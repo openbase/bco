@@ -26,33 +26,32 @@ import org.openbase.bco.manager.location.lib.ConnectionFactory;
 import org.openbase.bco.manager.location.lib.LocationController;
 import org.openbase.bco.manager.location.lib.LocationFactory;
 import org.openbase.bco.manager.location.lib.LocationManager;
-import org.openbase.bco.registry.device.lib.DeviceRegistry;
-import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.iface.Launchable;
+import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
 import org.openbase.jul.storage.registry.ControllerRegistry;
 import org.openbase.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig;
-import rst.domotic.unit.location.LocationConfigType.LocationConfig;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class LocationManagerController implements LocationManager {
+public class LocationManagerController implements LocationManager, Launchable<Void>, VoidInitializable {
 
-    protected static final Logger logger = LoggerFactory.getLogger(LocationManagerController.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(LocationManagerController.class);
 
     private static LocationManagerController instance;
     private final LocationRegistryRemote locationRegistryRemote;
-    private final DeviceRegistryRemote deviceRegistryRemote;
+//    private final DeviceRegistryRemote deviceRegistryRemote;
     private final LocationFactory locationFactory;
     private final ConnectionFactory connectionFactory;
     private final ControllerRegistry<String, LocationController> locationRegistry;
@@ -64,7 +63,7 @@ public class LocationManagerController implements LocationManager {
         try {
             this.instance = this;
             this.locationRegistryRemote = new LocationRegistryRemote();
-            this.deviceRegistryRemote = new DeviceRegistryRemote();
+//            this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.locationFactory = LocationFactoryImpl.getInstance();
             this.connectionFactory = ConnectionFactoryImpl.getInstance();
             this.locationRegistry = new ControllerRegistry<>();
@@ -95,37 +94,46 @@ public class LocationManagerController implements LocationManager {
         return instance;
     }
 
+    @Override
     public void init() throws InitializationException, InterruptedException {
         try {
-            this.locationRegistryRemote.init();
-            this.locationRegistryRemote.activate();
-            this.deviceRegistryRemote.init();
-            this.deviceRegistryRemote.activate();
-            this.locationRegistryRemote.waitForData();
-            this.deviceRegistryRemote.waitForData();
-            this.locationRegistrySynchronizer.init();
-            this.connectionRegistrySynchronizer.init();
+            locationRegistryRemote.init();
+//            deviceRegistryRemote.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        locationRegistryRemote.activate();
+        locationRegistrySynchronizer.activate();
+        connectionRegistrySynchronizer.activate();
+    }
+
+    @Override
+    public boolean isActive() {
+        return locationRegistryRemote.isActive();
+    }
+
+    @Override
+    public void deactivate() throws CouldNotPerformException, InterruptedException {
+        locationRegistrySynchronizer.deactivate();
+        connectionRegistrySynchronizer.deactivate();
+        locationRegistryRemote.deactivate();
+    }
+
+    @Override
     public void shutdown() {
-        this.locationRegistryRemote.shutdown();
-        this.deviceRegistryRemote.shutdown();
-        this.locationRegistrySynchronizer.shutdown();
-        this.connectionRegistrySynchronizer.shutdown();
+        locationRegistrySynchronizer.shutdown();
+        connectionRegistrySynchronizer.shutdown();
+        locationRegistryRemote.shutdown();
         instance = null;
     }
 
     @Override
     public LocationRegistry getLocationRegistry() throws NotAvailableException {
         return locationRegistryRemote;
-    }
-
-    @Override
-    public DeviceRegistry getDeviceRegistry() throws NotAvailableException {
-        return deviceRegistryRemote;
     }
 
     @Override

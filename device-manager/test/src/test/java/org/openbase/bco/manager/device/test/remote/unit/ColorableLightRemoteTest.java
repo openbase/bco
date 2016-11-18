@@ -72,7 +72,7 @@ public class ColorableLightRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
+        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
         label = MockRegistry.COLORABLE_LIGHT_LABEL;
 

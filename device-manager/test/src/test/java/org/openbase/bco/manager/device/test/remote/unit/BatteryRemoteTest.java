@@ -67,7 +67,7 @@ public class BatteryRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
+        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
         label = MockRegistry.BATTERY_LABEL;
 
@@ -113,7 +113,7 @@ public class BatteryRemoteTest {
         System.out.println("getBatteryLevel");
         double level = 34.0;
         BatteryState state = BatteryState.newBuilder().setLevel(level).setValue(BatteryState.State.OK).build();
-        ((BatteryController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(batteryRemote.getId())).updateBatteryStateProvider(state);
+        ((BatteryController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(batteryRemote.getId())).updateBatteryStateProvider(state);
         batteryRemote.requestData().get();
         assertEquals("The getter for the battery level returns the wrong value!", state, batteryRemote.getBatteryState());
     }

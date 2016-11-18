@@ -81,7 +81,6 @@ public class SceneRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    //todo: why is this test deactivated?
     //@Test
     public void testScene() throws Exception {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonData.getDefaultInstance()));

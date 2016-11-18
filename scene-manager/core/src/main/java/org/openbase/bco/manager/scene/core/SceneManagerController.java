@@ -29,6 +29,8 @@ import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.iface.Launchable;
+import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.storage.registry.ControllerRegistry;
 import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.openbase.jul.storage.registry.RegistryImpl;
@@ -41,15 +43,15 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class SceneManagerController implements SceneRegistryProvider, SceneManager {
+public class SceneManagerController implements SceneRegistryProvider, SceneManager, Launchable<Void>, VoidInitializable {
 
-    protected static final Logger logger = LoggerFactory.getLogger(SceneManagerController.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(SceneManagerController.class);
 
     private static SceneManagerController instance;
     private final SceneFactory factory;
     private final ControllerRegistry<String, SceneController> sceneRegistry;
     private final SceneRegistryRemote sceneRegistryRemote;
-    private final EnableableEntryRegistrySynchronizer<String, SceneController, UnitConfig, UnitConfig.Builder> registrySynchronizer;
+    private final EnableableEntryRegistrySynchronizer<String, SceneController, UnitConfig, UnitConfig.Builder> sceneRegistrySynchronizer;
 
     public SceneManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
@@ -58,7 +60,7 @@ public class SceneManagerController implements SceneRegistryProvider, SceneManag
             this.sceneRegistry = new ControllerRegistry<>();
             this.sceneRegistryRemote = new SceneRegistryRemote();
 
-            this.registrySynchronizer = new EnableableEntryRegistrySynchronizer<String, SceneController, UnitConfig, UnitConfig.Builder>(sceneRegistry, sceneRegistryRemote.getSceneConfigRemoteRegistry(), factory) {
+            this.sceneRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, SceneController, UnitConfig, UnitConfig.Builder>(sceneRegistry, sceneRegistryRemote.getSceneConfigRemoteRegistry(), factory) {
 
                 @Override
                 public boolean enablingCondition(UnitConfig config) {
@@ -77,20 +79,36 @@ public class SceneManagerController implements SceneRegistryProvider, SceneManag
         return instance;
     }
 
+    @Override
     public void init() throws InitializationException, InterruptedException {
         try {
-            this.sceneRegistryRemote.init();
-            this.sceneRegistryRemote.activate();
-            this.sceneRegistryRemote.waitForData();
-            this.registrySynchronizer.init();
+            sceneRegistryRemote.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        sceneRegistryRemote.activate();
+        sceneRegistrySynchronizer.activate();
+    }
+
+    @Override
+    public boolean isActive() {
+        return sceneRegistryRemote.isActive();
+    }
+
+    @Override
+    public void deactivate() throws CouldNotPerformException, InterruptedException {
+        sceneRegistrySynchronizer.deactivate();
+        sceneRegistryRemote.deactivate();
+    }
+
+    @Override
     public void shutdown() {
+        sceneRegistrySynchronizer.shutdown();
         sceneRegistryRemote.shutdown();
-        registrySynchronizer.shutdown();
         instance = null;
     }
 

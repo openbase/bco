@@ -23,6 +23,7 @@ package org.openbase.bco.manager.device.core;
  */
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
+import org.openbase.bco.dal.lib.layer.service.mock.ServiceFactoryMock;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistryImpl;
 import org.openbase.bco.manager.device.lib.DeviceController;
@@ -36,6 +37,8 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.iface.Launchable;
+import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
 import org.openbase.jul.storage.registry.ControllerRegistry;
 import org.openbase.jul.storage.registry.RegistryImpl;
@@ -49,7 +52,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
-public class DeviceManagerController implements DeviceManager {
+public class DeviceManagerController implements DeviceManager, Launchable<Void>, VoidInitializable {
 
     private static final Logger logger = LoggerFactory.getLogger(DeviceManagerController.class);
 
@@ -66,6 +69,15 @@ public class DeviceManagerController implements DeviceManager {
 
     private final ActivatableEntryRegistrySynchronizer<String, DeviceController, UnitConfig, UnitConfig.Builder> deviceRegistrySynchronizer;
 
+    /**
+     * This construction is using a service factory mock and is only suitable for the testing purpose.
+     * @throws org.openbase.jul.exception.InstantiationException
+     * @throws InterruptedException 
+     */
+    public DeviceManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+        this(new ServiceFactoryMock());
+    }
+    
     public DeviceManagerController(final ServiceFactory serviceFactory) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         this(serviceFactory, new DeviceFactoryImpl(serviceFactory));
     }
@@ -130,22 +142,42 @@ public class DeviceManagerController implements DeviceManager {
         return instance;
     }
 
+    @Override
     public void init() throws InitializationException, InterruptedException {
         try {
             deviceRegistryRemote.init();
-            deviceRegistryRemote.activate();
-            deviceRegistryRemote.waitForData();
-
             locationRegistryRemote.init();
-            locationRegistryRemote.activate();
-            locationRegistryRemote.waitForData();
-            deviceRegistrySynchronizer.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        deviceRegistryRemote.activate();
+        locationRegistryRemote.activate();
+        locationRegistryRemote.waitForData();
+        deviceRegistrySynchronizer.activate();
+    }
+
+    @Override
+    public boolean isActive() {
+        return deviceRegistryRemote.isActive() && locationRegistryRemote.isActive();
+    }
+
+    @Override
+    public void deactivate() throws CouldNotPerformException, InterruptedException {
+        deviceRegistryRemote.deactivate();
+        locationRegistryRemote.deactivate();
+        deviceRegistrySynchronizer.deactivate();
+        deviceControllerRegistry.clear();
+        unitControllerRegistry.clear();
+    }
+
+    @Override
     public void shutdown() {
+        deviceRegistryRemote.shutdown();
+        locationRegistryRemote.shutdown();
         deviceControllerRegistry.shutdown();
         unitControllerRegistry.shutdown();
         deviceRegistrySynchronizer.shutdown();
@@ -154,7 +186,7 @@ public class DeviceManagerController implements DeviceManager {
 
     @Override
     public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
-        // TODO: avoid timeout slit!
+        // TODO: avoid timeout split!
         locationRegistryRemote.waitForData(timeout, timeUnit);
         deviceRegistryRemote.waitForData(timeout, timeUnit);
     }

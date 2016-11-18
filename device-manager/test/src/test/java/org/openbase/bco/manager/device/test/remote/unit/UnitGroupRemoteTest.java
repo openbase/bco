@@ -75,14 +75,14 @@ public class UnitGroupRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
+        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
         unitGroupRemote = new UnitGroupRemote();
         ServiceTemplate powerStateOperationService = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.OPERATION).build();
         ServiceTemplate powerStateProviderService = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.PROVIDER).build();
         UnitGroupConfig.Builder unitGroupConfig = UnitGroupConfig.newBuilder().addServiceTemplate(powerStateOperationService).addServiceTemplate(powerStateProviderService);
-        assert !deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().isEmtpy();
-        for (Unit unit : deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().getEntries()) {
+        assert !deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().isEmtpy();
+        for (Unit unit : deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().getEntries()) {
             if (allServiceTemplatesImplementedByUnit(unitGroupConfig, unit)) {
                 unitList.add(unit);
                 unitGroupConfig.addMemberId(unit.getConfig().getId());

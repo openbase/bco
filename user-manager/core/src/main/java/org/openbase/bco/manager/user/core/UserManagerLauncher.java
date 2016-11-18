@@ -22,42 +22,22 @@ package org.openbase.bco.manager.user.core;
  * #L%
  */
 import org.openbase.bco.manager.user.lib.UserManager;
-import org.openbase.jps.core.JPService;
+import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class UserManagerLauncher {
+public class UserManagerLauncher extends AbstractLauncher<UserManagerController> {
 
-    protected static final Logger logger = LoggerFactory.getLogger(UserManagerLauncher.class);
-
-    private final UserManagerController userManagerController;
-
-    public UserManagerLauncher() throws InstantiationException, InterruptedException {
-        try {
-            this.userManagerController = new UserManagerController();
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(this, ex);
-        }
+    public UserManagerLauncher() throws InstantiationException {
+        super(UserManager.class, UserManagerController.class);
     }
 
-    public void launch() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        try {
-            userManagerController.init();
-        } catch (CouldNotPerformException ex) {
-            userManagerController.shutdown();
-            throw new org.openbase.jul.exception.InstantiationException(this, ex);
-        }
-    }
-
-    public void shutdown() {
-        userManagerController.shutdown();
+    @Override
+    public void loadProperties() {
     }
 
     /**
@@ -66,20 +46,6 @@ public class UserManagerLauncher {
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
     public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
-
-        /* Setup JPService */
-        JPService.setApplicationName(UserManager.class);
-        JPService.parseAndExitOnError(args);
-
-        /* Start main app */
-        logger.info("Start " + JPService.getApplicationName() + "...");
-        try {
-            new UserManagerLauncher().launch();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
-            return;
-
-        }
-        logger.info(JPService.getApplicationName() + " successfully started.");
+        AbstractLauncher.main(args, UserManager.class, UserManagerLauncher.class);
     }
 }

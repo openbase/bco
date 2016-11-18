@@ -66,7 +66,7 @@ public class ReedContactRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
+        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
         label = MockRegistry.REED_CONTACT_LABEL;
 
@@ -111,7 +111,7 @@ public class ReedContactRemoteTest {
     public void testGetReedSwitchState() throws Exception {
         System.out.println("getReedSwitchState");
         ContactState state = ContactState.newBuilder().setValue(ContactState.State.OPEN).build();
-        ((ReedContactController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(reedContactRemote.getId())).updateContactStateProvider(state);
+        ((ReedContactController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(reedContactRemote.getId())).updateContactStateProvider(state);
         reedContactRemote.requestData().get();
         Assert.assertEquals("The getter for the reed switch state returns the wrong value!", state, reedContactRemote.getContactState());
     }

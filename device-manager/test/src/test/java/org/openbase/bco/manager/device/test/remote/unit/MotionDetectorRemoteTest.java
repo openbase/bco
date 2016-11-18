@@ -69,7 +69,7 @@ public class MotionDetectorRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
+        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
         label = MockRegistry.MOTION_DETECTOR_LABEL;
 
@@ -114,7 +114,7 @@ public class MotionDetectorRemoteTest {
     public void testGetMotionState() throws Exception {
         System.out.println("getMotionState");
         MotionState motion = MotionState.newBuilder().setValue(MotionState.State.MOTION).build();
-        ((MotionDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(motionDetectorRemote.getId())).updateMotionStateProvider(motion);
+        ((MotionDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(motionDetectorRemote.getId())).updateMotionStateProvider(motion);
         motionDetectorRemote.requestData().get();
         Assert.assertEquals("The getter for the motion state returns the wrong value!", motion.getValue(), motionDetectorRemote.getMotionState().getValue());
     }
@@ -132,7 +132,7 @@ public class MotionDetectorRemoteTest {
         Stopwatch stopwatch = new Stopwatch();
 
         stopwatch.start();
-        ((MotionDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(motionDetectorRemote.getId())).updateMotionStateProvider(motion);
+        ((MotionDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(motionDetectorRemote.getId())).updateMotionStateProvider(motion);
         stopwatch.stop();
         motionDetectorRemote.requestData().get();
         Assert.assertEquals("The getter for the motion state returns the wrong value!", motion.getValue(), motionDetectorRemote.getMotionState().getValue());
@@ -145,7 +145,7 @@ public class MotionDetectorRemoteTest {
 
         motion = MotionState.newBuilder().setValue(MotionState.State.NO_MOTION).build();
         stopwatch.start();
-        ((MotionDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(motionDetectorRemote.getId())).updateMotionStateProvider(motion);
+        ((MotionDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(motionDetectorRemote.getId())).updateMotionStateProvider(motion);
         stopwatch.stop();
         motionDetectorRemote.requestData().get();
         Assert.assertEquals("The getter for the motion state returns the wrong value!", motion.getValue(), motionDetectorRemote.getMotionState().getValue());

@@ -20,18 +20,20 @@ package org.openbase.bco.manager.agent.core;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
+ *
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ *
  */
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.bco.manager.agent.lib.AgentFactory;
 import org.openbase.bco.manager.agent.lib.AgentManager;
 import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
-import org.openbase.bco.registry.device.lib.DeviceRegistry;
-import org.openbase.bco.registry.device.lib.provider.DeviceRegistryProvider;
-import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.iface.Launchable;
+import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.storage.registry.ControllerRegistry;
 import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.slf4j.Logger;
@@ -39,31 +41,26 @@ import org.slf4j.LoggerFactory;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
-/**
- *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- *
- */
-public class AgentManagerController implements DeviceRegistryProvider, AgentManager {
+public class AgentManagerController implements AgentManager, Launchable<Void>, VoidInitializable {
 
-    protected static final Logger logger = LoggerFactory.getLogger(AgentManagerController.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(AgentManagerController.class);
 
     private static AgentManagerController instance;
     private final AgentFactory factory;
     private final ControllerRegistry<String, AgentController> agentRegistry;
     private final AgentRegistryRemote agentRegistryRemote;
-    private final EnableableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder> registrySynchronizer;
-    private final DeviceRegistryRemote deviceRegistryRemote;
+    private final EnableableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder> agentRegistrySynchronizer;
+//    private final DeviceRegistryRemote deviceRegistryRemote;
 
     public AgentManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             this.instance = this;
             this.factory = AgentFactoryImpl.getInstance();
             this.agentRegistry = new ControllerRegistry<>();
-            this.deviceRegistryRemote = new DeviceRegistryRemote();
+//            this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.agentRegistryRemote = new AgentRegistryRemote();
 
-            this.registrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder>(agentRegistry, agentRegistryRemote.getAgentConfigRemoteRegistry(), factory) {
+            this.agentRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder>(agentRegistry, agentRegistryRemote.getAgentConfigRemoteRegistry(), factory) {
 
                 @Override
                 public boolean enablingCondition(final UnitConfig config) {
@@ -83,33 +80,51 @@ public class AgentManagerController implements DeviceRegistryProvider, AgentMana
         return instance;
     }
 
+    @Override
     public void init() throws InitializationException, InterruptedException {
         try {
-            this.agentRegistryRemote.init();
-            this.agentRegistryRemote.activate();
-            this.deviceRegistryRemote.init();
-            this.deviceRegistryRemote.activate();
-            this.registrySynchronizer.init();
+            agentRegistryRemote.init();
+//            deviceRegistryRemote.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
-    public void shutdown() {
-        this.agentRegistryRemote.shutdown();
-        this.deviceRegistryRemote.shutdown();
-        this.deviceRegistryRemote.shutdown();
-        instance = null;
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        agentRegistryRemote.activate();
+        agentRegistrySynchronizer.activate();
+//        deviceRegistryRemote.activate();
     }
 
     @Override
-    public DeviceRegistry getDeviceRegistry() throws NotAvailableException {
-        return this.deviceRegistryRemote;
+    public boolean isActive() {
+        return agentRegistryRemote.isActive();
     }
+
+    @Override
+    public void deactivate() throws CouldNotPerformException, InterruptedException {
+        agentRegistrySynchronizer.deactivate();
+        agentRegistryRemote.deactivate();
+//        deviceRegistryRemote.deactivate();
+    }
+
+    @Override
+    public void shutdown() {
+        agentRegistrySynchronizer.shutdown();
+        agentRegistryRemote.shutdown();
+//        deviceRegistryRemote.shutdown();
+        instance = null;
+    }
+
+//    @Override
+//    public DeviceRegistry getDeviceRegistry() throws NotAvailableException {
+//        return deviceRegistryRemote;
+//    }
 
     @Override
     public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
         agentRegistryRemote.waitForData(timeout, timeUnit);
-        deviceRegistryRemote.waitForData(timeout, timeUnit);
+//        deviceRegistryRemote.waitForData(timeout, timeUnit);
     }
 }

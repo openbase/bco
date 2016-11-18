@@ -22,69 +22,31 @@ package org.openbase.bco.manager.device.core;
  * #L%
  */
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.openbase.bco.dal.lib.layer.service.mock.ServiceFactoryMock;
 import org.openbase.bco.manager.device.lib.DeviceManager;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
+import org.openbase.bco.registry.lib.launch.AbstractLauncher;
+import static org.openbase.bco.registry.lib.launch.AbstractLauncher.main;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class DeviceManagerLauncher {
+public class DeviceManagerLauncher extends AbstractLauncher<DeviceManagerController> {
 
-    private static final Logger logger = LoggerFactory.getLogger(DeviceManagerLauncher.class);
-
-    private DeviceManagerController deviceManagerController;
-
-    public void launch() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        try {
-            logger.info("Launching device manager...");
-            deviceManagerController = new DeviceManagerController(new ServiceFactoryMock());
-            logger.info("Init device manager controller...");
-            deviceManagerController.init();
-            logger.info("Device manager launched!");
-        } catch (CouldNotPerformException ex) {
-            deviceManagerController.shutdown();
-            throw new org.openbase.jul.exception.InstantiationException(this, ex);
-        }
+    public DeviceManagerLauncher() throws org.openbase.jul.exception.InstantiationException {
+        super(DeviceManager.class, DeviceManagerController.class);
     }
 
-    public void shutdown() {
-        deviceManagerController.shutdown();
-    }
-
-    public DeviceManager getDeviceManager() {
-        return deviceManagerController;
-    }
-
-    /**
-     * @param args the command line arguments
-     * @throws java.lang.InterruptedException
-     * @throws org.openbase.jul.exception.CouldNotPerformException
-     */
-    public static void main(String[] args) throws InterruptedException, CouldNotPerformException {
-
-        /* Setup JPService */
-        JPService.setApplicationName(DeviceManager.class);
+    @Override
+    public void loadProperties() {
         JPService.registerProperty(JPHardwareSimulationMode.class);
         JPService.registerProperty(JPLocationRegistryScope.class);
         JPService.registerProperty(JPDeviceRegistryScope.class);
-        JPService.parseAndExitOnError(args);
+    }
 
-        /* Start main app */
-        logger.info("Start " + JPService.getApplicationName() + "...");
-        try {
-            new DeviceManagerLauncher().launch();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
-            return;
-        }
-        logger.info(JPService.getApplicationName() + " successfully started.");
+    public static void main(String args[]) throws Throwable {
+        main(args, DeviceManager.class, DeviceManagerLauncher.class);
     }
 }

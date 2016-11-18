@@ -108,8 +108,7 @@ public class AgentBindingOpenHABImpl extends AbstractOpenHABBinding {
             factory.init(openHABRemote);
             agentRegistryRemote.init();
             agentRegistryRemote.activate();
-            agentRegistryRemote.waitForData();
-            registrySynchronizer.init();
+            registrySynchronizer.activate();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }

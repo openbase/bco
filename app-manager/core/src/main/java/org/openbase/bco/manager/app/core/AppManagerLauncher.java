@@ -1,11 +1,8 @@
 package org.openbase.bco.manager.app.core;
 
 import org.openbase.bco.manager.app.lib.AppManager;
-import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.openbase.bco.registry.lib.launch.AbstractLauncher;
+import static org.openbase.bco.registry.lib.launch.AbstractLauncher.main;
 
 /*
  * #%L
@@ -27,58 +24,21 @@ import org.slf4j.LoggerFactory;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
- */
-/**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
-public class AppManagerLauncher {
+public class AppManagerLauncher extends AbstractLauncher<AppManagerController> {
 
-    protected static final Logger logger = LoggerFactory.getLogger(AppManagerLauncher.class);
-
-    private final AppManagerController appManagerController;
-
-    public AppManagerLauncher() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        try {
-            this.appManagerController = new AppManagerController();
-        } catch (CouldNotPerformException ex) {
-            throw new org.openbase.jul.exception.InstantiationException(this, ex);
-        }
+    public AppManagerLauncher() throws org.openbase.jul.exception.InstantiationException {
+        super(AppManager.class, AppManagerController.class);
     }
 
-    public void launch() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        try {
-            appManagerController.init();
-        } catch (CouldNotPerformException ex) {
-            appManagerController.shutdown();
-            throw new org.openbase.jul.exception.InstantiationException(this, ex);
-        }
+    @Override
+    public void loadProperties() {
     }
 
-    public void shutdown() {
-        appManagerController.shutdown();
-    }
-
-    /**
-     * @param args the command line arguments
-     * @throws java.lang.InterruptedException
-     * @throws org.openbase.jul.exception.CouldNotPerformException
-     */
-    public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
-
-        /* Setup JPService */
-        JPService.setApplicationName(AppManager.class);
-        JPService.parseAndExitOnError(args);
-
-        /* Start main app */
-        logger.info("Start " + JPService.getApplicationName() + "...");
-        try {
-            new AppManagerLauncher().launch();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
-            return;
-        }
-        logger.info(JPService.getApplicationName() + " successfully started.");
+    public static void main(String args[]) throws Throwable {
+        main(args, AppManager.class, AppManagerLauncher.class);
     }
 }

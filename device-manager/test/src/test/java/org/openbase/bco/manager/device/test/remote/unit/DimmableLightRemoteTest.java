@@ -66,7 +66,7 @@
 //
 //        deviceManagerLauncher = new DeviceManagerLauncher();
 //        deviceManagerLauncher.launch();
-//        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
+//        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 //
 //        dimmableLightRemote = new DimmableLightRemote();
 //        dimmableLightRemote.initByLabel(MockRegistry.DIMMABLE_LIGHT_LABEL);
@@ -121,7 +121,7 @@
 //    public void testGetPower() throws Exception {
 //        System.out.println("getPowerState");
 //        PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-//        ((DimmableLightController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(dimmableLightRemote.getId())).updatePowerStateProvider(state);
+//        ((DimmableLightController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dimmableLightRemote.getId())).updatePowerStateProvider(state);
 //        dimmableLightRemote.requestData().get();
 //        assertEquals("Power has not been set in time!", state, dimmableLightRemote.getPowerState());
 //    }
@@ -147,7 +147,7 @@
 //        System.out.println("getBrightness");
 //        Double brightness = 70.0d;
 //        BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).build();
-//        ((DimmableLightController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(dimmableLightRemote.getId())).updateBrightnessStateProvider(brightnessState);
+//        ((DimmableLightController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dimmableLightRemote.getId())).updateBrightnessStateProvider(brightnessState);
 //        dimmableLightRemote.requestData().get();
 //        assertEquals("Dimm has not been set in time!", brightnessState, dimmableLightRemote.getBrightnessState());
 //    }

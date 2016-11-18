@@ -69,7 +69,7 @@ public class ButtonRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
+        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
         label = MockRegistry.BUTTON_LABEL;
 
@@ -114,7 +114,7 @@ public class ButtonRemoteTest {
     public void testGetButtonState() throws Exception {
         logger.debug("getButtonState");
         ButtonState buttonState = ButtonState.newBuilder().setValue(ButtonState.State.PRESSED).build();
-        ((ButtonController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(buttonRemote.getId())).updateButtonStateProvider(buttonState);
+        ((ButtonController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId())).updateButtonStateProvider(buttonState);
         buttonRemote.requestData().get();
         assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
     }
@@ -132,7 +132,7 @@ public class ButtonRemoteTest {
         Stopwatch stopwatch = new Stopwatch();
 
         stopwatch.start();
-        ((ButtonController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(buttonRemote.getId())).updateButtonStateProvider(buttonState);
+        ((ButtonController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId())).updateButtonStateProvider(buttonState);
         stopwatch.stop();
         buttonRemote.requestData().get();
         assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
@@ -144,7 +144,7 @@ public class ButtonRemoteTest {
 
         buttonState = ButtonState.newBuilder().setValue(ButtonState.State.PRESSED).build();
         stopwatch.start();
-        ((ButtonController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(buttonRemote.getId())).updateButtonStateProvider(buttonState);
+        ((ButtonController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId())).updateButtonStateProvider(buttonState);
         stopwatch.stop();
         buttonRemote.requestData().get();
         assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
@@ -156,7 +156,7 @@ public class ButtonRemoteTest {
 
         buttonState = ButtonState.newBuilder().setValue(ButtonState.State.RELEASED).build();
         stopwatch.start();
-        ((ButtonController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(buttonRemote.getId())).updateButtonStateProvider(buttonState);
+        ((ButtonController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId())).updateButtonStateProvider(buttonState);
         stopwatch.stop();
         buttonRemote.requestData().get();
         assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());

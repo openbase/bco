@@ -22,63 +22,25 @@ package org.openbase.bco.manager.scene.core;
  * #L%
  */
 import org.openbase.bco.manager.scene.lib.SceneManager;
-import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.openbase.bco.registry.lib.launch.AbstractLauncher;
+import static org.openbase.bco.registry.lib.launch.AbstractLauncher.main;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
-public class SceneManagerLauncher {
+public class SceneManagerLauncher extends AbstractLauncher<SceneManagerController> {
 
-    protected static final Logger logger = LoggerFactory.getLogger(SceneManagerLauncher.class);
-
-    private final SceneManagerController sceneManagerController;
-
-    public SceneManagerLauncher() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        try {
-            this.sceneManagerController = new SceneManagerController();
-        } catch (CouldNotPerformException ex) {
-            throw new org.openbase.jul.exception.InstantiationException(this, ex);
-        }
+    public SceneManagerLauncher() throws org.openbase.jul.exception.InstantiationException {
+        super(SceneManager.class, SceneManagerController.class);
     }
 
-    public void launch() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        try {
-            sceneManagerController.init();
-        } catch (CouldNotPerformException ex) {
-            sceneManagerController.shutdown();
-            throw new org.openbase.jul.exception.InstantiationException(this, ex);
-        }
+    @Override
+    public void loadProperties() {
     }
 
-    public void shutdown() {
-        sceneManagerController.shutdown();
-    }
-
-    /**
-     * @param args the command line arguments
-     * @throws java.lang.InterruptedException
-     * @throws org.openbase.jul.exception.CouldNotPerformException
-     */
-    public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
-
-        /* Setup JPService */
-        JPService.setApplicationName(SceneManager.class);
-        JPService.parseAndExitOnError(args);
-
-        /* Start main app */
-        logger.info("Start " + JPService.getApplicationName() + "...");
-        try {
-            new SceneManagerLauncher().launch();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
-            return;
-        }
-        logger.info(JPService.getApplicationName() + " successfully started.");
+    public static void main(String args[]) throws Throwable {
+        main(args, SceneManager.class, SceneManagerLauncher.class);
     }
 }

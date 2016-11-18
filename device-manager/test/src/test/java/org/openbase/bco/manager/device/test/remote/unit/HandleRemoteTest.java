@@ -65,7 +65,7 @@ public class HandleRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
+        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
         handleRemote = new HandleRemote();
         handleRemote.initByLabel(MockRegistry.HANDLE_LABEL);
@@ -108,7 +108,7 @@ public class HandleRemoteTest {
     public void testGetRotaryHandleState() throws Exception {
         System.out.println("getRotaryHandleState");
         HandleState handlestate = HandleState.newBuilder().setPosition(90).build();
-        ((HandleController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(handleRemote.getId())).updateHandleStateProvider(handlestate);
+        ((HandleController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(handleRemote.getId())).updateHandleStateProvider(handlestate);
         handleRemote.requestData().get();
         Assert.assertEquals("The getter for the handle state returns the wrong value!", handlestate, handleRemote.getHandleState());
     }

@@ -22,63 +22,25 @@ package org.openbase.bco.manager.location.core;
  * #L%
  */
 import org.openbase.bco.manager.location.lib.LocationManager;
-import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.openbase.bco.registry.lib.launch.AbstractLauncher;
+import static org.openbase.bco.registry.lib.launch.AbstractLauncher.main;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
-public class LocationManagerLauncher {
+public class LocationManagerLauncher extends AbstractLauncher<LocationManagerController> {
 
-    protected static final Logger logger = LoggerFactory.getLogger(LocationManagerLauncher.class);
-
-    private final LocationManagerController locationManagerController;
-
-    public LocationManagerLauncher() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        try {
-            this.locationManagerController = new LocationManagerController();
-        } catch (CouldNotPerformException ex) {
-            throw new org.openbase.jul.exception.InstantiationException(this, ex);
-        }
+    public LocationManagerLauncher() throws org.openbase.jul.exception.InstantiationException {
+        super(LocationManager.class, LocationManagerController.class);
     }
 
-    public void launch() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        try {
-            locationManagerController.init();
-        } catch (CouldNotPerformException ex) {
-            locationManagerController.shutdown();
-            throw new org.openbase.jul.exception.InstantiationException(this, ex);
-        }
+    @Override
+    public void loadProperties() {
     }
 
-    public void shutdown() {
-        locationManagerController.shutdown();
-    }
-
-    /**
-     * @param args the command line arguments
-     * @throws java.lang.InterruptedException
-     * @throws org.openbase.jul.exception.CouldNotPerformException
-     */
-    public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
-
-        /* Setup JPService */
-        JPService.setApplicationName(LocationManager.class);
-        JPService.parseAndExitOnError(args);
-
-        /* Start main app */
-        logger.info("Start " + JPService.getApplicationName() + "...");
-        try {
-            new LocationManagerLauncher().launch();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
-            return;
-        }
-        logger.info(JPService.getApplicationName() + " successfully started.");
+    public static void main(String args[]) throws Throwable {
+        main(args, LocationManager.class, LocationManagerLauncher.class);
     }
 }

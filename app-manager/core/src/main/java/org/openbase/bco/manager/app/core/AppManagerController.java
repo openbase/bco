@@ -21,17 +21,15 @@ package org.openbase.bco.manager.app.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.manager.app.lib.AppController;
 import org.openbase.bco.manager.app.lib.AppFactory;
 import org.openbase.bco.manager.app.lib.AppManager;
 import org.openbase.bco.registry.app.remote.AppRegistryRemote;
-import org.openbase.bco.registry.device.lib.DeviceRegistry;
-import org.openbase.bco.registry.device.lib.provider.DeviceRegistryProvider;
-import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.iface.Launchable;
+import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.storage.registry.ControllerRegistry;
 import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.slf4j.Logger;
@@ -43,26 +41,26 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class AppManagerController implements DeviceRegistryProvider, AppManager {
+public class AppManagerController implements AppManager, Launchable<Void>, VoidInitializable {
 
-    protected static final Logger logger = LoggerFactory.getLogger(AppManagerController.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(AppManagerController.class);
 
     private static AppManagerController instance;
     private final AppFactory factory;
     private final ControllerRegistry<String, AppController> appRegistry;
     private final AppRegistryRemote appRegistryRemote;
-    private final EnableableEntryRegistrySynchronizer<String, AppController, UnitConfig, UnitConfig.Builder> registrySynchronizer;
-    private final DeviceRegistryRemote deviceRegistryRemote;
+    private final EnableableEntryRegistrySynchronizer<String, AppController, UnitConfig, UnitConfig.Builder> appRegistrySynchronizer;
+//    private final DeviceRegistryRemote deviceRegistryRemote;
 
     public AppManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             this.instance = this;
             this.factory = AppFactoryImpl.getInstance();
             this.appRegistry = new ControllerRegistry<>();
-            this.deviceRegistryRemote = new DeviceRegistryRemote();
+//            this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.appRegistryRemote = new AppRegistryRemote();
 
-            this.registrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AppController, UnitConfig, UnitConfig.Builder>(appRegistry, appRegistryRemote.getAppConfigRemoteRegistry(), factory) {
+            this.appRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AppController, UnitConfig, UnitConfig.Builder>(appRegistry, appRegistryRemote.getAppConfigRemoteRegistry(), factory) {
 
                 @Override
                 public boolean enablingCondition(final UnitConfig config) {
@@ -82,29 +80,46 @@ public class AppManagerController implements DeviceRegistryProvider, AppManager 
         return instance;
     }
 
+    @Override
     public void init() throws InitializationException, InterruptedException {
         try {
-            this.appRegistryRemote.init();
-            this.appRegistryRemote.activate();
-            this.deviceRegistryRemote.init();
-            this.deviceRegistryRemote.activate();
-            this.appRegistryRemote.waitForData();
-            this.deviceRegistryRemote.waitForData();
-            this.registrySynchronizer.init();
+            appRegistryRemote.init();
+//            deviceRegistryRemote.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
-    public void shutdown() {
-        this.appRegistryRemote.shutdown();
-        this.deviceRegistryRemote.shutdown();
-        this.deviceRegistryRemote.shutdown();
-        instance = null;
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        appRegistryRemote.activate();
+        appRegistrySynchronizer.activate();
+//            deviceRegistryRemote.activate();
+//            deviceRegistryRemote.waitForData();
     }
 
     @Override
-    public DeviceRegistry getDeviceRegistry() throws NotAvailableException {
-        return this.deviceRegistryRemote;
+    public boolean isActive() {
+        return appRegistryRemote.isActive();
     }
+
+    @Override
+    public void deactivate() throws CouldNotPerformException, InterruptedException {
+        appRegistrySynchronizer.deactivate();
+        appRegistryRemote.deactivate();
+    }
+
+    @Override
+    public void shutdown() {
+        appRegistrySynchronizer.shutdown();
+        appRegistryRemote.shutdown();
+//        this.deviceRegistryRemote.shutdown();
+//        this.deviceRegistryRemote.shutdown();
+        instance = null;
+    }
+
+//    @Override
+//    public DeviceRegistry getDeviceRegistry() throws NotAvailableException {
+//        return this.deviceRegistryRemote;
+//    }
 }

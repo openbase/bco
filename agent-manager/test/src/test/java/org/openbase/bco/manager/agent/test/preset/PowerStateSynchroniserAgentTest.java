@@ -98,8 +98,8 @@ public class PowerStateSynchroniserAgentTest {
         unitRegistry = CachedUnitRegistryRemote.getRegistry();
         locationRegistry = CachedLocationRegistryRemote.getRegistry();
 
-        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
-        agentManagerLauncher.getAgentManager().waitForInit(30, TimeUnit.SECONDS);
+        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+        agentManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
     }
 
     @AfterClass

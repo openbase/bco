@@ -78,7 +78,7 @@ public class DeviceBindingOpenHABImpl extends AbstractOpenHABBinding {
                         }
                         return super.isSupported(config);
                     } catch (CouldNotPerformException ex) {
-                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not check device support!", ex), logger);
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not check device support!", ex), LOGGER);
                         return false;
                     }
                 }

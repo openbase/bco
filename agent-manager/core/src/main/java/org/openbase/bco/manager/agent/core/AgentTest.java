@@ -21,8 +21,6 @@ package org.openbase.bco.manager.agent.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import static org.openbase.bco.manager.agent.core.AgentManagerLauncher.logger;
 import org.openbase.bco.manager.agent.lib.jp.JPAgentId;
 import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
 import org.openbase.jps.core.JPService;
@@ -31,12 +29,16 @@ import org.openbase.jps.preset.JPVerbose;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class AgentTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AgentManagerController.class);
 
     /**
      * @param args the command line arguments
@@ -52,7 +54,7 @@ public class AgentTest {
         JPService.parseAndExitOnError(args);
 
         /* Start main app */
-        logger.info("Start " + JPService.getApplicationName() + "...");
+        LOGGER.info("Start " + JPService.getApplicationName() + "...");
         try {
             AgentRegistryRemote agentRegistryRemote = new AgentRegistryRemote();
             agentRegistryRemote.init();
@@ -60,8 +62,8 @@ public class AgentTest {
             AgentFactoryImpl.getInstance().newInstance(agentRegistryRemote.getAgentConfigById(JPService.getProperty(JPAgentId.class).getValue())).enable();
             agentRegistryRemote.deactivate();
         } catch (JPServiceException | CouldNotPerformException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
         }
-        logger.info(JPService.getApplicationName() + " successfully started.");
+        LOGGER.info(JPService.getApplicationName() + " successfully started.");
     }
 }

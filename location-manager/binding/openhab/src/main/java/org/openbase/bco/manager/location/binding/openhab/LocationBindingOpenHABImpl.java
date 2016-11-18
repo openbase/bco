@@ -168,9 +168,8 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
         try {
             locationRegistryRemote.init();
             locationRegistryRemote.activate();
-            locationRegistryRemote.waitForData();
-            locationRegistrySynchronizer.init();
-            connectionRegistrySynchronizer.init();
+            locationRegistrySynchronizer.activate();
+            connectionRegistrySynchronizer.activate();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }

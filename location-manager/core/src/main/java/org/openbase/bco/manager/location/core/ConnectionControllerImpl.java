@@ -35,6 +35,8 @@ import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.openbase.bco.manager.location.lib.Connection;
 import org.openbase.bco.manager.location.lib.ConnectionController;
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -73,6 +75,7 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
     private final Map<String, UnitRemote> unitRemoteMap;
     private final Map<ServiceTemplateType.ServiceTemplate.ServiceType, Collection<? extends Service>> serviceMap;
     private List<String> originalUnitIdList;
+    private UnitRegistry unitRegistry;
 
     public ConnectionControllerImpl() throws InstantiationException {
         super(ConnectionData.newBuilder());
@@ -127,16 +130,17 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
     @Override
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         try {
+            CachedUnitRegistryRemote.waitForData();
+            unitRegistry = CachedUnitRegistryRemote.getRegistry();
             originalUnitIdList = config.getConnectionConfig().getUnitIdList();
             for (ServiceType serviceType : ServiceType.values()) {
                 if (isSupportedServiceType(serviceType)) {
                     serviceMap.put(serviceType, new ArrayList<>());
                 }
             }
-            DeviceRegistry deviceRegistry = LocationManagerController.getInstance().getDeviceRegistry();
-            for (UnitConfig unitConfig : deviceRegistry.getUnitConfigs()) {
+            for (UnitConfig unitConfig : unitRegistry.getUnitConfigs()) {
                 if (config.getConnectionConfig().getUnitIdList().contains(unitConfig.getId())) {
-                    List<ServiceTemplate> serviceTemplate = deviceRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTemplateList();
+                    List<ServiceTemplate> serviceTemplate = unitRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTemplateList();
 
                     // ignore units that do not have any service supported by a location
                     if (!isSupportedServiceType(serviceTemplate)) {
@@ -163,8 +167,7 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
                 unitRemoteMap.get(originalId).deactivate();
                 unitRemoteMap.remove(originalId);
                 for (Collection<? extends Service> serviceCollection : serviceMap.values()) {
-                    Collection serviceSelectionCopy = new ArrayList<>(serviceCollection);
-                    for (Object service : serviceSelectionCopy) {
+                    for (Service service : new ArrayList<>(serviceCollection)) {
                         if (((UnitRemote) service).getId().equals(originalId)) {
                             serviceCollection.remove(service);
                         }
@@ -173,8 +176,7 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
             }
         }
         for (String newUnitId : newUnitIdList) {
-            DeviceRegistry deviceRegistry = LocationManagerController.getInstance().getDeviceRegistry();
-            UnitConfig unitConfig = deviceRegistry.getUnitConfigById(newUnitId);
+            final UnitConfig unitConfig = unitRegistry.getUnitConfigById(newUnitId);
             List<ServiceTemplate> serviceTemplates = new ArrayList<>();
 
             // ignore units that do not have any service supported by a location
@@ -211,7 +213,7 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
         super.activate();
 
         for (UnitRemote unitRemote : unitRemoteMap.values()) {
-            for (ServiceTemplate serviceTemplate : LocationManagerController.getInstance().getDeviceRegistry().getUnitTemplateByType(unitRemote.getType()).getServiceTemplateList()) {
+            for (ServiceTemplate serviceTemplate : unitRegistry.getUnitTemplateByType(unitRemote.getType()).getServiceTemplateList()) {
                 addRemoteToServiceMap(serviceTemplate.getType(), unitRemote);
             }
         }

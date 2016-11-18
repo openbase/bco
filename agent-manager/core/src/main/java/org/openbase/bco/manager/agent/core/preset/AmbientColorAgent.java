@@ -26,8 +26,8 @@ import java.util.List;
 import java.util.Random;
 import org.openbase.bco.dal.remote.service.ColorStateServiceRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgent;
-import org.openbase.bco.manager.agent.core.AgentManagerController;
-import org.openbase.bco.registry.device.lib.DeviceRegistry;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -147,17 +147,18 @@ public class AmbientColorAgent extends AbstractAgent {
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         try {
             super.init(config);
+            CachedUnitRegistryRemote.waitForData();
+            UnitRegistry unitRegistry = CachedUnitRegistryRemote.getRegistry();
 
             MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("AmbientColorAgent", config.getMetaConfig());
 
-            DeviceRegistry deviceRegistry = AgentManagerController.getInstance().getDeviceRegistry();
             int i = 1;
             String unitId;
             try {
                 while (!(unitId = configVariableProvider.getValue(UNIT_KEY + "_" + i)).isEmpty()) {
                     logger.info("Found unit id [" + unitId + "] with key [" + UNIT_KEY + "_" + i + "]");
                     ColorStateServiceRemote remote = new ColorStateServiceRemote();
-                    remote.init(deviceRegistry.getUnitConfigById(unitId));
+                    remote.init(unitRegistry.getUnitConfigById(unitId));
                     colorRemotes.add(remote);
                     i++;
                 }
@@ -219,7 +220,7 @@ public class AmbientColorAgent extends AbstractAgent {
     private void initColorStates() throws CouldNotPerformException {
         HSBColor color;
         for (ColorStateServiceRemote colorRemote : colorRemotes) {
-            if (!colors.contains(colorRemote.getColorState())) {
+            if (!colors.contains(colorRemote.getColorState().getColor().getHsbColor())) {
                 color = colors.get(random.nextInt(colors.size()));
                 colorRemote.setColor(color);
             }

@@ -67,7 +67,7 @@ public class PowerSwitchRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
+        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
         label = MockRegistry.POWER_SWITCH_LABEL;
 
@@ -119,7 +119,7 @@ public class PowerSwitchRemoteTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        ((PowerSwitchController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(powerSwitchRemote.getId())).updatePowerStateProvider(state);
+        ((PowerSwitchController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(powerSwitchRemote.getId())).updatePowerStateProvider(state);
         powerSwitchRemote.requestData().get();
         assertEquals("The getter for the power state returns the wrong value!", state, powerSwitchRemote.getPowerState());
     }

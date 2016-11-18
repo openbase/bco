@@ -20,52 +20,24 @@ package org.openbase.bco.manager.agent.core;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
- */
-import org.openbase.bco.manager.agent.lib.AgentManager;
-import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.pattern.Launcher;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
-/**
+ *
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class AgentManagerLauncher implements Launcher {
+import org.openbase.bco.manager.agent.lib.AgentManager;
+import org.openbase.bco.registry.lib.launch.AbstractLauncher;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InstantiationException;
 
-    protected static final Logger logger = LoggerFactory.getLogger(AgentManagerLauncher.class);
+public class AgentManagerLauncher extends AbstractLauncher<AgentManagerController> {
 
-    private final AgentManagerController agentManagerController;
-
-    public AgentManagerLauncher() throws InstantiationException, InterruptedException {
-        try {
-            this.agentManagerController = new AgentManagerController();
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(this, ex);
-        }
+    public AgentManagerLauncher() throws InstantiationException {
+        super(AgentManager.class, AgentManagerController.class);
     }
 
     @Override
-    public boolean launch() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        try {
-            agentManagerController.init();
-        } catch (CouldNotPerformException ex) {
-            agentManagerController.shutdown();
-            throw new org.openbase.jul.exception.InstantiationException(this, ex);
-        }
-        return true;
-    }
+    protected void loadProperties() {
 
-    @Override
-    public void shutdown() {
-        agentManagerController.shutdown();
-    }
-
-    public AgentManager getAgentManager() {
-        return agentManagerController;
     }
 
     /**
@@ -74,23 +46,6 @@ public class AgentManagerLauncher implements Launcher {
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
     public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
-
-        /* Setup JPService */
-        JPService.setApplicationName(AgentManager.class);
-        JPService.parseAndExitOnError(args);
-
-        /* Start main app */
-        logger.info("Start " + JPService.getApplicationName() + "...");
-        try {
-            new AgentManagerLauncher().launch();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
-            return;
-        }
-        logger.info(JPService.getApplicationName() + " successfully started.");
-    }
-
-    @Override
-    public void loadProperties() {
+        AbstractLauncher.main(args, AgentManager.class, AgentManagerLauncher.class);
     }
 }

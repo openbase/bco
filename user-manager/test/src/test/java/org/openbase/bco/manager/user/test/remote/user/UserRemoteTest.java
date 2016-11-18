@@ -50,17 +50,19 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public class UserRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(UserRemoteTest.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(UserRemoteTest.class);
 
     private static UserManagerLauncher userManagerLauncher;
     private static UserRemote userRemote;
     private static MockRegistry registry;
 
     public UserRemoteTest() {
+        
     }
 
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
+        JPService.setupJUnitTestMode();
         JPService.registerProperty(JPHardwareSimulationMode.class, true);
         registry = MockRegistryHolder.newMockRegistry();
 
@@ -99,18 +101,18 @@ public class UserRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+    @Test/*(timeout = 10000)*/
     public void testGetUserName() throws Exception {
         System.out.println("testGetUserName");
         userRemote.requestData().get();
-        assertEquals("The user created int he manager has a different user name than the one registered!", MockRegistry.USER_NAME, userRemote.getData().getUserName());
+        assertEquals("The user created in the manager has a different user name than the one registered!", MockRegistry.USER_NAME, userRemote.getData().getUserName());
     }
 
-    @Test(timeout = 5000)
+    @Test/*(timeout = 10000)*/
     public void testSetUserValues() throws Exception {
         System.out.println("testSetUserValues");
 
-        UserActivityState activity = UserActivityState.newBuilder().setCurrentActivity(Activity.EATING).setLastActivity(Activity.COOKING).setNextActivity(Activity.RELAXING).build();;
+        UserActivityState activity = UserActivityState.newBuilder().setCurrentActivity(Activity.EATING).setLastActivity(Activity.COOKING).setNextActivity(Activity.RELAXING).build();
         UserPresenceState presenceState = UserPresenceState.newBuilder().setValue(UserPresenceState.State.AT_HOME).build();
 
         userRemote.setUserActivityState(activity).get();

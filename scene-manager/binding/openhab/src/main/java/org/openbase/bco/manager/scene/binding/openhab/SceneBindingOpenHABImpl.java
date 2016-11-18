@@ -109,8 +109,7 @@ public class SceneBindingOpenHABImpl extends AbstractOpenHABBinding {
             factory.init(openHABRemote);
             sceneRegistryRemote.init();
             sceneRegistryRemote.activate();
-            sceneRegistryRemote.waitForData();
-            registrySynchronizer.init();
+            registrySynchronizer.activate();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }

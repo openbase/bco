@@ -67,7 +67,7 @@ public class TemperatureControllerRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
+        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
         label = MockRegistry.TEMPERATURE_CONTROLLER_LABEL;
 
@@ -129,7 +129,7 @@ public class TemperatureControllerRemoteTest {
         double temperature = 3.141F;
         TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(temperature).build();
         System.out.println(temperatureControllerRemote.getTargetTemperatureState());
-        ((TemperatureControllerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(temperatureControllerRemote.getId())).updateTargetTemperatureStateProvider(temperatureState);
+        ((TemperatureControllerController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureControllerRemote.getId())).updateTargetTemperatureStateProvider(temperatureState);
         temperatureControllerRemote.requestData().get();
         Assert.assertEquals("The getter for the target temperature returns the wrong value!", temperatureState, temperatureControllerRemote.getTargetTemperatureState());
     }
@@ -144,7 +144,7 @@ public class TemperatureControllerRemoteTest {
         System.out.println("getTemperature");
         double temperature = 37.0F;
         TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(temperature).build();
-        ((TemperatureControllerController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(temperatureControllerRemote.getId())).updateTemperatureStateProvider(temperatureState);
+        ((TemperatureControllerController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureControllerRemote.getId())).updateTemperatureStateProvider(temperatureState);
         temperatureControllerRemote.requestData().get();
         Assert.assertEquals("The getter for the temperature returns the wrong value!", temperature, temperatureControllerRemote.getTemperatureState().getTemperature(), 0.1);
     }

@@ -66,7 +66,7 @@ public class RollerShutterRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
+        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
         label = MockRegistry.ROLLER_SHUTTER_LABEL;
 
@@ -118,7 +118,7 @@ public class RollerShutterRemoteTest {
     public void testGetShutterState() throws Exception {
         System.out.println("getShutterState");
         BlindState state = BlindState.newBuilder().setMovementState(BlindState.MovementState.UP).build();
-        ((RollerShutterController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(rollerShutterRemote.getId())).updateBlindStateProvider(state);
+        ((RollerShutterController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(rollerShutterRemote.getId())).updateBlindStateProvider(state);
         rollerShutterRemote.requestData().get();
         assertEquals("Shutter has not been set in time!", rollerShutterRemote.getBlindState(), state);
     }

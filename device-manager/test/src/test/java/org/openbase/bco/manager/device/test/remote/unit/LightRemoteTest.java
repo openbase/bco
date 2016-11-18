@@ -66,7 +66,7 @@ public class LightRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
+        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
         label = MockRegistry.LIGHT_LABEL;
 
@@ -122,7 +122,7 @@ public class LightRemoteTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        ((LightController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(lightRemote.getId())).updatePowerStateProvider(state);
+        ((LightController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightRemote.getId())).updatePowerStateProvider(state);
         lightRemote.requestData().get();
         assertEquals("Light has not been set in time!", state, lightRemote.getPowerState());
     }

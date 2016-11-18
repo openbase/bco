@@ -66,7 +66,7 @@ public class PowerConsumptionSensorRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
+        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
         label = MockRegistry.POWER_CONSUMPTION_LABEL;
 
@@ -115,7 +115,7 @@ public class PowerConsumptionSensorRemoteTest {
         double voltage = 100d;
         double current = 2d;
         PowerConsumptionState state = PowerConsumptionState.newBuilder().setConsumption(consumption).setCurrent(current).setVoltage(voltage).build();
-        ((PowerConsumptionSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(powerConsumptionRemote.getId())).updatePowerConsumptionStateProvider(state);
+        ((PowerConsumptionSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(powerConsumptionRemote.getId())).updatePowerConsumptionStateProvider(state);
         powerConsumptionRemote.requestData().get();
         Assert.assertEquals("The getter for the power consumption returns the wrong value!", state, powerConsumptionRemote.getPowerConsumptionState());
     }

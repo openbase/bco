@@ -30,6 +30,8 @@ import org.openbase.bco.registry.user.remote.UserRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.iface.Launchable;
+import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.storage.registry.ControllerRegistry;
 import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.slf4j.Logger;
@@ -41,9 +43,9 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class UserManagerController implements UserRegistryProvider, UserManager {
+public class UserManagerController implements UserRegistryProvider, UserManager, Launchable<Void>, VoidInitializable {
 
-    protected static final Logger logger = LoggerFactory.getLogger(UserManagerController.class);
+    protected static final Logger LOGGER = LoggerFactory.getLogger(UserManagerController.class);
 
     private static UserManagerController instance;
     private final UserFactory factory;
@@ -78,19 +80,39 @@ public class UserManagerController implements UserRegistryProvider, UserManager 
         return instance;
     }
 
+    @Override
     public void init() throws InitializationException, InterruptedException {
         try {
-            this.userRegistryRemote.init();
-            this.userRegistryRemote.activate();
-            this.userRegistryRemote.waitForData();
-            this.registrySynchronizer.init();
+            userRegistryRemote.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        userRegistryRemote.activate();
+        userRegistryRemote.waitForData();
+        registrySynchronizer.activate();
+    }
+
+    @Override
+    public boolean isActive() {
+        return userRegistryRemote.isActive();
+    }
+
+    @Override
+    public void deactivate() throws CouldNotPerformException, InterruptedException {
+        userRegistryRemote.deactivate();
+        registrySynchronizer.deactivate();
+        userRegistry.clear();
+    }
+
+    @Override
     public void shutdown() {
-        this.userRegistryRemote.shutdown();
+        registrySynchronizer.shutdown();
+        userRegistryRemote.shutdown();
+        userRegistry.shutdown();
         instance = null;
     }
 

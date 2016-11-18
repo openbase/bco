@@ -66,7 +66,7 @@ public class BrightnessSensorRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
+        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
         label = MockRegistry.BRIGHTNESS_SENSOR_LABEL;
 
@@ -112,7 +112,7 @@ public class BrightnessSensorRemoteTest {
         System.out.println("getBrightness");
         double brightness = 0.5;
         BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).build();
-        ((BrightnessSensorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(brightnessSensorRemote.getId())).updateBrightnessStateProvider(brightnessState);
+        ((BrightnessSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(brightnessSensorRemote.getId())).updateBrightnessStateProvider(brightnessState);
         brightnessSensorRemote.requestData().get();
         assertEquals("The getter for the brightness returns the wrong value!", brightnessState, brightnessSensorRemote.getBrightnessState());
     }

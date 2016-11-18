@@ -47,7 +47,8 @@ import org.openbase.bco.dal.remote.unit.UnitRemoteFactory;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.openbase.bco.manager.location.lib.Location;
 import org.openbase.bco.manager.location.lib.LocationController;
-import org.openbase.bco.registry.device.lib.DeviceRegistry;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -112,14 +113,15 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     private final UnitRemoteFactory factory;
     private final Map<String, UnitRemote> unitRemoteMap;
     private final Map<ServiceType, Collection<? extends Service>> serviceMap;
-    private List<String> originalUnitIdList;
+    private final List<String> originalUnitIdList;
+    private UnitRegistry unitRegistry;
 
     public LocationControllerImpl() throws InstantiationException {
         super(LocationData.newBuilder());
-        this.factory = UnitRemoteFactoryImpl.getInstance();
         this.unitRemoteMap = new HashMap<>();
         this.serviceMap = new HashMap<>();
-        originalUnitIdList = new ArrayList<>();
+        this.originalUnitIdList = new ArrayList<>();
+        this.factory = UnitRemoteFactoryImpl.getInstance();
     }
 
     private boolean isSupportedServiceType(final ServiceType serviceType) {
@@ -338,16 +340,18 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         logger.debug("Init location [" + config.getLabel() + "]");
         try {
-            originalUnitIdList = config.getLocationConfig().getUnitIdList();
+            CachedUnitRegistryRemote.waitForData();
+            unitRegistry = CachedUnitRegistryRemote.getRegistry();
+            originalUnitIdList.clear();
+            originalUnitIdList.addAll(config.getLocationConfig().getUnitIdList());
             for (ServiceType serviceType : ServiceType.values()) {
                 if (isSupportedServiceType(serviceType)) {
                     serviceMap.put(serviceType, new ArrayList<>());
                 }
             }
-            DeviceRegistry deviceRegistry = LocationManagerController.getInstance().getDeviceRegistry();
-            for (UnitConfig unitConfig : deviceRegistry.getUnitConfigs()) {
+            for (UnitConfig unitConfig : unitRegistry.getUnitConfigs()) {
                 if (config.getLocationConfig().getUnitIdList().contains(unitConfig.getId())) {
-                    List<ServiceTemplate> serviceTemplates = deviceRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTemplateList();
+                    List<ServiceTemplate> serviceTemplates = unitRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTemplateList();
 
                     // ignore units that do not have any service supported by a location
                     if (!isSupportedServiceType(serviceTemplates)) {
@@ -374,8 +378,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 unitRemoteMap.get(originalId).deactivate();
                 unitRemoteMap.remove(originalId);
                 for (Collection<? extends Service> serviceCollection : serviceMap.values()) {
-                    Collection serviceSelectionCopy = new ArrayList<>(serviceCollection);
-                    for (Object service : serviceSelectionCopy) {
+                    for (Service service : new ArrayList<>(serviceCollection)) {
                         if (((UnitRemote) service).getId().equals(originalId)) {
                             serviceCollection.remove(service);
                         }
@@ -384,8 +387,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
             }
         }
         for (String newUnitId : newUnitIdList) {
-            DeviceRegistry deviceRegistry = LocationManagerController.getInstance().getDeviceRegistry();
-            UnitConfig unitConfig = deviceRegistry.getUnitConfigById(newUnitId);
+            UnitConfig unitConfig = unitRegistry.getUnitConfigById(newUnitId);
             List<ServiceTemplate> serviceTemplates = new ArrayList<>();
 
             // ignore units that do not have any service supported by a location
@@ -405,7 +407,8 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         if (isActive()) {
             getCurrentStatus();
         }
-        originalUnitIdList = config.getLocationConfig().getUnitIdList();
+        originalUnitIdList.clear();
+        originalUnitIdList.addAll(config.getLocationConfig().getUnitIdList());
         return super.applyConfigUpdate(config);
     }
 
@@ -418,7 +421,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         super.activate();
 
         for (UnitRemote unitRemote : unitRemoteMap.values()) {
-            for (ServiceTemplate serviceTemplate : LocationManagerController.getInstance().getDeviceRegistry().getUnitTemplateByType(unitRemote.getType()).getServiceTemplateList()) {
+            for (ServiceTemplate serviceTemplate : unitRegistry.getUnitTemplateByType(unitRemote.getType()).getServiceTemplateList()) {
                 addRemoteToServiceMap(serviceTemplate.getType(), unitRemote);
             }
         }

@@ -69,7 +69,7 @@ public class TamperDetectorRemoteTest {
 
         deviceManagerLauncher = new DeviceManagerLauncher();
         deviceManagerLauncher.launch();
-        deviceManagerLauncher.getDeviceManager().waitForInit(30, TimeUnit.SECONDS);
+        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
         label = MockRegistry.TAMPER_DETECTOR_LABEL;
 
@@ -114,7 +114,7 @@ public class TamperDetectorRemoteTest {
     public void testGetTamperState() throws Exception {
         System.out.println("getTamperState");
         TamperState tamperState = TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
-        ((TamperDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(tamperDetectorRemote.getId())).updateTamperStateProvider(tamperState);
+        ((TamperDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId())).updateTamperStateProvider(tamperState);
         tamperDetectorRemote.requestData().get();
         assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
     }
@@ -132,7 +132,7 @@ public class TamperDetectorRemoteTest {
         Stopwatch stopwatch = new Stopwatch();
 
         stopwatch.start();
-        ((TamperDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(tamperDetectorRemote.getId())).updateTamperStateProvider(tamperState);
+        ((TamperDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId())).updateTamperStateProvider(tamperState);
         stopwatch.stop();
         tamperDetectorRemote.requestData().get();
         assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
@@ -145,7 +145,7 @@ public class TamperDetectorRemoteTest {
 
         tamperState = TamperState.newBuilder().setValue(TamperState.State.NO_TAMPER).build();
         stopwatch.start();
-        ((TamperDetectorController) deviceManagerLauncher.getDeviceManager().getUnitControllerRegistry().get(tamperDetectorRemote.getId())).updateTamperStateProvider(tamperState);
+        ((TamperDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId())).updateTamperStateProvider(tamperState);
         stopwatch.stop();
         tamperDetectorRemote.requestData().get();
         assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());

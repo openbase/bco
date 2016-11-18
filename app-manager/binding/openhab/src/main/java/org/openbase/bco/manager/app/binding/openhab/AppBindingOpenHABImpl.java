@@ -69,7 +69,6 @@ public class AppBindingOpenHABImpl extends AbstractOpenHABBinding {
                 return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
             }
         };
-
     }
 
     private String getIdFromOpenHABItem(OpenhabCommand command) {
@@ -97,7 +96,6 @@ public class AppBindingOpenHABImpl extends AbstractOpenHABBinding {
                     throw new CouldNotPerformException("Skip item update [" + command.getItem() + " = " + command.getOnOff() + "]!", ex);
                 }
             }
-
         });
     }
 
@@ -108,8 +106,7 @@ public class AppBindingOpenHABImpl extends AbstractOpenHABBinding {
             factory.init(openHABRemote);
             appRegistryRemote.init();
             appRegistryRemote.activate();
-            appRegistryRemote.waitForData();
-            registrySynchronizer.init();
+            registrySynchronizer.activate();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
