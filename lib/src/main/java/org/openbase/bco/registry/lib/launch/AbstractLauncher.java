@@ -21,11 +21,14 @@ package org.openbase.bco.registry.lib.launch;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.lang.reflect.Constructor;
-import java.lang.reflect.InvocationTargetException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -42,6 +45,7 @@ import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.iface.provider.NameProvider;
 import org.openbase.jul.pattern.Launcher;
+import org.openbase.jul.schedule.GlobalExecutionService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -58,6 +62,7 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
     //TODO should be moved to jul pattern after modularisation of the pattern project to avoid direct rsb comm dependencies for the patter project.
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
+    public static final long LAUNCHER_TIMEOUT = 60000;
     public static final String SCOPE_PREFIX_LAUNCHER = Scope.COMPONENT_SEPARATOR + "launcher";
 
     private final Class<L> launchableClass;
@@ -145,6 +150,7 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
     private final SyncObject LAUNCHER_LOCK = new SyncObject(this);
 
     public enum LauncherState {
+
         INITALIZING,
         LAUNCHING,
         RUNNING,
@@ -236,8 +242,6 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
         Map<Class<? extends AbstractLauncher>, AbstractLauncher> launcherMap = new HashMap<>();
         for (final Class<? extends AbstractLauncher> launcherClass : launchers) {
             try {
-//                Constructor<? extends AbstractLauncher> constructor = launcherClass.getConstructor(Boolean.class);
-//                launcherMap.put(launcherClass, constructor.newInstance(Boolean.TRUE));
                 launcherMap.put(launcherClass, launcherClass.newInstance());
             } catch (InstantiationException | IllegalAccessException ex) {
                 exceptionStack = MultiException.push(application, new CouldNotPerformException("Could not load launcher class!", ex), exceptionStack);
@@ -252,12 +256,26 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
 
         logger.info("Start " + JPService.getApplicationName() + "...");
 
+        final Map<Entry<Class<? extends AbstractLauncher>, AbstractLauncher>, Future> launchableFutureMap = new HashMap<>();
         try {
             for (final Entry<Class<? extends AbstractLauncher>, AbstractLauncher> launcherEntry : launcherMap.entrySet()) {
+                launchableFutureMap.put(launcherEntry, GlobalExecutionService.submit(new Callable<Void>() {
+
+                    @Override
+                    public Void call() throws Exception {
+                        launcherEntry.getValue().launch();
+                        return null;
+                    }
+                }));
+            }
+
+            for (Entry<Entry<Class<? extends AbstractLauncher>, AbstractLauncher>, Future> launcherEntry : launchableFutureMap.entrySet()) {
                 try {
-                    launcherEntry.getValue().launch();
-                } catch (CouldNotPerformException ex) {
-                    exceptionStack = MultiException.push(application, new CouldNotPerformException("Could not launch " + launcherEntry.getKey().getSimpleName() + "!", ex), exceptionStack);
+                    launcherEntry.getValue().get(LAUNCHER_TIMEOUT, TimeUnit.MILLISECONDS);
+                } catch (ExecutionException ex) {
+                    exceptionStack = MultiException.push(application, new CouldNotPerformException("Could not launch " + launcherEntry.getKey().getKey().getSimpleName() + "!", ex), exceptionStack);
+                } catch (TimeoutException ex) {
+                    exceptionStack = MultiException.push(application, new CouldNotPerformException("Launcher " + launcherEntry.getKey().getKey().getSimpleName() + " not responding!", ex), exceptionStack);
                 }
             }
         } catch (InterruptedException ex) {

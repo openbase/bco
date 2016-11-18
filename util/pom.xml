@@ -49,7 +49,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.openbase.bco.registry.RegistryLauncher</mainClass>
+                            <mainClass>org.openbase.bco.registry.launch.RegistryLauncher</mainClass>
                             <id>registry</id>
                             <platforms>
                                 <platform>unix</platform>
