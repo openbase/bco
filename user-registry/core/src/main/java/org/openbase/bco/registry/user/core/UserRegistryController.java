@@ -35,7 +35,8 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
-import org.openbase.jul.iface.Manageable;
+import org.openbase.jul.iface.DefaultInitializable;
+import org.openbase.jul.iface.Launchable;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
@@ -44,13 +45,13 @@ import rst.domotic.registry.UserRegistryDataType.UserRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.rsb.ScopeType;
+import rst.rsb.ScopeType.Scope;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class UserRegistryController extends AbstractVirtualRegistryController<UserRegistryData, UserRegistryData.Builder, UnitRegistryData> implements UserRegistry, Manageable<ScopeType.Scope> {
+public class UserRegistryController extends AbstractVirtualRegistryController<UserRegistryData, UserRegistryData.Builder, UnitRegistryData> implements UserRegistry, Launchable<Scope> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserRegistryData.getDefaultInstance()));
@@ -63,7 +64,7 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> userUnitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> authorizationGroupUnitConfigRemoteRegistry;
 
-    public UserRegistryController() throws InstantiationException, InterruptedException {
+    public UserRegistryController() throws InstantiationException {
         super(JPUserRegistryScope.class, UserRegistryData.newBuilder());
         this.unitRegistryRemote = new UnitRegistryRemote();
         this.userUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(unitRegistryRemote, UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);

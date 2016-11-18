@@ -21,70 +21,34 @@ package org.openbase.bco.registry.location.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.registry.lib.launch.AbstractLauncher;
+import static org.openbase.bco.registry.lib.launch.AbstractLauncher.main;
+import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jps.preset.JPForce;
 import org.openbase.jps.preset.JPReadOnly;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class LocationRegistryLauncher {
+public class LocationRegistryLauncher extends AbstractLauncher<LocationRegistryController> {
 
-    private static final Logger logger = LoggerFactory.getLogger(LocationRegistryLauncher.class);
-
-    public static final String APP_NAME = "LocationRegistry";
-
-    private final LocationRegistryController locationRegistry;
-
-    public LocationRegistryLauncher() throws InitializationException, InterruptedException {
-        try {
-            this.locationRegistry = new LocationRegistryController();
-            this.locationRegistry.init();
-            this.locationRegistry.activate();
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
+    public LocationRegistryLauncher() throws org.openbase.jul.exception.InstantiationException {
+        super(LocationRegistry.class, LocationRegistryController.class);
     }
 
-    public void shutdown() {
-        if (locationRegistry != null) {
-            locationRegistry.shutdown();
-        }
-    }
-
-    public LocationRegistryController getLocationRegistry() {
-        return locationRegistry;
-    }
-
-    public static void main(String args[]) throws Throwable {
-        logger.info("Start " + APP_NAME + "...");
-
-        /* Setup JPService */
-        JPService.setApplicationName(APP_NAME);
-
+    @Override
+    public void loadProperties() {
         JPService.registerProperty(JPLocationRegistryScope.class);
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);
+    }
 
-        JPService.parseAndExitOnError(args);
-
-        LocationRegistryLauncher locationRegistry;
-        try {
-            locationRegistry = new LocationRegistryLauncher();
-        } catch (InitializationException ex) {
-            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
-            return;
-        }
-
-        logger.info(APP_NAME + " successfully started.");
+    public static void main(String args[]) throws Throwable {
+        main(args, LocationRegistry.class, LocationRegistryLauncher.class);
     }
 }

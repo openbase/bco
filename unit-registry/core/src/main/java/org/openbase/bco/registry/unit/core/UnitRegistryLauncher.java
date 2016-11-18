@@ -20,7 +20,13 @@ package org.openbase.bco.registry.unit.core;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
+ *
+ *
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
+import static org.openbase.bco.registry.lib.launch.AbstractLauncher.main;
+import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.jp.JPAgentConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPAppConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPAuthorizationGroupConfigDatabaseDirectory;
@@ -36,60 +42,24 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jps.preset.JPForce;
 import org.openbase.jps.preset.JPReadOnly;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.MultiException;
-import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPlugin;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
 import org.openbase.jul.storage.registry.jp.JPInitializeDB;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.openbase.jul.storage.registry.jp.JPRecoverDB;
 
-/**
- *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- */
-public class UnitRegistryLauncher {
+public class UnitRegistryLauncher extends AbstractRegistryLauncher<UnitRegistryController> {
 
-    private static final Logger logger = LoggerFactory.getLogger(UnitRegistryLauncher.class);
-
-    public static final String APP_NAME = UnitRegistryLauncher.class.getSimpleName();
-
-    private final UnitRegistryController unitRegistry;
-
-    public UnitRegistryLauncher() throws InitializationException, InterruptedException {
-        try {
-            this.unitRegistry = new UnitRegistryController();
-            this.unitRegistry.init();
-            this.unitRegistry.activate();
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
+    public UnitRegistryLauncher() throws org.openbase.jul.exception.InstantiationException {
+        super(UnitRegistry.class, UnitRegistryController.class);
     }
 
-    public void shutdown() {
-        if (unitRegistry != null) {
-            unitRegistry.shutdown();
-        }
-    }
-
-    public UnitRegistryController getUnitRegistry() {
-        return unitRegistry;
-    }
-
-    public static void main(String args[]) throws Throwable {
-        logger.info("Start " + APP_NAME + "...");
-
-        /* Setup JPService */
-        JPService.setApplicationName(APP_NAME);
-
+    @Override
+    public void loadProperties() {
         JPService.registerProperty(JPUnitRegistryScope.class);
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);
+        JPService.registerProperty(JPRecoverDB.class);
         JPService.registerProperty(JPInitializeDB.class);
         JPService.registerProperty(JPUnitTemplateDatabaseDirectory.class);
         JPService.registerProperty(JPAgentConfigDatabaseDirectory.class);
@@ -103,65 +73,9 @@ public class UnitRegistryLauncher {
         JPService.registerProperty(JPUnitGroupDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
+    }
 
-        JPService.parseAndExitOnError(args);
-
-        UnitRegistryLauncher unitRegistry;
-        try {
-            unitRegistry = new UnitRegistryLauncher();
-        } catch (InitializationException ex) {
-            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
-            return;
-        }
-
-        MultiException.ExceptionStack exceptionStack = null;
-
-        if (!unitRegistry.getUnitRegistry().getUnitTemplateRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("UnitTemplateRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
-        }
-
-        if (!unitRegistry.getUnitRegistry().getAgentUnitConfigRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("AgentUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
-        }
-
-        if (!unitRegistry.getUnitRegistry().getAppUnitConfigRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("AppUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
-        }
-
-        if (!unitRegistry.getUnitRegistry().getAuthorizationGroupUnitConfigRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("AuthorizationGroupUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
-        }
-
-        if (!unitRegistry.getUnitRegistry().getConnectionUnitConfigRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("ConnectionUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
-        }
-
-        if (!unitRegistry.getUnitRegistry().getDalUnitConfigRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("DalUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
-        }
-
-        if (!unitRegistry.getUnitRegistry().getDeviceUnitConfigRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("DeviceUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
-        }
-
-        if (!unitRegistry.getUnitRegistry().getLocationUnitConfigRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("LocationUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
-        }
-
-        if (!unitRegistry.getUnitRegistry().getSceneUnitConfigRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("SceneUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
-        }
-
-        if (!unitRegistry.getUnitRegistry().getUnitGroupUnitConfigRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(unitRegistry, new VerificationFailedException("UnitGroupUnitConfigRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
-        }
-
-        try {
-            MultiException.checkAndThrow(APP_NAME + " started in fallback mode!", exceptionStack);
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(ex, logger);
-            return;
-        }
-        logger.info(APP_NAME + " successfully started.");
+    public static void main(String args[]) throws Throwable {
+        main(args, UnitRegistry.class, UnitRegistryLauncher.class);
     }
 }

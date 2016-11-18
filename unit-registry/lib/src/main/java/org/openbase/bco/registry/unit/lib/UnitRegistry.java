@@ -20,6 +20,8 @@ package org.openbase.bco.registry.unit.lib;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
+ *
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 import java.util.List;
 import java.util.concurrent.Future;
@@ -35,10 +37,6 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType.Scope;
 
-/**
- *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- */
 public interface UnitRegistry extends Shutdownable {
 
     public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;

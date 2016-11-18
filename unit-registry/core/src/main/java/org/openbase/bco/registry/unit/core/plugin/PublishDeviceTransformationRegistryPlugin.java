@@ -21,6 +21,7 @@ package org.openbase.bco.registry.unit.core.plugin;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -54,7 +55,6 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
         try {
             this.locationRegistry = locationRegistry;
             this.transformerFactory = TransformerFactory.getInstance();
-            this.transformPublisher = transformerFactory.createTransformPublisher(getClass().getSimpleName());
         } catch (Exception ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
@@ -63,10 +63,12 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
     @Override
     public void init(final Registry<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> registry) throws InitializationException, InterruptedException {
         try {
+            super.init(registry);
+            this.transformPublisher = transformerFactory.createTransformPublisher(registry.getName());
             for (IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry : registry.getEntries()) {
                 publishTransformation(entry);
             }
-        } catch (CouldNotPerformException ex) {
+        } catch (CouldNotPerformException | TransformerFactory.TransformerFactoryException ex) {
             throw new InitializationException(this, ex);
         }
     }
@@ -103,6 +105,7 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
                 transformation = PoseTransformer.transform(deviceConfig.getPlacementConfig().getPosition(), locationRegistry.getMessage(deviceConfig.getPlacementConfig().getLocationId()).getPlacementConfig().getTransformationFrameId(), deviceConfig.getPlacementConfig().getTransformationFrameId());
 
                 try {
+                    transformation.setAuthority(getRegistry().getName());
                     transformPublisher.sendTransform(transformation, TransformType.STATIC);
                 } catch (Exception ex) {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.ERROR);

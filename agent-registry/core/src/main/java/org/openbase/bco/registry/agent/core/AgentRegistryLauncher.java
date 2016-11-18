@@ -21,93 +21,45 @@ package org.openbase.bco.registry.agent.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentClassDatabaseDirectory;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
+import static org.openbase.bco.registry.lib.launch.AbstractLauncher.main;
+import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jps.preset.JPForce;
 import org.openbase.jps.preset.JPReadOnly;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.MultiException;
-import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPlugin;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
 import org.openbase.jul.storage.registry.jp.JPInitializeDB;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.openbase.jul.storage.registry.jp.JPRecoverDB;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class AgentRegistryLauncher {
-
-    private static final Logger logger = LoggerFactory.getLogger(AgentRegistryLauncher.class);
-
-    public static final String APP_NAME = AgentRegistryLauncher.class.getSimpleName();
-
-    private final AgentRegistryController agentRegistry;
-
-    public AgentRegistryLauncher() throws InitializationException, InterruptedException {
-        try {
-            this.agentRegistry = new AgentRegistryController();
-            this.agentRegistry.init();
-            this.agentRegistry.activate();
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
+public class AgentRegistryLauncher extends AbstractRegistryLauncher<AgentRegistryController> {
+    
+    public AgentRegistryLauncher() throws org.openbase.jul.exception.InstantiationException {
+        super(AgentRegistry.class, AgentRegistryController.class);
     }
-
-    public void shutdown() {
-        if (agentRegistry != null) {
-            agentRegistry.shutdown();
-        }
-    }
-
-    public AgentRegistryController getAgentRegistry() {
-        return agentRegistry;
-    }
-
-    public static void main(String args[]) throws Throwable {
-        logger.info("Start " + APP_NAME + "...");
-
-        /* Setup JPService */
-        JPService.setApplicationName(APP_NAME);
-
+    
+    @Override
+    public void loadProperties() {
         JPService.registerProperty(JPAgentRegistryScope.class);
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);
+        JPService.registerProperty(JPRecoverDB.class);
         JPService.registerProperty(JPInitializeDB.class);
         JPService.registerProperty(JPAgentClassDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
-
-        JPService.parseAndExitOnError(args);
-
-        AgentRegistryLauncher agentRegistry;
-        try {
-            agentRegistry = new AgentRegistryLauncher();
-        } catch (InitializationException ex) {
-            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
-            return;
-        }
-
-        MultiException.ExceptionStack exceptionStack = null;
-
-        if (!agentRegistry.getAgentRegistry().getAgentClassRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(agentRegistry, new VerificationFailedException("AgentClassRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
-        }
-
-        try {
-            MultiException.checkAndThrow(APP_NAME + " started in fallback mode!", exceptionStack);
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(ex, logger);
-            return;
-        }
-        logger.info(APP_NAME + " successfully started.");
+    }    
+    
+    public static void main(String args[]) throws Throwable {
+        main(args, AgentRegistry.class, AgentRegistryLauncher.class);
     }
+    
 }

@@ -58,7 +58,6 @@ public class PublishDalUnitTransformationRegistryPlugin extends FileRegistryPlug
         try {
             this.locationRegistry = locationRegistry;
             this.transformerFactory = TransformerFactory.getInstance();
-            this.transformPublisher = transformerFactory.createTransformPublisher(getClass().getSimpleName());
         } catch (Exception ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
@@ -67,10 +66,12 @@ public class PublishDalUnitTransformationRegistryPlugin extends FileRegistryPlug
     @Override
     public void init(final Registry<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> registry) throws InitializationException, InterruptedException {
         try {
+            super.init(registry);
+            this.transformPublisher = transformerFactory.createTransformPublisher(registry.getName());
             for (IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry : registry.getEntries()) {
                 publishTransformation(entry);
             }
-        } catch (CouldNotPerformException ex) {
+        } catch (CouldNotPerformException | TransformerFactory.TransformerFactoryException ex) {
             throw new InitializationException(this, ex);
         }
     }
@@ -100,6 +101,7 @@ public class PublishDalUnitTransformationRegistryPlugin extends FileRegistryPlug
                 Transform transformation = PoseTransformer.transform(unitConfig.getPlacementConfig().getPosition(), locationRegistry.getMessage(unitConfig.getPlacementConfig().getLocationId()).getPlacementConfig().getTransformationFrameId(), unitConfig.getPlacementConfig().getTransformationFrameId());
 
                 try {
+                    transformation.setAuthority(getRegistry().getName());
                     transformPublisher.sendTransform(transformation, TransformType.STATIC);
                 } catch (Exception ex) {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.ERROR);

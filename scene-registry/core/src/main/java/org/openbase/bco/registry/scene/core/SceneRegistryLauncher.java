@@ -21,70 +21,33 @@ package org.openbase.bco.registry.scene.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.registry.lib.launch.AbstractLauncher;
+import org.openbase.bco.registry.scene.lib.SceneRegistry;
 import org.openbase.bco.registry.scene.lib.jp.JPSceneRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jps.preset.JPForce;
 import org.openbase.jps.preset.JPReadOnly;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class SceneRegistryLauncher {
+public class SceneRegistryLauncher extends AbstractLauncher<SceneRegistryController> {
 
-    private static final Logger logger = LoggerFactory.getLogger(SceneRegistryLauncher.class);
-
-    public static final String APP_NAME = SceneRegistryLauncher.class.getSimpleName();
-
-    private final SceneRegistryController sceneRegistry;
-
-    public SceneRegistryLauncher() throws InitializationException, InterruptedException {
-        try {
-            this.sceneRegistry = new SceneRegistryController();
-            this.sceneRegistry.init();
-            this.sceneRegistry.activate();
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
+    public SceneRegistryLauncher() throws org.openbase.jul.exception.InstantiationException {
+        super(SceneRegistry.class, SceneRegistryController.class);
     }
 
-    public void shutdown() {
-        if (sceneRegistry != null) {
-            sceneRegistry.shutdown();
-        }
-    }
-
-    public SceneRegistryController getSceneRegistry() {
-        return sceneRegistry;
-    }
-
-    public static void main(String args[]) throws Throwable {
-        logger.info("Start " + APP_NAME + "...");
-
-        /* Setup JPService */
-        JPService.setApplicationName(APP_NAME);
-
+    @Override
+    public void loadProperties() {
         JPService.registerProperty(JPSceneRegistryScope.class);
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);
+    }
 
-        JPService.parseAndExitOnError(args);
-
-        SceneRegistryLauncher sceneRegistry;
-        try {
-            sceneRegistry = new SceneRegistryLauncher();
-        } catch (InitializationException ex) {
-            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
-            return;
-        }
-
-        logger.info(APP_NAME + " successfully started.");
+    public static void main(String args[]) throws Throwable {
+        AbstractLauncher.main(args, SceneRegistry.class, SceneRegistryLauncher.class);
     }
 }

@@ -21,23 +21,24 @@ package org.openbase.bco.registry.user.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.bco.registry.user.lib.UserRegistry;
 import org.openbase.bco.registry.user.lib.jp.JPUserRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jps.preset.JPForce;
 import org.openbase.jps.preset.JPReadOnly;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.pattern.AbstractLauncher;
+import org.openbase.jul.exception.InstantiationException;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class UserRegistryLauncher extends AbstractLauncher {
+public class UserRegistryLauncher extends AbstractLauncher<UserRegistryController> {
 
-    private UserRegistryController userRegistry;
+    public UserRegistryLauncher() throws InstantiationException {
+        super(UserRegistry.class, UserRegistryController.class);
+    }
 
     @Override
     public void loadProperties() {
@@ -45,29 +46,6 @@ public class UserRegistryLauncher extends AbstractLauncher {
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);
-    }
-
-    @Override
-    public boolean launch() throws CouldNotPerformException, InterruptedException {
-        try {
-            userRegistry = new UserRegistryController();
-            userRegistry.init();
-            userRegistry.activate();
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
-        return true;
-    }
-
-    @Override
-    public void shutdown() {
-        if (userRegistry != null) {
-            userRegistry.shutdown();
-        }
-    }
-
-    public UserRegistryController getUserRegistry() {
-        return userRegistry;
     }
 
     public static void main(String args[]) throws Throwable {

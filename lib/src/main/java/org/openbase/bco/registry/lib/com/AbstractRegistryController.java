@@ -25,15 +25,18 @@ import com.google.protobuf.GeneratedMessage;
 import java.util.ArrayList;
 import java.util.List;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
+import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rsb.scope.jp.JPScope;
+import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ConsistencyHandler;
@@ -43,6 +46,8 @@ import org.openbase.jul.storage.registry.RegistryController;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import static org.openbase.jul.storage.registry.version.DBVersionControl.DB_CONVERTER_PACKAGE_NAME;
+import rst.rsb.ScopeType;
+import rst.rsb.ScopeType.Scope;
 
 /**
  *
@@ -50,7 +55,7 @@ import static org.openbase.jul.storage.registry.version.DBVersionControl.DB_CONV
  * @param <M>
  * @param <MB>
  */
-public abstract class AbstractRegistryController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> implements RegistryController<M> {
+public abstract class AbstractRegistryController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> implements RegistryController<M>, Launchable<Scope> {
 
     protected ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
 
@@ -69,11 +74,11 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     }
 
     @Override
-    public void init() throws InitializationException, InterruptedException {
+    public ScopeType.Scope getDefaultConfig() throws NotAvailableException {
         try {
-            super.init(JPService.getProperty(jpScopePropery).getValue());
-        } catch (JPServiceException | CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
+            return ScopeTransformer.transform(JPService.getProperty(jpScopePropery).getValue());
+        } catch (JPNotAvailableException | CouldNotTransformException ex) {
+            throw new NotAvailableException("DefaultConfig", ex);
         }
     }
 
@@ -195,10 +200,10 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     }
 
     private void activateRegistryRemotes() throws CouldNotPerformException, InterruptedException {
-
         for (final RegistryRemote remote : registryRemotes) {
             remote.activate();
         }
+
         for (final RegistryRemote remote : registryRemotes) {
             remote.waitForData();
         }
@@ -292,7 +297,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         return registryRemotes;
     }
 
-    protected List<RemoteRegistry> getRemoteRegistries() {
+    public List<RemoteRegistry> getRemoteRegistries() {
         return remoteRegistries;
     }
 

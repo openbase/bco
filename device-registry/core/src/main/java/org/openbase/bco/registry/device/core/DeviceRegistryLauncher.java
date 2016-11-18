@@ -24,18 +24,12 @@ package org.openbase.bco.registry.device.core;
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceClassDatabaseDirectory;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
+import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jps.preset.JPForce;
 import org.openbase.jps.preset.JPReadOnly;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.MultiException;
-import org.openbase.jul.exception.MultiException.ExceptionStack;
-import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.pattern.AbstractLauncher;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPlugin;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
 import org.openbase.jul.storage.registry.jp.JPInitializeDB;
@@ -45,9 +39,11 @@ import org.openbase.jul.storage.registry.jp.JPRecoverDB;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class DeviceRegistryLauncher extends AbstractLauncher{
+public class DeviceRegistryLauncher extends AbstractRegistryLauncher<DeviceRegistryController> {
 
-    private DeviceRegistryController deviceRegistry;
+    public DeviceRegistryLauncher() throws InstantiationException {
+        super(DeviceRegistry.class, DeviceRegistryController.class);
+    }
     
     @Override
     public void loadProperties() {
@@ -60,44 +56,8 @@ public class DeviceRegistryLauncher extends AbstractLauncher{
         JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
-    }
+    }    
     
-    @Override
-    public boolean launch() throws CouldNotPerformException, InterruptedException {
-        try {
-            this.deviceRegistry = new DeviceRegistryController();
-            this.deviceRegistry.init();
-            this.deviceRegistry.activate();
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
-        
-        ExceptionStack exceptionStack = null;
-
-        if (!deviceRegistry.getDeviceClassRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(deviceRegistry, new VerificationFailedException("DeviceClassRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
-        }
-
-        try {
-            MultiException.checkAndThrow(JPService.getApplicationName() + " started in fallback mode!", exceptionStack);
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(ex, logger);
-            return false;
-        }
-        return true;
-    }
-    
-    @Override
-    public void shutdown() {
-        if (deviceRegistry != null) {
-            deviceRegistry.shutdown();
-        }
-    }
-
-    public DeviceRegistryController getDeviceRegistry() {
-        return deviceRegistry;
-    }
-
     public static void main(String args[]) throws Throwable {
         main(args, DeviceRegistry.class, DeviceRegistryLauncher.class);
     }

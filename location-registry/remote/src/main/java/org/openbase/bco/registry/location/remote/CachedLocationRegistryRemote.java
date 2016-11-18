@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  */
 public class CachedLocationRegistryRemote {
 
-    private static final Logger logger = LoggerFactory.getLogger(CachedLocationRegistryRemote.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CachedLocationRegistryRemote.class);
     private static LocationRegistryRemote locationRegistryRemote;
     private static boolean shutdown = false;
 
@@ -83,7 +83,7 @@ public class CachedLocationRegistryRemote {
                         locationRegistryRemote.shutdown();
                         locationRegistryRemote = null;
                     }
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not start cached location registry remote!", ex), logger);
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not start cached location registry remote!", ex), LOGGER);
                 }
             }
             return locationRegistryRemote;

@@ -21,7 +21,7 @@ package org.openbase.bco.registry.unit.core.plugin;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;
+import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -38,6 +38,7 @@ import rct.TransformPublisher;
 import rct.TransformType;
 import rct.TransformerException;
 import rct.TransformerFactory;
+import rct.TransformerFactory.TransformerFactoryException;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 public class PublishLocationTransformationRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> {
@@ -47,13 +48,10 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
     private TransformerFactory transformerFactory;
     private TransformPublisher transformPublisher;
 
-    private Registry<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> registry;
-
     public PublishLocationTransformationRegistryPlugin() throws org.openbase.jul.exception.InstantiationException {
         try {
             logger.debug("create location transformation publisher");
             this.transformerFactory = TransformerFactory.getInstance();
-            this.transformPublisher = transformerFactory.createTransformPublisher(getClass().getSimpleName());
         } catch (Exception ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
@@ -62,11 +60,12 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
     @Override
     public void init(final Registry<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> registry) throws InitializationException, InterruptedException {
         try {
-            this.registry = registry;
+            super.init(registry);
+            this.transformPublisher = transformerFactory.createTransformPublisher(registry.getName());
             for (IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry : registry.getEntries()) {
                 publishtransformation(entry);
             }
-        } catch (CouldNotPerformException ex) {
+        } catch (CouldNotPerformException | TransformerFactoryException ex) {
             throw new InitializationException(this, ex);
         }
     }
@@ -110,16 +109,16 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
                 throw new NotAvailableException("locationconfig.placementconfig.locationid");
             }
 
-            logger.info("Publish " + registry.get(locationConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId() + " to " + locationConfig.getPlacementConfig().getTransformationFrameId());
+            logger.info("Publish " + getRegistry().get(locationConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId() + " to " + locationConfig.getPlacementConfig().getTransformationFrameId());
 
             // Create the rct transform object with source and target frames
-            Transform transformation = PoseTransformer.transform(locationConfig.getPlacementConfig().getPosition(), registry.get(locationConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId(), locationConfig.getPlacementConfig().getTransformationFrameId());
+            Transform transformation = PoseTransformer.transform(locationConfig.getPlacementConfig().getPosition(), getRegistry().get(locationConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId(), locationConfig.getPlacementConfig().getTransformationFrameId());
 
             // Publish the transform object
-            transformation.setAuthority(UnitRegistryLauncher.APP_NAME);
+            transformation.setAuthority(getRegistry().getName());
             transformPublisher.sendTransform(transformation, TransformType.STATIC);
         } catch (CouldNotPerformException | TransformerException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "! RegistryConsistenct[" + registry.isConsistent() + "]", ex), logger, LogLevel.WARN);
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "! RegistryConsistenct[" + getRegistry().isConsistent() + "]", ex), logger, LogLevel.WARN);
         }
     }
 

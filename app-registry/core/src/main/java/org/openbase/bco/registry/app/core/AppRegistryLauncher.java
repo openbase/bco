@@ -21,93 +21,44 @@ package org.openbase.bco.registry.app.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.registry.app.lib.AppRegistry;
 import org.openbase.bco.registry.app.lib.jp.JPAppClassDatabaseDirectory;
 import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
+import static org.openbase.bco.registry.lib.launch.AbstractLauncher.main;
+import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jps.preset.JPForce;
 import org.openbase.jps.preset.JPReadOnly;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.MultiException;
-import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPlugin;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
 import org.openbase.jul.storage.registry.jp.JPInitializeDB;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import org.openbase.jul.storage.registry.jp.JPRecoverDB;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class AppRegistryLauncher {
+public class AppRegistryLauncher extends AbstractRegistryLauncher<AppRegistryController> {
 
-    private static final Logger logger = LoggerFactory.getLogger(AppRegistryLauncher.class);
-
-    public static final String APP_NAME = AppRegistryLauncher.class.getSimpleName();
-
-    private final AppRegistryController appRegistry;
-
-    public AppRegistryLauncher() throws InitializationException, InterruptedException {
-        try {
-            this.appRegistry = new AppRegistryController();
-            this.appRegistry.init();
-            this.appRegistry.activate();
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
+    public AppRegistryLauncher() throws org.openbase.jul.exception.InstantiationException {
+        super(AppRegistry.class, AppRegistryController.class);
     }
 
-    public void shutdown() {
-        if (appRegistry != null) {
-            appRegistry.shutdown();
-        }
-    }
-
-    public AppRegistryController getAppRegistry() {
-        return appRegistry;
-    }
-
-    public static void main(String args[]) throws Throwable {
-        logger.info("Start " + APP_NAME + "...");
-
-        /* Setup JPService */
-        JPService.setApplicationName(APP_NAME);
-
+    @Override
+    public void loadProperties() {
         JPService.registerProperty(JPAppRegistryScope.class);
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);
+        JPService.registerProperty(JPRecoverDB.class);
         JPService.registerProperty(JPInitializeDB.class);
         JPService.registerProperty(JPAppClassDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
+    }
 
-        JPService.parseAndExitOnError(args);
-
-        AppRegistryLauncher appRegistry;
-        try {
-            appRegistry = new AppRegistryLauncher();
-        } catch (InitializationException ex) {
-            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
-            return;
-        }
-
-        MultiException.ExceptionStack exceptionStack = null;
-
-        if (!appRegistry.getAppRegistry().getAppClassRegistry().isConsistent()) {
-            exceptionStack = MultiException.push(appRegistry, new VerificationFailedException("AppClassRegistry started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
-        }
-
-        try {
-            MultiException.checkAndThrow(APP_NAME + " started in fallback mode!", exceptionStack);
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(ex, logger);
-            return;
-        }
-        logger.info(APP_NAME + " successfully started.");
+    public static void main(String args[]) throws Throwable {
+        main(args, AppRegistry.class, AppRegistryLauncher.class);
     }
 }

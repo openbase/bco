@@ -1,4 +1,4 @@
-package org.openbase.bco.registry;
+package org.openbase.bco.registry.launch;
 
 /*
  * #%L
@@ -20,16 +20,20 @@ package org.openbase.bco.registry;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
- */
-import org.openbase.bco.registry.device.core.DeviceRegistryLauncher;
-import org.openbase.bco.registry.user.core.UserRegistryLauncher;
-import org.openbase.jul.pattern.AbstractLauncher;
-import org.openbase.jul.storage.registry.Registry;
-
-/**
+ *
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
+import org.openbase.bco.registry.agent.core.AgentRegistryLauncher;
+import org.openbase.bco.registry.app.core.AppRegistryLauncher;
+import org.openbase.bco.registry.device.core.DeviceRegistryLauncher;
+import org.openbase.bco.registry.user.core.UserRegistryLauncher;
+import org.openbase.bco.registry.lib.launch.AbstractLauncher;
+import org.openbase.bco.registry.location.core.LocationRegistryLauncher;
+import org.openbase.bco.registry.scene.core.SceneRegistryLauncher;
+import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;
+import org.openbase.jul.storage.registry.Registry;
+
 public class RegistryLauncher {
 
     /**
@@ -38,12 +42,12 @@ public class RegistryLauncher {
     public static void main(final String[] args) {
         AbstractLauncher.main(args, Registry.class,
                 DeviceRegistryLauncher.class,
-                //                AppRegistryLauncher.class,
-                //                AgentRegistryLauncher.class,
-                //                UnitRegistryLauncher.class,
-                //                LocationRegistryLauncher.class,
-                UserRegistryLauncher.class
-        //                SceneRegistryLauncher.class
+                AppRegistryLauncher.class,
+                AgentRegistryLauncher.class,
+                UnitRegistryLauncher.class,
+                LocationRegistryLauncher.class,
+                UserRegistryLauncher.class,
+                SceneRegistryLauncher.class
         );
     }
 }

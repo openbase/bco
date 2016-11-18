@@ -41,7 +41,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
-import org.openbase.jul.iface.Manageable;
+import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.schedule.GlobalExecutionService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
@@ -62,7 +62,7 @@ import rst.rsb.ScopeType;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class DeviceRegistryController extends AbstractVirtualRegistryController<DeviceRegistryData, DeviceRegistryData.Builder, UnitRegistryData> implements DeviceRegistry, Manageable<ScopeType.Scope> {
+public class DeviceRegistryController extends AbstractVirtualRegistryController<DeviceRegistryData, DeviceRegistryData.Builder, UnitRegistryData> implements DeviceRegistry, Launchable<ScopeType.Scope> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistryData.getDefaultInstance()));

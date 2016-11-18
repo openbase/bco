@@ -62,11 +62,12 @@ public class PublishConnectionTransformationRegistryPlugin extends FileRegistryP
     @Override
     public void init(Registry<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> registry) throws InitializationException, InterruptedException {
         try {
-            this.registry = registry;
+            super.init(registry);
+            this.transformPublisher = transformerFactory.createTransformPublisher(registry.getName());
             for (IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry : registry.getEntries()) {
                 publishTransformation(entry);
             }
-        } catch (CouldNotPerformException ex) {
+        } catch (CouldNotPerformException | TransformerFactory.TransformerFactoryException ex) {
             throw new InitializationException(this, ex);
         }
     }
@@ -103,7 +104,7 @@ public class PublishConnectionTransformationRegistryPlugin extends FileRegistryP
                 Transform transformation = PoseTransformer.transform(connectionConfig.getPlacementConfig().getPosition(), locationRegistry.get(connectionConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId(), connectionConfig.getPlacementConfig().getTransformationFrameId());
 
                 // Publish the transform object
-                transformation.setAuthority(PublishConnectionTransformationRegistryPlugin.class.getSimpleName());
+                transformation.setAuthority(getRegistry().getName());
                 transformPublisher.sendTransform(transformation, TransformType.STATIC);
             }
         } catch (CouldNotPerformException | TransformerException ex) {
