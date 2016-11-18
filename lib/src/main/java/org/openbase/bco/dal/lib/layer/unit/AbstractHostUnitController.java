@@ -56,12 +56,12 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  * @param <MB> Message related builder.
  * @param <CONFIG>
  */
-public abstract class AbstractSystemUnitController<M extends GeneratedMessage, MB extends M.Builder<MB>, CONFIG extends GeneratedMessage> extends AbstractConfigurableController<M, MB, CONFIG> implements Identifiable<String>, UnitHost {
+public abstract class AbstractHostUnitController<M extends GeneratedMessage, MB extends M.Builder<MB>, CONFIG extends GeneratedMessage> extends AbstractConfigurableController<M, MB, CONFIG> implements Identifiable<String>, UnitHost {
 
     private final Map<String, AbstractUnitController> unitMap;
     private UnitRegistry unitRegistry;
 
-    public AbstractSystemUnitController(final MB builder) throws InstantiationException {
+    public AbstractHostUnitController(final MB builder) throws InstantiationException {
         super(builder);
         this.unitMap = new HashMap<>();
     }

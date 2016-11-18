@@ -21,7 +21,6 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.dal.lib.layer.service.ServiceFactoryProvider;
 import org.openbase.bco.registry.device.lib.provider.DeviceRegistryProvider;
 import org.openbase.bco.registry.location.lib.provider.LocationRegistryProvider;
@@ -30,6 +29,7 @@ import org.openbase.bco.registry.location.lib.provider.LocationRegistryProvider;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
+@Deprecated
 public interface UnitHost extends ServiceFactoryProvider, LocationRegistryProvider, DeviceRegistryProvider {
 
 }

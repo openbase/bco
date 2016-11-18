@@ -67,13 +67,13 @@ import rst.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class UnitGroupRemote extends AbstractConfigurableRemote<UnitGroupData, UnitConfig> implements BrightnessStateOperationService, ColorStateOperationService, PowerStateOperationService, BlindStateOperationService, StandbyStateOperationService, TargetTemperatureStateOperationService {
+public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implements BrightnessStateOperationService, ColorStateOperationService, PowerStateOperationService, BlindStateOperationService, StandbyStateOperationService, TargetTemperatureStateOperationService {
 
     private final Map<ServiceTemplate, AbstractServiceRemote> serviceRemoteMap = new HashMap<>();
     private final ServiceRemoteFactory serviceRemoteFactory;
 
     public UnitGroupRemote() throws InstantiationException {
-        super(UnitGroupData.class, UnitConfig.class);
+        super(UnitGroupData.class);
         serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
         // todo: reimplement as real remote with manager.
     }

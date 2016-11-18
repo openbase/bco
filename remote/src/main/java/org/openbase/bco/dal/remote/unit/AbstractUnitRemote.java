@@ -24,23 +24,26 @@ package org.openbase.bco.dal.remote.unit;
 import com.google.protobuf.GeneratedMessage;
 import java.util.List;
 import java.util.concurrent.Future;
-import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
+import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
+import org.openbase.jul.pattern.Observable;
 import rsb.Scope;
 import rst.domotic.action.ActionConfigType;
+import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
-import rst.domotic.unit.scene.SceneConfigType;
 import rst.rsb.ScopeType;
 
 /**
@@ -51,8 +54,6 @@ import rst.rsb.ScopeType;
 public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends AbstractConfigurableRemote<M, UnitConfig> implements UnitRemote<M, UnitConfig> {
 
     private UnitTemplate template;
-
-    //TODO: switch to unit registry if available
     private UnitRegistry unitRegistry;
 
     public AbstractUnitRemote(final Class<M> dataClass) {
@@ -163,17 +164,21 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         }
     }
 
-//    @Override //TODO allow oberserver registration via registry interface.
-//    protected void postInit() throws InitializationException, InterruptedException {
-//        super.postInit();
-//        try {
-//            getDeviceRegistry().addDataObserver((Observable<DeviceRegistryDataType.DeviceRegistryData> source, DeviceRegistryDataType.DeviceRegistryData data1) -> {
-//                applyConfigUpdate(deviceRegistry.getUnitConfigById(getId()));
-//            });
-//        } catch (CouldNotPerformException ex) {
-//            ExceptionPrinter.printHistory("Could not register unit config update service for " + this, ex, logger);
-//        }
-//    }
+    @Override
+    protected void postInit() throws InitializationException, InterruptedException {
+        super.postInit();
+        ((UnitRegistryRemote) unitRegistry).addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
+            try {
+                final UnitConfig newUnitConfig = unitRegistry.getUnitConfigById(getId());
+                if (!newUnitConfig.equals(getConfig())) {
+                    applyConfigUpdate(newUnitConfig);
+                }
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory("Could not update unit config of " + this, ex, logger);
+            }
+        });
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -278,8 +283,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
      * @throws java.lang.InterruptedException
      */
     @Override
-    public Future<SceneConfigType.SceneConfig> recordSnapshot() throws CouldNotPerformException, InterruptedException {
-        //TODO use another rst container for a sction list.
-        return RPCHelper.callRemoteMethod(this, SceneConfigType.SceneConfig.class);
+    public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
+        return RPCHelper.callRemoteMethod(this, Snapshot.class);
     }
 }

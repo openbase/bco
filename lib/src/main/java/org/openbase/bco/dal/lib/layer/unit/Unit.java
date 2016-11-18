@@ -36,7 +36,7 @@ import org.openbase.jul.iface.provider.LabelProvider;
 import rst.domotic.action.ActionAuthorityType;
 import rst.domotic.action.ActionConfigType;
 import rst.domotic.action.ActionPriorityType;
-import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
+import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
@@ -46,7 +46,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Unit extends Service, LabelProvider, ScopeProvider, Identifiable<String>, ConfigProvider<UnitConfig>, Snapshotable<SceneConfig> {
+public interface Unit extends Service, LabelProvider, ScopeProvider, Identifiable<String>, ConfigProvider<UnitConfig>, Snapshotable<Snapshot> {
 
     /**
      * Returns the unit type.
@@ -65,9 +65,9 @@ public interface Unit extends Service, LabelProvider, ScopeProvider, Identifiabl
     public UnitTemplate getTemplate() throws NotAvailableException;
 
     @Override
-    public default Future<SceneConfig> recordSnapshot() throws CouldNotPerformException, InterruptedException {
+    public default Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
         MultiException.ExceptionStack exceptionStack = null;
-        SceneConfig.Builder snapshotBuilder = SceneConfig.newBuilder();
+        Snapshot.Builder snapshotBuilder = Snapshot.newBuilder();
         for (ServiceTemplate serviceTemplate : getTemplate().getServiceTemplateList()) {
             try {
                 ActionConfigType.ActionConfig.Builder actionConfig = ActionConfigType.ActionConfig.newBuilder().setServiceType(serviceTemplate.getType()).setUnitId(getId());
@@ -97,7 +97,7 @@ public interface Unit extends Service, LabelProvider, ScopeProvider, Identifiabl
     }
 
     @Override
-    public default Future<Void> restoreSnapshot(SceneConfig snapshot) throws CouldNotPerformException, InterruptedException {
+    public default Future<Void> restoreSnapshot(Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
         try {
             for (final ActionConfigType.ActionConfig actionConfig : snapshot.getActionConfigList()) {
                 applyAction(actionConfig);

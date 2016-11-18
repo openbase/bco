@@ -264,18 +264,22 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         }
 
         Class<? extends Service> serviceInterfaceClass = null;
-        Package servicePackage;
+        Package servicePackage = null;
         for (Entry<String, ServiceTemplate> serviceInterfaceMapEntry : serviceInterfaceMap.entrySet()) {
             try {
-                // Identify package
-                if (serviceInterfaceMapEntry.getValue().getPattern() == ServiceTemplate.ServicePattern.CONSUMER) {
-                    servicePackage = ConsumerService.class.getPackage();
-                } else if (serviceInterfaceMapEntry.getValue().getPattern() == ServiceTemplate.ServicePattern.OPERATION) {
-                    servicePackage = OperationService.class.getPackage();
-                } else if (serviceInterfaceMapEntry.getValue().getPattern() == ServiceTemplate.ServicePattern.PROVIDER) {
-                    servicePackage = ProviderService.class.getPackage();
-                } else {
-                    throw new NotSupportedException(serviceInterfaceMapEntry.getKey(), this);
+                if (null != serviceInterfaceMapEntry.getValue().getPattern()) // Identify package
+                switch (serviceInterfaceMapEntry.getValue().getPattern()) {
+                    case CONSUMER:
+                        servicePackage = ConsumerService.class.getPackage();
+                        break;
+                    case OPERATION:
+                        servicePackage = OperationService.class.getPackage();
+                        break;
+                    case PROVIDER:
+                        servicePackage = ProviderService.class.getPackage();
+                        break;
+                    default:
+                        throw new NotSupportedException(serviceInterfaceMapEntry.getKey(), this);
                 }
 
                 // Identify interface class
