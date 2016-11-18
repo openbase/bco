@@ -28,6 +28,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor.JavaTypeToProto;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPServiceException;
 import rst.domotic.state.PowerStateType;
 
 /**
@@ -37,13 +39,14 @@ import rst.domotic.state.PowerStateType;
 public class ServiceJSonProcessorTest {
 
     private final ServiceJSonProcessor serviceJSonProcessor;
-    
+
     public ServiceJSonProcessorTest() {
         this.serviceJSonProcessor = new ServiceJSonProcessor();
     }
 
     @BeforeClass
-    public static void setUpClass() {
+    public static void setUpClass() throws JPServiceException {
+        JPService.setupJUnitTestMode();
     }
 
     @AfterClass
