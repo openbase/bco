@@ -201,16 +201,12 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
             setState(LauncherState.STOPPED);
         }
     }
-    
-    
 
     @Override
     public void shutdown() {
         stop();
         super.shutdown();
     }
-    
-    
 
     @Override
     public long getUpTime() {
@@ -229,7 +225,6 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
     public boolean isVerified() {
         return verified;
     }
-    
 
     public static void main(final String args[], final Class application, final Class<? extends AbstractLauncher>... launchers) {
 
@@ -241,9 +236,10 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
         Map<Class<? extends AbstractLauncher>, AbstractLauncher> launcherMap = new HashMap<>();
         for (final Class<? extends AbstractLauncher> launcherClass : launchers) {
             try {
-                Constructor<? extends AbstractLauncher> constructor = launcherClass.getConstructor(Boolean.class);
-                launcherMap.put(launcherClass, constructor.newInstance(Boolean.TRUE));
-            } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException ex) {
+//                Constructor<? extends AbstractLauncher> constructor = launcherClass.getConstructor(Boolean.class);
+//                launcherMap.put(launcherClass, constructor.newInstance(Boolean.TRUE));
+                launcherMap.put(launcherClass, launcherClass.newInstance());
+            } catch (InstantiationException | IllegalAccessException ex) {
                 exceptionStack = MultiException.push(application, new CouldNotPerformException("Could not load launcher class!", ex), exceptionStack);
             }
         }
