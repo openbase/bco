@@ -43,7 +43,7 @@ public class LocationConfig_4_To_5_DBConverter extends AbstractDBVersionConverte
         // check if location is a tile
         if (locationConfig.getAsJsonPrimitive("type").getAsString().equalsIgnoreCase("tile")) {
             JsonObject tileConfig = locationConfig.getAsJsonObject("tile_config");
-            if (tileConfig.getAsJsonPrimitive("type").getAsString().equals("ROOM")) {
+            if (tileConfig != null && tileConfig.getAsJsonPrimitive("type") != null && tileConfig.getAsJsonPrimitive("type").getAsString().equals("ROOM")) {
                 tileConfig.remove("type");
                 tileConfig.add("type", new JsonPrimitive("INDOOR"));
             }
