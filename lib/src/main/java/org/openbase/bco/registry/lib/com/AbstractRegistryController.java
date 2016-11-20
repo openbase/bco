@@ -261,7 +261,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             try {
                 registry.checkConsistency();
             } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger, LogLevel.WARN);
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger);
                 notifyChange();
             }
         }

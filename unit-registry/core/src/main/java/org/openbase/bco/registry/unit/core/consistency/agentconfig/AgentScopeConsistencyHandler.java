@@ -66,6 +66,10 @@ public class AgentScopeConsistencyHandler extends AbstractProtoBufRegistryConsis
         if (!agentUnitConfig.getPlacementConfig().hasLocationId() || agentUnitConfig.getPlacementConfig().getLocationId().isEmpty()) {
             throw new NotAvailableException("agent.placementConfig.locationId");
         }
+        
+        if (!agentUnitConfig.getAgentConfig().hasAgentClassId() || agentUnitConfig.getAgentConfig().getAgentClassId().isEmpty()) {
+            throw new NotAvailableException("agent.agentClassId");
+        }
 
         Scope newScope = ScopeGenerator.generateAgentScope(agentUnitConfig, agentClassRegistry.get(agentUnitConfig.getAgentConfig().getAgentClassId()).getMessage(), locationRegistry.getMessage(agentUnitConfig.getPlacementConfig().getLocationId()));
 
