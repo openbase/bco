@@ -39,7 +39,8 @@ import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
-import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
+import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -66,6 +67,8 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
+import org.openbase.jul.pattern.Observable;
+import rst.domotic.registry.UnitRegistryDataType;
 
 /**
  *
@@ -87,9 +90,9 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     private final UnitHost unitHost;
     private final List<Service> serviceList;
     private final ServiceFactory serviceFactory;
-    private UnitTemplate template;
     private final ServiceJSonProcessor serviceJSonProcessor;
     private final Stopwatch stopWatch = new Stopwatch();
+    private UnitTemplate template;
 
     public AbstractUnitController(final Class unitClass, final UnitHost unitHost, final MB builder) throws CouldNotPerformException {
         super(builder);
@@ -101,6 +104,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
             }
             this.serviceJSonProcessor = new ServiceJSonProcessor();
             this.unitHost = unitHost;
+
             this.serviceFactory = unitHost.getServiceFactory();
             this.serviceList = new ArrayList<>();
 
@@ -128,7 +132,8 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     @Override
     public void init(ScopeType.Scope scope) throws InitializationException, InterruptedException {
         try {
-            super.init(unitHost.getDeviceRegistry().getUnitConfigByScope(scope));
+            CachedUnitRegistryRemote.waitForData();
+            super.init(CachedUnitRegistryRemote.getRegistry().getUnitConfigByScope(scope));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -168,6 +173,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
             }
 
             super.init(config);
+            
             try {
                 verifyUnitConfig();
             } catch (VerificationFailedException ex) {
@@ -187,9 +193,30 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     }
 
     @Override
+    protected void postInit() throws InitializationException, InterruptedException {
+        try {
+            super.postInit();
+            CachedUnitRegistryRemote.waitForData();
+            ((UnitRegistryRemote) CachedUnitRegistryRemote.getRegistry()).addDataObserver((Observable<UnitRegistryDataType.UnitRegistryData> source, UnitRegistryDataType.UnitRegistryData data) -> {
+                try {
+                    final UnitConfig newUnitConfig = CachedUnitRegistryRemote.getRegistry().getUnitConfigById(getId());
+                    if (!newUnitConfig.equals(getConfig())) {
+                        applyConfigUpdate(newUnitConfig);
+                    }
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not update unit config of " + this, ex, logger);
+                }
+            });
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
+    @Override
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        template = CachedDeviceRegistryRemote.getRegistry().getUnitTemplateByType(config.getType());
-        CachedDeviceRegistryRemote.waitForData();
+        assert config != null;
+        CachedUnitRegistryRemote.waitForData();
+        template = CachedUnitRegistryRemote.getRegistry().getUnitTemplateByType(config.getType());
         return super.applyConfigUpdate(config);
     }
 
@@ -268,18 +295,20 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         for (Entry<String, ServiceTemplate> serviceInterfaceMapEntry : serviceInterfaceMap.entrySet()) {
             try {
                 if (null != serviceInterfaceMapEntry.getValue().getPattern()) // Identify package
-                switch (serviceInterfaceMapEntry.getValue().getPattern()) {
-                    case CONSUMER:
-                        servicePackage = ConsumerService.class.getPackage();
-                        break;
-                    case OPERATION:
-                        servicePackage = OperationService.class.getPackage();
-                        break;
-                    case PROVIDER:
-                        servicePackage = ProviderService.class.getPackage();
-                        break;
-                    default:
-                        throw new NotSupportedException(serviceInterfaceMapEntry.getKey(), this);
+                {
+                    switch (serviceInterfaceMapEntry.getValue().getPattern()) {
+                        case CONSUMER:
+                            servicePackage = ConsumerService.class.getPackage();
+                            break;
+                        case OPERATION:
+                            servicePackage = OperationService.class.getPackage();
+                            break;
+                        case PROVIDER:
+                            servicePackage = ProviderService.class.getPackage();
+                            break;
+                        default:
+                            throw new NotSupportedException(serviceInterfaceMapEntry.getKey(), this);
+                    }
                 }
 
                 // Identify interface class
