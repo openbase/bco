@@ -54,7 +54,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public class DeviceManagerController implements DeviceManager, Launchable<Void>, VoidInitializable {
 
-    private static final Logger logger = LoggerFactory.getLogger(DeviceManagerController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeviceManagerController.class);
 
     private static DeviceManagerController instance;
 
@@ -121,7 +121,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
 
                         // verify device state.
                         if (config.getDeviceConfig().getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
-                            logger.info("Skip Device[" + config.getLabel() + "] because it is currently not installed!");
+                            LOGGER.info("Skip Device[" + config.getLabel() + "] because it is currently not installed!");
                             return false;
                         }
                         return true;
