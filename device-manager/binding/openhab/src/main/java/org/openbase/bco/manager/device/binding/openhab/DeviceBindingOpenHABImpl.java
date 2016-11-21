@@ -86,6 +86,7 @@ public class DeviceBindingOpenHABImpl extends AbstractOpenHABBinding {
 
             super.init(itemFilter, openHABRemote);
             this.deviceManagerController.init();
+            this.deviceManagerController.activate();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
