@@ -21,18 +21,15 @@ package org.openbase.bco.manager.agent.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
-import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Identifiable;
-import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Agent extends Identifiable<String>, Configurable<String, UnitConfig> {
+public interface Agent extends Identifiable<String>, Configurable<String, UnitConfig>, ActivationStateOperationService{
 
-    public Future<Void> setActivationState(ActivationState activation) throws CouldNotPerformException;
 }

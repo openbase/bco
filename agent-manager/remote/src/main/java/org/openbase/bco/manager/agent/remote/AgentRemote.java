@@ -25,6 +25,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.bco.manager.agent.lib.Agent;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -50,5 +51,10 @@ public class AgentRemote extends AbstractUnitRemote<AgentData> implements Agent 
     public Future<Void> setActivationState(final ActivationState activation) throws CouldNotPerformException {
         logger.info("Calling remote setActivationState to [" + activation + "] for agent");
         return RPCHelper.callRemoteMethod(activation, this, Void.class);
+    }
+
+    @Override
+    public ActivationState getActivationState() throws NotAvailableException {
+        return getData().getActivationState();
     }
 }
