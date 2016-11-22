@@ -21,16 +21,24 @@ package org.openbase.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.TimeUnit;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.EnumNotSupportedException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.rsb.ScopeType;
+import rst.rsb.ScopeType.Scope;
 
 /**
  * A unit remote factory which can be used to create unit remote instances out
- * of device- and location-manager delivered unit configurations.
+ * of the unit registry delivered unit configurations.
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
@@ -41,6 +49,11 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
     private UnitRemoteFactoryImpl() {
     }
 
+    /**
+     * Method returns a new singelton instance of the unit factory.
+     *
+     * @return
+     */
     public synchronized static UnitRemoteFactory getInstance() {
         if (instance == null) {
             instance = new UnitRemoteFactoryImpl();
@@ -83,28 +96,125 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
         }
     }
 
+    /**
+     * Method resolves the unit remote class of the given unit config.
+     *
+     * @param config the unit config to detect the unit class.
+     * @return the unit remote class is returned.
+     * @throws CouldNotPerformException is thrown if something went wrong during class loading.
+     */
     public static Class<? extends AbstractUnitRemote> loadUnitRemoteClass(final UnitConfig config) throws CouldNotPerformException {
         return loadUnitRemoteClass(config.getType());
     }
 
+    /**
+     * Method resolves the unit remote class of the given unit type.
+     *
+     * @param unitType the unit type to detect the unit class.
+     * @return the unit remote class is returned.
+     * @throws CouldNotPerformException is thrown if something went wrong during class loading.
+     */
     public static Class<? extends AbstractUnitRemote> loadUnitRemoteClass(final UnitType unitType) throws CouldNotPerformException {
-        String remoteClassName = AbstractUnitRemote.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
         try {
+            String remoteClassName = null;
+            // check unit type and load related class.
+            if (UnitConfigProcessor.isBaseUnit(unitType)) {
+                remoteClassName = "org.openbase.bco.manager." + unitType.name().toLowerCase() + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
+            } else if (UnitConfigProcessor.isDalUnit(unitType)) {
+                remoteClassName = AbstractUnitRemote.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
+            } else {
+                throw new EnumNotSupportedException(unitType, UnitRemoteFactoryImpl.class);
+            }
             return (Class<? extends AbstractUnitRemote>) UnitRemoteFactoryImpl.class.getClassLoader().loadClass(remoteClassName);
-        } catch (Exception ex) {
+        } catch (CouldNotPerformException | ClassNotFoundException ex) {
             throw new CouldNotPerformException("Could not detect unit remote class for UnitType[" + unitType.name() + "]!", ex);
         }
     }
 
-    private static AbstractUnitRemote instantiatUnitRemote(final Class<? extends AbstractUnitRemote> unitRemoteClass) throws org.openbase.jul.exception.InstantiationException {
+    /**
+     * {@inheritDoc}
+     *
+     * @param config {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws InstantiationException {@inheritDoc}
+     */
+    @Override
+    public UnitRemote newInstance(final UnitConfig config) throws InstantiationException {
         try {
-            AbstractUnitRemote remote = unitRemoteClass.newInstance();
-            return remote;
+            return newInstance(loadUnitRemoteClass(config));
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException("Could not create unit remote!", ex);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param unitRemoteClass {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws InstantiationException {@inheritDoc}
+     */
+    @Override
+    public <R extends AbstractUnitRemote> R newInstance(final Class<R> unitRemoteClass) throws InstantiationException {
+        try {
+            return unitRemoteClass.newInstance();
         } catch (java.lang.InstantiationException | IllegalAccessException ex) {
             throw new org.openbase.jul.exception.InstantiationException("Could not instantiate unit remote out of Class[" + unitRemoteClass.getName() + "]", ex);
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param type {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws InstantiationException {@inheritDoc}
+     */
+    @Override
+    public UnitRemote newInstance(final UnitType type) throws InstantiationException {
+        try {
+            return newInstance(loadUnitRemoteClass(type));
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException("Could not create unit remote!", ex);
+        }
+
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param unitId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws InstantiationException {@inheritDoc}
+     */
+    @Override
+    public UnitRemote newInstance(String unitId, long timeout, TimeUnit timeUnit) throws InstantiationException, CouldNotPerformException, InterruptedException {
+        CachedUnitRegistryRemote.waitForData(timeout, timeUnit);
+        return newInstance(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(unitId));
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param scope {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws InstantiationException {@inheritDoc}
+     */
+    @Override
+    public UnitRemote newInstance(ScopeType.Scope scope, long timeout, TimeUnit timeUnit) throws InstantiationException, CouldNotPerformException, InterruptedException {
+        CachedUnitRegistryRemote.waitForData(timeout, timeUnit);
+        return newInstance(CachedUnitRegistryRemote.getRegistry().getUnitConfigByScope(scope));
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param config {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws InitializationException {@inheritDoc}
+     * @throws InstantiationException {@inheritDoc}
+     * @throws InterruptedException {@inheritDoc}
+     */
     @Override
     public UnitRemote newInitializedInstance(final UnitConfig config) throws InitializationException, InstantiationException, InterruptedException {
         UnitRemote unitRemote = newInstance(config);
@@ -112,12 +222,73 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
         return unitRemote;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param scope {@inheritDoc}
+     * @param type {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws InitializationException {@inheritDoc}
+     * @throws InstantiationException {@inheritDoc}
+     * @throws InterruptedException {@inheritDoc}
+     */
     @Override
-    public UnitRemote newInstance(final UnitConfig config) throws InstantiationException {
-        try {
-            return instantiatUnitRemote(loadUnitRemoteClass(config));
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException("Could not create unit remote!", ex);
-        }
+    public UnitRemote newInitializedInstance(final Scope scope, final UnitType type) throws InitializationException, InstantiationException, InterruptedException {
+        UnitRemote unitRemote = newInstance(type);
+        unitRemote.init(scope);
+        return unitRemote;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param scope {@inheritDoc}
+     * @param unitRemoteClass {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws InitializationException {@inheritDoc}
+     * @throws InstantiationException {@inheritDoc}
+     * @throws InterruptedException {@inheritDoc}
+     */
+    @Override
+    public <R extends AbstractUnitRemote> R newInitializedInstance(final Scope scope, final Class<R> unitRemoteClass) throws InitializationException, InstantiationException, InterruptedException {
+        R unitRemote = newInstance(unitRemoteClass);
+        unitRemote.init(scope);
+        return unitRemote;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param scope {@inheritDoc}
+     * @param timeout {@inheritDoc}
+     * @param timeUnit {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws InitializationException {@inheritDoc}
+     * @throws InstantiationException {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws InterruptedException {@inheritDoc}
+     */
+    @Override
+    public UnitRemote newInitializedInstance(ScopeType.Scope scope, long timeout, TimeUnit timeUnit) throws InitializationException, InstantiationException, CouldNotPerformException, InterruptedException {
+        CachedUnitRegistryRemote.waitForData(timeout, timeUnit);
+        return newInitializedInstance(CachedUnitRegistryRemote.getRegistry().getUnitConfigByScope(scope));
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param unitId {@inheritDoc}
+     * @param timeout {@inheritDoc}
+     * @param timeUnit {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws InitializationException {@inheritDoc}
+     * @throws InstantiationException {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws InterruptedException {@inheritDoc}
+     */
+    @Override
+    public UnitRemote newInitializedInstance(final String unitId, long timeout, TimeUnit timeUnit) throws InitializationException, InstantiationException, CouldNotPerformException, InterruptedException {
+        CachedUnitRegistryRemote.waitForData(timeout, timeUnit);
+        return newInitializedInstance(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(unitId));
     }
 }

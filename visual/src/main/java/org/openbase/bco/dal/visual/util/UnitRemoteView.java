@@ -23,19 +23,17 @@ package org.openbase.bco.dal.visual.util;
  */
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
+import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType.Scope;
 
 /**
@@ -43,10 +41,10 @@ import rst.rsb.ScopeType.Scope;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <RS>
  */
-public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends javax.swing.JPanel implements Observer<GeneratedMessage> {
-    
+public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends javax.swing.JPanel implements Observer<GeneratedMessage>, Shutdownable {
+
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-    
+
     private RS remoteService;
 
     /**
@@ -55,25 +53,26 @@ public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends java
     public UnitRemoteView() {
         this.initComponents();
     }
-    
+
     private synchronized void setRemoteService(final RS remoteService) {
-        
+
         if (this.remoteService != null) {
             this.remoteService.shutdown();
         }
-        
+
         this.remoteService = remoteService;
         remoteService.addDataObserver(this);
     }
-    
+
+    @Override
     public synchronized void shutdown() {
         if (remoteService == null) {
             return;
         }
-        
+
         remoteService.shutdown();
     }
-    
+
     @Override
     public void update(final Observable<GeneratedMessage> source, GeneratedMessage data) {
         try {
@@ -82,74 +81,37 @@ public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends java
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update unit remote view!", ex), logger);
         }
     }
-    
+
     public RS getRemoteService() throws NotAvailableException {
         if (remoteService == null) {
             throw new NotAvailableException("remoteService");
         }
         return remoteService;
     }
-    
-    public void setUnitRemote(final UnitTemplateType.UnitTemplate.UnitType unitType, final Scope scope) throws CouldNotPerformException, InterruptedException {
+
+    public void setUnitRemote(final UnitType unitType, final Scope scope) throws CouldNotPerformException, InterruptedException {
         logger.info("Setup unit remote: " + unitType + ".");
         try {
-            Class<? extends RS> remoteClass = loadUnitRemoteClass(unitType);
-            RS unitRemote = instantiatUnitRemote(remoteClass);
-            initUnitRemote(unitRemote, scope);
-            unitRemote.activate();
-            setRemoteService(unitRemote);
+            RS remote = (RS) UnitRemoteFactoryImpl.getInstance().newInitializedInstance(scope, unitType);
+            remote.activate();
+            setRemoteService(remote);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not setup unit remote config!", ex);
         }
     }
-    
-    public RS setUnitRemote(final UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
+
+    public RS setUnitRemote(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         logger.info("Setup unit remote: " + unitConfig.getId());
         try {
-            Class<? extends RS> remoteClass = loadUnitRemoteClass(unitConfig.getType());
-            RS unitRemote = instantiatUnitRemote(remoteClass);
-            initUnitRemote(unitRemote, unitConfig);
-            unitRemote.activate();
-            setRemoteService(unitRemote);
-            return unitRemote;
+            RS remote = (RS) UnitRemoteFactoryImpl.getInstance().newInitializedInstance(unitConfig);
+            remote.activate();
+            setRemoteService((RS) remote);
+            return remote;
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not setup unit remote config!", ex);
         }
     }
-    
-    private Class<? extends RS> loadUnitRemoteClass(UnitTemplateType.UnitTemplate.UnitType unitType) throws CouldNotPerformException {
-        String remoteClassName = AbstractUnitRemote.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
-        try {
-            return (Class<? extends RS>) getClass().getClassLoader().loadClass(remoteClassName);
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not detect remote class for UnitType[" + unitType.name() + "]", ex);
-        }
-    }
-    
-    public RS instantiatUnitRemote(Class<? extends RS> remoteClass) throws InstantiationException {
-        try {
-            return remoteClass.newInstance();
-        } catch (Exception ex) {
-            throw new InstantiationException("Could not instantiate unit remote out of RemoteClass[" + remoteClass.getSimpleName() + "]!", ex);
-        }
-    }
-    
-    private void initUnitRemote(AbstractUnitRemote unitRemote, UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        try {
-            unitRemote.init(config);
-        } catch (InitializationException ex) {
-            throw new CouldNotPerformException("Could not init " + unitRemote + "!", ex);
-        }
-    }
-    
-    private void initUnitRemote(AbstractUnitRemote unitRemote, Scope scope) throws CouldNotPerformException, InterruptedException {
-        try {
-            unitRemote.init(scope);
-        } catch (InitializationException ex) {
-            throw new CouldNotPerformException("Could not init " + unitRemote + "!", ex);
-        }
-    }
-    
+
     protected abstract void updateDynamicComponents(GeneratedMessage data) throws CouldNotPerformException;
 
     /**

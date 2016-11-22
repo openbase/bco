@@ -437,6 +437,7 @@ public class SelectorPanel extends javax.swing.JPanel {
 
         instancePanel.setBorder(javax.swing.BorderFactory.createTitledBorder("Selected Instance"));
 
+        unitConfigComboBox.setMaximumRowCount(40);
         unitConfigComboBox.addItemListener(new java.awt.event.ItemListener() {
             public void itemStateChanged(java.awt.event.ItemEvent evt) {
                 unitConfigComboBoxItemStateChanged(evt);
@@ -760,6 +761,14 @@ public class SelectorPanel extends javax.swing.JPanel {
             if (o == null) {
                 return -1;
             }
+
+            // make sure "all" is on top.
+            if (isNotSpecified()) {
+                return -1;
+            } else if (o.isNotSpecified()) {
+                return +1;
+            }
+
             return toString().compareTo(o.toString());
         }
     }
@@ -774,7 +783,7 @@ public class SelectorPanel extends javax.swing.JPanel {
 
         @Override
         public String toString() {
-            if (type.equals(UnitType.UNKNOWN)) {
+            if (isNotSpecified()) {
                 return "All";
             }
             return StringProcessor.transformUpperCaseToCamelCase(type.name());
@@ -793,6 +802,14 @@ public class SelectorPanel extends javax.swing.JPanel {
             if (o == null) {
                 return -1;
             }
+
+            // make sure "all" is on top.
+            if (isNotSpecified()) {
+                return -1;
+            } else if (o.isNotSpecified()) {
+                return +1;
+            }
+
             return toString().compareTo(o.toString());
         }
     }
@@ -826,6 +843,14 @@ public class SelectorPanel extends javax.swing.JPanel {
             if (o == null) {
                 return -1;
             }
+
+            // make sure "all" is on top.
+            if (type.equals(ServiceType.UNKNOWN)) {
+                return -1;
+            } else if (o.getType().equals(ServiceType.UNKNOWN)) {
+                return +1;
+            }
+
             return toString().compareTo(o.toString());
         }
     }
@@ -835,18 +860,18 @@ public class SelectorPanel extends javax.swing.JPanel {
         private final UnitConfig config;
         private final UnitConfig locationUnitConfig;
 
-        public UnitConfigHolder(final UnitConfig config, final UnitConfig locationUnitConfig) {
+        public UnitConfigHolder(final UnitConfig config, final UnitConfig unitConfig) {
             this.config = config;
-            this.locationUnitConfig = locationUnitConfig;
+            this.locationUnitConfig = unitConfig;
         }
 
         @Override
         public String toString() {
             if (isNotSpecified()) {
-                return "All";
+                return "Not Available";
             }
             return StringProcessor.transformUpperCaseToCamelCase(config.getType().name())
-                    + "[" + config.getLabel() + "]"
+                    + " = " + config.getLabel() + ""
                     + " @ " + locationUnitConfig.getLabel();
         }
 

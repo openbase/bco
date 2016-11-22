@@ -38,10 +38,12 @@ import org.openbase.bco.dal.visual.util.StatusPanel;
 import org.openbase.bco.dal.visual.util.StatusPanel.StatusType;
 import org.openbase.bco.dal.visual.util.UnitRemoteView;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote.ConnectionState;
@@ -107,11 +109,11 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
             String remoteLabel;
             try {
                 UnitConfig unitConfig = ((UnitConfig) getRemoteService().getConfig());
-                remoteLabel = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name())
-                        + "[" + unitConfig.getLabel() + "]"
-                        + " @ " + CachedLocationRegistryRemote.getRegistry().getLocationConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel()
-                        + " of " + ((UnitConfig) getRemoteService().getConfig()).getUnitHostId()
-                        + " : " + unitConfig.getDescription();
+                remoteLabel = unitConfig.getLabel()
+                        + " (" + StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name()) + ")"
+                        + " @ " + CachedUnitRegistryRemote.getRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel()
+                        + " of " + CachedUnitRegistryRemote.getRegistry().getUnitConfigById(((UnitConfig) getRemoteService().getConfig()).getUnitHostId()).getLabel()
+                        + (unitConfig.getDescription().isEmpty() ? "" : "[" + unitConfig.getDescription() + "]");
             } catch (CouldNotPerformException ex) {
                 remoteLabel = "?";
             }
@@ -150,7 +152,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
             }
 
 //            TitledBorder titledBorder = BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToCamelCase(getRemoteService().getType().name()) + ":" + getRemoteService().getId() + " [" + textSuffix + "]");
-            TitledBorder titledBorder = BorderFactory.createTitledBorder("Remote Control - " + remoteLabel + " (" + textSuffix + ")");
+            TitledBorder titledBorder = BorderFactory.createTitledBorder(remoteLabel + " (" + textSuffix + ")");
             titledBorder.setTitleColor(textColor);
             setBorder(titledBorder);
         } catch (NullPointerException ex) {
@@ -201,7 +203,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
                 if (!servicePanelMap.containsKey(serviceConfig.getServiceTemplate().getType())) {
                     try {
                         servicePanel = new JPanel();
-                        servicePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getServiceTemplate().getType().name()) + ":" + unitConfig.getId()));
+                        servicePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getServiceTemplate().getType().name()) + " " + ScopeGenerator.generateStringRep(unitConfig.getScope())));
                         AbstractServicePanel abstractServicePanel = instantiatServicePanel(serviceConfig, loadServicePanelClass(serviceConfig.getServiceTemplate().getType()), getRemoteService());
                         abstractServicePanel.setUnitId(unitConfig.getId());
                         abstractServicePanel.setServiceType(serviceConfig.getServiceTemplate().getType());
