@@ -57,14 +57,14 @@ import rst.rsb.ScopeType.Scope;
  * @param <MB>
  */
 public abstract class AbstractRegistryController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> implements RegistryController<M>, Launchable<Scope> {
-
+    
     protected ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
-
+    
     private final List<RegistryRemote> registryRemoteList;
     private final List<RemoteRegistry> remoteRegistrieList;
     private final List<ProtoBufFileSynchronizedRegistry> registrieList;
     private final Class<? extends JPScope> jpScopePropery;
-
+    
     public AbstractRegistryController(final Class<? extends JPScope> jpScopePropery, MB builder) throws InstantiationException {
         super(builder);
         this.jpScopePropery = jpScopePropery;
@@ -73,7 +73,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         this.remoteRegistrieList = new ArrayList<>();
         this.protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
     }
-
+    
     @Override
     public ScopeType.Scope getDefaultConfig() throws NotAvailableException {
         try {
@@ -82,7 +82,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             throw new NotAvailableException("DefaultConfig", ex);
         }
     }
-
+    
     @Override
     protected void postInit() throws InitializationException, InterruptedException {
         super.postInit();
@@ -92,49 +92,49 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not register all internal registries!", ex);
             }
-
+            
             try {
                 registerRegistryRemotes();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not register all registry remotes!", ex);
             }
-
+            
             try {
                 registerRemoteRegistries();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not activate version control for all internal registries!", ex);
             }
-
+            
             try {
                 initRemoteRegistries();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not init all remote registries!", ex);
             }
-
+            
             try {
                 activateVersionControl();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not activate version control for all internal registries!", ex);
             }
-
+            
             try {
                 loadRegistries();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not load all internal registries!", ex);
             }
-
+            
             try {
                 registerConsistencyHandler();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not register consistency handler for all internal registries!", ex);
             }
-
+            
             try {
                 registerPlugins();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not register plugins for all internal registries!", ex);
             }
-
+            
             try {
                 registerObserver();
             } catch (CouldNotPerformException ex) {
@@ -144,7 +144,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             throw new InitializationException(this, ex);
         }
     }
-
+    
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         try {
@@ -157,7 +157,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             throw new CouldNotPerformException("Could not activate location registry!", ex);
         }
     }
-
+    
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         super.deactivate();
@@ -165,7 +165,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         deactivateRegistryRemotes();
         removeDependencies();
     }
-
+    
     @Override
     public void shutdown() {
         super.shutdown();
@@ -179,19 +179,19 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             registry.shutdown();
         });
     }
-
+    
     @Override
     public void notifyChange() throws CouldNotPerformException, InterruptedException {
         syncRegistryFlags();
         super.notifyChange();
     }
-
+    
     private void initRemoteRegistries() throws CouldNotPerformException, InterruptedException {
         for (final RegistryRemote remote : registryRemoteList) {
             remote.init();
         }
     }
-
+    
     private void activateRemoteRegistries() throws CouldNotPerformException, InterruptedException {
         for (RemoteRegistry remoteRegistry : remoteRegistrieList) {
             if (remoteRegistry instanceof SynchronizedRemoteRegistry) {
@@ -199,17 +199,17 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             }
         }
     }
-
+    
     private void activateRegistryRemotes() throws CouldNotPerformException, InterruptedException {
         for (final RegistryRemote remote : registryRemoteList) {
             remote.activate();
         }
-
+        
         for (final RegistryRemote remote : registryRemoteList) {
             remote.waitForData();
         }
     }
-
+    
     private void deactivateRemoteRegistries() throws CouldNotPerformException, InterruptedException {
         for (RemoteRegistry remoteRegistry : remoteRegistrieList) {
             if (remoteRegistry instanceof SynchronizedRemoteRegistry) {
@@ -217,19 +217,19 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             }
         }
     }
-
+    
     private void deactivateRegistryRemotes() throws CouldNotPerformException, InterruptedException {
         for (final RegistryRemote remote : registryRemoteList) {
             remote.deactivate();
         }
     }
-
+    
     private void removeDependencies() throws CouldNotPerformException {
         registrieList.stream().forEach((registry) -> {
             registry.removeAllDependencies();
         });
     }
-
+    
     private void registerObserver() throws CouldNotPerformException {
         registrieList.stream().forEach((registry) -> {
             registry.addObserver((Observable source, Object data) -> {
@@ -237,13 +237,13 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             });
         });
     }
-
+    
     private void loadRegistries() throws CouldNotPerformException {
         for (final ProtoBufFileSynchronizedRegistry registry : registrieList) {
             registry.loadRegistry();
         }
     }
-
+    
     private void activateVersionControl() throws CouldNotPerformException {
         Package versionConverterPackage;
         for (final ProtoBufFileSynchronizedRegistry registry : registrieList) {
@@ -256,7 +256,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             registry.activateVersionControl(versionConverterPackage);
         }
     }
-
+    
     private void performInitialConsistencyCheck() throws CouldNotPerformException, InterruptedException {
         for (final ProtoBufFileSynchronizedRegistry registry : registrieList) {
             try {
@@ -267,45 +267,47 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             }
         }
     }
-
+    
     protected void registerDependency(Registry dependency, Class messageClass) throws CouldNotPerformException {
         for (ProtoBufFileSynchronizedRegistry registry : registrieList) {
             registry.registerDependency(dependency);
         }
     }
-
+    
     protected void registerRegistryRemote(final RegistryRemote registry) {
         registryRemoteList.add(registry);
     }
-
+    
     protected void registerRegistry(final ProtoBufFileSynchronizedRegistry registry) {
         registrieList.add(registry);
     }
-
+    
     protected void registerRemoteRegistry(final RemoteRegistry registry) {
         remoteRegistrieList.add(registry);
     }
-
+    
     protected void registerConsistencyHandler(final ConsistencyHandler consistencyHandler, final Class messageClass) throws CouldNotPerformException {
         for (ProtoBufFileSynchronizedRegistry registry : registrieList) {
             if (messageClass.equals(registry.getMessageClass())) {
                 registry.registerConsistencyHandler(consistencyHandler);
+            } else {
+                logger.warn("Register of " + consistencyHandler + " skipped for "+registry+" because "+messageClass.getSimpleName()+" is not compatible!");
             }
         }
     }
-
+    
     protected List<RegistryRemote> getRegistryRemotes() {
         return registryRemoteList;
     }
-
+    
     public List<RemoteRegistry> getRemoteRegistries() {
         return remoteRegistrieList;
     }
-
+    
     protected List<ProtoBufFileSynchronizedRegistry> getRegistries() {
         return registrieList;
     }
-
+    
     private Package detectVersionConverterPackage() throws CouldNotPerformException {
         Package converterPackage;
         try {
@@ -315,18 +317,18 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         }
         return converterPackage;
     }
-
+    
     protected abstract void registerConsistencyHandler() throws CouldNotPerformException;
-
+    
     protected abstract void registerPlugins() throws CouldNotPerformException, InterruptedException;
-
+    
     protected abstract void registerRegistryRemotes() throws CouldNotPerformException;
-
+    
     protected abstract void registerRegistries() throws CouldNotPerformException;
-
+    
     protected abstract void registerDependencies() throws CouldNotPerformException;
-
+    
     protected abstract void syncRegistryFlags() throws CouldNotPerformException, InterruptedException;
-
+    
     protected abstract void registerRemoteRegistries() throws CouldNotPerformException;
 }
