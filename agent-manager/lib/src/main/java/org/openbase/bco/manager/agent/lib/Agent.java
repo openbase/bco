@@ -20,16 +20,12 @@ package org.openbase.bco.manager.agent.lib;
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
- */
-import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
-import org.openbase.jul.iface.Configurable;
-import org.openbase.jul.iface.Identifiable;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-
-/**
+ *
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @deprecated please use org.openbase.bco.dal.lib.layer.unit.app.Agent
  */
-public interface Agent extends Identifiable<String>, Configurable<String, UnitConfig>, ActivationStateOperationService{
+@Deprecated
+public interface Agent extends org.openbase.bco.dal.lib.layer.unit.agent.Agent {
 
 }

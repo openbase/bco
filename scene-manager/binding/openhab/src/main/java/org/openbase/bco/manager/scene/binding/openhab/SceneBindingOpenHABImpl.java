@@ -23,7 +23,7 @@ package org.openbase.bco.manager.scene.binding.openhab;
  */
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.manager.scene.binding.openhab.transform.ActivationStateTransformer;
-import org.openbase.bco.manager.scene.remote.SceneRemote;
+import org.openbase.bco.dal.remote.unit.scene.SceneRemote;
 import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;

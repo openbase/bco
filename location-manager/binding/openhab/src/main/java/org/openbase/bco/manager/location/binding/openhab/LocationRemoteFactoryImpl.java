@@ -22,7 +22,7 @@ package org.openbase.bco.manager.location.binding.openhab;
  * #L%
  */
 import org.openbase.bco.manager.location.binding.openhab.execution.OpenHABCommandFactory;
-import org.openbase.bco.manager.location.remote.LocationRemote;
+import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import static org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote.ITEM_SEGMENT_DELIMITER;
 import static org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote.ITEM_SUBSEGMENT_DELIMITER;

@@ -21,7 +21,7 @@ package org.openbase.bco.manager.location.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.manager.location.remote.ConnectionRemote;
+import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import static org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote.ITEM_SEGMENT_DELIMITER;
 import static org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote.ITEM_SUBSEGMENT_DELIMITER;

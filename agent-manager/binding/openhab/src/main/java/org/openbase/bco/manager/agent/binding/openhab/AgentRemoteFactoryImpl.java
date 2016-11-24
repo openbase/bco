@@ -23,7 +23,7 @@ package org.openbase.bco.manager.agent.binding.openhab;
  */
 
 import org.openbase.bco.manager.agent.binding.openhab.execution.OpenHABCommandFactory;
-import org.openbase.bco.manager.agent.remote.AgentRemote;
+import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import static org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote.ITEM_SEGMENT_DELIMITER;
 import static org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote.ITEM_SUBSEGMENT_DELIMITER;

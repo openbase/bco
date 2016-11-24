@@ -21,28 +21,10 @@ package org.openbase.bco.manager.user.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.iface.Identifiable;
-import rst.domotic.state.UserActivityStateType.UserActivityState;
-import rst.domotic.state.UserPresenceStateType.UserPresenceState;
-
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @deprecated please use org.openbase.bco.dal.lib.layer.unit.user.User
  */
-public interface User extends Identifiable<String> {
-
-    public final static String TYPE_FIELD_USER_NAME = "user_name";
-
-    public String getUserName() throws NotAvailableException;
-
-    public UserActivityState getUserActivityState() throws NotAvailableException;
-
-    public Future<Void> setUserActivityState(UserActivityState UserActivityState) throws CouldNotPerformException;
-
-    public UserPresenceState getUserPresenceState() throws NotAvailableException;
-
-    public Future<Void> setUserPresenceState(UserPresenceState userPresenceState) throws CouldNotPerformException;
+public interface User extends org.openbase.bco.dal.lib.layer.unit.user.User {
 }

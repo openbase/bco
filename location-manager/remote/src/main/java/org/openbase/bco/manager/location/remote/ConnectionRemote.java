@@ -21,70 +21,12 @@ package org.openbase.bco.manager.location.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
-import org.openbase.bco.manager.location.lib.Connection;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.ContactStateType.ContactState;
-import rst.domotic.state.DoorStateType.DoorState;
-import rst.domotic.state.HandleStateType.HandleState;
-import rst.domotic.state.PassageStateType.PassageState;
-import rst.domotic.state.WindowStateType.WindowState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @deprecated please use org.openbase.bco.dal.remote.unit.connection.ConnectionRemote
  */
-public class ConnectionRemote extends AbstractUnitRemote<ConnectionData> implements Connection {
+public class ConnectionRemote extends org.openbase.bco.dal.remote.unit.connection.ConnectionRemote {
 
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ContactState.getDefaultInstance()));
-    }
-
-    public ConnectionRemote() {
-        super(ConnectionData.class);
-    }
-
-    @Override
-    public void notifyDataUpdate(final ConnectionData data) throws CouldNotPerformException {
-    }
-
-    @Override
-    public String getLabel() throws NotAvailableException {
-        return getConfig().getLabel();
-    }
-
-    @Override
-    public DoorState getDoorState() throws NotAvailableException {
-        try {
-            return getData().getDoorState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("DoorState", ex);
-        }
-    }
-
-    @Override
-    public PassageState getPassageState() throws NotAvailableException {
-        try {
-            return getData().getPassageState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("PassageState", ex);
-        }
-    }
-
-    @Override
-    public WindowState getWindowState() throws NotAvailableException {
-        try {
-            return getData().getWindowState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("WindowState", ex);
-        }
-    }
 }

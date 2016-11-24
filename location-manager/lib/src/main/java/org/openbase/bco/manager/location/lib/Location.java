@@ -21,44 +21,10 @@ package org.openbase.bco.manager.location.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.List;
-import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionStateProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.SmokeAlarmStateProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.SmokeStateProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.TamperStateProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.extension.rst.iface.ScopeProvider;
-import org.openbase.jul.iface.Configurable;
-import org.openbase.jul.iface.Snapshotable;
-import org.openbase.jul.iface.provider.LabelProvider;
-import rst.domotic.action.SnapshotType.Snapshot;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- UnitConfig
+ * @deprecated please use org.openbase.bco.dal.lib.layer.unit.location.Location
  */
-public interface Location extends ScopeProvider, LabelProvider, Configurable<String, UnitConfig>,
-        BrightnessStateOperationService, ColorStateOperationService, PowerStateOperationService, BlindStateOperationService,
-        StandbyStateOperationService, TargetTemperatureStateOperationService, MotionStateProviderService, SmokeAlarmStateProviderService, SmokeStateProviderService,
-        TemperatureStateProviderService, PowerConsumptionStateProviderService, TamperStateProviderService, Snapshotable<Snapshot> {
-
-    /**
-     * Will return controller/remotes in the final implementation. Waiting for a
-     * remote pool...
-     *
-     * @return
-     * @throws CouldNotPerformException
-     * @deprecated
-     */
-    @Deprecated
-    public List<String> getNeighborLocationIds() throws CouldNotPerformException;
+public interface Location extends org.openbase.bco.dal.lib.layer.unit.location.Location {
 }

@@ -23,7 +23,7 @@ package org.openbase.bco.manager.agent.binding.openhab;
  */
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.manager.agent.binding.openhab.transform.ActivationStateTransformer;
-import org.openbase.bco.manager.agent.remote.AgentRemote;
+import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;

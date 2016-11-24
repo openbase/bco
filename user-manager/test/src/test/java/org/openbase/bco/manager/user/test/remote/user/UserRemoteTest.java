@@ -29,7 +29,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.bco.manager.user.core.UserManagerLauncher;
-import org.openbase.bco.manager.user.remote.UserRemote;
+import org.openbase.bco.dal.remote.unit.user.UserRemote;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.junit.After;

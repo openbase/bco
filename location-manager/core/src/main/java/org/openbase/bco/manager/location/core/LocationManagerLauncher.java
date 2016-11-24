@@ -23,7 +23,6 @@ package org.openbase.bco.manager.location.core;
  */
 import org.openbase.bco.manager.location.lib.LocationManager;
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
-import static org.openbase.bco.registry.lib.launch.AbstractLauncher.main;
 
 /**
  *

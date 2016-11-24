@@ -21,40 +21,10 @@ package org.openbase.bco.manager.agent.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
-import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
-import org.openbase.bco.manager.agent.lib.Agent;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.unit.agent.AgentDataType.AgentData;
-import rst.domotic.state.ActivationStateType.ActivationState;
-
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @deprecated please use org.openbase.bco.dal.remote.unit.agent.AgentRemote
  */
-public class AgentRemote extends AbstractUnitRemote<AgentData> implements Agent {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
-    }
-
-    public AgentRemote() {
-        super(AgentData.class);
-    }
-
-    @Override
-    public Future<Void> setActivationState(final ActivationState activation) throws CouldNotPerformException {
-        logger.info("Calling remote setActivationState to [" + activation + "] for agent");
-        return RPCHelper.callRemoteMethod(activation, this, Void.class);
-    }
-
-    @Override
-    public ActivationState getActivationState() throws NotAvailableException {
-        return getData().getActivationState();
-    }
+public class AgentRemote extends org.openbase.bco.dal.remote.unit.agent.AgentRemote {
 }

@@ -21,39 +21,11 @@ package org.openbase.bco.manager.scene.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
-import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
-import org.openbase.bco.manager.scene.lib.Scene;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionConfigType;
-import rst.domotic.unit.scene.SceneDataType.SceneData;
-import rst.domotic.state.ActivationStateType.ActivationState;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @deprecated please user org.openbase.bco.dal.lib.layer.unit.scene.Scene
  */
-public class SceneRemote extends AbstractUnitRemote<SceneData> implements Scene {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionConfigType.ActionConfig.getDefaultInstance()));
-    }
-
-    public SceneRemote() {
-        super(SceneData.class);
-    }
-
-    public Future<Void> setActivationState(ActivationState.State activationState) throws CouldNotPerformException {
-        return setActivationState(ActivationState.newBuilder().setValue(activationState).build());
-    }
-
-    @Override
-    public Future<Void> setActivationState(ActivationState activation) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(activation, this, Void.class);
-    }
+public class SceneRemote extends org.openbase.bco.dal.remote.unit.scene.SceneRemote {
 }

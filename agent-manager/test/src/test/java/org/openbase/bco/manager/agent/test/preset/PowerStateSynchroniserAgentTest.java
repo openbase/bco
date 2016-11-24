@@ -35,7 +35,7 @@ import org.openbase.bco.dal.remote.unit.DimmerRemote;
 import org.openbase.bco.dal.remote.unit.PowerSwitchRemote;
 import org.openbase.bco.manager.agent.core.AgentManagerLauncher;
 import org.openbase.bco.manager.agent.core.preset.PowerStateSynchroniserAgent;
-import org.openbase.bco.manager.agent.remote.AgentRemote;
+import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;

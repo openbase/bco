@@ -21,18 +21,12 @@ package org.openbase.bco.manager.device.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-import org.openbase.jul.extension.rst.iface.ScopeProvider;
-import org.openbase.jul.iface.Activatable;
-import org.openbase.jul.iface.Configurable;
-import org.openbase.jul.iface.Identifiable;
-import org.openbase.jul.iface.provider.LabelProvider;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ *
+ * @deprecated please use org.openbase.bco.dal.lib.layer.unit.device.Device
  */
-public interface Device extends ScopeProvider, LabelProvider, Identifiable<String>, Activatable, Configurable<String, UnitConfig> {
+public interface Device extends org.openbase.bco.dal.lib.layer.unit.device.Device {
 
 }
