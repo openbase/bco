@@ -67,6 +67,7 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
         // not needed for virtual registries.
     }
 
+    
     @Override
     protected void registerDependencies() throws CouldNotPerformException {
         // not needed for virtual registries.
@@ -81,7 +82,7 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
     protected void registerRegistries() throws CouldNotPerformException {
         // not needed for virtual registries.
     }
-
+    
     @Override
     protected void registerPlugins() throws CouldNotPerformException, InterruptedException {
         // not needed for virtual registries.
