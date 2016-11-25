@@ -36,14 +36,14 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public class UnitEnablingStateConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
-    private static final EnablingState DEFAULT_ENABLING_STAT = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
+    private static final EnablingState DEFAULT_ENABLING_STATE = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
 
-        if (!unitConfig.hasEnablingState() || !unitConfig.getEnablingState().hasValue() || unitConfig.getEnablingState().getValue().equals(EnablingState.State.UNKNOWN)) {
-            throw new EntryModification(entry.setMessage(unitConfig.setEnablingState(DEFAULT_ENABLING_STAT)), this);
+        if (!unitConfig.hasEnablingState() || !unitConfig.getEnablingState().hasValue() || unitConfig.getEnablingState().getValue() == EnablingState.State.UNKNOWN) {
+            throw new EntryModification(entry.setMessage(unitConfig.setEnablingState(DEFAULT_ENABLING_STATE)), this);
         }
     }
 
