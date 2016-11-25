@@ -21,70 +21,11 @@ package org.openbase.bco.manager.user.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
-import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
-import org.openbase.bco.manager.user.lib.User;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.UserActivityStateType.UserActivityState;
-import rst.domotic.unit.user.UserConfigType.UserConfig;
-import rst.domotic.unit.user.UserDataType.UserData;
-import rst.domotic.state.UserPresenceStateType.UserPresenceState;
-import rst.domotic.state.ActivationStateType.ActivationState;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @deprecated please user org.openbase.bco.dal.remote.unit.user.UserRemote
  */
-public class UserRemote extends AbstractUnitRemote<UserData> implements User {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserConfig.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
-    }
-
-    public UserRemote() {
-        super(UserData.class);
-    }
-
-    @Override
-    public String getUserName() throws NotAvailableException {
-        try {
-            return getConfig().getUserConfig().getUserName();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("username", ex);
-        }
-    }
-
-    @Override
-    public UserActivityState getUserActivityState() throws NotAvailableException {
-        try {
-            return getData().getUserActivityState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("user activity", ex);
-        }
-    }
-
-    @Override
-    public UserPresenceState getUserPresenceState() throws NotAvailableException {
-        try {
-            return getData().getUserPresenceState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("user presence state", ex);
-        }
-    }
-
-    @Override
-    public Future<Void> setUserActivityState(UserActivityState UserActivityState) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(UserActivityState, this, Void.class);
-    }
-
-    @Override
-    public Future<Void> setUserPresenceState(UserPresenceState userPresenceState) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(userPresenceState, this, Void.class);
-    }
+public class UserRemote extends org.openbase.bco.dal.remote.unit.user.UserRemote {
 }

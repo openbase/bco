@@ -1,11 +1,5 @@
 package org.openbase.bco.manager.app.lib;
 
-import java.util.concurrent.Future;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.iface.Configurable;
-import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-
 /*
  * #%L
  * COMA AppManager Library
@@ -29,9 +23,8 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @deprecated please use org.openbase.bco.dal.lib.layer.unit.app.App
  */
-public interface App extends Configurable<String, UnitConfig> {
-
-    public Future<Void> setActivationState(ActivationState activation) throws CouldNotPerformException;
+public interface App extends org.openbase.bco.dal.lib.layer.unit.app.App {
 }

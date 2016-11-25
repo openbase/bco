@@ -25,7 +25,7 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.openbase.bco.manager.scene.remote.SceneRemote;
+import org.openbase.bco.dal.remote.unit.scene.SceneRemote;
 import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;

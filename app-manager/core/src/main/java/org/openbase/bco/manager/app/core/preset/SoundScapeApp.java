@@ -21,7 +21,7 @@ package org.openbase.bco.manager.app.core.preset;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.manager.agent.remote.AgentRemote;
+import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.manager.app.core.AbstractApp;
 import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;

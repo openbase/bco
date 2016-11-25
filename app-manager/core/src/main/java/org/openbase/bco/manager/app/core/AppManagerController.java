@@ -50,14 +50,12 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
     private final ControllerRegistry<String, AppController> appRegistry;
     private final AppRegistryRemote appRegistryRemote;
     private final EnableableEntryRegistrySynchronizer<String, AppController, UnitConfig, UnitConfig.Builder> appRegistrySynchronizer;
-//    private final DeviceRegistryRemote deviceRegistryRemote;
 
     public AppManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             this.instance = this;
             this.factory = AppFactoryImpl.getInstance();
             this.appRegistry = new ControllerRegistry<>();
-//            this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.appRegistryRemote = new AppRegistryRemote();
 
             this.appRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AppController, UnitConfig, UnitConfig.Builder>(appRegistry, appRegistryRemote.getAppConfigRemoteRegistry(), factory) {
@@ -84,7 +82,6 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
     public void init() throws InitializationException, InterruptedException {
         try {
             appRegistryRemote.init();
-//            deviceRegistryRemote.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -93,9 +90,10 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         appRegistryRemote.activate();
+        
+        // TODO: pleminoq: let us analyse why this wait For data is needed. Without the sychnchronizer sync task is interrupted. And why is this never happening in the unit tests???
+        appRegistryRemote.waitForData();
         appRegistrySynchronizer.activate();
-//            deviceRegistryRemote.activate();
-//            deviceRegistryRemote.waitForData();
     }
 
     @Override
@@ -113,13 +111,6 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
     public void shutdown() {
         appRegistrySynchronizer.shutdown();
         appRegistryRemote.shutdown();
-//        this.deviceRegistryRemote.shutdown();
-//        this.deviceRegistryRemote.shutdown();
         instance = null;
     }
-
-//    @Override
-//    public DeviceRegistry getDeviceRegistry() throws NotAvailableException {
-//        return this.deviceRegistryRemote;
-//    }
 }

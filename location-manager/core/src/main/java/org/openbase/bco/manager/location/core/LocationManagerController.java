@@ -28,7 +28,6 @@ import org.openbase.bco.manager.location.lib.LocationFactory;
 import org.openbase.bco.manager.location.lib.LocationManager;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
-import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -51,7 +50,6 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
 
     private static LocationManagerController instance;
     private final LocationRegistryRemote locationRegistryRemote;
-//    private final DeviceRegistryRemote deviceRegistryRemote;
     private final LocationFactory locationFactory;
     private final ConnectionFactory connectionFactory;
     private final ControllerRegistry<String, LocationController> locationRegistry;
@@ -63,7 +61,6 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
         try {
             this.instance = this;
             this.locationRegistryRemote = new LocationRegistryRemote();
-//            this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.locationFactory = LocationFactoryImpl.getInstance();
             this.connectionFactory = ConnectionFactoryImpl.getInstance();
             this.locationRegistry = new ControllerRegistry<>();
@@ -98,7 +95,6 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
     public void init() throws InitializationException, InterruptedException {
         try {
             locationRegistryRemote.init();
-//            deviceRegistryRemote.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -107,6 +103,12 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         locationRegistryRemote.activate();
+//        CachedLocationRegistryRemote.waitForData();
+        // TODO: pleminoq: let us analyse why this wait For Datta is needed. Without the sychnchronizer sync task is interrupted. And why is this never happening in the unit tests???
+        locationRegistryRemote.waitForData();
+//        System.out.println("Locations: "+CachedLocationRegistryRemote.getRegistry().getLocationConfigs().size());
+//        System.out.println("Connection: "+CachedLocationRegistryRemote.getRegistry().getConnectionConfigs().size());
+//        System.out.println("Loc: "+locationRegistryRemote.getLocationConfigs().size());
         locationRegistrySynchronizer.activate();
         connectionRegistrySynchronizer.activate();
     }

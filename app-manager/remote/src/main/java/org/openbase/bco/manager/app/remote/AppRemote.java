@@ -21,33 +21,11 @@ package org.openbase.bco.manager.app.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
-import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
-import org.openbase.bco.manager.app.lib.App;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.unit.app.AppDataType.AppData;
-import rst.domotic.state.ActivationStateType.ActivationState;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @deprecated please use org.openbase.bco.dal.remote.unit.agent.AppRemote
  */
-public class AppRemote extends AbstractUnitRemote<AppData> implements App {
-
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
-    }
-
-    public AppRemote() {
-        super(AppData.class);
-    }
-
-    @Override
-    public Future<Void> setActivationState(ActivationState activation) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(activation, this, Void.class);
-    }
+public class AppRemote extends org.openbase.bco.dal.remote.unit.app.AppRemote {
 }

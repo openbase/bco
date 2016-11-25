@@ -31,7 +31,7 @@ import javax.swing.JOptionPane;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.openbase.bco.dal.visual.util.StatusPanel;
-import org.openbase.bco.manager.scene.remote.SceneRemote;
+import org.openbase.bco.dal.remote.unit.scene.SceneRemote;
 import org.openbase.bco.manager.scene.visual.LocationSelectorPanel.LocationUnitConfigHolder;
 import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;

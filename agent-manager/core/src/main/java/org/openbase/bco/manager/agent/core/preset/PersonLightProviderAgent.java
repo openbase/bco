@@ -23,7 +23,7 @@ package org.openbase.bco.manager.agent.core.preset;
  */
 import org.openbase.bco.dal.lib.detector.PresenseDetector;
 import org.openbase.bco.manager.agent.core.AbstractAgent;
-import org.openbase.bco.manager.location.remote.LocationRemote;
+import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;

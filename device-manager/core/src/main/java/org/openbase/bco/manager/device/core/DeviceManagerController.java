@@ -157,6 +157,9 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
         deviceRegistryRemote.activate();
         locationRegistryRemote.activate();
         locationRegistryRemote.waitForData();
+        
+        // TODO: pleminoq: let us analyse why this wait For data is needed. Without the sychnchronizer sync task is interrupted. And why is this never happening in the unit tests???
+        deviceRegistryRemote.waitForData();
         deviceRegistrySynchronizer.activate();
     }
 

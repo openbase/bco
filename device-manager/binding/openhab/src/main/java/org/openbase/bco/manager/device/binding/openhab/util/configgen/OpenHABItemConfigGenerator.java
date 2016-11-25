@@ -200,6 +200,12 @@ public class OpenHABItemConfigGenerator {
                             continue;
                         }
 
+                        if (serviceConfig.getServiceTemplate().getPattern() == ServiceTemplate.ServicePattern.PROVIDER) {
+                            if (unitHasServiceAsOperationService(unitConfig, serviceConfig.getServiceTemplate().getType())) {
+                                continue;
+                            }
+                        }
+
                         serviceTypeSet.add(serviceConfig.getServiceTemplate().getType());
                         try {
                             itemEntryList.add(new ServiceItemEntry(deviceClass, deviceUnitConfig.getMetaConfig(), unitConfig, serviceConfig, locationRegistryRemote));
@@ -303,5 +309,10 @@ public class OpenHABItemConfigGenerator {
 
     public void shutdown() {
 
+    }
+
+    private boolean unitHasServiceAsOperationService(UnitConfig unitConfig, ServiceType serviceType) {
+        return unitConfig.getServiceConfigList().stream().anyMatch((tmpServiceConfig) -> (tmpServiceConfig.getServiceTemplate().getType() == serviceType
+                && tmpServiceConfig.getServiceTemplate().getPattern() == ServiceTemplate.ServicePattern.OPERATION));
     }
 }
