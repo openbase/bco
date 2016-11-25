@@ -108,4 +108,9 @@ public class UnitConfigProcessor {
             }
         }
     }
+
+    public static void verifyUnit(final UnitConfig unitConfig) throws VerificationFailedException {
+        verifyUnitConfig(unitConfig, unitConfig.getType());
+        verifyUnitType(unitConfig, unitConfig.getType());
+    }
 }

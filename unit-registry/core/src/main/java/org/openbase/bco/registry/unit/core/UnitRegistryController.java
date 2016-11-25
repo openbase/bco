@@ -30,6 +30,7 @@ import org.openbase.bco.registry.app.remote.AppRegistryRemote;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
 import org.openbase.bco.registry.unit.core.consistency.DeviceInventoryStateConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.ExecutableUnitAutostartConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.ServiceConfigUnitIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitConfigUnitTemplateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitEnablingStateConsistencyHandler;
@@ -46,13 +47,13 @@ import org.openbase.bco.registry.unit.core.consistency.connectionconfig.Connecti
 import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionTilesConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionTransformationFrameConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.SyncBindingConfigDeviceClassUnitConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.DalUnitEnablingStateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.DalUnitHostIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.DalUnitLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.DalUnitLocationIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.DalUnitScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.OpenhabServiceConfigItemIdConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.SyncBindingConfigDeviceClassUnitConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.UnitBoundToHostConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.UnitTransformationFrameConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.deviceconfig.DeviceConfigDeviceClassIdConsistencyHandler;
@@ -263,12 +264,14 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         agentUnitConfigRegistry.registerConsistencyHandler(new AgentLabelConsistencyHandler());
         agentUnitConfigRegistry.registerConsistencyHandler(new AgentLocationConsistencyHandler(locationUnitConfigRegistry));
         agentUnitConfigRegistry.registerConsistencyHandler(new AgentScopeConsistencyHandler(locationUnitConfigRegistry, agentRegistryRemote.getAgentClassRemoteRegistry()));
+        agentUnitConfigRegistry.registerConsistencyHandler(new ExecutableUnitAutostartConsistencyHandler());
 
         //TODO: should be activated but fails in the current db version since appClasses have just been introduced
         //appConfigRegistry.registerConsistencyHandler(new AppConfigAppClassIdConsistencyHandler(appClassRegistry));
         appUnitConfigRegistry.registerConsistencyHandler(new AppLabelConsistencyHandler());
         appUnitConfigRegistry.registerConsistencyHandler(new AppLocationConsistencyHandler(locationUnitConfigRegistry));
         appUnitConfigRegistry.registerConsistencyHandler(new AppScopeConsistencyHandler(locationUnitConfigRegistry, appRegistryRemote.getAppClassRemoteRegistry()));
+        appUnitConfigRegistry.registerConsistencyHandler(new ExecutableUnitAutostartConsistencyHandler());
 
         authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorizationGroupConfigLabelConsistencyHandler());
         authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorizationGroupConfigScopeConsistencyHandler());
