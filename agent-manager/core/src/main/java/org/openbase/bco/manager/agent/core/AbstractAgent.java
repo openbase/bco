@@ -21,7 +21,6 @@ package org.openbase.bco.manager.agent.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.manager.agent.lib.Agent;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -60,6 +59,6 @@ public abstract class AbstractAgent extends AbstractExecutableController<AgentDa
 
     @Override
     public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
-        RPCHelper.registerInterface(Agent.class, this, server);
+        RPCHelper.registerInterface(org.openbase.bco.dal.lib.layer.unit.agent.Agent.class, this, server);
     }
 }
