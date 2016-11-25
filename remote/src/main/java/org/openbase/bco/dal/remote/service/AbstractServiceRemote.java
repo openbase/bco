@@ -60,8 +60,6 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  * @param <S> generic definition of the overall service type for this remote.
  * @param <ST> the corresponding state for the service type of this remote.
  */
-
-
 public abstract class AbstractServiceRemote<S extends Service, ST extends GeneratedMessage> implements Service, Manageable<UnitConfig> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
@@ -150,14 +148,14 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         try {
             if (!verifyServiceCompatibility(config, serviceType)) {
-                throw new NotSupportedException("Unit template is not compatible with given ServiceType[" + serviceType.name() + "]!", config.getId(), this);
+                throw new NotSupportedException("UnitTemplate[" + serviceType.name() + "]", config.getLabel());
             }
 
             UnitRemote remote = factory.newInitializedInstance(config);
             try {
                 serviceMap.put(config.getId(), (S) remote);
             } catch (ClassCastException ex) {
-                throw new NotSupportedException("Remote does not implement service interface!", remote, this, ex);
+                throw new NotSupportedException("ServiceInterface[" + serviceType.name() + "]", remote, "Remote does not implement the service interface!", ex);
             }
 
             unitRemoteMap.put(config.getId(), remote);
@@ -176,10 +174,10 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      */
     public void init(final Collection<UnitConfig> configs) throws InitializationException, InterruptedException {
         try {
-            if(configs.isEmpty()) {
+            if (configs.isEmpty()) {
                 throw new NotAvailableException("UnitConfigs");
             }
-            
+
             MultiException.ExceptionStack exceptionStack = null;
             for (UnitConfig config : configs) {
                 try {
@@ -329,5 +327,13 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
     public static boolean verifyServiceCompatibility(final UnitConfig unitConfig, final ServiceType serviceType) {
         return unitConfig.getServiceConfigList().stream().anyMatch((serviceConfig) -> (serviceConfig.getServiceTemplate().getType() == serviceType));
+    }
+
+    @Override
+    public String toString() {
+        if (serviceType == null) {
+            return getClass().getSimpleName() + "[serviceType: ? ]";
+        }
+        return getClass().getSimpleName() + "[serviceType:" + serviceType.name() + "]";
     }
 }
