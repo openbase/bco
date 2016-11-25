@@ -21,9 +21,6 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -61,5 +58,10 @@ public class UnitProcessor {
         } catch (NotAvailableException ex) {
             throw new VerificationFailedException("Could not verify unit type!", ex);
         }
+    }
+
+    public static void verifyUnit(final Unit unit) throws VerificationFailedException {
+        verifyUnitConfig(unit);
+        verifyUnitType(unit);
     }
 }
