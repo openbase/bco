@@ -46,18 +46,17 @@ public class AgentManagerController implements AgentManager, Launchable<Void>, V
     protected static final Logger LOGGER = LoggerFactory.getLogger(AgentManagerController.class);
 
     private static AgentManagerController instance;
+
     private final AgentFactory factory;
     private final ControllerRegistry<String, AgentController> agentRegistry;
     private final AgentRegistryRemote agentRegistryRemote;
     private final EnableableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder> agentRegistrySynchronizer;
-//    private final DeviceRegistryRemote deviceRegistryRemote;
 
     public AgentManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             this.instance = this;
             this.factory = AgentFactoryImpl.getInstance();
             this.agentRegistry = new ControllerRegistry<>();
-//            this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.agentRegistryRemote = new AgentRegistryRemote();
 
             this.agentRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder>(agentRegistry, agentRegistryRemote.getAgentConfigRemoteRegistry(), factory) {
@@ -84,7 +83,6 @@ public class AgentManagerController implements AgentManager, Launchable<Void>, V
     public void init() throws InitializationException, InterruptedException {
         try {
             agentRegistryRemote.init();
-//            deviceRegistryRemote.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -98,7 +96,6 @@ public class AgentManagerController implements AgentManager, Launchable<Void>, V
         agentRegistryRemote.waitForData();
         
         agentRegistrySynchronizer.activate();
-//        deviceRegistryRemote.activate();
     }
 
     @Override
@@ -110,25 +107,17 @@ public class AgentManagerController implements AgentManager, Launchable<Void>, V
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         agentRegistrySynchronizer.deactivate();
         agentRegistryRemote.deactivate();
-//        deviceRegistryRemote.deactivate();
     }
 
     @Override
     public void shutdown() {
         agentRegistrySynchronizer.shutdown();
         agentRegistryRemote.shutdown();
-//        deviceRegistryRemote.shutdown();
         instance = null;
     }
-
-//    @Override
-//    public DeviceRegistry getDeviceRegistry() throws NotAvailableException {
-//        return deviceRegistryRemote;
-//    }
 
     @Override
     public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
         agentRegistryRemote.waitForData(timeout, timeUnit);
-//        deviceRegistryRemote.waitForData(timeout, timeUnit);
     }
 }

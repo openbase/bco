@@ -45,7 +45,7 @@ public class PersonLightProviderAgent extends AbstractAgent {
     private PresenseDetector presenseDetector;
 
     public PersonLightProviderAgent() throws InstantiationException, CouldNotPerformException, InterruptedException {
-        super(false);
+        super();
     }
 
     @Override

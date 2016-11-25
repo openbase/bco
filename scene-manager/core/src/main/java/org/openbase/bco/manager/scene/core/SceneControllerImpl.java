@@ -37,23 +37,23 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.AbstractExecutableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionConfigType.ActionConfig;
-import rst.domotic.unit.scene.SceneDataType.SceneData;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.ButtonStateType.ButtonState;
-import rst.domotic.unit.dal.ButtonDataType.ButtonData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
+import rst.domotic.unit.dal.ButtonDataType.ButtonData;
+import rst.domotic.unit.scene.SceneDataType.SceneData;
 
 /**
  *
- UnitConfig
+ * UnitConfig
  */
 public class SceneControllerImpl extends AbstractExecutableController<SceneData, SceneData.Builder, UnitConfig> implements SceneController {
 
@@ -71,17 +71,13 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
     private DeviceRegistry deviceRegistry;
 
     public SceneControllerImpl() throws org.openbase.jul.exception.InstantiationException {
-        super(SceneData.newBuilder(), false);
+        super(SceneData.newBuilder());
         this.buttonRemoteList = new ArrayList<>();
         this.actionList = new ArrayList<>();
 
-        this.buttonObserver = new Observer<ButtonData>() {
-
-            @Override
-            public void update(final Observable<ButtonData> source, ButtonData data) throws Exception {
-                if (data.getButtonState().getValue().equals(ButtonState.State.PRESSED)) {
-                    setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
-                }
+        this.buttonObserver = (final Observable<ButtonData> source, ButtonData data) -> {
+            if (data.getButtonState().getValue().equals(ButtonState.State.PRESSED)) {
+                setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
             }
         };
     }

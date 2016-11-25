@@ -21,19 +21,17 @@ package org.openbase.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.detector.PresenseDetector;
 import java.util.concurrent.ExecutionException;
+import org.openbase.bco.dal.lib.detector.PresenseDetector;
 import org.openbase.bco.manager.agent.core.AbstractAgent;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
 import rst.domotic.action.SnapshotType.Snapshot;
-import rst.domotic.state.MotionStateType.MotionState;
 
 /**
  *
@@ -51,7 +49,7 @@ public class StandbyAgent extends AbstractAgent {
     private Snapshot snapshot;
 
     public StandbyAgent() throws InstantiationException, CouldNotPerformException, InterruptedException {
-        super(false);
+        super();
 
         this.standby = false;
 

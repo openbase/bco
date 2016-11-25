@@ -30,7 +30,6 @@ import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactory;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.openbase.bco.manager.agent.core.AbstractAgent;
-import org.openbase.bco.manager.agent.core.AgentManagerController;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -80,13 +79,12 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
     private UnitRegistry unitRegistry;
 
     public PowerStateSynchroniserAgent() throws InstantiationException, CouldNotPerformException {
-        super(true);
+        super();
         this.factory = UnitRemoteFactoryImpl.getInstance();
 
         // initialize observer
         sourceObserver = (final Observable<GeneratedMessage> source, GeneratedMessage data) -> {
             sourceLatestPowerState = invokeGetPowerState(data).getValue();
-            System.out.println("Received new value [" + sourceLatestPowerState + "] for source");
             logger.info("Received new value [" + sourceLatestPowerState + "] for source");
             if (sourceLatestPowerState == PowerState.State.OFF) {
                 if (targetLatestPowerState != PowerState.State.OFF) {
