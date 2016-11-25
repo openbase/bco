@@ -21,20 +21,18 @@ package org.openbase.bco.manager.app.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.manager.app.lib.App;
 import org.openbase.bco.manager.app.lib.AppController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.rsb.com.AbstractExecutableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.unit.app.AppConfigType.AppConfig;
-import rst.domotic.unit.app.AppDataType.AppData;
 import rst.domotic.state.ActivationStateType.ActivationState;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.app.AppDataType.AppData;
 
 /**
  *
@@ -48,7 +46,7 @@ public abstract class AbstractApp extends AbstractExecutableController<AppData, 
     }
 
     public AbstractApp(boolean autostart) throws org.openbase.jul.exception.InstantiationException {
-        super(AppData.newBuilder(), autostart);
+        super(AppData.newBuilder());
     }
 
     @Override

@@ -138,7 +138,7 @@ public class AmbientColorAgent extends AbstractAgent {
     private final Random random;
 
     public AmbientColorAgent() throws InstantiationException, InterruptedException, CouldNotPerformException {
-        super(false);
+        super();
         logger.info("Creating AmbienColorAgent");
         random = new Random();
     }

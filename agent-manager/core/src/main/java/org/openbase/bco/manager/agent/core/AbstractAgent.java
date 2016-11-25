@@ -28,13 +28,13 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.rsb.com.AbstractExecutableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.agent.AgentDataType;
 import rst.domotic.unit.agent.AgentDataType.AgentData;
-import rst.domotic.state.ActivationStateType.ActivationState;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -48,8 +48,8 @@ public abstract class AbstractAgent extends AbstractExecutableController<AgentDa
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
     }
 
-    public AbstractAgent(boolean autostart) throws InstantiationException {
-        super(AgentDataType.AgentData.newBuilder(), autostart);
+    public AbstractAgent() throws InstantiationException {
+        super(AgentDataType.AgentData.newBuilder());
     }
 
     @Override
