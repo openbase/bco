@@ -25,8 +25,10 @@ import java.io.File;
 import java.nio.charset.Charset;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import org.apache.commons.io.FileUtils;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.AbstractItemEntry;
@@ -217,17 +219,22 @@ public class OpenHABItemConfigGenerator {
             }
 
             for (UnitConfig locationUnitConfig : locationRegistryRemote.getLocationConfigs()) {
-                List<ServiceTemplate> serviceTemplatesOnLocation = new ArrayList<>();
+                Map<ServiceType, ServiceTemplate> serviceTemplatesOnLocation = new HashMap<>();
                 for (UnitConfig unitConfig : unitRegistry.getUnitConfigs()) {
                     if (locationUnitConfig.getLocationConfig().getUnitIdList().contains(unitConfig.getId())) {
                         for (ServiceTemplate serviceTemplate : unitRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTemplateList()) {
-                            if (!serviceTemplatesOnLocation.contains(serviceTemplate)) {
-                                serviceTemplatesOnLocation.add(serviceTemplate);
+                            if (!serviceTemplatesOnLocation.containsKey(serviceTemplate.getType())) {
+                                serviceTemplatesOnLocation.put(serviceTemplate.getType(), serviceTemplate);
+                            } else {
+                                if (serviceTemplatesOnLocation.get(serviceTemplate.getType()).getPattern() == ServiceTemplate.ServicePattern.PROVIDER
+                                        && serviceTemplate.getPattern() == ServiceTemplate.ServicePattern.OPERATION) {
+                                    serviceTemplatesOnLocation.put(serviceTemplate.getType(), serviceTemplate);
+                                }
                             }
                         }
                     }
                 }
-                for (ServiceTemplate serviceTemplate : serviceTemplatesOnLocation) {
+                for (ServiceTemplate serviceTemplate : serviceTemplatesOnLocation.values()) {
                     if (serviceTemplate.getType() == ServiceType.COLOR_STATE_SERVICE
                             || serviceTemplate.getType() == ServiceType.POWER_STATE_SERVICE
                             || serviceTemplate.getType() == ServiceType.POWER_CONSUMPTION_STATE_SERVICE) {
