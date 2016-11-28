@@ -88,12 +88,8 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
     }
 
     private void initDynamicComponents() {
-        locationRegistryRemote.addDataObserver(new Observer<LocationRegistryData>() {
-
-            @Override
-            public void update(final Observable<LocationRegistryData> source, LocationRegistryData data) throws Exception {
-                updateDynamicComponents();
-            }
+        locationRegistryRemote.addDataObserver((final Observable<LocationRegistryData> source, LocationRegistryData data) -> {
+            updateDynamicComponents();
         });
         updateDynamicComponents();
     }
@@ -116,10 +112,8 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
                     ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
                 }
             }
-        } else {
-            if (enableAllLocation) {
-                selectedLocationConfigHolder = ALL_LOCATION;
-            }
+        } else if (enableAllLocation) {
+            selectedLocationConfigHolder = ALL_LOCATION;
         }
 
         try {
@@ -188,16 +182,16 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
     }// </editor-fold>//GEN-END:initComponents
 
     private void locationComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_locationComboBoxActionPerformed
-        //no change id the same location has been selected
-        if (locationComboBox.getSelectedIndex() == -1 || (selectedLocationConfigHolder != null && selectedLocationConfigHolder.getConfig().getId().equals(((LocationUnitConfigHolder) locationComboBox.getSelectedItem()).getConfig().getId()))) {
-            return;
-        }
-
-        selectedLocationConfigHolder = (LocationUnitConfigHolder) locationComboBox.getSelectedItem();
         try {
+            //no change id the same location has been selected
+            if (locationComboBox.getSelectedIndex() == -1 || (selectedLocationConfigHolder != null && selectedLocationConfigHolder.getConfig().getId().equals(((LocationUnitConfigHolder) locationComboBox.getSelectedItem()).getConfig().getId()))) {
+                return;
+            }
+
+            selectedLocationConfigHolder = (LocationUnitConfigHolder) locationComboBox.getSelectedItem();
 //            logger.info("Notify observer with new location");
             locationConfigHolderObservable.notifyObservers(selectedLocationConfigHolder);
-        } catch (MultiException ex) {
+        } catch (MultiException | NullPointerException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify observers about location config change!", ex), logger, LogLevel.WARN);
         }
     }//GEN-LAST:event_locationComboBoxActionPerformed

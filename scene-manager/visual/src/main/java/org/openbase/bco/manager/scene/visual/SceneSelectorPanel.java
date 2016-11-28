@@ -51,6 +51,7 @@ import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType.Scope;
 import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
+import rst.domotic.state.EnablingStateType.EnablingState;
 
 /**
  *
@@ -119,30 +120,16 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
         locationRegistryRemote.activate();
         statusPanel.setStatus("Connection established.", StatusPanel.StatusType.INFO, 3);
 
-        locationRegistryRemote.addDataObserver(new Observer<LocationRegistryData>() {
-
-            @Override
-            public void update(final Observable<LocationRegistryData> source, LocationRegistryData data) throws Exception {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        updateDynamicComponents();
-                    }
-                });
-            }
+        locationRegistryRemote.addDataObserver((final Observable<LocationRegistryData> source, LocationRegistryData data) -> {
+            SwingUtilities.invokeLater(() -> {
+                updateDynamicComponents();
+            });
         });
 
-        deviceRegistryRemote.addDataObserver(new Observer<DeviceRegistryData>() {
-
-            @Override
-            public void update(final Observable<DeviceRegistryData> source, DeviceRegistryData data) throws Exception {
-                SwingUtilities.invokeLater(new Runnable() {
-                    @Override
-                    public void run() {
-                        updateDynamicComponents();
-                    }
-                });
-            }
+        deviceRegistryRemote.addDataObserver((final Observable<DeviceRegistryData> source, DeviceRegistryData data) -> {
+            SwingUtilities.invokeLater(() -> {
+                updateDynamicComponents();
+            });
         });
 
         init = true;
@@ -171,13 +158,6 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
             serviceTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(serviceTypeHolderList.toArray()));
             selectedServiceTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(serviceTypeHolderList.toArray()));
         });
-        //        locationRegistryRemote.addObserver(new Observer<LocationRegistryType.LocationRegistry>() {
-        //
-        //            @Override
-        //            public void update(Observable<LocationRegistryType.LocationRegistry> source, LocationRegistryType.LocationRegistry data) throws Exception {
-        //                updateDynamicComponents();
-        //            }
-        //        });
     }
 
     private void updateDynamicComponents() {
@@ -253,7 +233,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
                     for (UnitConfig config : deviceRegistryRemote.getUnitConfigs()) {
 
                         // ignore non installed units
-                        if (deviceRegistryRemote.getDeviceConfigById(config.getUnitHostId()).getDeviceConfig().getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                        if (!config.getEnablingState().getValue().equals(EnablingState.State.ENABLED)){
                             continue;
                         }
                         unitConfigHolderList.add(new UnitConfigHolder(config));
@@ -267,7 +247,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
                 } else {
                     for (UnitConfig config : deviceRegistryRemote.getUnitConfigs(selectedUnitType)) {
                         // ignore non installed units
-                        if (deviceRegistryRemote.getDeviceConfigById(config.getUnitHostId()).getDeviceConfig().getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                        if (!config.getEnablingState().getValue().equals(EnablingState.State.ENABLED)){
                             continue;
                         }
                         unitConfigHolderList.add(new UnitConfigHolder(config));

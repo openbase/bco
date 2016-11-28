@@ -155,7 +155,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
             switch (serviceType) {
                 
                 case BRIGHTNESS_STATE_SERVICE:
-                    // TODO pleminoq: This seems to cause in problems because
+                    // TODO pleminoq: This seems to cause in problems because units using this service in different ways.
                     ((ArrayList<BrightnessStateOperationService>) serviceMap.get(ServiceType.BRIGHTNESS_STATE_SERVICE)).add((BrightnessStateOperationService) unitRemote);
                     unitRemote.addDataObserver(new Observer() {
                         
@@ -206,7 +206,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                         
                         @Override
                         public void update(final Observable source, Object data) throws Exception {
-                            PowerConsumptionStateType.PowerConsumptionState powerConsumption = getPowerConsumptionState();
+                            PowerConsumptionState powerConsumption = getPowerConsumptionState();
                             try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                                 dataBuilder.getInternalBuilder().setPowerConsumptionState(powerConsumption);
                             } catch (Exception ex) {

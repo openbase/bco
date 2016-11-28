@@ -33,6 +33,7 @@ import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.openbase.bco.dal.visual.util.StatusPanel;
 import org.openbase.bco.dal.remote.unit.scene.SceneRemote;
 import org.openbase.bco.manager.scene.visual.LocationSelectorPanel.LocationUnitConfigHolder;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -70,11 +71,8 @@ public class SceneCreationPanel extends javax.swing.JPanel {
     }
 
     public void init() throws CouldNotPerformException, InterruptedException {
-        sceneRegistryRemote = new SceneRegistryRemote();
-        sceneRegistryRemote.init();
-        StatusPanel.getInstance().setStatus("Wait for scene manager connection...", StatusPanel.StatusType.INFO, sceneRegistryRemote.getDataFuture());
-        sceneRegistryRemote.activate();
-        StatusPanel.getInstance().setStatus("Wait for scene manager data...", StatusPanel.StatusType.INFO, sceneRegistryRemote.getDataFuture());
+        sceneRegistryRemote = Registries.getSceneRegistry();
+        StatusPanel.getInstance().setStatus("Wait for scene registry data...", StatusPanel.StatusType.INFO, sceneRegistryRemote.getDataFuture());
         sceneRegistryRemote.waitForData();
         StatusPanel.getInstance().setStatus("Scene registry loaded.", StatusPanel.StatusType.INFO, sceneRegistryRemote.getDataFuture());
         initDynamicComponents();
@@ -82,14 +80,8 @@ public class SceneCreationPanel extends javax.swing.JPanel {
     }
 
     private void initDynamicComponents() throws CouldNotPerformException, InitializationException, InterruptedException {
-        sceneRegistryRemote.addDataObserver(new Observer<SceneRegistryData>() {
-
-            @Override
-            public void update(final Observable<SceneRegistryData> source, SceneRegistryData data) throws Exception {
-
-                updateDynamicComponents();
-
-            }
+        sceneRegistryRemote.addDataObserver((final Observable<SceneRegistryData> source, SceneRegistryData data) -> {
+            updateDynamicComponents();
         });
         locationSelectorPanel.addObserver((final Observable<LocationSelectorPanel.LocationUnitConfigHolder> source, LocationSelectorPanel.LocationUnitConfigHolder data) -> {
             location = data;

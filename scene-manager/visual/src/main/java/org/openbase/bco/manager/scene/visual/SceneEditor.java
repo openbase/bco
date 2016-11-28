@@ -33,13 +33,14 @@ import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.visual.service.AbstractServicePanel;
 import org.openbase.bco.dal.visual.unit.GenericUnitPanel;
 import org.openbase.bco.dal.visual.unit.RemovableGenericUnitPanel;
+import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalExecutionService;
 import org.slf4j.LoggerFactory;
@@ -67,28 +68,24 @@ public class SceneEditor extends javax.swing.JFrame {
     }
 
     public SceneEditor init() throws InitializationException, InterruptedException {
-        sceneSelectorPanel.addObserver(new Observer<SceneSelectorPanel.UnitConfigServiceTypeHolder>() {
-
-            @Override
-            public void update(final Observable<SceneSelectorPanel.UnitConfigServiceTypeHolder> source, SceneSelectorPanel.UnitConfigServiceTypeHolder data) throws Exception {
-                genericUnitCollectionPanel.add(data.getConfig(), data.getServiceType(), true);
-            }
+        try {
+        sceneSelectorPanel.addObserver((final Observable<SceneSelectorPanel.UnitConfigServiceTypeHolder> source, SceneSelectorPanel.UnitConfigServiceTypeHolder data) -> {
+            genericUnitCollectionPanel.add(data.getConfig(), data.getServiceType(), true);
         });
-        sceneCreationPanel.addObserver(new Observer<List<ActionConfig>>() {
-
-            @Override
-            public void update(final Observable<List<ActionConfig>> source, List<ActionConfig> data) throws Exception {
-//                    logger.info("Update through new scene selected!");
-                genericUnitCollectionPanel.clearUnitPanel();
+        sceneCreationPanel.addObserver((final Observable<List<ActionConfig>> source, List<ActionConfig> data) -> {
+            //                    logger.info("Update through new scene selected!");
+            genericUnitCollectionPanel.clearUnitPanel();
 //                    logger.info("Cleared unit collection panel!");
-                for (ActionConfig action : data) {
+            for (ActionConfig action : data) {
 //                        logger.info("Adding new unit panel for action [" + action.getServiceAttributeType() + "][" + action.getServiceAttribute() + "]");
-                    Object value = serviceJSonProcessor.deserialize(action.getServiceAttribute(), action.getServiceAttributeType());
-                    genericUnitCollectionPanel.add(action.getUnitId(), action.getServiceType(), value, true);
-                }
+                Object value = serviceJSonProcessor.deserialize(action.getServiceAttribute(), action.getServiceAttributeType());
+                genericUnitCollectionPanel.add(action.getUnitId(), action.getServiceType(), value, true);
             }
         });
 
+        CachedLocationRegistryRemote.waitForData();
+        CachedUnitRegistryRemote.waitForData();
+        
         GlobalExecutionService.submit(() -> {
             try {
                 genericUnitCollectionPanel.init();
@@ -101,6 +98,9 @@ public class SceneEditor extends javax.swing.JFrame {
             }
         });
         return this;
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     /**
