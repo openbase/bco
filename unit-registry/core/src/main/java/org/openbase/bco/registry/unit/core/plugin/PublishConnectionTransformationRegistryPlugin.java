@@ -124,6 +124,8 @@ public class PublishConnectionTransformationRegistryPlugin extends FileRegistryP
 
     @Override
     public void shutdown() {
-        //TODO insert rct shutdown after implementation ;)
+        if (transformPublisher != null) {
+            transformPublisher.shutdown();
+        }
     }
 }

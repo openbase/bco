@@ -21,7 +21,6 @@ package org.openbase.bco.registry.unit.core.plugin;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -38,9 +37,9 @@ import rct.Transform;
 import rct.TransformPublisher;
 import rct.TransformType;
 import rct.TransformerFactory;
-import rst.geometry.PoseType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.geometry.PoseType;
 
 public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> {
 
@@ -148,6 +147,8 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
 
     @Override
     public void shutdown() {
-        //TODO insert rct shutdown after implementation ;)
+        if (transformPublisher != null) {
+            transformPublisher.shutdown();
+        }
     }
 }

@@ -144,6 +144,8 @@ public class PublishDalUnitTransformationRegistryPlugin extends FileRegistryPlug
 
     @Override
     public void shutdown() {
-        //TODO insert rct shutdown after implementation ;)
+        if (transformPublisher != null) {
+            transformPublisher.shutdown();
+        }
     }
 }
