@@ -67,7 +67,7 @@ public class CachedLocationRegistryRemote {
      * @return @throws InterruptedException
      * @throws NotAvailableException
      */
-    public synchronized static LocationRegistry getRegistry() throws InterruptedException, NotAvailableException {
+    public synchronized static LocationRegistryRemote getRegistry() throws InterruptedException, NotAvailableException {
         try {
             if (shutdown) {
                 throw new InvalidStateException("Remote service is shutting down!");

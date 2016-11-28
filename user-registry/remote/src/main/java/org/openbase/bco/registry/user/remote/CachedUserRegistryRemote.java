@@ -67,7 +67,7 @@ public class CachedUserRegistryRemote {
      * @return @throws InterruptedException
      * @throws NotAvailableException
      */
-    public synchronized static UserRegistry getRegistry() throws InterruptedException, NotAvailableException {
+    public synchronized static UserRegistryRemote getRegistry() throws InterruptedException, NotAvailableException {
         try {
             if (shutdown) {
                 throw new InvalidStateException("Remote service is shutting down!");

@@ -67,7 +67,7 @@ public class CachedDeviceRegistryRemote {
      * @return @throws InterruptedException
      * @throws NotAvailableException
      */
-    public synchronized static DeviceRegistry getRegistry() throws InterruptedException, NotAvailableException {
+    public synchronized static DeviceRegistryRemote getRegistry() throws InterruptedException, NotAvailableException {
         try {
             if (shutdown) {
                 throw new InvalidStateException("Remote service is shutting down!");

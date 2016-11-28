@@ -182,6 +182,7 @@
         <module>app-registry</module>
         <module>unit-registry</module>
         <module>user-registry</module>
+        <module>remote</module>
         <module>util</module>
         <module>lib</module>
     </modules>

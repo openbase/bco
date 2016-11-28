@@ -68,7 +68,7 @@ public class CachedSceneRegistryRemote {
      * @return @throws InterruptedException
      * @throws NotAvailableException
      */
-    public synchronized static SceneRegistry getRegistry() throws InterruptedException, NotAvailableException {
+    public synchronized static SceneRegistryRemote getRegistry() throws InterruptedException, NotAvailableException {
         try {
             if (shutdown) {
                 throw new InvalidStateException("Remote service is shutting down!");

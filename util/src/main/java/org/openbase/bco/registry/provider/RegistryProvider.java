@@ -27,6 +27,7 @@ import org.openbase.bco.registry.app.lib.provider.AppRegistryProvider;
 import org.openbase.bco.registry.device.lib.provider.DeviceRegistryProvider;
 import org.openbase.bco.registry.location.lib.provider.LocationRegistryProvider;
 import org.openbase.bco.registry.scene.lib.provider.SceneRegistryProvider;
+import org.openbase.bco.registry.scene.lib.provider.UnitRegistryProvider;
 import org.openbase.bco.registry.user.lib.provider.UserRegistryProvider;
 
 /**
@@ -34,6 +35,6 @@ import org.openbase.bco.registry.user.lib.provider.UserRegistryProvider;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface RegistryProvider extends AgentRegistryProvider, AppRegistryProvider, DeviceRegistryProvider, LocationRegistryProvider, SceneRegistryProvider, UserRegistryProvider {
+public interface RegistryProvider extends UnitRegistryProvider, AgentRegistryProvider, AppRegistryProvider, DeviceRegistryProvider, LocationRegistryProvider, SceneRegistryProvider, UserRegistryProvider {
 
 }

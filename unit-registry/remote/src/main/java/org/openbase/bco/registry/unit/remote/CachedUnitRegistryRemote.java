@@ -24,7 +24,6 @@ package org.openbase.bco.registry.unit.remote;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -38,7 +37,7 @@ import org.slf4j.LoggerFactory;
  */
 public class CachedUnitRegistryRemote {
 
-    private static final Logger logger = LoggerFactory.getLogger(CachedUnitRegistryRemote.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CachedUnitRegistryRemote.class);
     private static UnitRegistryRemote unitRegistryRemote;
     private static boolean shutdown = false;
 
@@ -67,7 +66,7 @@ public class CachedUnitRegistryRemote {
      * @return @throws InterruptedException
      * @throws NotAvailableException
      */
-    public synchronized static UnitRegistry getRegistry() throws InterruptedException, NotAvailableException {
+    public synchronized static UnitRegistryRemote getRegistry() throws InterruptedException, NotAvailableException {
         try {
             if (shutdown) {
                 throw new InvalidStateException("Remote service is shutting down!");
@@ -83,7 +82,7 @@ public class CachedUnitRegistryRemote {
                         unitRegistryRemote.shutdown();
                         unitRegistryRemote = null;
                     }
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not start cached unit registry remote!", ex), logger);
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not start cached unit registry remote!", ex), LOGGER);
                 }
             }
             return unitRegistryRemote;

@@ -67,7 +67,7 @@ public class CachedAgentRegistryRemote {
      * @return @throws InterruptedException
      * @throws NotAvailableException
      */
-    public synchronized static AgentRegistry getRegistry() throws InterruptedException, NotAvailableException {
+    public synchronized static AgentRegistryRemote getRegistry() throws InterruptedException, NotAvailableException {
         try {
             if (shutdown) {
                 throw new InvalidStateException("Remote service is shutting down!");
