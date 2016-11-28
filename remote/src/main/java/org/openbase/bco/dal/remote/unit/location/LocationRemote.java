@@ -20,6 +20,7 @@ import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType.ColorState;
+import rst.domotic.state.PowerStateType.PowerState.State;
 import rst.domotic.state.SmokeStateType.SmokeState;
 import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.state.TamperStateType.TamperState;
@@ -122,12 +123,12 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         }
     }
 
-    public void setPowerState(PowerState.State state) throws CouldNotPerformException {
+    public void setPowerState(final State state) throws CouldNotPerformException {
         LocationRemote.this.setPowerState(PowerState.newBuilder().setValue(state).build());
     }
 
     @Override
-    public Future<Void> setPowerState(PowerState state) throws CouldNotPerformException {
+    public Future<Void> setPowerState(final PowerState state) throws CouldNotPerformException {
         return RPCHelper.callRemoteMethod(state, this, Void.class);
     }
 

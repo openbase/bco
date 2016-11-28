@@ -26,6 +26,7 @@ import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderServic
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.MotionStateType.MotionState;
+import rst.timing.TimestampType;
 
 /**
  *
@@ -45,12 +46,15 @@ public interface MotionStateProviderServiceCollection extends MotionStateProvide
     @Override
     default public MotionState getMotionState() throws NotAvailableException {
         try {
+            MotionState.Builder builder = MotionState.newBuilder().setValue(MotionState.State.NO_MOTION);
+            builder.getLastMotionBuilder().setTime(System.currentTimeMillis());
             for (MotionStateProviderService provider : getMotionStateProviderServices()) {
                 if (provider.getMotionState().getValue() == MotionState.State.MOTION) {
-                    return MotionState.newBuilder().setValue(MotionState.State.MOTION).build();
+                    builder.setValue(MotionState.State.MOTION).build();
+                    builder.getLastMotionBuilder().setTime(Math.max(builder.getLastMotion().getTime(), provider.getMotionState().getLastMotion().getTime()));
                 }
             }
-            return MotionState.newBuilder().setValue(MotionState.State.NO_MOTION).build();
+            return builder.build();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("MotionState", ex);
         }
