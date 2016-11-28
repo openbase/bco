@@ -123,8 +123,9 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
 
     @Override
     public void shutdown() {
-        if (transformPublisher != null) {
-            transformPublisher.shutdown();
-        }
+// TODO should be activated after rsb 16 adjustments.
+//        if (transformPublisher != null) {
+//            transformPublisher.shutdown();
+//        }
     }
 }
