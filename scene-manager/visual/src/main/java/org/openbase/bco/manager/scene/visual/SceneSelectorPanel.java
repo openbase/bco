@@ -45,7 +45,6 @@ import org.slf4j.LoggerFactory;
 import rst.domotic.registry.DeviceRegistryDataType.DeviceRegistryData;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.InventoryStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -119,6 +118,9 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
         statusPanel.setStatus("Connecting to location manager...", StatusPanel.StatusType.INFO, true);
         locationRegistryRemote.activate();
         statusPanel.setStatus("Connection established.", StatusPanel.StatusType.INFO, 3);
+
+        locationRegistryRemote.waitForData();
+        deviceRegistryRemote.waitForData();
 
         locationRegistryRemote.addDataObserver((final Observable<LocationRegistryData> source, LocationRegistryData data) -> {
             SwingUtilities.invokeLater(() -> {
@@ -233,7 +235,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
                     for (UnitConfig config : deviceRegistryRemote.getUnitConfigs()) {
 
                         // ignore non installed units
-                        if (!config.getEnablingState().getValue().equals(EnablingState.State.ENABLED)){
+                        if (!config.getEnablingState().getValue().equals(EnablingState.State.ENABLED)) {
                             continue;
                         }
                         unitConfigHolderList.add(new UnitConfigHolder(config));
@@ -247,7 +249,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
                 } else {
                     for (UnitConfig config : deviceRegistryRemote.getUnitConfigs(selectedUnitType)) {
                         // ignore non installed units
-                        if (!config.getEnablingState().getValue().equals(EnablingState.State.ENABLED)){
+                        if (!config.getEnablingState().getValue().equals(EnablingState.State.ENABLED)) {
                             continue;
                         }
                         unitConfigHolderList.add(new UnitConfigHolder(config));
@@ -273,6 +275,10 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
             UnitType selectedUnitType = ((UnitTypeHolder) unitTypeComboBox.getSelectedItem()).getType();
             serviceTypeHolderList.add(ALL_Service);
             for (ServiceTemplate serviceTemplate : deviceRegistryRemote.getUnitTemplateByType(selectedUnitType).getServiceTemplateList()) {
+                if (serviceTemplate.getPattern() != ServiceTemplate.ServicePattern.OPERATION) {
+                    continue;
+                }
+
                 serviceTypeHolderList.add(new ServiceTypeHolder(serviceTemplate.getType()));
             }
             Collections.sort(serviceTypeHolderList);

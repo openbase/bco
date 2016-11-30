@@ -30,8 +30,8 @@ import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
-import org.openbase.bco.dal.visual.util.StatusPanel;
 import org.openbase.bco.dal.remote.unit.scene.SceneRemote;
+import org.openbase.bco.dal.visual.util.StatusPanel;
 import org.openbase.bco.manager.scene.visual.LocationSelectorPanel.LocationUnitConfigHolder;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
@@ -51,6 +51,8 @@ import rst.domotic.registry.SceneRegistryDataType.SceneRegistryData;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.EnablingStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType;
+import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
 
 public class SceneCreationPanel extends javax.swing.JPanel {
 
@@ -248,8 +250,10 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         try {
             logger.info("Registering scene from new button");
             UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setLabel(label);
+            unitConfig.setType(UnitTemplateType.UnitTemplate.UnitType.SCENE);
             unitConfig.getPlacementConfigBuilder().setLocationId(location.getConfig().getId());
             unitConfig.setEnablingState(EnablingStateType.EnablingState.newBuilder().setValue(EnablingStateType.EnablingState.State.ENABLED));
+            unitConfig.setSceneConfig(SceneConfig.getDefaultInstance());
             lastSelected = sceneRegistryRemote.registerSceneConfig(unitConfig.build()).get();
             updateDynamicComponents();
             observable.notifyObservers(lastSelected.getSceneConfig().getActionConfigList());
@@ -275,36 +279,18 @@ public class SceneCreationPanel extends javax.swing.JPanel {
             return;
         }
 
+        // TODO: add statusPanel update?
         logger.info("Apply update...");
         SceneRemote sceneRemote = new SceneRemote();
         try {
             sceneRemote.init(lastSelected);
             applyUpdateButton.setBackground(Color.GRAY);
             sceneRemote.activate();
-            switch (sceneRemote.getData().getActivationState().getValue()) {
-                case ACTIVE:
-                    applyUpdateButton.setBackground(Color.GREEN.darker().darker());
-                    break;
-                case DEACTIVE:
-                    applyUpdateButton.setBackground(Color.BLUE.darker().darker());
-                    break;
-                case UNKNOWN:
-                    applyUpdateButton.setBackground(Color.YELLOW.darker());
-                    break;
-
-            }
-            sceneRemote.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
-            switch (sceneRemote.getData().getActivationState().getValue()) {
-                case ACTIVE:
-                    applyUpdateButton.setBackground(Color.GREEN.darker().darker());
-                    break;
-                case DEACTIVE:
-                    applyUpdateButton.setBackground(Color.BLUE.darker().darker());
-                    break;
-                case UNKNOWN:
-                    applyUpdateButton.setBackground(Color.YELLOW.darker());
-                    break;
-
+            sceneRemote.waitForData();
+            try {
+                sceneRemote.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()).get();
+            } catch (ExecutionException ex) {
+                throw new CouldNotPerformException("Could not activate scene [" + sceneRemote.getLabel() + "]", ex);
             }
         } catch (InterruptedException | CouldNotPerformException ex) {
             logger.warn("Could not apply update. Initialization and activation of scene remote failed!");
