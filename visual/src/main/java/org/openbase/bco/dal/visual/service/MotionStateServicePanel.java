@@ -142,7 +142,12 @@ public class MotionStateServicePanel extends AbstractServicePanel<MotionStatePro
             }
             motionStatusLabel.setText(StringProcessor.transformUpperCaseToCamelCase(getProviderService().getMotionState().getValue().name()));
             try {
+                if(getProviderService().getMotionState().getLastMotion().getTime() <= 0) {
+                    lastMovementValueLabel.setText("Never");
+                } else {
                 lastMovementValueLabel.setText(dateFormat.format(new Date(getProviderService().getMotionState().getLastMotion().getTime())));
+                    
+                }
             } catch (Exception ex) {
                 lastMovementValueLabel.setText("N/A");
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not format: [" + getProviderService().getMotionState().getLastMotion() + "]!", ex), logger, LogLevel.ERROR);
