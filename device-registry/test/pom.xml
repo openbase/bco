@@ -103,5 +103,11 @@
             <scope>test</scope>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.openbase</groupId>
+            <artifactId>jul.exception</artifactId>
+            <type>jar</type>
+            <version>1.2-SNAPSHOT</version>
+        </dependency>
     </dependencies>
 </project>
