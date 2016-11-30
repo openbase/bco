@@ -295,7 +295,7 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
                 throw new InvalidStateException("Given service is not compatible with registered unit!", ex);
             }
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not set ServiceConfig!");
+            throw new CouldNotPerformException("Could not set ServiceConfig!", ex);
         }
     }
 

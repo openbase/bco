@@ -25,11 +25,12 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.unit.app.App;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.unit.app.AppDataType.AppData;
 import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.unit.app.AppDataType.AppData;
 
 /**
  *
@@ -49,5 +50,10 @@ public class AppRemote extends AbstractUnitRemote<AppData> implements App {
     @Override
     public Future<Void> setActivationState(ActivationState activation) throws CouldNotPerformException {
         return RPCHelper.callRemoteMethod(activation, this, Void.class);
+    }
+
+    @Override
+    public ActivationState getActivationState() throws NotAvailableException {
+        return getData().getActivationState();
     }
 }

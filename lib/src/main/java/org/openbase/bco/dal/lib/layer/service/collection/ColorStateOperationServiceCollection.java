@@ -78,7 +78,8 @@ public interface ColorStateOperationServiceCollection extends ColorStateOperatio
             averageBlue = averageBlue / amount;
 
             HSBColor hsbColor = HSBColorToRGBColorTransformer.transform(new Color((int) averageRed, (int) averageGreen, (int) averageBlue));
-            return ColorState.newBuilder().setColor(ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB)).build();
+            ColorType.Color color = ColorType.Color.newBuilder().setHsbColor(hsbColor).setType(ColorType.Color.Type.HSB).build();
+            return ColorState.newBuilder().setColor(color).build();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("HSBColor", ex);
         }

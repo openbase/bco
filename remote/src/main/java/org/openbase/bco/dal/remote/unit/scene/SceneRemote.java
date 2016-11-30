@@ -25,12 +25,13 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.unit.scene.Scene;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionConfigType;
-import rst.domotic.unit.scene.SceneDataType.SceneData;
 import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.unit.scene.SceneDataType.SceneData;
 
 /**
  *
@@ -55,5 +56,10 @@ public class SceneRemote extends AbstractUnitRemote<SceneData> implements Scene 
     @Override
     public Future<Void> setActivationState(ActivationState activation) throws CouldNotPerformException {
         return RPCHelper.callRemoteMethod(activation, this, Void.class);
+    }
+
+    @Override
+    public ActivationState getActivationState() throws NotAvailableException {
+        return getData().getActivationState();
     }
 }

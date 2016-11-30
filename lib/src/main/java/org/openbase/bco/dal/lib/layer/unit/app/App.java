@@ -1,9 +1,7 @@
 package org.openbase.bco.dal.lib.layer.unit.app;
 
-import java.util.concurrent.Future;
-import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.jul.iface.Configurable;
-import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /*
@@ -29,9 +27,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface App extends Configurable<String, UnitConfig> {
-
-    public Future<Void> setActivationState(ActivationState activation) throws CouldNotPerformException;
+public interface App extends Configurable<String, UnitConfig>, ActivationStateOperationService {
 }
