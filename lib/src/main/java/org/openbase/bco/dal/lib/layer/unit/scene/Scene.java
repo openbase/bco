@@ -21,19 +21,15 @@ package org.openbase.bco.dal.lib.layer.unit.scene;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-import java.util.concurrent.Future;
-import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Identifiable;
-import rst.domotic.state.ActivationStateType;
 import rst.domotic.unit.UnitConfigType;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Scene extends Identifiable<String>, Configurable<String, UnitConfigType.UnitConfig> {
+public interface Scene extends Identifiable<String>, Configurable<String, UnitConfigType.UnitConfig>, ActivationStateOperationService {
 
-    public Future<Void> setActivationState(ActivationStateType.ActivationState activation) throws CouldNotPerformException;
 }

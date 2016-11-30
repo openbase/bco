@@ -59,55 +59,55 @@ public class ActivationStateServicePanel extends AbstractServicePanel<Activation
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        powerButton = new javax.swing.JButton();
-        powerStatePanel = new javax.swing.JPanel();
-        powerStatusLabel = new javax.swing.JLabel();
+        activationButton = new javax.swing.JButton();
+        activationStatePanel = new javax.swing.JPanel();
+        activationStatusLabel = new javax.swing.JLabel();
 
-        powerButton.setText("PowerButton");
-        powerButton.addActionListener(new java.awt.event.ActionListener() {
+        activationButton.setText("ActivationButton");
+        activationButton.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                powerButtonActionPerformed(evt);
+                activationButtonActionPerformed(evt);
             }
         });
 
-        powerStatePanel.setBackground(new java.awt.Color(204, 204, 204));
-        powerStatePanel.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 5, true));
-        powerStatePanel.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        activationStatePanel.setBackground(new java.awt.Color(204, 204, 204));
+        activationStatePanel.setBorder(new javax.swing.border.LineBorder(new java.awt.Color(0, 0, 0), 5, true));
+        activationStatePanel.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
 
-        powerStatusLabel.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
-        powerStatusLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        powerStatusLabel.setText("PowerState");
-        powerStatusLabel.setFocusable(false);
-        powerStatusLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
+        activationStatusLabel.setFont(new java.awt.Font("Dialog", 1, 14)); // NOI18N
+        activationStatusLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        activationStatusLabel.setText("ActivationState");
+        activationStatusLabel.setFocusable(false);
+        activationStatusLabel.setHorizontalTextPosition(javax.swing.SwingConstants.CENTER);
 
-        javax.swing.GroupLayout powerStatePanelLayout = new javax.swing.GroupLayout(powerStatePanel);
-        powerStatePanel.setLayout(powerStatePanelLayout);
-        powerStatePanelLayout.setHorizontalGroup(
-            powerStatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(powerStatusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
+        javax.swing.GroupLayout activationStatePanelLayout = new javax.swing.GroupLayout(activationStatePanel);
+        activationStatePanel.setLayout(activationStatePanelLayout);
+        activationStatePanelLayout.setHorizontalGroup(
+            activationStatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(activationStatusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 177, Short.MAX_VALUE)
         );
-        powerStatePanelLayout.setVerticalGroup(
-            powerStatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(powerStatusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
+        activationStatePanelLayout.setVerticalGroup(
+            activationStatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(activationStatusLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 23, Short.MAX_VALUE)
         );
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(powerStatePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(powerButton, javax.swing.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
+            .addComponent(activationStatePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(activationButton, javax.swing.GroupLayout.DEFAULT_SIZE, 187, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(powerStatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(activationStatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(powerButton))
+                .addComponent(activationButton))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void powerButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_powerButtonActionPerformed
+    private void activationButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_activationButtonActionPerformed
         try {
             switch (getOperationService().getActivationState().getValue()) {
                 case ACTIVE:
@@ -123,12 +123,12 @@ public class ActivationStateServicePanel extends AbstractServicePanel<Activation
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set activation state!", ex), logger);
         }
-    }//GEN-LAST:event_powerButtonActionPerformed
+    }//GEN-LAST:event_activationButtonActionPerformed
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JButton powerButton;
-    private javax.swing.JPanel powerStatePanel;
-    private javax.swing.JLabel powerStatusLabel;
+    private javax.swing.JButton activationButton;
+    private javax.swing.JPanel activationStatePanel;
+    private javax.swing.JLabel activationStatusLabel;
     // End of variables declaration//GEN-END:variables
 
     @Override
@@ -137,24 +137,24 @@ public class ActivationStateServicePanel extends AbstractServicePanel<Activation
             logger.info("state: " + getProviderService().getActivationState().getValue().name());
             switch (getProviderService().getActivationState().getValue()) {
                 case ACTIVE:
-                    powerStatusLabel.setForeground(Color.BLACK);
-                    powerStatePanel.setBackground(Color.GREEN.darker());
-                    powerButton.setText("Deactivate");
+                    activationStatusLabel.setForeground(Color.BLACK);
+                    activationStatePanel.setBackground(Color.GREEN.darker());
+                    activationButton.setText("Deactivate");
                     break;
                 case DEACTIVE:
-                    powerStatusLabel.setForeground(Color.LIGHT_GRAY);
-                    powerStatePanel.setBackground(Color.GRAY.darker());
-                    powerButton.setText("Activate");
+                    activationStatusLabel.setForeground(Color.LIGHT_GRAY);
+                    activationStatePanel.setBackground(Color.GRAY.darker());
+                    activationButton.setText("Activate");
                     break;
                 case UNKNOWN:
-                    powerStatusLabel.setForeground(Color.BLACK);
-                    powerStatePanel.setBackground(Color.ORANGE.darker());
-                    powerButton.setText("Activate");
+                    activationStatusLabel.setForeground(Color.BLACK);
+                    activationStatePanel.setBackground(Color.ORANGE.darker());
+                    activationButton.setText("Activate");
                     break;
                 default:
                     throw new InvalidStateException("State[" + getProviderService().getActivationState().getValue() + "] is unknown.");
             }
-            powerStatusLabel.setText("Current ActivationState = " + StringProcessor.transformUpperCaseToCamelCase(getProviderService().getActivationState().getValue().name()));
+            activationStatusLabel.setText("Current ActivationState = " + StringProcessor.transformUpperCaseToCamelCase(getProviderService().getActivationState().getValue().name()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }

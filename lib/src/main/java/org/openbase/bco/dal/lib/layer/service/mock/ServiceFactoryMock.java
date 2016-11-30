@@ -25,11 +25,11 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
+import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.IntensityStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
@@ -37,12 +37,11 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.action.ActionConfigType;
-import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.IntensityStateType;
+import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.StandbyStateType;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 
@@ -188,7 +187,7 @@ public class ServiceFactoryMock implements ServiceFactory {
             public IntensityStateType.IntensityState getIntensityState() throws NotAvailableException {
                 return ((IntensityStateOperationService) unit).getIntensityState();
             }
-            
+
         };
     }
 }
