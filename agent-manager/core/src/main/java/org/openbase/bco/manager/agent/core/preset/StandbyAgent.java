@@ -22,7 +22,7 @@ package org.openbase.bco.manager.agent.core.preset;
  * #L%
  */
 import java.util.concurrent.ExecutionException;
-import org.openbase.bco.dal.lib.detector.PresenseDetector;
+import org.openbase.bco.dal.remote.detector.PresenceDetector;
 import org.openbase.bco.manager.agent.core.AbstractAgent;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
@@ -41,7 +41,7 @@ public class StandbyAgent extends AbstractAgent {
 
     public static final long TIEMOUT = 900000;
     private LocationRemote locationRemote;
-    private PresenseDetector presenseDetector;
+    private PresenceDetector presenseDetector;
     private final Timeout timeout;
     private final SyncObject standbySync = new SyncObject("StandbySync");
     private boolean standby;
@@ -74,7 +74,7 @@ public class StandbyAgent extends AbstractAgent {
         locationRemote.init(CachedLocationRegistryRemote.getRegistry().getLocationConfigById(getConfig().getId()));
         locationRemote.activate();
 
-        this.presenseDetector = new PresenseDetector();
+        this.presenseDetector = new PresenceDetector();
 //        presenseDetector.init(locationRemote);
 
 //        this.presenseDetector.addObserver((Observable<MotionState> source, MotionState data) -> {

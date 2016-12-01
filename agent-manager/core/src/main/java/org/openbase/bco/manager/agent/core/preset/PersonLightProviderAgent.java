@@ -21,17 +21,17 @@ package org.openbase.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.detector.PresenseDetector;
 import org.openbase.bco.manager.agent.core.AbstractAgent;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observable;
-import rst.domotic.state.MotionStateType.MotionState;
-import rst.domotic.state.MotionStateType.MotionStateOrBuilder;
 import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.state.PresenceStateType.PresenceState;
+import rst.domotic.state.PresenceStateType.PresenceStateOrBuilder;
+import rst.domotic.unit.location.LocationDataType;
 
 /**
  *
@@ -42,7 +42,6 @@ public class PersonLightProviderAgent extends AbstractAgent {
 
     public static final double MINIMUM_LIGHT_THRESHOLD = 100;
     private LocationRemote locationRemote;
-    private PresenseDetector presenseDetector;
 
     public PersonLightProviderAgent() throws InstantiationException, CouldNotPerformException, InterruptedException {
         super();
@@ -52,18 +51,14 @@ public class PersonLightProviderAgent extends AbstractAgent {
     public void activate() throws CouldNotPerformException, InterruptedException {
         logger.info("Activating [" + getConfig().getLabel() + "]");
         locationRemote = new LocationRemote();
-        CachedLocationRegistryRemote.waitForData();
-        locationRemote.init(CachedLocationRegistryRemote.getRegistry().getLocationConfigById(getConfig().getId()));
+        Registries.getLocationRegistry().waitForData();
+        locationRemote.init(Registries.getLocationRegistry().getLocationConfigById(getConfig().getId()));
         locationRemote.activate();
-
-        this.presenseDetector = new PresenseDetector();
-//        presenseDetector.init(locationRemote);
-
-        this.presenseDetector.addObserver((Observable<MotionState> source, MotionState data) -> {
+        locationRemote.addDataObserver((Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
             try {
-                notifyMotionStateChanged(data);
+                notifyPresenceStateChanged(data.getPresenceState());
             } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify motion state change!", ex), logger);
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify presence state change!", ex), logger);
             }
         });
         super.activate();
@@ -73,28 +68,25 @@ public class PersonLightProviderAgent extends AbstractAgent {
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         logger.info("Deactivating [" + getClass().getSimpleName() + "]");
         locationRemote.deactivate();
-        presenseDetector.shutdown();
         super.deactivate();
     }
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
-//        presenseDetector.activate();
         locationRemote.activate();
     }
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
-//        presenseDetector.deactivate();
         locationRemote.deactivate();
     }
 
-    private void notifyMotionStateChanged(final MotionStateOrBuilder motionState) throws CouldNotPerformException {
-        if (motionState.getValue() == MotionState.State.MOTION) {
+    private void notifyPresenceStateChanged(final PresenceStateOrBuilder presenceState) throws CouldNotPerformException {
+        if (presenceState.getValue() == PresenceState.State.PRESENT) {
             locationRemote.setPowerState(PowerState.State.ON);
         } else {
             locationRemote.setPowerState(PowerState.State.OFF);
         }
-        logger.info("detect: " + motionState.getValue());
+        logger.info("detect: " + presenceState.getValue());
     }
 }
