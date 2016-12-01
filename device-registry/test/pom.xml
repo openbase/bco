@@ -107,7 +107,7 @@
             <groupId>org.openbase</groupId>
             <artifactId>jul.exception</artifactId>
             <type>jar</type>
-            <version>1.2-SNAPSHOT</version>
+            <version>${project.version}</version>
         </dependency>
     </dependencies>
 </project>
