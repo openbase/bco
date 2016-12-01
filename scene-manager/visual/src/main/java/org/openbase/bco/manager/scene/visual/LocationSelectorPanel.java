@@ -69,12 +69,16 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
         this.enableAllLocation = enableAllLocation;
 
         statusPanel = StatusPanel.getInstance();
-        statusPanel.setStatus("Init location manager connection...", StatusPanel.StatusType.INFO, true);
+        statusPanel.setStatus("Init location registry connection...", StatusPanel.StatusType.INFO, true);
         locationRegistryRemote.init();
 
-        statusPanel.setStatus("Connecting to location manager...", StatusPanel.StatusType.INFO, true);
+        statusPanel.setStatus("Connecting to location registry...", StatusPanel.StatusType.INFO, true);
         locationRegistryRemote.activate();
         statusPanel.setStatus("Connection established.", StatusPanel.StatusType.INFO, 3);
+
+        statusPanel.setStatus("Wait for location registry data...", StatusPanel.StatusType.INFO, true);
+        locationRegistryRemote.waitForData();
+        statusPanel.setStatus("Data received.", StatusPanel.StatusType.INFO, 3);
 
         init = true;
 

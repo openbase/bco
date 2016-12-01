@@ -62,6 +62,7 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.GlobalExecutionService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionConfigType.ActionConfig;
@@ -111,6 +112,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PresenceState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionConfig.getDefaultInstance()));
     }
 
     private final UnitRemoteFactory factory;
@@ -180,7 +182,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                             BrightnessState brightness = getBrightnessState();
                             try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                                 dataBuilder.getInternalBuilder().setBrightnessState(brightness);
-                            } catch (Exception ex) {
+                            } catch (CouldNotPerformException ex) {
                                 throw new CouldNotPerformException("Could not apply brightness data change!", ex);
                             }
                         }
@@ -195,7 +197,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                             ColorState color = getColorState();
                             try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                                 dataBuilder.getInternalBuilder().setColorState(color);
-                            } catch (Exception ex) {
+                            } catch (CouldNotPerformException ex) {
                                 throw new CouldNotPerformException("Could not apply color data change!", ex);
                             }
                         }
@@ -210,7 +212,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                             MotionState motion = getMotionState();
                             try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                                 dataBuilder.getInternalBuilder().setMotionState(motion);
-                            } catch (Exception ex) {
+                            } catch (CouldNotPerformException ex) {
                                 throw new CouldNotPerformException("Could not apply motion data change!", ex);
                             }
                         }
@@ -225,7 +227,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                             PowerConsumptionState powerConsumption = getPowerConsumptionState();
                             try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                                 dataBuilder.getInternalBuilder().setPowerConsumptionState(powerConsumption);
-                            } catch (Exception ex) {
+                            } catch (CouldNotPerformException ex) {
                                 throw new CouldNotPerformException("Could not apply power consumption data change!", ex);
                             }
                             //                        logger.info("Received powerConsumption[" + powerConsumption.getConsumption() + "] update for location [" + getLabel() + "]");
@@ -241,7 +243,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                             PowerState powerState = getPowerState();
                             try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                                 dataBuilder.getInternalBuilder().setPowerState(powerState);
-                            } catch (Exception ex) {
+                            } catch (CouldNotPerformException ex) {
                                 throw new CouldNotPerformException("Could not apply power data change!", ex);
                             }
                         }
@@ -256,7 +258,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                             BlindState blindState = getBlindState();
                             try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                                 dataBuilder.getInternalBuilder().setBlindState(blindState);
-                            } catch (Exception ex) {
+                            } catch (CouldNotPerformException ex) {
                                 throw new CouldNotPerformException("Could not apply shutter data change!", ex);
                             }
                         }
@@ -271,7 +273,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                             AlarmStateType.AlarmState smokeAlarmState = getSmokeAlarmState();
                             try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                                 dataBuilder.getInternalBuilder().setSmokeAlarmState(smokeAlarmState);
-                            } catch (Exception ex) {
+                            } catch (CouldNotPerformException ex) {
                                 throw new CouldNotPerformException("Could not apply smoke alarm state data change!", ex);
                             }
                         }
@@ -286,7 +288,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                             SmokeState smokeState = getSmokeState();
                             try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                                 dataBuilder.getInternalBuilder().setSmokeState(smokeState);
-                            } catch (Exception ex) {
+                            } catch (CouldNotPerformException ex) {
                                 throw new CouldNotPerformException("Could not apply smoke data change!", ex);
                             }
                         }
@@ -301,7 +303,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                             StandbyState standby = getStandbyState();
                             try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                                 dataBuilder.getInternalBuilder().setStandbyState(standby);
-                            } catch (Exception ex) {
+                            } catch (CouldNotPerformException ex) {
                                 throw new CouldNotPerformException("Could not apply standby data change!", ex);
                             }
                         }
@@ -316,7 +318,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                             TamperState tamper = getTamperState();
                             try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                                 dataBuilder.getInternalBuilder().setTamperState(tamper);
-                            } catch (Exception ex) {
+                            } catch (CouldNotPerformException ex) {
                                 throw new CouldNotPerformException("Could not apply tamper data change!", ex);
                             }
                         }
@@ -331,7 +333,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                             TemperatureState targetTemperature = getTargetTemperatureState();
                             try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                                 dataBuilder.getInternalBuilder().setTargetTemperatureState(targetTemperature);
-                            } catch (Exception ex) {
+                            } catch (CouldNotPerformException ex) {
                                 throw new CouldNotPerformException("Could not apply target temperature data change!", ex);
                             }
                         }
@@ -346,7 +348,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                             TemperatureState temperature = getTemperatureState();
                             try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                                 dataBuilder.getInternalBuilder().setAcutalTemperatureState(temperature);
-                            } catch (Exception ex) {
+                            } catch (CouldNotPerformException ex) {
                                 throw new CouldNotPerformException("Could not apply temperature data change!", ex);
                             }
                         }
@@ -593,10 +595,13 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
 
     @Override
     public Future<Void> applyAction(final ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
-        return unitRemoteMap.get(actionConfig.getUnitId()).applyAction(actionConfig);
+        Collection<Future> futureCollection = new ArrayList<>();
+        for (Service service : serviceMap.get(actionConfig.getServiceType())) {
+            futureCollection.add(service.applyAction(actionConfig));
+        }
+        return GlobalExecutionService.allOf(futureCollection, null);
     }
 
-    
     @Override
     public List<String> getNeighborLocationIds() throws CouldNotPerformException {
         List<String> neighborIdList = new ArrayList<>();

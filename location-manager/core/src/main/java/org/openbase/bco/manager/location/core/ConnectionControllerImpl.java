@@ -165,14 +165,16 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
                 });
 
                 try {
-                    ContactDoorPosition contactDoorPosition;
-                    try {
-                        metaConfigContactDoorPositionProvider = new MetaConfigVariableProvider("bla", ((UnitConfig) unitRemote.getConfig()).getMetaConfig());
-                        contactDoorPosition = ContactDoorPosition.valueOf(metaConfigContactDoorPositionProvider.getValue("CONTACT_DOOR_POSITION"));
-                    } catch (NotAvailableException | IllegalArgumentException ex) {
-                        contactDoorPosition = DEFAULT_CONTACT_DOOR_POSITION;
+                    if (getConfig().getConnectionConfig().getType() == ConnectionType.DOOR) {
+                        ContactDoorPosition contactDoorPosition;
+                        try {
+                            metaConfigContactDoorPositionProvider = new MetaConfigVariableProvider("doorPositionMetaConfigProvider", ((UnitConfig) unitRemote.getConfig()).getMetaConfig());
+                            contactDoorPosition = ContactDoorPosition.valueOf(metaConfigContactDoorPositionProvider.getValue("CONTACT_DOOR_POSITION"));
+                        } catch (NotAvailableException | IllegalArgumentException ex) {
+                            contactDoorPosition = DEFAULT_CONTACT_DOOR_POSITION;
+                        }
+                        contactDoorPositionMap.put((String) unitRemote.getId(), contactDoorPosition);
                     }
-                    contactDoorPositionMap.put((String) unitRemote.getId(), contactDoorPosition);
                 } catch (NotAvailableException ex) {
                     ExceptionPrinter.printHistory("Id for unit with contactState not available!", ex, logger);
                 }
@@ -314,7 +316,26 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
         DoorState.State doorState = null;
         try {
             for (UnitRemote contactStateProvider : getContactStateProviderServices()) {
-                if (((ContactStateProviderService) contactStateProvider).getContactState().getValue() == ContactState.State.CLOSED) {
+                ContactState.State contactState = ((ContactStateProviderService) contactStateProvider).getContactState().getValue();
+                DoorState.State correspondingDoorState = contactDoorPositionMap.get((String) contactStateProvider.getId()).getCorrespondingDoorState();
+                switch (contactState) {
+                    case CLOSED:
+                        if (doorState == null) {
+                            doorState = correspondingDoorState;
+                        } else if (doorState != correspondingDoorState) {
+                            throw new CouldNotPerformException("Contradicting contact values for the door state!");
+                        }
+                        break;
+                    case OPEN:
+                        doorState = DoorState.State.OPEN;
+                        break;
+                    case UNKNOWN:
+                        logger.warn("Ignoring unknown ConnectionState for DoorState update!");
+                        break;
+                    default:
+                        break;
+                }
+                if (contactState == ContactState.State.CLOSED) {
                     if (doorState == null) {
                         doorState = contactDoorPositionMap.get((String) contactStateProvider.getId()).getCorrespondingDoorState();
                     } else if (doorState != contactDoorPositionMap.get((String) contactStateProvider.getId()).getCorrespondingDoorState()) {

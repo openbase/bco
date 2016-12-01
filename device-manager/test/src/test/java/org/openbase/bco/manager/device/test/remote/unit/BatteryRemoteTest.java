@@ -42,6 +42,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.pattern.Remote;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.BatteryStateType.BatteryState;
 
@@ -51,7 +52,7 @@ import rst.domotic.state.BatteryStateType.BatteryState;
  */
 public class BatteryRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(BatteryRemoteTest.class);
+    private static final Logger logger = LoggerFactory.getLogger(BatteryRemoteTest.class);
 
     private static BatteryRemote batteryRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;

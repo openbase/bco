@@ -23,7 +23,11 @@ package org.openbase.bco.manager.scene.core;
  */
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.remote.control.action.Action;
 import org.openbase.bco.dal.remote.unit.ButtonRemote;
 import org.openbase.bco.manager.scene.lib.Scene;
@@ -44,6 +48,7 @@ import org.openbase.jul.schedule.SyncObject;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionConfigType.ActionConfig;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.ButtonStateType.ButtonState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -214,11 +219,25 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
             }
         };
         thread.start();
-        setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
+//        setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
     }
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
         logger.info("Finished scene: " + getConfig().getLabel());
+    }
+
+    @Override
+    public Future<Void> applyAction(final ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+        try {
+            logger.info("applyAction: " + actionConfig.getLabel());
+            Object attribute = new ServiceJSonProcessor().deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType());
+            // Since its an action it has to be an operation service pattern
+            ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(actionConfig.getServiceType()).setPattern(ServiceTemplate.ServicePattern.OPERATION).build();
+            Service.invokeServiceMethod(serviceTemplate, this, attribute);
+            return CompletableFuture.completedFuture(null); // TODO Should be asynchron!
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not apply action!", ex);
+        }
     }
 }
