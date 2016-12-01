@@ -71,6 +71,8 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
     private long launchTime = -1;
     private LauncherState state;
     private boolean verified;
+    
+    
 
     /**
      * Constructor prepares the launcher and registers already a shutdown hook.
