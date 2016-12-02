@@ -48,6 +48,7 @@ import org.openbase.bco.dal.remote.unit.UnitRemoteFactory;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.openbase.bco.manager.location.lib.Location;
 import org.openbase.bco.manager.location.lib.LocationController;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -373,7 +374,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                     serviceMap.put(serviceType, new ArrayList<>());
                 }
             }
-            for (UnitConfig unitConfig : unitRegistry.getUnitConfigs()) {
+            for (UnitConfig unitConfig : unitRegistry.getDalUnitConfigs()) {
                 if (config.getLocationConfig().getUnitIdList().contains(unitConfig.getId())) {
                     List<ServiceTemplate> serviceTemplates = unitRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTemplateList();
 
@@ -413,6 +414,10 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         }
         for (String newUnitId : newUnitIdList) {
             UnitConfig unitConfig = unitRegistry.getUnitConfigById(newUnitId);
+
+            if (UnitConfigProcessor.isBaseUnit(unitConfig)) {
+                continue;
+            }
             List<ServiceTemplate> serviceTemplates = new ArrayList<>();
 
             // ignore units that do not have any service supported by a location
