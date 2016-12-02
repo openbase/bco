@@ -36,7 +36,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface DeviceManager extends LocationRegistryProvider, DeviceRegistryProvider, ServiceFactoryProvider, DeviceFactoryProvider {
+public interface DeviceManager extends ServiceFactoryProvider, DeviceFactoryProvider {
 
     public RegistryImpl<String, DeviceController> getDeviceControllerRegistry() throws NotAvailableException;
 

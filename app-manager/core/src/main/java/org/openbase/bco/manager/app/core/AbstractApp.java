@@ -59,4 +59,9 @@ public abstract class AbstractApp extends AbstractExecutableController<AppData, 
     public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
         RPCHelper.registerInterface(App.class, this, server);
     }
+
+    @Override
+    protected boolean isAutostartEnabled() throws CouldNotPerformException {
+        return getConfig().getAppConfig().getAutostart();
+    }    
 }

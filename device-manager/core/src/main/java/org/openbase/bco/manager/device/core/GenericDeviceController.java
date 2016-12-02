@@ -63,14 +63,4 @@ public class GenericDeviceController extends AbstractDeviceController {
         }
         return serviceFactory;
     }
-
-    @Override
-    public LocationRegistry getLocationRegistry() throws NotAvailableException {
-        return DeviceManagerController.getDeviceManager().getLocationRegistry();
-    }
-
-    @Override
-    public DeviceRegistry getDeviceRegistry() throws NotAvailableException {
-        return DeviceManagerController.getDeviceManager().getDeviceRegistry();
-    }
 }
