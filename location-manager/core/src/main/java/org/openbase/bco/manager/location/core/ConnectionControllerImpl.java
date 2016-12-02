@@ -34,6 +34,7 @@ import org.openbase.bco.dal.remote.unit.UnitRemoteFactory;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.openbase.bco.manager.location.lib.Connection;
 import org.openbase.bco.manager.location.lib.ConnectionController;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -105,7 +106,27 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
         }
     }
 
+    public enum ContactWindowPosition {
+
+        WINDOW_CLOSED(WindowState.State.CLOSED),
+        WINDOW_OPEN(WindowState.State.OPEN);
+
+        private final WindowState.State correspondingWindowState;
+
+        private ContactWindowPosition(WindowState.State correspondingWindowState) {
+            this.correspondingWindowState = correspondingWindowState;
+        }
+
+        public WindowState.State getCorrespondingWindowState() {
+            return correspondingWindowState;
+        }
+    }
+
     public static final ContactDoorPosition DEFAULT_CONTACT_DOOR_POSITION = ContactDoorPosition.DOOR_CLOSED;
+    public static final ContactWindowPosition DEFAULT_CONTACT_WINDOW_POSITION = ContactWindowPosition.WINDOW_CLOSED;
+
+    public static final String META_CONFIG_DOOR_POSITION_KEY = "CONTACT_DOOR_POSITION";
+    public static final String META_CONFIG_WINDOW_POSITION_KEY = "CONTACT_WINDOW_POSITION";
 
     private final UnitRemoteFactory factory;
     private final Map<String, UnitRemote> unitRemoteMap;
@@ -113,8 +134,8 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
     private List<String> originalUnitIdList;
     private UnitRegistry unitRegistry;
 
-    private MetaConfigVariableProvider metaConfigContactDoorPositionProvider;
     private final Map<String, ContactDoorPosition> contactDoorPositionMap;
+    private final Map<String, ContactWindowPosition> contactWindowPositionMap;
 
     public ConnectionControllerImpl() throws InstantiationException {
         super(ConnectionData.newBuilder());
@@ -122,6 +143,7 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
         this.unitRemoteMap = new HashMap<>();
         this.serviceMap = new HashMap<>();
         this.contactDoorPositionMap = new HashMap<>();
+        this.contactWindowPositionMap = new HashMap<>();
     }
 
     private boolean isSupportedServiceType(final ServiceType serviceType) {
@@ -149,8 +171,6 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
                     @Override
                     public void update(final Observable source, Object data) throws Exception {
                         updateCurrentStatus();
-//                        HandleState handle = getHandleState();
-                        // data has to be fused to build DOOR/WINDOW or PASSAGE States
                     }
                 });
                 break;
@@ -165,15 +185,29 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
                 });
 
                 try {
-                    if (getConfig().getConnectionConfig().getType() == ConnectionType.DOOR) {
-                        ContactDoorPosition contactDoorPosition;
-                        try {
-                            metaConfigContactDoorPositionProvider = new MetaConfigVariableProvider("doorPositionMetaConfigProvider", ((UnitConfig) unitRemote.getConfig()).getMetaConfig());
-                            contactDoorPosition = ContactDoorPosition.valueOf(metaConfigContactDoorPositionProvider.getValue("CONTACT_DOOR_POSITION"));
-                        } catch (NotAvailableException | IllegalArgumentException ex) {
-                            contactDoorPosition = DEFAULT_CONTACT_DOOR_POSITION;
-                        }
-                        contactDoorPositionMap.put((String) unitRemote.getId(), contactDoorPosition);
+                    switch (getConfig().getConnectionConfig().getType()) {
+                        case DOOR:
+                            ContactDoorPosition contactDoorPosition;
+                            try {
+                                MetaConfigVariableProvider variableProvider = new MetaConfigVariableProvider("doorPositionMetaConfigProvider", ((UnitConfig) unitRemote.getConfig()).getMetaConfig());
+                                contactDoorPosition = ContactDoorPosition.valueOf(variableProvider.getValue(META_CONFIG_DOOR_POSITION_KEY));
+                            } catch (NotAvailableException | IllegalArgumentException ex) {
+                                contactDoorPosition = DEFAULT_CONTACT_DOOR_POSITION;
+                            }
+                            contactDoorPositionMap.put((String) unitRemote.getId(), contactDoorPosition);
+                            break;
+                        case WINDOW:
+                            ContactWindowPosition contactWindowPosition;
+                            try {
+                                MetaConfigVariableProvider variableProvider = new MetaConfigVariableProvider("windowPositionVariableProvider", ((UnitConfig) unitRemote.getConfig()).getMetaConfig());
+                                contactWindowPosition = ContactWindowPosition.valueOf(variableProvider.getValue(META_CONFIG_WINDOW_POSITION_KEY));
+                            } catch (NotAvailableException | IllegalArgumentException ex) {
+                                contactWindowPosition = DEFAULT_CONTACT_WINDOW_POSITION;
+                            }
+                            contactWindowPositionMap.put((String) unitRemote.getId(), contactWindowPosition);
+                            break;
+                        default:
+                            break;
                     }
                 } catch (NotAvailableException ex) {
                     ExceptionPrinter.printHistory("Id for unit with contactState not available!", ex, logger);
@@ -193,7 +227,7 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
                     serviceMap.put(serviceType, new ArrayList<>());
                 }
             }
-            for (UnitConfig unitConfig : unitRegistry.getUnitConfigs()) {
+            for (UnitConfig unitConfig : unitRegistry.getDalUnitConfigs()) {
                 if (config.getConnectionConfig().getUnitIdList().contains(unitConfig.getId())) {
                     List<ServiceTemplate> serviceTemplate = unitRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTemplateList();
 
@@ -234,7 +268,11 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
             final UnitConfig unitConfig = unitRegistry.getUnitConfigById(newUnitId);
             List<ServiceTemplate> serviceTemplates = new ArrayList<>();
 
-            // ignore units that do not have any service supported by a location
+            if (UnitConfigProcessor.isBaseUnit(unitConfig)) {
+                continue;
+            }
+
+            // ignore units that do not have any service supported by a connection
             if (!isSupportedServiceType(serviceTemplates)) {
                 continue;
             }
@@ -327,20 +365,15 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
                         }
                         break;
                     case OPEN:
-                        doorState = DoorState.State.OPEN;
+                        if (doorState == null) {
+                            doorState = DoorState.State.OPEN;
+                        }
                         break;
                     case UNKNOWN:
                         logger.warn("Ignoring unknown ConnectionState for DoorState update!");
                         break;
                     default:
                         break;
-                }
-                if (contactState == ContactState.State.CLOSED) {
-                    if (doorState == null) {
-                        doorState = contactDoorPositionMap.get((String) contactStateProvider.getId()).getCorrespondingDoorState();
-                    } else if (doorState != contactDoorPositionMap.get((String) contactStateProvider.getId()).getCorrespondingDoorState()) {
-                        throw new CouldNotPerformException("Contradicting contact values for the door state!");
-                    }
                 }
             }
             if (doorState == null) {
@@ -358,7 +391,43 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
     }
 
     private void updateWindowState() throws CouldNotPerformException {
+        WindowState.State windowState = null;
+        try {
+            for (UnitRemote contactStateProvider : getContactStateProviderServices()) {
+                ContactState.State contactState = ((ContactStateProviderService) contactStateProvider).getContactState().getValue();
+                WindowState.State correspondingDoorState = contactWindowPositionMap.get((String) contactStateProvider.getId()).getCorrespondingWindowState();
+                switch (contactState) {
+                    case CLOSED:
+                        if (windowState == null) {
+                            windowState = correspondingDoorState;
+                        } else if (windowState != correspondingDoorState) {
+                            throw new CouldNotPerformException("Contradicting contact values for the window state!");
+                        }
+                        break;
+                    case OPEN:
+                        if (windowState == null) {
+                            windowState = WindowState.State.OPEN;
+                        }
+                        break;
+                    case UNKNOWN:
+                        logger.warn("Ignoring unknown ConnectionState for DoorState update!");
+                        break;
+                    default:
+                        break;
+                }
+            }
+            if (windowState == null) {
+                return;
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not update door state", ex);
+        }
 
+        try (ClosableDataBuilder<ConnectionData.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().setWindowState(WindowState.newBuilder().setValue(windowState).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())));
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply brightness data change!", ex);
+        }
     }
 
     private void updatePassageState() throws CouldNotPerformException {
