@@ -615,4 +615,9 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         }
         return neighborIdList;
     }
+
+    @Override
+    public PresenceState getPresenceState() throws NotAvailableException {
+        return getData().getPresenceState();
+    }
 }
