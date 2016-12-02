@@ -30,6 +30,6 @@ import org.openbase.bco.registry.location.lib.provider.LocationRegistryProvider;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 @Deprecated
-public interface UnitHost extends ServiceFactoryProvider, LocationRegistryProvider, DeviceRegistryProvider {
+public interface UnitHost extends ServiceFactoryProvider {
 
 }
