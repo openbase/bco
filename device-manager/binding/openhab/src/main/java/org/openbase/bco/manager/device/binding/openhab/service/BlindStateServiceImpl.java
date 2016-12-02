@@ -22,9 +22,9 @@ package org.openbase.bco.manager.device.binding.openhab.service;
  * #L%
  */
 import java.util.concurrent.Future;
-import org.openbase.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
+import org.openbase.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -43,7 +43,16 @@ public class BlindStateServiceImpl<ST extends BlindStateOperationService & Unit>
 
     @Override
     public Future<Void> setBlindState(BlindState state) throws CouldNotPerformException {
-        return executeCommand(OpenHABCommandFactory.newUpDownCommand(state));
+        switch (state.getMovementState()) {
+            case UP:
+                return executeCommand(OpenHABCommandFactory.newUpDownCommand(state));
+            case DOWN:
+                return executeCommand(OpenHABCommandFactory.newUpDownCommand(state));
+            case STOP:
+                return executeCommand(OpenHABCommandFactory.newStopMoveCommand(state));
+            default:
+                throw new CouldNotPerformException("Cannot ste unknown state [" + state + "]");
+        }
     }
 
     @Override
