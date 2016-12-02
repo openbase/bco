@@ -52,11 +52,9 @@ public class BatteryStateServicePanel extends AbstractServicePanel<BatteryStateP
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        batteryLevelBar = new javax.swing.JProgressBar();
         stateColorPanel = new javax.swing.JPanel();
         stateLabel = new javax.swing.JLabel();
-
-        batteryLevelBar.setStringPainted(true);
+        batteryLevelBar = new javax.swing.JProgressBar();
 
         stateColorPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 3));
 
@@ -74,6 +72,8 @@ public class BatteryStateServicePanel extends AbstractServicePanel<BatteryStateP
             stateColorPanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addComponent(stateLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 40, Short.MAX_VALUE)
         );
+
+        batteryLevelBar.setStringPainted(true);
 
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
