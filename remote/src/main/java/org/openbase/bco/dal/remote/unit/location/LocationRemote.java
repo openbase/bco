@@ -21,6 +21,7 @@ import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.PowerStateType.PowerState.State;
+import rst.domotic.state.PresenceStateType;
 import rst.domotic.state.SmokeStateType.SmokeState;
 import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.state.TamperStateType.TamperState;
@@ -263,5 +264,14 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
             throw new CouldNotPerformException("Could not get CachedLocationRegistryRemote!", ex);
         }
         return neighborIdList;
+    }
+
+    @Override
+    public PresenceStateType.PresenceState getPresenceState() throws NotAvailableException {
+       try {
+            return getData().getPresenceState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("PresenceState", ex);
+        }
     }
 }

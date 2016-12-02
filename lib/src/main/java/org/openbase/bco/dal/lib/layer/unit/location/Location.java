@@ -30,6 +30,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationSer
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.PresenceStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.SmokeAlarmStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.SmokeStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.TamperStateProviderService;
@@ -49,7 +50,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 public interface Location extends ScopeProvider, LabelProvider, Configurable<String, UnitConfig>,
         BrightnessStateOperationService, ColorStateOperationService, PowerStateOperationService, BlindStateOperationService,
         StandbyStateOperationService, TargetTemperatureStateOperationService, MotionStateProviderService, SmokeAlarmStateProviderService, SmokeStateProviderService,
-        TemperatureStateProviderService, PowerConsumptionStateProviderService, TamperStateProviderService, Snapshotable<Snapshot> {
+        TemperatureStateProviderService, PowerConsumptionStateProviderService, TamperStateProviderService, PresenceStateProviderService, Snapshotable<Snapshot> {
 
     /**
      * TODO: Will return controller/remotes in the final implementation. Waiting for a
