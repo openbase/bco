@@ -240,4 +240,9 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
             throw new CouldNotPerformException("Could not apply action!", ex);
         }
     }
+    
+    @Override
+    protected boolean isAutostartEnabled() throws CouldNotPerformException {
+        return false;
+    }   
 }

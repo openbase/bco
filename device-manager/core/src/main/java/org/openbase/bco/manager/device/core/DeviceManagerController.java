@@ -29,10 +29,11 @@ import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistryImpl;
 import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.bco.manager.device.lib.DeviceFactory;
 import org.openbase.bco.manager.device.lib.DeviceManager;
-import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
+import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -61,13 +62,14 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
     private final DeviceFactory deviceFactory;
     private final ServiceFactory serviceFactory;
 
-    private final LocationRegistryRemote locationRegistryRemote;
-    private final DeviceRegistryRemote deviceRegistryRemote;
+    private final UnitRegistryRemote unitRegistryRemote;
 
     private final ControllerRegistry<String, DeviceController> deviceControllerRegistry;
     private final UnitControllerRegistryImpl unitControllerRegistry;
 
     private final ActivatableEntryRegistrySynchronizer<String, DeviceController, UnitConfig, UnitConfig.Builder> deviceRegistrySynchronizer;
+    
+    private boolean active = false;
 
     /**
      * This construction is using a service factory mock and is only suitable for the testing purpose.
@@ -91,12 +93,12 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
 
             this.unitControllerRegistry = new UnitControllerRegistryImpl();
             this.deviceControllerRegistry = new ControllerRegistry<>();
-            CachedLocationRegistryRemote.waitForData();
-            CachedDeviceRegistryRemote.waitForData();
-            this.locationRegistryRemote = (LocationRegistryRemote) CachedLocationRegistryRemote.getRegistry();
-            this.deviceRegistryRemote = (DeviceRegistryRemote) CachedDeviceRegistryRemote.getRegistry();
+            
+            CachedUnitRegistryRemote.waitForData();
+            
+            this.unitRegistryRemote = CachedUnitRegistryRemote.getRegistry();
 
-            this.deviceRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, DeviceController, UnitConfig, UnitConfig.Builder>(deviceControllerRegistry, deviceRegistryRemote.getDeviceConfigRemoteRegistry(), deviceFactory) {
+            this.deviceRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, DeviceController, UnitConfig, UnitConfig.Builder>(deviceControllerRegistry, unitRegistryRemote.getDeviceUnitConfigRemoteRegistry(), deviceFactory) {
 
                 @Override
                 public boolean activationCondition(UnitConfig config) {
@@ -106,13 +108,6 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
                 @Override
                 public boolean verifyConfig(final UnitConfig config) throws VerificationFailedException {
                     try {
-
-                        // verify device class.
-                        try {
-                            deviceRegistryRemote.containsDeviceClassById(config.getDeviceConfig().getDeviceClassId());
-                        } catch (CouldNotPerformException ex) {
-                            throw new VerificationFailedException("DeviceClass[" + config.getDeviceConfig().getDeviceClassId() + "] of Device[" + config.getId() + "] is not supported yet!", ex);
-                        }
 
                         // verify device manager support.
                         if (!DeviceManagerController.this.isSupported(config)) {
@@ -144,34 +139,28 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
 
     @Override
     public void init() throws InitializationException, InterruptedException {
-        try {
-            deviceRegistryRemote.init();
-            locationRegistryRemote.init();
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
+//        try {
+//        } catch (CouldNotPerformException ex) {
+//            throw new InitializationException(this, ex);
+//        }
     }
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        deviceRegistryRemote.activate();
-        locationRegistryRemote.activate();
-        locationRegistryRemote.waitForData();
-        
+        active = true;
         // TODO: pleminoq: let us analyse why this wait For data is needed. Without the sychnchronizer sync task is interrupted. And why is this never happening in the unit tests???
-        deviceRegistryRemote.waitForData();
+        unitRegistryRemote.waitForData();
         deviceRegistrySynchronizer.activate();
     }
 
     @Override
     public boolean isActive() {
-        return deviceRegistryRemote.isActive() && locationRegistryRemote.isActive();
+        return active;
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        deviceRegistryRemote.deactivate();
-        locationRegistryRemote.deactivate();
+        active = false;
         deviceRegistrySynchronizer.deactivate();
         deviceControllerRegistry.clear();
         unitControllerRegistry.clear();
@@ -179,8 +168,6 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
 
     @Override
     public void shutdown() {
-        deviceRegistryRemote.shutdown();
-        locationRegistryRemote.shutdown();
         deviceControllerRegistry.shutdown();
         unitControllerRegistry.shutdown();
         deviceRegistrySynchronizer.shutdown();
@@ -189,19 +176,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
 
     @Override
     public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
-        // TODO: avoid timeout split!
-        locationRegistryRemote.waitForData(timeout, timeUnit);
-        deviceRegistryRemote.waitForData(timeout, timeUnit);
-    }
-
-    @Override
-    public DeviceRegistryRemote getDeviceRegistry() {
-        return deviceRegistryRemote;
-    }
-
-    @Override
-    public LocationRegistryRemote getLocationRegistry() {
-        return locationRegistryRemote;
+        unitRegistryRemote.waitForData(timeout, timeUnit);
     }
 
     @Override

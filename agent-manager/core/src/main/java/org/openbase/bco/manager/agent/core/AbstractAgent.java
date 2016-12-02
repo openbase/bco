@@ -61,4 +61,9 @@ public abstract class AbstractAgent extends AbstractExecutableController<AgentDa
     public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
         RPCHelper.registerInterface(org.openbase.bco.dal.lib.layer.unit.agent.Agent.class, this, server);
     }
+    
+    @Override
+    protected boolean isAutostartEnabled() throws CouldNotPerformException {
+        return getConfig().getAgentConfig().getAutostart();
+    }   
 }
