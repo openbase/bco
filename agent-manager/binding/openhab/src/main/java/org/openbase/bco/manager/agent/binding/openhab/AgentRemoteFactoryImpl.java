@@ -21,9 +21,9 @@ package org.openbase.bco.manager.agent.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import org.openbase.bco.manager.agent.binding.openhab.execution.OpenHABCommandFactory;
+import java.util.concurrent.ExecutionException;
 import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
+import org.openbase.bco.manager.agent.binding.openhab.execution.OpenHABCommandFactory;
 import org.openbase.jul.exception.CouldNotPerformException;
 import static org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote.ITEM_SEGMENT_DELIMITER;
 import static org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote.ITEM_SUBSEGMENT_DELIMITER;
@@ -32,14 +32,19 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Factory;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.processing.StringProcessor;
-import rst.domotic.unit.agent.AgentDataType.AgentData;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import rst.domotic.binding.openhab.OpenhabCommandType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.agent.AgentDataType.AgentData;
 
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class AgentRemoteFactoryImpl implements Factory<AgentRemote, UnitConfig> {
+
+    private static final Logger logger = LoggerFactory.getLogger(AgentRemoteFactoryImpl.class);
 
     private OpenHABRemote openHABRemote;
 
@@ -55,7 +60,12 @@ public class AgentRemoteFactoryImpl implements Factory<AgentRemote, UnitConfig> 
         AgentRemote agentRemote = new AgentRemote();
         try {
             agentRemote.addDataObserver((final Observable<AgentData> source, AgentData data) -> {
-                openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(generateItemId(config)).build());
+                OpenhabCommandType.OpenhabCommand build = OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(generateItemId(config)).build();
+                try {
+                    openHABRemote.postUpdate(build).get();
+                } catch (ExecutionException ex) {
+                    logger.error("ERROR during openHABRemote postUpdate!", ex);
+                }
             });
             agentRemote.init(config);
             agentRemote.activate();
@@ -67,9 +77,9 @@ public class AgentRemoteFactoryImpl implements Factory<AgentRemote, UnitConfig> 
     }
 
     //TODO: method is implemented in the openhab config generator and should be used from there
-    private String generateItemId(UnitConfig agentUnitConfig) throws CouldNotPerformException {
-        return StringProcessor.transformToIdString("agent")
+    private String generateItemId(final UnitConfig agentConfig) throws CouldNotPerformException {
+        return StringProcessor.transformToIdString("Agent")
                 + ITEM_SEGMENT_DELIMITER
-                + ScopeGenerator.generateStringRepWithDelimiter(agentUnitConfig.getScope(), ITEM_SUBSEGMENT_DELIMITER);
+                + ScopeGenerator.generateStringRepWithDelimiter(agentConfig.getScope(), ITEM_SUBSEGMENT_DELIMITER);
     }
 }

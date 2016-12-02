@@ -21,8 +21,8 @@ package org.openbase.bco.manager.scene.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.manager.scene.binding.openhab.execution.OpenHABCommandFactory;
 import org.openbase.bco.dal.remote.unit.scene.SceneRemote;
+import org.openbase.bco.manager.scene.binding.openhab.execution.OpenHABCommandFactory;
 import org.openbase.jul.exception.CouldNotPerformException;
 import static org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote.ITEM_SEGMENT_DELIMITER;
 import static org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote.ITEM_SUBSEGMENT_DELIMITER;
@@ -31,8 +31,8 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Factory;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.processing.StringProcessor;
-import rst.domotic.unit.scene.SceneDataType.SceneData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.scene.SceneDataType.SceneData;
 
 /**
  *
@@ -66,9 +66,9 @@ public class SceneRemoteFactoryImpl implements Factory<SceneRemote, UnitConfig> 
     }
 
     //TODO: method is implemented in the openhab config generator and should be used from there
-    private String generateItemId(UnitConfig sceneConfig) throws CouldNotPerformException {
+    private String generateItemId(final UnitConfig sceneUnitConfig) throws CouldNotPerformException {
         return StringProcessor.transformToIdString("Scene")
                 + ITEM_SEGMENT_DELIMITER
-                + ScopeGenerator.generateStringRepWithDelimiter(sceneConfig.getScope(), ITEM_SUBSEGMENT_DELIMITER);
+                + ScopeGenerator.generateStringRepWithDelimiter(sceneUnitConfig.getScope(), ITEM_SUBSEGMENT_DELIMITER);
     }
 }

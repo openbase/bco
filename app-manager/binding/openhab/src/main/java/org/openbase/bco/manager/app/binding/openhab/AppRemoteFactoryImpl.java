@@ -21,8 +21,8 @@ package org.openbase.bco.manager.app.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.remote.unit.app.AppRemote;
 import org.openbase.bco.manager.app.binding.openhab.execution.OpenHABCommandFactory;
-import org.openbase.bco.manager.app.remote.AppRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import static org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote.ITEM_SEGMENT_DELIMITER;
 import static org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote.ITEM_SUBSEGMENT_DELIMITER;
@@ -30,11 +30,9 @@ import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Factory;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
-import rst.domotic.unit.app.AppConfigType.AppConfig;
-import rst.domotic.unit.app.AppDataType.AppData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.app.AppDataType.AppData;
 
 /**
  *
@@ -69,7 +67,7 @@ public class AppRemoteFactoryImpl implements Factory<AppRemote, UnitConfig> {
 
     //TODO: method is implemented in the openhab config generator and should be used from there
     private String generateItemId(final UnitConfig appConfig) throws CouldNotPerformException {
-        return StringProcessor.transformToIdString("app")
+        return StringProcessor.transformToIdString("App")
                 + ITEM_SEGMENT_DELIMITER
                 + ScopeGenerator.generateStringRepWithDelimiter(appConfig.getScope(), ITEM_SUBSEGMENT_DELIMITER);
     }
