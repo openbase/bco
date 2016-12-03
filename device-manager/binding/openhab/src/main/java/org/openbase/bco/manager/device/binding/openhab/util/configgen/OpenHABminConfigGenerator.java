@@ -36,6 +36,7 @@ import org.openbase.bco.manager.device.binding.openhab.util.configgen.xmlpaser.X
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.xmlpaser.XMLParsingException;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPPrefix;
@@ -60,27 +61,22 @@ public class OpenHABminConfigGenerator {
 
     public static final long TIMEOUT = 15000;
 
-    private final DeviceRegistryRemote deviceRegistryRemote;
-    private final LocationRegistryRemote locationRegistryRemote;
-
     public OpenHABminConfigGenerator() throws InstantiationException {
-        try {
-            this.deviceRegistryRemote = new DeviceRegistryRemote();
-            this.locationRegistryRemote = new LocationRegistryRemote();
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(this, ex);
-        }
+//        try {
+
+//        } catch (CouldNotPerformException ex) {
+//            throw new InstantiationException(this, ex);
+//        }
     }
 
     private void init() throws InitializationException, InterruptedException, CouldNotPerformException {
         logger.info("init");
-        deviceRegistryRemote.init();
-        deviceRegistryRemote.activate();
-        locationRegistryRemote.init();
-        locationRegistryRemote.activate();
+        Registries.getUnitRegistry().waitForData();
+        Registries.getDeviceRegistry().waitForData();
+        Registries.getLocationRegistry().waitForData();
     }
 
-    private void generate() throws CouldNotPerformException {
+    private void generate() throws CouldNotPerformException, InterruptedException {
         try {
             File zwaveDb = JPService.getProperty(JPOpenHABminZwaveConfig.class).getValue();
             try {
@@ -93,18 +89,18 @@ public class OpenHABminConfigGenerator {
 
                 logger.info("update zwave entries of HABmin zwave DB[" + zwaveDb + "] ...");
 
-                List<UnitConfig> deviceUnitConfigs = deviceRegistryRemote.getDeviceConfigs();
+                List<UnitConfig> deviceUnitConfigs = Registries.getUnitRegistry().getData().getDeviceUnitConfigList();
 
                 for (UnitConfig deviceUnitConfig : deviceUnitConfigs) {
                     try {
 
                         // check openhab binding type
-                        if (!deviceRegistryRemote.getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId()).getBindingConfig().getBindingId().equals("OPENHAB")) {
+                        if (!Registries.getDeviceRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId()).getBindingConfig().getBindingId().equals("OPENHAB")) {
                             continue;
                         }
 
                         // check if zwave
-                        variableProvider = new MetaConfigVariableProvider("BindingConfigVariableProvider", deviceRegistryRemote.getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId()).getBindingConfig().getMetaConfig());
+                        variableProvider = new MetaConfigVariableProvider("BindingConfigVariableProvider", Registries.getDeviceRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId()).getBindingConfig().getMetaConfig());
                         openhabBindingType = variableProvider.getValue(SERVICE_TEMPLATE_BINDING_TYPE);
                         if (!"zwave".equals(openhabBindingType)) {
                             continue;
@@ -139,7 +135,7 @@ public class OpenHABminConfigGenerator {
         }
     }
 
-    public void updateZwaveNodeConfig(final File zwaveNodeConfigFile, final UnitConfig deviceDeviceConfig) throws CouldNotPerformException {
+    public void updateZwaveNodeConfig(final File zwaveNodeConfigFile, final UnitConfig deviceDeviceConfig) throws CouldNotPerformException, InterruptedException {
         try {
 
             // load
@@ -163,8 +159,8 @@ public class OpenHABminConfigGenerator {
             Element locationElement = new Element("location");
 
             // add values
-            nameElement.appendChild(deviceDeviceConfig.getLabel() + " " + locationRegistryRemote.getLocationConfigById(deviceDeviceConfig.getPlacementConfig().getLocationId()).getLabel());
-            locationElement.appendChild(locationRegistryRemote.getLocationConfigById(deviceDeviceConfig.getPlacementConfig().getLocationId()).getLabel());
+            nameElement.appendChild(deviceDeviceConfig.getLabel() + " " + Registries.getLocationRegistry().getLocationConfigById(deviceDeviceConfig.getPlacementConfig().getLocationId()).getLabel());
+            locationElement.appendChild(Registries.getLocationRegistry().getLocationConfigById(deviceDeviceConfig.getPlacementConfig().getLocationId()).getLabel());
 
             // store back
             nodeElement.appendChild(nameElement);
@@ -184,8 +180,6 @@ public class OpenHABminConfigGenerator {
 
     private void shutdown() {
         logger.info("shutdown");
-        deviceRegistryRemote.shutdown();
-        locationRegistryRemote.shutdown();
     }
 
     /**
