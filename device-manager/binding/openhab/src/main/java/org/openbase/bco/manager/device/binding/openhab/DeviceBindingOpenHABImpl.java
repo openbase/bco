@@ -42,6 +42,8 @@ import rst.domotic.unit.device.DeviceClassType.DeviceClass;
  */
 public class DeviceBindingOpenHABImpl extends AbstractOpenHABBinding {
 
+    
+    
     //TODO: Should be declared in the openhab config generator and used from there
     public static final String DEVICE_MANAGER_ITEM_FILTER = "";
 

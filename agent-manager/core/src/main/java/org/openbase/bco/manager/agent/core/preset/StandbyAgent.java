@@ -29,9 +29,13 @@ import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
 import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.state.PresenceStateType;
+import rst.domotic.unit.location.LocationDataType;
 
 /**
  *
@@ -39,9 +43,12 @@ import rst.domotic.action.SnapshotType.Snapshot;
  */
 public class StandbyAgent extends AbstractAgent {
 
-    public static final long TIEMOUT = 900000;
+    /**
+     * 15 min default standby timeout
+     */
+    public static final long TIEMOUT = 60000 * 15;
+    
     private LocationRemote locationRemote;
-    private PresenceDetector presenseDetector;
     private final Timeout timeout;
     private final SyncObject standbySync = new SyncObject("StandbySync");
     private boolean standby;
@@ -73,25 +80,25 @@ public class StandbyAgent extends AbstractAgent {
         CachedLocationRegistryRemote.waitForData();
         locationRemote.init(CachedLocationRegistryRemote.getRegistry().getLocationConfigById(getConfig().getId()));
         locationRemote.activate();
-
-        this.presenseDetector = new PresenceDetector();
-//        presenseDetector.init(locationRemote);
-
-//        this.presenseDetector.addObserver((Observable<MotionState> source, MotionState data) -> {
-//            if (data.getValue().equals(MotionState.State.MOTION)) {
-//                timeout.restart();
-//                synchronized (standbySync) {
-//                    if (standby) {
-//                        try {
-//                            wakeUp();
-//                        } catch (CouldNotPerformException ex) {
-//                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify motion state change!", ex), logger);
-//                        }
-//E
-//                    }
-//                }
-//            }
-//        });
+        locationRemote.addDataObserver(new Observer<LocationDataType.LocationData>() {
+            @Override
+            public void update(Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) throws Exception {
+                if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT)) {
+                    timeout.cancel();
+                    synchronized (standbySync) {
+                        if (standby) {
+                            try {
+                                wakeUp();
+                            } catch (CouldNotPerformException ex) {
+                                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify motion state change!", ex), logger);
+                            }
+                        }
+                    }
+                } else if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.ABSENT)) {
+                    timeout.start();
+                }
+            }
+        });
         super.activate();
     }
 
@@ -99,14 +106,12 @@ public class StandbyAgent extends AbstractAgent {
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         logger.info("Deactivating [" + getClass().getSimpleName() + "]");
         locationRemote.deactivate();
-//        presenseDetector.deactivate();
         super.deactivate();
 
     }
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
-//        presenseDetector.activate();
         locationRemote.activate();
         timeout.start();
     }
@@ -114,7 +119,6 @@ public class StandbyAgent extends AbstractAgent {
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
         timeout.cancel();
-//        presenseDetector.deactivate();
         locationRemote.deactivate();
     }
 
