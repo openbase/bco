@@ -22,11 +22,16 @@ package org.openbase.bco.dal.visual.service;
  * #L%
  */
 import java.awt.Color;
+import java.text.DateFormat;
+import java.util.Date;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.PresenceStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.processing.StringProcessor;
 
 /**
  *
@@ -34,6 +39,8 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
  */
 public class PresenceStateServicePanel extends AbstractServicePanel<PresenceStateProviderService, ConsumerService, OperationService> {
 
+    private final DateFormat dateFormat = DateFormat.getDateTimeInstance(DateFormat.FULL, DateFormat.MEDIUM);
+    
     /**
      * Creates new form PresenceStateServicePanel
      *
@@ -54,6 +61,8 @@ public class PresenceStateServicePanel extends AbstractServicePanel<PresenceStat
 
         presenceStatePanel = new javax.swing.JPanel();
         stateLabel = new javax.swing.JLabel();
+        lastPresenceValueLabel = new javax.swing.JLabel();
+        jLabel2 = new javax.swing.JLabel();
 
         presenceStatePanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 3));
 
@@ -72,6 +81,10 @@ public class PresenceStateServicePanel extends AbstractServicePanel<PresenceStat
             .addComponent(stateLabel, javax.swing.GroupLayout.Alignment.TRAILING, javax.swing.GroupLayout.DEFAULT_SIZE, 40, Short.MAX_VALUE)
         );
 
+        lastPresenceValueLabel.setText("N/A");
+
+        jLabel2.setText("Last Presence:");
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
@@ -80,23 +93,44 @@ public class PresenceStateServicePanel extends AbstractServicePanel<PresenceStat
                 .addContainerGap()
                 .addComponent(presenceStatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addContainerGap()
+                    .addComponent(jLabel2)
+                    .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                    .addComponent(lastPresenceValueLabel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                    .addContainerGap()))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
                 .addContainerGap()
                 .addComponent(presenceStatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addContainerGap(32, Short.MAX_VALUE))
+            .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                .addGroup(layout.createSequentialGroup()
+                    .addGap(64, 64, 64)
+                    .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(lastPresenceValueLabel)
+                        .addComponent(jLabel2))
+                    .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
         );
     }// </editor-fold>//GEN-END:initComponents
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JLabel jLabel2;
+    private javax.swing.JLabel lastPresenceValueLabel;
     private javax.swing.JPanel presenceStatePanel;
     private javax.swing.JLabel stateLabel;
     // End of variables declaration//GEN-END:variables
 
     @Override
     protected void updateDynamicComponents() {
+        try {
+            stateLabel.setText(StringProcessor.transformUpperCaseToCamelCase(getProviderService().getPresenceState().getValue().name()));
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(ex, logger);
+        }
         try {
             switch (getProviderService().getPresenceState().getValue()) {
                 case ABSENT:
@@ -109,11 +143,22 @@ public class PresenceStateServicePanel extends AbstractServicePanel<PresenceStat
                     presenceStatePanel.setBackground(Color.GRAY);
                     break;
                 default:
-                    break;
+                    throw new InvalidStateException("State[" + getProviderService().getPresenceState().getValue() + "] is unknown.");
             }
-            stateLabel.setText(getProviderService().getPresenceState().getValue().name());
+            
+            try {
+                if(getProviderService().getPresenceState().getLastPresence().getTime() <= 0) {
+                    lastPresenceValueLabel.setText("Never");
+                } else {
+                lastPresenceValueLabel.setText(dateFormat.format(new Date(getProviderService().getPresenceState().getLastPresence().getTime())));
+                    
+                }
+            } catch (Exception ex) {
+                lastPresenceValueLabel.setText("N/A");
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not format: [" + getProviderService().getPresenceState().getLastPresence() + "]!", ex), logger, LogLevel.ERROR);
+            }
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(ex, logger);
+            ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }
     }
 }

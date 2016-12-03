@@ -36,6 +36,7 @@ import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.schedule.GlobalExecutionService;
 import rst.domotic.state.MotionStateType.MotionState;
 import rst.domotic.state.MotionStateType.MotionStateOrBuilder;
 import rst.domotic.state.PresenceStateType.PresenceState;
@@ -52,7 +53,7 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
      * Default 3 minute window of no movement unit the state switches to
      * NO_MOTION.
      */
-    public static final long MOTION_TIMEOUT = 10000;
+    public static final long PRESENCE_TIMEOUT = 60000 * 15;
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -67,11 +68,21 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
         this.presenceState = PresenceState.newBuilder();
         this.active = false;
         this.presenceStateObservable = new ObservableImpl<>();
-        this.presenceTimeout = new Timeout(MOTION_TIMEOUT) {
+        this.presenceTimeout = new Timeout(PRESENCE_TIMEOUT) {
 
             @Override
             public void expired() {
                 try {
+                    // if motion is still detected just restart the timeout.
+                    if(locationDataProvider.getData().getMotionState().getValue() == MotionState.State.MOTION) {
+                        GlobalExecutionService.submit(new Runnable() {
+                            @Override
+                            public void run() {
+                                presenceTimeout.restart();
+                            }
+                        });
+                        return;
+                    }
                     updatePresenceState(PresenceState.newBuilder().setValue(PresenceState.State.ABSENT));
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify absent by timer!", ex), logger);
@@ -80,6 +91,7 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
         };
 
         locationDataObserver = (Observable<LocationData> source, LocationData data) -> {
+
             updateMotionState(data.getMotionState());
         };
     }
@@ -102,6 +114,7 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
         }
 
         active = true;
+        System.out.println("Resgiter location observer for presencedetector...");
         locationDataProvider.addDataObserver(locationDataObserver);
     }
 
@@ -128,29 +141,37 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
 
     private synchronized void updatePresenceState(final PresenceStateOrBuilder presenceState) throws CouldNotPerformException {
 
+        System.out.println("presense change:" + presenceState.getValue().name());
         // update Timestemp and reset timer
         if (presenceState.getValue() == PresenceState.State.PRESENT) {
             presenceTimeout.restart();
             this.presenceState.getLastPresenceBuilder().setTime(Math.max(this.presenceState.getLastPresence().getTime(), presenceState.getLastPresence().getTime()));
         }
 
+        System.out.println("presense update");
+
         // update value
         this.presenceState.setValue(presenceState.getValue());
 
         // notify
         try {
+            System.out.println("presense notify");
             presenceStateObservable.notifyObservers(this.presenceState.build());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update MotionState!", ex), logger, LogLevel.ERROR);
         }
     }
 
-    private void updateMotionState(final MotionStateOrBuilder motionState) throws CouldNotPerformException {
+    private synchronized void updateMotionState(final MotionStateOrBuilder motionState) throws CouldNotPerformException {
+
+        System.out.println("Motion update triggered!");
 
         // Filter rush motion predictions.
         if (motionState.getValue() == MotionState.State.NO_MOTION && !presenceTimeout.isExpired()) {
             return;
         }
+
+        System.out.println("trigger presence!");
 
         if (motionState.getValue() == MotionState.State.MOTION) {
             updatePresenceState(PresenceState.newBuilder().setValue(PresenceState.State.PRESENT).setTimestamp(motionState.getLastMotion()));
