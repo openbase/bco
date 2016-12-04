@@ -139,7 +139,7 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
                     } catch (IllegalArgumentException ex) {
                         throw new CouldNotPerformException("Does not match [" + relatedMethod.getParameterTypes()[0].getName() + "] which is needed by [" + relatedMethod.getName() + "]!", ex);
                     } catch (InvocationTargetException ex) {
-                        throw new CouldNotPerformException("The related method [" + relatedMethod.getName() + "] throws an exceptioin during invocation!", ex);
+                        throw new CouldNotPerformException("The related method [" + relatedMethod.getName() + "] throws an exception during invocation!", ex);
                     }
 
                     GlobalExecutionService.applyErrorHandling(returnValue, (Exception input) -> {
