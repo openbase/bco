@@ -30,6 +30,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfigOrBuilder;
 import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 import rst.domotic.unit.device.DeviceClassType.DeviceClassOrBuilder;
 
 /**
@@ -45,21 +46,39 @@ public class DeviceConfigUtils {
      * @param deviceUnitConfig
      * @return true if a duplicated unit type is detected.
      */
-    public static boolean checkDuplicatedUnitType(final UnitConfigOrBuilder deviceUnitConfig, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> dalUnitRegistry) throws CouldNotPerformException {
+    public static boolean checkDuplicatedUnitType(final UnitConfigOrBuilder deviceUnitConfig, final DeviceClassOrBuilder deviceClass, final ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> dalUnitRegistry) throws CouldNotPerformException {
 
+        
         List<UnitTemplate.UnitType> unitTypeList = new ArrayList<>();
-        for (String unitId : deviceUnitConfig.getDeviceConfig().getUnitIdList()) {
-            if (!dalUnitRegistry.contains(unitId)) {
-                continue;
-            }
-
-            UnitConfig dalUnitConfig = dalUnitRegistry.getMessage(unitId);
-            if (unitTypeList.contains(dalUnitConfig.getType())) {
+        
+        for(UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
+            
+            // check if device contains already this unit type
+            if (unitTypeList.contains(unitTemplateConfig.getType())) {
                 return true;
             }
-            unitTypeList.add(dalUnitConfig.getType());
+            unitTypeList.add(unitTemplateConfig.getType());
         }
         return false;
+        
+//        // iterate over device introduced units
+//        for (String unitId : deviceUnitConfig.getDeviceConfig().getUnitIdList()) {
+//            
+////            // continue if units are not known
+////            if (!dalUnitRegistry.contains(unitId)) {
+////                continue;
+////            }
+//
+//            // resolve unit config
+//            UnitConfig dalUnitConfig = dalUnitRegistry.getMessage(unitId);
+//            
+//            // check if device contains already unit of the same type
+//            if (unitTypeList.contains(dalUnitConfig.getType())) {
+//                return true;
+//            }
+//            unitTypeList.add(dalUnitConfig.getType());
+//        }
+//        return false;
     }
 
     /**
@@ -72,7 +91,7 @@ public class DeviceConfigUtils {
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
     public static boolean setupUnitLabelByDeviceConfig(final UnitConfig.Builder unitConfig, final UnitConfigOrBuilder deviceConfig, final DeviceClassOrBuilder deviceClass, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> dalUnitRegistry) throws CouldNotPerformException {
-        return setupUnitLabelByDeviceConfig(unitConfig, deviceConfig, deviceClass, checkDuplicatedUnitType(deviceConfig, dalUnitRegistry));
+        return setupUnitLabelByDeviceConfig(unitConfig, deviceConfig, deviceClass, checkDuplicatedUnitType(deviceConfig, deviceClass, dalUnitRegistry));
     }
 
     /**
@@ -115,6 +134,7 @@ public class DeviceConfigUtils {
 
                     if (!unitConfig.getLabel().equals(deviceUnitConfig.getLabel())) {
                         unitConfig.setLabel(deviceUnitConfig.getLabel());
+                        // because device does not contain dublicated unit types, the device label can be used without any conflicts.
                         return true;
                     }
                 }

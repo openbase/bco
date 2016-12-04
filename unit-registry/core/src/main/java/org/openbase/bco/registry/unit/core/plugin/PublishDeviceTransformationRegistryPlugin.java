@@ -21,6 +21,7 @@ package org.openbase.bco.registry.unit.core.plugin;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.ConcurrentModificationException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -36,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import rct.Transform;
 import rct.TransformPublisher;
 import rct.TransformType;
+import rct.TransformerException;
 import rct.TransformerFactory;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -103,15 +105,13 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
                 logger.info("Publish " + locationRegistry.getMessage(deviceConfig.getPlacementConfig().getLocationId()).getPlacementConfig().getTransformationFrameId() + " to " + deviceConfig.getPlacementConfig().getTransformationFrameId());
                 transformation = PoseTransformer.transform(deviceConfig.getPlacementConfig().getPosition(), locationRegistry.getMessage(deviceConfig.getPlacementConfig().getLocationId()).getPlacementConfig().getTransformationFrameId(), deviceConfig.getPlacementConfig().getTransformationFrameId());
 
-                try {
-                    transformation.setAuthority(getRegistry().getName());
-                    transformPublisher.sendTransform(transformation, TransformType.STATIC);
-                } catch (Exception ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.ERROR);
-                }
+                transformation.setAuthority(getRegistry().getName());
+                transformPublisher.sendTransform(transformation, TransformType.STATIC);
             }
-        } catch (Exception ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish device transformation of " + entry + "!", ex), logger, LogLevel.WARN);
+        } catch (NotAvailableException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.DEBUG);
+        } catch (CouldNotPerformException | TransformerException | ConcurrentModificationException | NullPointerException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.WARN);
         }
     }
 

@@ -21,6 +21,7 @@ package org.openbase.bco.registry.unit.core.plugin;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.ConcurrentModificationException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -116,8 +117,10 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
             // Publish the transform object
             transformation.setAuthority(getRegistry().getName());
             transformPublisher.sendTransform(transformation, TransformType.STATIC);
-        } catch (CouldNotPerformException | TransformerException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "! RegistryConsistenct[" + getRegistry().isConsistent() + "]", ex), logger, LogLevel.WARN);
+        } catch (NotAvailableException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.DEBUG);
+        } catch (CouldNotPerformException | TransformerException | ConcurrentModificationException | NullPointerException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.WARN);
         }
     }
 
