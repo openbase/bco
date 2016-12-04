@@ -362,7 +362,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
             } catch (IllegalArgumentException ex) {
                 throw new CouldNotPerformException("Does not match [" + updateMethod.getParameterTypes()[0].getName() + "] which is needed by [" + updateMethod.getName() + "]!", ex);
             } catch (InvocationTargetException ex) {
-                throw new CouldNotPerformException("The related method [" + updateMethod.getName() + "] throws an exceptioin during invocation!", ex);
+                throw new CouldNotPerformException("The related method [" + updateMethod.getName() + "] throws an exception during invocation!", ex);
             }
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply " + serviceType.name() + " Update[" + serviceArgument + "] for Unit[" + getLabel() + "]!", ex);
