@@ -23,6 +23,7 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen.items;
  */
 
 import java.util.List;
+import org.openbase.jul.exception.CouldNotPerformException;
 
 /**
  *
@@ -30,7 +31,7 @@ import java.util.List;
  */
 public interface ItemEntry {
     
-    public String buildStringRep();
+    public String buildStringRep() throws CouldNotPerformException;
 
     public String getCommandType();
 

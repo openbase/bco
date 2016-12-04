@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import static org.openbase.bco.manager.device.binding.openhab.util.configgen.OpenHABItemConfigGenerator.TAB_SIZE;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceTemplateType;
@@ -77,7 +79,9 @@ public abstract class AbstractItemEntry implements ItemEntry {
     }
 
     @Override
-    public String buildStringRep() {
+    public String buildStringRep() throws CouldNotPerformException {
+        
+        verify();
 
         String stringRep = "";
 
@@ -216,6 +220,12 @@ public abstract class AbstractItemEntry implements ItemEntry {
             default:
                 logger.warn("Unkown Service Type: " + serviceTemplate);
                 return "";
+        }
+    }
+    
+    private void verify() throws VerificationFailedException {
+        if(itemId.contains("-")) {
+            throw new VerificationFailedException("Found \"-\" in item id which is not allowed for openhab configurations!");
         }
     }
 }
