@@ -40,12 +40,14 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.SyncObject;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class PowerStateSynchroniserAgent extends AbstractAgent {
 
@@ -53,6 +55,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
     public static final String TARGET_KEY = "TARGET";
     public static final String SOURCE_BEHAVIOUR_KEY = "SOURCE_BEHAVIOUR";
     public static final String TARGET_BEHAVIOUR_KEY = "TARGET_BEHAVIOUR";
+    private final Object AGENT_LOCK = new SyncObject("PowerStateLock");
     private static final PowerState ON = PowerState.newBuilder().setValue(PowerState.State.ON).build();
     private static final PowerState OFF = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
 
@@ -84,66 +87,15 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
 
         // initialize observer
         sourceObserver = (final Observable<GeneratedMessage> source, GeneratedMessage data) -> {
-            sourceLatestPowerState = invokeGetPowerState(data).getValue();
-            logger.info("Received new value [" + sourceLatestPowerState + "] for source");
-            if (sourceLatestPowerState == PowerState.State.OFF) {
-                if (targetLatestPowerState != PowerState.State.OFF) {
-                    for (UnitRemote targetRemote : targetRemotes) {
-                        invokeSetPower(targetRemote, OFF);
-                    }
-                }
-            } else if (sourceLatestPowerState == PowerState.State.ON) {
-                switch (targetBehaviour) {
-                    case OFF:
-                        if (targetLatestPowerState != PowerState.State.OFF) {
-                            for (UnitRemote targetRemote : targetRemotes) {
-                                invokeSetPower(targetRemote, OFF);
-                            }
-                        }
-                        break;
-                    case ON:
-                        if (targetLatestPowerState != PowerState.State.ON) {
-                            for (UnitRemote targetRemote : targetRemotes) {
-                                invokeSetPower(targetRemote, ON);
-                            }
-                        }
-                        break;
-                    case LAST_STATE:
-                        break;
-                }
-            }
+            handleSourcePowerStateUpdate(invokeGetPowerState(data).getValue(), source);
         };
         targetObserver = (final Observable<GeneratedMessage> source, GeneratedMessage data) -> {
-            PowerState.State newPowerState = invokeGetPowerState(data).getValue();
-            logger.info("Received new value [" + targetLatestPowerState + "] for target [" + source + "]");
-            if (!updateLatestTargetPowerState(newPowerState)) {
-                return;
-            }
-            if (targetLatestPowerState == PowerState.State.ON) {
-                if (sourceLatestPowerState != PowerState.State.ON) {
-                    invokeSetPower(sourceRemote, ON);
-                }
-            } else if (targetLatestPowerState == PowerState.State.OFF) {
-                switch (sourceBehaviour) {
-                    case OFF:
-                        if (sourceLatestPowerState != PowerState.State.OFF) {
-                            invokeSetPower(sourceRemote, OFF);
-                        }
-                        break;
-                    case ON:
-                        if (sourceLatestPowerState != PowerState.State.ON) {
-                            invokeSetPower(sourceRemote, ON);
-                        }
-                        break;
-                    case LAST_STATE:
-                        break;
-                }
-            }
+            handleTargetPowerStateUpdate(invokeGetPowerState(data).getValue(), source);
         };
     }
 
     @Override
-    public void init(UnitConfig config) throws InitializationException, InterruptedException {
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
         try {
             logger.debug("Creating PowerStateSynchroniserAgent[" + config.getLabel() + "]");
@@ -174,23 +126,95 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
         }
     }
 
+    private void handleTargetPowerStateUpdate(final PowerState.State targetPowerState, final Object target) {
+        synchronized (AGENT_LOCK) {
+            try {
+                logger.info("Received new Value[" + targetPowerState + "] for Target[" + target + "]");
+                if (!updateLatestTargetPowerState(targetPowerState, target)) {
+                    return;
+                }
+                if (targetLatestPowerState == PowerState.State.ON) {
+                    if (sourceLatestPowerState != PowerState.State.ON) {
+                        invokeSetPower(sourceRemote, ON);
+                    }
+                } else if (targetLatestPowerState == PowerState.State.OFF) {
+                    switch (sourceBehaviour) {
+                        case OFF:
+                            if (sourceLatestPowerState != PowerState.State.OFF) {
+                                invokeSetPower(sourceRemote, OFF);
+                            }
+                            break;
+                        case ON:
+                            if (sourceLatestPowerState != PowerState.State.ON) {
+                                invokeSetPower(sourceRemote, ON);
+                            }
+                            break;
+                        case LAST_STATE:
+                            break;
+                    }
+                }
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory("Could not handle target power state update!", ex, logger);
+            }
+        }
+    }
+
+    private void handleSourcePowerStateUpdate(final PowerState.State sourcePowerState, final Object target) {
+//        try {
+        synchronized (AGENT_LOCK) {
+            this.sourceLatestPowerState = sourcePowerState;
+            logger.info("Handle new Value[" + sourcePowerState + "] for Source[" + target + "]");
+            if (sourceLatestPowerState == PowerState.State.OFF) {
+                if (targetLatestPowerState != PowerState.State.OFF) {
+                    targetRemotes.stream().forEach((targetRemote) -> {
+                        invokeSetPower(targetRemote, OFF);
+                    });
+                }
+            } else if (sourceLatestPowerState == PowerState.State.ON) {
+                switch (targetBehaviour) {
+                    case OFF:
+                        if (targetLatestPowerState != PowerState.State.OFF) {
+                            targetRemotes.stream().forEach((targetRemote) -> {
+                                invokeSetPower(targetRemote, OFF);
+                            });
+                        }
+                        break;
+                    case ON:
+                        if (targetLatestPowerState != PowerState.State.ON) {
+                            targetRemotes.stream().forEach((targetRemote) -> {
+                                invokeSetPower(targetRemote, ON);
+                            });
+                        }
+                        break;
+                    case LAST_STATE:
+                        break;
+                }
+            }
+        }
+//        } catch (CouldNotPerformException ex) {
+//            ExceptionPrinter.printHistory("Could not handle source power state update!", ex, logger);
+//        }
+
+    }
+
     /**
      *
-     * @param powerState
+     * @param targetPowerState
      * @return if the latest target power state has changed
      * @throws CouldNotPerformException
      */
-    private boolean updateLatestTargetPowerState(PowerState.State powerState) throws CouldNotPerformException {
+    private boolean updateLatestTargetPowerState(final PowerState.State targetPowerState, final Object source) throws CouldNotPerformException {
+        logger.info("Received new Value[" + targetPowerState + "] for Source[" + source + "]");
         if (targetLatestPowerState == PowerState.State.UNKNOWN) {
-            targetLatestPowerState = powerState;
+            targetLatestPowerState = targetPowerState;
             return true;
         }
-        if (targetLatestPowerState == PowerState.State.OFF && powerState == PowerState.State.ON) {
+        if (targetLatestPowerState == PowerState.State.OFF && targetPowerState == PowerState.State.ON) {
             targetLatestPowerState = PowerState.State.ON;
             return true;
         }
 
-        if (targetLatestPowerState == PowerState.State.ON && powerState == PowerState.State.OFF) {
+        if (targetLatestPowerState == PowerState.State.ON && targetPowerState == PowerState.State.OFF) {
             targetLatestPowerState = PowerState.State.OFF;
             for (UnitRemote targetRemote : targetRemotes) {
                 if (invokeGetPowerState(targetRemote.getData()).getValue() == PowerState.State.ON) {
@@ -204,7 +228,8 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
         return false;
     }
 
-    private void invokeSetPower(UnitRemote remote, PowerState powerState) {
+    private void invokeSetPower(final UnitRemote remote, final PowerState powerState) {
+        logger.info("Switch " + remote + " to " + powerState.getValue().name());
         try {
             Method method = remote.getClass().getMethod("setPowerState", PowerState.class);
             method.invoke(remote, powerState);
@@ -215,25 +240,13 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
         }
     }
 
-    private PowerState invokeGetPowerState(Object message) throws CouldNotPerformException {
+    private PowerState invokeGetPowerState(final Object message) throws CouldNotPerformException {
         try {
             Method method = message.getClass().getMethod("getPowerState");
             return (PowerState) method.invoke(message);
         } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             throw new CouldNotPerformException("Could not get powerState from message [" + message + "]", ex);
         }
-    }
-
-    @Override
-    public void activate() throws CouldNotPerformException, InterruptedException {
-        logger.debug("Activating [" + getClass().getSimpleName() + "]");
-        super.activate();
-    }
-
-    @Override
-    public void deactivate() throws CouldNotPerformException, InterruptedException {
-        logger.debug("Deactivating [" + getClass().getSimpleName() + "]");
-        super.deactivate();
     }
 
     @Override
@@ -246,22 +259,23 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
         for (UnitRemote targetRemote : targetRemotes) {
             targetRemote.activate();
             targetRemote.waitForData();
-            targetIds += "[" + targetRemote.getId() + "]";
+            targetIds += "[" + targetRemote.getLabel() + "]";
             if ((targetLatestPowerState == PowerState.State.OFF || targetLatestPowerState == PowerState.State.UNKNOWN) && invokeGetPowerState(targetRemote.getData()).getValue() == PowerState.State.ON) {
                 targetLatestPowerState = PowerState.State.ON;
             } else if (targetLatestPowerState == PowerState.State.UNKNOWN && invokeGetPowerState(targetRemote.getData()).getValue() == PowerState.State.OFF) {
                 targetLatestPowerState = PowerState.State.OFF;
             }
             targetRemote.addDataObserver(targetObserver);
+            handleTargetPowerStateUpdate(invokeGetPowerState(targetRemote.getData()).getValue(), targetRemote);
         }
 
         // add data observer after all target remotes have been activated
         // else setPowerState could be called on a target remote without being active
         sourceRemote.addDataObserver(sourceObserver);
-        sourceLatestPowerState = invokeGetPowerState(sourceRemote.getData()).getValue();
+        handleSourcePowerStateUpdate(invokeGetPowerState(sourceRemote.getData()).getValue(), sourceRemote);
 
-        logger.info("Source [" + sourceRemote.getId() + "], behaviour [" + sourceBehaviour + "]");
-        logger.info("Targets [" + targetIds + "], behaviour [" + targetBehaviour + "]");
+        logger.info("Source [" + sourceRemote.getLabel() + "] behaviour [" + sourceBehaviour + "]");
+        logger.info("Targets [" + targetIds + "] behaviour [" + targetBehaviour + "]");
     }
 
     @Override
