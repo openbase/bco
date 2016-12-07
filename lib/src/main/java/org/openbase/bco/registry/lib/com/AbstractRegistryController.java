@@ -291,7 +291,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             if (messageClass.equals(registry.getMessageClass())) {
                 registry.registerConsistencyHandler(consistencyHandler);
             } else {
-                logger.warn("Register of " + consistencyHandler + " skipped for "+registry+" because "+messageClass.getSimpleName()+" is not compatible!");
+                logger.debug("Register of " + consistencyHandler + " skipped for "+registry+" because "+messageClass.getSimpleName()+" is not compatible.");
             }
         }
     }

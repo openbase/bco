@@ -178,9 +178,9 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
                 setState(LauncherState.RUNNING);
                 try {
                     verify();
-                    verified = false;
-                } catch (VerificationFailedException ex) {
                     verified = true;
+                } catch (VerificationFailedException ex) {
+                    verified = false;
                     ExceptionPrinter.printHistory(ex, logger);
                 }
             } catch (CouldNotPerformException ex) {
@@ -259,6 +259,7 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
         logger.info("Start " + JPService.getApplicationName() + "...");
 
         final Map<Entry<Class<? extends AbstractLauncher>, AbstractLauncher>, Future> launchableFutureMap = new HashMap<>();
+        boolean verified = true;
         try {
             for (final Entry<Class<? extends AbstractLauncher>, AbstractLauncher> launcherEntry : launcherMap.entrySet()) {
                 launchableFutureMap.put(launcherEntry, GlobalExecutionService.submit(new Callable<Void>() {
@@ -274,6 +275,7 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
             for (Entry<Entry<Class<? extends AbstractLauncher>, AbstractLauncher>, Future> launcherEntry : launchableFutureMap.entrySet()) {
                 try {
                     launcherEntry.getValue().get(LAUNCHER_TIMEOUT, TimeUnit.MILLISECONDS);
+                    verified &= launcherEntry.getKey().getValue().isVerified();
                 } catch (ExecutionException ex) {
                     exceptionStack = MultiException.push(application, new CouldNotPerformException("Could not launch " + launcherEntry.getKey().getKey().getSimpleName() + "!", ex), exceptionStack);
                 } catch (TimeoutException ex) {
@@ -285,9 +287,15 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
         }
         try {
             MultiException.checkAndThrow("Errors during startup phase!", exceptionStack);
+
+            if(!verified) {
+                logger.info(JPService.getApplicationName() + " was started with restrictions!");
+                return;
+            }
+            
             logger.info(JPService.getApplicationName() + " successfully started.");
         } catch (MultiException ex) {
-            ExceptionPrinter.printHistory(JPService.getApplicationName() + " was startet with some errors!", ex, logger);
+            ExceptionPrinter.printHistory(JPService.getApplicationName() + " was started with some errors!", ex, logger);
         }
     }
 }
