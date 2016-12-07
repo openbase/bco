@@ -53,7 +53,7 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
      * Default 3 minute window of no movement unit the state switches to
      * NO_MOTION.
      */
-    public static final long PRESENCE_TIMEOUT = 60000 * 15;
+    public static final long PRESENCE_TIMEOUT = 60000 * 1;
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -114,7 +114,6 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
         }
 
         active = true;
-        System.out.println("Resgiter location observer for presencedetector...");
         locationDataProvider.addDataObserver(locationDataObserver);
     }
 
@@ -141,21 +140,19 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
 
     private synchronized void updatePresenceState(final PresenceStateOrBuilder presenceState) throws CouldNotPerformException {
 
-        System.out.println("presense change:" + presenceState.getValue().name());
         // update Timestemp and reset timer
         if (presenceState.getValue() == PresenceState.State.PRESENT) {
             presenceTimeout.restart();
             this.presenceState.getLastPresenceBuilder().setTime(Math.max(this.presenceState.getLastPresence().getTime(), presenceState.getLastPresence().getTime()));
         }
-
-        System.out.println("presense update");
+        
 
         // update value
+        this.presenceState.getTimestampBuilder().setTime(System.currentTimeMillis());
         this.presenceState.setValue(presenceState.getValue());
 
         // notify
         try {
-            System.out.println("presense notify");
             presenceStateObservable.notifyObservers(this.presenceState.build());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update MotionState!", ex), logger, LogLevel.ERROR);
@@ -164,17 +161,13 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
 
     private synchronized void updateMotionState(final MotionStateOrBuilder motionState) throws CouldNotPerformException {
 
-        System.out.println("Motion update triggered!");
-
         // Filter rush motion predictions.
         if (motionState.getValue() == MotionState.State.NO_MOTION && !presenceTimeout.isExpired()) {
             return;
         }
 
-        System.out.println("trigger presence!");
-
         if (motionState.getValue() == MotionState.State.MOTION) {
-            updatePresenceState(PresenceState.newBuilder().setValue(PresenceState.State.PRESENT).setTimestamp(motionState.getLastMotion()));
+            updatePresenceState(PresenceState.newBuilder().setValue(PresenceState.State.PRESENT).setLastPresence(motionState.getLastMotion()));
         }
     }
 

@@ -30,6 +30,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
@@ -68,6 +69,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.schedule.GlobalExecutionService;
 import rst.domotic.registry.UnitRegistryDataType;
 
 /**
@@ -173,7 +175,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
             }
 
             super.init(config);
-            
+
             try {
                 verifyUnitConfig();
             } catch (VerificationFailedException ex) {
@@ -436,7 +438,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
                 updateMethodVerificationTime += stopWatch.stop();
             }
         } catch (CouldNotPerformException ex) {
-            logger.error("Coul not stop StopWatch");
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Coul not stop StopWatch", ex), logger);
         }
     }
 
@@ -444,11 +446,14 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     public Future<Void> applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
         try {
             logger.info("applyAction: " + actionConfig.getLabel());
-            Object attribute = serviceJSonProcessor.deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType());
+            final Object attribute = serviceJSonProcessor.deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType());
             // Since its an action it has to be an operation service pattern
-            ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(actionConfig.getServiceType()).setPattern(ServiceTemplate.ServicePattern.OPERATION).build();
-            Service.invokeServiceMethod(serviceTemplate, this, attribute);
-            return CompletableFuture.completedFuture(null); // TODO Should be asynchron!
+            final ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(actionConfig.getServiceType()).setPattern(ServiceTemplate.ServicePattern.OPERATION).build();
+
+            return GlobalExecutionService.submit(() -> {
+                Service.invokeServiceMethod(serviceTemplate, AbstractUnitController.this, attribute);
+                return null;
+            });
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }
