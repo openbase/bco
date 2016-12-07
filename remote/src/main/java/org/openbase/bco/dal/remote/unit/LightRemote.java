@@ -22,6 +22,7 @@ package org.openbase.bco.dal.remote.unit;
  * #L%
  */
 import java.util.concurrent.Future;
+import org.openbase.bco.dal.lib.layer.unit.Light;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -29,11 +30,10 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.dal.LightDataType.LightData;
-import org.openbase.bco.dal.lib.layer.unit.Light;
 
 /**
  *
- * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class LightRemote extends AbstractUnitRemote<LightData> implements Light {
 
