@@ -115,7 +115,6 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
         };
         targetObserver = (final Observable<GeneratedMessage> source, GeneratedMessage data) -> {
             PowerState.State newPowerState = invokeGetPowerState(data).getValue();
-            System.out.println("Received new value [" + targetLatestPowerState + "] for target [" + source + "]");
             logger.info("Received new value [" + targetLatestPowerState + "] for target [" + source + "]");
             if (!updateLatestTargetPowerState(newPowerState)) {
                 return;

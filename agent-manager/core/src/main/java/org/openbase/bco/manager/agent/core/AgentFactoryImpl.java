@@ -28,9 +28,12 @@ import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.rsb.ScopeType;
 
 /**
  *
@@ -69,7 +72,7 @@ public class AgentFactoryImpl implements AgentFactory {
             CachedAgentRegistryRemote.waitForData();
             String agentClassLabel = CachedAgentRegistryRemote.getRegistry().getAgentClassById(config.getAgentConfig().getAgentClassId()).getLabel();
             final Class agentClass = Thread.currentThread().getContextClassLoader().loadClass(getAgentClass(agentClassLabel));
-            logger.info("Creating agent of type [" + agentClass.getSimpleName() + "] on scope [" + config.getScope() + "]");
+            logger.info("Creating agent of type [" + agentClass.getSimpleName() + "] on scope [" + ScopeGenerator.generateStringRep(config.getScope()) + "]");
             agent = (AgentController) agentClass.newInstance();
             agent.init(config);
         } catch (CouldNotPerformException | ClassNotFoundException | SecurityException | java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException | InterruptedException ex) {

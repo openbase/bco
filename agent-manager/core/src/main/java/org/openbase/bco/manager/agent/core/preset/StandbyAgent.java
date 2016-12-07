@@ -34,6 +34,7 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
 import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.state.PowerStateType;
 import rst.domotic.state.PresenceStateType;
 import rst.domotic.unit.location.LocationDataType;
 
@@ -46,8 +47,9 @@ public class StandbyAgent extends AbstractAgent {
     /**
      * 15 min default standby timeout
      */
-    public static final long TIEMOUT = 60000 * 15;
-    
+//    public static final long TIEMOUT = 60000 * 15;
+    public static final long TIEMOUT = 10000;
+
     private LocationRemote locationRemote;
     private final Timeout timeout;
     private final SyncObject standbySync = new SyncObject("StandbySync");
@@ -78,7 +80,7 @@ public class StandbyAgent extends AbstractAgent {
         logger.info("Activating [" + getConfig().getLabel() + "]");
         locationRemote = new LocationRemote();
         CachedLocationRegistryRemote.waitForData();
-        locationRemote.init(CachedLocationRegistryRemote.getRegistry().getLocationConfigById(getConfig().getId()));
+        locationRemote.init(CachedLocationRegistryRemote.getRegistry().getLocationConfigById(getConfig().getPlacementConfig().getLocationId()));
         locationRemote.activate();
         locationRemote.addDataObserver(new Observer<LocationDataType.LocationData>() {
             @Override
@@ -86,6 +88,7 @@ public class StandbyAgent extends AbstractAgent {
                 if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT)) {
                     timeout.cancel();
                     synchronized (standbySync) {
+                        System.out.println("update in");
                         if (standby) {
                             try {
                                 wakeUp();
@@ -93,9 +96,11 @@ public class StandbyAgent extends AbstractAgent {
                                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify motion state change!", ex), logger);
                             }
                         }
+                        System.out.println("update out");
                     }
                 } else if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.ABSENT)) {
                     timeout.start();
+                    System.out.println("timeout started");
                 }
             }
         });
@@ -123,27 +128,41 @@ public class StandbyAgent extends AbstractAgent {
     }
 
     private void standby() throws CouldNotPerformException, InterruptedException {
+        logger.info("Standby " + locationRemote.getLabel() + "...");
         synchronized (standbySync) {
+            System.out.println("standby in");
             try {
-                if (snapshot == null) {
-                    return;
-                }
+                logger.info("Create snapshot of " + locationRemote.getLabel() + " state.");
                 snapshot = locationRemote.recordSnapshot().get();
                 standby = true;
-            } catch (ExecutionException | CouldNotPerformException ex) {
+                logger.info("Switch off all devices...");
+                locationRemote.setPowerState(PowerStateType.PowerState.State.OFF);
+                logger.info(locationRemote.getLabel() + " is now standby.");
+            } catch (ExecutionException | CouldNotPerformException | InterruptedException ex) {
                 throw new CouldNotPerformException("Standby failed!", ex);
+            } finally {
+                System.out.println("standby out");
             }
         }
     }
 
     private void wakeUp() throws CouldNotPerformException, InterruptedException {
+        logger.info("Wake up " + locationRemote.getLabel() + "...");
         synchronized (standbySync) {
+            System.out.println("wakeUp in");
+            if (snapshot == null) {
+                logger.info("skip wake up because no snapshot information available!");
+                return;
+            }
             try {
+                logger.info("restore snapshot up");
                 locationRemote.restoreSnapshot(snapshot).get();
                 snapshot = null;
                 standby = false;
             } catch (ExecutionException | CouldNotPerformException ex) {
                 throw new CouldNotPerformException("WakeUp failed!", ex);
+            } finally {
+                System.out.println("wakeUp out");
             }
         }
     }

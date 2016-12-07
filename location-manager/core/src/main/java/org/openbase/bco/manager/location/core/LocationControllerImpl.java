@@ -29,6 +29,8 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
@@ -42,6 +44,7 @@ import org.openbase.bco.dal.lib.layer.service.provider.SmokeAlarmStateProviderSe
 import org.openbase.bco.dal.lib.layer.service.provider.SmokeStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.TamperStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
+import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactory;
@@ -114,6 +117,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PresenceState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Snapshot.getDefaultInstance()));
     }
 
     private final UnitRemoteFactory factory;
@@ -357,7 +361,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                     break;
             }
         } catch (ClassCastException ex) {
-            logger.error("Could not load Service[" + serviceType + "] for " + unitRemote);
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load Service[" + serviceType + "] for " + unitRemote, ex), logger);
         }
     }
 
@@ -486,6 +490,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 dataBuilder.getInternalBuilder().setTamperState(tamper);
                 dataBuilder.getInternalBuilder().setTargetTemperatureState(targetTemperature);
                 dataBuilder.getInternalBuilder().setAcutalTemperatureState(temperature);
+                dataBuilder.getInternalBuilder().setPresenceState(presenceDetector.getData());
             } catch (Exception ex) {
                 throw new CouldNotPerformException("Could not apply data change!", ex);
             }
@@ -578,10 +583,19 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         try {
             Snapshot.Builder snapshotBuilder = Snapshot.newBuilder();
             for (UnitRemote remote : unitRemoteMap.values()) {
-                snapshotBuilder.addAllActionConfig(remote.recordSnapshot().get().getActionConfigList());
+                try {
+                    if (UnitProcessor.isDalUnit(remote)) {
+                        if (!remote.isConnected()) {
+                            throw new NotAvailableException("Unit[" + remote.getLabel() + "] is currently not reachable!");
+                        }
+                        snapshotBuilder.addAllActionConfig(remote.recordSnapshot().get(2, TimeUnit.SECONDS).getActionConfigList());
+                    }
+                } catch (ExecutionException | TimeoutException ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not record snapshot of " + remote.getLabel(), ex), logger);
+                }
             }
             return CompletableFuture.completedFuture(snapshotBuilder.build());
-        } catch (final ExecutionException | CouldNotPerformException ex) {
+        } catch (final CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not record snapshot!", ex);
         }
     }

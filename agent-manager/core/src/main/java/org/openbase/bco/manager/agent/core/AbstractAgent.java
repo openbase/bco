@@ -28,6 +28,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.rsb.com.AbstractExecutableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.ActivationStateType.ActivationState;
@@ -49,12 +50,6 @@ public abstract class AbstractAgent extends AbstractExecutableController<AgentDa
 
     public AbstractAgent() throws InstantiationException {
         super(AgentDataType.AgentData.newBuilder());
-    }
-
-    @Override
-    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
-        super.init(config);
-        logger.info("Initializing " + getClass().getSimpleName() + "[" + config.getId() + "] on scope [" + config.getScope() + "]");
     }
 
     @Override
