@@ -21,6 +21,7 @@ package org.openbase.bco.registry.unit.core.consistency.dalunitconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.registry.lib.util.DeviceConfigUtils;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
@@ -28,8 +29,10 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import org.openbase.jul.storage.registry.Registry;
 import rst.domotic.registry.UnitRegistryDataType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.device.DeviceClassType;
 
 /**
  *
@@ -38,10 +41,14 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 public class UnitBoundToHostConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     public static final boolean DEFAULT_BOUND_TO_DEVICE = true;
+
+    private final Registry<String, IdentifiableMessage<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder>> deviceClassRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryDataType.UnitRegistryData.Builder> deviceRegistry;
 
-    public UnitBoundToHostConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryDataType.UnitRegistryData.Builder> deviceRegistry) {
+    public UnitBoundToHostConsistencyHandler(final Registry<String, IdentifiableMessage<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder>> deviceClassRegistry,
+            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryDataType.UnitRegistryData.Builder> deviceRegistry) {
         this.deviceRegistry = deviceRegistry;
+        this.deviceClassRegistry = deviceClassRegistry;
     }
 
     @Override
@@ -59,13 +66,13 @@ public class UnitBoundToHostConsistencyHandler extends AbstractProtoBufRegistryC
         // Copy device placement, location and label if bound to device is enabled.
         if (dalUnitConfig.getBoundToUnitHost()) {
             UnitConfig deviceUnitConfig = deviceRegistry.getMessage(dalUnitConfig.getUnitHostId());
+            DeviceClassType.DeviceClass deviceClass = deviceClassRegistry.get(deviceUnitConfig.getDeviceConfig().getDeviceClassId()).getMessage();
 
-            // copy device label into dal unit
-            if (!dalUnitConfig.getLabel().equals(deviceUnitConfig.getLabel())) {
-                dalUnitConfig.setLabel(deviceUnitConfig.getLabel());
-                modification = true;
-            }
-            
+            boolean hasDuplicatedUnitType = DeviceConfigUtils.checkDuplicatedUnitType(deviceUnitConfig, deviceClass, registry);
+
+            // Setup device label if unit has no label configured.
+            modification = modification || DeviceConfigUtils.setupUnitLabelByDeviceConfig(dalUnitConfig, deviceUnitConfig, deviceClass, hasDuplicatedUnitType);
+
             // copy location id
             if (!dalUnitConfig.getPlacementConfig().getLocationId().equals(deviceUnitConfig.getPlacementConfig().getLocationId())) {
                 dalUnitConfig.getPlacementConfigBuilder().setLocationId(deviceUnitConfig.getPlacementConfig().getLocationId());

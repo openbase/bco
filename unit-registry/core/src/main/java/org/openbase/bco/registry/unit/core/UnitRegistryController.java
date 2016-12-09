@@ -284,7 +284,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitScopeConsistencyHandler(locationUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new SyncBindingConfigDeviceClassUnitConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry(), deviceUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry(), locationUnitConfigRegistry, deviceUnitConfigRegistry));
-        dalUnitConfigRegistry.registerConsistencyHandler(new UnitBoundToHostConsistencyHandler(deviceUnitConfigRegistry));
+        dalUnitConfigRegistry.registerConsistencyHandler(new UnitBoundToHostConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry(), deviceUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new UnitTransformationFrameConsistencyHandler(locationUnitConfigRegistry));
 
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassIdConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry()));
