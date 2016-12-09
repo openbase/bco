@@ -56,10 +56,16 @@ public class UnitBoundToHostConsistencyHandler extends AbstractProtoBufRegistryC
             modification = true;
         }
 
-        // Copy device placement and label if bound to device is enabled.
+        // Copy device placement, location and label if bound to device is enabled.
         if (dalUnitConfig.getBoundToUnitHost()) {
             UnitConfig deviceUnitConfig = deviceRegistry.getMessage(dalUnitConfig.getUnitHostId());
 
+            // copy device label into dal unit
+            if (!dalUnitConfig.getLabel().equals(deviceUnitConfig.getLabel())) {
+                dalUnitConfig.setLabel(deviceUnitConfig.getLabel());
+                modification = true;
+            }
+            
             // copy location id
             if (!dalUnitConfig.getPlacementConfig().getLocationId().equals(deviceUnitConfig.getPlacementConfig().getLocationId())) {
                 dalUnitConfig.getPlacementConfigBuilder().setLocationId(deviceUnitConfig.getPlacementConfig().getLocationId());
