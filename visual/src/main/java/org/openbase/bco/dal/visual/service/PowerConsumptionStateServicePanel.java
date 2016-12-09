@@ -146,7 +146,6 @@ public class PowerConsumptionStateServicePanel extends AbstractServicePanel<Powe
             consumptionBar.setString(numberFormat.format(getProviderService().getPowerConsumptionState().getConsumption()) + " W");
 
             double level = (getProviderService().getPowerConsumptionState().getCurrent() / 16d);
-            System.out.println("Level: "+level);
             consumptionBar.setValue((int) (level * 100));
 
             double hue = Math.min(180, Math.max(0, 180 - level * 180));
