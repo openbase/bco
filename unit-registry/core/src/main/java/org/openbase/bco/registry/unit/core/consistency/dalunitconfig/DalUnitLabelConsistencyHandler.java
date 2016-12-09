@@ -61,10 +61,6 @@ public class DalUnitLabelConsistencyHandler extends AbstractProtoBufRegistryCons
         UnitConfig deviceUnitConfig = deviceRegistry.getMessage(dalUnitConfig.getUnitHostId());
         DeviceClass deviceClass = deviceClassRegistry.get(deviceUnitConfig.getDeviceConfig().getDeviceClassId()).getMessage();
 
-        if(deviceUnitConfig.getLabel().equals("TestUnit")) {
-            System.out.println("found testunit");
-        }
-        
         boolean hasDuplicatedUnitType = DeviceConfigUtils.checkDuplicatedUnitType(deviceUnitConfig, deviceClass, registry);
         
         // Setup device label if unit has no label configured.

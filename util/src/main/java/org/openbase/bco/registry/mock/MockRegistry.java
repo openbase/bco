@@ -473,94 +473,70 @@ public class MockRegistry {
 
     private void registerDevices() throws CouldNotPerformException, InterruptedException {
         try {
-            System.out.println("registerDevices thread: " + Thread.currentThread().getName());
             // ambient light
-            System.out.println("Device 1 class");
             DeviceClass ambientLightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Philips_Hue_E27", "KV01_18U", "Philips", UnitType.COLORABLE_LIGHT)).get();
             waitForDeviceClass(ambientLightClass);
 
-            System.out.println("Device 1 config");
             registerDeviceUnitConfig(getDeviceConfig("PH_Hue_E27_Device", serialNumber, ambientLightClass));
 
-            System.out.println("Device 2 class");
             // battery, brightnessSensor, motionSensor, tamperSwitch, temperatureSensor
             DeviceClass motionSensorClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_MotionSensor", "FGMS_001", "Fibaro", UnitType.MOTION_DETECTOR, UnitType.BATTERY, UnitType.BRIGHTNESS_SENSOR, UnitType.TEMPERATURE_SENSOR, UnitType.TAMPER_DETECTOR)).get();
             waitForDeviceClass(motionSensorClass);
 
-            System.out.println("Device 2 config");
             registerDeviceUnitConfig(getDeviceConfig("F_MotionSensor_Device", serialNumber, motionSensorClass));
 
-            System.out.println("Device 3 class");
             // button
             DeviceClass buttonClass = deviceRegistry.registerDeviceClass(getDeviceClass("Gira_429496730210000", "429496730210000", "Gira", UnitType.BUTTON)).get();
             waitForDeviceClass(buttonClass);
 
-            System.out.println("Device 3 config");
             registerDeviceUnitConfig(getDeviceConfig("GI_429496730210000_Device", serialNumber, buttonClass));
 
-            System.out.println("Device 4 class");
             // dimmer
             DeviceClass dimmerClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA663A", "TYA663A", "Hager", UnitType.DIMMER)).get();
             waitForDeviceClass(dimmerClass);
 
-            System.out.println("Device 4 config");
             registerDeviceUnitConfig(getDeviceConfig("HA_TYA663A_Device", serialNumber, dimmerClass));
 
-            System.out.println("Device 5 class");
             // handle
             DeviceClass handleClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_RotaryHandleSensor", "Sec_RHS", "Homematic", UnitType.HANDLE)).get();
             waitForDeviceClass(handleClass);
 
-            System.out.println("Device 5 config");
             registerDeviceUnitConfig(getDeviceConfig("HM_RotaryHandleSensor_Device", serialNumber, handleClass));
 
-            System.out.println("Device 6 class");
             // light
             DeviceClass lightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_FGS_221", "FGS_221", "Fibaro", UnitType.LIGHT)).get();
             waitForDeviceClass(lightClass);
 
-            System.out.println("Device 6 config");
             registerDeviceUnitConfig(getDeviceConfig("F_FGS221_Device", serialNumber, lightClass));
 
-            System.out.println("Device 7 class");
             // powerConsumptionSensor, powerPlug
             DeviceClass powerPlugClass = deviceRegistry.registerDeviceClass(getDeviceClass("Plugwise_PowerPlug", "070140", "Plugwise", UnitType.POWER_SWITCH, UnitType.POWER_CONSUMPTION_SENSOR)).get();
             waitForDeviceClass(powerPlugClass);
 
-            System.out.println("Device 7 config");
             registerDeviceUnitConfig(getDeviceConfig("PW_PowerPlug_Device", serialNumber, powerPlugClass));
 
-            System.out.println("Device 8 class");
             // reedSwitch
             DeviceClass reedSwitchClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_ReedSwitch", "Sec_SC_2", "Homematic", UnitType.REED_CONTACT)).get();
             waitForDeviceClass(reedSwitchClass);
 
-            System.out.println("Device 8 config");
             registerDeviceUnitConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass));
 
-            System.out.println("Device 9 class");
             // rollershutter
             DeviceClass rollershutterClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA628C", "TYA628C", "Hager", UnitType.ROLLER_SHUTTER)).get();
             waitForDeviceClass(rollershutterClass);
 
-            System.out.println("Device 9 config");
             registerDeviceUnitConfig(getDeviceConfig("HA_TYA628C_Device", serialNumber, rollershutterClass));
 
-            System.out.println("Device 10 class");
             // smoke detector
             DeviceClass smokeDetector = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_FGSS_001", "FGSS_001", "Fibaro", UnitType.SMOKE_DETECTOR)).get();
             waitForDeviceClass(smokeDetector);
 
-            System.out.println("Device 10 config");
             registerDeviceUnitConfig(getDeviceConfig("Fibaro_SmokeDetector_Device", serialNumber, smokeDetector));
 
-            System.out.println("Device 11 class");
             // temperature controller
             DeviceClass temperatureControllerClass = deviceRegistry.registerDeviceClass(getDeviceClass("Gira_429496730250000", "429496730250000", "Gira", UnitType.TEMPERATURE_CONTROLLER)).get();
             waitForDeviceClass(temperatureControllerClass);
-            System.out.println("11 id: " + temperatureControllerClass.getId());
 
-            System.out.println("Device 11 config");
             registerDeviceUnitConfig(getDeviceConfig("Gire_TemperatureController_Device", serialNumber, temperatureControllerClass));
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
@@ -580,7 +556,6 @@ public class MockRegistry {
                 while (!deviceRegistryRemote.containsDeviceClass(deviceClass)) {
                     LOCK.wait();
                 }
-                System.out.println("Device class [" + deviceClass.getLabel() + "] registered in remote registry!");
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }

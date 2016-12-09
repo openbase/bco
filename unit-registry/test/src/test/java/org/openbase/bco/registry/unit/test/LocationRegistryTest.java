@@ -69,19 +69,23 @@ public class LocationRegistryTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InstantiationException, InitializationException, IOException, JPServiceException, InterruptedException, CouldNotPerformException {
+    public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
         JPService.registerProperty(JPDebugMode.class, true);
 
-        unitRegistry = new UnitRegistryController();
-        deviceRegistry = new DeviceRegistryController();
-        appRegistry = new AppRegistryController();
-        agentRegistry = new AgentRegistryController();
+        try {
+            unitRegistry = new UnitRegistryController();
+            deviceRegistry = new DeviceRegistryController();
+            appRegistry = new AppRegistryController();
+            agentRegistry = new AgentRegistryController();
 
-        unitRegistry.init();
-        deviceRegistry.init();
-        appRegistry.init();
-        agentRegistry.init();
+            unitRegistry.init();
+            deviceRegistry.init();
+            appRegistry.init();
+            agentRegistry.init();
+        } catch (Exception ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+        }
 
         Thread unitRegistryThread = new Thread(new Runnable() {
 

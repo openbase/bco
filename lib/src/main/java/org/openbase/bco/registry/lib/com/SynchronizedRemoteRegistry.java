@@ -144,8 +144,8 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
 
     @Override
     public String getName() {
-        if (fieldDescriptors.length == 0) {
-            return getClass().getSimpleName() + "[" + remoteService.toString() + "]";
+        if (fieldDescriptors == null || fieldDescriptors.length == 0) {
+            return getClass().getSimpleName() + "[" + (remoteService != null ? remoteService.toString() : "?")  + "]";
         } else {
             String fieldDescritorNames = "[";
             fieldDescritorNames += fieldDescriptors[0].getName();

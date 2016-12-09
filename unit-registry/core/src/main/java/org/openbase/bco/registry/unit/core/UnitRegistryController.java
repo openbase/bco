@@ -184,7 +184,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         try {
             this.unitConfigRegistryList = new ArrayList();
             this.baseUnitConfigRegistryList = new ArrayList();
-
             this.unitTemplateRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitTemplate.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.UNIT_TEMPLATE_FIELD_NUMBER), new UnitTemplateIdGenerator(), JPService.getProperty(JPUnitTemplateDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.dalUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPDalUnitConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.userUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPUserConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
@@ -196,7 +195,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             this.agentUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPAgentConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.sceneUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPSceneConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.appUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPAppConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-
             this.unitConfigRegistryList.add(dalUnitConfigRegistry);
             this.unitConfigRegistryList.add(userUnitConfigRegistry);
             this.unitConfigRegistryList.add(authorizationGroupUnitConfigRegistry);
@@ -207,7 +205,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             this.unitConfigRegistryList.add(sceneUnitConfigRegistry);
             this.unitConfigRegistryList.add(agentUnitConfigRegistry);
             this.unitConfigRegistryList.add(appUnitConfigRegistry);
-
             this.baseUnitConfigRegistryList.add(userUnitConfigRegistry);
             this.baseUnitConfigRegistryList.add(authorizationGroupUnitConfigRegistry);
             this.baseUnitConfigRegistryList.add(deviceUnitConfigRegistry);
@@ -217,12 +214,10 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             this.baseUnitConfigRegistryList.add(sceneUnitConfigRegistry);
             this.baseUnitConfigRegistryList.add(agentUnitConfigRegistry);
             this.baseUnitConfigRegistryList.add(appUnitConfigRegistry);
-
             this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.appRegistryRemote = new AppRegistryRemote();
             this.agentRegistryRemote = new AgentRegistryRemote();
-
-        } catch (JPServiceException ex) {
+        } catch (JPServiceException | NullPointerException ex) {
             throw new InstantiationException(this, ex);
         }
     }

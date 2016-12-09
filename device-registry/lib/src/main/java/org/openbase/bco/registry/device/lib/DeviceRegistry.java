@@ -193,12 +193,10 @@ public interface DeviceRegistry {
                         && isDeviceConfigRegistryConsistent()
                         && isUnitGroupConfigRegistryConsistent()
                         && isUnitTemplateRegistryConsistent()) {
-                    System.out.println("WaitForConsistency finished!");
                     return;
                 }
             } catch (CouldNotPerformException ex) {
             }
-            System.out.println("wait for consistency...");
         }
     }
 }
