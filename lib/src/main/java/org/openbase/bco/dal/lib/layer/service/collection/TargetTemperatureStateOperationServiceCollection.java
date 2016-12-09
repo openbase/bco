@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 
 /**
@@ -37,7 +37,7 @@ public interface TargetTemperatureStateOperationServiceCollection extends Target
 
     @Override
     default public Future<Void> setTargetTemperatureState(TemperatureState temperatureState) throws CouldNotPerformException {
-        return GlobalExecutionService.allOf((TargetTemperatureStateOperationService input) -> input.setTargetTemperatureState(temperatureState), getTargetTemperatureStateOperationServices());
+        return GlobalCachedExecutorService.allOf((TargetTemperatureStateOperationService input) -> input.setTargetTemperatureState(temperatureState), getTargetTemperatureStateOperationServices());
     }
 
     //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots

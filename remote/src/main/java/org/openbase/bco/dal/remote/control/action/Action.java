@@ -36,7 +36,7 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.iface.Initializable;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -123,7 +123,7 @@ public class Action implements ActionService, Initializable<ActionConfig> {
                     return null;
                 }
             });
-            executionFuture = GlobalExecutionService.submit(task);
+            executionFuture = GlobalCachedExecutorService.submit(task);
         }
     }
 

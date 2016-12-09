@@ -48,7 +48,7 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote.ConnectionState;
 import org.openbase.jul.processing.StringProcessor;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.visual.swing.layout.LayoutGenerator;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
@@ -128,7 +128,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
                 case CONNECTING:
                     textColor = Color.ORANGE.darker();
                     textSuffix = "waiting for connection...";
-                    GlobalExecutionService.submit(new Runnable() {
+                    GlobalCachedExecutorService.submit(new Runnable() {
                         @Override
                         public void run() {
                             try {

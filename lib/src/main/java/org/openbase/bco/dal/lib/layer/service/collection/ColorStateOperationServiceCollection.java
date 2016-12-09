@@ -28,7 +28,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationServi
 import org.openbase.bco.dal.lib.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.vision.ColorType;
 import rst.vision.HSBColorType.HSBColor;
@@ -48,7 +48,7 @@ public interface ColorStateOperationServiceCollection extends ColorStateOperatio
      */
     @Override
     default public Future<Void> setColorState(final ColorState colorState) throws CouldNotPerformException {
-        return GlobalExecutionService.allOf((ColorStateOperationService input) -> input.setColorState(colorState), getColorStateOperationServices());
+        return GlobalCachedExecutorService.allOf((ColorStateOperationService input) -> input.setColorState(colorState), getColorStateOperationServices());
     }
 
     //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots

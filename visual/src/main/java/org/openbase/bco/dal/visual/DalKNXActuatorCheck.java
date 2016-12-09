@@ -43,7 +43,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import javax.swing.SwingUtilities;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.unit.dal.PowerConsumptionSensorDataType.PowerConsumptionSensorData;
@@ -121,7 +121,7 @@ public class DalKNXActuatorCheck extends javax.swing.JFrame {
     }
 
     private synchronized void verifyConsumption() {
-        Future<Void> future = GlobalExecutionService.submit(new Callable<Void>() {
+        Future<Void> future = GlobalCachedExecutorService.submit(new Callable<Void>() {
 
             @Override
             public Void call() throws Exception {

@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.state.PowerStateType.PowerState;
 
 /**
@@ -37,7 +37,7 @@ public interface PowerStateOperationServiceCollection extends PowerStateOperatio
 
     @Override
     default public Future<Void> setPowerState(final PowerState powerState) throws CouldNotPerformException {
-        return GlobalExecutionService.allOf((PowerStateOperationService input) -> input.setPowerState(powerState), getPowerStateOperationServices());
+        return GlobalCachedExecutorService.allOf((PowerStateOperationService input) -> input.setPowerState(powerState), getPowerStateOperationServices());
     }
 
     //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots

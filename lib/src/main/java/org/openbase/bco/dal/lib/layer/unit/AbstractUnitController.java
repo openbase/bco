@@ -69,7 +69,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.registry.UnitRegistryDataType;
 
 /**
@@ -450,7 +450,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
             // Since its an action it has to be an operation service pattern
             final ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(actionConfig.getServiceType()).setPattern(ServiceTemplate.ServicePattern.OPERATION).build();
 
-            return GlobalExecutionService.submit(() -> {
+            return GlobalCachedExecutorService.submit(() -> {
                 Service.invokeServiceMethod(serviceTemplate, AbstractUnitController.this, attribute);
                 return null;
             });

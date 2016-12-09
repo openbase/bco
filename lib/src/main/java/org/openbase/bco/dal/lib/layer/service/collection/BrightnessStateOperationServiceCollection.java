@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 
 /**
@@ -37,7 +37,7 @@ public interface BrightnessStateOperationServiceCollection extends BrightnessSta
 
     @Override
     default public Future<Void> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
-        return GlobalExecutionService.allOf((BrightnessStateOperationService input) -> input.setBrightnessState(brightnessState), getBrightnessStateOperationServices());
+        return GlobalCachedExecutorService.allOf((BrightnessStateOperationService input) -> input.setBrightnessState(brightnessState), getBrightnessStateOperationServices());
     }
 
     //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots

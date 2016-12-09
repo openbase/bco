@@ -36,7 +36,7 @@ import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.state.MotionStateType.MotionState;
 import rst.domotic.state.MotionStateType.MotionStateOrBuilder;
 import rst.domotic.state.PresenceStateType.PresenceState;
@@ -75,7 +75,7 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
                 try {
                     // if motion is still detected just restart the timeout.
                     if(locationDataProvider.getData().getMotionState().getValue() == MotionState.State.MOTION) {
-                        GlobalExecutionService.submit(new Runnable() {
+                        GlobalCachedExecutorService.submit(new Runnable() {
                             @Override
                             public void run() {
                                 presenceTimeout.restart();

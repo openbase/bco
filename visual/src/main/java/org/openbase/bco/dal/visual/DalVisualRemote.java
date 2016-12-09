@@ -29,7 +29,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -79,7 +79,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
     }
 
     public final void init() throws InterruptedException, CouldNotPerformException {
-        GlobalExecutionService.execute(() -> {
+        GlobalCachedExecutorService.execute(() -> {
             try {
                 selectorPanel.init();
             } catch (InterruptedException | CouldNotPerformException ex) {

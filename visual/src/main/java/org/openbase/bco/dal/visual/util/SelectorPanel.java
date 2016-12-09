@@ -42,7 +42,7 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
@@ -336,7 +336,7 @@ public class SelectorPanel extends javax.swing.JPanel {
             currentTask.cancel(true);
         }
 
-        currentTask = GlobalExecutionService.submit(task);
+        currentTask = GlobalCachedExecutorService.submit(task);
         return currentTask;
     }
 

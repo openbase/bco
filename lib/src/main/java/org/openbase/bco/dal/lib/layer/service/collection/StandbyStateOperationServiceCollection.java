@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.state.StandbyStateType.StandbyState;
 
 /**
@@ -37,7 +37,7 @@ public interface StandbyStateOperationServiceCollection extends StandbyStateOper
 
     @Override
     default public Future<Void> setStandbyState(StandbyState state) throws CouldNotPerformException {
-        return GlobalExecutionService.allOf((StandbyStateOperationService input) -> input.setStandbyState(state), getStandbyStateOperationServices());
+        return GlobalCachedExecutorService.allOf((StandbyStateOperationService input) -> input.setStandbyState(state), getStandbyStateOperationServices());
     }
 
     //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots

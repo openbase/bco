@@ -29,7 +29,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import javax.swing.Timer;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -122,7 +122,7 @@ public class StatusPanel extends javax.swing.JPanel {
         cancelButton.setEnabled(true);
         progressBar.setIndeterminate(true);
         setText(text, type);
-        GlobalExecutionService.execute(() -> {
+        GlobalCachedExecutorService.execute(() -> {
             try {
                 future.get();
                 reset();

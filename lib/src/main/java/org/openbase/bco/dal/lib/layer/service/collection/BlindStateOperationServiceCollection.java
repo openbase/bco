@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.state.BlindStateType.BlindState;
 
 /**
@@ -37,7 +37,7 @@ public interface BlindStateOperationServiceCollection extends BlindStateOperatio
 
     @Override
     default public Future<Void> setBlindState(BlindState state) throws CouldNotPerformException {
-        return GlobalExecutionService.allOf((BlindStateOperationService input) -> input.setBlindState(state), getBlindStateOperationServices());
+        return GlobalCachedExecutorService.allOf((BlindStateOperationService input) -> input.setBlindState(state), getBlindStateOperationServices());
     }
 
     //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
