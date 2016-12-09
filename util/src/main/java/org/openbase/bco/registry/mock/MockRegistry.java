@@ -82,7 +82,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.LoggerFactory;
 import rst.domotic.binding.BindingConfigType.BindingConfig;
@@ -271,7 +271,7 @@ public class MockRegistry {
         try {
             JPService.setupJUnitTestMode();
             List<Future<Void>> registryStartupTasks = new ArrayList<>();
-            registryStartupTasks.add(GlobalExecutionService.submit(() -> {
+            registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
                     unitRegistryLauncher = new UnitRegistryLauncher();
                     unitRegistryLauncher.launch();
@@ -281,7 +281,7 @@ public class MockRegistry {
                 }
                 return null;
             }));
-            registryStartupTasks.add(GlobalExecutionService.submit(() -> {
+            registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
                     deviceRegistryLauncher = new DeviceRegistryLauncher();
                     deviceRegistryLauncher.launch();
@@ -292,7 +292,7 @@ public class MockRegistry {
                 return null;
 //                    throw new CouldNotPerformException("Bad case!");
             }));
-            registryStartupTasks.add(GlobalExecutionService.submit(() -> {
+            registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
                     agentRegistryLauncher = new AgentRegistryLauncher();
                     agentRegistryLauncher.launch();
@@ -302,7 +302,7 @@ public class MockRegistry {
                 }
                 return null;
             }));
-            registryStartupTasks.add(GlobalExecutionService.submit(() -> {
+            registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
                     appRegistryLauncher = new AppRegistryLauncher();
                     appRegistryLauncher.launch();
@@ -320,7 +320,7 @@ public class MockRegistry {
 
             logger.info("Real registries started!");
 
-            registryStartupTasks.add(GlobalExecutionService.submit(() -> {
+            registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
                     locationRegistryLauncher = new LocationRegistryLauncher();
                     locationRegistryLauncher.launch();
@@ -330,7 +330,7 @@ public class MockRegistry {
                 }
                 return null;
             }));
-            registryStartupTasks.add(GlobalExecutionService.submit(() -> {
+            registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
                     userRegistryLauncher = new UserRegistryLauncher();
                     userRegistryLauncher.launch();
@@ -340,7 +340,7 @@ public class MockRegistry {
                 }
                 return null;
             }));
-            registryStartupTasks.add(GlobalExecutionService.submit(() -> {
+            registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
                     sceneRegistryLauncher = new SceneRegistryLauncher();
                     sceneRegistryLauncher.launch();
@@ -363,7 +363,7 @@ public class MockRegistry {
 
             deviceRegistryRemote = unitRegistryLauncher.getLaunchable().getDeviceRegistryRemote();
 
-            registryStartupTasks.add(GlobalExecutionService.submit(() -> {
+            registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
                     logger.info("Update unitTemplates...");
                     // load templates

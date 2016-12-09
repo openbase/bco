@@ -42,7 +42,7 @@ import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Launchable;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -328,7 +328,7 @@ public class DeviceRegistryController extends AbstractVirtualRegistryController<
      */
     @Override
     public Future<DeviceClass> registerDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> deviceClassRegistry.register(deviceClass));
+        return GlobalCachedExecutorService.submit(() -> deviceClassRegistry.register(deviceClass));
     }
 
     /**
@@ -364,7 +364,7 @@ public class DeviceRegistryController extends AbstractVirtualRegistryController<
      */
     @Override
     public Future<DeviceClass> updateDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> deviceClassRegistry.update(deviceClass));
+        return GlobalCachedExecutorService.submit(() -> deviceClassRegistry.update(deviceClass));
     }
 
     /**
@@ -376,7 +376,7 @@ public class DeviceRegistryController extends AbstractVirtualRegistryController<
      */
     @Override
     public Future<DeviceClass> removeDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> deviceClassRegistry.remove(deviceClass));
+        return GlobalCachedExecutorService.submit(() -> deviceClassRegistry.remove(deviceClass));
     }
 
     /**

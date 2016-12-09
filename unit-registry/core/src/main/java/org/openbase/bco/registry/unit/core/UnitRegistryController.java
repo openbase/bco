@@ -115,7 +115,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
@@ -466,7 +466,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
     @Override
     public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> getUnitConfigRegistry(unitConfig.getType()).register(unitConfig));
+        return GlobalCachedExecutorService.submit(() -> getUnitConfigRegistry(unitConfig.getType()).register(unitConfig));
     }
 
     @Override
@@ -500,12 +500,12 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
     @Override
     public Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> getUnitConfigRegistry(unitConfig.getType()).update(unitConfig));
+        return GlobalCachedExecutorService.submit(() -> getUnitConfigRegistry(unitConfig.getType()).update(unitConfig));
     }
 
     @Override
     public Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> getUnitConfigRegistry(unitConfig.getType()).remove(unitConfig));
+        return GlobalCachedExecutorService.submit(() -> getUnitConfigRegistry(unitConfig.getType()).remove(unitConfig));
     }
 
     @Override
@@ -604,7 +604,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      */
     @Override
     public Future<UnitTemplate> updateUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> unitTemplateRegistry.update(unitTemplate));
+        return GlobalCachedExecutorService.submit(() -> unitTemplateRegistry.update(unitTemplate));
     }
 
     /**
@@ -737,7 +737,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public Future<UnitConfig> registerUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException {
         verifyUnitGroupUnitConfig(groupConfig);
-        return GlobalExecutionService.submit(() -> unitGroupUnitConfigRegistry.register(groupConfig));
+        return GlobalCachedExecutorService.submit(() -> unitGroupUnitConfigRegistry.register(groupConfig));
     }
 
     /**
@@ -774,7 +774,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public Future<UnitConfig> updateUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException {
         verifyUnitGroupUnitConfig(groupConfig);
-        return GlobalExecutionService.submit(() -> unitGroupUnitConfigRegistry.update(groupConfig));
+        return GlobalCachedExecutorService.submit(() -> unitGroupUnitConfigRegistry.update(groupConfig));
     }
 
     /**
@@ -787,7 +787,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public Future<UnitConfig> removeUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException {
         verifyUnitGroupUnitConfig(groupConfig);
-        return GlobalExecutionService.submit(() -> unitGroupUnitConfigRegistry.remove(groupConfig));
+        return GlobalCachedExecutorService.submit(() -> unitGroupUnitConfigRegistry.remove(groupConfig));
     }
 
     /**

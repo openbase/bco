@@ -45,7 +45,7 @@ import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.iface.provider.NameProvider;
 import org.openbase.jul.pattern.Launcher;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -262,7 +262,7 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
         boolean verified = true;
         try {
             for (final Entry<Class<? extends AbstractLauncher>, AbstractLauncher> launcherEntry : launcherMap.entrySet()) {
-                launchableFutureMap.put(launcherEntry, GlobalExecutionService.submit(new Callable<Void>() {
+                launchableFutureMap.put(launcherEntry, GlobalCachedExecutorService.submit(new Callable<Void>() {
 
                     @Override
                     public Void call() throws Exception {

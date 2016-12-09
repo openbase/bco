@@ -40,7 +40,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -228,7 +228,7 @@ public class AgentRegistryController extends AbstractVirtualRegistryController<A
 
     @Override
     public Future<AgentClass> registerAgentClass(AgentClass agentClass) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> agentClassRegistry.register(agentClass));
+        return GlobalCachedExecutorService.submit(() -> agentClassRegistry.register(agentClass));
     }
 
     @Override
@@ -243,12 +243,12 @@ public class AgentRegistryController extends AbstractVirtualRegistryController<A
 
     @Override
     public Future<AgentClass> updateAgentClass(AgentClass agentClass) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> agentClassRegistry.update(agentClass));
+        return GlobalCachedExecutorService.submit(() -> agentClassRegistry.update(agentClass));
     }
 
     @Override
     public Future<AgentClass> removeAgentClass(AgentClass agentClass) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> agentClassRegistry.remove(agentClass));
+        return GlobalCachedExecutorService.submit(() -> agentClassRegistry.remove(agentClass));
     }
 
     @Override

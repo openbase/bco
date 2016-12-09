@@ -41,7 +41,7 @@ import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -229,7 +229,7 @@ public class AppRegistryController extends AbstractVirtualRegistryController<App
 
     @Override
     public Future<AppClass> registerAppClass(AppClass appClass) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> appClassRegistry.register(appClass));
+        return GlobalCachedExecutorService.submit(() -> appClassRegistry.register(appClass));
     }
 
     @Override
@@ -244,12 +244,12 @@ public class AppRegistryController extends AbstractVirtualRegistryController<App
 
     @Override
     public Future<AppClass> updateAppClass(AppClass appClass) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> appClassRegistry.update(appClass));
+        return GlobalCachedExecutorService.submit(() -> appClassRegistry.update(appClass));
     }
 
     @Override
     public Future<AppClass> removeAppClass(AppClass appClass) throws CouldNotPerformException {
-        return GlobalExecutionService.submit(() -> appClassRegistry.remove(appClass));
+        return GlobalCachedExecutorService.submit(() -> appClassRegistry.remove(appClass));
     }
 
     @Override
