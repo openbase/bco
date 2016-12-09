@@ -17,7 +17,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.location.LocationConfigType;
@@ -106,7 +106,7 @@ public class PartyLightTileFollowerApp extends AbstractApp {
             logger.warn(this + " is already executing!");
             return;
         }
-        tileFollowerFuture = GlobalExecutionService.submit(new TileFollower());
+        tileFollowerFuture = GlobalCachedExecutorService.submit(new TileFollower());
 
     }
 

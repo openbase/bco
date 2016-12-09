@@ -42,7 +42,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.processing.StringProcessor;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionConfigType.ActionConfig;
@@ -86,7 +86,7 @@ public class SceneEditor extends javax.swing.JFrame {
         CachedLocationRegistryRemote.waitForData();
         CachedUnitRegistryRemote.waitForData();
         
-        GlobalExecutionService.submit(() -> {
+        GlobalCachedExecutorService.submit(() -> {
             try {
                 genericUnitCollectionPanel.init();
                 sceneSelectorPanel.init();

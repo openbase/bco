@@ -66,7 +66,7 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionConfigType.ActionConfig;
@@ -618,7 +618,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         for (Service service : serviceMap.get(actionConfig.getServiceType())) {
             futureCollection.add(service.applyAction(actionConfig));
         }
-        return GlobalExecutionService.allOf(futureCollection, null);
+        return GlobalCachedExecutorService.allOf(futureCollection, null);
     }
 
     @Override

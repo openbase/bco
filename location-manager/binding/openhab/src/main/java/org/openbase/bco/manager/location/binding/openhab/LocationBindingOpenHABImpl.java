@@ -43,7 +43,7 @@ import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.openbase.jul.extension.openhab.binding.transform.OpenhabCommandTransformer;
 import org.openbase.jul.extension.rsb.com.RSBRemoteService;
 import org.openbase.jul.processing.StringProcessor;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
 import org.openbase.jul.storage.registry.RegistryImpl;
 import rst.domotic.binding.openhab.OpenhabCommandType.OpenhabCommand;
@@ -142,7 +142,7 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
                         throw new CouldNotPerformException("The related method [" + relatedMethod.getName() + "] throws an exception during invocation!", ex);
                     }
 
-                    GlobalExecutionService.applyErrorHandling(returnValue, (Exception input) -> {
+                    GlobalCachedExecutorService.applyErrorHandling(returnValue, (Exception input) -> {
                         ExceptionPrinter.printHistory(new CouldNotPerformException("Waiting for result on method failed with exception", input), logger);
                         return null;
                     }, 30, TimeUnit.SECONDS);

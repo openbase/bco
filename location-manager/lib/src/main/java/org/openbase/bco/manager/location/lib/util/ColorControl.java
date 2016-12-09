@@ -36,7 +36,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openbase.jul.schedule.GlobalExecutionService;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.vision.HSBColorType.HSBColor;
@@ -78,7 +78,7 @@ public class ColorControl {
     
     public Future<HSBColor> execute(final HSBColor color) throws InterruptedException, CouldNotPerformException {
 
-        return GlobalExecutionService.submit(new Callable<HSBColor>() {
+        return GlobalCachedExecutorService.submit(new Callable<HSBColor>() {
 
             @Override
             public HSBColor call() throws Exception {
