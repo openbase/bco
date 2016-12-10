@@ -64,9 +64,9 @@ public class UnitBoundToHostConsistencyHandler extends AbstractProtoBufRegistryC
             System.out.println("add BoundToUnitHost flag for " + dalUnitConfig.getLabel());
             modification = true;
         }
-        
+
         // Overwrite unit bounds by device bounds
-        if(deviceUnitConfig.getBoundToUnitHost() && !dalUnitConfig.getBoundToUnitHost()) {
+        if (deviceUnitConfig.getBoundToUnitHost() && !dalUnitConfig.getBoundToUnitHost()) {
             dalUnitConfig.setBoundToUnitHost(true);
         }
 
@@ -79,9 +79,15 @@ public class UnitBoundToHostConsistencyHandler extends AbstractProtoBufRegistryC
 //            if (dalUnitConfig.getLabel().equals("Temperature_Controller_Unit_Test")) {
 //                System.out.println("break;");
 //            }
-
             // Setup device label if unit has no label configured.
-            modification = modification || DeviceConfigUtils.setupUnitLabelByDeviceConfig(dalUnitConfig, deviceUnitConfig, deviceClass, hasDuplicatedUnitType);
+            UnitConfig.Builder unitConfigCopy = UnitConfig.newBuilder(dalUnitConfig.build());
+            DeviceConfigUtils.setupUnitLabelByDeviceConfig(unitConfigCopy, deviceUnitConfig, deviceClass, hasDuplicatedUnitType);
+
+            if (!unitConfigCopy.getLabel().equals(dalUnitConfig)) {
+                if (unitConfigCopy.getLabel().startsWith(deviceUnitConfig.getLabel())) {
+                    modification = modification || DeviceConfigUtils.setupUnitLabelByDeviceConfig(dalUnitConfig, deviceUnitConfig, deviceClass, hasDuplicatedUnitType);
+                }
+            }
 
             if (modification) {
                 System.out.println("Updated label to : " + dalUnitConfig.getLabel());

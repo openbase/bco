@@ -21,17 +21,14 @@ package org.openbase.bco.registry.unit.core.consistency.deviceconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.*;
 import org.openbase.bco.registry.lib.util.DeviceConfigUtils;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.Registry;
-import rst.domotic.registry.UnitRegistryDataType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.device.DeviceClassType;
 
@@ -41,9 +38,10 @@ import rst.domotic.unit.device.DeviceClassType;
  */
 public class DeviceBoundToHostConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
-    public static final boolean DEFAULT_BOUND_TO_DEVICE = true;
+    private final Registry<String, IdentifiableMessage<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder>> deviceClassRegistry;
 
-    public DeviceBoundToHostConsistencyHandler() {
+    public DeviceBoundToHostConsistencyHandler(final Registry<String, IdentifiableMessage<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder>> deviceClassRegistry) {
+        this.deviceClassRegistry = deviceClassRegistry;
     }
 
     @Override
@@ -52,9 +50,11 @@ public class DeviceBoundToHostConsistencyHandler extends AbstractProtoBufRegistr
 
         boolean modification = false;
 
+        final DeviceClassType.DeviceClass deviceClass = deviceClassRegistry.get(deviceUnitConfig.getDeviceConfig().getDeviceClassId()).getMessage();
+        
         // Setup default bounding
         if (!deviceUnitConfig.hasBoundToUnitHost()) {
-            deviceUnitConfig.setBoundToUnitHost(DEFAULT_BOUND_TO_DEVICE);
+            deviceUnitConfig.setBoundToUnitHost(!DeviceConfigUtils.checkDuplicatedUnitType(deviceUnitConfig, deviceClass, registry));
             modification = true;
         }
 
