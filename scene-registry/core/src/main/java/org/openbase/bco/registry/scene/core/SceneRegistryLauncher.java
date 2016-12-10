@@ -22,6 +22,7 @@ package org.openbase.bco.registry.scene.core;
  * #L%
  */
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
+import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
 import org.openbase.bco.registry.scene.lib.SceneRegistry;
 import org.openbase.bco.registry.scene.lib.jp.JPSceneRegistryScope;
 import org.openbase.jps.core.JPService;
@@ -33,7 +34,7 @@ import org.openbase.jps.preset.JPReadOnly;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class SceneRegistryLauncher extends AbstractLauncher<SceneRegistryController> {
+public class SceneRegistryLauncher extends AbstractRegistryLauncher<SceneRegistryController> {
 
     public SceneRegistryLauncher() throws org.openbase.jul.exception.InstantiationException {
         super(SceneRegistry.class, SceneRegistryController.class);

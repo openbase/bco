@@ -67,6 +67,10 @@
         </plugins>
     </build>
 
+    <properties>
+        <skipTests>false</skipTests>
+    </properties>
+
     <dependencies>
         <dependency>
             <groupId>junit</groupId>

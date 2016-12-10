@@ -22,6 +22,7 @@ package org.openbase.bco.registry.user.core;
  * #L%
  */
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
+import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
 import org.openbase.bco.registry.user.lib.UserRegistry;
 import org.openbase.bco.registry.user.lib.jp.JPUserRegistryScope;
 import org.openbase.jps.core.JPService;
@@ -34,7 +35,7 @@ import org.openbase.jul.exception.InstantiationException;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class UserRegistryLauncher extends AbstractLauncher<UserRegistryController> {
+public class UserRegistryLauncher extends AbstractRegistryLauncher<UserRegistryController> {
 
     public UserRegistryLauncher() throws InstantiationException {
         super(UserRegistry.class, UserRegistryController.class);

@@ -21,8 +21,10 @@ package org.openbase.bco.registry.location.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.registry.lib.com.AbstractRegistryController;
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import static org.openbase.bco.registry.lib.launch.AbstractLauncher.main;
+import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.openbase.jps.core.JPService;
@@ -34,7 +36,7 @@ import org.openbase.jps.preset.JPReadOnly;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class LocationRegistryLauncher extends AbstractLauncher<LocationRegistryController> {
+public class LocationRegistryLauncher extends AbstractRegistryLauncher<LocationRegistryController> {
 
     public LocationRegistryLauncher() throws org.openbase.jul.exception.InstantiationException {
         super(LocationRegistry.class, LocationRegistryController.class);

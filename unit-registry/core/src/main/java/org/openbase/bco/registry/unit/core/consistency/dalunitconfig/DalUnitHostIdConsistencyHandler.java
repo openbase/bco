@@ -21,6 +21,10 @@ package org.openbase.bco.registry.unit.core.consistency.dalunitconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -29,6 +33,7 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import org.openbase.jul.storage.registry.jp.JPRecoverDB;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 
@@ -55,6 +60,19 @@ public class DalUnitHostIdConsistencyHandler extends AbstractProtoBufRegistryCon
             // throws a could not perform exception if the unit host is not registered
             UnitConfig unitHostConfig = unitDeviceConfigRegistry.get(dalUnitConfig.getUnitHostId()).getMessage();
             if (!unitHostConfig.getDeviceConfig().getUnitIdList().contains(dalUnitConfig.getId())) {
+
+                try {
+                    if (JPService.getProperty(JPRecoverDB.class).getValue()) {
+                        if (!registry.isSandbox()) {
+                            logger.warn("Unit[" + dalUnitConfig.getLabel() + "] will be removed because UnitHost[" + unitHostConfig.getLabel() + "] does not know this unit!");
+                        }
+                        registry.remove(dalUnitConfig);
+                        return;
+                    }
+                } catch (JPNotAvailableException ex) {
+                    logger.warn("Could not check JPRecoverDB flag!");
+                }
+
                 throw new VerificationFailedException("DalUnitConfig [" + dalUnitConfig.getLabel() + "] is not registered in UnitHost[" + unitHostConfig.getLabel() + "]!");
             }
         }

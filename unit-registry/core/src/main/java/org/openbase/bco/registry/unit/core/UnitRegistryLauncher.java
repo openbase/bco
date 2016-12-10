@@ -24,6 +24,7 @@ package org.openbase.bco.registry.unit.core;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
+import org.openbase.bco.registry.lib.com.AbstractRegistryController;
 import static org.openbase.bco.registry.lib.launch.AbstractLauncher.main;
 import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;

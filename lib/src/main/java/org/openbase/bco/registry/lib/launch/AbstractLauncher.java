@@ -21,6 +21,7 @@ package org.openbase.bco.registry.lib.launch;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -71,8 +72,7 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
     private long launchTime = -1;
     private LauncherState state;
     private boolean verified;
-    
-    
+    private VerificationFailedException verificationFailedException;
 
     /**
      * Constructor prepares the launcher and registers already a shutdown hook.
@@ -181,7 +181,7 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
                     verified = true;
                 } catch (VerificationFailedException ex) {
                     verified = false;
-                    ExceptionPrinter.printHistory(ex, logger);
+                    verificationFailedException = ex;
                 }
             } catch (CouldNotPerformException ex) {
                 setState(LauncherState.ERROR);
@@ -234,19 +234,24 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
         return verified;
     }
 
+    public VerificationFailedException getVerificationFailedCause() {
+        return verificationFailedException;
+    }
+
     public static void main(final String args[], final Class application, final Class<? extends AbstractLauncher>... launchers) {
 
         final Logger logger = LoggerFactory.getLogger(Launcher.class);
         JPService.setApplicationName(application);
 
-        MultiException.ExceptionStack exceptionStack = null;
+        MultiException.ExceptionStack errorExceptionStack = null;
+        MultiException.ExceptionStack verificationExceptionStack = null;
 
         Map<Class<? extends AbstractLauncher>, AbstractLauncher> launcherMap = new HashMap<>();
         for (final Class<? extends AbstractLauncher> launcherClass : launchers) {
             try {
                 launcherMap.put(launcherClass, launcherClass.newInstance());
             } catch (InstantiationException | IllegalAccessException ex) {
-                exceptionStack = MultiException.push(application, new CouldNotPerformException("Could not load launcher class!", ex), exceptionStack);
+                errorExceptionStack = MultiException.push(application, new CouldNotPerformException("Could not load launcher class!", ex), errorExceptionStack);
             }
         }
 
@@ -259,7 +264,6 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
         logger.info("Start " + JPService.getApplicationName() + "...");
 
         final Map<Entry<Class<? extends AbstractLauncher>, AbstractLauncher>, Future> launchableFutureMap = new HashMap<>();
-        boolean verified = true;
         try {
             for (final Entry<Class<? extends AbstractLauncher>, AbstractLauncher> launcherEntry : launcherMap.entrySet()) {
                 launchableFutureMap.put(launcherEntry, GlobalCachedExecutorService.submit(new Callable<Void>() {
@@ -272,30 +276,42 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
                 }));
             }
 
-            for (Entry<Entry<Class<? extends AbstractLauncher>, AbstractLauncher>, Future> launcherEntry : launchableFutureMap.entrySet()) {
-                try {
-                    launcherEntry.getValue().get(LAUNCHER_TIMEOUT, TimeUnit.MILLISECONDS);
-                    verified &= launcherEntry.getKey().getValue().isVerified();
-                } catch (ExecutionException ex) {
-                    exceptionStack = MultiException.push(application, new CouldNotPerformException("Could not launch " + launcherEntry.getKey().getKey().getSimpleName() + "!", ex), exceptionStack);
-                } catch (TimeoutException ex) {
-                    exceptionStack = MultiException.push(application, new CouldNotPerformException("Launcher " + launcherEntry.getKey().getKey().getSimpleName() + " not responding!", ex), exceptionStack);
+            while (!Thread.interrupted() && !launchableFutureMap.isEmpty()) {
+                for (Entry<Entry<Class<? extends AbstractLauncher>, AbstractLauncher>, Future> launcherEntry : new ArrayList<>(launchableFutureMap.entrySet())) {
+                    try {
+                        launcherEntry.getValue().get(LAUNCHER_TIMEOUT, TimeUnit.MILLISECONDS);
+                        if (!launcherEntry.getKey().getValue().isVerified()) {
+                            verificationExceptionStack = MultiException.push(application, new CouldNotPerformException("Could not verify " + launcherEntry.getKey().getKey().getSimpleName() + "!", launcherEntry.getKey().getValue().getVerificationFailedCause()), verificationExceptionStack);
+                        }
+                        launchableFutureMap.remove(launcherEntry.getKey());
+                    } catch (ExecutionException ex) {
+                        errorExceptionStack = MultiException.push(application, new CouldNotPerformException("Could not launch " + launcherEntry.getKey().getKey().getSimpleName() + "!", ex), errorExceptionStack);
+                    } catch (TimeoutException ex) {
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Launcher " + launcherEntry.getKey().getKey().getSimpleName() + " startup delay detected!", ex), logger);
+                    }
                 }
             }
         } catch (InterruptedException ex) {
             ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " catched shutdown signal during startup phase!", ex, logger);
         }
-        try {
-            MultiException.checkAndThrow("Errors during startup phase!", exceptionStack);
 
-            if(!verified) {
-                logger.info(JPService.getApplicationName() + " was started with restrictions!");
-                return;
+        try {
+            MultiException.ExceptionStack exceptionStack = null;
+            try {
+                MultiException.checkAndThrow("Errors during startup phase!", errorExceptionStack);
+            } catch (MultiException ex) {
+                exceptionStack = MultiException.push(application, ex, exceptionStack);
             }
-            
+            try {
+                MultiException.checkAndThrow("Cause detections during startup phase!", verificationExceptionStack);
+            } catch (MultiException ex) {
+                exceptionStack = MultiException.push(application, ex, exceptionStack);
+            }
+
+            MultiException.checkAndThrow(JPService.getApplicationName() + " was started with restrictions!", exceptionStack);
             logger.info(JPService.getApplicationName() + " successfully started.");
         } catch (MultiException ex) {
-            ExceptionPrinter.printHistory(JPService.getApplicationName() + " was started with some errors!", ex, logger);
+            ExceptionPrinter.printHistory(ex, logger);
         }
     }
 }
