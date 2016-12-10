@@ -66,6 +66,10 @@
         </plugins>
     </build>
     
+    <properties>
+        <skipTests>false</skipTests>
+    </properties>
+    
     <dependencies>
         <dependency>
             <groupId>org.openbase.bco</groupId>
