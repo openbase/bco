@@ -56,6 +56,7 @@ import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.OpenhabServ
 import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.SyncBindingConfigDeviceClassUnitConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.UnitBoundToHostConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.dalunitconfig.UnitTransformationFrameConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.deviceconfig.DeviceBoundToHostConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.deviceconfig.DeviceConfigDeviceClassIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.deviceconfig.DeviceConfigLocationIdForInstalledDevicesConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.deviceconfig.DeviceEnablingStateConsistencyHandler;
@@ -287,6 +288,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         dalUnitConfigRegistry.registerConsistencyHandler(new UnitBoundToHostConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry(), deviceUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new UnitTransformationFrameConsistencyHandler(locationUnitConfigRegistry));
 
+        deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceBoundToHostConsistencyHandler());
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassIdConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry()));
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceConfigLocationIdForInstalledDevicesConsistencyHandler());
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceInventoryStateConsistencyHandler());

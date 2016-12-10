@@ -70,17 +70,17 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <version>1.9</version>
+                <version>1.10</version>
                 <configuration>
                     <verbose>false</verbose>
                 </configuration>
                 <executions>
-                    <execution>
+<!--                    <execution>  //disabled because of broken license url
                         <id>download-licenses</id>
                         <goals>
                             <goal>download-licenses</goal>
                         </goals>
-                    </execution>
+                    </execution>-->
                 </executions>
             </plugin>
             <plugin>

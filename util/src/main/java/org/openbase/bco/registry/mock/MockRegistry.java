@@ -591,11 +591,6 @@ public class MockRegistry {
         return serviceConfigList;
     }
 
-    public static UnitConfig getUnitConfig(UnitTemplate.UnitType type, String label) throws CouldNotPerformException {
-        UnitTemplate template = MockUnitTemplate.getTemplate(type);
-        return UnitConfig.newBuilder().setPlacementConfig(getDefaultPlacement()).setType(type).addAllServiceConfig(getServiceConfig(template)).setLabel(label).setBoundToUnitHost(false).build();
-    }
-
     public static UnitConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz) {
         DeviceConfig tmp = DeviceConfig.newBuilder()
                 .setSerialNumber(serialNumber)
@@ -606,6 +601,7 @@ public class MockRegistry {
                 .setPlacementConfig(getDefaultPlacement())
                 .setLabel(label)
                 .setDeviceConfig(tmp)
+                .setBoundToUnitHost(false)
                 .setType(UnitType.DEVICE)
                 .build();
     }

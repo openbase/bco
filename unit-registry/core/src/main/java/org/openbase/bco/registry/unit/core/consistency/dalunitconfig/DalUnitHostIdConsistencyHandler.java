@@ -56,8 +56,15 @@ public class DalUnitHostIdConsistencyHandler extends AbstractProtoBufRegistryCon
         if (!dalUnitConfig.hasUnitHostId() || dalUnitConfig.getUnitHostId().isEmpty()) {
             throw new VerificationFailedException("DalUnitConfig [" + dalUnitConfig + "] has no unitHostId!");
         } else {
+
             // TODO: this should be implemented for app hosts as well. Currently there are only devices supported!
             // throws a could not perform exception if the unit host is not registered
+            
+            // skip unit host check if device registry is maybe currently registering this unit.
+            if (unitDeviceConfigRegistry.isBusyByCurrentThread()) {
+                return;
+            }
+
             UnitConfig unitHostConfig = unitDeviceConfigRegistry.get(dalUnitConfig.getUnitHostId()).getMessage();
             if (!unitHostConfig.getDeviceConfig().getUnitIdList().contains(dalUnitConfig.getId())) {
 

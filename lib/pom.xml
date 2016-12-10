@@ -56,12 +56,6 @@
                             </roots>
                         </configuration>
                     </execution>
-                    <execution>
-                        <id>download-licenses</id>
-                        <goals>
-                            <goal>download-licenses</goal>
-                        </goals>
-                    </execution>
                 </executions>
             </plugin>
         </plugins>

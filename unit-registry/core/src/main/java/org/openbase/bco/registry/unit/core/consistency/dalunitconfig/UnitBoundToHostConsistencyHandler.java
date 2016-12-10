@@ -56,26 +56,41 @@ public class UnitBoundToHostConsistencyHandler extends AbstractProtoBufRegistryC
         UnitConfig.Builder dalUnitConfig = entry.getMessage().toBuilder();
 
         boolean modification = false;
+        final UnitConfig deviceUnitConfig = deviceRegistry.getMessage(dalUnitConfig.getUnitHostId());
 
         // Setup default bounding
         if (!dalUnitConfig.hasBoundToUnitHost()) {
-            dalUnitConfig.setBoundToUnitHost(DEFAULT_BOUND_TO_DEVICE);
+            dalUnitConfig.setBoundToUnitHost(deviceUnitConfig.getBoundToUnitHost());
+            System.out.println("add BoundToUnitHost flag for " + dalUnitConfig.getLabel());
             modification = true;
+        }
+        
+        // Overwrite unit bounds by device bounds
+        if(deviceUnitConfig.getBoundToUnitHost() && !dalUnitConfig.getBoundToUnitHost()) {
+            dalUnitConfig.setBoundToUnitHost(true);
         }
 
         // Copy device placement, location and label if bound to device is enabled.
         if (dalUnitConfig.getBoundToUnitHost()) {
-            UnitConfig deviceUnitConfig = deviceRegistry.getMessage(dalUnitConfig.getUnitHostId());
-            DeviceClassType.DeviceClass deviceClass = deviceClassRegistry.get(deviceUnitConfig.getDeviceConfig().getDeviceClassId()).getMessage();
+            final DeviceClassType.DeviceClass deviceClass = deviceClassRegistry.get(deviceUnitConfig.getDeviceConfig().getDeviceClassId()).getMessage();
 
             boolean hasDuplicatedUnitType = DeviceConfigUtils.checkDuplicatedUnitType(deviceUnitConfig, deviceClass, registry);
+
+//            if (dalUnitConfig.getLabel().equals("Temperature_Controller_Unit_Test")) {
+//                System.out.println("break;");
+//            }
 
             // Setup device label if unit has no label configured.
             modification = modification || DeviceConfigUtils.setupUnitLabelByDeviceConfig(dalUnitConfig, deviceUnitConfig, deviceClass, hasDuplicatedUnitType);
 
+            if (modification) {
+                System.out.println("Updated label to : " + dalUnitConfig.getLabel());
+            }
+
             // copy location id
             if (!dalUnitConfig.getPlacementConfig().getLocationId().equals(deviceUnitConfig.getPlacementConfig().getLocationId())) {
                 dalUnitConfig.getPlacementConfigBuilder().setLocationId(deviceUnitConfig.getPlacementConfig().getLocationId());
+                System.out.println("Updated location to : " + deviceUnitConfig.getPlacementConfig().getLocationId());
                 modification = true;
             }
 
