@@ -37,7 +37,7 @@ public class SceneItemEntry extends AbstractItemEntry {
     public static String SCENE_GROUP_LABEL = "Scenes";
 
     public SceneItemEntry(final UnitConfig sceneUnitConfig, final LocationRegistryRemote locationRegistryRemote) throws org.openbase.jul.exception.InstantiationException {
-        super();
+        super(sceneUnitConfig, null);
         try {
             this.itemId = generateItemId(sceneUnitConfig);
             this.icon = "";

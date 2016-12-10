@@ -29,13 +29,16 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
+import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public abstract class AbstractItemEntry implements ItemEntry {
+public abstract class AbstractItemEntry implements ItemEntry, Comparable<AbstractItemEntry> {
 
     protected static final org.slf4j.Logger logger = LoggerFactory.getLogger(AbstractItemEntry.class);
 
@@ -48,6 +51,8 @@ public abstract class AbstractItemEntry implements ItemEntry {
     protected String icon;
     protected final List<String> groups;
     protected String itemHardwareConfig;
+    protected final UnitConfig unitConfig;
+    protected final ServiceConfig serviceConfig;
 
     private static int maxCommandTypeSize = 0;
     private static int maxItemIdSize = 0;
@@ -56,8 +61,10 @@ public abstract class AbstractItemEntry implements ItemEntry {
     private static int maxGroupSize = 0;
     private static int maxBindingConfigSize = 0;
 
-    protected AbstractItemEntry() throws org.openbase.jul.exception.InstantiationException {
+    public AbstractItemEntry(UnitConfig unitConfig, ServiceConfig serviceConfig) {
         this.groups = new ArrayList<>();
+        this.unitConfig = unitConfig;
+        this.serviceConfig = serviceConfig;
     }
 
     protected void calculateGaps() {
@@ -80,7 +87,7 @@ public abstract class AbstractItemEntry implements ItemEntry {
 
     @Override
     public String buildStringRep() throws CouldNotPerformException {
-        
+
         verify();
 
         String stringRep = "";
@@ -222,10 +229,48 @@ public abstract class AbstractItemEntry implements ItemEntry {
                 return "";
         }
     }
+
+    public UnitConfig getUnitConfig() {
+        return unitConfig;
+    }
+
+    public ServiceConfig getServiceConfig() {
+        return serviceConfig;
+    }
     
     private void verify() throws VerificationFailedException {
-        if(itemId.contains("-")) {
+        if (itemId.contains("-")) {
             throw new VerificationFailedException("Found \"-\" in item id which is not allowed for openhab configurations!");
+        }
+    }
+
+    @Override
+    public int compareTo(AbstractItemEntry o) {
+
+        // unit type sort
+        if (!o.unitConfig.getType().equals(o.unitConfig.getType())) {
+            return getUnitTypeOrder(unitConfig.getType()).compareTo(getUnitTypeOrder(o.unitConfig.getType()));
+        }
+
+        // command type sort
+        if (!getCommandType().equals(o.getCommandType())) {
+            return getCommandType().compareTo(o.getCommandType());
+        }
+
+        // label sort
+        return getLabel().compareTo(o.getLabel());
+    }
+
+    private Integer getUnitTypeOrder(final UnitType unitType) {
+        switch (unitType) {
+            case LOCATION:
+                return 0;
+            case SCENE:
+                return 1;
+            case UNIT_GROUP:
+                return 1;
+            default:
+                return 100;
         }
     }
 }

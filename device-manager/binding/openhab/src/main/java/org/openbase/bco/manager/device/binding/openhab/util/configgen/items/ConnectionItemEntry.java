@@ -41,7 +41,7 @@ public class ConnectionItemEntry extends AbstractItemEntry {
     public static String CONNECTION_GROUP_LABEL = "Connections";
 
     public ConnectionItemEntry(final UnitConfig connectionUnitConfig, final ServiceTemplate serviceTemplate) throws org.openbase.jul.exception.InstantiationException {
-        super();
+        super(connectionUnitConfig, null);
         try {
             this.itemId = generateItemId(connectionUnitConfig, serviceTemplate.getType());
             this.icon = "";

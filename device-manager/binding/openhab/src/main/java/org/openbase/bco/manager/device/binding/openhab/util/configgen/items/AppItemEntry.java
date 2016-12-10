@@ -37,7 +37,7 @@ public class AppItemEntry extends AbstractItemEntry {
     public static String APP_GROUP_LABEL = "Apps";
 
     public AppItemEntry(final UnitConfig appUnitConfig, final LocationRegistryRemote locationRegistryRemote) throws org.openbase.jul.exception.InstantiationException {
-        super();
+        super(appUnitConfig, null);
         try {
             this.itemId = generateItemId(appUnitConfig);
             this.icon = "";
@@ -45,7 +45,7 @@ public class AppItemEntry extends AbstractItemEntry {
             this.label = appUnitConfig.getLabel();
             this.itemHardwareConfig = "rsb=\"bco.manager.app:" + appUnitConfig.getId() + "\"";
             groups.add(APP_GROUP_LABEL);
-            groups.add(GroupEntry.generateGroupID(appUnitConfig.getPlacementConfig().getLocationId(), locationRegistryRemote));
+//            groups.add(GroupEntry.generateGroupID(appUnitConfig.getPlacementConfig().getLocationId(), locationRegistryRemote));
             calculateGaps();
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);

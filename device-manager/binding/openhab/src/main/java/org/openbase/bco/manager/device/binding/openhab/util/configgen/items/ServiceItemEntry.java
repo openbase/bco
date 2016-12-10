@@ -37,6 +37,7 @@ import rst.configuration.MetaConfigType.MetaConfig;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
+import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -59,7 +60,7 @@ public class ServiceItemEntry extends AbstractItemEntry {
     private final MetaConfigPool configPool;
 
     public ServiceItemEntry(final DeviceClass deviceClass, final MetaConfig unitHostMetaConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig, final LocationRegistryRemote locationRegistryRemote) throws InstantiationException {
-        super();
+        super(unitConfig, serviceConfig);
         try {
             UnitConfig locationUnitConfig = locationRegistryRemote.getLocationConfigById(unitConfig.getPlacementConfig().getLocationId());
 
@@ -105,16 +106,18 @@ public class ServiceItemEntry extends AbstractItemEntry {
                 this.icon = "";
             }
 
-            this.groups.add("Unit" + StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name()));
-            this.groups.add("Service" + StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getServiceTemplate().getType().name()));
+            this.groups.add("bco_"+unitConfig.getType().name().toLowerCase());
+            this.groups.add("bco_"+serviceConfig.getServiceTemplate().getType().name().toLowerCase());
 
             try {
                 // just add location group if unit is visible.
-                if (Boolean.parseBoolean(configPool.getValue(UNIT_VISIBLE_IN_GUI))) {
+                if (Boolean.parseBoolean(configPool.getValue(UNIT_VISIBLE_IN_GUI)) && !checkAlreadyAvailableThrougOtherComponents(unitConfig, serviceConfig)) {
                     this.groups.add(GroupEntry.generateGroupID(unitConfig.getPlacementConfig(), locationRegistryRemote));
                 }
             } catch (Exception ex) {
-                this.groups.add(GroupEntry.generateGroupID(unitConfig.getPlacementConfig(), locationRegistryRemote));
+                if (!checkAlreadyAvailableThrougOtherComponents(unitConfig, serviceConfig)) {
+                    this.groups.add(GroupEntry.generateGroupID(unitConfig.getPlacementConfig(), locationRegistryRemote));
+                }
             }
 
             try {
@@ -127,6 +130,14 @@ public class ServiceItemEntry extends AbstractItemEntry {
         } catch (Exception ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
+    }
+
+    private boolean checkAlreadyAvailableThrougOtherComponents(final UnitConfig unitConfig, final ServiceConfig serviceConfig) {
+        // skip if function is already available through other components
+        if (unitConfig.getType() == UnitType.COLORABLE_LIGHT && serviceConfig.getServiceTemplate().getType() == ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE) {
+            return true;
+        }
+        return false;
     }
 
     private String generateItemHardwareConfig(final UnitConfig unitConfig, final ServiceConfig serviceConfig) throws CouldNotPerformException {

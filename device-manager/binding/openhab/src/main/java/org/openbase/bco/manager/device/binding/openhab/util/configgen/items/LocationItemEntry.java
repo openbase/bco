@@ -39,7 +39,7 @@ public class LocationItemEntry extends AbstractItemEntry {
     public static String LOCATION_RSB_BINDING_CONFIG = "bco.manager.location";
 
     public LocationItemEntry(final UnitConfig locationUnitConfig, final ServiceTemplate serviceTemplate) throws org.openbase.jul.exception.InstantiationException {
-        super();
+        super(locationUnitConfig, null);
         try {
             this.itemId = generateItemId(locationUnitConfig, serviceTemplate.getType());
             this.icon = "";

@@ -58,6 +58,7 @@ import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.EnablingStateType;
 import rst.domotic.state.InventoryStateType.InventoryState;
@@ -146,8 +147,8 @@ public class OpenHABItemConfigGenerator {
             if (unitType.equals(UnitType.UNKNOWN)) {
                 continue;
             }
-            String unitLabel = StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Unit";
-            groupEntryList.add(new GroupEntry(unitLabel, unitLabel, unitLabel, overviewGroupEntry));
+            String unitLabel = "bco_" + unitType.name().toLowerCase();
+            groupEntryList.add(new GroupEntry(unitLabel, "Units", unitLabel, overviewGroupEntry));
         }
 
         groupEntryList.add(new GroupEntry(SCENE_GROUP_LABEL, SCENE_GROUP_LABEL, SCENE_GROUP_LABEL, overviewGroupEntry));
@@ -155,69 +156,15 @@ public class OpenHABItemConfigGenerator {
         groupEntryList.add(new GroupEntry(APP_GROUP_LABEL, APP_GROUP_LABEL, APP_GROUP_LABEL, overviewGroupEntry));
         groupEntryList.add(new GroupEntry(LOCATION_GROUP_LABEL, LOCATION_GROUP_LABEL, LOCATION_GROUP_LABEL, overviewGroupEntry));
 
-//        for (ServiceType serviceType : ServiceType.values()) {
-//            groupEntryList.add(new GroupEntry(serviceType.name(), serviceType.name(), "", rootGroupEntry));
-//        }
+        for (ServiceType serviceType : ServiceType.values()) {
+            final String serviceLabel = "bco_" + serviceType.name().toLowerCase();
+            groupEntryList.add(new GroupEntry(serviceLabel, "Scenen", serviceLabel, overviewGroupEntry));
+        }
     }
 
     private void generateItemEntries() throws CouldNotPerformException, InterruptedException {
         try {
-            final List<UnitConfig> deviceUnitConfigList = unitRegistry.getUnitConfigs(UnitType.DEVICE);
-
-            for (UnitConfig deviceUnitConfig : deviceUnitConfigList) {
-
-                // load device class
-                DeviceClass deviceClass = deviceRegistry.getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
-
-                // ignore non openhab items
-                if (!deviceClass.getBindingConfig().getBindingId().equals("OPENHAB")) {
-                    continue;
-                }
-
-                // ignore non installed items
-                if (deviceUnitConfig.getDeviceConfig().getInventoryState().getValue() != InventoryState.State.INSTALLED) {
-                    continue;
-                }
-
-                final List<UnitConfig> dalUnitConfigList = new ArrayList<>();
-
-                for (String unitId : deviceUnitConfig.getDeviceConfig().getUnitIdList()) {
-                    dalUnitConfigList.add(unitRegistry.getUnitConfigById(unitId));
-                }
-
-                for (final UnitConfig unitConfig : dalUnitConfigList) {
-
-                    // ignore disabled units
-                    if (!unitConfig.getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED)) {
-                        continue;
-                    }
-
-                    Set<ServiceType> serviceTypeSet = new HashSet<>();
-                    for (final ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                        if (serviceConfig.getServiceTemplate().getPattern() == ServiceTemplate.ServicePattern.CONSUMER) {
-                            continue;
-                        }
-
-                        if (serviceTypeSet.contains(serviceConfig.getServiceTemplate().getType())) {
-                            continue;
-                        }
-
-                        if (serviceConfig.getServiceTemplate().getPattern() == ServiceTemplate.ServicePattern.PROVIDER) {
-                            if (unitHasServiceAsOperationService(unitConfig, serviceConfig.getServiceTemplate().getType())) {
-                                continue;
-                            }
-                        }
-
-                        serviceTypeSet.add(serviceConfig.getServiceTemplate().getType());
-                        try {
-                            itemEntryList.add(new ServiceItemEntry(deviceClass, deviceUnitConfig.getMetaConfig(), unitConfig, serviceConfig, locationRegistryRemote));
-                        } catch (Exception ex) {
-                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not generate item for Service[" + serviceConfig.getServiceTemplate().getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex), logger, LogLevel.ERROR);
-                        }
-                    }
-                }
-            }
-
+            
             for (UnitConfig locationUnitConfig : locationRegistryRemote.getLocationConfigs()) {
                 Map<ServiceType, ServiceTemplate> serviceTemplatesOnLocation = new HashMap<>();
                 for (UnitConfig unitConfig : unitRegistry.getUnitConfigs()) {
@@ -245,6 +192,7 @@ public class OpenHABItemConfigGenerator {
                 }
             }
 
+            // Scenes
             for (final UnitConfig sceneUnitConfig : sceneRegistryRemote.getSceneConfigs()) {
                 // Skip disabled scenes
                 if (sceneUnitConfig.getEnablingState().getValue() == EnablingStateType.EnablingState.State.ENABLED) {
@@ -252,10 +200,66 @@ public class OpenHABItemConfigGenerator {
                 }
             }
 
+            final List<UnitConfig> deviceUnitConfigList = unitRegistry.getUnitConfigs(UnitType.DEVICE);
+
+            for (UnitConfig deviceUnitConfig : deviceUnitConfigList) {
+
+                // load device class
+                DeviceClass deviceClass = deviceRegistry.getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
+
+                // ignore non openhab items
+                if (!deviceClass.getBindingConfig().getBindingId().equalsIgnoreCase("OPENHAB")) {
+                    continue;
+                }
+
+                // ignore non installed items
+                if (deviceUnitConfig.getDeviceConfig().getInventoryState().getValue() != InventoryState.State.INSTALLED) {
+                    continue;
+                }
+
+                final List<UnitConfig> dalUnitConfigList = new ArrayList<>();
+
+                for (String unitId : deviceUnitConfig.getDeviceConfig().getUnitIdList()) {
+                    dalUnitConfigList.add(unitRegistry.getUnitConfigById(unitId));
+                }
+
+                for (final UnitConfig unitConfig : dalUnitConfigList) {
+
+                    // ignore disabled units
+                    if (!unitConfig.getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED)) {
+                        continue;
+                    }
+
+                    Set<ServiceType> serviceTypeSet = new HashSet<>();
+                    for (final ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                        if (serviceConfig.getServiceTemplate().getPattern() == ServicePattern.CONSUMER) {
+                            continue;
+                        }
+
+                        if (serviceTypeSet.contains(serviceConfig.getServiceTemplate().getType())) {
+                            continue;
+                        }
+
+                        if (serviceConfig.getServiceTemplate().getPattern() == ServicePattern.PROVIDER) {
+                            if (unitHasServiceAsOperationService(unitConfig, serviceConfig.getServiceTemplate().getType())) {
+                                continue;
+                            }
+                        }
+
+                        serviceTypeSet.add(serviceConfig.getServiceTemplate().getType());
+                        try {
+                            itemEntryList.add(new ServiceItemEntry(deviceClass, deviceUnitConfig.getMetaConfig(), unitConfig, serviceConfig, locationRegistryRemote));
+                        } catch (Exception ex) {
+                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not generate item for Service[" + serviceConfig.getServiceTemplate().getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex), logger, LogLevel.ERROR);
+                        }
+                    }
+                }
+            }
+
             for (final UnitConfig agentUnitConfig : agentRegistryRemote.getAgentConfigs()) {
                 // Skip disabled agents
                 if (agentUnitConfig.getEnablingState().getValue() == EnablingStateType.EnablingState.State.ENABLED) {
-                    itemEntryList.add(new AgentItemEntry(agentUnitConfig, locationRegistryRemote));
+                    itemEntryList.add(new AgentItemEntry(agentUnitConfig, null, locationRegistryRemote));
                 }
             }
 
@@ -267,14 +271,11 @@ public class OpenHABItemConfigGenerator {
             }
 
             // sort items by command type and label
-            Collections.sort(itemEntryList, (AbstractItemEntry o1, AbstractItemEntry o2) -> {
-                int typeComparation = o1.getCommandType().compareTo(o2.getCommandType());
-                if (typeComparation != 0) {
-                    return typeComparation;
-                } else {
-                    return o1.getLabel().compareTo(o2.getLabel());
-                }
-            });
+            Collections.sort(itemEntryList);
+            
+            for(AbstractItemEntry entry : itemEntryList) {
+                System.out.println("entry : "+entry.getUnitConfig().getType()+" "+ entry.getUnitConfig().getLabel());
+            }
 
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not generate item entries.", ex);

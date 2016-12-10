@@ -21,11 +21,11 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen.items;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.GroupEntry;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
+import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
@@ -36,8 +36,8 @@ public class AgentItemEntry extends AbstractItemEntry {
 
     public static String AGENT_GROUP_LABEL = "Agents";
 
-    public AgentItemEntry(final UnitConfig agentUnitConfig, final LocationRegistryRemote locationRegistryRemote) throws org.openbase.jul.exception.InstantiationException {
-        super();
+    public AgentItemEntry(final UnitConfig agentUnitConfig, final ServiceConfig serviceConfig, final LocationRegistryRemote locationRegistryRemote) throws org.openbase.jul.exception.InstantiationException {
+        super(agentUnitConfig, serviceConfig);
         try {
             this.itemId = generateItemId(agentUnitConfig);
             this.icon = "";
@@ -45,7 +45,7 @@ public class AgentItemEntry extends AbstractItemEntry {
             this.label = agentUnitConfig.getLabel();
             this.itemHardwareConfig = "rsb=\"bco.manager.agent:" + agentUnitConfig.getId() + "\"";
             groups.add(AGENT_GROUP_LABEL);
-            groups.add(GroupEntry.generateGroupID(agentUnitConfig.getPlacementConfig().getLocationId(), locationRegistryRemote));
+//            groups.add(GroupEntry.generateGroupID(agentUnitConfig.getPlacementConfig().getLocationId(), locationRegistryRemote));
             calculateGaps();
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
