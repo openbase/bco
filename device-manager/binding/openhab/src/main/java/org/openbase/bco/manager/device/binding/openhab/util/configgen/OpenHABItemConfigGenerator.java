@@ -148,7 +148,7 @@ public class OpenHABItemConfigGenerator {
                 continue;
             }
             String unitLabel = "bco_" + unitType.name().toLowerCase();
-            groupEntryList.add(new GroupEntry(unitLabel, "Units", unitLabel, overviewGroupEntry));
+            groupEntryList.add(new GroupEntry(unitLabel, unitType.name(), unitLabel, overviewGroupEntry));
         }
 
         groupEntryList.add(new GroupEntry(SCENE_GROUP_LABEL, SCENE_GROUP_LABEL, SCENE_GROUP_LABEL, overviewGroupEntry));
@@ -158,11 +158,11 @@ public class OpenHABItemConfigGenerator {
 
         for (ServiceType serviceType : ServiceType.values()) {
             final String serviceLabel = "bco_" + serviceType.name().toLowerCase();
-            groupEntryList.add(new GroupEntry(serviceLabel, "Scenen", serviceLabel, overviewGroupEntry));
+            groupEntryList.add(new GroupEntry(serviceLabel, serviceType.name(), serviceLabel, overviewGroupEntry));
         }
     }
 
-    private void generateItemEntries() throws CouldNotPerformException, InterruptedException {
+    private synchronized void generateItemEntries() throws CouldNotPerformException, InterruptedException {
         try {
             
             for (UnitConfig locationUnitConfig : locationRegistryRemote.getLocationConfigs()) {
@@ -270,11 +270,16 @@ public class OpenHABItemConfigGenerator {
                 }
             }
 
+            for(AbstractItemEntry entry : itemEntryList) {
+                logger.info("============ entry : "+entry.getUnitConfig().getType()+" "+ entry.getUnitConfig().getLabel());
+            }
+            
+            logger.info("################################ sort ######################################");
             // sort items by command type and label
             Collections.sort(itemEntryList);
             
             for(AbstractItemEntry entry : itemEntryList) {
-                System.out.println("entry : "+entry.getUnitConfig().getType()+" "+ entry.getUnitConfig().getLabel());
+                logger.info("============ entry : "+entry.getUnitConfig().getType()+" "+ entry.getUnitConfig().getLabel());
             }
 
         } catch (CouldNotPerformException ex) {

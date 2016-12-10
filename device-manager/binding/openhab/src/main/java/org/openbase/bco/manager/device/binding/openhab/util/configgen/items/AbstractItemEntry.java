@@ -237,7 +237,7 @@ public abstract class AbstractItemEntry implements ItemEntry, Comparable<Abstrac
     public ServiceConfig getServiceConfig() {
         return serviceConfig;
     }
-    
+
     private void verify() throws VerificationFailedException {
         if (itemId.contains("-")) {
             throw new VerificationFailedException("Found \"-\" in item id which is not allowed for openhab configurations!");
@@ -248,7 +248,7 @@ public abstract class AbstractItemEntry implements ItemEntry, Comparable<Abstrac
     public int compareTo(AbstractItemEntry o) {
 
         // unit type sort
-        if (!o.unitConfig.getType().equals(o.unitConfig.getType())) {
+        if (!getUnitTypeOrder(unitConfig.getType()).equals(getUnitTypeOrder(o.unitConfig.getType()))) {
             return getUnitTypeOrder(unitConfig.getType()).compareTo(getUnitTypeOrder(o.unitConfig.getType()));
         }
 
@@ -268,7 +268,7 @@ public abstract class AbstractItemEntry implements ItemEntry, Comparable<Abstrac
             case SCENE:
                 return 1;
             case UNIT_GROUP:
-                return 1;
+                return 2;
             default:
                 return 100;
         }
