@@ -41,6 +41,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
@@ -50,35 +51,39 @@ import rst.domotic.state.TemperatureStateType.TemperatureState;
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class TemperatureControllerRemoteTest {
-
+    
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(TemperatureControllerRemoteTest.class);
-
+    
     private static TemperatureControllerRemote temperatureControllerRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
     private static String label;
-
+    
     public TemperatureControllerRemoteTest() {
     }
-
+    
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, InterruptedException, JPServiceException {
-        JPService.setupJUnitTestMode();
-        JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = MockRegistryHolder.newMockRegistry();
-
-        deviceManagerLauncher = new DeviceManagerLauncher();
-        deviceManagerLauncher.launch();
-        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
-
-        label = MockRegistry.TEMPERATURE_CONTROLLER_LABEL;
-
-        temperatureControllerRemote = new TemperatureControllerRemote();
-        temperatureControllerRemote.initByLabel(label);
-        temperatureControllerRemote.activate();
-        temperatureControllerRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+    public static void setUpClass() throws Exception {
+        try {
+            JPService.setupJUnitTestMode();
+            JPService.registerProperty(JPHardwareSimulationMode.class, true);
+            registry = MockRegistryHolder.newMockRegistry();
+            
+            deviceManagerLauncher = new DeviceManagerLauncher();
+            deviceManagerLauncher.launch();
+            deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+            
+            label = MockRegistry.TEMPERATURE_CONTROLLER_LABEL;
+            
+            temperatureControllerRemote = new TemperatureControllerRemote();
+            temperatureControllerRemote.initByLabel(label);
+            temperatureControllerRemote.activate();
+            temperatureControllerRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+        } catch (Exception ex) {
+            ExceptionPrinter.printHistory(ex, logger);
+        }
     }
-
+    
     @AfterClass
     public static void tearDownClass() throws CouldNotPerformException {
         if (deviceManagerLauncher != null) {
@@ -89,11 +94,11 @@ public class TemperatureControllerRemoteTest {
         }
         MockRegistryHolder.shutdownMockRegistry();
     }
-
+    
     @Before
     public void setUp() {
     }
-
+    
     @After
     public void tearDown() {
     }
