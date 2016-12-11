@@ -44,6 +44,7 @@ import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.unit.location.LocationConfigType.LocationConfig;
 import rst.rsb.ScopeType;
 
 /**
@@ -259,6 +260,15 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
             return getConfig().getScope();
         } catch (NullPointerException | CouldNotPerformException ex) {
             throw new NotAvailableException("unit label", ex);
+        }
+    }
+
+    public UnitConfig getLocationConfig() throws NotAvailableException {
+        try {
+            // TODO implement get unit config by type and id;
+            return unitRegistry.getUnitConfigById(getConfig().getPlacementConfig().getLocationId());
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("LocationConfig", ex);
         }
     }
 

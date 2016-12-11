@@ -158,7 +158,7 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
     }
 
     public GenericUnitPanel add(final UnitConfig unitConfig, final ServiceType serviceType, final Object serviceAttribute, final boolean removable) throws CouldNotPerformException, InterruptedException {
-        LOGGER.info("Add " + unitConfig.getLabel() + " with " + serviceType.name() + " to unit panel.");
+        LOGGER.info("Add " + unitConfig.getLabel() + " with " + serviceType.name() + " " + serviceAttribute + "to unit panel.");
         synchronized (unitPanelMapLock) {
             GenericUnitPanel genericUnitPanel;
             try {

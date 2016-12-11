@@ -267,6 +267,13 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
         try {
             try {
                 switch (serviceConfig.getServiceTemplate().getPattern()) {
+                    case OPERATION:
+                        if (operationServiceConfig != null) {
+                            throw new InvalidStateException("OperationServiceConfig already bind!");
+                        }
+                        operationService = (OS) unitRemote;
+                        setOperationServiceConfig(serviceConfig);
+                        break;
                     case PROVIDER:
                         if (providerServiceConfig != null) {
                             throw new InvalidStateException("ProviderServiceConfig already bind!");
@@ -280,13 +287,6 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
                         }
                         consumerService = (CS) unitRemote;
                         setConsumerServiceConfig(serviceConfig);
-                        break;
-                    case OPERATION:
-                        if (operationServiceConfig != null) {
-                            throw new InvalidStateException("OperationServiceConfig already bind!");
-                        }
-                        operationService = (OS) unitRemote;
-                        setOperationServiceConfig(serviceConfig);
                         break;
                     default:
                         throw new EnumNotSupportedException(serviceConfig.getServiceTemplate().getPattern(), this);

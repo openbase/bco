@@ -215,6 +215,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
                             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service panel for ServiceType[" + serviceConfig.getServiceTemplate().getType().name() + "]", ex), logger, LogLevel.ERROR);
                         }
                     }
+                    System.out.println("Bind service " + serviceConfig +" for "+unitConfig.getLabel());
                     servicePanelMap.get(serviceConfig.getServiceTemplate().getType()).bindServiceConfig(serviceConfig);
                 } catch (CouldNotPerformException | NullPointerException ex) {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Could not configure service panel for ServiceType[" + serviceConfig.getServiceTemplate().getType().name() + "]", ex), logger, LogLevel.ERROR);
