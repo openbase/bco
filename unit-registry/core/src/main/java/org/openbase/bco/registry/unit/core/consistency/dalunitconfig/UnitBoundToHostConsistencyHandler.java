@@ -76,27 +76,21 @@ public class UnitBoundToHostConsistencyHandler extends AbstractProtoBufRegistryC
 
             boolean hasDuplicatedUnitType = DeviceConfigUtils.checkDuplicatedUnitType(deviceUnitConfig, deviceClass, registry);
 
-//            if (dalUnitConfig.getLabel().equals("Temperature_Controller_Unit_Test")) {
-//                System.out.println("break;");
-//            }
             // Setup device label if unit has no label configured.
             UnitConfig.Builder unitConfigCopy = UnitConfig.newBuilder(dalUnitConfig.build());
             DeviceConfigUtils.setupUnitLabelByDeviceConfig(unitConfigCopy, deviceUnitConfig, deviceClass, hasDuplicatedUnitType);
 
             if (!unitConfigCopy.getLabel().equals(dalUnitConfig)) {
-                if (unitConfigCopy.getLabel().startsWith(deviceUnitConfig.getLabel())) {
+                if (dalUnitConfig.getLabel().equals(DeviceConfigUtils.generateDefaultUnitLabel(dalUnitConfig, deviceUnitConfig, deviceClass, hasDuplicatedUnitType))) {
+                    logger.debug("Update label of Unit["+dalUnitConfig.getLabel()+"] to " + unitConfigCopy.getLabel());
                     modification = modification || DeviceConfigUtils.setupUnitLabelByDeviceConfig(dalUnitConfig, deviceUnitConfig, deviceClass, hasDuplicatedUnitType);
                 }
-            }
-
-            if (modification) {
-                System.out.println("Updated label to : " + dalUnitConfig.getLabel());
             }
 
             // copy location id
             if (!dalUnitConfig.getPlacementConfig().getLocationId().equals(deviceUnitConfig.getPlacementConfig().getLocationId())) {
                 dalUnitConfig.getPlacementConfigBuilder().setLocationId(deviceUnitConfig.getPlacementConfig().getLocationId());
-                System.out.println("Updated location to : " + deviceUnitConfig.getPlacementConfig().getLocationId());
+                logger.debug("Updated location to : " + deviceUnitConfig.getPlacementConfig().getLocationId());
                 modification = true;
             }
 

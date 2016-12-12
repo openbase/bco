@@ -48,11 +48,10 @@ public class DeviceConfigUtils {
      */
     public static boolean checkDuplicatedUnitType(final UnitConfigOrBuilder deviceUnitConfig, final DeviceClassOrBuilder deviceClass, final ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> dalUnitRegistry) throws CouldNotPerformException {
 
-        
         List<UnitTemplate.UnitType> unitTypeList = new ArrayList<>();
-        
-        for(UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
-            
+
+        for (UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
+
             // check if device contains already this unit type
             if (unitTypeList.contains(unitTemplateConfig.getType())) {
                 return true;
@@ -60,25 +59,6 @@ public class DeviceConfigUtils {
             unitTypeList.add(unitTemplateConfig.getType());
         }
         return false;
-        
-//        // iterate over device introduced units
-//        for (String unitId : deviceUnitConfig.getDeviceConfig().getUnitIdList()) {
-//            
-////            // continue if units are not known
-////            if (!dalUnitRegistry.contains(unitId)) {
-////                continue;
-////            }
-//
-//            // resolve unit config
-//            UnitConfig dalUnitConfig = dalUnitRegistry.getMessage(unitId);
-//            
-//            // check if device contains already unit of the same type
-//            if (unitTypeList.contains(dalUnitConfig.getType())) {
-//                return true;
-//            }
-//            unitTypeList.add(dalUnitConfig.getType());
-//        }
-//        return false;
     }
 
     /**
@@ -104,7 +84,7 @@ public class DeviceConfigUtils {
      * @return true if the unitConfig was modified otherwise false.
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
-    public static boolean setupUnitLabelByDeviceConfig(final UnitConfig.Builder unitConfig, final UnitConfigOrBuilder deviceUnitConfig, final DeviceClassOrBuilder deviceClass, boolean deviceConfigHasDuplicatedUnitType) throws CouldNotPerformException {
+    public static boolean setupUnitLabelByDeviceConfig(final UnitConfig.Builder unitConfig, final UnitConfigOrBuilder deviceUnitConfig, final DeviceClassOrBuilder deviceClass, final boolean deviceConfigHasDuplicatedUnitType) throws CouldNotPerformException {
         try {
             if (!unitConfig.hasLabel() || unitConfig.getLabel().isEmpty() || unitConfig.getBoundToUnitHost()) {
                 if (deviceConfigHasDuplicatedUnitType) {
@@ -116,16 +96,7 @@ public class DeviceConfigUtils {
                         throw new NotAvailableException("unitconfig.unittemplateconfigid");
                     }
 
-                    for (UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
-                        if (unitTemplateConfig.getId().equals(unitConfig.getUnitTemplateConfigId())) {
-                            if (unitTemplateConfig.getLabel().isEmpty()) {
-                                throw new NotAvailableException("unitTemplateConfig.label");
-                            }
-                            unitConfig.setLabel(deviceUnitConfig.getLabel() + "_" + unitTemplateConfig.getLabel());
-                            return true;
-                        }
-                    }
-                    throw new CouldNotPerformException("DeviceClass[" + deviceClass.getId() + "] does not contain UnitTemplateConfig[" + unitConfig.getUnitTemplateConfigId() + "]!");
+                    unitConfig.setLabel(generateDefaultUnitLabel(unitConfig, deviceUnitConfig, deviceClass, deviceConfigHasDuplicatedUnitType));
                 } else {
 
                     if (!deviceUnitConfig.hasLabel()) {
@@ -133,8 +104,7 @@ public class DeviceConfigUtils {
                     }
 
                     if (!unitConfig.getLabel().equals(deviceUnitConfig.getLabel())) {
-                        unitConfig.setLabel(deviceUnitConfig.getLabel());
-                        // because device does not contain dublicated unit types, the device label can be used without any conflicts.
+                        unitConfig.setLabel(generateDefaultUnitLabel(unitConfig, deviceUnitConfig, deviceClass, deviceConfigHasDuplicatedUnitType));
                         return true;
                     }
                 }
@@ -143,5 +113,21 @@ public class DeviceConfigUtils {
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not setup UnitConfig[" + unitConfig.getId() + "] by DeviceConfig[" + deviceUnitConfig + "]!", ex);
         }
+    }
+
+    public static String generateDefaultUnitLabel(final UnitConfig.Builder unitConfig, final UnitConfigOrBuilder deviceUnitConfig, final DeviceClassOrBuilder deviceClass, final boolean deviceConfigHasDuplicatedUnitType) throws CouldNotPerformException {
+        if (deviceConfigHasDuplicatedUnitType) {
+            for (UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
+                if (unitTemplateConfig.getId().equals(unitConfig.getUnitTemplateConfigId())) {
+                    if (unitTemplateConfig.getLabel().isEmpty()) {
+                        throw new NotAvailableException("unitTemplateConfig.label");
+                    }
+                    return deviceUnitConfig.getLabel() + "_" + unitTemplateConfig.getLabel();
+                }
+            }
+            throw new CouldNotPerformException("DeviceClass[" + deviceClass.getId() + "] does not contain UnitTemplateConfig[" + unitConfig.getUnitTemplateConfigId() + "]!");
+        }
+        // because device does not contain dublicated unit types, the device label can be used without any conflicts.
+        return deviceUnitConfig.getLabel();
     }
 }

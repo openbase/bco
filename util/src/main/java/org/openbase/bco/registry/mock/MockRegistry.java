@@ -601,7 +601,6 @@ public class MockRegistry {
                 .setPlacementConfig(getDefaultPlacement())
                 .setLabel(label)
                 .setDeviceConfig(tmp)
-                .setBoundToUnitHost(false)
                 .setType(UnitType.DEVICE)
                 .build();
     }
