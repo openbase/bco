@@ -28,7 +28,10 @@ import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitProbabilityCollectionType.UnitProbabilityCollection;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.tracking.PointingRay3DFloatCollectionType.PointingRay3DFloatCollection;
+import rst.tracking.PointingRay3DFloatType.PointingRay3DFloat;
 
 /**
  *
@@ -382,4 +385,23 @@ public interface LocationRegistry {
      */
     public Boolean isConnectionConfigRegistryConsistent() throws CouldNotPerformException;
 
+    /**
+     * Method returns a list of probably intersected units by the given 3D ray. 
+     * This could for example be useful for selecting units by pointing gestures.
+     * 
+     * @param PointingRay3DFloat a ray which probably intersects with a specific unit priorized by a given certainty. 
+     * @return a collection of probably intersected units referred by there id.
+     * @throws CouldNotPerformException is thrown in case the computation could not be performed.  
+     */
+    public Future<UnitProbabilityCollection> computeUnitIntersection(final PointingRay3DFloat pointingRay3DFloat) throws CouldNotPerformException;
+    
+    /**
+     * Method returns a list of probably intersected units by the given 3D rays.
+     * This could for example be useful for selecting units by pointing gestures.
+     * 
+     * @param pointingRay3DFloatCollection a collection of rays which probably intersects with a specific unit priorized by a given certainty. 
+     * @return a collection of probably intersected units referred by there id.
+     * @throws CouldNotPerformException is thrown in case the computation could not be performed. 
+     */
+    public Future<UnitProbabilityCollection> computeUnitIntersection(final PointingRay3DFloatCollection pointingRay3DFloatCollection) throws CouldNotPerformException;
 }

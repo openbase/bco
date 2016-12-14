@@ -52,6 +52,9 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig;
 import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
+import rst.domotic.unit.UnitProbabilityCollectionType.UnitProbabilityCollection;
+import rst.tracking.PointingRay3DFloatCollectionType.PointingRay3DFloatCollection;
+import rst.tracking.PointingRay3DFloatType;
 
 /**
  *
@@ -645,6 +648,40 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
             return getData().getConnectionUnitConfigRegistryConsistent();
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param pointingRay3DFloat {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Future<UnitProbabilityCollection> computeUnitIntersection(PointingRay3DFloatType.PointingRay3DFloat pointingRay3DFloat) throws CouldNotPerformException {
+        try {
+            validateData();
+            return RPCHelper.callRemoteMethod(pointingRay3DFloat, this, UnitProbabilityCollection.class);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not compute unit intersection!", ex);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param pointingRay3DFloatCollection {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Future<UnitProbabilityCollection> computeUnitIntersection(PointingRay3DFloatCollection pointingRay3DFloatCollection) throws CouldNotPerformException {
+        try {
+            validateData();
+            return RPCHelper.callRemoteMethod(pointingRay3DFloatCollection, this, UnitProbabilityCollection.class);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not compute unit intersection!", ex);
         }
     }
 }

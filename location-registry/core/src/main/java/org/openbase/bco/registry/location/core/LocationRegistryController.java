@@ -36,6 +36,7 @@ import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -53,6 +54,9 @@ import rst.rsb.ScopeType;
 import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig;
 import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
+import rst.domotic.unit.UnitProbabilityCollectionType.UnitProbabilityCollection;
+import rst.tracking.PointingRay3DFloatCollectionType.PointingRay3DFloatCollection;
+import rst.tracking.PointingRay3DFloatType.PointingRay3DFloat;
 
 /**
  *
@@ -592,5 +596,31 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
     public Boolean isConnectionConfigRegistryConsistent() throws CouldNotPerformException {
         unitRegistryRemote.validateData();
         return getData().getConnectionUnitConfigRegistryConsistent();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param pointingRay3DFloat {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException{@inheritDoc}
+     */
+    @Override
+    public Future<UnitProbabilityCollection> computeUnitIntersection(PointingRay3DFloat pointingRay3DFloat) throws CouldNotPerformException {
+        //TODO jdaberkow
+        throw new NotSupportedException("Method[computeUnitIntersection]", this);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param pointingRay3DFloatCollection {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Future<UnitProbabilityCollection> computeUnitIntersection(PointingRay3DFloatCollection pointingRay3DFloatCollection) throws CouldNotPerformException {
+        //TODO jdaberkow
+        throw new NotSupportedException("Method[computeUnitIntersection]", this);
     }
 }
