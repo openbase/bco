@@ -389,7 +389,7 @@ public interface LocationRegistry {
      * Method returns a list of probably intersected units by the given 3D ray. 
      * This could for example be useful for selecting units by pointing gestures.
      * 
-     * @param PointingRay3DFloat a ray which probably intersects with a specific unit priorized by a given certainty. 
+     * @param pointingRay3DFloat ray which probably intersects with a specific unit priorized by a given certainty. 
      * @return a collection of probably intersected units referred by there id.
      * @throws CouldNotPerformException is thrown in case the computation could not be performed.  
      */

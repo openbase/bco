@@ -603,7 +603,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      *
      * @param pointingRay3DFloat {@inheritDoc}
      * @return {@inheritDoc}
-     * @throws CouldNotPerformException{@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<UnitProbabilityCollection> computeUnitIntersection(PointingRay3DFloat pointingRay3DFloat) throws CouldNotPerformException {
