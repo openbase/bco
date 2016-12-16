@@ -328,7 +328,7 @@ public class DeviceRegistryTest {
         }
     }
 
-    @Test(timeout = 5000)
+    @Test//(timeout = 5000)
     public void testDeviceClassDeviceConfigUnitConsistencyHandler() throws Exception {
         ServiceTemplateConfig serviceTemplate1 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.POWER_STATE_SERVICE).build();
         UnitTemplateConfig unitTemplateConfig1 = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).addServiceTemplateConfig(serviceTemplate1).build();
@@ -350,11 +350,11 @@ public class DeviceRegistryTest {
         assertEquals("Units in device config were not set according to the device classes unit templates", clazz.getUnitTemplateConfigCount(), config.getDeviceConfig().getUnitIdCount());
         boolean containsLight = false;
         boolean containsHandlseSensor = false;
-        List<UnitConfig> dalUnitConfig = new ArrayList<>();
+        List<UnitConfig> dalUnitConfigs = new ArrayList<>();
         for (String unitId : config.getDeviceConfig().getUnitIdList()) {
-            dalUnitConfig.add(unitRegistry.getUnitConfigById(unitId));
+            dalUnitConfigs.add(unitRegistry.getUnitConfigById(unitId));
         }
-        for (UnitConfig unit : dalUnitConfig) {
+        for (UnitConfig unit : dalUnitConfigs) {
             if (unit.getType().equals(unitTemplateConfig1.getType())) {
                 containsLight = true;
                 assertEquals("The light unit contains more or less services than the template config", unit.getServiceConfigCount(), unitTemplateConfig1.getServiceTemplateConfigCount());
@@ -385,12 +385,22 @@ public class DeviceRegistryTest {
         }
         assertEquals("Unit configs and templates differ after the update of the device class", config.getDeviceConfig().getUnitIdCount(), clazz.getUnitTemplateConfigCount());
 
-        dalUnitConfig.clear();
+        dalUnitConfigs.clear();
         for (String unitId : config.getDeviceConfig().getUnitIdList()) {
-            dalUnitConfig.add(unitRegistry.getUnitConfigById(unitId));
+            dalUnitConfigs.add(unitRegistry.getUnitConfigById(unitId));
         }
-        assertEquals("Device config does not contain the right unit config", dalUnitConfig.get(2).getType(), unitTemplateConfig3.getType());
-        assertEquals("Unit config does not contain the right service", dalUnitConfig.get(2).getServiceConfig(0).getServiceTemplate().getType(), serviceTemplate4.getServiceType());
+        assertEquals("Device config does not contain the right unit config", dalUnitConfigs.get(2).getType(), unitTemplateConfig3.getType());
+        assertEquals("Unit config does not contain the right service", dalUnitConfigs.get(2).getServiceConfig(0).getServiceTemplate().getType(), serviceTemplate4.getServiceType());
+
+        config = deviceRegistry.updateDeviceConfig(config.toBuilder().setLabel("newDeviceLabel").build()).get();
+        assertTrue("More dal units registered after device renaming!", unitRegistry.getDalUnitConfigs().size() == 3);
+        assertTrue("More units in device config after renaming!", config.getDeviceConfig().getUnitIdCount() == 3);
+
+        //test if dal units are also removed when a device is removed
+        deviceRegistry.removeDeviceConfig(config).get();
+        for (UnitConfig dalUnitConfig : dalUnitConfigs) {
+            assertTrue("DalUnit [" + dalUnitConfig.getLabel() + "] still registered even though its device has been removed!", !unitRegistry.containsUnitConfig(dalUnitConfig));
+        }
 
         // clearing unit templates because of effects on other tests it might have
         unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.LIGHT).toBuilder().clearServiceTemplate().build();

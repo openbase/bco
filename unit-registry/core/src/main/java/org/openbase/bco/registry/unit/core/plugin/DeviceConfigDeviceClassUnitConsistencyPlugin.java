@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.Registry;
@@ -66,6 +67,17 @@ public class DeviceConfigDeviceClassUnitConsistencyPlugin extends FileRegistryPl
     public void afterConsistencyCheck() throws CouldNotPerformException {
         for (IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry : getRegistry().getEntries()) {
             updateUnitConfigs(entry);
+        }
+    }
+
+    @Override
+    public void beforeRemove(IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry) throws RejectedException {
+        try {
+            for (String unitId : entry.getMessage().getDeviceConfig().getUnitIdList()) {
+                dalUnitRegistry.remove(unitId);
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new RejectedException("Could not remove all units for the removed device!", ex);
         }
     }
 
