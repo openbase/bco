@@ -21,7 +21,8 @@ package org.openbase.bco.registry.unit.core.consistency.dalunitconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import java.util.HashMap;
+import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -30,10 +31,9 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.domotic.state.EnablingStateType.EnablingState;
-import rst.domotic.state.InventoryStateType.InventoryState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.state.EnablingStateType.EnablingState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -42,9 +42,11 @@ import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 public class DalUnitEnablingStateConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry;
+    private final Map<String, EnablingState> oldHostEnablingStateMap;
 
     public DalUnitEnablingStateConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry) {
         this.deviceRegistry = deviceRegistry;
+        this.oldHostEnablingStateMap = new HashMap<>();
     }
 
     @Override
@@ -57,7 +59,18 @@ public class DalUnitEnablingStateConsistencyHandler extends AbstractProtoBufRegi
 
         UnitConfig deviceUnitConfig = deviceRegistry.getMessage(dalUnitConfig.getUnitHostId());
 
-        if (deviceUnitConfig.getDeviceConfig().getInventoryState().getValue() != InventoryState.State.INSTALLED) {
+        if (!oldHostEnablingStateMap.containsKey(dalUnitConfig.getId())) {
+            oldHostEnablingStateMap.put(dalUnitConfig.getId(), deviceUnitConfig.getEnablingState());
+        }
+
+        if (oldHostEnablingStateMap.get(dalUnitConfig.getId()) != deviceUnitConfig.getEnablingState()) {
+            oldHostEnablingStateMap.put(dalUnitConfig.getId(), deviceUnitConfig.getEnablingState());
+            if (deviceUnitConfig.getEnablingState().getValue() == EnablingState.State.ENABLED) {
+                throw new EntryModification(entry.setMessage(dalUnitConfig.toBuilder().setEnablingState(deviceUnitConfig.getEnablingState())), this);
+            }
+        }
+
+        if (deviceUnitConfig.getEnablingState().getValue() == EnablingState.State.DISABLED) {
             if (dalUnitConfig.getEnablingState().getValue() == EnablingState.State.ENABLED) {
                 EnablingState disabled = EnablingState.newBuilder().setValue(EnablingState.State.DISABLED).build();
                 throw new EntryModification(entry.setMessage(dalUnitConfig.toBuilder().setEnablingState(disabled)), this);

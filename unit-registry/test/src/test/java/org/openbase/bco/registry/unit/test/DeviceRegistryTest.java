@@ -476,6 +476,23 @@ public class DeviceRegistryTest {
         assertEquals("The owner id did not get removed even though the user got removed!", "", ownerRemovalDeviceConfig.getDeviceConfig().getInventoryState().getOwnerId());
     }
 
+//    @Test(timeout = 5000)
+//    public void testInventoryEnablingStateConnection() throws Exception {
+//        ServiceTemplateConfig serviceTemplate1 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.POWER_STATE_SERVICE).build();
+//        UnitTemplateConfig unitTemplateConfig1 = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).addServiceTemplateConfig(serviceTemplate1).build();
+//        UnitTemplate unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.LIGHT).toBuilder().addServiceTemplate(ServiceTemplate.newBuilder().setType(serviceTemplate1.getServiceType())).build();
+//        unitRegistry.updateUnitTemplate(unitTemplate).get();
+//
+//        DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("testInventoryEnablingStateConnection", "1297389612873619", "Inventory").toBuilder().addUnitTemplateConfig(unitTemplateConfig1).build()).get();
+//        waitForDeviceClass(clazz);
+//
+//        String label = "testLabel"; 
+//        UnitConfig device = getDeviceUnitConfig(label, "124972691872s3918723", clazz);
+//        DeviceConfig config = device.getDeviceConf
+//                
+//        unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.LIGHT).toBuilder().clearServiceTemplate().build();
+//        unitRegistry.updateUnitTemplate(unitTemplate).get();
+//    }
     /**
      * Test if the owner of a device is updated correctly.
      *

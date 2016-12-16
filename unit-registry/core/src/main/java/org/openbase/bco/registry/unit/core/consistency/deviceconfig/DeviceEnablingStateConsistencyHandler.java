@@ -21,7 +21,8 @@ package org.openbase.bco.registry.unit.core.consistency.deviceconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import java.util.HashMap;
+import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -29,10 +30,10 @@ import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.InventoryStateType.InventoryState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
 
 /**
  *
@@ -40,10 +41,20 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public class DeviceEnablingStateConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
+    private final Map<String, InventoryState.State> oldInventoryStateMap;
+
+    public DeviceEnablingStateConsistencyHandler() {
+        this.oldInventoryStateMap = new HashMap<>();
+    }
+
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig deviceUnitConfig = entry.getMessage();
         DeviceConfig deviceConfig = deviceUnitConfig.getDeviceConfig();
+
+        if (!oldInventoryStateMap.containsKey(deviceUnitConfig.getId())) {
+            oldInventoryStateMap.put(deviceUnitConfig.getId(), deviceConfig.getInventoryState().getValue());
+        }
 
         if (!deviceConfig.hasInventoryState()) {
             throw new NotAvailableException("deviceConfig.inventoryState");
@@ -55,8 +66,22 @@ public class DeviceEnablingStateConsistencyHandler extends AbstractProtoBufRegis
 
         if (deviceConfig.getInventoryState().getValue() != InventoryState.State.INSTALLED) {
             if (deviceUnitConfig.getEnablingState().getValue() == EnablingState.State.ENABLED) {
+                System.out.println("Diabling because not installed but enabled");
                 EnablingState disabled = EnablingState.newBuilder().setValue(EnablingState.State.DISABLED).build();
                 throw new EntryModification(entry.setMessage(deviceUnitConfig.toBuilder().setEnablingState(disabled)), this);
+            }
+        }
+
+        if (oldInventoryStateMap.get(deviceUnitConfig.getId()) != deviceConfig.getInventoryState().getValue()) {
+            System.out.println("oldState, newState [" + oldInventoryStateMap.get(deviceUnitConfig.getId()) + "," + deviceConfig.getInventoryState().getValue() + "]");
+            oldInventoryStateMap.put(deviceUnitConfig.getId(), deviceConfig.getInventoryState().getValue());
+            if (deviceConfig.getInventoryState().getValue() == InventoryState.State.INSTALLED) {
+                System.out.println("new State is installed");
+                EnablingState enabled = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
+                System.out.println("TEST");
+                IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> setMessage = entry.setMessage(deviceUnitConfig.toBuilder().setEnablingState(enabled));
+                System.out.println("Entry after set [" + setMessage.getMessage() + "]" + setMessage);
+                throw new EntryModification(entry.setMessage(deviceUnitConfig.toBuilder().setEnablingState(enabled)), this);
             }
         }
     }
