@@ -89,6 +89,11 @@
         </dependency>
         <dependency>
             <groupId>org.openbase.bco</groupId>
+            <artifactId>registry.location.core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
             <artifactId>registry.agent.core</artifactId>
             <version>${project.version}</version>
         </dependency>

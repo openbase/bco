@@ -48,17 +48,17 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
 
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
-        getRegistryRemotes().forEach((registryRemote) -> {
-            registryRemote.addDataObserver(virtualRegistrySynchronizer);
-        });
+//        getRegistryRemotes().forEach((registryRemote) -> {
+//            registryRemote.addDataObserver(virtualRegistrySynchronizer);
+//        });
         super.activate();
     }
 
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
-        getRegistryRemotes().forEach((registryRemote) -> {
-            registryRemote.removeDataObserver(virtualRegistrySynchronizer);
-        });
+//        getRegistryRemotes().forEach((registryRemote) -> {
+//            registryRemote.removeDataObserver(virtualRegistrySynchronizer);
+//        });
         super.deactivate();
     }
 
@@ -67,7 +67,6 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
         // not needed for virtual registries.
     }
 
-    
     @Override
     protected void registerDependencies() throws CouldNotPerformException {
         // not needed for virtual registries.
@@ -82,10 +81,29 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
     protected void registerRegistries() throws CouldNotPerformException {
         // not needed for virtual registries.
     }
-    
+
     @Override
     protected void registerPlugins() throws CouldNotPerformException, InterruptedException {
         // not needed for virtual registries.
+    }
+
+    @Override
+    protected void activateRemoteRegistries() throws CouldNotPerformException, InterruptedException {
+        /* The order here is important!
+         * If the VirtualRegistrySynchronizer would be registered first the data type would be notified while the remote registries
+         * have not synced. This way getter for the VirtualRegistryController would not contain the updated values when called within an observer. */
+        super.activateRemoteRegistries();
+        getRegistryRemotes().forEach((registryRemote) -> {
+            registryRemote.addDataObserver(virtualRegistrySynchronizer);
+        });
+    }
+
+    @Override
+    protected void deactivateRegistryRemotes() throws CouldNotPerformException, InterruptedException {
+        getRegistryRemotes().forEach((registryRemote) -> {
+            registryRemote.removeDataObserver(virtualRegistrySynchronizer);
+        });
+        super.deactivateRegistryRemotes();
     }
 
     protected abstract void syncVirtualRegistryFields(final MB virtualDataBuilder, final RM realData) throws CouldNotPerformException;
