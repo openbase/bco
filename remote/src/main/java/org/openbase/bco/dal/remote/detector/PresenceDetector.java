@@ -103,7 +103,7 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
 
     public void init(final DataProvider<LocationData> locationDataProvider, final long motionTimeout) throws InitializationException, InterruptedException {
         init(locationDataProvider);
-        presenceTimeout.setWaitTime(motionTimeout);
+        presenceTimeout.setDefaultWaitTime(motionTimeout);
     }
 
     @Override
