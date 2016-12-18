@@ -22,7 +22,8 @@ package org.openbase.bco.manager.agent.core.preset;
  * #L%
  */
 import java.util.concurrent.ExecutionException;
-import org.openbase.bco.dal.remote.detector.PresenceDetector;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.openbase.bco.manager.agent.core.AbstractAgent;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
@@ -30,7 +31,6 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
 import rst.domotic.action.SnapshotType.Snapshot;
@@ -47,8 +47,8 @@ public class StandbyAgent extends AbstractAgent {
     /**
      * 15 min default standby timeout
      */
-//    public static final long TIEMOUT = 60000 * 15;
-    public static final long TIEMOUT = 10000;
+    public static final long TIMEOUT = 60000 * 15;
+//    public static final long TIMEOUT = 10000;
 
     private LocationRemote locationRemote;
     private final Timeout timeout;
@@ -62,7 +62,7 @@ public class StandbyAgent extends AbstractAgent {
 
         this.standby = false;
 
-        this.timeout = new Timeout(TIEMOUT) {
+        this.timeout = new Timeout(TIMEOUT) {
 
             @Override
             public void expired() throws InterruptedException {
@@ -82,30 +82,31 @@ public class StandbyAgent extends AbstractAgent {
         CachedLocationRegistryRemote.waitForData();
         locationRemote.init(CachedLocationRegistryRemote.getRegistry().getLocationConfigById(getConfig().getPlacementConfig().getLocationId()));
         locationRemote.addDataObserver((Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
-           triggerPresenceChange(data);
+            triggerPresenceChange(data);
         });
         super.activate();
-        
+
     }
 
     public void triggerPresenceChange(LocationDataType.LocationData data) throws InterruptedException {
-         if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT)) {
+        System.out.println("trigger: " + data.getPresenceState().getValue().name());
+        synchronized (standbySync) {
+            if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT)) {
                 timeout.cancel();
-                synchronized (standbySync) {
-                    System.out.println("update in");
-                    if (standby) {
-                        try {
-                            wakeUp();
-                        } catch (CouldNotPerformException ex) {
-                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify motion state change!", ex), logger);
-                        }
+                if (standby) {
+                    try {
+                        wakeUp();
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify motion state change!", ex), logger);
                     }
-                    System.out.println("update out");
                 }
             } else if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.ABSENT)) {
-                timeout.restart();
-                System.out.println("timeout started");
+                if (!timeout.isActive()) {
+                    System.out.println("timeout start");
+                    timeout.start();
+                }
             }
+        }
     }
 
     @Override
@@ -128,20 +129,26 @@ public class StandbyAgent extends AbstractAgent {
     }
 
     private void standby() throws CouldNotPerformException, InterruptedException {
-        logger.info("Standby " + locationRemote.getLabel() + "...");
+        System.out.println("try to standby");
         synchronized (standbySync) {
-            System.out.println("standby in");
+            if (standby) {
+                return;
+            }
+            logger.info("Standby " + locationRemote.getLabel() + "...");
             try {
-                logger.info("Create snapshot of " + locationRemote.getLabel() + " state.");
-//                snapshot = locationRemote.recordSnapshot().get();
+                try {
+                    logger.info("Create snapshot of " + locationRemote.getLabel() + " state.");
+                    snapshot = locationRemote.recordSnapshot().get(10, TimeUnit.SECONDS);
+                } catch (ExecutionException | CouldNotPerformException | TimeoutException ex) {
+                    ExceptionPrinter.printHistory("Could not create snapshot!", ex, logger);
+                }
                 standby = true;
                 logger.info("Switch off all devices...");
                 locationRemote.setPowerState(PowerStateType.PowerState.State.OFF);
                 logger.info(locationRemote.getLabel() + " is now standby.");
-//            } catch (ExecutionException | CouldNotPerformException | InterruptedException ex) {
-//                throw new CouldNotPerformException("Standby failed!", ex);
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Standby failed!", ex);
             } finally {
-                System.out.println("standby out");
             }
         }
     }
@@ -149,24 +156,20 @@ public class StandbyAgent extends AbstractAgent {
     private void wakeUp() throws CouldNotPerformException, InterruptedException {
         logger.info("Wake up " + locationRemote.getLabel() + "...");
         synchronized (standbySync) {
-            System.out.println("wakeUp in");
             standby = false;
-            locationRemote.setPowerState(PowerStateType.PowerState.State.ON);
 
-//            if (snapshot == null) {
-//                logger.info("skip wake up because no snapshot information available!");
-//                return;
-//            }
+            if (snapshot == null) {
+                logger.info("skip wake up because no snapshot information available!");
+                return;
+            }
 
             try {
                 logger.info("restore snapshot up");
-//                locationRemote.restoreSnapshot(snapshot).get();
+                locationRemote.restoreSnapshot(snapshot).get();
                 snapshot = null;
-                
-//            } catch (ExecutionException | CouldNotPerformException ex) {
-//                throw new CouldNotPerformException("WakeUp failed!", ex);
-            } finally {
-                System.out.println("wakeUp out");
+
+            } catch (ExecutionException | CouldNotPerformException ex) {
+                throw new CouldNotPerformException("WakeUp failed!", ex);
             }
         }
     }
