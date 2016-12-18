@@ -81,30 +81,31 @@ public class StandbyAgent extends AbstractAgent {
         locationRemote = new LocationRemote();
         CachedLocationRegistryRemote.waitForData();
         locationRemote.init(CachedLocationRegistryRemote.getRegistry().getLocationConfigById(getConfig().getPlacementConfig().getLocationId()));
-        locationRemote.activate();
-        locationRemote.addDataObserver(new Observer<LocationDataType.LocationData>() {
-            @Override
-            public void update(Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) throws Exception {
-                if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT)) {
-                    timeout.cancel();
-                    synchronized (standbySync) {
-                        System.out.println("update in");
-                        if (standby) {
-                            try {
-                                wakeUp();
-                            } catch (CouldNotPerformException ex) {
-                                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify motion state change!", ex), logger);
-                            }
-                        }
-                        System.out.println("update out");
-                    }
-                } else if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.ABSENT)) {
-                    timeout.start();
-                    System.out.println("timeout started");
-                }
-            }
+        locationRemote.addDataObserver((Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
+           triggerPresenceChange(data);
         });
         super.activate();
+        
+    }
+
+    public void triggerPresenceChange(LocationDataType.LocationData data) throws InterruptedException {
+         if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT)) {
+                timeout.cancel();
+                synchronized (standbySync) {
+                    System.out.println("update in");
+                    if (standby) {
+                        try {
+                            wakeUp();
+                        } catch (CouldNotPerformException ex) {
+                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify motion state change!", ex), logger);
+                        }
+                    }
+                    System.out.println("update out");
+                }
+            } else if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.ABSENT)) {
+                timeout.restart();
+                System.out.println("timeout started");
+            }
     }
 
     @Override
@@ -112,13 +113,12 @@ public class StandbyAgent extends AbstractAgent {
         logger.info("Deactivating [" + getClass().getSimpleName() + "]");
         locationRemote.deactivate();
         super.deactivate();
-
     }
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
         locationRemote.activate();
-        timeout.start();
+        triggerPresenceChange(locationRemote.getData());
     }
 
     @Override
@@ -133,13 +133,13 @@ public class StandbyAgent extends AbstractAgent {
             System.out.println("standby in");
             try {
                 logger.info("Create snapshot of " + locationRemote.getLabel() + " state.");
-                snapshot = locationRemote.recordSnapshot().get();
+//                snapshot = locationRemote.recordSnapshot().get();
                 standby = true;
                 logger.info("Switch off all devices...");
                 locationRemote.setPowerState(PowerStateType.PowerState.State.OFF);
                 logger.info(locationRemote.getLabel() + " is now standby.");
-            } catch (ExecutionException | CouldNotPerformException | InterruptedException ex) {
-                throw new CouldNotPerformException("Standby failed!", ex);
+//            } catch (ExecutionException | CouldNotPerformException | InterruptedException ex) {
+//                throw new CouldNotPerformException("Standby failed!", ex);
             } finally {
                 System.out.println("standby out");
             }
@@ -150,17 +150,21 @@ public class StandbyAgent extends AbstractAgent {
         logger.info("Wake up " + locationRemote.getLabel() + "...");
         synchronized (standbySync) {
             System.out.println("wakeUp in");
-            if (snapshot == null) {
-                logger.info("skip wake up because no snapshot information available!");
-                return;
-            }
+            standby = false;
+            locationRemote.setPowerState(PowerStateType.PowerState.State.ON);
+
+//            if (snapshot == null) {
+//                logger.info("skip wake up because no snapshot information available!");
+//                return;
+//            }
+
             try {
                 logger.info("restore snapshot up");
-                locationRemote.restoreSnapshot(snapshot).get();
+//                locationRemote.restoreSnapshot(snapshot).get();
                 snapshot = null;
-                standby = false;
-            } catch (ExecutionException | CouldNotPerformException ex) {
-                throw new CouldNotPerformException("WakeUp failed!", ex);
+                
+//            } catch (ExecutionException | CouldNotPerformException ex) {
+//                throw new CouldNotPerformException("WakeUp failed!", ex);
             } finally {
                 System.out.println("wakeUp out");
             }
