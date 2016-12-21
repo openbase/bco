@@ -41,7 +41,6 @@ public class UnitEnablingStateConsistencyHandler extends AbstractProtoBufRegistr
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
-
         if (!unitConfig.hasEnablingState() || !unitConfig.getEnablingState().hasValue() || unitConfig.getEnablingState().getValue() == EnablingState.State.UNKNOWN) {
             throw new EntryModification(entry.setMessage(unitConfig.setEnablingState(DEFAULT_ENABLING_STATE)), this);
         }

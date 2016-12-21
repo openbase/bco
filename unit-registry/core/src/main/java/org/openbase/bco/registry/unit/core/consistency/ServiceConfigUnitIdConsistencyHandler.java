@@ -40,7 +40,6 @@ public class ServiceConfigUnitIdConsistencyHandler extends AbstractProtoBufRegis
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
-
         boolean modification = false;
         UnitConfig.Builder unitConfigClone = unitConfig.clone();
 

@@ -42,11 +42,13 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 public class DalUnitEnablingStateConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry;
-    private final Map<String, EnablingState> oldHostEnablingStateMap;
+    private final Map<Boolean, Map<String, EnablingState>> oldHostEnablingStateMap;
 
     public DalUnitEnablingStateConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry) {
         this.deviceRegistry = deviceRegistry;
         this.oldHostEnablingStateMap = new HashMap<>();
+        this.oldHostEnablingStateMap.put(Boolean.TRUE, new HashMap<>());
+        this.oldHostEnablingStateMap.put(Boolean.FALSE, new HashMap<>());
     }
 
     @Override
@@ -59,12 +61,12 @@ public class DalUnitEnablingStateConsistencyHandler extends AbstractProtoBufRegi
 
         UnitConfig deviceUnitConfig = deviceRegistry.getMessage(dalUnitConfig.getUnitHostId());
 
-        if (!oldHostEnablingStateMap.containsKey(dalUnitConfig.getId())) {
-            oldHostEnablingStateMap.put(dalUnitConfig.getId(), deviceUnitConfig.getEnablingState());
+        if (!oldHostEnablingStateMap.get(registry.isSandbox()).containsKey(dalUnitConfig.getId())) {
+            oldHostEnablingStateMap.get(registry.isSandbox()).put(dalUnitConfig.getId(), deviceUnitConfig.getEnablingState());
         }
 
-        if (oldHostEnablingStateMap.get(dalUnitConfig.getId()) != deviceUnitConfig.getEnablingState()) {
-            oldHostEnablingStateMap.put(dalUnitConfig.getId(), deviceUnitConfig.getEnablingState());
+        if (oldHostEnablingStateMap.get(registry.isSandbox()).get(dalUnitConfig.getId()) != deviceUnitConfig.getEnablingState()) {
+            oldHostEnablingStateMap.get(registry.isSandbox()).put(dalUnitConfig.getId(), deviceUnitConfig.getEnablingState());
             if (deviceUnitConfig.getEnablingState().getValue() == EnablingState.State.ENABLED) {
                 throw new EntryModification(entry.setMessage(dalUnitConfig.toBuilder().setEnablingState(deviceUnitConfig.getEnablingState())), this);
             }

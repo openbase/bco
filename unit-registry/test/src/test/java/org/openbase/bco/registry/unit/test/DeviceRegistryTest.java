@@ -476,23 +476,55 @@ public class DeviceRegistryTest {
         assertEquals("The owner id did not get removed even though the user got removed!", "", ownerRemovalDeviceConfig.getDeviceConfig().getInventoryState().getOwnerId());
     }
 
-//    @Test(timeout = 5000)
-//    public void testInventoryEnablingStateConnection() throws Exception {
-//        ServiceTemplateConfig serviceTemplate1 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.POWER_STATE_SERVICE).build();
-//        UnitTemplateConfig unitTemplateConfig1 = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).addServiceTemplateConfig(serviceTemplate1).build();
-//        UnitTemplate unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.LIGHT).toBuilder().addServiceTemplate(ServiceTemplate.newBuilder().setType(serviceTemplate1.getServiceType())).build();
-//        unitRegistry.updateUnitTemplate(unitTemplate).get();
-//
-//        DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("testInventoryEnablingStateConnection", "1297389612873619", "Inventory").toBuilder().addUnitTemplateConfig(unitTemplateConfig1).build()).get();
-//        waitForDeviceClass(clazz);
-//
-//        String label = "testLabel"; 
-//        UnitConfig device = getDeviceUnitConfig(label, "124972691872s3918723", clazz);
-//        DeviceConfig config = device.getDeviceConf
-//                
-//        unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.LIGHT).toBuilder().clearServiceTemplate().build();
-//        unitRegistry.updateUnitTemplate(unitTemplate).get();
-//    }
+    @Test//(timeout = 5000)
+    public void testInventoryEnablingStateConnection() throws Exception {
+        ServiceTemplateConfig serviceTemplate1 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.POWER_STATE_SERVICE).build();
+        UnitTemplateConfig unitTemplateConfig1 = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).addServiceTemplateConfig(serviceTemplate1).build();
+        UnitTemplate unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.LIGHT).toBuilder().addServiceTemplate(ServiceTemplate.newBuilder().setType(serviceTemplate1.getServiceType())).build();
+        unitRegistry.updateUnitTemplate(unitTemplate).get();
+
+        DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("testInventoryEnablingStateConnection", "1297389612873619", "Inventory").toBuilder().addUnitTemplateConfig(unitTemplateConfig1).build()).get();
+        waitForDeviceClass(clazz);
+
+        String label = "testLabel";
+        UnitConfig.Builder device = getDeviceUnitConfig(label, "124972691872s3918723", clazz).toBuilder();
+        DeviceConfig.Builder deviceConf = device.getDeviceConfigBuilder();
+        InventoryState.Builder inventoryState = deviceConf.getInventoryStateBuilder();
+        inventoryState.setValue(InventoryState.State.INSTALLED);
+
+        device = deviceRegistry.registerDeviceConfig(device.build()).get().toBuilder();
+        UnitConfig dalUnit = unitRegistry.getUnitConfigById(device.getDeviceConfig().getUnitId(0));
+        assertTrue("DeviceUnitConfig is not Enabled", device.getEnablingState().getValue() == EnablingState.State.ENABLED);
+        assertTrue("DalUnitConfig is not Enabled", device.getEnablingState().getValue() == dalUnit.getEnablingState().getValue());
+        assertEquals("DeviceUnitConfig and DalUnitConfig have different labels", device.getLabel(), dalUnit.getLabel());
+
+        label = label + "-2";
+        device = deviceRegistry.updateDeviceConfig(device.setLabel(label).build()).get().toBuilder();
+        dalUnit = unitRegistry.getUnitConfigById(device.getDeviceConfig().getUnitId(0));
+        assertEquals(device.getLabel(), dalUnit.getLabel());
+
+        deviceConf = device.getDeviceConfigBuilder();
+        inventoryState = deviceConf.getInventoryStateBuilder();
+        inventoryState.setValue(InventoryState.State.IN_STOCK);
+        device = deviceRegistry.updateDeviceConfig(device.build()).get().toBuilder();
+        dalUnit = unitRegistry.getUnitConfigById(device.getDeviceConfig().getUnitId(0));
+        assertTrue("DeviceUnitConfig inventory state is not IN_STOCK", device.getDeviceConfig().getInventoryState().getValue() == InventoryState.State.IN_STOCK);
+        assertTrue("DeviceUnitConfig is not Disabled", device.getEnablingState().getValue() == EnablingState.State.DISABLED);
+        assertTrue("DalUnitConfig is not Disabled", device.getEnablingState().getValue() == dalUnit.getEnablingState().getValue());
+
+        deviceConf = device.getDeviceConfigBuilder();
+        inventoryState = deviceConf.getInventoryStateBuilder();
+        inventoryState.setValue(InventoryState.State.INSTALLED);
+        device = deviceRegistry.updateDeviceConfig(device.build()).get().toBuilder();
+        dalUnit = unitRegistry.getUnitConfigById(device.getDeviceConfig().getUnitId(0));
+        assertTrue("DeviceUnitConfig inventory state is not INSTALLED", device.getDeviceConfig().getInventoryState().getValue() == InventoryState.State.INSTALLED);
+        assertTrue("DeviceUnitConfig is not Enabled", device.getEnablingState().getValue() == EnablingState.State.ENABLED);
+        assertTrue("DalUnitConfig is not Enabled", device.getEnablingState().getValue() == dalUnit.getEnablingState().getValue());
+
+        unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.LIGHT).toBuilder().clearServiceTemplate().build();
+        unitRegistry.updateUnitTemplate(unitTemplate).get();
+    }
+
     /**
      * Test if the owner of a device is updated correctly.
      *

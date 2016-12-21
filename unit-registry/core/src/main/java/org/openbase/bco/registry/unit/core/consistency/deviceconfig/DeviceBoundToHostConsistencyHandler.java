@@ -47,11 +47,10 @@ public class DeviceBoundToHostConsistencyHandler extends AbstractProtoBufRegistr
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder deviceUnitConfig = entry.getMessage().toBuilder();
-
         boolean modification = false;
 
         final DeviceClassType.DeviceClass deviceClass = deviceClassRegistry.get(deviceUnitConfig.getDeviceConfig().getDeviceClassId()).getMessage();
-        
+
         // Setup default bounding
         if (!deviceUnitConfig.hasBoundToUnitHost()) {
             deviceUnitConfig.setBoundToUnitHost(!DeviceConfigUtils.checkDuplicatedUnitType(deviceUnitConfig, deviceClass, registry));

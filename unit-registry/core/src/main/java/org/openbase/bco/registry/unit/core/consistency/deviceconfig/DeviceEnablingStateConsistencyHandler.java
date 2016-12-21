@@ -41,10 +41,12 @@ import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
  */
 public class DeviceEnablingStateConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
-    private final Map<String, InventoryState.State> oldInventoryStateMap;
+    private final Map<Boolean, Map<String, InventoryState.State>> oldInventoryStateMap;
 
     public DeviceEnablingStateConsistencyHandler() {
         this.oldInventoryStateMap = new HashMap<>();
+        this.oldInventoryStateMap.put(Boolean.TRUE, new HashMap<>());
+        this.oldInventoryStateMap.put(Boolean.FALSE, new HashMap<>());
     }
 
     @Override
@@ -52,8 +54,8 @@ public class DeviceEnablingStateConsistencyHandler extends AbstractProtoBufRegis
         UnitConfig deviceUnitConfig = entry.getMessage();
         DeviceConfig deviceConfig = deviceUnitConfig.getDeviceConfig();
 
-        if (!oldInventoryStateMap.containsKey(deviceUnitConfig.getId())) {
-            oldInventoryStateMap.put(deviceUnitConfig.getId(), deviceConfig.getInventoryState().getValue());
+        if (!oldInventoryStateMap.get(registry.isSandbox()).containsKey(deviceUnitConfig.getId())) {
+            oldInventoryStateMap.get(registry.isSandbox()).put(deviceUnitConfig.getId(), deviceConfig.getInventoryState().getValue());
         }
 
         if (!deviceConfig.hasInventoryState()) {
@@ -66,21 +68,15 @@ public class DeviceEnablingStateConsistencyHandler extends AbstractProtoBufRegis
 
         if (deviceConfig.getInventoryState().getValue() != InventoryState.State.INSTALLED) {
             if (deviceUnitConfig.getEnablingState().getValue() == EnablingState.State.ENABLED) {
-                System.out.println("Diabling because not installed but enabled");
                 EnablingState disabled = EnablingState.newBuilder().setValue(EnablingState.State.DISABLED).build();
                 throw new EntryModification(entry.setMessage(deviceUnitConfig.toBuilder().setEnablingState(disabled)), this);
             }
         }
 
-        if (oldInventoryStateMap.get(deviceUnitConfig.getId()) != deviceConfig.getInventoryState().getValue()) {
-            System.out.println("oldState, newState [" + oldInventoryStateMap.get(deviceUnitConfig.getId()) + "," + deviceConfig.getInventoryState().getValue() + "]");
-            oldInventoryStateMap.put(deviceUnitConfig.getId(), deviceConfig.getInventoryState().getValue());
+        if (oldInventoryStateMap.get(registry.isSandbox()).get(deviceUnitConfig.getId()) != deviceConfig.getInventoryState().getValue()) {
+            oldInventoryStateMap.get(registry.isSandbox()).put(deviceUnitConfig.getId(), deviceConfig.getInventoryState().getValue());
             if (deviceConfig.getInventoryState().getValue() == InventoryState.State.INSTALLED) {
-                System.out.println("new State is installed");
                 EnablingState enabled = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
-                System.out.println("TEST");
-                IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> setMessage = entry.setMessage(deviceUnitConfig.toBuilder().setEnablingState(enabled));
-                System.out.println("Entry after set [" + setMessage.getMessage() + "]" + setMessage);
                 throw new EntryModification(entry.setMessage(deviceUnitConfig.toBuilder().setEnablingState(enabled)), this);
             }
         }
