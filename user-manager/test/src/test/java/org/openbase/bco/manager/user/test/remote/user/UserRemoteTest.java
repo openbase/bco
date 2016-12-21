@@ -101,14 +101,14 @@ public class UserRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test/*(timeout = 10000)*/
+    @Test(timeout = 10000)
     public void testGetUserName() throws Exception {
         System.out.println("testGetUserName");
         userRemote.requestData().get();
         assertEquals("The user created in the manager has a different user name than the one registered!", MockRegistry.USER_NAME, userRemote.getData().getUserName());
     }
 
-    @Test/*(timeout = 10000)*/
+    @Test(timeout = 10000)
     public void testSetUserValues() throws Exception {
         System.out.println("testSetUserValues");
 
@@ -117,7 +117,9 @@ public class UserRemoteTest {
 
         userRemote.setUserActivityState(activity).get();
         userRemote.setUserPresenceState(presenceState).get();
-
+        
+        userRemote.requestData();
+        
         assertEquals("UserActivityState has not been set!", activity, userRemote.getUserActivityState());
         assertEquals("UserPresenceState has not been set!", presenceState, userRemote.getUserPresenceState());
     }
