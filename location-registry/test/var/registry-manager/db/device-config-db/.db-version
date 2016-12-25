@@ -1,9 +1,0 @@
-### PLEASE DO NOT MODIFY ###
-{
-  "version": 1,
-  "applied_consistency_handler": [
-    "DeviceConfig_1_VersionConsistencyHandler",
-    "DeviceConfig_1_VersionConsistencyHandler",
-    "DeviceConfig_1_VersionConsistencyHandler"
-  ]
-}

@@ -78,8 +78,15 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.openbase.bco.registry.launch.RegistryLauncher</mainClass>
+                            <mainClass>org.openbase.bco.registry.launch.RegistryLauncherDeprecated</mainClass>
                             <id>registry</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.registry.launch.RegistryLauncher</mainClass>
+                            <id>bco-registry</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
