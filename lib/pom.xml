@@ -88,6 +88,12 @@
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>
+            <artifactId>jul.extension.rst.processing</artifactId>
+            <version>${dependency.jul.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase</groupId>
             <artifactId>jul.extension.rsb.interface</artifactId>
             <version>${dependency.jul.version}</version>
             <type>jar</type>

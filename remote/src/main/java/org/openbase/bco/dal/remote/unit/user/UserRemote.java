@@ -25,6 +25,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.unit.user.User;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
@@ -86,5 +87,36 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
     @Override
     public Future<Void> setUserPresenceState(UserPresenceState userPresenceState) throws CouldNotPerformException {
         return RPCHelper.callRemoteMethod(userPresenceState, this, Void.class);
+    }
+
+    //TODO move into user unit interface
+    public Boolean isAtHome() throws NotAvailableException {
+        try {
+            switch (getData().getUserPresenceState().getValue()) {
+                case AT_HOME:
+                case SHORT_AT_HOME:
+                case SOON_AWAY:
+                    return true;
+                case AWAY:
+                case SHORT_AWAY:
+                case SOON_AT_HOME:
+                    return false;
+                case UNKNOWN:
+                    throw new InvalidStateException("UserPresenceState is unknown!");
+                default:
+                    throw new AssertionError("Type " + getData().getUserPresenceState().getValue() + " not supported!");
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("AtHomeState");
+        }
+    }
+
+    //TODO move into user unit interface
+    public String getName() throws NotAvailableException {
+        try {
+            return getConfig().getUserConfig().getFirstName() + " " + getConfig().getUserConfig().getLastName();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Name", ex);
+        }
     }
 }
