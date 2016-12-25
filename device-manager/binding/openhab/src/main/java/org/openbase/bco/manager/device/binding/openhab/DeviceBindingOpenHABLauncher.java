@@ -22,45 +22,28 @@ package org.openbase.bco.manager.device.binding.openhab;
  * #L%
  */
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.openbase.bco.dal.lib.layer.unit.AbstractUnitController;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
+import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABBinding;
-import org.openbase.jul.schedule.Stopwatch;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
-public class DeviceBindingOpenHABLauncher {
+public class DeviceBindingOpenHABLauncher extends AbstractLauncher<DeviceBindingOpenHABImpl> {
 
-    private static final Logger logger = LoggerFactory.getLogger(DeviceBindingOpenHABLauncher.class);
-
-    private DeviceBindingOpenHABImpl openHABBinding;
-
-    public void launch() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        try {
-            openHABBinding = new DeviceBindingOpenHABImpl();
-            openHABBinding.init();
-        } catch (CouldNotPerformException | JPServiceException ex) {
-            openHABBinding.shutdown();
-            throw new org.openbase.jul.exception.InstantiationException(this, ex);
-        }
+    public DeviceBindingOpenHABLauncher() throws org.openbase.jul.exception.InstantiationException {
+        super(DeviceBindingOpenHABLauncher.class, DeviceBindingOpenHABImpl.class);
     }
 
-    public void shutdown() throws InterruptedException {
-        openHABBinding.shutdown();
-    }
-
-    public DeviceBindingOpenHABImpl getOpenHABBinding() {
-        return openHABBinding;
+    @Override
+    protected void loadProperties() {
+        JPService.registerProperty(JPHardwareSimulationMode.class);
+        JPService.registerProperty(JPLocationRegistryScope.class);
+        JPService.registerProperty(JPDeviceRegistryScope.class);
     }
 
     /**
@@ -68,31 +51,7 @@ public class DeviceBindingOpenHABLauncher {
      * @throws java.lang.InterruptedException
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
-    public static void main(String[] args) throws InterruptedException, CouldNotPerformException {
-
-        /* Setup JPService */
-        JPService.setApplicationName(OpenHABBinding.class);
-        JPService.registerProperty(JPHardwareSimulationMode.class);
-        JPService.registerProperty(JPLocationRegistryScope.class);
-        JPService.registerProperty(JPDeviceRegistryScope.class);
-        JPService.parseAndExitOnError(args);
-
-        /* Start main app */
-        logger.info("Start " + JPService.getApplicationName() + "...");
-        Stopwatch stopWatch = new Stopwatch();
-        stopWatch.start();
-        long time = System.currentTimeMillis();
-        try {
-            new DeviceBindingOpenHABLauncher().launch();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
-            return;
-        }
-        //logger.info("Activation took " + ControllerManager.activationTime / 1000.0f + "s.");
-        logger.info("Method registration took " + AbstractUnitController.registerMethodTime / 1000.0f + "s.");
-        logger.info("UpdateMethod verification took " + AbstractUnitController.updateMethodVerificationTime / 1000.0f + "s.");
-        logger.info("Init took " + AbstractUnitController.initTime / 1000.0f + "s.");
-        logger.info("Constructor took " + AbstractUnitController.constructorTime / 1000.0f + "s.");
-        logger.info(JPService.getApplicationName() + " successfully started in " + stopWatch.stop() / 1000.0f + "s.");
+    public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
+        AbstractLauncher.main(args, DeviceBindingOpenHABLauncher.class, DeviceBindingOpenHABLauncher.class);
     }
 }

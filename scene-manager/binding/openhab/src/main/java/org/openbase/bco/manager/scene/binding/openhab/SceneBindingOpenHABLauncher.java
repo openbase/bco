@@ -22,42 +22,26 @@ package org.openbase.bco.manager.scene.binding.openhab;
  * #L%
  */
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
+import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.bco.registry.scene.lib.jp.JPSceneRegistryScope;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABBinding;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
-public class SceneBindingOpenHABLauncher {
+public class SceneBindingOpenHABLauncher extends AbstractLauncher<SceneBindingOpenHABImpl> {
 
-    private static final Logger logger = LoggerFactory.getLogger(SceneBindingOpenHABLauncher.class);
-
-    private SceneBindingOpenHABImpl openHABBinding;
-
-    public void launch() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        try {
-            openHABBinding = new SceneBindingOpenHABImpl();
-            openHABBinding.init();
-        } catch (CouldNotPerformException | JPServiceException ex) {
-            openHABBinding.shutdown();
-            throw new org.openbase.jul.exception.InstantiationException(this, ex);
-        }
+    public SceneBindingOpenHABLauncher() throws org.openbase.jul.exception.InstantiationException {
+        super(SceneBindingOpenHABLauncher.class, SceneBindingOpenHABImpl.class);
     }
 
-    public void shutdown() throws InterruptedException {
-        openHABBinding.shutdown();
-    }
-
-    public SceneBindingOpenHABImpl getOpenHABBinding() {
-        return openHABBinding;
+    @Override
+    protected void loadProperties() {
+        JPService.registerProperty(JPHardwareSimulationMode.class);
+        JPService.registerProperty(JPSceneRegistryScope.class);
     }
 
     /**
@@ -65,22 +49,7 @@ public class SceneBindingOpenHABLauncher {
      * @throws java.lang.InterruptedException
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
-    public static void main(String[] args) throws InterruptedException, CouldNotPerformException {
-
-        /* Setup JPService */
-        JPService.setApplicationName(OpenHABBinding.class);
-        JPService.registerProperty(JPHardwareSimulationMode.class);
-        JPService.registerProperty(JPSceneRegistryScope.class);
-        JPService.parseAndExitOnError(args);
-
-        /* Start main app */
-        logger.info("Start " + JPService.getApplicationName() + "...");
-        try {
-            new SceneBindingOpenHABLauncher().launch();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
-            return;
-        }
-        logger.info(JPService.getApplicationName() + " successfully started.");
+    public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
+        AbstractLauncher.main(args, SceneBindingOpenHABLauncher.class, SceneBindingOpenHABLauncher.class);
     }
 }

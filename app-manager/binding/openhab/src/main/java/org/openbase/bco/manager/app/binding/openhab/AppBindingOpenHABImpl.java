@@ -54,6 +54,7 @@ public class AppBindingOpenHABImpl extends AbstractOpenHABBinding {
     private final RegistrySynchronizer<String, AppRemote, UnitConfig, UnitConfig.Builder> registrySynchronizer;
     private final RegistryImpl<String, AppRemote> registry;
     private final boolean hardwareSimulationMode;
+    private boolean active;
 
     public AppBindingOpenHABImpl() throws InstantiationException, JPNotAvailableException, InterruptedException {
         super();
@@ -105,10 +106,28 @@ public class AppBindingOpenHABImpl extends AbstractOpenHABBinding {
         try {
             factory.init(openHABRemote);
             appRegistryRemote.init();
-            appRegistryRemote.activate();
-            registrySynchronizer.activate();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
+    }
+
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        active = true;
+        appRegistryRemote.activate();
+        registrySynchronizer.activate();
+
+    }
+
+    @Override
+    public void deactivate() throws CouldNotPerformException, InterruptedException {
+        active = false;
+        appRegistryRemote.deactivate();
+        registrySynchronizer.deactivate();
+    }
+
+    @Override
+    public boolean isActive() {
+        return active;
     }
 }

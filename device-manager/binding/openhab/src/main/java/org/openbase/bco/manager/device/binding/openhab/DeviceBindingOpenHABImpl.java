@@ -25,6 +25,7 @@ import org.openbase.bco.manager.device.binding.openhab.comm.OpenHABRemoteImpl;
 import org.openbase.bco.manager.device.binding.openhab.service.OpenhabServiceFactory;
 import org.openbase.bco.manager.device.core.DeviceManagerController;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -42,14 +43,12 @@ import rst.domotic.unit.device.DeviceClassType.DeviceClass;
  */
 public class DeviceBindingOpenHABImpl extends AbstractOpenHABBinding {
 
-    
-    
     //TODO: Should be declared in the openhab config generator and used from there
     public static final String DEVICE_MANAGER_ITEM_FILTER = "";
 
     private DeviceManagerController deviceManagerController;
     private DeviceRegistryRemote deviceRegistryRemote;
-
+    
     public DeviceBindingOpenHABImpl() throws InstantiationException, JPNotAvailableException {
         super();
     }
@@ -65,11 +64,9 @@ public class DeviceBindingOpenHABImpl extends AbstractOpenHABBinding {
     @Override
     public void init(String itemFilter, OpenHABRemote openHABRemote) throws InitializationException, InterruptedException {
         try {
-            this.deviceRegistryRemote = new DeviceRegistryRemote();
-            this.deviceRegistryRemote.init();
-            this.deviceRegistryRemote.activate();
-
-            this.deviceManagerController = new DeviceManagerController(new OpenhabServiceFactory()) {
+            deviceRegistryRemote = Registries.getDeviceRegistry();
+            deviceRegistryRemote.waitForData();
+            deviceManagerController = new DeviceManagerController(new OpenhabServiceFactory()) {
 
                 @Override
                 public boolean isSupported(UnitConfig config) throws CouldNotPerformException {
@@ -87,18 +84,32 @@ public class DeviceBindingOpenHABImpl extends AbstractOpenHABBinding {
             };
 
             super.init(itemFilter, openHABRemote);
-            this.deviceManagerController.init();
-            this.deviceManagerController.activate();
+            deviceManagerController.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
     @Override
-    public void shutdown() throws InterruptedException {
+    public void shutdown() {
         if (deviceManagerController != null) {
             deviceManagerController.shutdown();
         }
         super.shutdown();
+    }
+
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        deviceManagerController.activate();
+    }
+
+    @Override
+    public void deactivate() throws CouldNotPerformException, InterruptedException {
+        deviceManagerController.deactivate();
+    }
+
+    @Override
+    public boolean isActive() {
+        return deviceManagerController.isActive();
     }
 }

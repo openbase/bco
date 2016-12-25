@@ -23,41 +23,25 @@ package org.openbase.bco.manager.agent.binding.openhab;
  */
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
+import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABBinding;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
-public class AgentBindingOpenHABLauncher {
+public class AgentBindingOpenHABLauncher extends AbstractLauncher<AgentBindingOpenHABImpl> {
 
-    private static final Logger logger = LoggerFactory.getLogger(AgentBindingOpenHABLauncher.class);
-
-    private AgentBindingOpenHABImpl openHABBinding;
-
-    public void launch() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        try {
-            openHABBinding = new AgentBindingOpenHABImpl();
-            openHABBinding.init();
-        } catch (CouldNotPerformException | JPServiceException ex) {
-            openHABBinding.shutdown();
-            throw new org.openbase.jul.exception.InstantiationException(this, ex);
-        }
+    public AgentBindingOpenHABLauncher() throws org.openbase.jul.exception.InstantiationException {
+        super(AgentBindingOpenHABLauncher.class, AgentBindingOpenHABImpl.class);
     }
-
-    public void shutdown() throws InterruptedException {
-        openHABBinding.shutdown();
-    }
-
-    public AgentBindingOpenHABImpl getOpenHABBinding() {
-        return openHABBinding;
+    
+    @Override
+    protected void loadProperties() {
+        JPService.registerProperty(JPHardwareSimulationMode.class);
+        JPService.registerProperty(JPAgentRegistryScope.class);
     }
 
     /**
@@ -65,22 +49,7 @@ public class AgentBindingOpenHABLauncher {
      * @throws java.lang.InterruptedException
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
-    public static void main(String[] args) throws InterruptedException, CouldNotPerformException {
-
-        /* Setup JPService */
-        JPService.setApplicationName(OpenHABBinding.class);
-        JPService.registerProperty(JPHardwareSimulationMode.class);
-        JPService.registerProperty(JPAgentRegistryScope.class);
-        JPService.parseAndExitOnError(args);
-
-        /* Start main app */
-        logger.info("Start " + JPService.getApplicationName() + "...");
-        try {
-            new AgentBindingOpenHABLauncher().launch();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
-            return;
-        }
-        logger.info(JPService.getApplicationName() + " successfully started.");
+    public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
+        AbstractLauncher.main(args, AgentBindingOpenHABLauncher.class, AgentBindingOpenHABLauncher.class);
     }
 }

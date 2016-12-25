@@ -68,6 +68,7 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
     private final RegistryImpl<String, LocationRemote> locationRegistry;
     private final RegistryImpl<String, ConnectionRemote> connectionRegistry;
     private final boolean hardwareSimulationMode;
+    private boolean active;
 
     public LocationBindingOpenHABImpl() throws InstantiationException, JPNotAvailableException, InterruptedException {
         super();
@@ -164,14 +165,32 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
     @Override
     public void init(String itemFilter, OpenHABRemote openHABRemote) throws InitializationException, InterruptedException {
         super.init(itemFilter, openHABRemote);
-        locationRemoteFactory.init(openHABRemote);
         try {
+            locationRemoteFactory.init(openHABRemote);
             locationRegistryRemote.init();
-            locationRegistryRemote.activate();
-            locationRegistrySynchronizer.activate();
-            connectionRegistrySynchronizer.activate();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
+    }
+
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        active = true;
+        locationRegistryRemote.activate();
+        locationRegistrySynchronizer.activate();
+        connectionRegistrySynchronizer.activate();
+    }
+
+    @Override
+    public void deactivate() throws CouldNotPerformException, InterruptedException {
+        active = false;
+        locationRegistryRemote.deactivate();
+        locationRegistrySynchronizer.deactivate();
+        connectionRegistrySynchronizer.deactivate();
+    }
+
+    @Override
+    public boolean isActive() {
+        return active;
     }
 }

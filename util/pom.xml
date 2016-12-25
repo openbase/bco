@@ -5,7 +5,7 @@
     <artifactId>manager.util</artifactId>
     <packaging>jar</packaging>
 
-    <name>BCO Manager Util</name>
+    <name>BCO Manager Utility</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>
@@ -50,8 +50,15 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.openbase.bco.manager.util.ManagerLauncher</mainClass>
+                            <mainClass>org.openbase.bco.manager.util.launch.ManagerLauncher</mainClass>
                             <id>bco-manager</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.manager.util.launch.BCOLauncher</mainClass>
+                            <id>bco</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
@@ -87,10 +94,64 @@
     </build>    
 
     <dependencies>
+        <!-- registries -->
         <dependency>
             <groupId>org.openbase.bco</groupId>
-            <artifactId>manager.user.lib</artifactId>
+            <artifactId>registry.util</artifactId>
+            <version>${dependency.bco.registry.version}</version>
+        </dependency>
+        <!-- manager -->
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>manager.agent.core</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>manager.app.core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>manager.device.core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>manager.location.core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>manager.scene.core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>manager.user.core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <!-- manager bindings -->
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>manager.agent.binding.openhab</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>manager.location.binding.openhab</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>manager.scene.binding.openhab</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>manager.device.binding.openhab</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        
     </dependencies>
 </project>

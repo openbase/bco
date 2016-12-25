@@ -55,6 +55,7 @@ public class SceneBindingOpenHABImpl extends AbstractOpenHABBinding {
     private final RegistrySynchronizer<String, SceneRemote, UnitConfig, UnitConfig.Builder> registrySynchronizer;
     private final RegistryImpl<String, SceneRemote> registry;
     private final boolean hardwareSimulationMode;
+    private boolean active;
 
     public SceneBindingOpenHABImpl() throws InstantiationException, JPNotAvailableException, InterruptedException {
         super();
@@ -70,7 +71,6 @@ public class SceneBindingOpenHABImpl extends AbstractOpenHABBinding {
                 return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
             }
         };
-
     }
 
     private String getSceneIdFromOpenHABItem(OpenhabCommand command) {
@@ -108,10 +108,27 @@ public class SceneBindingOpenHABImpl extends AbstractOpenHABBinding {
         try {
             factory.init(openHABRemote);
             sceneRegistryRemote.init();
-            sceneRegistryRemote.activate();
-            registrySynchronizer.activate();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
+    }
+
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        active = true;
+        sceneRegistryRemote.activate();
+        registrySynchronizer.activate();
+    }
+
+    @Override
+    public void deactivate() throws CouldNotPerformException, InterruptedException {
+        active = false;
+        sceneRegistryRemote.deactivate();
+        registrySynchronizer.deactivate();
+    }
+
+    @Override
+    public boolean isActive() {
+        return active;
     }
 }

@@ -55,6 +55,7 @@ public class AgentBindingOpenHABImpl extends AbstractOpenHABBinding {
     private final RegistrySynchronizer<String, AgentRemote, UnitConfig, UnitConfig.Builder> registrySynchronizer;
     private final RegistryImpl<String, AgentRemote> registry;
     private final boolean hardwareSimulationMode;
+    private boolean active;
 
     public AgentBindingOpenHABImpl() throws InstantiationException, JPNotAvailableException, InterruptedException {
         super();
@@ -77,6 +78,7 @@ public class AgentBindingOpenHABImpl extends AbstractOpenHABBinding {
         return command.getItemBindingConfig().split(":")[1];
     }
 
+    @Override
     public void init() throws InitializationException, InterruptedException {
         init(AGENT_MANAGER_ITEM_FILTER, new AbstractOpenHABRemote(hardwareSimulationMode) {
 
@@ -107,10 +109,27 @@ public class AgentBindingOpenHABImpl extends AbstractOpenHABBinding {
         try {
             factory.init(openHABRemote);
             agentRegistryRemote.init();
-            agentRegistryRemote.activate();
-            registrySynchronizer.activate();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
+    }
+
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        active = true;
+        agentRegistryRemote.activate();
+        registrySynchronizer.activate();
+    }
+
+    @Override
+    public void deactivate() throws CouldNotPerformException, InterruptedException {
+        active = false;
+        agentRegistryRemote.deactivate();
+        registrySynchronizer.deactivate();
+    }
+
+    @Override
+    public boolean isActive() {
+        return active;
     }
 }

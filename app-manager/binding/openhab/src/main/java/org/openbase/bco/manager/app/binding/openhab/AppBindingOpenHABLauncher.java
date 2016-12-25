@@ -21,43 +21,25 @@ package org.openbase.bco.manager.app.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
+import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABBinding;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
-public class AppBindingOpenHABLauncher {
+public class AppBindingOpenHABLauncher extends AbstractLauncher<AppBindingOpenHABImpl> {
 
-    private static final Logger logger = LoggerFactory.getLogger(AppBindingOpenHABLauncher.class);
-
-    private AppBindingOpenHABImpl openHABBinding;
-
-    public void launch() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        try {
-            openHABBinding = new AppBindingOpenHABImpl();
-            openHABBinding.init();
-        } catch (CouldNotPerformException | JPServiceException ex) {
-            openHABBinding.shutdown();
-            throw new org.openbase.jul.exception.InstantiationException(this, ex);
-        }
+    public AppBindingOpenHABLauncher() throws org.openbase.jul.exception.InstantiationException {
+        super(AppBindingOpenHABLauncher.class, AppBindingOpenHABImpl.class);
     }
 
-    public void shutdown() throws InterruptedException {
-        openHABBinding.shutdown();
-    }
-
-    public AppBindingOpenHABImpl getOpenHABBinding() {
-        return openHABBinding;
+    @Override
+    protected void loadProperties() {
+        JPService.registerProperty(JPAppRegistryScope.class);
     }
 
     /**
@@ -65,22 +47,7 @@ public class AppBindingOpenHABLauncher {
      * @throws java.lang.InterruptedException
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
-    public static void main(String[] args) throws InterruptedException, CouldNotPerformException {
-
-        /* Setup JPService */
-        JPService.setApplicationName(OpenHABBinding.class);
-        JPService.registerProperty(JPHardwareSimulationMode.class);
-        JPService.registerProperty(JPAppRegistryScope.class);
-        JPService.parseAndExitOnError(args);
-
-        /* Start main app */
-        logger.info("Start " + JPService.getApplicationName() + "...");
-        try {
-            new AppBindingOpenHABLauncher().launch();
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistoryAndExit(JPService.getApplicationName() + " crashed during startup phase!", ex, logger);
-            return;
-        }
-        logger.info(JPService.getApplicationName() + " successfully started.");
+    public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
+        AbstractLauncher.main(args, AppBindingOpenHABLauncher.class, AppBindingOpenHABLauncher.class);
     }
 }
