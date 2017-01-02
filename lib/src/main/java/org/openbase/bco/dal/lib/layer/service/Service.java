@@ -67,6 +67,17 @@ public interface Service {
         }
     }
 
+    /**
+     * Method returns the state-name of the appurtenant service.
+     *
+     * @param template The serviceTemplate.
+     *
+     * @return The state-name as string.
+     */
+    public static String getStateOfService(final ServiceTemplateType.ServiceTemplate template) {
+        return template.getType().name().toLowerCase().replaceAll("_service", "");
+    }
+
     public static Method detectServiceMethod(final ServiceTemplateType.ServiceTemplate template, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
         try {
             return instanceClass.getMethod(getServicePrefix(template.getPattern()) + StringProcessor.transformUpperCaseToCamelCase(template.getType().name()).replaceAll("Service", ""), argumentClasses);
