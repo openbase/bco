@@ -1,15 +1,5 @@
 package org.openbase.bco.dal.lib.layer.service;
 
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.concurrent.Future;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotSupportedException;
-import org.openbase.jul.processing.StringProcessor;
-import rst.domotic.action.ActionConfigType;
-import rst.domotic.service.ServiceTemplateType;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
-
 /*
  * #%L
  * DAL Library
@@ -31,9 +21,21 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.concurrent.Future;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotSupportedException;
+import org.openbase.jul.processing.StringProcessor;
+import rst.domotic.action.ActionConfigType;
+import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:agatting@techfak.uni-bielefeld.de">Andreas Gatting</a>
  */
 public interface Service {
 
@@ -68,19 +70,26 @@ public interface Service {
     }
 
     /**
-     * Method returns the state-name of the appurtenant service.
+     * Method returns the state  name of the appurtenant service.
      *
-     * @param template The serviceTemplate.
-     *
-     * @return The state-name as string.
+     * @param template The service template.
+     * @return The state type name as string.
      */
-    public static String getStateOfService(final ServiceTemplateType.ServiceTemplate template) {
-        return template.getType().name().toLowerCase().replaceAll("_service", "");
+    public static String getServiceStateName(final ServiceTemplate template) throws NotAvailableException {
+        try {
+            if (template == null) {
+                assert false;
+                throw new NotAvailableException("ServiceTemplate");
+            }
+            return StringProcessor.transformUpperCaseToCamelCase(template.getType().name()).replaceAll("Service", "");
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("SServiceStateName");
+        }
     }
 
     public static Method detectServiceMethod(final ServiceTemplateType.ServiceTemplate template, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
         try {
-            return instanceClass.getMethod(getServicePrefix(template.getPattern()) + StringProcessor.transformUpperCaseToCamelCase(template.getType().name()).replaceAll("Service", ""), argumentClasses);
+            return instanceClass.getMethod(getServicePrefix(template.getPattern()) + getServiceStateName(template), argumentClasses);
         } catch (NoSuchMethodException | SecurityException ex) {
             throw new CouldNotPerformException("Could not detect service method!", ex);
         }
