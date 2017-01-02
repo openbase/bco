@@ -35,9 +35,9 @@ import rst.timing.TimestampType.Timestamp;
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class HandleStateStateRemote extends AbstractServiceRemote<HandleStateProviderService, HandleState> implements HandleStateProviderServiceCollection {
+public class HandleStateServiceRemote extends AbstractServiceRemote<HandleStateProviderService, HandleState> implements HandleStateProviderServiceCollection {
 
-    public HandleStateStateRemote() {
+    public HandleStateServiceRemote() {
         super(ServiceType.HANDLE_STATE_SERVICE);
     }
 
