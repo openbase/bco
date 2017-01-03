@@ -63,6 +63,13 @@
                                 <platform>unix</platform>
                             </platforms>
                         </program>
+                        <program>
+                            <mainClass>org.openbase.bco.manager.util.launch.BCOBindingOpenhabLauncher</mainClass>
+                            <id>bco-openhab</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
                     </programs>
                 </configuration>
             </plugin>
@@ -132,6 +139,11 @@
             <version>${project.version}</version>
         </dependency>
         <!-- manager bindings -->
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>manager.app.binding.openhab</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         <dependency>
             <groupId>org.openbase.bco</groupId>
             <artifactId>manager.agent.binding.openhab</artifactId>

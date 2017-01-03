@@ -21,13 +21,11 @@ package org.openbase.bco.manager.util.launch;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.manager.agent.binding.openhab.AgentBindingOpenHABLauncher;
 import org.openbase.bco.manager.agent.core.AgentManagerLauncher;
 import org.openbase.bco.manager.app.binding.openhab.AppBindingOpenHABLauncher;
 import org.openbase.bco.manager.app.core.AppManagerLauncher;
 import org.openbase.bco.manager.device.binding.openhab.DeviceBindingOpenHABLauncher;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.manager.location.binding.openhab.LocationBindingOpenHABLauncher;
 import org.openbase.bco.manager.location.core.LocationManagerLauncher;
 import org.openbase.bco.manager.scene.binding.openhab.SceneBindingOpenHABLauncher;
@@ -45,14 +43,16 @@ import org.openbase.bco.registry.user.core.UserRegistryLauncher;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class BCOLauncher {
+public class BCOBindingOpenhabLauncher {
 
     /**
      * @param args the command line arguments
      */
     public static void main(final String[] args) {
         AbstractLauncher.main(args, BCO.class,
-                /** Registry **/
+                /**
+                 * Registry *
+                 */
                 DeviceRegistryLauncher.class,
                 AppRegistryLauncher.class,
                 AgentRegistryLauncher.class,
@@ -60,20 +60,22 @@ public class BCOLauncher {
                 LocationRegistryLauncher.class,
                 UserRegistryLauncher.class,
                 SceneRegistryLauncher.class,
-                
-                /** Manager **/
+                /**
+                 * Manager *
+                 */
                 AgentManagerLauncher.class,
                 AppManagerLauncher.class,
-                DeviceManagerLauncher.class,
                 LocationManagerLauncher.class,
                 SceneManagerLauncher.class,
-                UserManagerLauncher.class, 
-                
-                /** Bindings **/
+                UserManagerLauncher.class,
+                /**
+                 * Bindings *
+                 */
                 AppBindingOpenHABLauncher.class,
                 AgentBindingOpenHABLauncher.class,
                 LocationBindingOpenHABLauncher.class,
-                SceneBindingOpenHABLauncher.class
+                SceneBindingOpenHABLauncher.class,
+                DeviceBindingOpenHABLauncher.class
         );
     }
 }
