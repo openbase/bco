@@ -41,6 +41,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.PowerStateType.PowerState;
@@ -51,7 +52,7 @@ import rst.domotic.state.PowerStateType.PowerState;
  */
 public class PowerSwitchRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(PowerSwitchRemoteTest.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(PowerSwitchRemoteTest.class);
 
     private static PowerSwitchRemote powerSwitchRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
@@ -63,31 +64,39 @@ public class PowerSwitchRemoteTest {
 
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, InterruptedException, JPServiceException {
-        JPService.setupJUnitTestMode();
-        JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = MockRegistryHolder.newMockRegistry();
+        try {
+            JPService.setupJUnitTestMode();
+            JPService.registerProperty(JPHardwareSimulationMode.class, true);
+            registry = MockRegistryHolder.newMockRegistry();
 
-        deviceManagerLauncher = new DeviceManagerLauncher();
-        deviceManagerLauncher.launch();
-        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+            deviceManagerLauncher = new DeviceManagerLauncher();
+            deviceManagerLauncher.launch();
+            deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
-        label = MockRegistry.POWER_SWITCH_LABEL;
+            label = MockRegistry.POWER_SWITCH_LABEL;
 
-        powerSwitchRemote = new PowerSwitchRemote();
-        powerSwitchRemote.initByLabel(label);
-        powerSwitchRemote.activate();
-        powerSwitchRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+            powerSwitchRemote = new PowerSwitchRemote();
+            powerSwitchRemote.initByLabel(label);
+            powerSwitchRemote.activate();
+            powerSwitchRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
     }
 
     @AfterClass
-    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
-        if (deviceManagerLauncher != null) {
-            deviceManagerLauncher.shutdown();
+    public static void tearDownClass() throws Throwable {
+        try {
+            if (deviceManagerLauncher != null) {
+                deviceManagerLauncher.shutdown();
+            }
+            if (powerSwitchRemote != null) {
+                powerSwitchRemote.shutdown();
+            }
+            MockRegistryHolder.shutdownMockRegistry();
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
-        if (powerSwitchRemote != null) {
-            powerSwitchRemote.shutdown();
-        }
-        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before

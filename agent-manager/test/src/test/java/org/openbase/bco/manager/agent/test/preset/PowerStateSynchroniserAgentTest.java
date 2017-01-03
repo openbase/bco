@@ -48,6 +48,7 @@ import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
 import rst.configuration.EntryType.Entry;
 import rst.configuration.MetaConfigType.MetaConfig;
@@ -65,7 +66,7 @@ import rst.spatial.PlacementConfigType;
  */
 public class PowerStateSynchroniserAgentTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(PowerStateSynchroniserAgentTest.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(PowerStateSynchroniserAgentTest.class);
 
     public static final String POWER_STATE_SYNC_AGENT_LABEL = "Power_State_Sync_Agent_Unit_Test";
 
@@ -83,37 +84,45 @@ public class PowerStateSynchroniserAgentTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws CouldNotPerformException, InstantiationException, InterruptedException {
-        JPService.registerProperty(JPHardwareSimulationMode.class, true);
+    public static void setUpClass() throws Throwable {
+        try {
+            JPService.registerProperty(JPHardwareSimulationMode.class, true);
 
-        MockRegistryHolder.newMockRegistry();
+            MockRegistryHolder.newMockRegistry();
 
-        deviceManagerLauncher = new DeviceManagerLauncher();
-        deviceManagerLauncher.launch();
+            deviceManagerLauncher = new DeviceManagerLauncher();
+            deviceManagerLauncher.launch();
 
-        agentManagerLauncher = new AgentManagerLauncher();
-        agentManagerLauncher.launch();
+            agentManagerLauncher = new AgentManagerLauncher();
+            agentManagerLauncher.launch();
 
-        agentRegistry = CachedAgentRegistryRemote.getRegistry();
-        unitRegistry = CachedUnitRegistryRemote.getRegistry();
-        locationRegistry = CachedLocationRegistryRemote.getRegistry();
+            agentRegistry = CachedAgentRegistryRemote.getRegistry();
+            unitRegistry = CachedUnitRegistryRemote.getRegistry();
+            locationRegistry = CachedLocationRegistryRemote.getRegistry();
 
-        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
-        agentManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+            deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+            agentManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+        } catch (Throwable ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
     }
 
     @AfterClass
-    public static void tearDownClass() {
-        if (deviceManagerLauncher != null) {
-            deviceManagerLauncher.shutdown();
+    public static void tearDownClass() throws Throwable {
+        try {
+            if (deviceManagerLauncher != null) {
+                deviceManagerLauncher.shutdown();
+            }
+            if (agentManagerLauncher != null) {
+                agentManagerLauncher.shutdown();
+            }
+            if (agentRegistry != null) {
+                agentRegistry.shutdown();
+            }
+            MockRegistryHolder.shutdownMockRegistry();
+        } catch (Throwable ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
-        if (agentManagerLauncher != null) {
-            agentManagerLauncher.shutdown();
-        }
-        if (agentRegistry != null) {
-            agentRegistry.shutdown();
-        }
-        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before
@@ -161,14 +170,14 @@ public class PowerStateSynchroniserAgentTest {
         ambientLightRemote.waitForData();
         powerPlugRemote.waitForData();
 
-        logger.info("Dimmer id [" + sourceId + "]");
-        logger.info("Ambient light id [" + ambientLightRemote.getId() + "]");
-        logger.info("Power plug id [" + powerPlugRemote.getId() + "]");
+        LOGGER.info("Dimmer id [" + sourceId + "]");
+        LOGGER.info("Ambient light id [" + ambientLightRemote.getId() + "]");
+        LOGGER.info("Power plug id [" + powerPlugRemote.getId() + "]");
 
         dimmerRemote.setPowerState(OFF).get();
         Thread.sleep(50);
         dimmerRemote.requestData().get();
-        logger.info("Dimmer state [" + dimmerRemote.getPowerState().getValue() + "]");
+        LOGGER.info("Dimmer state [" + dimmerRemote.getPowerState().getValue() + "]");
         ambientLightRemote.requestData().get();
         powerPlugRemote.requestData().get();
         assertEquals("Dimmer[Source] has not been turned off", PowerState.State.OFF, dimmerRemote.getPowerState().getValue());

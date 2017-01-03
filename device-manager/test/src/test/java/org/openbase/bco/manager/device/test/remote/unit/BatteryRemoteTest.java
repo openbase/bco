@@ -53,7 +53,7 @@ import rst.domotic.state.BatteryStateType.BatteryState;
  */
 public class BatteryRemoteTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(BatteryRemoteTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(BatteryRemoteTest.class);
 
     private static BatteryRemote batteryRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
@@ -64,7 +64,7 @@ public class BatteryRemoteTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws Exception {
+    public static void setUpClass() throws Throwable {
         try {
             JPService.setupJUnitTestMode();
             JPService.registerProperty(JPHardwareSimulationMode.class, true);
@@ -80,20 +80,24 @@ public class BatteryRemoteTest {
             batteryRemote.initByLabel(label);
             batteryRemote.activate();
             batteryRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
-        } catch (Exception ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+        } catch (Throwable ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
     }
 
     @AfterClass
-    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
-        if (deviceManagerLauncher != null) {
-            deviceManagerLauncher.shutdown();
+    public static void tearDownClass() throws Throwable {
+        try {
+            if (deviceManagerLauncher != null) {
+                deviceManagerLauncher.shutdown();
+            }
+            if (batteryRemote != null) {
+                batteryRemote.shutdown();
+            }
+            MockRegistryHolder.shutdownMockRegistry();
+        } catch (Throwable ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
-        if (batteryRemote != null) {
-            batteryRemote.shutdown();
-        }
-        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before

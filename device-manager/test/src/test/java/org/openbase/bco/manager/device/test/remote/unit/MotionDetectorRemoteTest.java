@@ -42,6 +42,7 @@ import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.schedule.Stopwatch;
 import org.slf4j.LoggerFactory;
@@ -53,7 +54,7 @@ import rst.domotic.state.MotionStateType.MotionState;
  */
 public class MotionDetectorRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MotionDetectorRemoteTest.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MotionDetectorRemoteTest.class);
 
     private static MotionDetectorRemote motionDetectorRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
@@ -64,32 +65,40 @@ public class MotionDetectorRemoteTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, org.openbase.jul.exception.InstantiationException, CouldNotPerformException, InterruptedException, JPServiceException {
-        JPService.setupJUnitTestMode();
-        JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = MockRegistryHolder.newMockRegistry();
+    public static void setUpClass() throws Throwable {
+        try {
+            JPService.setupJUnitTestMode();
+            JPService.registerProperty(JPHardwareSimulationMode.class, true);
+            registry = MockRegistryHolder.newMockRegistry();
 
-        deviceManagerLauncher = new DeviceManagerLauncher();
-        deviceManagerLauncher.launch();
-        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+            deviceManagerLauncher = new DeviceManagerLauncher();
+            deviceManagerLauncher.launch();
+            deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
-        label = MockRegistry.MOTION_DETECTOR_LABEL;
+            label = MockRegistry.MOTION_DETECTOR_LABEL;
 
-        motionDetectorRemote = new MotionDetectorRemote();
-        motionDetectorRemote.initByLabel(label);
-        motionDetectorRemote.activate();
-        motionDetectorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+            motionDetectorRemote = new MotionDetectorRemote();
+            motionDetectorRemote.initByLabel(label);
+            motionDetectorRemote.activate();
+            motionDetectorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
     }
 
     @AfterClass
-    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
-        if (deviceManagerLauncher != null) {
-            deviceManagerLauncher.shutdown();
+    public static void tearDownClass() throws Throwable {
+        try {
+            if (deviceManagerLauncher != null) {
+                deviceManagerLauncher.shutdown();
+            }
+            if (motionDetectorRemote != null) {
+                motionDetectorRemote.shutdown();
+            }
+            MockRegistryHolder.shutdownMockRegistry();
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
-        if (motionDetectorRemote != null) {
-            motionDetectorRemote.shutdown();
-        }
-        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before
@@ -128,7 +137,7 @@ public class MotionDetectorRemoteTest {
      */
     @Test//(timeout = 10000)
     public void testGetMotionStateTimestamp() throws Exception {
-        logger.debug("testGetMotionStateTimestamp");
+        LOGGER.debug("testGetMotionStateTimestamp");
         long timestamp;
         MotionState motion = MotionState.newBuilder().setValue(MotionState.State.MOTION).build();
         Stopwatch stopwatch = new Stopwatch();

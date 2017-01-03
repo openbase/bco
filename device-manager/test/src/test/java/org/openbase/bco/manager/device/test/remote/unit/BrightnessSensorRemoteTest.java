@@ -40,6 +40,7 @@ import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
@@ -50,7 +51,7 @@ import rst.domotic.state.BrightnessStateType.BrightnessState;
  */
 public class BrightnessSensorRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(BrightnessSensorRemoteTest.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(BrightnessSensorRemoteTest.class);
 
     private static BrightnessSensorRemote brightnessSensorRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
@@ -61,32 +62,40 @@ public class BrightnessSensorRemoteTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, org.openbase.jul.exception.InstantiationException, CouldNotPerformException, InterruptedException, JPServiceException {
-        JPService.setupJUnitTestMode();
-        JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = MockRegistryHolder.newMockRegistry();
+    public static void setUpClass() throws Throwable {
+        try {
+            JPService.setupJUnitTestMode();
+            JPService.registerProperty(JPHardwareSimulationMode.class, true);
+            registry = MockRegistryHolder.newMockRegistry();
 
-        deviceManagerLauncher = new DeviceManagerLauncher();
-        deviceManagerLauncher.launch();
-        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+            deviceManagerLauncher = new DeviceManagerLauncher();
+            deviceManagerLauncher.launch();
+            deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
-        label = MockRegistry.BRIGHTNESS_SENSOR_LABEL;
+            label = MockRegistry.BRIGHTNESS_SENSOR_LABEL;
 
-        brightnessSensorRemote = new BrightnessSensorRemote();
-        brightnessSensorRemote.initByLabel(label);
-        brightnessSensorRemote.activate();
-        brightnessSensorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+            brightnessSensorRemote = new BrightnessSensorRemote();
+            brightnessSensorRemote.initByLabel(label);
+            brightnessSensorRemote.activate();
+            brightnessSensorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
     }
 
     @AfterClass
-    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
-        if (deviceManagerLauncher != null) {
-            deviceManagerLauncher.shutdown();
+    public static void tearDownClass() throws Throwable {
+        try {
+            if (deviceManagerLauncher != null) {
+                deviceManagerLauncher.shutdown();
+            }
+            if (brightnessSensorRemote != null) {
+                brightnessSensorRemote.shutdown();
+            }
+            MockRegistryHolder.shutdownMockRegistry();
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
-        if (brightnessSensorRemote != null) {
-            brightnessSensorRemote.shutdown();
-        }
-        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before

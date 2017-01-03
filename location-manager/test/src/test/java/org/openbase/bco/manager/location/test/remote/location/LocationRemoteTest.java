@@ -50,6 +50,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -81,35 +82,43 @@ public class LocationRemoteTest {
 
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
-        JPService.setupJUnitTestMode();
-        JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = MockRegistryHolder.newMockRegistry();
+        try {
+            JPService.setupJUnitTestMode();
+            JPService.registerProperty(JPHardwareSimulationMode.class, true);
+            registry = MockRegistryHolder.newMockRegistry();
 
-        deviceManagerLauncher = new DeviceManagerLauncher();
-        deviceManagerLauncher.launch();
-        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+            deviceManagerLauncher = new DeviceManagerLauncher();
+            deviceManagerLauncher.launch();
+            deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
-        locationManagerLauncher = new LocationManagerLauncher();
-        locationManagerLauncher.launch();
+            locationManagerLauncher = new LocationManagerLauncher();
+            locationManagerLauncher.launch();
 
-        locationRegistry = CachedLocationRegistryRemote.getRegistry();
-        unitRegistry = CachedUnitRegistryRemote.getRegistry();
+            locationRegistry = CachedLocationRegistryRemote.getRegistry();
+            unitRegistry = CachedUnitRegistryRemote.getRegistry();
 
-        locationRemote = new LocationRemote();
-        locationRemote.init(locationRegistry.getRootLocationConfig());
-        locationRemote.activate();
-        locationRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+            locationRemote = new LocationRemote();
+            locationRemote.init(locationRegistry.getRootLocationConfig());
+            locationRemote.activate();
+            locationRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+        }
     }
 
     @AfterClass
     public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
-        if (deviceManagerLauncher != null) {
-            deviceManagerLauncher.shutdown();
+        try {
+            if (deviceManagerLauncher != null) {
+                deviceManagerLauncher.shutdown();
+            }
+            if (locationRemote != null) {
+                locationRemote.shutdown();
+            }
+            MockRegistryHolder.shutdownMockRegistry();
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
-        if (locationRemote != null) {
-            locationRemote.shutdown();
-        }
-        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before

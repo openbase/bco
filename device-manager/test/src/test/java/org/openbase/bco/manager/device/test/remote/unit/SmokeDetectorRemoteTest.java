@@ -40,6 +40,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.AlarmStateType.AlarmState;
@@ -51,7 +52,7 @@ import rst.domotic.state.SmokeStateType.SmokeState;
  */
 public class SmokeDetectorRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(SmokeDetectorRemoteTest.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SmokeDetectorRemoteTest.class);
 
     private static SmokeDetectorRemote smokeDetectorRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
@@ -63,31 +64,39 @@ public class SmokeDetectorRemoteTest {
 
     @BeforeClass
     public static void setUpClass() throws InstantiationException, CouldNotPerformException, InterruptedException, ExecutionException, JPServiceException {
-        JPService.setupJUnitTestMode();
-        JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = MockRegistryHolder.newMockRegistry();
+        try {
+            JPService.setupJUnitTestMode();
+            JPService.registerProperty(JPHardwareSimulationMode.class, true);
+            registry = MockRegistryHolder.newMockRegistry();
 
-        deviceManagerLauncher = new DeviceManagerLauncher();
-        deviceManagerLauncher.launch();
-        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+            deviceManagerLauncher = new DeviceManagerLauncher();
+            deviceManagerLauncher.launch();
+            deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
-        label = MockRegistry.SMOKE_DETECTOR_LABEL;
+            label = MockRegistry.SMOKE_DETECTOR_LABEL;
 
-        smokeDetectorRemote = new SmokeDetectorRemote();
-        smokeDetectorRemote.initByLabel(label);
-        smokeDetectorRemote.activate();
-        smokeDetectorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+            smokeDetectorRemote = new SmokeDetectorRemote();
+            smokeDetectorRemote.initByLabel(label);
+            smokeDetectorRemote.activate();
+            smokeDetectorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
     }
 
     @AfterClass
     public static void tearDownClass() {
-        if (deviceManagerLauncher != null) {
-            deviceManagerLauncher.shutdown();
+        try {
+            if (deviceManagerLauncher != null) {
+                deviceManagerLauncher.shutdown();
+            }
+            if (smokeDetectorRemote != null) {
+                smokeDetectorRemote.shutdown();
+            }
+            MockRegistryHolder.shutdownMockRegistry();
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
-        if (smokeDetectorRemote != null) {
-            smokeDetectorRemote.shutdown();
-        }
-        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before

@@ -42,6 +42,7 @@ import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.schedule.Stopwatch;
 import org.slf4j.LoggerFactory;
@@ -53,7 +54,7 @@ import rst.domotic.state.ButtonStateType.ButtonState;
  */
 public class ButtonRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ButtonRemoteTest.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ButtonRemoteTest.class);
 
     private static ButtonRemote buttonRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
@@ -64,32 +65,40 @@ public class ButtonRemoteTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, org.openbase.jul.exception.InstantiationException, CouldNotPerformException, InterruptedException, JPServiceException {
-        JPService.setupJUnitTestMode();
-        JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = MockRegistryHolder.newMockRegistry();
+    public static void setUpClass() throws Throwable {
+        try {
+            JPService.setupJUnitTestMode();
+            JPService.registerProperty(JPHardwareSimulationMode.class, true);
+            registry = MockRegistryHolder.newMockRegistry();
 
-        deviceManagerLauncher = new DeviceManagerLauncher();
-        deviceManagerLauncher.launch();
-        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+            deviceManagerLauncher = new DeviceManagerLauncher();
+            deviceManagerLauncher.launch();
+            deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
-        label = MockRegistry.BUTTON_LABEL;
+            label = MockRegistry.BUTTON_LABEL;
 
-        buttonRemote = new ButtonRemote();
-        buttonRemote.initByLabel(label);
-        buttonRemote.activate();
-        buttonRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+            buttonRemote = new ButtonRemote();
+            buttonRemote.initByLabel(label);
+            buttonRemote.activate();
+            buttonRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
     }
 
     @AfterClass
-    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
-        if (deviceManagerLauncher != null) {
-            deviceManagerLauncher.shutdown();
+    public static void tearDownClass() throws Throwable {
+        try {
+            if (deviceManagerLauncher != null) {
+                deviceManagerLauncher.shutdown();
+            }
+            if (buttonRemote != null) {
+                buttonRemote.shutdown();
+            }
+            MockRegistryHolder.shutdownMockRegistry();
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
-        if (buttonRemote != null) {
-            buttonRemote.shutdown();
-        }
-        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before
@@ -114,7 +123,7 @@ public class ButtonRemoteTest {
      */
     @Test(timeout = 10000)
     public void testGetButtonState() throws Exception {
-        logger.debug("getButtonState");
+        LOGGER.debug("getButtonState");
         ButtonState buttonState = ButtonState.newBuilder().setValue(ButtonState.State.PRESSED).build();
         ((ButtonController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId())).updateButtonStateProvider(buttonState);
         buttonRemote.requestData().get();
@@ -128,7 +137,7 @@ public class ButtonRemoteTest {
      */
     @Test(timeout = 10000)
     public void testGetButtonStateTimestamp() throws Exception {
-        logger.debug("testGetButtonStateTimestamp");
+        LOGGER.debug("testGetButtonStateTimestamp");
         long timestamp;
         ButtonState buttonState = ButtonState.newBuilder().setValue(ButtonState.State.DOUBLE_PRESSED).build();
         Stopwatch stopwatch = new Stopwatch();

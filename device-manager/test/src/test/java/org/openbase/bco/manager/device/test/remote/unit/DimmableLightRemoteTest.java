@@ -45,7 +45,7 @@
 //import rst.domotic.state.PowerStateType.PowerState;
 //
 ///**
-// *
+// * TODO reactivate this test.
 // * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
 // */
 //public class DimmableLightRemoteTest {
@@ -76,7 +76,7 @@
 //    }
 //
 //    @AfterClass
-//    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
+//    public static void tearDownClass() throws Throwable {
 //        if (deviceManagerLauncher != null) {
 //            deviceManagerLauncher.shutdown();
 //        }

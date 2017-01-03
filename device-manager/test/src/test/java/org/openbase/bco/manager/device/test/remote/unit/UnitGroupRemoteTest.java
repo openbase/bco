@@ -46,6 +46,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -70,42 +71,50 @@ public class UnitGroupRemoteTest {
 
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
-        JPService.setupJUnitTestMode();
-        JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        MockRegistryHolder.newMockRegistry();
+        try {
+            JPService.setupJUnitTestMode();
+            JPService.registerProperty(JPHardwareSimulationMode.class, true);
+            MockRegistryHolder.newMockRegistry();
 
-        deviceManagerLauncher = new DeviceManagerLauncher();
-        deviceManagerLauncher.launch();
-        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+            deviceManagerLauncher = new DeviceManagerLauncher();
+            deviceManagerLauncher.launch();
+            deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
-        unitGroupRemote = new UnitGroupRemote();
-        ServiceTemplate powerStateOperationService = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.OPERATION).build();
-        ServiceTemplate powerStateProviderService = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.PROVIDER).build();
-        UnitGroupConfig.Builder unitGroupConfig = UnitGroupConfig.newBuilder().addServiceTemplate(powerStateOperationService).addServiceTemplate(powerStateProviderService);
-        assert !deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().isEmtpy();
-        for (Unit unit : deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().getEntries()) {
-            if (allServiceTemplatesImplementedByUnit(unitGroupConfig, unit)) {
-                unitList.add(unit);
-                unitGroupConfig.addMemberId(unit.getConfig().getId());
+            unitGroupRemote = new UnitGroupRemote();
+            ServiceTemplate powerStateOperationService = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.OPERATION).build();
+            ServiceTemplate powerStateProviderService = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.PROVIDER).build();
+            UnitGroupConfig.Builder unitGroupConfig = UnitGroupConfig.newBuilder().addServiceTemplate(powerStateOperationService).addServiceTemplate(powerStateProviderService);
+            assert !deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().isEmtpy();
+            for (Unit unit : deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().getEntries()) {
+                if (allServiceTemplatesImplementedByUnit(unitGroupConfig, unit)) {
+                    unitList.add(unit);
+                    unitGroupConfig.addMemberId(unit.getConfig().getId());
+                }
             }
+            assert unitGroupConfig.getMemberIdList().size() > 0;
+            UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setUnitGroupConfig(unitGroupConfig).setLabel("testGroup");
+            LOGGER.info("Unit group [" + unitGroupConfig.build() + "]");
+            unitGroupRemote.init(unitConfig.build());
+            unitGroupRemote.activate();
+            unitGroupRemote.waitForData();
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
-        assert unitGroupConfig.getMemberIdList().size() > 0;
-        UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setUnitGroupConfig(unitGroupConfig).setLabel("testGroup");
-        LOGGER.info("Unit group [" + unitGroupConfig.build() + "]");
-        unitGroupRemote.init(unitConfig.build());
-        unitGroupRemote.activate();
-        unitGroupRemote.waitForData();
     }
 
     @AfterClass
-    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
-        if (deviceManagerLauncher != null) {
-            deviceManagerLauncher.shutdown();
+    public static void tearDownClass() throws Throwable {
+        try {
+            if (deviceManagerLauncher != null) {
+                deviceManagerLauncher.shutdown();
+            }
+            if (unitGroupRemote != null) {
+                unitGroupRemote.shutdown();
+            }
+            MockRegistryHolder.shutdownMockRegistry();
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
-        if (unitGroupRemote != null) {
-            unitGroupRemote.shutdown();
-        }
-        MockRegistryHolder.shutdownMockRegistry();
     }
 
     private static boolean allServiceTemplatesImplementedByUnit(UnitGroupConfig.Builder unitGroup, final Unit unit) throws NotAvailableException {

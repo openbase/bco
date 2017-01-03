@@ -41,6 +41,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.AlarmStateType.AlarmState;
@@ -52,7 +53,7 @@ import rst.domotic.state.TemperatureStateType.TemperatureState;
  */
 public class TemperatureSensorRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(TemperatureSensorRemoteTest.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TemperatureSensorRemoteTest.class);
 
     private static TemperatureSensorRemote temperatureSensorRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
@@ -64,31 +65,39 @@ public class TemperatureSensorRemoteTest {
 
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, InterruptedException, JPServiceException {
-        JPService.setupJUnitTestMode();
-        JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = MockRegistryHolder.newMockRegistry();
+        try {
+            JPService.setupJUnitTestMode();
+            JPService.registerProperty(JPHardwareSimulationMode.class, true);
+            registry = MockRegistryHolder.newMockRegistry();
 
-        deviceManagerLauncher = new DeviceManagerLauncher();
-        deviceManagerLauncher.launch();
-        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+            deviceManagerLauncher = new DeviceManagerLauncher();
+            deviceManagerLauncher.launch();
+            deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
-        label = MockRegistry.TEMPERATURE_SENSOR_LABEL;
+            label = MockRegistry.TEMPERATURE_SENSOR_LABEL;
 
-        temperatureSensorRemote = new TemperatureSensorRemote();
-        temperatureSensorRemote.initByLabel(label);
-        temperatureSensorRemote.activate();
-        temperatureSensorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+            temperatureSensorRemote = new TemperatureSensorRemote();
+            temperatureSensorRemote.initByLabel(label);
+            temperatureSensorRemote.activate();
+            temperatureSensorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
     }
 
     @AfterClass
     public static void tearDownClass() throws CouldNotPerformException {
-        if (deviceManagerLauncher != null) {
-            deviceManagerLauncher.shutdown();
+        try {
+            if (deviceManagerLauncher != null) {
+                deviceManagerLauncher.shutdown();
+            }
+            if (temperatureSensorRemote != null) {
+                temperatureSensorRemote.shutdown();
+            }
+            MockRegistryHolder.shutdownMockRegistry();
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
-        if (temperatureSensorRemote != null) {
-            temperatureSensorRemote.shutdown();
-        }
-        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before

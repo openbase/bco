@@ -42,6 +42,7 @@ import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.schedule.Stopwatch;
 import org.slf4j.LoggerFactory;
@@ -53,7 +54,7 @@ import rst.domotic.state.TamperStateType.TamperState;
  */
 public class TamperDetectorRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(TamperDetectorRemoteTest.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TamperDetectorRemoteTest.class);
 
     private static TamperDetectorRemote tamperDetectorRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
@@ -64,32 +65,40 @@ public class TamperDetectorRemoteTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, org.openbase.jul.exception.InstantiationException, CouldNotPerformException, InterruptedException, JPServiceException {
-        JPService.setupJUnitTestMode();
-        JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = MockRegistryHolder.newMockRegistry();
+    public static void setUpClass() throws Throwable {
+        try {
+            JPService.setupJUnitTestMode();
+            JPService.registerProperty(JPHardwareSimulationMode.class, true);
+            registry = MockRegistryHolder.newMockRegistry();
 
-        deviceManagerLauncher = new DeviceManagerLauncher();
-        deviceManagerLauncher.launch();
-        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+            deviceManagerLauncher = new DeviceManagerLauncher();
+            deviceManagerLauncher.launch();
+            deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
-        label = MockRegistry.TAMPER_DETECTOR_LABEL;
+            label = MockRegistry.TAMPER_DETECTOR_LABEL;
 
-        tamperDetectorRemote = new TamperDetectorRemote();
-        tamperDetectorRemote.initByLabel(label);
-        tamperDetectorRemote.activate();
-        tamperDetectorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+            tamperDetectorRemote = new TamperDetectorRemote();
+            tamperDetectorRemote.initByLabel(label);
+            tamperDetectorRemote.activate();
+            tamperDetectorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
     }
 
     @AfterClass
-    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
-        if (deviceManagerLauncher != null) {
-            deviceManagerLauncher.shutdown();
+    public static void tearDownClass() throws Throwable {
+        try {
+            if (deviceManagerLauncher != null) {
+                deviceManagerLauncher.shutdown();
+            }
+            if (tamperDetectorRemote != null) {
+                tamperDetectorRemote.shutdown();
+            }
+            MockRegistryHolder.shutdownMockRegistry();
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
-        if (tamperDetectorRemote != null) {
-            tamperDetectorRemote.shutdown();
-        }
-        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before
@@ -128,7 +137,7 @@ public class TamperDetectorRemoteTest {
      */
     @Test(timeout = 10000)
     public void testGetTamperStateTimestamp() throws Exception {
-        logger.debug("testGetTamperStateTimestamp");
+        LOGGER.debug("testGetTamperStateTimestamp");
         long timestamp;
         TamperState tamperState = TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
         Stopwatch stopwatch = new Stopwatch();

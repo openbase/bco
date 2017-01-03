@@ -39,6 +39,7 @@ import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.PowerStateType.PowerState;
@@ -49,7 +50,7 @@ import rst.domotic.state.PowerStateType.PowerState;
  */
 public class LightRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(LightRemoteTest.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(LightRemoteTest.class);
 
     private static LightRemote lightRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
@@ -60,37 +61,45 @@ public class LightRemoteTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, org.openbase.jul.exception.InstantiationException, CouldNotPerformException, InterruptedException, JPServiceException {
-        JPService.setupJUnitTestMode();
-        JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        System.out.println("setUpClass thread: " + Thread.currentThread().getName());
-        registry = MockRegistryHolder.newMockRegistry();
+    public static void setUpClass() throws Throwable {
+        try {
+            JPService.setupJUnitTestMode();
+            JPService.registerProperty(JPHardwareSimulationMode.class, true);
+            System.out.println("setUpClass thread: " + Thread.currentThread().getName());
+            registry = MockRegistryHolder.newMockRegistry();
 
-        deviceManagerLauncher = new DeviceManagerLauncher();
-        deviceManagerLauncher.launch();
-        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+            deviceManagerLauncher = new DeviceManagerLauncher();
+            deviceManagerLauncher.launch();
+            deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
-        label = MockRegistry.LIGHT_LABEL;
+            label = MockRegistry.LIGHT_LABEL;
 
-        lightRemote = new LightRemote();
-        lightRemote.initByLabel(label);
-        lightRemote.activate();
-        System.out.println("#### wait for light remote...");
-        lightRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED, 30000);
-        System.out.println("#### successfull started!");
+            lightRemote = new LightRemote();
+            lightRemote.initByLabel(label);
+            lightRemote.activate();
+            System.out.println("#### wait for light remote...");
+            lightRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED, 30000);
+            System.out.println("#### successfull started!");
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
     }
 
     @AfterClass
-    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
-        System.out.println("#### tearDownClass");
-        if (deviceManagerLauncher != null) {
-            deviceManagerLauncher.shutdown();
+    public static void tearDownClass() throws Throwable {
+        try {
+            System.out.println("#### tearDownClass");
+            if (deviceManagerLauncher != null) {
+                deviceManagerLauncher.shutdown();
+            }
+            if (lightRemote != null) {
+                lightRemote.shutdown();
+            }
+            MockRegistryHolder.shutdownMockRegistry();
+            System.out.println("#### finished");
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
-        if (lightRemote != null) {
-            lightRemote.shutdown();
-        }
-        MockRegistryHolder.shutdownMockRegistry();
-        System.out.println("#### finished");
     }
 
     @Before

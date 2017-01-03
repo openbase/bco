@@ -45,7 +45,9 @@ import rsb.config.ParticipantConfig;
  */
 public class AppRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(AppRemoteTest.class);
+    // TODO Implement this unit test.
+    
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AppRemoteTest.class);
 
     private static AppManagerLauncher appManagerLauncher;
     private static AppRemote appRemote;

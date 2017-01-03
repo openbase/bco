@@ -22,11 +22,9 @@ package org.openbase.bco.manager.user.test.remote.user;
  * #L%
  */
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.bco.manager.user.core.UserManagerLauncher;
 import org.openbase.bco.dal.remote.unit.user.UserRemote;
@@ -38,6 +36,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.UserActivityStateType.UserActivityState;
 import rst.domotic.state.UserActivityStateType.UserActivityState.Activity;
@@ -57,33 +56,41 @@ public class UserRemoteTest {
     private static MockRegistry registry;
 
     public UserRemoteTest() {
-        
+
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
-        JPService.setupJUnitTestMode();
-        JPService.registerProperty(JPHardwareSimulationMode.class, true);
-        registry = MockRegistryHolder.newMockRegistry();
+    public static void setUpClass() throws Throwable {
+        try {
+            JPService.setupJUnitTestMode();
+            JPService.registerProperty(JPHardwareSimulationMode.class, true);
+            registry = MockRegistryHolder.newMockRegistry();
 
-        userManagerLauncher = new UserManagerLauncher();
-        userManagerLauncher.launch();
+            userManagerLauncher = new UserManagerLauncher();
+            userManagerLauncher.launch();
 
-        UnitConfig unitConfig = MockRegistry.testUser;
-        userRemote = new UserRemote();
-        userRemote.init(unitConfig);
-        userRemote.activate();
+            UnitConfig unitConfig = MockRegistry.testUser;
+            userRemote = new UserRemote();
+            userRemote.init(unitConfig);
+            userRemote.activate();
+        } catch (Throwable ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
     }
 
     @AfterClass
-    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
-        if (userManagerLauncher != null) {
-            userManagerLauncher.shutdown();
+    public static void tearDownClass() throws Throwable {
+        try {
+            if (userManagerLauncher != null) {
+                userManagerLauncher.shutdown();
+            }
+            if (userRemote != null) {
+                userRemote.shutdown();
+            }
+            MockRegistryHolder.shutdownMockRegistry();
+        } catch (Throwable ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
-        if (userRemote != null) {
-            userRemote.shutdown();
-        }
-        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before
@@ -117,9 +124,9 @@ public class UserRemoteTest {
 
         userRemote.setUserActivityState(activity).get();
         userRemote.setUserPresenceState(presenceState).get();
-        
+
         userRemote.requestData();
-        
+
         assertEquals("UserActivityState has not been set!", activity, userRemote.getUserActivityState());
         assertEquals("UserPresenceState has not been set!", presenceState, userRemote.getUserPresenceState());
     }

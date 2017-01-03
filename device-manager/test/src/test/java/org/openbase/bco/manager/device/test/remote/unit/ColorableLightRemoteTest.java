@@ -41,6 +41,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
@@ -54,7 +55,7 @@ import rst.vision.HSBColorType.HSBColor;
  */
 public class ColorableLightRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ColorableLightRemoteTest.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ColorableLightRemoteTest.class);
 
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static ColorableLightRemote colorableLightRemote;
@@ -66,32 +67,40 @@ public class ColorableLightRemoteTest {
 
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
-        JPService.setupJUnitTestMode();
-        JPService.registerProperty(JPHardwareSimulationMode.class, true);
+        try {
+            JPService.setupJUnitTestMode();
+            JPService.registerProperty(JPHardwareSimulationMode.class, true);
 //        JPService.registerProperty(JPRSBTransport.class, JPRSBTransport.TransportType.SOCKET);
-        registry = MockRegistryHolder.newMockRegistry();
+            registry = MockRegistryHolder.newMockRegistry();
 
-        deviceManagerLauncher = new DeviceManagerLauncher();
-        deviceManagerLauncher.launch();
-        deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+            deviceManagerLauncher = new DeviceManagerLauncher();
+            deviceManagerLauncher.launch();
+            deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
-        label = MockRegistry.COLORABLE_LIGHT_LABEL;
+            label = MockRegistry.COLORABLE_LIGHT_LABEL;
 
-        colorableLightRemote = new ColorableLightRemote();
-        colorableLightRemote.initByLabel(label);
-        colorableLightRemote.activate();
-        colorableLightRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+            colorableLightRemote = new ColorableLightRemote();
+            colorableLightRemote.initByLabel(label);
+            colorableLightRemote.activate();
+            colorableLightRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
     }
 
     @AfterClass
-    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
-        if (deviceManagerLauncher != null) {
-            deviceManagerLauncher.shutdown();
+    public static void tearDownClass() throws Throwable {
+        try {
+            if (deviceManagerLauncher != null) {
+                deviceManagerLauncher.shutdown();
+            }
+            if (colorableLightRemote != null) {
+                colorableLightRemote.shutdown();
+            }
+            MockRegistryHolder.shutdownMockRegistry();
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
-        if (colorableLightRemote != null) {
-            colorableLightRemote.shutdown();
-        }
-        MockRegistryHolder.shutdownMockRegistry();
     }
 
     @Before

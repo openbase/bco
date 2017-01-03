@@ -30,6 +30,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -39,21 +40,29 @@ import org.slf4j.LoggerFactory;
  */
 public class DalRegisterDeviceTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(DalRegisterDeviceTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DalRegisterDeviceTest.class);
 
     public DalRegisterDeviceTest() {
 
     }
 
     @BeforeClass
-    public static void setUpClass() throws InstantiationException, JPServiceException, JPServiceException {
-        JPService.setupJUnitTestMode();
-        MockRegistryHolder.newMockRegistry();
+    public static void setUpClass() throws Throwable {
+        try {
+            JPService.setupJUnitTestMode();
+            MockRegistryHolder.newMockRegistry();
+        } catch (Throwable ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
     }
 
     @AfterClass
-    public static void tearDownClass() {
-        MockRegistryHolder.shutdownMockRegistry();
+    public static void tearDownClass() throws Throwable {
+        try {
+            MockRegistryHolder.shutdownMockRegistry();
+        } catch (Throwable ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
     }
 
     @Before

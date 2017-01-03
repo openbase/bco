@@ -44,20 +44,28 @@ import rst.domotic.state.MotionStateType;
  */
 public class LauncherTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(LauncherTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LauncherTest.class);
 
     public LauncherTest() {
     }
 
     @BeforeClass
-    public static void setUpClass() throws org.openbase.jul.exception.InstantiationException, JPServiceException, JPServiceException {
-        JPService.setupJUnitTestMode();
-        MockRegistryHolder.newMockRegistry();
+    public static void setUpClass() throws Throwable {
+        try {
+            JPService.setupJUnitTestMode();
+            MockRegistryHolder.newMockRegistry();
+        } catch (Throwable ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
     }
 
     @AfterClass
-    public static void tearDownClass() {
-        MockRegistryHolder.shutdownMockRegistry();
+    public static void tearDownClass() throws Throwable {
+        try {
+            MockRegistryHolder.shutdownMockRegistry();
+        } catch (Throwable ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
     }
 
     @Before
@@ -77,7 +85,7 @@ public class LauncherTest {
         try {
             instance.launch();
         } catch (Exception ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
         instance.shutdown();
     }

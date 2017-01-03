@@ -51,54 +51,58 @@ import rst.domotic.state.TemperatureStateType.TemperatureState;
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class TemperatureControllerRemoteTest {
-    
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(TemperatureControllerRemoteTest.class);
-    
+
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TemperatureControllerRemoteTest.class);
+
     private static TemperatureControllerRemote temperatureControllerRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static MockRegistry registry;
     private static String label;
-    
+
     public TemperatureControllerRemoteTest() {
     }
-    
+
     @BeforeClass
-    public static void setUpClass() throws Exception {
+    public static void setUpClass() throws Throwable {
         try {
             JPService.setupJUnitTestMode();
             JPService.registerProperty(JPHardwareSimulationMode.class, true);
             registry = MockRegistryHolder.newMockRegistry();
-            
+
             deviceManagerLauncher = new DeviceManagerLauncher();
             deviceManagerLauncher.launch();
             deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
-            
+
             label = MockRegistry.TEMPERATURE_CONTROLLER_LABEL;
-            
+
             temperatureControllerRemote = new TemperatureControllerRemote();
             temperatureControllerRemote.initByLabel(label);
             temperatureControllerRemote.activate();
             temperatureControllerRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
-        } catch (Exception ex) {
-            ExceptionPrinter.printHistory(ex, logger);
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
     }
-    
+
     @AfterClass
     public static void tearDownClass() throws CouldNotPerformException {
-        if (deviceManagerLauncher != null) {
-            deviceManagerLauncher.shutdown();
+        try {
+            if (deviceManagerLauncher != null) {
+                deviceManagerLauncher.shutdown();
+            }
+            if (temperatureControllerRemote != null) {
+                temperatureControllerRemote.shutdown();
+            }
+            MockRegistryHolder.shutdownMockRegistry();
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
-        if (temperatureControllerRemote != null) {
-            temperatureControllerRemote.shutdown();
-        }
-        MockRegistryHolder.shutdownMockRegistry();
     }
-    
+
     @Before
     public void setUp() {
     }
-    
+
     @After
     public void tearDown() {
     }
