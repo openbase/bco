@@ -275,10 +275,10 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     /**
      * {@inheritDoc}
      *
-     * @param actionConfig
-     * @return
-     * @throws org.openbase.jul.exception.CouldNotPerformException
-     * @throws java.lang.InterruptedException
+     * @param actionConfig {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
     public Future<Void> applyAction(ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
@@ -288,9 +288,9 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     /**
      * {@inheritDoc}
      *
-     * @return
-     * @throws org.openbase.jul.exception.CouldNotPerformException
-     * @throws java.lang.InterruptedException
+     * @return {@inheritDoc}
+     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
     public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
