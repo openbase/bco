@@ -58,7 +58,7 @@ import rst.spatial.PlacementConfigType.PlacementConfig;
  */
 public class LocationRegistryTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(LocationRegistryTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(LocationRegistryTest.class);
 
     private static UnitRegistryController unitRegistry;
     private static DeviceRegistryController deviceRegistry;
@@ -69,93 +69,101 @@ public class LocationRegistryTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws Exception {
-        JPService.setupJUnitTestMode();
-        JPService.registerProperty(JPDebugMode.class, true);
-
+    public static void setUpClass() throws Throwable {
         try {
-            unitRegistry = new UnitRegistryController();
-            deviceRegistry = new DeviceRegistryController();
-            appRegistry = new AppRegistryController();
-            agentRegistry = new AgentRegistryController();
+            JPService.setupJUnitTestMode();
+            JPService.registerProperty(JPDebugMode.class, true);
 
-            unitRegistry.init();
-            deviceRegistry.init();
-            appRegistry.init();
-            agentRegistry.init();
-        } catch (Exception ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+            try {
+                unitRegistry = new UnitRegistryController();
+                deviceRegistry = new DeviceRegistryController();
+                appRegistry = new AppRegistryController();
+                agentRegistry = new AgentRegistryController();
+
+                unitRegistry.init();
+                deviceRegistry.init();
+                appRegistry.init();
+                agentRegistry.init();
+            } catch (Throwable ex) {
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+            }
+
+            Thread unitRegistryThread = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        unitRegistry.activate();
+                    } catch (CouldNotPerformException | InterruptedException ex) {
+                        ExceptionPrinter.printHistory(ex, LOGGER);
+                    }
+                }
+            });
+            Thread deviceRegistryThread = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        deviceRegistry.activate();
+                    } catch (CouldNotPerformException | InterruptedException ex) {
+                        ExceptionPrinter.printHistory(ex, LOGGER);
+                    }
+                }
+            });
+            Thread appRegistryThread = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        appRegistry.activate();
+                    } catch (CouldNotPerformException | InterruptedException ex) {
+                        ExceptionPrinter.printHistory(ex, LOGGER);
+                    }
+                }
+            });
+            Thread agentRegistryThread = new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    try {
+                        agentRegistry.activate();
+                    } catch (CouldNotPerformException | InterruptedException ex) {
+                        ExceptionPrinter.printHistory(ex, LOGGER);
+                    }
+                }
+            });
+
+            unitRegistryThread.start();
+            deviceRegistryThread.start();
+            appRegistryThread.start();
+            agentRegistryThread.start();
+
+            unitRegistryThread.join();
+            deviceRegistryThread.join();
+            appRegistryThread.join();
+            agentRegistryThread.join();
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
-
-        Thread unitRegistryThread = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    unitRegistry.activate();
-                } catch (CouldNotPerformException | InterruptedException ex) {
-                    ExceptionPrinter.printHistory(ex, logger);
-                }
-            }
-        });
-        Thread deviceRegistryThread = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    deviceRegistry.activate();
-                } catch (CouldNotPerformException | InterruptedException ex) {
-                    ExceptionPrinter.printHistory(ex, logger);
-                }
-            }
-        });
-        Thread appRegistryThread = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    appRegistry.activate();
-                } catch (CouldNotPerformException | InterruptedException ex) {
-                    ExceptionPrinter.printHistory(ex, logger);
-                }
-            }
-        });
-        Thread agentRegistryThread = new Thread(new Runnable() {
-
-            @Override
-            public void run() {
-                try {
-                    agentRegistry.activate();
-                } catch (CouldNotPerformException | InterruptedException ex) {
-                    ExceptionPrinter.printHistory(ex, logger);
-                }
-            }
-        });
-
-        unitRegistryThread.start();
-        deviceRegistryThread.start();
-        appRegistryThread.start();
-        agentRegistryThread.start();
-
-        unitRegistryThread.join();
-        deviceRegistryThread.join();
-        appRegistryThread.join();
-        agentRegistryThread.join();
     }
 
     @AfterClass
     public static void tearDownClass() throws InterruptedException, CouldNotPerformException {
-        if (unitRegistry != null) {
-            unitRegistry.shutdown();
-        }
-        if (deviceRegistry != null) {
-            deviceRegistry.shutdown();
-        }
-        if (appRegistry != null) {
-            appRegistry.shutdown();
-        }
-        if (agentRegistry != null) {
-            agentRegistry.shutdown();
+        try {
+            if (unitRegistry != null) {
+                unitRegistry.shutdown();
+            }
+            if (deviceRegistry != null) {
+                deviceRegistry.shutdown();
+            }
+            if (appRegistry != null) {
+                appRegistry.shutdown();
+            }
+            if (agentRegistry != null) {
+                agentRegistry.shutdown();
+            }
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
     }
 
@@ -381,7 +389,7 @@ public class LocationRegistryTest {
             ExceptionPrinter.setBeQuit(Boolean.TRUE);
             unitRegistry.registerUnitConfig(connection3).get();
             Assert.fail("No exception thrown when registering a second connection at the same location with the same label");
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
         } finally {
             ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }

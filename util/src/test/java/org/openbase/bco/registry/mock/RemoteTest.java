@@ -29,7 +29,9 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.jps.core.JPService;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Remote;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -37,18 +39,25 @@ import org.openbase.jul.pattern.Remote;
  */
 public class RemoteTest {
 
-    public RemoteTest() {
-    }
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(RemoteTest.class);
 
     @BeforeClass
-    public static void setUpClass() throws Exception {
-        JPService.setupJUnitTestMode();
-        MockRegistryHolder.newMockRegistry();
+    public static void setUpClass() throws Throwable {
+        try {
+            JPService.setupJUnitTestMode();
+            MockRegistryHolder.newMockRegistry();
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
     }
 
     @AfterClass
     public static void tearDownClass() {
-        MockRegistryHolder.shutdownMockRegistry();
+        try {
+            MockRegistryHolder.shutdownMockRegistry();
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
     }
 
     @Before
