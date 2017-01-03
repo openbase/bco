@@ -74,7 +74,7 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
             public void expired() {
                 try {
                     // if motion is still detected just restart the timeout.
-                    if(locationDataProvider.getData().getMotionState().getValue() == MotionState.State.MOTION) {
+                    if (locationDataProvider.getData().getMotionState().getValue() == MotionState.State.MOTION) {
                         GlobalCachedExecutorService.submit(new Runnable() {
                             @Override
                             public void run() {
@@ -145,9 +145,11 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
             presenceTimeout.restart();
             this.presenceState.getLastPresenceBuilder().setTime(Math.max(this.presenceState.getLastPresence().getTime(), presenceState.getLastPresence().getTime()));
         }
-        
 
         // update value
+        if (!(this.presenceState.getValue() == presenceState.getValue())) {
+            return;
+        }
         this.presenceState.getTimestampBuilder().setTime(System.currentTimeMillis());
         this.presenceState.setValue(presenceState.getValue());
 
