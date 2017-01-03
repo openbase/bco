@@ -85,6 +85,9 @@ public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoB
             }
 
             if (serviceConfig.getBindingConfig().getBindingId().equals("OPENHAB")) {
+                if(!unitConfig.getPlacementConfig().hasLocationId() || unitConfig.getPlacementConfig().getLocationId().isEmpty()) {
+                    throw new NotAvailableException("unitConfig.placementConfig.locationId");
+                }
                 String itemId = generateItemName(entry.getMessage(), deviceClass.getLabel(), unitConfig.clone().build(), serviceConfig.clone().build(), locationRegistry.getMessage(unitConfig.getPlacementConfig().getLocationId()));
 
                 MetaConfig metaConfig;

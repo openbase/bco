@@ -97,6 +97,7 @@ public class DeviceConfigUtils {
                     }
 
                     unitConfig.setLabel(generateDefaultUnitLabel(unitConfig, deviceUnitConfig, deviceClass, deviceConfigHasDuplicatedUnitType));
+                    return true;
                 } else {
 
                     if (!deviceUnitConfig.hasLabel()) {
