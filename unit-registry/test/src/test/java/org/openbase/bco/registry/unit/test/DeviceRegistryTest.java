@@ -79,7 +79,7 @@ import rst.spatial.PlacementConfigType.PlacementConfig;
  */
 public class DeviceRegistryTest {
 
-    private static final Logger logger = LoggerFactory.getLogger(DeviceRegistryTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(DeviceRegistryTest.class);
 
     public static final String LOCATION_LABEL = "paradise";
     public static UnitConfig LOCATION;
@@ -96,101 +96,109 @@ public class DeviceRegistryTest {
 //    private static DeviceRegistryRemote deviceRegistryRemote;
     @BeforeClass
     public static void setUpClass() throws InstantiationException, InitializationException, IOException, InvalidStateException, JPServiceException, InterruptedException, CouldNotPerformException, ExecutionException {
-        JPService.setupJUnitTestMode();
+        try {
+            JPService.setupJUnitTestMode();
 
-        deviceRegistry = new DeviceRegistryController();
-        unitRegistry = new UnitRegistryController();
-        appRegistry = new AppRegistryController();
-        agentRegistry = new AgentRegistryController();
+            deviceRegistry = new DeviceRegistryController();
+            unitRegistry = new UnitRegistryController();
+            appRegistry = new AppRegistryController();
+            agentRegistry = new AgentRegistryController();
 
-        deviceRegistry.init();
-        unitRegistry.init();
-        appRegistry.init();
-        agentRegistry.init();
+            deviceRegistry.init();
+            unitRegistry.init();
+            appRegistry.init();
+            agentRegistry.init();
 
-        Thread deviceRegistryThread = new Thread(new Runnable() {
+            Thread deviceRegistryThread = new Thread(new Runnable() {
 
-            @Override
-            public void run() {
-                try {
-                    deviceRegistry.activate();
-                } catch (CouldNotPerformException | InterruptedException ex) {
-                    ExceptionPrinter.printHistory(ex, logger);
+                @Override
+                public void run() {
+                    try {
+                        deviceRegistry.activate();
+                    } catch (CouldNotPerformException | InterruptedException ex) {
+                        ExceptionPrinter.printHistory(ex, LOGGER);
+                    }
                 }
-            }
-        });
+            });
 
-        Thread unitRegistryThread = new Thread(new Runnable() {
+            Thread unitRegistryThread = new Thread(new Runnable() {
 
-            @Override
-            public void run() {
-                try {
-                    unitRegistry.activate();
-                } catch (CouldNotPerformException | InterruptedException ex) {
-                    ExceptionPrinter.printHistory(ex, logger);
+                @Override
+                public void run() {
+                    try {
+                        unitRegistry.activate();
+                    } catch (CouldNotPerformException | InterruptedException ex) {
+                        ExceptionPrinter.printHistory(ex, LOGGER);
+                    }
                 }
-            }
-        });
+            });
 
-        Thread appRegistryThread = new Thread(new Runnable() {
+            Thread appRegistryThread = new Thread(new Runnable() {
 
-            @Override
-            public void run() {
-                try {
-                    appRegistry.activate();
-                } catch (CouldNotPerformException | InterruptedException ex) {
-                    ExceptionPrinter.printHistory(ex, logger);
+                @Override
+                public void run() {
+                    try {
+                        appRegistry.activate();
+                    } catch (CouldNotPerformException | InterruptedException ex) {
+                        ExceptionPrinter.printHistory(ex, LOGGER);
+                    }
                 }
-            }
-        });
+            });
 
-        Thread agentRegistryThread = new Thread(new Runnable() {
+            Thread agentRegistryThread = new Thread(new Runnable() {
 
-            @Override
-            public void run() {
-                try {
-                    agentRegistry.activate();
-                } catch (CouldNotPerformException | InterruptedException ex) {
-                    ExceptionPrinter.printHistory(ex, logger);
+                @Override
+                public void run() {
+                    try {
+                        agentRegistry.activate();
+                    } catch (CouldNotPerformException | InterruptedException ex) {
+                        ExceptionPrinter.printHistory(ex, LOGGER);
+                    }
                 }
-            }
-        });
+            });
 
-        deviceRegistryThread.start();
-        unitRegistryThread.start();
-        appRegistryThread.start();
-        agentRegistryThread.start();
+            deviceRegistryThread.start();
+            unitRegistryThread.start();
+            appRegistryThread.start();
+            agentRegistryThread.start();
 
-        deviceRegistryThread.join();
-        unitRegistryThread.join();
-        appRegistryThread.join();
-        agentRegistryThread.join();
+            deviceRegistryThread.join();
+            unitRegistryThread.join();
+            appRegistryThread.join();
+            agentRegistryThread.join();
 
-        deviceClass = DeviceClass.getDefaultInstance().newBuilderForType();
-        deviceClass.setLabel("TestDeviceClassLabel");
-        deviceClass.setCompany("MyCom");
-        deviceClass.setProductNumber("TDCL-001");
-        deviceConfig = DeviceConfig.getDefaultInstance().newBuilderForType();
-        deviceConfig.setSerialNumber("0001-0004-2245");
-        deviceConfig.setDeviceClassId("TestDeviceClassLabel");
-        deviceUnitConfig = UnitConfig.newBuilder().setLabel("TestDeviceConfigLabel").setType(UnitType.DEVICE).setDeviceConfig(deviceConfig);
+            deviceClass = DeviceClass.getDefaultInstance().newBuilderForType();
+            deviceClass.setLabel("TestDeviceClassLabel");
+            deviceClass.setCompany("MyCom");
+            deviceClass.setProductNumber("TDCL-001");
+            deviceConfig = DeviceConfig.getDefaultInstance().newBuilderForType();
+            deviceConfig.setSerialNumber("0001-0004-2245");
+            deviceConfig.setDeviceClassId("TestDeviceClassLabel");
+            deviceUnitConfig = UnitConfig.newBuilder().setLabel("TestDeviceConfigLabel").setType(UnitType.DEVICE).setDeviceConfig(deviceConfig);
 
-        LOCATION = unitRegistry.registerUnitConfig(UnitConfig.newBuilder().setLabel(LOCATION_LABEL).setType(UnitType.LOCATION).build()).get();
+            LOCATION = unitRegistry.registerUnitConfig(UnitConfig.newBuilder().setLabel(LOCATION_LABEL).setType(UnitType.LOCATION).build()).get();
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
     }
 
     @AfterClass
     public static void tearDownClass() {
-        if (unitRegistry != null) {
-            unitRegistry.shutdown();
-        }
-        if (deviceRegistry != null) {
-            deviceRegistry.shutdown();
-        }
-        if (appRegistry != null) {
-            appRegistry.shutdown();
-        }
-        if (agentRegistry != null) {
-            agentRegistry.shutdown();
+        try {
+            if (unitRegistry != null) {
+                unitRegistry.shutdown();
+            }
+            if (deviceRegistry != null) {
+                deviceRegistry.shutdown();
+            }
+            if (appRegistry != null) {
+                appRegistry.shutdown();
+            }
+            if (agentRegistry != null) {
+                agentRegistry.shutdown();
+            }
+        } catch (Throwable ex) {
+            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
     }
 
