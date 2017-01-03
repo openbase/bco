@@ -42,7 +42,7 @@ import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.rsb.ScopeType;
 
-/** 
+/**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class Units {
@@ -385,7 +385,7 @@ public class Units {
             throw new NotAvailableException("Unit[" + scope + "]", ex);
         }
     }
-    
+
     /**
      * Method establishes a connection to the unit referred by the given unit label and location scope.
      * The returned unit remote object is fully synchronized with the unit controller and all states locally cached.
@@ -423,6 +423,28 @@ public class Units {
             throw new NotAvailableException("Unit[" + label + "]", ex);
         }
     }
+
+//    public enum UnitClass {
+//        LIGHT(LightRemote.class);
+//
+//        final Class unitRemoteClass;
+//
+//        private UnitClass(final Class unitRemoteClass) {
+//            this.unitRemoteClass = unitRemoteClass;
+//        }
+//
+//        public Class getUnitClass() {
+//            return unitRemoteClass;
+//        }
+//    }
+//    
+//    public static <UR extends UnitRemote> UR getUnit(final String unitId, boolean waitForData, final UnitClass unitClass) throws NotAvailableException, InterruptedException {
+//        try {
+//            return (UR) getUnit(unitId, waitForData, unitClass.getUnitClass());
+//        } catch (ClassCastException ex) {
+//            throw new NotAvailableException("Unit[" + unitId + "]", new InvalidStateException("Requested Unit[" + unitId + "] is not compatible with defined UnitRemoteClass[" + unitRemoteClass + "]!", ex));
+//        }
+//    }
 
     public static LightRemote getLightUnit(final UnitConfig unitConfig, boolean waitForData) throws NotAvailableException, InterruptedException {
         return getUnit(unitConfig, waitForData, LightRemote.class);
