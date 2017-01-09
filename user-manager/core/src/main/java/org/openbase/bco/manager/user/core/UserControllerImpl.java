@@ -57,51 +57,51 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  */
 public class UserControllerImpl extends AbstractConfigurableController<UserData, UserData.Builder, UnitConfig> implements UserController {
-
+    
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserData.getDefaultInstance()));
     }
-
+    
     public static final String NET_DEVICE_VARIABLE_IDENTIFIER = "NET_DEVICE";
-
+    
     private boolean enabled;
     private final Object netDeviceDetectorMapLock = new SyncObject("NetDeviceDetectorMapLock");
-
+    
     protected UnitConfig config;
     private final Map<String, NetDeviceDetector> netDeviceDetectorMap;
-
+    
     public UserControllerImpl() throws org.openbase.jul.exception.InstantiationException {
         super(UserData.newBuilder());
         this.netDeviceDetectorMap = new HashMap<>();
     }
-
+    
     @Override
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         this.config = config;
         logger.info("Initializing " + getClass().getSimpleName() + "[" + config.getId() + "] with scope [" + config.getScope().toString() + "]");
         super.init(config);
     }
-
+    
     @Override
     public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
         RPCHelper.registerInterface(User.class, this, server);
     }
-
+    
     @Override
     public String getId() throws NotAvailableException {
         return config.getId();
     }
-
+    
     @Override
     public UnitConfig getConfig() throws NotAvailableException {
         return config;
     }
-
+    
     @Override
     public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
         setDataField(TYPE_FIELD_USER_NAME, config.getUserConfig().getUserName());
         MetaConfigVariableProvider variableProvider = new MetaConfigVariableProvider(config.getLabel(), config.getMetaConfig());
-
+        
         synchronized (netDeviceDetectorMapLock) {
 
             // shutdown and remove all existing detectors
@@ -109,44 +109,47 @@ public class UserControllerImpl extends AbstractConfigurableController<UserData,
                 detector.shutdown();
             }
             netDeviceDetectorMap.clear();
-
-            for (String netDevice : variableProvider.getValues(NET_DEVICE_VARIABLE_IDENTIFIER).values()) {
-                if (!netDeviceDetectorMap.containsKey(netDevice)) {
-                    NetDeviceDetector netDeviceDetector = new NetDeviceDetector();
-                    netDeviceDetector.init(netDevice);
-                    netDeviceDetectorMap.put(netDevice, netDeviceDetector);
-                    netDeviceDetector.addObserver((Observable<Boolean> source, Boolean reachable) -> {
-                        synchronized (netDeviceDetectorMapLock) {
-                            for (NetDeviceDetector detector : netDeviceDetectorMap.values()) {
-                                if (detector.isReachable()) {
-                                    setUserPresenceState(UserPresenceState.newBuilder().setValue(UserPresenceState.State.AT_HOME).build());
-                                    return;
+            try {
+                for (String netDevice : variableProvider.getValues(NET_DEVICE_VARIABLE_IDENTIFIER).values()) {
+                    if (!netDeviceDetectorMap.containsKey(netDevice)) {
+                        NetDeviceDetector netDeviceDetector = new NetDeviceDetector();
+                        netDeviceDetector.init(netDevice);
+                        netDeviceDetectorMap.put(netDevice, netDeviceDetector);
+                        netDeviceDetector.addObserver((Observable<Boolean> source, Boolean reachable) -> {
+                            synchronized (netDeviceDetectorMapLock) {
+                                for (NetDeviceDetector detector : netDeviceDetectorMap.values()) {
+                                    if (detector.isReachable()) {
+                                        setUserPresenceState(UserPresenceState.newBuilder().setValue(UserPresenceState.State.AT_HOME).build());
+                                        return;
+                                    }
                                 }
+                                setUserPresenceState(UserPresenceState.newBuilder().setValue(UserPresenceState.State.AWAY).build());
                             }
-                            setUserPresenceState(UserPresenceState.newBuilder().setValue(UserPresenceState.State.AWAY).build());
+                        });
+                        if (isActive()) {
+                            netDeviceDetector.activate();
                         }
-                    });
-                    if (isActive()) {
-                        netDeviceDetector.activate();
                     }
                 }
+            } catch (NotAvailableException ex) {
+                logger.debug("No net devices found for " + this);
             }
         }
         return super.applyConfigUpdate(config);
     }
-
+    
     @Override
     public void enable() throws CouldNotPerformException, InterruptedException {
         enabled = true;
         activate();
     }
-
+    
     @Override
     public void disable() throws CouldNotPerformException, InterruptedException {
         enabled = false;
         deactivate();
     }
-
+    
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         synchronized (netDeviceDetectorMapLock) {
@@ -160,7 +163,7 @@ public class UserControllerImpl extends AbstractConfigurableController<UserData,
         }
         super.activate();
     }
-
+    
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         synchronized (netDeviceDetectorMapLock) {
@@ -174,12 +177,12 @@ public class UserControllerImpl extends AbstractConfigurableController<UserData,
         }
         super.deactivate();
     }
-
+    
     @Override
     public boolean isEnabled() {
         return enabled;
     }
-
+    
     @Override
     public String getUserName() throws NotAvailableException {
         try {
@@ -191,7 +194,7 @@ public class UserControllerImpl extends AbstractConfigurableController<UserData,
             throw new NotAvailableException("username", ex);
         }
     }
-
+    
     @Override
     public UserActivityState getUserActivityState() throws NotAvailableException {
         try {
@@ -200,7 +203,7 @@ public class UserControllerImpl extends AbstractConfigurableController<UserData,
             throw new NotAvailableException("user activity", ex);
         }
     }
-
+    
     @Override
     public UserPresenceState getUserPresenceState() throws NotAvailableException {
         try {
@@ -209,7 +212,7 @@ public class UserControllerImpl extends AbstractConfigurableController<UserData,
             throw new NotAvailableException("user presence state", ex);
         }
     }
-
+    
     @Override
     public Future<Void> setUserActivityState(UserActivityState UserActivityState) throws CouldNotPerformException {
         try (ClosableDataBuilder<UserData.Builder> dataBuilder = getDataBuilder(this)) {
@@ -219,7 +222,7 @@ public class UserControllerImpl extends AbstractConfigurableController<UserData,
         }
         return null;
     }
-
+    
     @Override
     public Future<Void> setUserPresenceState(UserPresenceState userPresenceState) throws CouldNotPerformException {
         try (ClosableDataBuilder<UserData.Builder> dataBuilder = getDataBuilder(this)) {
@@ -230,21 +233,21 @@ public class UserControllerImpl extends AbstractConfigurableController<UserData,
         }
         return null;
     }
-
+    
     private class NetDeviceDetector extends ObservableImpl<Boolean> implements Manageable<String> {
-
+        
         private static final int REACHABLE_TIMEOUT = 5000;
         private static final int REQUEST_PERIOD = 60000;
-
+        
         private String hostName;
         private Future detectorTask;
         private boolean reachable;
-
+        
         @Override
         public void init(final String hostName) throws InitializationException, InterruptedException {
             this.hostName = hostName;
         }
-
+        
         @Override
         public void activate() throws CouldNotPerformException, InterruptedException {
             detectorTask = GlobalScheduledExecutorService.scheduleAtFixedRate(new Runnable() {
@@ -259,21 +262,21 @@ public class UserControllerImpl extends AbstractConfigurableController<UserData,
                 }
             }, 0, REQUEST_PERIOD, TimeUnit.MILLISECONDS);
         }
-
+        
         @Override
         public void deactivate() throws CouldNotPerformException, InterruptedException {
             detectorTask.cancel(false);
         }
-
+        
         @Override
         public boolean isActive() {
             return detectorTask != null && !detectorTask.isDone();
         }
-
+        
         public String getHostName() {
             return hostName;
         }
-
+        
         public boolean checkIfReachable() {
             try {
                 return InetAddress.getByName(hostName).isReachable(REACHABLE_TIMEOUT);
@@ -282,11 +285,11 @@ public class UserControllerImpl extends AbstractConfigurableController<UserData,
                 return false;
             }
         }
-
+        
         public boolean isReachable() {
             return reachable;
         }
-
+        
         @Override
         public void shutdown() {
             try {
@@ -298,11 +301,11 @@ public class UserControllerImpl extends AbstractConfigurableController<UserData,
             }
             super.shutdown();
         }
-
+        
         @Override
         public String toString() {
             return getClass().getSimpleName() + "[host:" + hostName + "]";
         }
-
+        
     }
 }
