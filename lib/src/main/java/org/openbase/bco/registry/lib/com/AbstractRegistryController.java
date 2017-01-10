@@ -60,16 +60,16 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     protected ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
 
     private final List<RegistryRemote> registryRemoteList;
-    private final List<RemoteRegistry> remoteRegistrieList;
-    private final List<ProtoBufFileSynchronizedRegistry> registrieList;
+    private final List<RemoteRegistry> remoteRegistryList;
+    private final List<ProtoBufFileSynchronizedRegistry> registryList;
     private final Class<? extends JPScope> jpScopePropery;
 
     public AbstractRegistryController(final Class<? extends JPScope> jpScopePropery, MB builder) throws InstantiationException {
         super(builder);
         this.jpScopePropery = jpScopePropery;
         this.registryRemoteList = new ArrayList<>();
-        this.registrieList = new ArrayList<>();
-        this.remoteRegistrieList = new ArrayList<>();
+        this.registryList = new ArrayList<>();
+        this.remoteRegistryList = new ArrayList<>();
         this.protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
     }
 
@@ -171,10 +171,10 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         registryRemoteList.stream().forEach((remote) -> {
             remote.shutdown();
         });
-        remoteRegistrieList.stream().forEach((remoteRegistry) -> {
+        remoteRegistryList.stream().forEach((remoteRegistry) -> {
             remoteRegistry.shutdown();
         });
-        registrieList.stream().forEach((registry) -> {
+        registryList.stream().forEach((registry) -> {
             registry.shutdown();
         });
     }
@@ -192,7 +192,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     }
 
     protected void activateRemoteRegistries() throws CouldNotPerformException, InterruptedException {
-        for (RemoteRegistry remoteRegistry : remoteRegistrieList) {
+        for (RemoteRegistry remoteRegistry : remoteRegistryList) {
             if (remoteRegistry instanceof SynchronizedRemoteRegistry) {
                 ((SynchronizedRemoteRegistry) remoteRegistry).activate();
             }
@@ -210,7 +210,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     }
 
     private void deactivateRemoteRegistries() throws CouldNotPerformException, InterruptedException {
-        for (RemoteRegistry remoteRegistry : remoteRegistrieList) {
+        for (RemoteRegistry remoteRegistry : remoteRegistryList) {
             if (remoteRegistry instanceof SynchronizedRemoteRegistry) {
                 ((SynchronizedRemoteRegistry) remoteRegistry).deactivate();
             }
@@ -224,13 +224,13 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     }
 
     private void removeDependencies() throws CouldNotPerformException {
-        registrieList.stream().forEach((registry) -> {
+        registryList.stream().forEach((registry) -> {
             registry.removeAllDependencies();
         });
     }
 
     private void registerObserver() throws CouldNotPerformException {
-        registrieList.stream().forEach((registry) -> {
+        registryList.stream().forEach((registry) -> {
             registry.addObserver((Observable source, Object data) -> {
                 notifyChange();
             });
@@ -238,14 +238,14 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     }
 
     private void loadRegistries() throws CouldNotPerformException {
-        for (final ProtoBufFileSynchronizedRegistry registry : registrieList) {
+        for (final ProtoBufFileSynchronizedRegistry registry : registryList) {
             registry.loadRegistry();
         }
     }
 
     private void activateVersionControl() throws CouldNotPerformException {
         Package versionConverterPackage;
-        for (final ProtoBufFileSynchronizedRegistry registry : registrieList) {
+        for (final ProtoBufFileSynchronizedRegistry registry : registryList) {
             try {
                 versionConverterPackage = detectVersionConverterPackage();
             } catch (NotAvailableException ex) {
@@ -257,8 +257,9 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     }
 
     private void performInitialConsistencyCheck() throws CouldNotPerformException, InterruptedException {
-        for (final ProtoBufFileSynchronizedRegistry registry : registrieList) {
+        for (final ProtoBufFileSynchronizedRegistry registry : registryList) {
             try {
+                logger.debug("Trigger inital consistency check of "+registry+ " with "+registry.getEntries().size() + " entries.");
                 registry.checkConsistency();
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger);
@@ -268,7 +269,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     }
 
     protected void registerDependency(Registry dependency, Class messageClass) throws CouldNotPerformException {
-        for (ProtoBufFileSynchronizedRegistry registry : registrieList) {
+        for (ProtoBufFileSynchronizedRegistry registry : registryList) {
             registry.registerDependency(dependency);
         }
     }
@@ -278,15 +279,15 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     }
 
     protected void registerRegistry(final ProtoBufFileSynchronizedRegistry registry) {
-        registrieList.add(registry);
+        registryList.add(registry);
     }
 
     protected void registerRemoteRegistry(final RemoteRegistry registry) {
-        remoteRegistrieList.add(registry);
+        remoteRegistryList.add(registry);
     }
 
     protected void registerConsistencyHandler(final ConsistencyHandler consistencyHandler, final Class messageClass) throws CouldNotPerformException {
-        for (ProtoBufFileSynchronizedRegistry registry : registrieList) {
+        for (ProtoBufFileSynchronizedRegistry registry : registryList) {
             if (messageClass.equals(registry.getMessageClass())) {
                 registry.registerConsistencyHandler(consistencyHandler);
             } else {
@@ -300,11 +301,11 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     }
 
     public List<RemoteRegistry> getRemoteRegistries() {
-        return remoteRegistrieList;
+        return remoteRegistryList;
     }
 
     protected List<ProtoBufFileSynchronizedRegistry> getRegistries() {
-        return registrieList;
+        return registryList;
     }
 
     private Package detectVersionConverterPackage() throws CouldNotPerformException {
