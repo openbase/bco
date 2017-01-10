@@ -50,13 +50,14 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.ActionConfigType;
+import rst.domotic.action.ActionConfigType.ActionConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ *
  * @param <S> generic definition of the overall service type for this remote.
  * @param <ST> the corresponding state for the service type of this remote.
  */
@@ -74,8 +75,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     private final SyncObject syncObject = new SyncObject("ServiceStateComputationLock");
 
     /**
+     * AbstractServiceRemote constructor.
      *
-     * @param serviceType
+     * @param serviceType The remote service type.
      */
     public AbstractServiceRemote(final ServiceType serviceType) {
         this.serviceState = null;
@@ -124,7 +126,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      *
      * @param observer the observer which is notified
      */
-    public void addDataObserver(Observer<ST> observer) {
+    public void addDataObserver(final Observer<ST> observer) {
         serviceStateObservable.addObserver(observer);
     }
 
@@ -133,7 +135,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      *
      * @param observer the observer which has been registered
      */
-    public void removeDataObserver(Observer<ST> observer) {
+    public void removeDataObserver(final Observer<ST> observer) {
         serviceStateObservable.removeObserver(observer);
     }
 
@@ -169,8 +171,8 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * Each of the units referred by the given configurations should provide the service type of this service remote.
      *
      * @param configs a set of unit configurations.
-     * @throws InitializationException
-     * @throws InterruptedException
+     * @throws InitializationException is thrown if the service remote could not be initialized.
+     * @throws InterruptedException is thrown if the current thread is externally interrupted.
      */
     public void init(final Collection<UnitConfig> configs) throws InitializationException, InterruptedException {
         try {
@@ -192,6 +194,12 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws InterruptedException {@inheritDoc}
+     */
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         try {
@@ -210,6 +218,12 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws InterruptedException {@inheritDoc}
+     */
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         MultiException.ExceptionStack exceptionStack = null;
@@ -224,6 +238,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         MultiException.checkAndThrow("Could not deactivate all service units!", exceptionStack);
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public void shutdown() {
         try {
@@ -233,33 +250,63 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
     @Override
     public boolean isActive() {
         return unitRemoteMap.values().stream().allMatch((remote) -> (remote.isActive()));
     }
 
+    /**
+     * Returns the internal service factory which is used for the instance creation.
+     *
+     * @return the internal service factory.
+     */
     public UnitRemoteFactory getFactory() {
         return factory;
     }
 
-    public void setFactory(UnitRemoteFactory factory) {
+    /**
+     * Set the internal service factory which will be used for the instance creation.
+     *
+     * @param factory the service factory.
+     */
+    public void setFactory(final UnitRemoteFactory factory) {
         this.factory = factory;
     }
 
+    /**
+     * Returns a collection of all internally used unit remotes.
+     *
+     * @return a collection of unit remotes limited to the service interface.
+     */
     public Collection<UnitRemote> getInternalUnits() {
         return Collections.unmodifiableCollection(unitRemoteMap.values());
     }
 
+    /**
+     * Returns a collection of all internally used unit remotes.
+     *
+     * @return a collection of unit remotes limited to the service interface.
+     */
     public Collection<S> getServices() {
         return Collections.unmodifiableCollection(serviceMap.values());
     }
 
+    /**
+     * Returns the service type of this remote.
+     *
+     * @return the remote service type.
+     */
     public ServiceType getServiceType() {
         return serviceType;
     }
 
     @Override
-    public Future<Void> applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+    public Future<Void> applyAction(final ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
         try {
             if (!actionConfig.getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
@@ -299,7 +346,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * @throws CouldNotPerformException is thrown in case the any error occurs, or if the given timeout is reached. In this case a TimeoutException is thrown.
      * @throws InterruptedException is thrown in case the thread is externally interrupted.
      */
-    public void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+    public void waitForData(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
         //todo reimplement with respect to the given timeout.
         for (UnitRemote remote : unitRemoteMap.values()) {
             waitForData(timeout, timeUnit);
@@ -329,6 +376,11 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         return unitConfig.getServiceConfigList().stream().anyMatch((serviceConfig) -> (serviceConfig.getServiceTemplate().getType() == serviceType));
     }
 
+    /**
+     * Returns a short instance description.
+     *
+     * @return a description as string.
+     */
     @Override
     public String toString() {
         if (serviceType == null) {

@@ -28,7 +28,6 @@ import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -212,7 +211,7 @@ public class Units {
      * To force a resynchronization call {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the remote instance.
      * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
      *
-     * @param unitId the unit identifier.
+     * @param unitConfig the unit configuration.
      * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
      * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
      * @throws NotAvailableException is thrown in case the unit is not available.
@@ -244,7 +243,7 @@ public class Units {
      *
      * @see #getUnit(rst.domotic.unit.UnitConfigType.UnitConfig, boolean)
      */
-    public static <UR extends UnitRemote> UR getUnit(final UnitConfig unitConfig, boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
+    public static <UR extends UnitRemote> UR getUnit(final UnitConfig unitConfig, final boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
         try {
             return (UR) getUnit(unitConfig, waitForData);
         } catch (ClassCastException ex) {

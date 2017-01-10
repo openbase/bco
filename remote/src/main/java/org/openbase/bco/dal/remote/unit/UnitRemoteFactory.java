@@ -33,8 +33,9 @@ import rst.rsb.ScopeType;
 import rst.rsb.ScopeType.Scope;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * 
+ * The unit remote factory interface.
  */
 public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
 
