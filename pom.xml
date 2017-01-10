@@ -70,17 +70,26 @@
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>
-                <version>1.10</version>
+                <version>${dependency.org.codehaus.mojo.license-maven-plugin.version}</version>
                 <configuration>
                     <verbose>false</verbose>
+                    <failOnMissingHeader>true</failOnMissingHeader>
+                    <failOnNotUptodateHeader>true</failOnNotUptodateHeader>
+                    <canUpdateCopyright>true</canUpdateCopyright>
+                    <canUpdateDescription>true</canUpdateDescription>
+                    <canUpdateLicense>true</canUpdateLicense>
+                    <roots>
+                        <root>src/main/java</root>
+                        <root>src/test</root>
+                    </roots>
                 </configuration>
                 <executions>
-<!--                    <execution>  //disabled because of broken license url
+                    <execution>
                         <id>download-licenses</id>
                         <goals>
                             <goal>download-licenses</goal>
                         </goals>
-                    </execution>-->
+                    </execution>
                 </executions>
             </plugin>
             <plugin>
@@ -194,6 +203,7 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <!--dependency.jul.version>1.1-SNAPSHOT</dependency.jul.version-->
         <dependency.jul.version>1.2-SNAPSHOT</dependency.jul.version>
+        <dependency.org.codehaus.mojo.license-maven-plugin.version>1.10</dependency.org.codehaus.mojo.license-maven-plugin.version>
     </properties>
     
     <dependencies>
