@@ -2,9 +2,9 @@ package org.openbase.bco.registry.unit.lib;
 
 /*
  * #%L
- * REM UnitRegistry Library
+ * BCO Registry Unit Library
  * %%
- * Copyright (C) 2014 - 2016 openbase.org
+ * Copyright (C) 2014 - 2017 openbase.org
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as

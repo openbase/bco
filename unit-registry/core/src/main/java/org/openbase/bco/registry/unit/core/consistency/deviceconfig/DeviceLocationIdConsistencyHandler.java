@@ -2,9 +2,9 @@ package org.openbase.bco.registry.unit.core.consistency.deviceconfig;
 
 /*
  * #%L
- * REM DeviceRegistry Core
+ * BCO Registry Unit Core
  * %%
- * Copyright (C) 2014 - 2016 openbase.org
+ * Copyright (C) 2014 - 2017 openbase.org
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
