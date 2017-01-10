@@ -125,7 +125,7 @@ public class UserRemoteTest {
         userRemote.setUserActivityState(activity).get();
         userRemote.setUserPresenceState(presenceState).get();
 
-        userRemote.requestData();
+        userRemote.requestData().get();
 
         assertEquals("UserActivityState has not been set!", activity, userRemote.getUserActivityState());
         assertEquals("UserPresenceState has not been set!", presenceState, userRemote.getUserPresenceState());
