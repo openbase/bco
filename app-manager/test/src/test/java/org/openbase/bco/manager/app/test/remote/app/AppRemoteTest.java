@@ -2,9 +2,9 @@ package org.openbase.bco.manager.app.test.remote.app;
 
 /*
  * #%L
- * COMA DeviceManager Test
+ * BCO Manager App Test
  * %%
- * Copyright (C) 2015 - 2016 openbase.org
+ * Copyright (C) 2015 - 2017 openbase.org
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as

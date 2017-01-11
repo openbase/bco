@@ -2,9 +2,9 @@ package org.openbase.bco.manager.agent.binding.openhab.transform;
 
 /*
  * #%L
- * COMA SceneManager Binding OpenHAB
+ * BCO Manager Agent Binding OpenHAB
  * %%
- * Copyright (C) 2015 - 2016 openbase.org
+ * Copyright (C) 2015 - 2017 openbase.org
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
