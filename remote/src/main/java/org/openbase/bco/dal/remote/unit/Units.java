@@ -53,7 +53,7 @@ public class Units {
     private static final ReentrantReadWriteLock unitRemoteRegistryLock = new ReentrantReadWriteLock();
     private static final UnitRemoteFactory unitRemoteFactory = UnitRemoteFactoryImpl.getInstance();
 
-    private static RemoteControllerRegistry<String, UnitRemote<? extends GeneratedMessage, UnitConfig>> unitRemoteRegistry;
+    private static RemoteControllerRegistry<String, UnitRemote<? extends GeneratedMessage>> unitRemoteRegistry;
     private static UnitRegistry unitRegistry;
 
     static {

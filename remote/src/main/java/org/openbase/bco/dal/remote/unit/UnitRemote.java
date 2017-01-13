@@ -21,6 +21,7 @@ package org.openbase.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.InitializationException;
@@ -34,9 +35,8 @@ import rst.rsb.ScopeType;
  * 
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <M> Message
- * @param <CONFIG> Configuration
  */
-public interface UnitRemote<M, CONFIG> extends Unit, Service, ConfigurableRemote<String, M, UnitConfig> {
+public interface UnitRemote<M extends GeneratedMessage> extends Unit, Service, ConfigurableRemote<String, M, UnitConfig> {
 
     /**
      * Method initializes this unit remote instance via it's remote controller scope.

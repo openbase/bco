@@ -36,7 +36,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public class UnitRemotePool {
 
-    private Map<Class, Map<String, UnitRemote<?, UnitConfig>>> pool;
+    private Map<Class, Map<String, UnitRemote<?>>> pool;
     private UnitRemoteFactory factory;
     private DeviceRegistryRemote deviceRegistryRemote;
 
@@ -66,7 +66,7 @@ public class UnitRemotePool {
 
     private void initAllUnitRemotes() throws CouldNotPerformException, InterruptedException {
         for (UnitConfig unitConfig : deviceRegistryRemote.getUnitConfigs()) {
-            UnitRemote<?, UnitConfig> unitRemote = factory.newInitializedInstance(unitConfig);
+            UnitRemote<?> unitRemote = factory.newInitializedInstance(unitConfig);
 
             if (!pool.containsKey(unitRemote.getClass())) {
                 pool.put(unitRemote.getClass(), new HashMap<>());
@@ -78,7 +78,7 @@ public class UnitRemotePool {
     }
 
     public void activate() throws InterruptedException, CouldNotPerformException {
-        for (Map<String, UnitRemote<?, UnitConfig>> unitCollection : pool.values()) {
+        for (Map<String, UnitRemote<?>> unitCollection : pool.values()) {
             for (UnitRemote remote : unitCollection.values()) {
                 remote.activate();
             }
