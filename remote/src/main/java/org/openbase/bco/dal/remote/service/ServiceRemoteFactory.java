@@ -2,9 +2,9 @@ package org.openbase.bco.dal.remote.service;
 
 /*
  * #%L
- * DAL Remote
+ * BCO DAL Remote
  * %%
- * Copyright (C) 2014 - 2016 openbase.org
+ * Copyright (C) 2014 - 2017 openbase.org
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -37,11 +37,11 @@ public interface ServiceRemoteFactory {
      * Creates and initializes a service remote out of the given service type
      * and a collection of unitConfigs.
      *
-     * @param serviceType
-     * @param unitConfigs
+     * @param serviceType The remote service type.
+     * @param unitConfigs The collection of units which are controlled by the new service remote instance.
      * @return the new created service remote.
-     * @throws CouldNotPerformException
-     * @throws java.lang.InterruptedException
+     * @throws CouldNotPerformException is thrown if any error occurs during the creation.
+     * @throws InterruptedException is thrown if the current thread is externally interrupted.
      */
     public AbstractServiceRemote createAndInitServiceRemote(final ServiceType serviceType, final Collection<UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException;
 
@@ -49,20 +49,20 @@ public interface ServiceRemoteFactory {
      * Creates and initializes a service remote out of the given service type
      * and unitConfig.
      *
-     * @param serviceType
-     * @param unitConfig
+     * @param serviceType The remote service type.
+     * @param unitConfig The unit which is controlled by the new service remote instance.
      * @return the new created service remote.
-     * @throws CouldNotPerformException
-     * @throws java.lang.InterruptedException
+     * @throws CouldNotPerformException is thrown if any error occurs during the creation.
+     * @throws InterruptedException is thrown if the current thread is externally interrupted.
      */
     public AbstractServiceRemote createAndInitServiceRemote(final ServiceType serviceType, final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException;
 
     /**
      * Creates a service remote out of the given service type.
      *
-     * @param serviceType
+     * @param serviceType The remote service type.
      * @return the new created unit remote.
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException is thrown if any error occurs during the creation.
      */
     public AbstractServiceRemote createServiceRemote(final ServiceType serviceType) throws CouldNotPerformException;
 }

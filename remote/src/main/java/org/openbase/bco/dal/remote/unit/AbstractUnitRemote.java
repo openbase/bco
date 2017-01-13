@@ -2,9 +2,9 @@ package org.openbase.bco.dal.remote.unit;
 
 /*
  * #%L
- * DAL Remote
+ * BCO DAL Remote
  * %%
- * Copyright (C) 2014 - 2016 openbase.org
+ * Copyright (C) 2014 - 2017 openbase.org
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -275,10 +275,10 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     /**
      * {@inheritDoc}
      *
-     * @param actionConfig
-     * @return
-     * @throws org.openbase.jul.exception.CouldNotPerformException
-     * @throws java.lang.InterruptedException
+     * @param actionConfig {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
     public Future<Void> applyAction(ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
@@ -288,9 +288,9 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     /**
      * {@inheritDoc}
      *
-     * @return
-     * @throws org.openbase.jul.exception.CouldNotPerformException
-     * @throws java.lang.InterruptedException
+     * @return {@inheritDoc}
+     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
     public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {

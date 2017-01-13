@@ -2,9 +2,9 @@ package org.openbase.bco.dal.remote.service;
 
 /*
  * #%L
- * DAL Remote
+ * BCO DAL Remote
  * %%
- * Copyright (C) 2014 - 2016 openbase.org
+ * Copyright (C) 2014 - 2017 openbase.org
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
@@ -35,9 +35,9 @@ import rst.timing.TimestampType.Timestamp;
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class HandleStateStateRemote extends AbstractServiceRemote<HandleStateProviderService, HandleState> implements HandleStateProviderServiceCollection {
+public class HandleStateServiceRemote extends AbstractServiceRemote<HandleStateProviderService, HandleState> implements HandleStateProviderServiceCollection {
 
-    public HandleStateStateRemote() {
+    public HandleStateServiceRemote() {
         super(ServiceType.HANDLE_STATE_SERVICE);
     }
 
