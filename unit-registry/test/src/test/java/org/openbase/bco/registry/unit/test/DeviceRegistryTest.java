@@ -33,10 +33,10 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.registry.agent.core.AgentRegistryController;
-import org.openbase.bco.registry.app.core.AppRegistryController;
 import org.openbase.bco.registry.device.core.DeviceRegistryController;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
+import org.openbase.bco.registry.mock.MockRegistry;
+import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.unit.core.UnitRegistryController;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -81,122 +81,22 @@ public class DeviceRegistryTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceRegistryTest.class);
 
-    public static final String LOCATION_LABEL = "paradise";
-    public static UnitConfig LOCATION;
+    private static MockRegistry mockRegistry;
 
-    private static DeviceRegistryController deviceRegistry;
     private static UnitRegistryController unitRegistry;
-    private static AppRegistryController appRegistry;
-    private static AgentRegistryController agentRegistry;
+    private static DeviceRegistryController deviceRegistry;
 
-    private static DeviceClass.Builder deviceClass;
-    private static DeviceConfig.Builder deviceConfig;
-    private static UnitConfig.Builder deviceUnitConfig;
+    private static UnitConfig LOCATION;
 
-//    private static DeviceRegistryRemote deviceRegistryRemote;
     @BeforeClass
     public static void setUpClass() throws InstantiationException, InitializationException, IOException, InvalidStateException, JPServiceException, InterruptedException, CouldNotPerformException, ExecutionException {
-        try {
-            JPService.setupJUnitTestMode();
-
-            deviceRegistry = new DeviceRegistryController();
-            unitRegistry = new UnitRegistryController();
-            appRegistry = new AppRegistryController();
-            agentRegistry = new AgentRegistryController();
-
-            deviceRegistry.init();
-            unitRegistry.init();
-            appRegistry.init();
-            agentRegistry.init();
-
-            Thread deviceRegistryThread = new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        deviceRegistry.activate();
-                    } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, LOGGER);
-                    }
-                }
-            });
-
-            Thread unitRegistryThread = new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        unitRegistry.activate();
-                    } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, LOGGER);
-                    }
-                }
-            });
-
-            Thread appRegistryThread = new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        appRegistry.activate();
-                    } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, LOGGER);
-                    }
-                }
-            });
-
-            Thread agentRegistryThread = new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        agentRegistry.activate();
-                    } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, LOGGER);
-                    }
-                }
-            });
-
-            deviceRegistryThread.start();
-            unitRegistryThread.start();
-            appRegistryThread.start();
-            agentRegistryThread.start();
-
-            deviceRegistryThread.join();
-            unitRegistryThread.join();
-            appRegistryThread.join();
-            agentRegistryThread.join();
-
-            deviceClass = DeviceClass.getDefaultInstance().newBuilderForType();
-            deviceClass.setLabel("TestDeviceClassLabel");
-            deviceClass.setCompany("MyCom");
-            deviceClass.setProductNumber("TDCL-001");
-            deviceConfig = DeviceConfig.getDefaultInstance().newBuilderForType();
-            deviceConfig.setSerialNumber("0001-0004-2245");
-            deviceConfig.setDeviceClassId("TestDeviceClassLabel");
-            deviceUnitConfig = UnitConfig.newBuilder().setLabel("TestDeviceConfigLabel").setType(UnitType.DEVICE).setDeviceConfig(deviceConfig);
-
-            LOCATION = unitRegistry.registerUnitConfig(UnitConfig.newBuilder().setLabel(LOCATION_LABEL).setType(UnitType.LOCATION).build()).get();
-        } catch (Throwable ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
+        JPService.setupJUnitTestMode();
     }
 
     @AfterClass
     public static void tearDownClass() {
         try {
-            if (unitRegistry != null) {
-                unitRegistry.shutdown();
-            }
-            if (deviceRegistry != null) {
-                deviceRegistry.shutdown();
-            }
-            if (appRegistry != null) {
-                appRegistry.shutdown();
-            }
-            if (agentRegistry != null) {
-                agentRegistry.shutdown();
-            }
+            MockRegistryHolder.shutdownMockRegistry();
         } catch (Throwable ex) {
             ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
@@ -204,20 +104,23 @@ public class DeviceRegistryTest {
 
     @Before
     public void setUp() throws CouldNotPerformException {
-        System.out.println("\n CLEARING \n");
-        try {
-            unitRegistry.getDalUnitConfigRegistry().clear();
-            unitRegistry.getDeviceUnitConfigRegistry().clear();
-            deviceRegistry.getDeviceClassRegistry().clear();
-        } catch (CouldNotPerformException ex) {
-            System.out.println("COULD NOT CLEAR REGISTRIES...");
-            throw ex;
-        }
-        System.out.println("\n FINISHED CLEARING \n");
+        mockRegistry = MockRegistryHolder.newMockRegistry();
+
+        unitRegistry = (UnitRegistryController) mockRegistry.getUnitRegistry();
+        deviceRegistry = (DeviceRegistryController) mockRegistry.getDeviceRegistry();
+
+        LOCATION = mockRegistry.getLocationRegistry().getRootLocationConfig();
     }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws CouldNotPerformException {
+        MockRegistryHolder.shutdownMockRegistry();
+//        mockRegistry = MockRegistryHolder.newMockRegistry();
+//
+//        unitRegistry = (UnitRegistryController) mockRegistry.getUnitRegistry();
+//        deviceRegistry = (DeviceRegistryController) mockRegistry.getDeviceRegistry();
+//
+//        LOCATION = mockRegistry.getLocationRegistry().getRootLocationConfig();
     }
 
     /**
@@ -235,9 +138,9 @@ public class DeviceRegistryTest {
         String company = "Fibaro";
 
         String deviceLabel = "TestSensor";
-        String deviceScope = "/" + LOCATION_LABEL + "/" + "device" + "/" + deviceLabel.toLowerCase() + "/";
+        String deviceScope = "/" + LOCATION.getLabel().toLowerCase() + "/" + "device" + "/" + deviceLabel.toLowerCase() + "/";
 
-        String expectedUnitScope = "/" + LOCATION_LABEL + "/" + UnitType.BATTERY.name().toLowerCase() + "/" + deviceLabel.toLowerCase() + "/";
+        String expectedUnitScope = "/" + LOCATION.getLabel().toLowerCase() + "/" + UnitType.BATTERY.name().toLowerCase() + "/" + deviceLabel.toLowerCase() + "/";
 
         // units are automatically added when a unit template config in the device class exists
         UnitTemplateConfig unitTemplateConfig = UnitTemplateConfig.newBuilder().setType(UnitType.BATTERY).build();
@@ -245,7 +148,6 @@ public class DeviceRegistryTest {
         waitForDeviceClass(motionSensorClass);
         UnitConfig motionSensorConfig = getDeviceUnitConfig(deviceLabel, serialNumber, motionSensorClass);
         motionSensorConfig = deviceRegistry.registerDeviceConfig(motionSensorConfig).get();
-        System.out.println("Config:" + motionSensorConfig);
 
         assertEquals("Device scope is not set properly", deviceScope, ScopeGenerator.generateStringRep(motionSensorConfig.getScope()));
         assertEquals("Device has not the correct number of units", 1, motionSensorConfig.getDeviceConfig().getUnitIdCount());
@@ -278,7 +180,6 @@ public class DeviceRegistryTest {
      * Test of testRegisterTwoDevicesWithSameLabel method, of class
      * DeviceRegistryImpl.
      */
-    // TODO: fix that the consisteny handling will work after this
     @Test(timeout = 5000)
     public void testRegisterTwoDevicesWithSameLabel() throws Exception {
         System.out.println("testRegisterTwoDevicesWithSameLabel");
@@ -295,7 +196,7 @@ public class DeviceRegistryTest {
         try {
             ExceptionPrinter.setBeQuit(Boolean.TRUE);
             deviceRegistry.registerDeviceConfig(deviceWithLabel2).get();
-            fail("There was no exception thrown even though two devices with the same label [" + deviceLabel + "] where registered in the same location [" + LOCATION_LABEL + "]");
+            fail("There was no exception thrown even though two devices with the same label [" + deviceLabel + "] where registered in the same location [" + LOCATION.getLabel() + "]");
         } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
             assertTrue(true);
         } finally {
@@ -306,9 +207,14 @@ public class DeviceRegistryTest {
     @Test(timeout = 5000)
     public void testUnitConfigUnitTemplateConsistencyHandler() throws Exception {
         System.out.println("testUnitConfigUnitTemplateConsistencyHandler");
+
+        // clearing unit templates because they are already changed by the mock registry
+        UnitTemplate unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.COLORABLE_LIGHT).toBuilder().clearServiceTemplate().build();
+        unitRegistry.updateUnitTemplate(unitTemplate).get();
+
         ServiceTemplate batteryTemplate = ServiceTemplate.newBuilder().setType(ServiceType.BATTERY_STATE_SERVICE).build();
         ServiceTemplate colorTemplate = ServiceTemplate.newBuilder().setType(ServiceType.COLOR_STATE_SERVICE).build();
-        UnitTemplate unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.COLORABLE_LIGHT);
+        unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.COLORABLE_LIGHT);
         unitTemplate = unitTemplate.toBuilder().addServiceTemplate(batteryTemplate).addServiceTemplate(colorTemplate).build();
         unitTemplate = unitRegistry.updateUnitTemplate(unitTemplate).get();
         assertTrue(unitTemplate.getServiceTemplateList().contains(batteryTemplate));
@@ -326,10 +232,10 @@ public class DeviceRegistryTest {
         UnitConfig localDeviceConfig = getDeviceUnitConfig(deviceLabel, serialNumber1, clazz);
 
         localDeviceConfig = deviceRegistry.registerDeviceConfig(localDeviceConfig).get();
-        assertTrue(localDeviceConfig.getDeviceConfig().getUnitIdCount() == 1);
+        assertTrue("DeviceConfig does not contain the correct amount of units", localDeviceConfig.getDeviceConfig().getUnitIdCount() == 1);
 
         UnitConfig registeredUnit = unitRegistry.getUnitConfigById(localDeviceConfig.getDeviceConfig().getUnitId(0));
-        assertTrue(registeredUnit.getServiceConfigCount() == 2);
+        assertTrue("The amount of service configs for the unit is not correct", registeredUnit.getServiceConfigCount() == 2);
         assertTrue(registeredUnit.getServiceConfig(0).getServiceTemplate().getType() == ServiceType.BATTERY_STATE_SERVICE || registeredUnit.getServiceConfig(0).getServiceTemplate().getType() == ServiceType.COLOR_STATE_SERVICE);
         assertTrue(registeredUnit.getServiceConfig(1).getServiceTemplate().getType() == ServiceType.BATTERY_STATE_SERVICE || registeredUnit.getServiceConfig(1).getServiceTemplate().getType() == ServiceType.COLOR_STATE_SERVICE);
 
@@ -347,16 +253,25 @@ public class DeviceRegistryTest {
         }
     }
 
-    @Test//(timeout = 5000)
+    @Test(timeout = 5000)
     public void testDeviceClassDeviceConfigUnitConsistencyHandler() throws Exception {
         System.out.println("testDeviceClassDeviceConfigUnitConsistencyHandler");
+
+        // clearing unit templates because they are already changed by the mock registry
+        UnitTemplate unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.LIGHT).toBuilder().clearServiceTemplate().build();
+        unitRegistry.updateUnitTemplate(unitTemplate).get();
+        unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.HANDLE).toBuilder().clearServiceTemplate().build();
+        unitRegistry.updateUnitTemplate(unitTemplate).get();
+        unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.BUTTON).toBuilder().clearServiceTemplate().build();
+        unitRegistry.updateUnitTemplate(unitTemplate).get();
+
         ServiceTemplateConfig serviceTemplate1 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.POWER_STATE_SERVICE).build();
         UnitTemplateConfig unitTemplateConfig1 = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).addServiceTemplateConfig(serviceTemplate1).build();
         ServiceTemplateConfig serviceTemplate2 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.BATTERY_STATE_SERVICE).build();
         ServiceTemplateConfig serviceTemplate3 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.HANDLE_STATE_SERVICE).build();
         UnitTemplateConfig unitTemplateConfig2 = UnitTemplateConfig.newBuilder().setType(UnitType.HANDLE).addServiceTemplateConfig(serviceTemplate2).addServiceTemplateConfig(serviceTemplate3).build();
 
-        UnitTemplate unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.LIGHT).toBuilder().addServiceTemplate(ServiceTemplate.newBuilder().setType(serviceTemplate1.getServiceType())).build();
+        unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.LIGHT).toBuilder().addServiceTemplate(ServiceTemplate.newBuilder().setType(serviceTemplate1.getServiceType())).build();
         unitRegistry.updateUnitTemplate(unitTemplate).get();
         unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.HANDLE).toBuilder().addServiceTemplate(ServiceTemplate.newBuilder().setType(ServiceType.BATTERY_STATE_SERVICE)).addServiceTemplate(ServiceTemplate.newBuilder().setType(ServiceType.HANDLE_STATE_SERVICE)).build();
         unitRegistry.updateUnitTemplate(unitTemplate).get();
@@ -412,8 +327,9 @@ public class DeviceRegistryTest {
         assertEquals("Device config does not contain the right unit config", dalUnitConfigs.get(2).getType(), unitTemplateConfig3.getType());
         assertEquals("Unit config does not contain the right service", dalUnitConfigs.get(2).getServiceConfig(0).getServiceTemplate().getType(), serviceTemplate4.getServiceType());
 
+        int sizeBefore = unitRegistry.getDalUnitConfigs().size();
         config = deviceRegistry.updateDeviceConfig(config.toBuilder().setLabel("newDeviceLabel").build()).get();
-        assertTrue("More dal units registered after device renaming!", unitRegistry.getDalUnitConfigs().size() == 3);
+        assertTrue("More dal units registered after device renaming!", unitRegistry.getDalUnitConfigs().size() == sizeBefore);
         assertTrue("More units in device config after renaming!", config.getDeviceConfig().getUnitIdCount() == 3);
 
         //test if dal units are also removed when a device is removed
@@ -422,13 +338,6 @@ public class DeviceRegistryTest {
             assertTrue("DalUnit [" + dalUnitConfig.getLabel() + "] still registered even though its device has been removed!", !unitRegistry.containsUnitConfig(dalUnitConfig));
         }
 
-        // clearing unit templates because of effects on other tests it might have
-        unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.LIGHT).toBuilder().clearServiceTemplate().build();
-        unitRegistry.updateUnitTemplate(unitTemplate);
-        unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.HANDLE).toBuilder().clearServiceTemplate().build();
-        unitRegistry.updateUnitTemplate(unitTemplate);
-        unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.BUTTON).toBuilder().clearServiceTemplate().build();
-        unitRegistry.updateUnitTemplate(unitTemplate).get();
     }
 
     @Test(timeout = 5000)
@@ -498,7 +407,7 @@ public class DeviceRegistryTest {
         assertEquals("The owner id did not get removed even though the user got removed!", "", ownerRemovalDeviceConfig.getDeviceConfig().getInventoryState().getOwnerId());
     }
 
-    @Test//(timeout = 5000)
+    @Test(timeout = 5000)
     public void testInventoryEnablingStateConnection() throws Exception {
         System.out.println("testInventoryEnablingStateConnection");
         ServiceTemplateConfig serviceTemplate1 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.POWER_STATE_SERVICE).build();
@@ -611,7 +520,7 @@ public class DeviceRegistryTest {
         RotationType.Rotation rotation = RotationType.Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build();
         TranslationType.Translation translation = TranslationType.Translation.newBuilder().setX(0).setY(0).setZ(0).build();
         PoseType.Pose pose = PoseType.Pose.newBuilder().setRotation(rotation).setTranslation(translation).build();
-        ScopeType.Scope.Builder locationScope = ScopeType.Scope.newBuilder().addComponent(LOCATION_LABEL);
+        ScopeType.Scope.Builder locationScope = ScopeType.Scope.newBuilder().addComponent(LOCATION.getLabel());
         return PlacementConfig.newBuilder().setPosition(pose).setLocationId(LOCATION.getId()).build();
     }
 

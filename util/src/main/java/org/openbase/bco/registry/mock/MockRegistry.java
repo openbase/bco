@@ -634,4 +634,16 @@ public class MockRegistry {
     public static UnitConfig getLocation() {
         return paradiseLocation;
     }
+
+    public static DeviceRegistry getDeviceRegistry() {
+        return deviceRegistry;
+    }
+
+    public static UnitRegistry getUnitRegistry() {
+        return unitRegistry;
+    }
+
+    public static LocationRegistry getLocationRegistry() {
+        return locationRegistry;
+    }
 }

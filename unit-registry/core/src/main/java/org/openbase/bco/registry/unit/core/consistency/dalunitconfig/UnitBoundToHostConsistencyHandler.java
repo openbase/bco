@@ -61,7 +61,6 @@ public class UnitBoundToHostConsistencyHandler extends AbstractProtoBufRegistryC
         // Setup default bounding
         if (!dalUnitConfig.hasBoundToUnitHost()) {
             dalUnitConfig.setBoundToUnitHost(deviceUnitConfig.getBoundToUnitHost());
-            System.out.println("add BoundToUnitHost flag for " + dalUnitConfig.getLabel());
             modification = true;
         }
 
@@ -82,7 +81,7 @@ public class UnitBoundToHostConsistencyHandler extends AbstractProtoBufRegistryC
 
             if (!unitConfigCopy.getLabel().equals(dalUnitConfig)) {
                 if (dalUnitConfig.getLabel().equals(DeviceConfigUtils.generateDefaultUnitLabel(dalUnitConfig, deviceUnitConfig, deviceClass, hasDuplicatedUnitType))) {
-                    logger.debug("Update label of Unit["+dalUnitConfig.getLabel()+"] to " + unitConfigCopy.getLabel());
+                    logger.debug("Update label of Unit[" + dalUnitConfig.getLabel() + "] to " + unitConfigCopy.getLabel());
                     modification = modification || DeviceConfigUtils.setupUnitLabelByDeviceConfig(dalUnitConfig, deviceUnitConfig, deviceClass, hasDuplicatedUnitType);
                 }
             }
