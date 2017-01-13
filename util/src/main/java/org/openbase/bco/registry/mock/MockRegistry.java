@@ -374,10 +374,10 @@ public class MockRegistry {
 
                     logger.info("Register user...");
                     registerUser();
-                    
+
                     logger.info("Register agentClasses...");
                     registerAgentClasses();
-                    
+
                     logger.info("Register locations...");
                     registerLocations();
                     // TODO need to be implemented.

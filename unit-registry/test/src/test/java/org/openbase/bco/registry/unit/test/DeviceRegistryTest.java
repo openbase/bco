@@ -204,9 +204,16 @@ public class DeviceRegistryTest {
 
     @Before
     public void setUp() throws CouldNotPerformException {
-        unitRegistry.getDalUnitConfigRegistry().clear();
-        unitRegistry.getDeviceUnitConfigRegistry().clear();
-        deviceRegistry.getDeviceClassRegistry().clear();
+        System.out.println("\n CLEARING \n");
+        try {
+            unitRegistry.getDalUnitConfigRegistry().clear();
+            unitRegistry.getDeviceUnitConfigRegistry().clear();
+            deviceRegistry.getDeviceClassRegistry().clear();
+        } catch (CouldNotPerformException ex) {
+            System.out.println("COULD NOT CLEAR REGISTRIES...");
+            throw ex;
+        }
+        System.out.println("\n FINISHED CLEARING \n");
     }
 
     @After
@@ -222,6 +229,7 @@ public class DeviceRegistryTest {
      */
     @Test(timeout = 5000)
     public void testRegisterDeviceConfigWithUnits() throws Exception {
+        System.out.println("testRegisterDeviceConfigWithUnits");
         String productNumber = "ABCD-4321";
         String serialNumber = "1234-WXYZ";
         String company = "Fibaro";
@@ -253,6 +261,7 @@ public class DeviceRegistryTest {
      */
     @Test(timeout = 5000)
     public void testRegisteredDeviceConfigWithoutLabel() throws Exception {
+        System.out.println("testRegisteredDeviceConfigWithoutLabel");
         String productNumber = "KNHD-4321";
         String serialNumber = "112358";
         String company = "Company";
@@ -272,6 +281,7 @@ public class DeviceRegistryTest {
     // TODO: fix that the consisteny handling will work after this
     @Test(timeout = 5000)
     public void testRegisterTwoDevicesWithSameLabel() throws Exception {
+        System.out.println("testRegisterTwoDevicesWithSameLabel");
         String serialNumber1 = "FIRST_DEV";
         String serialNumber2 = "BAD_DEV";
         String deviceLabel = "SameLabelSameLocation";
@@ -295,6 +305,7 @@ public class DeviceRegistryTest {
 
     @Test(timeout = 5000)
     public void testUnitConfigUnitTemplateConsistencyHandler() throws Exception {
+        System.out.println("testUnitConfigUnitTemplateConsistencyHandler");
         ServiceTemplate batteryTemplate = ServiceTemplate.newBuilder().setType(ServiceType.BATTERY_STATE_SERVICE).build();
         ServiceTemplate colorTemplate = ServiceTemplate.newBuilder().setType(ServiceType.COLOR_STATE_SERVICE).build();
         UnitTemplate unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.COLORABLE_LIGHT);
@@ -338,6 +349,7 @@ public class DeviceRegistryTest {
 
     @Test//(timeout = 5000)
     public void testDeviceClassDeviceConfigUnitConsistencyHandler() throws Exception {
+        System.out.println("testDeviceClassDeviceConfigUnitConsistencyHandler");
         ServiceTemplateConfig serviceTemplate1 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.POWER_STATE_SERVICE).build();
         UnitTemplateConfig unitTemplateConfig1 = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).addServiceTemplateConfig(serviceTemplate1).build();
         ServiceTemplateConfig serviceTemplate2 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.BATTERY_STATE_SERVICE).build();
@@ -421,6 +433,7 @@ public class DeviceRegistryTest {
 
     @Test(timeout = 5000)
     public void testBoundToDeviceConsistencyHandler() throws Exception {
+        System.out.println("testBoundToDeviceConsistencyHandler");
         ServiceTemplateConfig serviceTemplate1 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.POWER_STATE_SERVICE).build();
         UnitTemplateConfig unitTemplateConfig1 = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).addServiceTemplateConfig(serviceTemplate1).build();
         UnitTemplate unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.LIGHT).toBuilder().addServiceTemplate(ServiceTemplate.newBuilder().setType(serviceTemplate1.getServiceType())).build();
@@ -460,6 +473,7 @@ public class DeviceRegistryTest {
      */
     @Test(timeout = 5000)
     public void testOwnerRemoval() throws Exception {
+        System.out.println("testOwnerRemoval");
         UserConfig userConfig = UserConfig.newBuilder().setUserName("owner").setFirstName("Max").setLastName("Mustermann").build();
         UnitConfig owner = unitRegistry.registerUnitConfig(UnitConfig.newBuilder().setType(UnitType.USER).setUserConfig(userConfig).setEnablingState(EnablingState.newBuilder().setValue(EnablingState.State.ENABLED)).build()).get();
 
@@ -486,6 +500,7 @@ public class DeviceRegistryTest {
 
     @Test//(timeout = 5000)
     public void testInventoryEnablingStateConnection() throws Exception {
+        System.out.println("testInventoryEnablingStateConnection");
         ServiceTemplateConfig serviceTemplate1 = ServiceTemplateConfig.newBuilder().setServiceType(ServiceType.POWER_STATE_SERVICE).build();
         UnitTemplateConfig unitTemplateConfig1 = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).addServiceTemplateConfig(serviceTemplate1).build();
         UnitTemplate unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.LIGHT).toBuilder().addServiceTemplate(ServiceTemplate.newBuilder().setType(serviceTemplate1.getServiceType())).build();
@@ -540,6 +555,7 @@ public class DeviceRegistryTest {
      */
     @Test(timeout = 5000)
     public void testLocationIdInInventoryState() throws Exception {
+        System.out.println("testLocationIdInInventoryState");
         DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("testLocationIdInInventoryState", "103721ggbdk12", "ServiceGMBH")).get();
         waitForDeviceClass(clazz);
 

@@ -21,6 +21,8 @@ package org.openbase.bco.registry.mock;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.ArrayList;
+import java.util.List;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -31,6 +33,7 @@ import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.schedule.Stopwatch;
 
 /**
  *
@@ -65,16 +68,23 @@ public class MockRegistryTest {
      */
     @Test(timeout = 60000)
     public void testMockRegistryCreation() throws InstantiationException, InterruptedException, CouldNotPerformException {
+        Stopwatch stopwatch = new Stopwatch();
+        List<Long> times = new ArrayList<>();
         System.out.println("testMockRegistryCreation");
         try {
-            for (int i = 0; i < 1; ++i) {
+            for (int i = 0; i < 10; ++i) {
                 System.out.println("start mock registry");
+                stopwatch.restart();
                 MockRegistryHolder.newMockRegistry();
                 System.out.println("shutdown mock registry");
                 MockRegistryHolder.shutdownMockRegistry();
+                times.add(stopwatch.stop());
             }
         } catch (InstantiationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, System.err);
+        }
+        for (Long time : times) {
+            System.out.println("Startup + Shutdown took: " + time + "ms");
         }
     }
 }
