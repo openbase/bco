@@ -232,15 +232,23 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
      * @throws CouldNotPerformException
      * @throws InterruptedException
      */
-    public void initUnit(final UnitRemote unitRemote) throws CouldNotPerformException, InterruptedException {
+    public void init(final UnitRemote unitRemote, final ServiceConfig serviceConfig) throws CouldNotPerformException, InterruptedException {
         if (this.unitRemote != null) {
             unitRemote.removeDataObserver(dataObserver);
             unitRemote.removeConnectionStateObserver(connectionStateObserver);
         }
         this.unitRemote = unitRemote;
+//        bindServiceConfig(serviceConfig);
+//        unitRemote.addDataObserver(dataObserver);
+//        unitRemote.addConnectionStateObserver(connectionStateObserver);
+//        unitRemote.waitForData();
+    }
+
+    public void initObserver() throws CouldNotPerformException, InterruptedException {
         unitRemote.addDataObserver(dataObserver);
         unitRemote.addConnectionStateObserver(connectionStateObserver);
         unitRemote.waitForData();
+        updateDynamicComponents();
     }
 
     /**
@@ -257,7 +265,7 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
                 throw new InvalidStateException("The unit remote is unknown!!");
             }
             setServiceConfig(serviceConfig);
-            updateDynamicComponents();
+//            updateDynamicComponents();
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not bind ServiceConfig[" + serviceConfig.getServiceTemplate().getType() + "] on UnitRemote[" + unitRemote.getScope() + "]!", ex);
         }

@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.swing.DefaultComboBoxModel;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
@@ -79,6 +80,8 @@ public class SelectorPanel extends javax.swing.JPanel {
 
     private Future currentTask;
 
+    private final ReentrantReadWriteLock updateComponentLock;
+
     /**
      * Creates new form SelectorPanel
      *
@@ -92,6 +95,7 @@ public class SelectorPanel extends javax.swing.JPanel {
             this.initDynamicComponents();
             this.unitRegistryRemote = new UnitRegistryRemote();
             this.locationRegistryRemote = new LocationRegistryRemote();
+            this.updateComponentLock = new ReentrantReadWriteLock();
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -165,6 +169,7 @@ public class SelectorPanel extends javax.swing.JPanel {
     private synchronized void updateDynamicComponents() {
         MultiException.ExceptionStack exceptionStack = null;
 
+        updateComponentLock.writeLock().lock();
         try {
             if (!init) {
                 return;
@@ -266,9 +271,12 @@ public class SelectorPanel extends javax.swing.JPanel {
                 unitConfigComboBox.setEnabled(false);
                 throw ex;
             }
+            updateRemotePanel();
             MultiException.checkAndThrow("Could not acquire all informations!", exceptionStack);
         } catch (CouldNotPerformException | NullPointerException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update all dynamic components!", ex), logger);
+        } finally {
+            updateComponentLock.writeLock().unlock();
         }
     }
 
@@ -294,40 +302,44 @@ public class SelectorPanel extends javax.swing.JPanel {
     private UnitConfig loadedUnitConfig;
 
     private synchronized void updateRemotePanel() {
-        try {
-            final UnitConfigHolder unitConfigHolder = (UnitConfigHolder) unitConfigComboBox.getSelectedItem();
+        if (updateComponentLock.writeLock().tryLock()) {
+            try {
+                final UnitConfigHolder unitConfigHolder = (UnitConfigHolder) unitConfigComboBox.getSelectedItem();
 
-            if (unitConfigHolder == null) {
-                // no config available.
-                return;
-            }
-
-            final UnitConfig selectedUnitConfig = unitConfigHolder.getConfig();
-
-            if (loadedUnitConfig == selectedUnitConfig) {
-                // selection has not been changed.
-                return;
-            }
-            statusPanel.setStatus("Load new remote control " + unitConfigHolder + "...", StatusPanel.StatusType.INFO, executeSingleTask(new Callable<Void>() {
-
-                @Override
-                public Void call() throws Exception {
-                    try {
-                        unitConfigComboBox.setForeground(Color.BLACK);
-                        unitConfigObservable.notifyObservers(selectedUnitConfig);
-                        scopeTextField.setText(ScopeGenerator.generateStringRep(selectedUnitConfig.getScope()));
-                    } catch (MultiException ex) {
-                        unitConfigComboBox.setForeground(Color.RED);
-                        statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger));
-                    }
-                    updateButtonStates();
-                    return null;
+                if (unitConfigHolder == null) {
+                    // no config available.
+                    return;
                 }
-            }));
 
-            loadedUnitConfig = selectedUnitConfig;
-        } catch (Exception ex) {
-            statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not update remote panel!", ex), logger));
+                final UnitConfig selectedUnitConfig = unitConfigHolder.getConfig();
+
+                if (loadedUnitConfig == selectedUnitConfig) {
+                    // selection has not been changed.
+                    return;
+                }
+                statusPanel.setStatus("Load new remote control " + unitConfigHolder + "...", StatusPanel.StatusType.INFO, executeSingleTask(new Callable<Void>() {
+
+                    @Override
+                    public Void call() throws Exception {
+                        try {
+                            unitConfigComboBox.setForeground(Color.BLACK);
+                            unitConfigObservable.notifyObservers(selectedUnitConfig);
+                            scopeTextField.setText(ScopeGenerator.generateStringRep(selectedUnitConfig.getScope()));
+                        } catch (MultiException ex) {
+                            unitConfigComboBox.setForeground(Color.RED);
+                            statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger));
+                        }
+                        updateButtonStates();
+                        return null;
+                    }
+                }));
+
+                loadedUnitConfig = selectedUnitConfig;
+            } catch (Exception ex) {
+                statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not update remote panel!", ex), logger));
+            } finally {
+                updateComponentLock.writeLock().unlock();
+            }
         }
     }
 
