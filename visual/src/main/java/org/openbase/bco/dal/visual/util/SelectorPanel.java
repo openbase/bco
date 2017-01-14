@@ -27,6 +27,7 @@ import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
@@ -288,7 +289,11 @@ public class SelectorPanel extends javax.swing.JPanel {
                 }
             }
         }
-        throw new NotAvailableException("Could not detect unit type for Scope[" + ScopeGenerator.generateStringRep(scope) + "]!");
+        try {
+            throw new NotAvailableException("Could not detect unit type for Scope[" + ScopeGenerator.generateStringRep(scope) + "]!");
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Could not detect unit type!");
+        }
     }
 
     public void addObserver(Observer<UnitConfig> observer) {
@@ -704,7 +709,7 @@ public class SelectorPanel extends javax.swing.JPanel {
 
         try {
             changes = !ScopeGenerator.generateStringRep(unitConfigObservable.getValue().getScope()).equals(text);
-        } catch (NotAvailableException ex) {
+        } catch (CouldNotPerformException ex) {
             changes = !scopeTextField.getText().isEmpty();
         }
 

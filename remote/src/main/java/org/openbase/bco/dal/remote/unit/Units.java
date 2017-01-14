@@ -24,6 +24,7 @@ package org.openbase.bco.dal.remote.unit;
 import com.google.protobuf.GeneratedMessage;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import java.util.logging.Level;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -329,7 +330,11 @@ public class Units {
             }
             return getUnit(getUnitRegistry().getUnitConfigByScope(scope), waitForData);
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Unit[" + ScopeGenerator.generateStringRep(scope) + "]", ex);
+            try {
+                throw new NotAvailableException("Unit[" + ScopeGenerator.generateStringRep(scope) + "]", ex);
+            } catch (CouldNotPerformException ex1) {
+               throw new NotAvailableException("Unit[?]", ex);
+            }
         }
     }
 
