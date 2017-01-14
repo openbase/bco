@@ -23,6 +23,7 @@ package org.openbase.bco.manager.scene.visual;
  */
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
 import org.openbase.bco.dal.visual.util.StatusPanel;
@@ -304,7 +305,11 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
                 }
             }
         }
-        throw new NotAvailableException("Could not detect unit type for Scope[" + ScopeGenerator.generateStringRep(scope) + "]!");
+        try {
+            throw new NotAvailableException("Could not detect unit type for Scope[" + ScopeGenerator.generateStringRep(scope) + "]!");
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Could not detect unit type!");
+        }
     }
 
     public void addObserver(Observer<UnitConfigServiceTypeHolder> observer) {
