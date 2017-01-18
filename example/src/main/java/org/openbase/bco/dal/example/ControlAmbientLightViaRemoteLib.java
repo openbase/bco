@@ -21,13 +21,12 @@ package org.openbase.bco.dal.example;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import java.awt.Color;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import java.awt.Color;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
@@ -80,7 +79,7 @@ public class ControlAmbientLightViaRemoteLib {
 
         try {
             new ControlAmbientLightViaRemoteLib().notifyAlarm();
-        } catch(CouldNotPerformException | InterruptedException ex) {
+        } catch (CouldNotPerformException | InterruptedException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }
     }

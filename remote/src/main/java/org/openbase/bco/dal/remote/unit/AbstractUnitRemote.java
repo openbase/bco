@@ -44,7 +44,6 @@ import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
-import rst.domotic.unit.location.LocationConfigType.LocationConfig;
 import rst.rsb.ScopeType;
 
 /**
