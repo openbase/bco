@@ -31,6 +31,7 @@ import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.timing.TimestampType.Timestamp;
 
+// TODO pleminoq: This seems to cause in problems because units using this service in different ways.
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
