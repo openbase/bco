@@ -174,6 +174,10 @@ public class LocationUtils {
                 throw new NotAvailableException("placementConfig.locationId");
             }
 
+            if (locationUnit.getLocationConfig().getRoot()) {
+                return LocationType.ZONE;
+            }
+
             LocationType parentLocationType = locationRegistry.get(locationUnit.getPlacementConfig().getLocationId()).getMessage().getLocationConfig().getType();
             Set<LocationType> childLocationTypes = new HashSet<>();
             for (String childId : locationUnit.getLocationConfig().getChildIdList()) {
@@ -197,7 +201,7 @@ public class LocationUtils {
      * @return the type locationUnit should have
      * @throws CouldNotPerformException if the type is ambiguous
      */
-    public static LocationType detectLocationType(LocationType parentLocationType, Set<LocationType> childLocationTypes) throws CouldNotPerformException {
+    private static LocationType detectLocationType(LocationType parentLocationType, Set<LocationType> childLocationTypes) throws CouldNotPerformException {
         // if the parent is a region or tile than the location has to be a region
         if (parentLocationType == LocationType.REGION || parentLocationType == LocationType.TILE) {
             return LocationType.REGION;

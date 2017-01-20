@@ -406,9 +406,14 @@ public class LocationRegistryTest {
         String tile1Label = "RealTile1";
         String tile2Label = "RealTile2";
         UnitConfig root = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.ZONE).setLabel(rootLabel).build()).get();
-        UnitConfig noTile = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.REGION).setLabel(noTileLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build()).get();
         UnitConfig tile1 = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.TILE).setLabel(tile1Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build()).get();
         UnitConfig tile2 = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.TILE).setLabel(tile2Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build()).get();
+        UnitConfig noTile = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.REGION).setLabel(noTileLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build()).get();
+
+        System.out.println("Locations: ");
+        for (UnitConfig location : unitRegistry.getLocationUnitConfigRegistry().getMessages()) {
+            System.out.println(location.getLocationConfig().getType() + ", " + location.getLabel());
+        }
 
         String connectionFailLabel = "ConnectionFail";
         String connectionLabel = "TilesTestConnection";
