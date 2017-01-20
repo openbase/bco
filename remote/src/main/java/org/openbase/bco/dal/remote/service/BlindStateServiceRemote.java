@@ -22,13 +22,16 @@ package org.openbase.bco.dal.remote.service;
  * #L%
  */
 import java.util.Collection;
+import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.collection.BlindStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.timing.TimestampType.Timestamp;
 
 /**
@@ -47,8 +50,7 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
     }
 
     /**
-     * {@inheritDoc}
-     * Computes the average opening ratio and the movement state which appears the most.
+     * {@inheritDoc} Computes the average opening ratio and the movement state which appears the most.
      *
      * @return
      * @throws CouldNotPerformException {@inheritDoc}
@@ -94,5 +96,15 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
     @Override
     public BlindState getBlindState() throws NotAvailableException {
         return getServiceState();
+    }
+
+    @Override
+    public Future<Void> setBlindState(BlindState state) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.allOf((BlindStateOperationService input) -> input.setBlindState(state), getBlindStateOperationServices());
+    }
+
+    @Override
+    public Future<Void> setBlindState(BlindState state, UnitType unitType) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.allOf((BlindStateOperationService input) -> input.setBlindState(state), getServices(unitType));
     }
 }
