@@ -32,8 +32,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
-import org.openbase.bco.dal.remote.unit.UnitRemoteFactory;
-import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
+import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.MultiException;
@@ -68,7 +67,6 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     private final ServiceType serviceType;
     private final Map<String, UnitRemote> unitRemoteMap;
     private final Map<String, S> serviceMap;
-    private UnitRemoteFactory factory = UnitRemoteFactoryImpl.getInstance();
     private ST serviceState;
     private final Observer dataObserver;
     protected final ObservableImpl<ST> serviceStateObservable = new ObservableImpl<>();
@@ -153,7 +151,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                 throw new NotSupportedException("UnitTemplate[" + serviceType.name() + "]", config.getLabel());
             }
 
-            UnitRemote remote = factory.newInitializedInstance(config);
+            UnitRemote remote = Units.getUnit(config, false);
             try {
                 serviceMap.put(config.getId(), (S) remote);
             } catch (ClassCastException ex) {
@@ -260,22 +258,15 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         return unitRemoteMap.values().stream().allMatch((remote) -> (remote.isActive()));
     }
 
-    /**
-     * Returns the internal service factory which is used for the instance creation.
-     *
-     * @return the internal service factory.
-     */
-    public UnitRemoteFactory getFactory() {
-        return factory;
-    }
-
-    /**
-     * Set the internal service factory which will be used for the instance creation.
-     *
-     * @param factory the service factory.
-     */
-    public void setFactory(final UnitRemoteFactory factory) {
-        this.factory = factory;
+    public void removeUnit(UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
+        UnitRemote unitRemote = unitRemoteMap.get(unitConfig.getId());
+        try {
+            unitRemote.removeDataObserver(dataObserver);
+            unitRemote.deactivate();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not deactivate unitRemote", ex);
+        }
+        unitRemoteMap.remove(unitConfig.getId());
     }
 
     /**
