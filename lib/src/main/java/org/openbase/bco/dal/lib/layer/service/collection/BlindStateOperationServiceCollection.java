@@ -35,7 +35,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public interface BlindStateOperationServiceCollection extends BlindStateOperationService {
 
-    public Future<Void> setBlindState(BlindState blindState, UnitType unitType) throws CouldNotPerformException;
+    public Future<Void> setBlindState(final BlindState blindState, final UnitType unitType) throws CouldNotPerformException;
     
     /**
      * Returns up if all shutter services are up and else the from up differing
@@ -46,6 +46,14 @@ public interface BlindStateOperationServiceCollection extends BlindStateOperatio
      */
     @Override
     public BlindState getBlindState() throws NotAvailableException;
-
-    public Collection<BlindStateOperationService> getBlindStateOperationServices() throws CouldNotPerformException;
+    
+    /**
+     * Returns up if all shutter services of the given unit type are up and else the from up differing
+     * state of the first shutter.
+     *
+     * @param unitType the unit type to filter the result.
+     * @return
+     * @throws NotAvailableException
+     */
+    public BlindState getBlindState(final UnitType unitType) throws NotAvailableException;
 }

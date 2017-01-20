@@ -44,7 +44,6 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
         super(ServiceType.BLIND_STATE_SERVICE);
     }
 
-    @Override
     public Collection<BlindStateOperationService> getBlindStateOperationServices() {
         return getServices();
     }
@@ -57,6 +56,16 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
      */
     @Override
     protected BlindState computeServiceState() throws CouldNotPerformException {
+        return getBlindState(UnitType.UNKNOWN);
+    }
+
+    @Override
+    public BlindState getBlindState() throws NotAvailableException {
+        return getServiceState();
+    }
+
+    @Override
+    public BlindState getBlindState(UnitType unitType) throws NotAvailableException {
         int serviceNumber = getBlindStateOperationServices().size(), stop = 0, down = 0, up = 0;
         float openingRatioAverage = 0;
         for (BlindStateOperationService service : getBlindStateOperationServices()) {
@@ -94,17 +103,12 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
     }
 
     @Override
-    public BlindState getBlindState() throws NotAvailableException {
-        return getServiceState();
-    }
-
-    @Override
-    public Future<Void> setBlindState(BlindState state) throws CouldNotPerformException {
+    public Future<Void> setBlindState(final BlindState state) throws CouldNotPerformException {
         return GlobalCachedExecutorService.allOf((BlindStateOperationService input) -> input.setBlindState(state), super.getServices());
     }
 
     @Override
-    public Future<Void> setBlindState(BlindState state, UnitType unitType) throws CouldNotPerformException {
+    public Future<Void> setBlindState(final BlindState state, final UnitType unitType) throws CouldNotPerformException {
         return GlobalCachedExecutorService.allOf((BlindStateOperationService input) -> input.setBlindState(state), super.getServices(unitType));
     }
 }

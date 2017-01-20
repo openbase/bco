@@ -44,7 +44,6 @@ public class ActivationStateServiceRemote extends AbstractServiceRemote<Activati
         super(ServiceType.ACTIVATION_STATE_SERVICE);
     }
 
-    @Override
     public Collection<ActivationStateOperationService> getActivationStateOperationServices() {
         return getServices();
     }
@@ -57,9 +56,19 @@ public class ActivationStateServiceRemote extends AbstractServiceRemote<Activati
      */
     @Override
     protected ActivationState computeServiceState() throws CouldNotPerformException {
+        getActivationState(UnitType.UNKNOWN);
+    }
+
+    @Override
+    public ActivationState getActivationState() throws NotAvailableException {
+        return getServiceState();
+    }
+    
+    @Override
+    public ActivationState getActivationState(final UnitType unitType) throws NotAvailableException {
         ActivationState.State activationStateValue = ActivationState.State.DEACTIVE;
         try {
-            for (ActivationStateOperationService service : getActivationStateOperationServices()) {
+            for (ActivationStateOperationService service : getServices(unitType)) {
                 if (!((UnitRemote) service).isDataAvailable()) {
                     continue;
                 }
@@ -72,11 +81,6 @@ public class ActivationStateServiceRemote extends AbstractServiceRemote<Activati
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("ActivationState", ex);
         }
-    }
-
-    @Override
-    public ActivationState getActivationState() throws NotAvailableException {
-        return getServiceState();
     }
 
     @Override

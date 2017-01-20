@@ -45,6 +45,13 @@ public interface ActivationStateOperationServiceCollection extends ActivationSta
      */
     @Override
     public ActivationState getActivationState() throws NotAvailableException;
-
-    public Collection<ActivationStateOperationService> getActivationStateOperationServices() throws CouldNotPerformException;
+    
+    /**
+     * Returns on if at least one of the power services is on and else off.
+     *
+     * @param unitType the unit type to filter.
+     * @return
+     * @throws NotAvailableException
+     */
+    public ActivationState getActivationState(final UnitType unitType) throws NotAvailableException;
 }

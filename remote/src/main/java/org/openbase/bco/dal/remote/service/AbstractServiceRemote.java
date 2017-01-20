@@ -280,6 +280,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * @return a collection of unit remotes limited to the service interface.
      */
     public Collection<S> getServices(final UnitType unitType) {
+        if(unitType == UnitType.UNKNOWN) {
+            return Collections.unmodifiableCollection(serviceMap.values());
+        }
         return Collections.unmodifiableCollection(unitRemoteTypeMap.get(unitType));
     }
 
