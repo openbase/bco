@@ -65,6 +65,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
+    private boolean active;
     private final ServiceType serviceType;
     private final Map<String, UnitRemote> unitRemoteMap;
     private final Map<UnitType, List<S>> unitRemoteTypeMap;
@@ -160,7 +161,6 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                 unitRemoteTypeMap.put(remote.getType(), new ArrayList());
             }
 
-            
             try {
                 serviceMap.put(config.getId(), (S) remote);
                 unitRemoteTypeMap.get(remote.getType()).add((S) remote);
@@ -209,19 +209,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      */
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        try {
-            MultiException.ExceptionStack exceptionStack = null;
-            for (UnitRemote remote : unitRemoteMap.values()) {
-                try {
-                    remote.addDataObserver(dataObserver);
-                    remote.activate();
-                } catch (CouldNotPerformException ex) {
-                    exceptionStack = MultiException.push(remote, ex, exceptionStack);
-                }
-            }
-            MultiException.checkAndThrow("Could not activate all internal service units!", exceptionStack);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not activate service remote!", ex);
+        active = true;
+        for (UnitRemote remote : unitRemoteMap.values()) {
+            remote.addDataObserver(dataObserver);
         }
     }
 
@@ -233,16 +223,10 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      */
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        MultiException.ExceptionStack exceptionStack = null;
+        active = false;
         for (UnitRemote remote : unitRemoteMap.values()) {
             remote.removeDataObserver(dataObserver);
-            try {
-                remote.deactivate();
-            } catch (CouldNotPerformException ex) {
-                exceptionStack = MultiException.push(remote, ex, exceptionStack);
-            }
         }
-        MultiException.checkAndThrow("Could not deactivate all service units!", exceptionStack);
     }
 
     /**
@@ -264,17 +248,11 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      */
     @Override
     public boolean isActive() {
-        return unitRemoteMap.values().stream().allMatch((remote) -> (remote.isActive()));
+        return active;
     }
 
     public void removeUnit(UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
-        UnitRemote unitRemote = unitRemoteMap.get(unitConfig.getId());
-        try {
-            unitRemote.removeDataObserver(dataObserver);
-            unitRemote.deactivate();
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not deactivate unitRemote", ex);
-        }
+        unitRemoteMap.get(unitConfig.getId()).removeDataObserver(dataObserver);
         unitRemoteMap.remove(unitConfig.getId());
     }
 
@@ -358,7 +336,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     public void waitForData(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
         //todo reimplement with respect to the given timeout.
         for (UnitRemote remote : unitRemoteMap.values()) {
-            waitForData(timeout, timeUnit);
+            remote.waitForData(timeout, timeUnit);
         }
         serviceStateObservable.waitForValue(timeout, timeUnit);
     }
