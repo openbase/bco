@@ -22,13 +22,16 @@ package org.openbase.bco.dal.remote.service;
  * #L%
  */
 import java.util.Collection;
+import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.collection.ActivationStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.timing.TimestampType.Timestamp;
 
 /**
@@ -38,7 +41,7 @@ import rst.timing.TimestampType.Timestamp;
 public class ActivationStateServiceRemote extends AbstractServiceRemote<ActivationStateOperationService, ActivationState> implements ActivationStateOperationServiceCollection {
 
     public ActivationStateServiceRemote() {
-        super(ServiceType.  ACTIVATION_STATE_SERVICE);
+        super(ServiceType.ACTIVATION_STATE_SERVICE);
     }
 
     @Override
@@ -47,8 +50,7 @@ public class ActivationStateServiceRemote extends AbstractServiceRemote<Activati
     }
 
     /**
-     * {@inheritDoc}
-     * Computes the activation state as on if at least one underlying service is on and else off.
+     * {@inheritDoc} Computes the activation state as on if at least one underlying service is on and else off.
      *
      * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
@@ -56,21 +58,34 @@ public class ActivationStateServiceRemote extends AbstractServiceRemote<Activati
     @Override
     protected ActivationState computeServiceState() throws CouldNotPerformException {
         ActivationState.State activationStateValue = ActivationState.State.DEACTIVE;
-        for (ActivationStateOperationService service : getActivationStateOperationServices()) {
-            if (!((UnitRemote) service).isDataAvailable()) {
-                continue;
-            }
+        try {
+            for (ActivationStateOperationService service : getActivationStateOperationServices()) {
+                if (!((UnitRemote) service).isDataAvailable()) {
+                    continue;
+                }
 
-            if (service.getActivationState().getValue() == ActivationState.State.ACTIVE) {
-                activationStateValue = ActivationState.State.ACTIVE;
+                if (service.getActivationState().getValue() == ActivationState.State.ACTIVE) {
+                    activationStateValue = ActivationState.State.ACTIVE;
+                }
             }
+            return ActivationState.newBuilder().setValue(activationStateValue).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("ActivationState", ex);
         }
-
-        return ActivationState.newBuilder().setValue(activationStateValue).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
     }
 
     @Override
     public ActivationState getActivationState() throws NotAvailableException {
         return getServiceState();
+    }
+
+    @Override
+    public Future<Void> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.allOf((ActivationStateOperationService input) -> input.setActivationState(activationState), super.getServices());
+    }
+
+    @Override
+    public Future<Void> setActivationState(final ActivationState activationState, final UnitType unitType) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.allOf((ActivationStateOperationService input) -> input.setActivationState(activationState), super.getServices(unitType));
     }
 }
