@@ -32,6 +32,6 @@ import rst.domotic.state.BlindStateType.BlindState;
  */
 public interface BlindStateOperationService extends OperationService, BlindStateProviderService {
 
-    public Future<Void> setBlindState(BlindState blindState) throws CouldNotPerformException;
+    public Future<Void> setBlindState(final BlindState blindState) throws CouldNotPerformException;
 
 }

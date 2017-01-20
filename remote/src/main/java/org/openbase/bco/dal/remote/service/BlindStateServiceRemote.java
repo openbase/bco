@@ -100,11 +100,11 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
 
     @Override
     public Future<Void> setBlindState(BlindState state) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf((BlindStateOperationService input) -> input.setBlindState(state), getBlindStateOperationServices());
+        return GlobalCachedExecutorService.allOf((BlindStateOperationService input) -> input.setBlindState(state), super.getServices());
     }
 
     @Override
     public Future<Void> setBlindState(BlindState state, UnitType unitType) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf((BlindStateOperationService input) -> input.setBlindState(state), getServices(unitType));
+        return GlobalCachedExecutorService.allOf((BlindStateOperationService input) -> input.setBlindState(state), super.getServices(unitType));
     }
 }
