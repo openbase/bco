@@ -60,43 +60,43 @@ import rst.spatial.PlacementConfigType.PlacementConfig;
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class VirtualRegistrySyncTest {
-
+    
     private static final Logger LOGGER = LoggerFactory.getLogger(VirtualRegistrySyncTest.class);
-
+    
     private static final String ROOT_LOCATION_LABEL = "syncTestRoot";
     private static UnitConfig ROOT_LOCATION;
-
+    
     private static final String DEVICE_CLASS_LABEL = "syncTestDeviceClass";
     private static final String DEVICE_CLASS_COMPANY = "syncTestCompany";
     private static final String DEVICE_CLASS_PRODUCT_NUMBER = "12344321";
     private static DeviceClass DEVICE_CLASS;
-
+    
     private static DeviceRegistryController deviceRegistry;
     private static UnitRegistryController unitRegistry;
     private static AppRegistryController appRegistry;
     private static AgentRegistryController agentRegistry;
-
+    
     private static LocationRegistryController locationRegistry;
-
+    
     @BeforeClass
     public static void setUpClass() throws InstantiationException, InitializationException, IOException, InvalidStateException, JPServiceException, InterruptedException, CouldNotPerformException, ExecutionException {
         try {
             JPService.setupJUnitTestMode();
-
+            
             deviceRegistry = new DeviceRegistryController();
             unitRegistry = new UnitRegistryController();
             appRegistry = new AppRegistryController();
             agentRegistry = new AgentRegistryController();
             locationRegistry = new LocationRegistryController();
-
+            
             deviceRegistry.init();
             unitRegistry.init();
             appRegistry.init();
             agentRegistry.init();
             locationRegistry.init();
-
+            
             Thread deviceRegistryThread = new Thread(new Runnable() {
-
+                
                 @Override
                 public void run() {
                     try {
@@ -106,9 +106,9 @@ public class VirtualRegistrySyncTest {
                     }
                 }
             });
-
+            
             Thread unitRegistryThread = new Thread(new Runnable() {
-
+                
                 @Override
                 public void run() {
                     try {
@@ -118,9 +118,9 @@ public class VirtualRegistrySyncTest {
                     }
                 }
             });
-
+            
             Thread appRegistryThread = new Thread(new Runnable() {
-
+                
                 @Override
                 public void run() {
                     try {
@@ -130,9 +130,9 @@ public class VirtualRegistrySyncTest {
                     }
                 }
             });
-
+            
             Thread agentRegistryThread = new Thread(new Runnable() {
-
+                
                 @Override
                 public void run() {
                     try {
@@ -142,9 +142,9 @@ public class VirtualRegistrySyncTest {
                     }
                 }
             });
-
+            
             Thread locationRegistryThread = new Thread(new Runnable() {
-
+                
                 @Override
                 public void run() {
                     try {
@@ -154,23 +154,23 @@ public class VirtualRegistrySyncTest {
                     }
                 }
             });
-
+            
             deviceRegistryThread.start();
             unitRegistryThread.start();
             appRegistryThread.start();
             agentRegistryThread.start();
             locationRegistryThread.start();
-
+            
             deviceRegistryThread.join();
             unitRegistryThread.join();
             appRegistryThread.join();
             agentRegistryThread.join();
             locationRegistryThread.join();
-
-            LocationConfig rootLocationConfig = LocationConfig.newBuilder().setRoot(true).build();
+            
+            LocationConfig rootLocationConfig = LocationConfig.newBuilder().setRoot(true).setType(LocationConfig.LocationType.ZONE).build();
             ROOT_LOCATION = locationRegistry.registerLocationConfig(UnitConfig.newBuilder().setLabel(ROOT_LOCATION_LABEL).setType(UnitType.LOCATION).setLocationConfig(rootLocationConfig).build()).get();
             DEVICE_CLASS = deviceRegistry.registerDeviceClass(DeviceClass.newBuilder().setLabel(DEVICE_CLASS_LABEL).setCompany(DEVICE_CLASS_COMPANY).setProductNumber(DEVICE_CLASS_PRODUCT_NUMBER).build()).get();
-
+            
             while (!unitRegistry.getDeviceRegistryRemote().containsDeviceClass(DEVICE_CLASS)) {
                 Thread.sleep(50);
             }
@@ -178,7 +178,7 @@ public class VirtualRegistrySyncTest {
             ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
     }
-
+    
     @AfterClass
     public static void tearDownClass() {
         try {
@@ -201,26 +201,26 @@ public class VirtualRegistrySyncTest {
             ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
     }
-
+    
     private DeviceConfig deviceConfig = DeviceConfig.getDefaultInstance();
     private UnitConfig deviceUnitConfig = UnitConfig.getDefaultInstance();
-
+    
     private final Stopwatch deviceStopWatch = new Stopwatch();
     private final Stopwatch locationStopWatch = new Stopwatch();
-
+    
     private final SyncObject DEVICE_LOCK = new SyncObject("deviceRegistryLock");
     private final SyncObject LOCATION_LOCK = new SyncObject("locationRegistryLock");
-
+    
     @Test(timeout = 5000)
     public void testVirtualRegistrySync() throws Exception {
         Stopwatch stopwatch = new Stopwatch();
         stopwatch.start();
         PlacementConfig rootPlacement = PlacementConfig.newBuilder().setLocationId(ROOT_LOCATION.getId()).build();
         InventoryState inventoryState = InventoryState.newBuilder().setValue(InventoryState.State.INSTALLED).build();
-
+        
         String label = "syncTestDevice - ";
         String serialNumber = "0000-";
-
+        
         final Observer deviceRegistryObserver = (Observer<DeviceRegistryData>) (Observable<DeviceRegistryData> source, DeviceRegistryData data) -> {
             synchronized (DEVICE_LOCK) {
                 DEVICE_LOCK.notifyAll();
@@ -228,7 +228,7 @@ public class VirtualRegistrySyncTest {
         };
         deviceRegistry.addDataObserver(deviceRegistryObserver);
         Thread waitForDeviceUpdateThread;
-
+        
         final Observer locationRegistryObserver = (Observer<LocationRegistryData>) (Observable<LocationRegistryData> source, LocationRegistryData data) -> {
             synchronized (LOCATION_LOCK) {
                 LOCATION_LOCK.notifyAll();
@@ -236,20 +236,20 @@ public class VirtualRegistrySyncTest {
         };
         locationRegistry.addDataObserver(locationRegistryObserver);
         Thread waitForLocationUpdateThread;
-
+        
         for (int i = 0; i < 10; ++i) {
             waitForDeviceUpdateThread = getDeviceThread();
             waitForLocationUpdateThread = getLocationThread();
-
+            
             deviceConfig = DeviceConfig.newBuilder().setDeviceClassId(DEVICE_CLASS.getId()).setSerialNumber(serialNumber + i).setInventoryState(inventoryState).build();
             deviceUnitConfig = UnitConfig.newBuilder().setType(UnitType.DEVICE).setLabel(label + i).setPlacementConfig(rootPlacement).setDeviceConfig(deviceConfig).build();
-
+            
             waitForDeviceUpdateThread.start();
             waitForLocationUpdateThread.start();
-
+            
             deviceStopWatch.restart();
             locationStopWatch.restart();
-
+            
             try {
                 if ((i % 2) == 0) {
                     deviceUnitConfig = unitRegistry.registerUnitConfig(deviceUnitConfig).get();
@@ -259,25 +259,25 @@ public class VirtualRegistrySyncTest {
             } catch (ExecutionException ex) {
                 throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
             }
-
+            
             waitForDeviceUpdateThread.join();
             waitForLocationUpdateThread.join();
-
+            
             LOGGER.info(deviceStopWatch.getTime() + " ms until device[" + deviceUnitConfig.getLabel() + "] registered in deviceRegistry!");
             LOGGER.info(locationStopWatch.getTime() + " ms until device[" + deviceUnitConfig.getLabel() + "] registered in root location!");
         }
-
+        
         deviceRegistry.removeDataObserver(deviceRegistryObserver);
         locationRegistry.removeDataObserver(locationRegistryObserver);
     }
-
+    
     private Thread getDeviceThread() {
         return new Thread(new Runnable() {
-
+            
             @Override
             public void run() {
                 synchronized (DEVICE_LOCK) {
-
+                    
                     try {
                         while (!deviceUnitConfig.hasId() && !containsByLabel(new ArrayList<>(deviceRegistry.getDeviceConfigs()))) {
                             DEVICE_LOCK.wait();
@@ -290,14 +290,14 @@ public class VirtualRegistrySyncTest {
             }
         });
     }
-
+    
     private boolean containsByLabel(final List<UnitConfig> deviceUnitConfigList) {
         return deviceUnitConfigList.stream().anyMatch((unitConfig) -> (unitConfig.getLabel().equals(deviceUnitConfig.getLabel())));
     }
-
+    
     private Thread getLocationThread() {
         return new Thread(new Runnable() {
-
+            
             @Override
             public void run() {
                 try {

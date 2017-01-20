@@ -23,7 +23,9 @@ package org.openbase.bco.registry.lib.util;
  */
 import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -31,7 +33,9 @@ import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.ConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
 import rst.spatial.PlacementConfigType;
 
 /**
@@ -148,5 +152,70 @@ public class LocationUtils {
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not compute root location!", ex);
         }
+    }
+
+    /**
+     * Detect the type of a location.
+     * Since a location, except the root location, always has a parent the only ambiguous case
+     * is when the parent is a zone but no children are defined. Than the location can either be
+     * a zone or a tile. In this case an exception is thrown.
+     *
+     * @param locationUnit the location of which the type is detected
+     * @param locationRegistry the location registry
+     * @return the type locationUnit should have
+     * @throws CouldNotPerformException if the type is ambiguous
+     */
+    public static LocationType detectLocationType(UnitConfig locationUnit, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> locationRegistry) throws CouldNotPerformException {
+        try {
+            if (!locationUnit.hasPlacementConfig()) {
+                throw new NotAvailableException("placementConfig");
+            }
+            if (!locationUnit.getPlacementConfig().hasLocationId() || locationUnit.getPlacementConfig().getLocationId().isEmpty()) {
+                throw new NotAvailableException("placementConfig.locationId");
+            }
+
+            LocationType parentLocationType = locationRegistry.get(locationUnit.getPlacementConfig().getLocationId()).getMessage().getLocationConfig().getType();
+            Set<LocationType> childLocationTypes = new HashSet<>();
+            for (String childId : locationUnit.getLocationConfig().getChildIdList()) {
+                childLocationTypes.add(locationRegistry.get(childId).getMessage().getLocationConfig().getType());
+            }
+
+            return detectLocationType(parentLocationType, childLocationTypes);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not detect Type for location [" + locationUnit.getLabel() + "]", ex);
+        }
+    }
+
+    /**
+     * Detect the type of a location.
+     * Since a location, except the root location, always has a parent the only ambiguous case
+     * is when the parent is a zone but no children are defined. Than the location can either be
+     * a zone or a tile. In this case an exception is thrown.
+     *
+     * @param parentLocationType the type of the parent location of the location whose type is detected
+     * @param childLocationTypes a set of all immediate child types of the location whose type is detected
+     * @return the type locationUnit should have
+     * @throws CouldNotPerformException if the type is ambiguous
+     */
+    public static LocationType detectLocationType(LocationType parentLocationType, Set<LocationType> childLocationTypes) throws CouldNotPerformException {
+        // if the parent is a region or tile than the location has to be a region
+        if (parentLocationType == LocationType.REGION || parentLocationType == LocationType.TILE) {
+            return LocationType.REGION;
+        }
+
+        // if one child is a zone or a tile the location has to be a zone
+        if (childLocationTypes.contains(LocationType.ZONE) || childLocationTypes.contains(LocationType.TILE)) {
+            return LocationType.ZONE;
+        }
+
+        // if the parent is a zone and a child is a region than the location has to be a tile
+        if (parentLocationType == LocationType.ZONE && childLocationTypes.contains(LocationType.REGION)) {
+            return LocationType.TILE;
+        }
+
+        // if the parent type is a zone but no childs are defined the location could be a tile or a zone which leaves the type undefined
+        String childTypes = "";
+        childTypes = "[ " + childLocationTypes.stream().map((locationType) -> locationType.toString() + " ").reduce(childTypes, String::concat) + "]";
+        throw new CouldNotPerformException("Could not detect locationType from parentType[" + parentLocationType.name() + "] and childTypes" + childTypes);
     }
 }

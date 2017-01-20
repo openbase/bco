@@ -446,8 +446,8 @@ public class MockRegistry {
 
     private void registerLocations() throws CouldNotPerformException, InterruptedException {
         try {
-            LocationConfig defaultLocation = LocationConfig.getDefaultInstance();
-            paradiseLocation = locationRegistry.registerLocationConfig(UnitConfig.newBuilder().setType(UnitType.LOCATION).setLabel("Paradise").setLocationConfig(defaultLocation).build()).get();
+            LocationConfig zoneLocationConfig = LocationConfig.newBuilder().setType(LocationConfig.LocationType.ZONE).build();
+            paradiseLocation = locationRegistry.registerLocationConfig(UnitConfig.newBuilder().setType(UnitType.LOCATION).setLabel("Paradise").setLocationConfig(zoneLocationConfig).build()).get();
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
         }
