@@ -74,7 +74,7 @@ public class Action implements ActionService, Initializable<ActionConfig> {
             this.deviceRegistry = CachedDeviceRegistryRemote.getRegistry();
             this.serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
             CachedDeviceRegistryRemote.waitForData();
-            this.serviceRemote = serviceRemoteFactory.createAndInitServiceRemote(config.getServiceType(), deviceRegistry.getUnitConfigById(config.getUnitId()));
+            this.serviceRemote = serviceRemoteFactory.newInitializedInstance(config.getServiceType(), deviceRegistry.getUnitConfigById(config.getUnitId()));
             serviceRemote.activate();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
