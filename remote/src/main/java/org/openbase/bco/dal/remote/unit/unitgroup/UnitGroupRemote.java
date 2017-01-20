@@ -101,7 +101,7 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
                     unitConfigsByService.add(unitConfig);
                 });
                 // create serviceRemoteByType and unitCOnfiglist
-                serviceRemoteMap.put(serviceTemplate, serviceRemoteFactory.createAndInitServiceRemote(serviceTemplate.getType(), unitConfigsByService));
+                serviceRemoteMap.put(serviceTemplate, serviceRemoteFactory.newInitializedInstance(serviceTemplate.getType(), unitConfigsByService));
                 unitConfigsByService.clear();
             }
         } catch (CouldNotPerformException ex) {

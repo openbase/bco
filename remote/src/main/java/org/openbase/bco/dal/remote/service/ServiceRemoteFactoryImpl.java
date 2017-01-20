@@ -21,12 +21,12 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.Collection;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+//import org.openbase.jul.exception.InstantiationException;
 
 /**
  *
@@ -47,25 +47,25 @@ public class ServiceRemoteFactoryImpl implements ServiceRemoteFactory {
     }
 
     @Override
-    public AbstractServiceRemote createAndInitServiceRemote(ServiceType serviceType, Collection<UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException {
-        AbstractServiceRemote serviceRemote = createServiceRemote(serviceType);
+    public AbstractServiceRemote newInitializedInstance(ServiceType serviceType, Collection<UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException {
+        AbstractServiceRemote serviceRemote = newInstance(serviceType);
         serviceRemote.init(unitConfigs);
         return serviceRemote;
     }
 
     @Override
-    public AbstractServiceRemote createAndInitServiceRemote(ServiceType serviceType, UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
-        AbstractServiceRemote serviceRemote = createServiceRemote(serviceType);
+    public AbstractServiceRemote newInitializedInstance(ServiceType serviceType, UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
+        AbstractServiceRemote serviceRemote = newInstance(serviceType);
         serviceRemote.init(unitConfig);
         return serviceRemote;
     }
 
     @Override
-    public AbstractServiceRemote createServiceRemote(ServiceType serviceType) throws CouldNotPerformException {
+    public AbstractServiceRemote newInstance(ServiceType serviceType) throws org.openbase.jul.exception.InstantiationException {
         try {
             return instantiatServiceRemote(loadServiceRemoteClass(serviceType));
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not create service remote!", ex);
+            throw new org.openbase.jul.exception.InstantiationException("Could not create service remote!", ex);
         }
     }
 
@@ -85,5 +85,20 @@ public class ServiceRemoteFactoryImpl implements ServiceRemoteFactory {
         } catch (InstantiationException | IllegalAccessException ex) {
             throw new org.openbase.jul.exception.InstantiationException("Could not instantiate service remote out of Class[" + serviceRemoteClass.getName() + "]", ex);
         }
+    }
+
+    @Override
+    public AbstractServiceRemote createAndInitServiceRemote(ServiceType serviceType, Collection<UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException {
+        return newInitializedInstance(serviceType, unitConfigs);
+    }
+
+    @Override
+    public AbstractServiceRemote createAndInitServiceRemote(ServiceType serviceType, UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
+        return newInitializedInstance(serviceType, unitConfig);
+    }
+
+    @Override
+    public AbstractServiceRemote createServiceRemote(ServiceType serviceType) throws CouldNotPerformException {
+        return newInstance(serviceType);
     }
 }
