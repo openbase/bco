@@ -464,6 +464,12 @@ public class LocationRegistryTest {
             PlacementConfig regionPlacement = PlacementConfig.newBuilder().setLocationId(tile.getId()).build();
             UnitConfig region = unitRegistry.registerUnitConfig(getLocationUnitBuilder().setLabel(regionlabel).setPlacementConfig(regionPlacement).build()).get();
             assertEquals("Type has not been detected for region!", LocationType.REGION, region.getLocationConfig().getType());
+
+            LocationConfig wrongType = tile.getLocationConfig().toBuilder().setType(LocationType.ZONE).build();
+            tile = tile.toBuilder().setLocationConfig(wrongType).build();
+            assertEquals("LocationType is not correct!", LocationType.ZONE, tile.getLocationConfig().getType());
+            tile = unitRegistry.updateUnitConfig(tile).get();
+            assertEquals("Type has not been corrected for tile!", LocationType.TILE, tile.getLocationConfig().getType());
         } catch (CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }

@@ -54,10 +54,11 @@ public class LocationTypeConsistencyHandler extends AbstractProtoBufRegistryCons
             try {
                 LocationType detectedType = LocationUtils.detectLocationType(entry.getMessage(), registry);
                 if (detectedType != locationConfig.getType()) {
-                    throw new CouldNotPerformException("Manually defined locationType[" + locationConfig.getType().name() + "] differs from detetcted type[" + detectedType + "] for location[" + locationUnit.getLabel() + "]!");
+                    locationConfig.setType(detectedType);
+                    throw new EntryModification(entry.setMessage(locationUnit), this);
                 }
             } catch (CouldNotPerformException ex) {
-                logger.debug("Could not detect locationType for location with defined type [" + locationConfig.getType().name() + "]", ex);
+                logger.debug("Could not detect locationType for location[" + locationUnit.getLabel() + "] with current type [" + locationConfig.getType().name() + "]", ex);
             }
         }
     }
