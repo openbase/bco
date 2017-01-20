@@ -53,6 +53,7 @@ import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionConfigType.ActionConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -67,6 +68,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
     private final ServiceType serviceType;
     private final Map<String, UnitRemote> unitRemoteMap;
+    private final Map<UnitType, List<S>> unitRemoteTypeMap;
     private final Map<String, S> serviceMap;
     private UnitRemoteFactory factory = UnitRemoteFactoryImpl.getInstance();
     private ST serviceState;
@@ -83,6 +85,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         this.serviceState = null;
         this.serviceType = serviceType;
         this.unitRemoteMap = new HashMap<>();
+        this.unitRemoteTypeMap = new HashMap<>();
         this.serviceMap = new HashMap<>();
         this.dataObserver = (Observer) (Observable source, Object data) -> {
             updateServiceState();
@@ -154,8 +157,14 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             }
 
             UnitRemote remote = factory.newInitializedInstance(config);
+
+            if (!unitRemoteTypeMap.containsKey(remote.getType())) {
+                unitRemoteTypeMap.put(remote.getType(), new ArrayList());
+            }
+
             try {
                 serviceMap.put(config.getId(), (S) remote);
+                unitRemoteTypeMap.get(remote.getType()).add((S) remote);
             } catch (ClassCastException ex) {
                 throw new NotSupportedException("ServiceInterface[" + serviceType.name() + "]", remote, "Remote does not implement the service interface!", ex);
             }
@@ -167,8 +176,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     }
 
     /**
-     * Initializes this service remote with a set of unit configurations.
-     * Each of the units referred by the given configurations should provide the service type of this service remote.
+     * Initializes this service remote with a set of unit configurations. Each of the units referred by the given configurations should provide the service type of this service remote.
      *
      * @param configs a set of unit configurations.
      * @throws InitializationException is thrown if the service remote could not be initialized.
@@ -294,6 +302,15 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      */
     public Collection<S> getServices() {
         return Collections.unmodifiableCollection(serviceMap.values());
+    }
+
+    /**
+     * Returns a collection of all internally used unit remotes filtered by the given unit type.
+     *
+     * @return a collection of unit remotes limited to the service interface.
+     */
+    public Collection<S> getServices(final UnitType unitType) {
+        return Collections.unmodifiableCollection(unitRemoteTypeMap.get(unitType));
     }
 
     /**
