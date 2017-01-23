@@ -21,16 +21,16 @@ package org.openbase.bco.manager.app.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.manager.app.lib.App;
+import org.openbase.bco.dal.lib.layer.unit.app.App;
 import org.openbase.bco.manager.app.lib.AppController;
 import org.openbase.bco.manager.app.lib.AppFactory;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
-import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.app.AppClassType.AppClass;
 
 /**
  *
@@ -53,12 +53,11 @@ public class AppFactoryImpl implements AppFactory {
 
     @Override
     public AppController newInstance(final UnitConfig config) throws org.openbase.jul.exception.InstantiationException {
-        AppController app;
+        final AppController app;
         try {
             if (config == null) {
                 throw new NotAvailableException("appconfig");
             }
-            MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("AppConfigTypeProvider", config.getMetaConfig());
 
             final Class appClass = Thread.currentThread().getContextClassLoader().loadClass(getAppClass(config));
             logger.info("Creating app of type [" + appClass.getSimpleName() + "]");
@@ -70,11 +69,16 @@ public class AppFactoryImpl implements AppFactory {
         return app;
     }
 
-    // TODO relsolve app class via app class registry, id not vaild anymore.
-    private String getAppClass(final UnitConfig config) {
-        return AbstractApp.class.getPackage().getName() + "."
-                + "preset."
-                + StringProcessor.transformUpperCaseToCamelCase(config.getAppConfig().getAppClassId())
-                + "App";
+    private String getAppClass(final UnitConfig appUnitConfig) throws InterruptedException, NotAvailableException {
+        try {
+            Registries.getAppRegistry().waitForData();
+            AppClass appClass = Registries.getAppRegistry().getAppClassById(appUnitConfig.getAppConfig().getAppClassId());
+            return AbstractApp.class.getPackage().getName() + "."
+                    + "preset."
+                    + appClass.getLabel()
+                    + "App";
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("AppClass", ex);
+        }
     }
 }

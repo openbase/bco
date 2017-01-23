@@ -26,6 +26,7 @@ import org.openbase.bco.manager.agent.core.AgentManagerLauncher;
 import org.openbase.bco.manager.app.binding.openhab.AppBindingOpenHABLauncher;
 import org.openbase.bco.manager.app.core.AppManagerLauncher;
 import org.openbase.bco.manager.device.binding.openhab.DeviceBindingOpenHABLauncher;
+import org.openbase.bco.manager.device.binding.openhab.util.configgen.OpenHABConfigGeneratorLauncher;
 import org.openbase.bco.manager.location.binding.openhab.LocationBindingOpenHABLauncher;
 import org.openbase.bco.manager.location.core.LocationManagerLauncher;
 import org.openbase.bco.manager.scene.binding.openhab.SceneBindingOpenHABLauncher;
@@ -75,7 +76,8 @@ public class BCOBindingOpenhabLauncher {
                 AgentBindingOpenHABLauncher.class,
                 LocationBindingOpenHABLauncher.class,
                 SceneBindingOpenHABLauncher.class,
-                DeviceBindingOpenHABLauncher.class
+                DeviceBindingOpenHABLauncher.class,
+                OpenHABConfigGeneratorLauncher.class
         );
     }
 }

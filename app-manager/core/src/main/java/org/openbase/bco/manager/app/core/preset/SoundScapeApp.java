@@ -24,6 +24,7 @@ package org.openbase.bco.manager.app.core.preset;
 import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.manager.app.core.AbstractApp;
 import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
@@ -56,7 +57,6 @@ public class SoundScapeApp extends AbstractApp {
     private final RSBListener listener;
     private final WatchDog listenerWatchDog;
     private final Scope scope = new Scope("/app/soundscape/theme/");
-    private final AgentRegistryRemote agentRegistryRemote;
     private final ActivationStateType.ActivationState activate = ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.ACTIVE).build();
     private final ActivationStateType.ActivationState deactive = ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.ACTIVE).build();
 
@@ -94,21 +94,19 @@ public class SoundScapeApp extends AbstractApp {
                 }
             }
         }, false);
-        this.agentRegistryRemote = new AgentRegistryRemote();
-        this.agentRegistryRemote.init();
     }
 
     @Override
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
         try {
-            agentRegistryRemote.activate();
             listenerWatchDog.activate();
+            Registries.getAgentRegistry().waitForData();
 //            agentBathAmbientColorBeachBottomRemote.init(agentRegistryRemote.getAgentConfigById("BathAmbientColorBeachBottom"));
-            agentBathAmbientColorBeachCeiling.init(agentRegistryRemote.getAgentConfigById("BathAmbientColorBeachCeiling"));
-            agentBathAmbientColorForest.init(agentRegistryRemote.getAgentConfigById("BathAmbientColorForest"));
-            agentBathAmbientColorNight.init(agentRegistryRemote.getAgentConfigById("BathAmbientColorNight"));
-            agentBathAmbientColorZen.init(agentRegistryRemote.getAgentConfigById("BathAmbientColorZen"));
+            agentBathAmbientColorBeachCeiling.init(Registries.getAgentRegistry().getAgentConfigById("BathAmbientColorBeachCeiling"));
+            agentBathAmbientColorForest.init(Registries.getAgentRegistry().getAgentConfigById("BathAmbientColorForest"));
+            agentBathAmbientColorNight.init(Registries.getAgentRegistry().getAgentConfigById("BathAmbientColorNight"));
+            agentBathAmbientColorZen.init(Registries.getAgentRegistry().getAgentConfigById("BathAmbientColorZen"));
 //            agentBathAmbientColorBeachBottomRemote.activate();
             agentBathAmbientColorBeachCeiling.activate();
 //            agentBathAmbientColorForest.activate();
@@ -145,7 +143,6 @@ public class SoundScapeApp extends AbstractApp {
             agentBathAmbientColorForest.setActivationState(deactive);
             agentBathAmbientColorNight.setActivationState(deactive);
             agentBathAmbientColorZen.setActivationState(deactive);
-            agentRegistryRemote.deactivate();
             listenerWatchDog.deactivate();
             super.deactivate();
         } catch (InterruptedException | CouldNotPerformException ex) {
