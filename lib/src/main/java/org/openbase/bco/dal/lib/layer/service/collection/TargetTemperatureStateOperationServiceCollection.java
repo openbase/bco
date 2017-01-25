@@ -26,8 +26,8 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -35,13 +35,8 @@ import rst.domotic.state.TemperatureStateType.TemperatureState;
  */
 public interface TargetTemperatureStateOperationServiceCollection extends TargetTemperatureStateOperationService {
 
-    @Override
-    default public Future<Void> setTargetTemperatureState(TemperatureState temperatureState) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf((TargetTemperatureStateOperationService input) -> input.setTargetTemperatureState(temperatureState), getTargetTemperatureStateOperationServices());
-    }
+    public Future<Void> setTargetTemperatureState(TemperatureState temperatureState, UnitType unitType) throws CouldNotPerformException;
 
-    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
-    //remove when remote cashing is implemented
     /**
      * Returns the average target temperature value for a collection of target
      * temperature services.
@@ -50,18 +45,17 @@ public interface TargetTemperatureStateOperationServiceCollection extends Target
      * @throws NotAvailableException
      */
     @Override
-    default public TemperatureState getTargetTemperatureState() throws NotAvailableException {
-        try {
-            Double average = 0d;
-            for (TargetTemperatureStateOperationService service : getTargetTemperatureStateOperationServices()) {
-                average += service.getTargetTemperatureState().getTemperature();
-            }
-            average /= getTargetTemperatureStateOperationServices().size();
-            return TemperatureState.newBuilder().setTemperature(average).build();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("TargetTemperature", ex);
-        }
-    }
+    public TemperatureState getTargetTemperatureState() throws NotAvailableException;
+
+    /**
+     * Returns the average target temperature value for a collection of target
+     * temperature services with the given unitType.
+     *
+     * @param unitType
+     * @return
+     * @throws NotAvailableException
+     */
+    public TemperatureState getTargetTemperatureState(UnitType unitType) throws NotAvailableException;
 
     public Collection<TargetTemperatureStateOperationService> getTargetTemperatureStateOperationServices() throws CouldNotPerformException;
 }
