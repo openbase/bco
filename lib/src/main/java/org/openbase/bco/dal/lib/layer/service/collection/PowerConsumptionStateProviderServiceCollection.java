@@ -22,10 +22,14 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * #L%
  */
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rsb.com.RSBRemote;
 import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
+import rst.timing.TimestampType;
 
 /**
  *
@@ -45,17 +49,26 @@ public interface PowerConsumptionStateProviderServiceCollection extends PowerCon
     @Override
     default public PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {
         try {
+            // WORKAROUND HACK BEFORE LOCATION CONTROLLER IMPROVEMENT FEATURE IS READY
             double consumptionSum = 0;
             double averageCurrent = 0;
             double averageVoltage = 0;
+            Collection<PowerConsumptionStateProviderService> powerConsumptionStateProviderServices = getPowerConsumptionStateProviderServices();
+            int amount = powerConsumptionStateProviderServices.size();
             for (PowerConsumptionStateProviderService provider : getPowerConsumptionStateProviderServices()) {
+                if (!((RSBRemote) provider).isDataAvailable()) {
+                    amount--;
+                    continue;
+                }
+                
                 consumptionSum += provider.getPowerConsumptionState().getConsumption();
                 averageCurrent += provider.getPowerConsumptionState().getCurrent();
                 averageVoltage += provider.getPowerConsumptionState().getVoltage();
             }
-            averageCurrent = averageCurrent / getPowerConsumptionStateProviderServices().size();
-            averageVoltage = averageVoltage / getPowerConsumptionStateProviderServices().size();
-            return PowerConsumptionState.newBuilder().setConsumption(consumptionSum).setCurrent(averageCurrent).setVoltage(averageVoltage).build();
+            averageCurrent = averageCurrent / amount;
+            averageVoltage = averageVoltage / amount;
+            
+            return PowerConsumptionState.newBuilder().setConsumption(consumptionSum).setCurrent(averageCurrent).setVoltage(averageVoltage).setTimestamp(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("PowerConsumptionState", ex);
         }
