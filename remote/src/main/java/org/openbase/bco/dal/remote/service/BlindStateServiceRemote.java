@@ -64,6 +64,7 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
         return getServiceState();
     }
 
+    // TODO: das filtern nach dem unit typen fehlt noch...
     @Override
     public BlindState getBlindState(UnitType unitType) throws NotAvailableException {
         int serviceNumber = getBlindStateOperationServices().size(), stop = 0, down = 0, up = 0;

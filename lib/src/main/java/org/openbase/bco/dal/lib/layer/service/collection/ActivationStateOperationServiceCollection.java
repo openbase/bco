@@ -21,7 +21,6 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -45,7 +44,7 @@ public interface ActivationStateOperationServiceCollection extends ActivationSta
      */
     @Override
     public ActivationState getActivationState() throws NotAvailableException;
-    
+
     /**
      * Returns on if at least one of the power services is on and else off.
      *

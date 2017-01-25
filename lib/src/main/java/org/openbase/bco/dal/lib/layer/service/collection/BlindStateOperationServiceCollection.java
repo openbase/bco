@@ -21,7 +21,6 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -36,7 +35,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 public interface BlindStateOperationServiceCollection extends BlindStateOperationService {
 
     public Future<Void> setBlindState(final BlindState blindState, final UnitType unitType) throws CouldNotPerformException;
-    
+
     /**
      * Returns up if all shutter services are up and else the from up differing
      * state of the first shutter.
@@ -46,7 +45,7 @@ public interface BlindStateOperationServiceCollection extends BlindStateOperatio
      */
     @Override
     public BlindState getBlindState() throws NotAvailableException;
-    
+
     /**
      * Returns up if all shutter services of the given unit type are up and else the from up differing
      * state of the first shutter.

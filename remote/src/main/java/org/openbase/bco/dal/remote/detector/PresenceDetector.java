@@ -23,20 +23,20 @@ package org.openbase.bco.dal.remote.detector;
  */
 import java.util.concurrent.TimeUnit;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.NotInitializedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.pattern.ObservableImpl;
-import org.openbase.jul.schedule.Timeout;
-import org.openbase.jul.exception.NotAvailableException;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.NotInitializedException;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.jul.schedule.Timeout;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rst.domotic.state.MotionStateType.MotionState;
 import rst.domotic.state.MotionStateType.MotionStateOrBuilder;
 import rst.domotic.state.PresenceStateType.PresenceState;
@@ -140,6 +140,8 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
 
     private synchronized void updatePresenceState(final PresenceStateOrBuilder presenceState) throws CouldNotPerformException {
 
+        // so wird das timeout durch das erste present setzten des detectors selbst nochmal restarted...
+        // vorher nach motion state filtern (inklusive lastMotion) und wenn gleich das presence update skippen?
         // update Timestemp and reset timer
         if (presenceState.getValue() == PresenceState.State.PRESENT) {
             presenceTimeout.restart();

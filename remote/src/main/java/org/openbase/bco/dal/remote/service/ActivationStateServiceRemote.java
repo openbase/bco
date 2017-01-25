@@ -56,14 +56,14 @@ public class ActivationStateServiceRemote extends AbstractServiceRemote<Activati
      */
     @Override
     protected ActivationState computeServiceState() throws CouldNotPerformException {
-        getActivationState(UnitType.UNKNOWN);
+        return getActivationState(UnitType.UNKNOWN);
     }
 
     @Override
     public ActivationState getActivationState() throws NotAvailableException {
         return getServiceState();
     }
-    
+
     @Override
     public ActivationState getActivationState(final UnitType unitType) throws NotAvailableException {
         ActivationState.State activationStateValue = ActivationState.State.DEACTIVE;
