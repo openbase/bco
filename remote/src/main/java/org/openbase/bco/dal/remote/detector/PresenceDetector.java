@@ -146,10 +146,12 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
             this.presenceState.getLastPresenceBuilder().setTime(Math.max(this.presenceState.getLastPresence().getTime(), presenceState.getLastPresence().getTime()));
         }
 
-        // update value
-        if (!(this.presenceState.getValue() == presenceState.getValue())) {
+        // filter non state changes
+        if (this.presenceState.getValue() == presenceState.getValue()) {
             return;
         }
+        
+        // update value
         this.presenceState.getTimestampBuilder().setTime(System.currentTimeMillis());
         this.presenceState.setValue(presenceState.getValue());
 
