@@ -61,6 +61,8 @@ import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.PO
 import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.POWER_SPS;
 import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.SMOKE_ALARM_SPS;
 import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.SMOKE_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.STANDBY_SOS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.STANDBY_SPS;
 import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.TAMPER_SPS;
 import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.TARGET_TEMPERATURE_SOS;
 import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.TARGET_TEMPERATURE_SPS;
@@ -185,6 +187,8 @@ public class MockRegistry {
         POWER_SPS(ServiceType.POWER_STATE_SERVICE, ServicePattern.PROVIDER),
         SMOKE_ALARM_SPS(ServiceType.SMOKE_ALARM_STATE_SERVICE, ServicePattern.PROVIDER),
         SMOKE_SPS(ServiceType.SMOKE_STATE_SERVICE, ServicePattern.PROVIDER),
+        STANDBY_SPS(ServiceType.STANDBY_STATE_SERVICE, ServicePattern.PROVIDER),
+        STANDBY_SOS(ServiceType.STANDBY_STATE_SERVICE, ServicePattern.OPERATION),
         TAMPER_SPS(ServiceType.TAMPER_STATE_SERVICE, ServicePattern.PROVIDER),
         TARGET_TEMPERATURE_SOS(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, ServicePattern.OPERATION),
         TARGET_TEMPERATURE_SPS(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, ServicePattern.PROVIDER),
@@ -221,7 +225,9 @@ public class MockRegistry {
         TEMPERATURE_CONTROLLER(UnitType.TEMPERATURE_CONTROLLER, TARGET_TEMPERATURE_SOS, TARGET_TEMPERATURE_SPS, TEMPERATURE_SPS),
         SMOKE_DETECTOR_CONTROLLER(UnitType.SMOKE_DETECTOR, SMOKE_SPS, SMOKE_ALARM_SPS),
         TEMPERATURE_SENSOR(UnitType.TEMPERATURE_SENSOR, TEMPERATURE_SPS),
-        BATTERY(UnitType.BATTERY, BATTERY_SPS);
+        BATTERY(UnitType.BATTERY, BATTERY_SPS),
+        LOCATION(UnitType.LOCATION, COLOR_SPS, COLOR_SOS, MOTION_SPS, POWER_CONSUMPTION_SPS, POWER_SPS, POWER_SOS, BLIND_SPS, BLIND_SOS, SMOKE_ALARM_SPS,
+                SMOKE_SPS, STANDBY_SPS, STANDBY_SOS, TAMPER_SPS, TARGET_TEMPERATURE_SPS, TARGET_TEMPERATURE_SOS, TEMPERATURE_SPS);
 
         private final UnitTemplate template;
 
