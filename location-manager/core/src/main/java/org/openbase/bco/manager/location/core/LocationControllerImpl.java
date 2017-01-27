@@ -178,20 +178,20 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
             switch (serviceType) {
 
                 case BRIGHTNESS_STATE_SERVICE:
-//                    // TODO pleminoq: This seems to cause in problems because units using this service in different ways.
-//                    ((ArrayList<BrightnessStateOperationService>) serviceMap.get(ServiceType.BRIGHTNESS_STATE_SERVICE)).add((BrightnessStateOperationService) unitRemote);
-//                    unitRemote.addDataObserver(new Observer() {
-//
-//                        @Override
-//                        public void update(final Observable source, Object data) throws Exception {
-//                            BrightnessState brightness = getBrightnessState();
-//                            try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
-//                                dataBuilder.getInternalBuilder().setBrightnessState(brightness);
-//                            } catch (CouldNotPerformException ex) {
-//                                throw new CouldNotPerformException("Could not apply brightness data change!", ex);
-//                            }
-//                        }
-//                    });
+                    // TODO pleminoq: This seems to cause in problems because units using this service in different ways.
+                    ((ArrayList<BrightnessStateOperationService>) serviceMap.get(ServiceType.BRIGHTNESS_STATE_SERVICE)).add((BrightnessStateOperationService) unitRemote);
+                    unitRemote.addDataObserver(new Observer() {
+
+                        @Override
+                        public void update(final Observable source, Object data) throws Exception {
+                            BrightnessState brightness = getBrightnessState();
+                            try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
+                                dataBuilder.getInternalBuilder().setBrightnessState(brightness);
+                            } catch (CouldNotPerformException ex) {
+                                throw new CouldNotPerformException("Could not apply brightness data change!", ex);
+                            }
+                        }
+                    });
                     break;
                 case COLOR_STATE_SERVICE:
                     ((ArrayList<ColorStateOperationService>) serviceMap.get(ServiceType.COLOR_STATE_SERVICE)).add((ColorStateOperationService) unitRemote);
