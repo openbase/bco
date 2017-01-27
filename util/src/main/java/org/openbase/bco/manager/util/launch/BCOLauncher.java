@@ -21,7 +21,6 @@ package org.openbase.bco.manager.util.launch;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.manager.agent.binding.openhab.AgentBindingOpenHABLauncher;
 import org.openbase.bco.manager.agent.core.AgentManagerLauncher;
 import org.openbase.bco.manager.app.binding.openhab.AppBindingOpenHABLauncher;
@@ -52,7 +51,9 @@ public class BCOLauncher {
      */
     public static void main(final String[] args) {
         AbstractLauncher.main(args, BCO.class,
-                /** Registry **/
+                /**
+                 * Registry *
+                 */
                 DeviceRegistryLauncher.class,
                 AppRegistryLauncher.class,
                 AgentRegistryLauncher.class,
@@ -60,20 +61,15 @@ public class BCOLauncher {
                 LocationRegistryLauncher.class,
                 UserRegistryLauncher.class,
                 SceneRegistryLauncher.class,
-                
-                /** Manager **/
+                /**
+                 * Manager *
+                 */
                 AgentManagerLauncher.class,
                 AppManagerLauncher.class,
                 DeviceManagerLauncher.class,
                 LocationManagerLauncher.class,
                 SceneManagerLauncher.class,
-                UserManagerLauncher.class, 
-                
-                /** Bindings **/
-                AppBindingOpenHABLauncher.class,
-                AgentBindingOpenHABLauncher.class,
-                LocationBindingOpenHABLauncher.class,
-                SceneBindingOpenHABLauncher.class
+                UserManagerLauncher.class
         );
     }
 }

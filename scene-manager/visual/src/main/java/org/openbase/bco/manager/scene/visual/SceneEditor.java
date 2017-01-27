@@ -73,13 +73,10 @@ public class SceneEditor extends javax.swing.JFrame {
             genericUnitCollectionPanel.add(data.getConfig(), data.getServiceType(), true);
         });
         sceneCreationPanel.addObserver((final Observable<List<ActionConfig>> source, List<ActionConfig> data) -> {
-            //                    logger.info("Update through new scene selected!");
             genericUnitCollectionPanel.clearUnitPanel();
-//                    logger.info("Cleared unit collection panel!");
             for (ActionConfig action : data) {
-//                        logger.info("Adding new unit panel for action [" + action.getServiceAttributeType() + "][" + action.getServiceAttribute() + "]");
+                logger.info("Adding new unit panel for action [" + action.getServiceAttributeType() + "][" + action.getServiceAttribute() + "]");
                 Object value = serviceJSonProcessor.deserialize(action.getServiceAttribute(), action.getServiceAttributeType());
-                System.out.println("getServiceAttributeType: "+ value);
                 genericUnitCollectionPanel.add(action.getUnitId(), action.getServiceType(), value, true);
             }
         });

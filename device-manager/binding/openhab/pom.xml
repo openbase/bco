@@ -62,7 +62,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.openbase.bco.manager.device.binding.openhab.util.configgen.OpenHABConfigGenerator</mainClass>
+                            <mainClass>org.openbase.bco.manager.device.binding.openhab.util.configgen.OpenHABConfigGeneratorLauncher</mainClass>
                             <id>binding-openhab-config-generator</id>
                             <platforms>
                                 <platform>unix</platform>
