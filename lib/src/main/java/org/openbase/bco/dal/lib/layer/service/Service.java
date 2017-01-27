@@ -29,9 +29,12 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.processing.StringProcessor;
+import org.openbase.jul.schedule.WatchDog.ServiceState;
 import rst.domotic.action.ActionConfigType;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
  *
@@ -69,9 +72,27 @@ public interface Service {
                 throw new NotSupportedException(pattern, Service.class);
         }
     }
-
+    
     /**
      * Method returns the state  name of the appurtenant service.
+     *
+     * @param template The service template.
+     * @return The state type name as string.
+     */
+    public static String getServiceStateName(final ServiceType serviceType) throws NotAvailableException {
+        try {
+            if (serviceType == null) {
+                assert false;
+                throw new NotAvailableException("ServiceState");
+            }
+            return StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replaceAll("Service", "");
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("ServiceStateName", ex);
+        }
+    }
+
+    /**
+     * Method returns the state name of the appurtenant service.
      *
      * @param template The service template.
      * @return The state type name as string.
@@ -82,26 +103,42 @@ public interface Service {
                 assert false;
                 throw new NotAvailableException("ServiceTemplate");
             }
-            return StringProcessor.transformUpperCaseToCamelCase(template.getType().name()).replaceAll("Service", "");
+            return getServiceStateName(template.getType());
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("SServiceStateName");
+            throw new NotAvailableException("ServiceStateName", ex);
         }
     }
 
-    public static Method detectServiceMethod(final ServiceTemplateType.ServiceTemplate template, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
+    public static Method detectServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
         try {
-            return instanceClass.getMethod(getServicePrefix(template.getPattern()) + getServiceStateName(template), argumentClasses);
+            return instanceClass.getMethod(getServicePrefix(servicePattern) + getServiceStateName(serviceType), argumentClasses);
         } catch (NoSuchMethodException | SecurityException ex) {
             throw new CouldNotPerformException("Could not detect service method!", ex);
         }
     }
+    
+    public static Method detectServiceMethod(final ServiceTemplate template, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
+        return detectServiceMethod(template.getType(), template.getPattern(), instanceClass, argumentClasses);
+    }
 
-    public static Object invokeServiceMethod(final ServiceTemplateType.ServiceTemplate template, final Service instance, final Object... arguments) throws CouldNotPerformException {
+    public static Object invokeServiceMethod(final ServiceTemplate template, final Service instance, final Object... arguments) throws CouldNotPerformException {
         try {
             return detectServiceMethod(template, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             throw new CouldNotPerformException("Could not invoke service method!", ex);
         }
+    }
+    
+    public static Object invokeServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final Service instance, final Object... arguments) throws CouldNotPerformException {
+        try {
+            return detectServiceMethod(serviceType, servicePattern, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+            throw new CouldNotPerformException("Could not invoke service method!", ex);
+        }
+    }
+    
+    public static Object invokeOperationServiceMethod(final ServiceType serviceType, final Service instance, final Object... arguments) throws CouldNotPerformException {
+        return invokeServiceMethod(serviceType, ServicePattern.OPERATION, instance, arguments);
     }
 
     public static Class[] getArgumentClasses(final Object[] arguments) {

@@ -91,7 +91,6 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
         };
 
         locationDataObserver = (Observable<LocationData> source, LocationData data) -> {
-
             updateMotionState(data.getMotionState());
         };
     }
@@ -115,6 +114,7 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
 
         active = true;
         locationDataProvider.addDataObserver(locationDataObserver);
+        updateMotionState(locationDataProvider.getData().getMotionState());
     }
 
     @Override
@@ -150,7 +150,7 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
         if (this.presenceState.getValue() == presenceState.getValue()) {
             return;
         }
-        
+
         // update value
         this.presenceState.getTimestampBuilder().setTime(System.currentTimeMillis());
         this.presenceState.setValue(presenceState.getValue());
