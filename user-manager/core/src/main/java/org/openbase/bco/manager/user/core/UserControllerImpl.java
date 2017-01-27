@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.manager.user.lib.User;
@@ -217,21 +218,20 @@ public class UserControllerImpl extends AbstractConfigurableController<UserData,
     public Future<Void> setUserActivityState(UserActivityState UserActivityState) throws CouldNotPerformException {
         try (ClosableDataBuilder<UserData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setUserActivityState(UserActivityState);
-        } catch (Exception ex) {
+        } catch (CouldNotPerformException | NullPointerException ex) {
             throw new CouldNotPerformException("Could not set user activity to [" + UserActivityState + "] for " + this + "!", ex);
         }
-        return null;
+        return CompletableFuture.completedFuture(null);
     }
     
     @Override
     public Future<Void> setUserPresenceState(UserPresenceState userPresenceState) throws CouldNotPerformException {
         try (ClosableDataBuilder<UserData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setUserPresenceState(userPresenceState);
-            System.out.println("new presence state:" + userPresenceState.getValue().name());
-        } catch (Exception ex) {
+        } catch (CouldNotPerformException | NullPointerException ex) {
             throw new CouldNotPerformException("Could not set user presence state to [" + userPresenceState + "] for " + this + "!", ex);
         }
-        return null;
+        return CompletableFuture.completedFuture(null);
     }
     
     private class NetDeviceDetector extends ObservableImpl<Boolean> implements Manageable<String> {
