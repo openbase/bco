@@ -34,26 +34,24 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.openbase.bco.dal.lib.layer.service.Service;
-import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionStateProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.SmokeAlarmStateProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.SmokeStateProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.TamperStateProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
 import org.openbase.bco.dal.lib.layer.unit.location.Location;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
 import org.openbase.bco.dal.remote.service.AbstractServiceRemote;
 import org.openbase.bco.dal.remote.service.BlindStateServiceRemote;
 import org.openbase.bco.dal.remote.service.BrightnessStateServiceRemote;
+import org.openbase.bco.dal.remote.service.ColorStateServiceRemote;
+import org.openbase.bco.dal.remote.service.MotionStateServiceRemote;
+import org.openbase.bco.dal.remote.service.PowerConsumptionStateServiceRemote;
+import org.openbase.bco.dal.remote.service.PowerStateServiceRemote;
 import org.openbase.bco.dal.remote.service.ServiceRemoteFactory;
 import org.openbase.bco.dal.remote.service.ServiceRemoteFactoryImpl;
+import org.openbase.bco.dal.remote.service.SmokeAlarmStateServiceRemote;
+import org.openbase.bco.dal.remote.service.SmokeStateServiceRemote;
+import org.openbase.bco.dal.remote.service.StandbyStateServiceRemote;
+import org.openbase.bco.dal.remote.service.TamperStateServiceRemote;
+import org.openbase.bco.dal.remote.service.TargetTemperatureStateServiceRemote;
+import org.openbase.bco.dal.remote.service.TemperatureStateServiceRemote;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.bco.manager.location.lib.LocationController;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
@@ -160,7 +158,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
 
     private boolean isSupportedServiceType(final ServiceType serviceType) {
         switch (serviceType) {
-            case BRIGHTNESS_STATE_SERVICE:
+//            case BRIGHTNESS_STATE_SERVICE:
             case COLOR_STATE_SERVICE:
             case MOTION_STATE_SERVICE:
             case POWER_CONSUMPTION_STATE_SERVICE:
@@ -209,7 +207,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
-
+        presenceDetector.init(this);
         super.init(config);
     }
 
@@ -251,6 +249,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     public void activate() throws InterruptedException, CouldNotPerformException {
         logger.debug("Activate location [" + getLabel() + "]!");
         for (AbstractServiceRemote serviceRemote : serviceRemoteMap.values()) {
+            serviceRemote.activate();
             serviceRemote.addDataObserver(serviceDataObserver);
         }
         super.activate();
@@ -259,6 +258,15 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     }
 
     private void getCurrentStatus() {
+        List<ServiceType> serviceTypes = new ArrayList<>();
+        for (ServiceType serviceType : serviceTypes) {
+            try {
+                Service.invokeServiceMethod(ServiceTemplate.newBuilder().setPattern(ServiceTemplate.ServicePattern.PROVIDER).setType(serviceType).build(), this);
+            } catch (Exception ex) {
+
+            }
+        }
+//        this.getClass().getMethod(FIELD_SCOPE, parameterTypes)
         try {
             BrightnessState brighntess = getBrightnessState();
             ColorState color = getColorState();
@@ -299,6 +307,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         presenceDetector.deactivate();
         for (AbstractServiceRemote serviceRemote : serviceRemoteMap.values()) {
             serviceRemote.removeDataObserver(serviceDataObserver);
+            serviceRemote.deactivate();
         }
         super.deactivate();
     }
@@ -382,11 +391,6 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     }
 
     @Override
-    public Future<Void> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
-        return ((BrightnessStateServiceRemote) serviceRemoteMap.get(ServiceType.BRIGHTNESS_STATE_SERVICE)).setBrightnessState(brightnessState);
-    }
-
-    @Override
     public Future<Void> setBlindState(BlindState blindState, UnitType unitType) throws CouldNotPerformException {
         return ((BlindStateServiceRemote) serviceRemoteMap.get(ServiceType.BLIND_STATE_SERVICE)).setBlindState(blindState, unitType);
     }
@@ -402,137 +406,167 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     }
 
     @Override
+    public BlindState getBlindState(UnitType unitType) throws NotAvailableException {
+        return ((BlindStateServiceRemote) serviceRemoteMap.get(ServiceType.BLIND_STATE_SERVICE)).getBlindState(unitType);
+    }
+
+    @Override
+    public Future<Void> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
+        return ((BrightnessStateServiceRemote) serviceRemoteMap.get(ServiceType.BRIGHTNESS_STATE_SERVICE)).setBrightnessState(brightnessState);
+    }
+
+    @Override
+    public Future<Void> setBrightnessState(BrightnessState brightnessState, UnitType unitType) throws CouldNotPerformException {
+        return ((BrightnessStateServiceRemote) serviceRemoteMap.get(ServiceType.BRIGHTNESS_STATE_SERVICE)).setBrightnessState(brightnessState, unitType);
+    }
+
+    @Override
     public BrightnessState getBrightnessState() throws NotAvailableException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ((BrightnessStateServiceRemote) serviceRemoteMap.get(ServiceType.BRIGHTNESS_STATE_SERVICE)).getBrightnessState();
+    }
+
+    @Override
+    public BrightnessState getBrightnessState(UnitType unitType) throws NotAvailableException {
+        return ((BrightnessStateServiceRemote) serviceRemoteMap.get(ServiceType.BRIGHTNESS_STATE_SERVICE)).getBrightnessState(unitType);
     }
 
     @Override
     public Future<Void> setColorState(ColorState colorState) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ((ColorStateServiceRemote) serviceRemoteMap.get(ServiceType.COLOR_STATE_SERVICE)).setColorState(colorState);
+    }
+
+    @Override
+    public Future<Void> setColorState(ColorState colorState, UnitType unitType) throws CouldNotPerformException {
+        return ((ColorStateServiceRemote) serviceRemoteMap.get(ServiceType.COLOR_STATE_SERVICE)).setColorState(colorState, unitType);
     }
 
     @Override
     public ColorState getColorState() throws NotAvailableException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ((ColorStateServiceRemote) serviceRemoteMap.get(ServiceType.COLOR_STATE_SERVICE)).getColorState();
+    }
+
+    @Override
+    public ColorState getColorState(UnitType unitType) throws NotAvailableException {
+        return ((ColorStateServiceRemote) serviceRemoteMap.get(ServiceType.COLOR_STATE_SERVICE)).getColorState(unitType);
     }
 
     @Override
     public Future<Void> setPowerState(PowerState powerState) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ((PowerStateServiceRemote) serviceRemoteMap.get(ServiceType.POWER_STATE_SERVICE)).setPowerState(powerState);
+    }
+
+    @Override
+    public Future<Void> setPowerState(PowerState powerState, UnitType unitType) throws CouldNotPerformException {
+        return ((PowerStateServiceRemote) serviceRemoteMap.get(ServiceType.POWER_STATE_SERVICE)).setPowerState(powerState, unitType);
     }
 
     @Override
     public PowerState getPowerState() throws NotAvailableException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ((PowerStateServiceRemote) serviceRemoteMap.get(ServiceType.POWER_STATE_SERVICE)).getPowerState();
+    }
+
+    @Override
+    public PowerState getPowerState(UnitType unitType) throws NotAvailableException {
+        return ((PowerStateServiceRemote) serviceRemoteMap.get(ServiceType.POWER_STATE_SERVICE)).getPowerState(unitType);
     }
 
     @Override
     public Future<Void> setStandbyState(StandbyState standbyState) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ((StandbyStateServiceRemote) serviceRemoteMap.get(ServiceType.STANDBY_STATE_SERVICE)).setStandbyState(standbyState);
+    }
+
+    @Override
+    public Future<Void> setStandbyState(StandbyState state, UnitType unitType) throws CouldNotPerformException {
+        return ((StandbyStateServiceRemote) serviceRemoteMap.get(ServiceType.STANDBY_STATE_SERVICE)).setStandbyState(state, unitType);
     }
 
     @Override
     public StandbyState getStandbyState() throws NotAvailableException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ((StandbyStateServiceRemote) serviceRemoteMap.get(ServiceType.STANDBY_STATE_SERVICE)).getStandbyState();
+    }
+
+    @Override
+    public StandbyState getStandbyState(UnitType unitType) throws NotAvailableException {
+        return ((StandbyStateServiceRemote) serviceRemoteMap.get(ServiceType.STANDBY_STATE_SERVICE)).getStandbyState(unitType);
     }
 
     @Override
     public Future<Void> setTargetTemperatureState(TemperatureState temperatureState) throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ((TargetTemperatureStateServiceRemote) serviceRemoteMap.get(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)).setTargetTemperatureState(temperatureState);
+    }
+
+    @Override
+    public Future<Void> setTargetTemperatureState(TemperatureState temperatureState, UnitType unitType) throws CouldNotPerformException {
+        return ((TargetTemperatureStateServiceRemote) serviceRemoteMap.get(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)).setTargetTemperatureState(temperatureState, unitType);
     }
 
     @Override
     public TemperatureState getTargetTemperatureState() throws NotAvailableException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ((TargetTemperatureStateServiceRemote) serviceRemoteMap.get(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)).getTargetTemperatureState();
+    }
+
+    @Override
+    public TemperatureState getTargetTemperatureState(UnitType unitType) throws NotAvailableException {
+        return ((TargetTemperatureStateServiceRemote) serviceRemoteMap.get(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)).getTargetTemperatureState(unitType);
     }
 
     @Override
     public MotionState getMotionState() throws NotAvailableException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ((MotionStateServiceRemote) serviceRemoteMap.get(ServiceType.MOTION_STATE_SERVICE)).getMotionState();
+    }
+
+    @Override
+    public MotionState getMotionState(UnitType unitType) throws NotAvailableException {
+        return ((MotionStateServiceRemote) serviceRemoteMap.get(ServiceType.MOTION_STATE_SERVICE)).getMotionState(unitType);
     }
 
     @Override
     public AlarmState getSmokeAlarmState() throws NotAvailableException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ((SmokeAlarmStateServiceRemote) serviceRemoteMap.get(ServiceType.SMOKE_ALARM_STATE_SERVICE)).getSmokeAlarmState();
+    }
+
+    @Override
+    public AlarmState getSmokeAlarmState(UnitType unitType) throws NotAvailableException {
+        return ((SmokeAlarmStateServiceRemote) serviceRemoteMap.get(ServiceType.SMOKE_ALARM_STATE_SERVICE)).getSmokeAlarmState(unitType);
     }
 
     @Override
     public SmokeState getSmokeState() throws NotAvailableException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ((SmokeStateServiceRemote) serviceRemoteMap.get(ServiceType.SMOKE_STATE_SERVICE)).getSmokeState();
+    }
+
+    @Override
+    public SmokeState getSmokeState(UnitType unitType) throws NotAvailableException {
+        return ((SmokeStateServiceRemote) serviceRemoteMap.get(ServiceType.SMOKE_STATE_SERVICE)).getSmokeState(unitType);
     }
 
     @Override
     public TemperatureState getTemperatureState() throws NotAvailableException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ((TemperatureStateServiceRemote) serviceRemoteMap.get(ServiceType.TEMPERATURE_STATE_SERVICE)).getTemperatureState();
+    }
+
+    @Override
+    public TemperatureState getTemperatureState(UnitType unitType) throws NotAvailableException {
+        return ((TemperatureStateServiceRemote) serviceRemoteMap.get(ServiceType.TEMPERATURE_STATE_SERVICE)).getTemperatureState(unitType);
     }
 
     @Override
     public PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ((PowerConsumptionStateServiceRemote) serviceRemoteMap.get(ServiceType.POWER_CONSUMPTION_STATE_SERVICE)).getPowerConsumptionState();
+    }
+
+    @Override
+    public PowerConsumptionState getPowerConsumptionState(UnitType unitType) throws NotAvailableException {
+        return ((PowerConsumptionStateServiceRemote) serviceRemoteMap.get(ServiceType.POWER_CONSUMPTION_STATE_SERVICE)).getPowerConsumptionState(unitType);
     }
 
     @Override
     public TamperState getTamperState() throws NotAvailableException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return ((TamperStateServiceRemote) serviceRemoteMap.get(ServiceType.TAMPER_STATE_SERVICE)).getTamperState();
     }
 
     @Override
-    public Collection<BrightnessStateOperationService> getBrightnessStateOperationServices() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Collection<ColorStateOperationService> getColorStateOperationServices() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Collection<PowerStateOperationService> getPowerStateOperationServices() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Collection<BlindStateOperationService> getBlindStateOperationServices() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Collection<StandbyStateOperationService> getStandbyStateOperationServices() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Collection<TargetTemperatureStateOperationService> getTargetTemperatureStateOperationServices() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Collection<MotionStateProviderService> getMotionStateProviderServices() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Collection<SmokeAlarmStateProviderService> getSmokeAlarmStateProviderServices() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Collection<SmokeStateProviderService> getSmokeStateProviderServices() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Collection<TemperatureStateProviderService> getTemperatureStateProviderServices() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Collection<PowerConsumptionStateProviderService> getPowerConsumptionStateProviderServices() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public Collection<TamperStateProviderService> getTamperStateProviderServices() throws CouldNotPerformException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public TamperState getTamperState(UnitType unitType) throws NotAvailableException {
+        return ((TamperStateServiceRemote) serviceRemoteMap.get(ServiceType.TAMPER_STATE_SERVICE)).getTamperState(unitType);
     }
 }
