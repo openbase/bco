@@ -21,13 +21,12 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.state.StandbyStateType.StandbyState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -35,33 +34,25 @@ import rst.domotic.state.StandbyStateType.StandbyState;
  */
 public interface StandbyStateOperationServiceCollection extends StandbyStateOperationService {
 
-    @Override
-    default public Future<Void> setStandbyState(StandbyState state) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf((StandbyStateOperationService input) -> input.setStandbyState(state), getStandbyStateOperationServices());
-    }
+    public Future<Void> setStandbyState(final StandbyState state, final UnitType unitType) throws CouldNotPerformException;
 
-    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
-    //remove when remote cashing is implemented
     /**
-     * Returns running if at least one of the standby services is running and
+     * Returns running if at least one of the standbyServices is running and
      * else standby.
      *
      * @return
      * @throws NotAvailableException
      */
     @Override
-    default public StandbyState getStandbyState() throws NotAvailableException {
-        try {
-            for (StandbyStateOperationService service : getStandbyStateOperationServices()) {
-                if (service.getStandbyState().getValue() == StandbyState.State.RUNNING) {
-                    return StandbyState.newBuilder().setValue(StandbyState.State.RUNNING).build();
-                }
-            }
-            return StandbyState.newBuilder().setValue(StandbyState.State.STANDBY).build();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("StandbyState", ex);
-        }
-    }
+    public StandbyState getStandbyState() throws NotAvailableException;
 
-    public Collection<StandbyStateOperationService> getStandbyStateOperationServices() throws CouldNotPerformException;
+    /**
+     * Returns running if at least one of the standbyServices with given unitType is running and
+     * else standby.
+     *
+     * @param unitType
+     * @return
+     * @throws NotAvailableException
+     */
+    public StandbyState getStandbyState(final UnitType unitType) throws NotAvailableException;
 }

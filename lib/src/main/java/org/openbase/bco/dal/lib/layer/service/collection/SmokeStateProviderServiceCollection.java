@@ -21,11 +21,10 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.provider.SmokeStateProviderService;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.SmokeStateType.SmokeState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -33,37 +32,24 @@ import rst.domotic.state.SmokeStateType.SmokeState;
  */
 public interface SmokeStateProviderServiceCollection extends SmokeStateProviderService {
 
-    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
-    //remove when remote cashing is implemented
     /**
-     * If at least one smoke state provider returns smoke than that is returned.
-     * Else if at least one returns some smoke than that is returned. Else no
-     * smoke is returned.
+     * Computes the average smoke level and the state as smoke if at least one underlying services detects smoke.
+     * If no service detects smoke and at least one detects some smoke then that is set and else no smoke.
      *
      * @return
      * @throws NotAvailableException
      */
     @Override
-    default public SmokeState getSmokeState() throws NotAvailableException {
-        try {
-            boolean someSmoke = false;
-            for (SmokeStateProviderService provider : getSmokeStateProviderServices()) {
-                if (provider.getSmokeState().getValue() == SmokeState.State.SMOKE) {
-                    return SmokeState.newBuilder().setValue(SmokeState.State.SMOKE).build();
-                }
-                if (provider.getSmokeState().getValue() == SmokeState.State.SOME_SMOKE) {
-                    someSmoke = true;
-                }
-            }
-            if (someSmoke) {
-                return SmokeState.newBuilder().setValue(SmokeState.State.SOME_SMOKE).build();
-            } else {
-                return SmokeState.newBuilder().setValue(SmokeState.State.NO_SMOKE).build();
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("SmokeState", ex);
-        }
-    }
+    public SmokeState getSmokeState() throws NotAvailableException;
 
-    public Collection<SmokeStateProviderService> getSmokeStateProviderServices() throws CouldNotPerformException;
+    /**
+     * Computes the average smoke level and the state as smoke if at least one underlying services detects smoke.
+     * If no service detects smoke and at least one detects some smoke then that is set and else no smoke.
+     * Only used the smokeStateProvider with given unitType for the evaluation.
+     *
+     * @param unitType
+     * @return
+     * @throws NotAvailableException
+     */
+    public SmokeState getSmokeState(final UnitType unitType) throws NotAvailableException;
 }

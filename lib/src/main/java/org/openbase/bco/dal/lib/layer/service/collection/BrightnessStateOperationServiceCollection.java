@@ -21,13 +21,12 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -35,33 +34,23 @@ import rst.domotic.state.BrightnessStateType.BrightnessState;
  */
 public interface BrightnessStateOperationServiceCollection extends BrightnessStateOperationService {
 
-    @Override
-    default public Future<Void> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf((BrightnessStateOperationService input) -> input.setBrightnessState(brightnessState), getBrightnessStateOperationServices());
-    }
+    public Future<Void> setBrightnessState(final BrightnessState brightnessState, final UnitType unitType) throws CouldNotPerformException;
 
-    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
-    //remove when remote cashing is implemented
     /**
-     * Returns the average brightness value for a collection of brightness
-     * services.
+     * Returns the average brightness value for a collection of brightnessServices.
      *
      * @return
      * @throws org.openbase.jul.exception.NotAvailableException
      */
     @Override
-    default public BrightnessState getBrightnessState() throws NotAvailableException {
-        try {
-            Double average = 0d;
-            for (BrightnessStateOperationService service : getBrightnessStateOperationServices()) {
-                average += service.getBrightnessState().getBrightness();
-            }
-            average /= getBrightnessStateOperationServices().size();
-            return BrightnessState.newBuilder().setBrightness(average).build();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Brightness", ex);
-        }
-    }
+    public BrightnessState getBrightnessState() throws NotAvailableException;
 
-    public Collection<BrightnessStateOperationService> getBrightnessStateOperationServices() throws CouldNotPerformException;
+    /**
+     * Returns the average brightness value for a collection of brightnessServices with given unitType.
+     *
+     * @param unitType
+     * @return
+     * @throws org.openbase.jul.exception.NotAvailableException
+     */
+    public BrightnessState getBrightnessState(final UnitType unitType) throws NotAvailableException;
 }

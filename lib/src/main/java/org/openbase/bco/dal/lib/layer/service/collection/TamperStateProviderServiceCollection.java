@@ -21,11 +21,10 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.provider.TamperStateProviderService;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.TamperStateType.TamperState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -33,29 +32,23 @@ import rst.domotic.state.TamperStateType.TamperState;
  */
 public interface TamperStateProviderServiceCollection extends TamperStateProviderService {
 
-    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
-    //remove when remote cashing is implemented
     /**
-     * Returns tamper if at least one of the tamper providers returns tamper and
+     * Returns tamper if at least one of the tamperProviders returns tamper and
      * else no tamper.
      *
      * @return
      * @throws NotAvailableException
      */
     @Override
-    default public TamperState getTamperState() throws NotAvailableException {
-        try {
-            for (TamperStateProviderService provider : getTamperStateProviderServices()) {
-                if (provider.getTamperState().getValue() == TamperState.State.TAMPER) {
-                    return TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
-                }
-            }
-            return TamperState.newBuilder().setValue(TamperState.State.NO_TAMPER).build();
+    public TamperState getTamperState() throws NotAvailableException;
 
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("TamperState", ex);
-        }
-    }
-
-    public Collection<TamperStateProviderService> getTamperStateProviderServices() throws CouldNotPerformException;
+    /**
+     * Returns tamper if at least one of the tamperProviders with given unitType returns tamper and
+     * else no tamper.
+     *
+     * @param unitType
+     * @return
+     * @throws NotAvailableException
+     */
+    public TamperState getTamperState(final UnitType unitType) throws NotAvailableException;
 }

@@ -22,13 +22,16 @@ package org.openbase.bco.dal.remote.service;
  * #L%
  */
 import java.util.Collection;
+import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.collection.BrightnessStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.service.ServiceTemplateType;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.timing.TimestampType.Timestamp;
 
 // TODO pleminoq: This seems to cause in problems because units using this service in different ways.
@@ -39,12 +42,21 @@ import rst.timing.TimestampType.Timestamp;
 public class BrightnessStateServiceRemote extends AbstractServiceRemote<BrightnessStateOperationService, BrightnessState> implements BrightnessStateOperationServiceCollection {
 
     public BrightnessStateServiceRemote() {
-        super(ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE);
+        super(ServiceType.BRIGHTNESS_STATE_SERVICE);
+    }
+
+    public Collection<BrightnessStateOperationService> getBrightnessStateOperationServices() throws CouldNotPerformException {
+        return getServices();
     }
 
     @Override
-    public Collection<BrightnessStateOperationService> getBrightnessStateOperationServices() throws CouldNotPerformException {
-        return getServices();
+    public Future<Void> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.allOf((BrightnessStateOperationService input) -> input.setBrightnessState(brightnessState), getServices());
+    }
+
+    @Override
+    public Future<Void> setBrightnessState(final BrightnessState brightnessState, final UnitType unitType) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.allOf((BrightnessStateOperationService input) -> input.setBrightnessState(brightnessState), getServices(unitType));
     }
 
     /**
@@ -56,9 +68,20 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
      */
     @Override
     protected BrightnessState computeServiceState() throws CouldNotPerformException {
-        int serviceNumber = getBrightnessStateOperationServices().size();
+        return getBrightnessState(UnitType.UNKNOWN);
+    }
+
+    @Override
+    public BrightnessState getBrightnessState() throws NotAvailableException {
+        return getServiceState();
+    }
+
+    @Override
+    public BrightnessState getBrightnessState(final UnitType unitType) throws NotAvailableException {
+        Collection<BrightnessStateOperationService> brightnessStateOperationServices = getServices(UnitType.BATTERY);
+        int serviceNumber = brightnessStateOperationServices.size();
         Double average = 0d;
-        for (BrightnessStateOperationService service : getBrightnessStateOperationServices()) {
+        for (BrightnessStateOperationService service : brightnessStateOperationServices) {
             if (!((UnitRemote) service).isDataAvailable()) {
                 serviceNumber--;
                 continue;
@@ -67,10 +90,5 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
         }
         average /= serviceNumber;
         return BrightnessState.newBuilder().setBrightness(average).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
-    }
-
-    @Override
-    public BrightnessState getBrightnessState() throws NotAvailableException {
-        return getServiceState();
     }
 }

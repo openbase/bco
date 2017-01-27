@@ -23,14 +23,19 @@ package org.openbase.bco.dal.remote.service;
  */
 import java.awt.Color;
 import java.util.Collection;
+import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.collection.ColorStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.transform.HSBColorToRGBColorTransformer;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.TypeNotSupportedException;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.ColorStateType.ColorState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.timing.TimestampType.Timestamp;
 import rst.vision.ColorType;
 import rst.vision.HSBColorType.HSBColor;
@@ -45,7 +50,6 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
         super(ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE);
     }
 
-    @Override
     public Collection<ColorStateOperationService> getColorStateOperationServices() {
         return getServices();
     }
@@ -59,32 +63,52 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
      */
     @Override
     protected ColorState computeServiceState() throws CouldNotPerformException {
-        double averageRed = 0;
-        double averageGreen = 0;
-        double averageBlue = 0;
-        int amount = getColorStateOperationServices().size();
-        Collection<ColorStateOperationService> colorStateOperationServicCollection = getColorStateOperationServices();
-        for (ColorStateOperationService service : colorStateOperationServicCollection) {
-            if (!((UnitRemote) service).isDataAvailable()) {
-                amount--;
-                continue;
-            }
+        return getColorState(UnitType.UNKNOWN);
+    }
 
-            Color color = HSBColorToRGBColorTransformer.transform(service.getColorState().getColor().getHsbColor());
-            averageRed += color.getRed();
-            averageGreen += color.getGreen();
-            averageBlue += color.getBlue();
-        }
-        averageRed = averageRed / amount;
-        averageGreen = averageGreen / amount;
-        averageBlue = averageBlue / amount;
+    @Override
+    public Future<Void> setColorState(ColorState colorState) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.allOf((ColorStateOperationService input) -> input.setColorState(colorState), getServices());
+    }
 
-        HSBColor hsbColor = HSBColorToRGBColorTransformer.transform(new Color((int) averageRed, (int) averageGreen, (int) averageBlue));
-        return ColorState.newBuilder().setColor(ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(hsbColor)).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+    @Override
+    public Future<Void> setColorState(final ColorState colorState, final UnitType unitType) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.allOf((ColorStateOperationService input) -> input.setColorState(colorState), getServices(unitType));
     }
 
     @Override
     public ColorState getColorState() throws NotAvailableException {
         return getServiceState();
+    }
+
+    @Override
+    public ColorState getColorState(final UnitType unitType) throws NotAvailableException {
+        try {
+            double averageRed = 0;
+            double averageGreen = 0;
+            double averageBlue = 0;
+            int amount = getColorStateOperationServices().size();
+            Collection<ColorStateOperationService> colorStateOperationServicCollection = getServices(unitType);
+            for (ColorStateOperationService service : colorStateOperationServicCollection) {
+                if (!((UnitRemote) service).isDataAvailable()) {
+                    amount--;
+                    continue;
+                }
+
+                Color color = HSBColorToRGBColorTransformer.transform(service.getColorState().getColor().getHsbColor());
+                averageRed += color.getRed();
+                averageGreen += color.getGreen();
+                averageBlue += color.getBlue();
+
+            }
+            averageRed = averageRed / amount;
+            averageGreen = averageGreen / amount;
+            averageBlue = averageBlue / amount;
+
+            HSBColor hsbColor = HSBColorToRGBColorTransformer.transform(new Color((int) averageRed, (int) averageGreen, (int) averageBlue));
+            return ColorState.newBuilder().setColor(ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(hsbColor)).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        } catch (CouldNotTransformException | TypeNotSupportedException ex) {
+            throw new NotAvailableException("Could not transform from HSB to RGB or vice-versa!", ex);
+        }
     }
 }

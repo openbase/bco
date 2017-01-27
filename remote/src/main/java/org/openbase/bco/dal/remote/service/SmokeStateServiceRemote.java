@@ -29,6 +29,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.SmokeStateType.SmokeState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.timing.TimestampType.Timestamp;
 
 /**
@@ -41,7 +42,6 @@ public class SmokeStateServiceRemote extends AbstractServiceRemote<SmokeStatePro
         super(ServiceType.SMOKE_STATE_SERVICE);
     }
 
-    @Override
     public Collection<SmokeStateProviderService> getSmokeStateProviderServices() {
         return getServices();
     }
@@ -56,12 +56,22 @@ public class SmokeStateServiceRemote extends AbstractServiceRemote<SmokeStatePro
      */
     @Override
     protected SmokeState computeServiceState() throws CouldNotPerformException {
+        return getSmokeState(UnitType.UNKNOWN);
+    }
+
+    @Override
+    public SmokeState getSmokeState() throws NotAvailableException {
+        return getServiceState();
+    }
+
+    @Override
+    public SmokeState getSmokeState(final UnitType unitType) throws NotAvailableException {
         boolean someSmoke = false;
         SmokeState.State smokeValue = SmokeState.State.NO_SMOKE;
         Collection<SmokeStateProviderService> smokeStateProviderServices = getSmokeStateProviderServices();
         int amount = smokeStateProviderServices.size();
         double averageSmokeLevel = 0;
-        for (SmokeStateProviderService provider : smokeStateProviderServices) {
+        for (SmokeStateProviderService provider : getServices(unitType)) {
             if (((UnitRemote) provider).isDataAvailable()) {
                 amount--;
                 continue;
@@ -84,10 +94,5 @@ public class SmokeStateServiceRemote extends AbstractServiceRemote<SmokeStatePro
         averageSmokeLevel /= amount;
 
         return SmokeState.newBuilder().setValue(smokeValue).setSmokeLevel(averageSmokeLevel).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
-    }
-
-    @Override
-    public SmokeState getSmokeState() throws NotAvailableException {
-        return getServiceState();
     }
 }

@@ -21,11 +21,10 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionStateProviderService;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -33,33 +32,21 @@ import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
  */
 public interface PowerConsumptionStateProviderServiceCollection extends PowerConsumptionStateProviderService {
 
-    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
-    //remove when remote cashing is implemented
     /**
-     * Returns an average current and voltage for the underlying provider and
-     * the sum of their consumptions.
+     * Computes the average current and voltage and the sum of the consumption of the underlying services.
      *
      * @return
      * @throws NotAvailableException
      */
     @Override
-    default public PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {
-        try {
-            double consumptionSum = 0;
-            double averageCurrent = 0;
-            double averageVoltage = 0;
-            for (PowerConsumptionStateProviderService provider : getPowerConsumptionStateProviderServices()) {
-                consumptionSum += provider.getPowerConsumptionState().getConsumption();
-                averageCurrent += provider.getPowerConsumptionState().getCurrent();
-                averageVoltage += provider.getPowerConsumptionState().getVoltage();
-            }
-            averageCurrent = averageCurrent / getPowerConsumptionStateProviderServices().size();
-            averageVoltage = averageVoltage / getPowerConsumptionStateProviderServices().size();
-            return PowerConsumptionState.newBuilder().setConsumption(consumptionSum).setCurrent(averageCurrent).setVoltage(averageVoltage).build();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("PowerConsumptionState", ex);
-        }
-    }
+    public PowerConsumptionState getPowerConsumptionState() throws NotAvailableException;
 
-    public Collection<PowerConsumptionStateProviderService> getPowerConsumptionStateProviderServices() throws CouldNotPerformException;
+    /**
+     * Computes the average current and voltage and the sum of the consumption of the underlying service
+     * with given unitType.
+     *
+     * @return
+     * @throws NotAvailableException
+     */
+    public PowerConsumptionState getPowerConsumptionState(final UnitType unitType) throws NotAvailableException;
 }

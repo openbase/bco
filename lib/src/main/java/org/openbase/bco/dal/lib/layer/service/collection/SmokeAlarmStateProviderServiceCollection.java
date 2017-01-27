@@ -21,11 +21,10 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.provider.SmokeAlarmStateProviderService;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.AlarmStateType.AlarmState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -33,28 +32,23 @@ import rst.domotic.state.AlarmStateType.AlarmState;
  */
 public interface SmokeAlarmStateProviderServiceCollection extends SmokeAlarmStateProviderService {
 
-    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
-    //remove when remote cashing is implemented
     /**
-     * Returns alarm if at least one smoke alarm state provider returns alarm
+     * Returns alarm if at least one smokeAlarmStateProvider returns alarm
      * else no alarm.
      *
      * @return
      * @throws NotAvailableException
      */
     @Override
-    default public AlarmState getSmokeAlarmState() throws NotAvailableException {
-        try {
-            for (SmokeAlarmStateProviderService provider : getSmokeAlarmStateProviderServices()) {
-                if (provider.getSmokeAlarmState().getValue() == AlarmState.State.ALARM) {
-                    return AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
-                }
-            }
-            return AlarmState.newBuilder().setValue(AlarmState.State.NO_ALARM).build();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("AlarmState", ex);
-        }
-    }
+    public AlarmState getSmokeAlarmState() throws NotAvailableException;
 
-    public Collection<SmokeAlarmStateProviderService> getSmokeAlarmStateProviderServices() throws CouldNotPerformException;
+    /**
+     * Returns alarm if at least one smokeAlarmStateProvider with given unitType returns alarm
+     * else no alarm.
+     *
+     * @param unitType
+     * @return
+     * @throws NotAvailableException
+     */
+    public AlarmState getSmokeAlarmState(final UnitType unitType) throws NotAvailableException;
 }

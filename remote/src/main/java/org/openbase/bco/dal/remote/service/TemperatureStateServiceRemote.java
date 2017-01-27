@@ -37,12 +37,11 @@ import rst.timing.TimestampType.Timestamp;
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class TemperatureStateServiceRemote extends AbstractServiceRemote<TemperatureStateProviderService, TemperatureState> implements TemperatureStateProviderServiceCollection {
-    
+
     public TemperatureStateServiceRemote() {
         super(ServiceType.TEMPERATURE_STATE_SERVICE);
     }
-    
-    @Override
+
     public Collection<TemperatureStateProviderService> getTemperatureStateProviderServices() {
         return getServices();
     }
@@ -58,14 +57,14 @@ public class TemperatureStateServiceRemote extends AbstractServiceRemote<Tempera
     protected TemperatureState computeServiceState() throws CouldNotPerformException {
         return getTemperatureState(UnitType.UNKNOWN);
     }
-    
+
     @Override
     public TemperatureState getTemperatureState() throws NotAvailableException {
         return getServiceState();
     }
-    
+
     @Override
-    public TemperatureState getTemperatureState(UnitType unitType) throws NotAvailableException {
+    public TemperatureState getTemperatureState(final UnitType unitType) throws NotAvailableException {
         Double average = 0d;
         Collection<TemperatureStateProviderService> temperatureStateProviderServices = getServices(unitType);
         int amount = temperatureStateProviderServices.size();
@@ -74,11 +73,11 @@ public class TemperatureStateServiceRemote extends AbstractServiceRemote<Tempera
                 amount--;
                 continue;
             }
-            
+
             average += provider.getTemperatureState().getTemperature();
         }
         average /= amount;
-        
+
         return TemperatureState.newBuilder().setTemperature(average).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
     }
 }

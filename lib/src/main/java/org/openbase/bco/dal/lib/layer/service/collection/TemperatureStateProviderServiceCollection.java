@@ -21,9 +21,7 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -53,6 +51,4 @@ public interface TemperatureStateProviderServiceCollection extends TemperatureSt
      * @throws NotAvailableException
      */
     public TemperatureState getTemperatureState(final UnitType unitType) throws NotAvailableException;
-
-    public Collection<TemperatureStateProviderService> getTemperatureStateProviderServices() throws CouldNotPerformException;
 }

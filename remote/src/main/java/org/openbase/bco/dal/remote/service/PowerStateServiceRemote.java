@@ -22,13 +22,16 @@ package org.openbase.bco.dal.remote.service;
  * #L%
  */
 import java.util.Collection;
+import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.collection.PowerStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.timing.TimestampType.Timestamp;
 
 /**
@@ -41,9 +44,18 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
         super(ServiceType.POWER_STATE_SERVICE);
     }
 
-    @Override
     public Collection<PowerStateOperationService> getPowerStateOperationServices() {
         return getServices();
+    }
+
+    @Override
+    public Future<Void> setPowerState(PowerState powerState) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.allOf((PowerStateOperationService input) -> input.setPowerState(powerState), super.getServices());
+    }
+
+    @Override
+    public Future<Void> setPowerState(final PowerState powerState, final UnitType unitType) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.allOf((PowerStateOperationService input) -> input.setPowerState(powerState), super.getServices(unitType));
     }
 
     /**
@@ -55,8 +67,18 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
      */
     @Override
     protected PowerState computeServiceState() throws CouldNotPerformException {
+        return getPowerState(UnitType.UNKNOWN);
+    }
+
+    @Override
+    public PowerState getPowerState() throws NotAvailableException {
+        return getServiceState();
+    }
+
+    @Override
+    public PowerState getPowerState(final UnitType unitType) throws NotAvailableException {
         PowerState.State powerStateValue = PowerState.State.OFF;
-        for (PowerStateOperationService service : getPowerStateOperationServices()) {
+        for (PowerStateOperationService service : getServices(unitType)) {
             if (!((UnitRemote) service).isDataAvailable()) {
                 continue;
             }
@@ -67,10 +89,5 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
         }
 
         return PowerState.newBuilder().setValue(powerStateValue).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
-    }
-
-    @Override
-    public PowerState getPowerState() throws NotAvailableException {
-        return getServiceState();
     }
 }

@@ -44,18 +44,17 @@ public class TargetTemperatureStateServiceRemote extends AbstractServiceRemote<T
         super(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
     }
 
-    @Override
     public Collection<TargetTemperatureStateOperationService> getTargetTemperatureStateOperationServices() {
         return getServices();
     }
 
     @Override
-    public Future<Void> setTargetTemperatureState(TemperatureState temperatureState) throws CouldNotPerformException {
+    public Future<Void> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException {
         return GlobalCachedExecutorService.allOf((TargetTemperatureStateOperationService input) -> input.setTargetTemperatureState(temperatureState), getServices());
     }
 
     @Override
-    public Future<Void> setTargetTemperatureState(TemperatureState temperatureState, UnitType unitType) throws CouldNotPerformException {
+    public Future<Void> setTargetTemperatureState(final TemperatureState temperatureState, final UnitType unitType) throws CouldNotPerformException {
         return GlobalCachedExecutorService.allOf((TargetTemperatureStateOperationService input) -> input.setTargetTemperatureState(temperatureState), getServices(unitType));
     }
 
@@ -77,7 +76,7 @@ public class TargetTemperatureStateServiceRemote extends AbstractServiceRemote<T
     }
 
     @Override
-    public TemperatureState getTargetTemperatureState(UnitType unitType) throws NotAvailableException {
+    public TemperatureState getTargetTemperatureState(final UnitType unitType) throws NotAvailableException {
         Double average = 0d;
         Collection<TargetTemperatureStateOperationService> targetTemperatureStateOperationServices = getServices(unitType);
         int amount = targetTemperatureStateOperationServices.size();

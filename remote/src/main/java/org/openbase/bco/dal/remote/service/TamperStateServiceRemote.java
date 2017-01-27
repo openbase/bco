@@ -29,6 +29,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.TamperStateType.TamperState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.timing.TimestampType.Timestamp;
 
 /**
@@ -41,7 +42,6 @@ public class TamperStateServiceRemote extends AbstractServiceRemote<TamperStateP
         super(ServiceType.TAMPER_STATE_SERVICE);
     }
 
-    @Override
     public Collection<TamperStateProviderService> getTamperStateProviderServices() {
         return getServices();
     }
@@ -56,9 +56,19 @@ public class TamperStateServiceRemote extends AbstractServiceRemote<TamperStateP
      */
     @Override
     protected TamperState computeServiceState() throws CouldNotPerformException {
+        return getTamperState(UnitType.UNKNOWN);
+    }
+
+    @Override
+    public TamperState getTamperState() throws NotAvailableException {
+        return getServiceState();
+    }
+
+    @Override
+    public TamperState getTamperState(final UnitType unitType) throws NotAvailableException {
         TamperState.State tamperValue = TamperState.State.NO_TAMPER;
         long lastDetection = 0;
-        for (TamperStateProviderService provider : getTamperStateProviderServices()) {
+        for (TamperStateProviderService provider : getServices(unitType)) {
             if (!((UnitRemote) provider).isDataAvailable()) {
                 continue;
             }
@@ -74,10 +84,5 @@ public class TamperStateServiceRemote extends AbstractServiceRemote<TamperStateP
         }
 
         return TamperState.newBuilder().setValue(tamperValue).setLastDetection(Timestamp.newBuilder().setTime(lastDetection)).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
-    }
-
-    @Override
-    public TamperState getTamperState() throws NotAvailableException {
-        return getServiceState();
     }
 }

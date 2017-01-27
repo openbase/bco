@@ -29,6 +29,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.MotionStateType.MotionState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.timing.TimestampType.Timestamp;
 
 /**
@@ -41,7 +42,6 @@ public class MotionStateServiceRemote extends AbstractServiceRemote<MotionStateP
         super(ServiceType.MOTION_STATE_SERVICE);
     }
 
-    @Override
     public Collection<MotionStateProviderService> getMotionStateProviderServices() {
         return getServices();
     }
@@ -49,16 +49,26 @@ public class MotionStateServiceRemote extends AbstractServiceRemote<MotionStateP
     /**
      * {@inheritDoc}
      * Computes the motion state as motion if at least one underlying services replies with motion and else no motion.
-     * Additionally the last motion timestamp as set as the latest of the underlying services.
+     * Additionally the last motion timestamp is set as the latest of the underlying services.
      *
      * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     protected MotionState computeServiceState() throws CouldNotPerformException {
+        return getMotionState(UnitType.UNKNOWN);
+    }
+
+    @Override
+    public MotionState getMotionState() throws NotAvailableException {
+        return getServiceState();
+    }
+
+    @Override
+    public MotionState getMotionState(UnitType unitType) throws NotAvailableException {
         MotionState.State motionValue = MotionState.State.NO_MOTION;
         long lastMotion = 0;
-        for (MotionStateProviderService provider : getMotionStateProviderServices()) {
+        for (MotionStateProviderService provider : getServices(unitType)) {
             if (!((UnitRemote) provider).isDataAvailable()) {
                 continue;
             }
@@ -74,10 +84,5 @@ public class MotionStateServiceRemote extends AbstractServiceRemote<MotionStateP
         }
 
         return MotionState.newBuilder().setValue(motionValue).setLastMotion(Timestamp.newBuilder().setTime(lastMotion)).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
-    }
-
-    @Override
-    public MotionState getMotionState() throws NotAvailableException {
-        return getServiceState();
     }
 }
