@@ -91,7 +91,6 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
         };
 
         locationDataObserver = (Observable<LocationData> source, LocationData data) -> {
-
             updateMotionState(data.getMotionState());
         };
     }
@@ -115,6 +114,7 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
 
         active = true;
         locationDataProvider.addDataObserver(locationDataObserver);
+        updateMotionState(locationDataProvider.getData().getMotionState());
     }
 
     @Override
@@ -143,15 +143,17 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
         // so wird das timeout durch das erste present setzten des detectors selbst nochmal restarted...
         // vorher nach motion state filtern (inklusive lastMotion) und wenn gleich das presence update skippen?
         // update Timestemp and reset timer
-        if (presenceState.getValue() == PresenceState.State.PRESENT) {
+        if (presenceState.getValue() == PresenceState.State.PRESENT && this.presenceState.getLastPresence() != presenceState.getLastPresence()) {
             presenceTimeout.restart();
             this.presenceState.getLastPresenceBuilder().setTime(Math.max(this.presenceState.getLastPresence().getTime(), presenceState.getLastPresence().getTime()));
         }
 
-        // update value
-        if (!(this.presenceState.getValue() == presenceState.getValue())) {
+        // filter non state changes
+        if (this.presenceState.getValue() == presenceState.getValue()) {
             return;
         }
+
+        // update value
         this.presenceState.getTimestampBuilder().setTime(System.currentTimeMillis());
         this.presenceState.setValue(presenceState.getValue());
 
@@ -166,7 +168,7 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
     private synchronized void updateMotionState(final MotionStateOrBuilder motionState) throws CouldNotPerformException {
 
         // Filter rush motion predictions.
-        if (motionState.getValue() == MotionState.State.NO_MOTION && !presenceTimeout.isExpired()) {
+        if (motionState.getValue() == MotionState.State.NO_MOTION) {
             return;
         }
 
