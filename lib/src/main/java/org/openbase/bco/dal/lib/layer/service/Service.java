@@ -129,7 +129,7 @@ public interface Service {
         }
     }
     
-    public static Object invokeServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final Service instance, final Object... arguments) throws CouldNotPerformException {
+    public static Object invokeServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final Object instance, final Object... arguments) throws CouldNotPerformException {
         try {
             return detectServiceMethod(serviceType, servicePattern, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
@@ -137,7 +137,11 @@ public interface Service {
         }
     }
     
-    public static Object invokeOperationServiceMethod(final ServiceType serviceType, final Service instance, final Object... arguments) throws CouldNotPerformException {
+    public static Object invokeProviderServiceMethod(final ServiceType serviceType, final Object instance, final Object... arguments) throws CouldNotPerformException {
+        return invokeServiceMethod(serviceType, ServicePattern.PROVIDER, instance, arguments);
+    }
+    
+    public static Object invokeOperationServiceMethod(final ServiceType serviceType, final Object instance, final Object... arguments) throws CouldNotPerformException {
         return invokeServiceMethod(serviceType, ServicePattern.OPERATION, instance, arguments);
     }
 
