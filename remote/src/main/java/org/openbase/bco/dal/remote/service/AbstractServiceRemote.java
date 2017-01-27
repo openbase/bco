@@ -70,7 +70,6 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     private final Map<String, UnitRemote> unitRemoteMap;
     private final Map<UnitType, List<S>> unitRemoteTypeMap;
     private final Map<String, S> serviceMap;
-    private ST serviceState;
     private final Observer dataObserver;
     protected final ObservableImpl<ST> serviceStateObservable = new ObservableImpl<>();
     private final SyncObject syncObject = new SyncObject("ServiceStateComputationLock");
@@ -81,7 +80,6 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * @param serviceType The remote service type.
      */
     public AbstractServiceRemote(final ServiceType serviceType) {
-        this.serviceState = null;
         this.serviceType = serviceType;
         this.unitRemoteMap = new HashMap<>();
         this.unitRemoteTypeMap = new HashMap<>();
@@ -105,6 +103,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * @throws CouldNotPerformException if the computation fails
      */
     private void updateServiceState() throws CouldNotPerformException {
+        final ST serviceState;
         synchronized (syncObject) {
             serviceState = computeServiceState();
         }
@@ -117,10 +116,10 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * @throws NotAvailableException if the service state has not been set at least once.
      */
     public ST getServiceState() throws NotAvailableException {
-        if (serviceState == null) {
+        if (serviceStateObservable.isValueAvailable()) {
             throw new NotAvailableException("ServiceState");
         }
-        return serviceState;
+        return serviceStateObservable.getValue();
     }
 
     /**
@@ -169,6 +168,10 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             }
 
             unitRemoteMap.put(config.getId(), remote);
+
+            if (active) {
+                remote.addDataObserver(dataObserver);
+            }
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -183,10 +186,6 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      */
     public void init(final Collection<UnitConfig> configs) throws InitializationException, InterruptedException {
         try {
-            if (configs.isEmpty()) {
-                throw new NotAvailableException("UnitConfigs");
-            }
-
             MultiException.ExceptionStack exceptionStack = null;
             for (UnitConfig config : configs) {
                 try {
@@ -280,7 +279,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * @return a collection of unit remotes limited to the service interface.
      */
     public Collection<S> getServices(final UnitType unitType) {
-        if(unitType == UnitType.UNKNOWN) {
+        if (unitType == UnitType.UNKNOWN) {
             return Collections.unmodifiableCollection(serviceMap.values());
         }
         return Collections.unmodifiableCollection(unitRemoteTypeMap.get(unitType));
@@ -322,6 +321,10 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * @throws InterruptedException is thrown in case the thread is externally interrupted.
      */
     public void waitForData() throws CouldNotPerformException, InterruptedException {
+        if (unitRemoteMap.isEmpty()) {
+            return;
+        }
+
         for (UnitRemote remote : unitRemoteMap.values()) {
             remote.waitForData();
         }
@@ -337,6 +340,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * @throws InterruptedException is thrown in case the thread is externally interrupted.
      */
     public void waitForData(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        if (unitRemoteMap.isEmpty()) {
+            return;
+        }
         //todo reimplement with respect to the given timeout.
         for (UnitRemote remote : unitRemoteMap.values()) {
             remote.waitForData(timeout, timeUnit);
