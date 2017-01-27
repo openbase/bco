@@ -57,6 +57,7 @@ import org.openbase.bco.manager.location.lib.LocationController;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -80,7 +81,6 @@ import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.MotionStateType.MotionState;
-import rst.domotic.state.PowerConsumptionStateType;
 import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.PresenceStateType.PresenceState;
@@ -151,7 +151,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
 
             @Override
             public void update(Observable source, Object data) throws Exception {
-                getCurrentStatus();
+                updateCurrentState();
             }
         };
     }
@@ -238,7 +238,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
             }
         }
         if (isActive()) {
-            getCurrentStatus();
+            updateCurrentState();
         }
         originalUnitIdList.clear();
         originalUnitIdList.addAll(config.getLocationConfig().getUnitIdList());
@@ -254,51 +254,32 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         }
         super.activate();
         presenceDetector.activate();
-        getCurrentStatus();
+        updateCurrentState();
     }
 
-    private void getCurrentStatus() {
+    private void updateCurrentState() {
         List<ServiceType> serviceTypes = new ArrayList<>();
-        for (ServiceType serviceType : serviceTypes) {
-            try {
-                Service.invokeServiceMethod(ServiceTemplate.newBuilder().setPattern(ServiceTemplate.ServicePattern.PROVIDER).setType(serviceType).build(), this);
-            } catch (Exception ex) {
+        try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
+            for (final ServiceType serviceType : serviceTypes) {
+                final Object state;
+                try {
+                    state = Service.invokeProviderServiceMethod(serviceType, this);
+                } catch (NotAvailableException ex) {
+                    logger.debug("No service data for type[" + serviceType + "] on location available!", ex);
+                    continue;
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(new FatalImplementationErrorException("LocationController does not implement service[" + serviceType + "] method defined for the location unitType!", ex), logger);
+                    continue;
+                }
 
-            }
-        }
-//        this.getClass().getMethod(FIELD_SCOPE, parameterTypes)
-        try {
-            BrightnessState brighntess = getBrightnessState();
-            ColorState color = getColorState();
-            MotionState motion = getMotionState();
-            PowerState power = getPowerState();
-            PowerConsumptionStateType.PowerConsumptionState powerConsumption = getPowerConsumptionState();
-            BlindState blindState = getBlindState();
-            AlarmState smokeAlarmState = getSmokeAlarmState();
-            SmokeState smokeState = getSmokeState();
-            StandbyState standby = getStandbyState();
-            TamperState tamper = getTamperState();
-            TemperatureState targetTemperature = getTargetTemperatureState();
-            TemperatureState temperature = getTemperatureState();
-            try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
-                dataBuilder.getInternalBuilder().setBrightnessState(brighntess);
-                dataBuilder.getInternalBuilder().setColorState(color);
-                dataBuilder.getInternalBuilder().setMotionState(motion);
-                dataBuilder.getInternalBuilder().setPowerState(power);
-                dataBuilder.getInternalBuilder().setPowerConsumptionState(powerConsumption);
-                dataBuilder.getInternalBuilder().setBlindState(blindState);
-                dataBuilder.getInternalBuilder().setSmokeAlarmState(smokeAlarmState);
-                dataBuilder.getInternalBuilder().setSmokeState(smokeState);
-                dataBuilder.getInternalBuilder().setStandbyState(standby);
-                dataBuilder.getInternalBuilder().setTamperState(tamper);
-                dataBuilder.getInternalBuilder().setTargetTemperatureState(targetTemperature);
-                dataBuilder.getInternalBuilder().setAcutalTemperatureState(temperature);
-                dataBuilder.getInternalBuilder().setPresenceState(presenceDetector.getData());
-            } catch (Exception ex) {
-                throw new CouldNotPerformException("Could not apply data change!", ex);
+                try {
+                    Service.invokeOperationServiceMethod(serviceType, dataBuilder.getInternalBuilder(), state);
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(new FatalImplementationErrorException("Location RST data type does not contain data for service[" + serviceType + "]!", ex), logger);
+                }
             }
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not get current status!", ex), logger, LogLevel.WARN);
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), logger, LogLevel.WARN);
         }
     }
 
