@@ -283,12 +283,15 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
                         if (!launcherEntry.getKey().getValue().isVerified()) {
                             verificationExceptionStack = MultiException.push(application, new CouldNotPerformException("Could not verify " + launcherEntry.getKey().getKey().getSimpleName() + "!", launcherEntry.getKey().getValue().getVerificationFailedCause()), verificationExceptionStack);
                         }
+                        // remove from stack because launcher was successfully started.
                         launchableFutureMap.remove(launcherEntry.getKey());
                     } catch (InterruptedException ex) {
                         throw ex;
                     } catch (TimeoutException ex) {
                         ExceptionPrinter.printHistory(new CouldNotPerformException("Launcher " + launcherEntry.getKey().getKey().getSimpleName() + " startup delay detected!", ex), logger);
                     } catch (Exception ex) {
+                        // remove from stack because launcher failed and generate exception report.
+                        launchableFutureMap.remove(launcherEntry.getKey());
                         errorExceptionStack = MultiException.push(application, new CouldNotPerformException("Could not launch " + launcherEntry.getKey().getKey().getSimpleName() + "!", ex), errorExceptionStack);
                     }
                 }
