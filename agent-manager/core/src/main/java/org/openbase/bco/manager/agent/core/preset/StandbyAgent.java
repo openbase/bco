@@ -89,7 +89,7 @@ public class StandbyAgent extends AbstractAgent {
     }
 
     public void triggerPresenceChange(LocationDataType.LocationData data) throws InterruptedException {
-        System.out.println("trigger: " + data.getPresenceState().getValue().name());
+//        System.out.println("trigger: " + data.getPresenceState().getValue().name());
         synchronized (standbySync) {
             if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT)) {
                 timeout.cancel();
@@ -102,7 +102,7 @@ public class StandbyAgent extends AbstractAgent {
                 }
             } else if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.ABSENT)) {
                 if (!timeout.isActive()) {
-                    System.out.println("timeout start");
+//                    System.out.println("timeout start");
                     timeout.start();
                 }
             }
@@ -129,7 +129,7 @@ public class StandbyAgent extends AbstractAgent {
     }
 
     private void standby() throws CouldNotPerformException, InterruptedException {
-        System.out.println("try to standby");
+//        System.out.println("try to standby");
         synchronized (standbySync) {
             if (standby) {
                 return;

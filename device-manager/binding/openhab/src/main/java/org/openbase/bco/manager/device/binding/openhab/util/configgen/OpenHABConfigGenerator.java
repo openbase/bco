@@ -21,13 +21,10 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABConfiguration;
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABDistribution;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABItemConfig;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
-import org.openbase.jps.preset.JPPrefix;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -40,16 +37,14 @@ import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
 import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
 import org.openbase.bco.registry.app.remote.AppRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
+import org.openbase.jul.iface.Launchable;
+import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.pattern.Observable;
 import org.slf4j.LoggerFactory;
-import rst.domotic.registry.AgentRegistryDataType.AgentRegistryData;
-import rst.domotic.registry.AppRegistryDataType.AppRegistryData;
-import rst.domotic.registry.SceneRegistryDataType.SceneRegistryData;
-import rst.domotic.registry.DeviceRegistryDataType.DeviceRegistryData;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
-import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
 
 /**
  * //TODO: openHAB config generator should maybe become a project on its on. It
@@ -58,7 +53,7 @@ import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class OpenHABConfigGenerator {
+public class OpenHABConfigGenerator implements Launchable<Void>, VoidInitializable {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(OpenHABConfigGenerator.class);
 
@@ -72,8 +67,9 @@ public class OpenHABConfigGenerator {
     private final AgentRegistryRemote agentRegistryRemote;
     private final AppRegistryRemote appRegistryRemote;
     private final RecurrenceEventFilter recurrenceGenerationFilter;
+    private boolean active;
 
-    public OpenHABConfigGenerator() throws InstantiationException {
+    public OpenHABConfigGenerator() throws InstantiationException, InterruptedException {
         try {
             this.deviceRegistryRemote = new DeviceRegistryRemote();
             this.locationRegistryRemote = new LocationRegistryRemote();
@@ -91,52 +87,54 @@ public class OpenHABConfigGenerator {
 
             };
 
-        } catch (CouldNotPerformException | InterruptedException ex) {
+            FileAlterationObserver fileAlterationObserver = new FileAlterationObserver(JPService.getProperty(JPOpenHABItemConfig.class).getValue().getParent());
+            fileAlterationObserver.initialize();
+            fileAlterationObserver.addListener(new FileAlterationListenerAdaptor() {
+
+                @Override
+                public void onFileDelete(File file) {
+                    logger.warn("Detect config file deletion!");
+                    generate();
+                }
+            });
+
+            final FileAlterationMonitor monitor = new FileAlterationMonitor(10000);
+            monitor.addObserver(fileAlterationObserver);
+            monitor.start();
+
+            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
+
+                @Override
+                public void run() {
+                    shutdown();
+                    try {
+                        monitor.stop();
+                    } catch (Exception ex) {
+                        ExceptionPrinter.printHistory(ex, logger);
+                    }
+                }
+            }));
+
+        } catch (InterruptedException ex) {
+            throw ex;
+        } catch (Exception ex) {
             throw new InstantiationException(this, ex);
         }
     }
 
-    private void init() throws InitializationException, InterruptedException, CouldNotPerformException {
-        logger.info("init");
-        deviceRegistryRemote.init();
-        deviceRegistryRemote.activate();
-        locationRegistryRemote.init();
-        locationRegistryRemote.activate();
-        sceneRegistryRemote.init();
-        sceneRegistryRemote.activate();
-        agentRegistryRemote.init();
-        agentRegistryRemote.activate();
-        appRegistryRemote.init();
-        appRegistryRemote.activate();
-        itemConfigGenerator.init();
-        unitRegistryRemote.init();
-        unitRegistryRemote.activate();
+    @Override
+    public void init() throws InitializationException, InterruptedException {
+        try {
+            itemConfigGenerator.init();
+            Registries.getUnitRegistry().waitForData();
 
-        deviceRegistryRemote.waitForData();
-        locationRegistryRemote.waitForData();
-        sceneRegistryRemote.waitForData();
-        agentRegistryRemote.waitForData();
-        appRegistryRemote.waitForData();
-        unitRegistryRemote.waitForData();
-
-        this.deviceRegistryRemote.addDataObserver((Observable<DeviceRegistryData> source, DeviceRegistryData data) -> {
+            Registries.getUnitRegistry().addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
+                generate();
+            });
             generate();
-        });
-        this.locationRegistryRemote.addDataObserver((Observable<LocationRegistryData> source, LocationRegistryData data) -> {
-            generate();
-        });
-        this.sceneRegistryRemote.addDataObserver((Observable<SceneRegistryData> source, SceneRegistryData data) -> {
-            generate();
-        });
-        this.agentRegistryRemote.addDataObserver((Observable<AgentRegistryData> source, AgentRegistryData data) -> {
-            generate();
-        });
-        this.appRegistryRemote.addDataObserver((Observable<AppRegistryData> source, AppRegistryData data) -> {
-            generate();
-        });
-        this.unitRegistryRemote.addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
-            generate();
-        });
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     public void generate() {
@@ -156,64 +154,23 @@ public class OpenHABConfigGenerator {
         }
     }
 
-    private void shutdown() {
-        logger.info("shutdown");
-        itemConfigGenerator.shutdown();
-        deviceRegistryRemote.shutdown();
-        locationRegistryRemote.shutdown();
-        sceneRegistryRemote.shutdown();
-        agentRegistryRemote.shutdown();
-        appRegistryRemote.shutdown();
-        unitRegistryRemote.shutdown();
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        active = true;
     }
 
-    /**
-     * @param args the command line arguments
-     */
-    public static void main(String[] args) throws Exception {
-        JPService.setApplicationName("dal-openhab-config-generator");
-        JPService.registerProperty(JPPrefix.class);
-        JPService.registerProperty(JPOpenHABItemConfig.class);
-        JPService.registerProperty(JPOpenHABDistribution.class);
-        JPService.registerProperty(JPOpenHABConfiguration.class);
-        JPService.parseAndExitOnError(args);
+    @Override
+    public void deactivate() throws CouldNotPerformException, InterruptedException {
+        active = false;
+    }
 
-        try {
-            final OpenHABConfigGenerator openHABConfigGenerator = new OpenHABConfigGenerator();
-            openHABConfigGenerator.init();
-            openHABConfigGenerator.generate();
+    @Override
+    public boolean isActive() {
+        return active;
+    }
 
-            FileAlterationObserver fileAlterationObserver = new FileAlterationObserver(JPService.getProperty(JPOpenHABItemConfig.class).getValue().getParent());
-            fileAlterationObserver.initialize();
-            fileAlterationObserver.addListener(new FileAlterationListenerAdaptor() {
-
-                @Override
-                public void onFileDelete(File file) {
-                    logger.warn("Detect config file deletion!");
-                    openHABConfigGenerator.generate();
-                }
-            });
-
-            final FileAlterationMonitor monitor = new FileAlterationMonitor(10000);
-            monitor.addObserver(fileAlterationObserver);
-            monitor.start();
-
-            Runtime.getRuntime().addShutdownHook(new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    openHABConfigGenerator.shutdown();
-                    try {
-                        monitor.stop();
-                    } catch (Exception ex) {
-                        ExceptionPrinter.printHistory(ex, logger);
-                    }
-                }
-            }));
-
-        } catch (Exception ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
-        }
-        logger.info(JPService.getApplicationName() + " successfully started.");
+    @Override
+    public void shutdown() {
+        itemConfigGenerator.shutdown();
     }
 }

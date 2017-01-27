@@ -142,7 +142,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                 try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                     dataBuilder.getInternalBuilder().setPresenceState(data);
                 } catch (CouldNotPerformException ex) {
-                    throw new CouldNotPerformException("Could not apply data change!", ex);
+                    throw new CouldNotPerformException("Could not apply presense state change!", ex);
                 }
             }
         });

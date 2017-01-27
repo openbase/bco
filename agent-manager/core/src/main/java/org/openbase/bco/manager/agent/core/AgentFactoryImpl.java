@@ -25,15 +25,15 @@ import org.openbase.bco.manager.agent.lib.Agent;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.bco.manager.agent.lib.AgentFactory;
 import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.rsb.ScopeType;
+import rst.domotic.unit.agent.AgentClassType.AgentClass;
 
 /**
  *
@@ -57,34 +57,39 @@ public class AgentFactoryImpl implements AgentFactory {
     }
 
     @Override
-    public AgentController newInstance(final UnitConfig config) throws InstantiationException {
+    public AgentController newInstance(final UnitConfig agentUnitConfig) throws InstantiationException {
         AgentController agent;
         try {
-            if (config == null) {
+            if (agentUnitConfig == null) {
                 throw new NotAvailableException("agentconfig");
             }
-            if (!config.getAgentConfig().hasAgentClassId()) {
+            if (!agentUnitConfig.getAgentConfig().hasAgentClassId()) {
                 throw new NotAvailableException("agentype");
             }
-            if (!config.hasScope() && config.getScope().getComponentList().isEmpty()) {
+            if (!agentUnitConfig.hasScope() && agentUnitConfig.getScope().getComponentList().isEmpty()) {
                 throw new NotAvailableException("scope");
             }
             CachedAgentRegistryRemote.waitForData();
-            String agentClassLabel = CachedAgentRegistryRemote.getRegistry().getAgentClassById(config.getAgentConfig().getAgentClassId()).getLabel();
-            final Class agentClass = Thread.currentThread().getContextClassLoader().loadClass(getAgentClass(agentClassLabel));
-            logger.info("Creating agent of type [" + agentClass.getSimpleName() + "] on scope [" + ScopeGenerator.generateStringRep(config.getScope()) + "]");
+            final Class agentClass = Thread.currentThread().getContextClassLoader().loadClass(getAgentClass(agentUnitConfig));
+            logger.info("Creating agent of type [" + agentClass.getSimpleName() + "] on scope [" + ScopeGenerator.generateStringRep(agentUnitConfig.getScope()) + "]");
             agent = (AgentController) agentClass.newInstance();
-            agent.init(config);
+            agent.init(agentUnitConfig);
         } catch (CouldNotPerformException | ClassNotFoundException | SecurityException | java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException | InterruptedException ex) {
-            throw new InstantiationException(Agent.class, config.getId(), ex);
+            throw new InstantiationException(Agent.class, agentUnitConfig.getId(), ex);
         }
         return agent;
     }
 
-    private String getAgentClass(final String agentClassLabel) {
-        return AbstractAgent.class.getPackage().getName() + "."
-                + "preset."
-                + agentClassLabel
-                + "Agent";
+    private String getAgentClass(final UnitConfig agentUnitConfig) throws InterruptedException, NotAvailableException {
+        try {
+            Registries.getAgentRegistry().waitForData();
+            AgentClass agentClass = Registries.getAgentRegistry().getAgentClassById(agentUnitConfig.getAgentConfig().getAgentClassId());
+            return AbstractAgent.class.getPackage().getName() + "."
+                    + "preset."
+                    + agentClass.getLabel()
+                    + "Agent";
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("AgentClass", ex);
+        }
     }
 }
