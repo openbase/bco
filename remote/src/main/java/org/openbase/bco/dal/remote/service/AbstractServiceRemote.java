@@ -108,6 +108,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             serviceState = computeServiceState();
         }
         serviceStateObservable.notifyObservers(serviceState);
+        assert serviceStateObservable.isValueAvailable();
     }
 
     /**

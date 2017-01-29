@@ -34,6 +34,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
+import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.storage.registry.RemoteControllerRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -44,6 +45,11 @@ import rst.rsb.ScopeType;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ *
+ * This is the global unit remote pool of bco.
+ * It allows the access and control of all bco units without taking care of the internal unit remote instances.
+ * All requested instances are already initialized and activated. Even the shutdown of all instances is managed by this pool.
+ *
  */
 public class Units {
 
@@ -63,6 +69,31 @@ public class Units {
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new FatalImplementationErrorException(new org.openbase.jul.exception.InstantiationException(Units.class, ex)), LOGGER);
         }
+
+        Shutdownable.registerShutdownHook(new Shutdownable() {
+            @Override
+            public void shutdown() {
+                try {
+                    unitRemoteRegistry.getEntries().forEach(((UnitRemote unitRemote) -> {
+                        try {
+                            unitRemote.unlock(unitRemoteRegistryLock);
+                            unitRemote.shutdown();
+                        } catch (CouldNotPerformException ex) {
+                            ExceptionPrinter.printHistory("Could not properly shutdown " + unitRemote, ex, LOGGER);
+                        }
+                    }));
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not properly shutdown remote pool!", ex, LOGGER);
+                } finally {
+                    unitRemoteRegistry.shutdown();
+                }
+            }
+
+            @Override
+            public String toString() {
+                return "UnitRemotePool";
+            }
+        });
     }
 
     /**
@@ -93,13 +124,14 @@ public class Units {
     private static UnitRemote getUnitRemote(final String unitId) throws NotAvailableException, InterruptedException {
         final boolean newInstance;
         final UnitRemote unitRemote;
-        unitRemoteRegistryLock.writeLock().lock();
         try {
+            unitRemoteRegistryLock.writeLock().lock();
             try {
                 if (!unitRemoteRegistry.contains(unitId)) {
                     // create new instance.
                     newInstance = true;
                     unitRemote = unitRemoteFactory.newInitializedInstance(getUnitRegistry().getUnitConfigById(unitId));
+
                     unitRemoteRegistry.register(unitRemote);
 
                 } else {
@@ -115,6 +147,7 @@ public class Units {
             // By this, new unit remotes can be requested independend from the activation state of other units.
             if (newInstance) {
                 unitRemote.activate();
+                unitRemote.lock(unitRemoteRegistry);
             }
             return unitRemote;
         } catch (CouldNotPerformException | NullPointerException ex) {
@@ -133,8 +166,8 @@ public class Units {
     private static UnitRemote getUnitRemote(final UnitConfig unitConfig) throws NotAvailableException, InterruptedException {
         final boolean newInstance;
         final UnitRemote unitRemote;
-        unitRemoteRegistryLock.writeLock().lock();
         try {
+            unitRemoteRegistryLock.writeLock().lock();
             try {
                 if (!unitRemoteRegistry.contains(unitConfig.getId())) {
                     // create new instance.
@@ -155,6 +188,7 @@ public class Units {
             // By this, new unit remotes can be requested independend from the activation state of other units.
             if (newInstance) {
                 unitRemote.activate();
+                unitRemote.lock(unitRemoteRegistry);
             }
             return unitRemote;
         } catch (CouldNotPerformException ex) {
@@ -333,7 +367,7 @@ public class Units {
             try {
                 throw new NotAvailableException("Unit[" + ScopeGenerator.generateStringRep(scope) + "]", ex);
             } catch (CouldNotPerformException ex1) {
-               throw new NotAvailableException("Unit[?]", ex);
+                throw new NotAvailableException("Unit[?]", ex);
             }
         }
     }
@@ -449,7 +483,6 @@ public class Units {
 //            throw new NotAvailableException("Unit[" + unitId + "]", new InvalidStateException("Requested Unit[" + unitId + "] is not compatible with defined UnitRemoteClass[" + unitRemoteClass + "]!", ex));
 //        }
 //    }
-
     public static LightRemote getLightUnit(final UnitConfig unitConfig, boolean waitForData) throws NotAvailableException, InterruptedException {
         return getUnit(unitConfig, waitForData, LightRemote.class);
     }

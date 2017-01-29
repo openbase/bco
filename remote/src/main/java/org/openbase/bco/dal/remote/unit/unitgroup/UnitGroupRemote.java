@@ -70,7 +70,6 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
     public UnitGroupRemote() throws InstantiationException {
         super(UnitGroupData.class);
         serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
-        // todo: reimplement as real remote with manager.
     }
 
     @Override

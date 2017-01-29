@@ -25,6 +25,7 @@ import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.pattern.ConfigurableRemote;
 import rsb.Scope;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
