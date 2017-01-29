@@ -31,8 +31,11 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
 import org.openbase.bco.dal.lib.layer.unit.location.Location;
@@ -53,9 +56,11 @@ import org.openbase.bco.dal.remote.service.TamperStateServiceRemote;
 import org.openbase.bco.dal.remote.service.TargetTemperatureStateServiceRemote;
 import org.openbase.bco.dal.remote.service.TemperatureStateServiceRemote;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
+import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.location.lib.LocationController;
-import org.openbase.bco.registry.unit.lib.UnitRegistry;
-import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.InitializationException;
@@ -70,11 +75,13 @@ import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.jul.schedule.GlobalScheduledExecutorService;
+import org.openbase.jul.schedule.SyncObject;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionConfigType.ActionConfig;
 import rst.domotic.action.SnapshotType.Snapshot;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.AlarmStateType.AlarmState;
 import rst.domotic.state.BlindStateType.BlindState;
@@ -122,16 +129,15 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Snapshot.getDefaultInstance()));
     }
 
-    private final List<String> originalUnitIdList;
+    private final SyncObject serviceRemoteMapLock = new SyncObject("ServiceRemoteMapLock");
+
     private final PresenceDetector presenceDetector;
-    private UnitRegistry unitRegistry;
     private final Map<ServiceType, AbstractServiceRemote> serviceRemoteMap;
     private final ServiceRemoteFactory serviceRemoteFactory;
     private final Observer serviceDataObserver;
 
     public LocationControllerImpl() throws InstantiationException {
         super(LocationData.newBuilder());
-        this.originalUnitIdList = new ArrayList<>();
         this.serviceRemoteMap = new HashMap<>();
         serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
 
@@ -148,113 +154,125 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         });
 
         serviceDataObserver = new Observer() {
-
             @Override
             public void update(Observable source, Object data) throws Exception {
                 updateCurrentState();
             }
         };
-    }
 
-    private boolean isSupportedServiceType(final ServiceType serviceType) {
-        switch (serviceType) {
-//            case BRIGHTNESS_STATE_SERVICE:
-            case COLOR_STATE_SERVICE:
-            case MOTION_STATE_SERVICE:
-            case POWER_CONSUMPTION_STATE_SERVICE:
-            case POWER_STATE_SERVICE:
-            case BLIND_STATE_SERVICE:
-            case SMOKE_ALARM_STATE_SERVICE:
-            case SMOKE_STATE_SERVICE:
-            case STANDBY_STATE_SERVICE:
-            case TAMPER_STATE_SERVICE:
-            case TARGET_TEMPERATURE_STATE_SERVICE:
-            case TEMPERATURE_STATE_SERVICE:
-                return true;
-            default:
-                return false;
-        }
+//        try {
+//            GlobalScheduledExecutorService.scheduleAtFixedRate(new Runnable() {
+//                @Override
+//                public void run() {
+//                    try {
+//                        System.out.println(this + " connnection State: " + getControllerAvailabilityState().name());
+//                        LocationRemote l = new LocationRemote();
+//                        l.init(scope);
+//                        l.activate();
+//                        System.out.println("====== New Remote =========");
+//                        System.out.println(l + " connnection State: " + l.getConnectionState().name());
+//                        l.waitForData();
+//                        System.out.println(l + " connnection State: " + l.getConnectionState().name());
+//                        l.shutdown();
+//                        System.out.println("====== Pool ================");
+//                        System.out.println(Units.getUnitByScope(scope, false).getConnectionState() + " connnection State: " + Units.getUnitByScope(scope, false).getConnectionState().name());
+//                        System.out.println(Units.getUnitByScope(scope, false).getConnectionState() + " active: " + Units.getUnitByScope(scope, false).isActive());
+//                        System.out.println(Units.getUnitByScope(scope, false).getConnectionState() + " locked: " + Units.getUnitByScope(scope, false).isLocked());
+//                        System.out.println(Units.getUnitByScope(scope, false).getConnectionState() + " data avail: " + Units.getUnitByScope(scope, false).isDataAvailable());
+//                        System.out.println("======================");
+//                    } catch (Exception ex) {
+//                        Logger.getLogger(LocationControllerImpl.class.getName()).log(Level.SEVERE, null, ex);
+//                    }
+//                }
+//            }, 1, 5000, TimeUnit.MILLISECONDS);
+//        } catch (Exception ex) {
+//            Logger.getLogger(LocationControllerImpl.class.getName()).log(Level.SEVERE, null, ex);
+//        }
     }
 
     @Override
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         logger.debug("Init location [" + config.getLabel() + "]");
         try {
-            CachedUnitRegistryRemote.waitForData();
-            unitRegistry = CachedUnitRegistryRemote.getRegistry();
-            Map<ServiceType, List<UnitConfig>> serviceMap = new HashMap<>();
-            for (ServiceType serviceType : ServiceType.values()) {
-                if (isSupportedServiceType(serviceType)) {
-                    serviceMap.put(serviceType, new ArrayList<>());
-                }
-            }
-            for (UnitConfig unitConfig : unitRegistry.getDalUnitConfigs()) {
-                Set<ServiceType> serviceTypeSet = new HashSet<>();
-                if (config.getLocationConfig().getUnitIdList().contains(unitConfig.getId())) {
-                    List<ServiceTemplate> serviceTemplates = unitRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTemplateList();
-                    for (ServiceTemplate serviceTemplate : serviceTemplates) {
-                        if (!serviceTypeSet.contains(serviceTemplate.getType()) && isSupportedServiceType(serviceTemplate.getType())) {
-                            serviceTypeSet.add(serviceTemplate.getType());
-                            serviceMap.get(serviceTemplate.getType()).add(unitConfig);
-                        }
-                    }
-                }
-            }
-
-            for (ServiceType serviceType : serviceMap.keySet()) {
-                serviceRemoteMap.put(serviceType, serviceRemoteFactory.newInitializedInstance(serviceType, serviceMap.get(serviceType)));
-            }
+            Registries.getUnitRegistry().waitForData();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
-        presenceDetector.init(this);
         super.init(config);
+        presenceDetector.init(this);
     }
 
     @Override
-    public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        List<String> newUnitIdList = new ArrayList<>(config.getLocationConfig().getUnitIdList());
-        for (String originalId : originalUnitIdList) {
-            if (config.getLocationConfig().getUnitIdList().contains(originalId)) {
-                newUnitIdList.remove(originalId);
-            } else {
-                UnitConfig unitConfig = unitRegistry.getUnitConfigById(originalId);
-                for (ServiceTemplate serviceTemplate : unitRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTemplateList()) {
-                    if (!isSupportedServiceType(serviceTemplate.getType())) {
-                        continue;
-                    }
-                    serviceRemoteMap.get(serviceTemplate.getType()).removeUnit(unitConfig);
-                }
+    public synchronized UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        config = super.applyConfigUpdate(config);
+        synchronized (serviceRemoteMapLock) {
+            // shutdown all existing instances.
+            for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
+                remote.shutdown();
             }
-        }
-        for (String newUnitId : newUnitIdList) {
-            UnitConfig unitConfig = unitRegistry.getUnitConfigById(newUnitId);
-            for (ServiceTemplate serviceTemplate : unitRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTemplateList()) {
-                if (!isSupportedServiceType(serviceTemplate.getType())) {
+            serviceRemoteMap.clear();
+
+            // init a new set for each supported service type.
+            Map<ServiceType, Set<UnitConfig>> serviceMap = new HashMap<>();
+            for (ServiceType serviceType : getSupportedServiceTypes()) {
+                serviceMap.put(serviceType, new HashSet<>());
+            }
+
+            // init service unit map
+            for (final String unitId : config.getLocationConfig().getUnitIdList()) {
+
+                // resolve unit config by unit registry
+                final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
+
+                // filter non dal units
+                if (!UnitConfigProcessor.isDalUnit(unitConfig)) {
                     continue;
                 }
 
-                serviceRemoteMap.get(serviceTemplate.getType()).init(unitConfig);
+                // sort dal unit by service type
+                for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+
+                    // filter all services which are not supported by locations.
+                    if (!serviceMap.containsKey(serviceConfig.getServiceTemplate().getType())) {
+                        continue;
+                    }
+
+                    // register unit for service type. UnitConfigs are may added twice because of dublicated type of different service pattern but are filtered by the set. 
+                    serviceMap.get(serviceConfig.getServiceTemplate().getType()).add(unitConfig);
+                }
+            }
+
+            // initialize service remotes
+            for (ServiceType serviceType : getSupportedServiceTypes()) {
+                final AbstractServiceRemote serviceRemote = serviceRemoteFactory.newInitializedInstance(serviceType, serviceMap.get(serviceType));
+                serviceRemoteMap.put(serviceType, serviceRemote);
+
+                // if already active than update the current location state.
+                if (isActive()) {
+                    serviceRemote.activate();
+                }
+            }
+
+            // if already active than update the current location state.
+            if (isActive()) {
+                updateCurrentState();
             }
         }
-        if (isActive()) {
-            updateCurrentState();
-        }
-        originalUnitIdList.clear();
-        originalUnitIdList.addAll(config.getLocationConfig().getUnitIdList());
-        return super.applyConfigUpdate(config);
+        return config;
     }
 
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         logger.debug("Activate location [" + getLabel() + "]!");
-        for (AbstractServiceRemote serviceRemote : serviceRemoteMap.values()) {
-            serviceRemote.activate();
-            serviceRemote.addDataObserver(serviceDataObserver);
+        synchronized (serviceRemoteMapLock) {
+            for (AbstractServiceRemote serviceRemote : serviceRemoteMap.values()) {
+                serviceRemote.activate();
+                serviceRemote.addDataObserver(serviceDataObserver);
+            }
+            super.activate();
+            presenceDetector.activate();
+            updateCurrentState();
         }
-        super.activate();
-        presenceDetector.activate();
-        updateCurrentState();
     }
 
     private void updateCurrentState() {
@@ -262,6 +280,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
             for (final ServiceType serviceType : serviceTypes) {
                 final Object state;
+
                 try {
                     state = Service.invokeProviderServiceMethod(serviceType, this);
                 } catch (NotAvailableException ex) {
@@ -285,10 +304,12 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
 
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
-        presenceDetector.deactivate();
-        for (AbstractServiceRemote serviceRemote : serviceRemoteMap.values()) {
-            serviceRemote.removeDataObserver(serviceDataObserver);
-            serviceRemote.deactivate();
+        synchronized (serviceRemoteMapLock) {
+            presenceDetector.deactivate();
+            for (AbstractServiceRemote serviceRemote : serviceRemoteMap.values()) {
+                serviceRemote.removeDataObserver(serviceDataObserver);
+                serviceRemote.deactivate();
+            }
         }
         super.deactivate();
     }
@@ -296,6 +317,26 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     @Override
     public void registerMethods(RSBLocalServer server) throws CouldNotPerformException {
         RPCHelper.registerInterface(Location.class, this, server);
+    }
+
+    private boolean isServiceTypeSupported(final ServiceType serviceType) throws CouldNotPerformException, InterruptedException {
+        if (serviceType == null) {
+            assert false;
+            throw new NotAvailableException("ServiceType");
+        }
+        return getSupportedServiceTypes().contains(serviceType);
+    }
+
+    private Set<ServiceType> getSupportedServiceTypes() throws NotAvailableException, InterruptedException {
+        final Set<ServiceType> serviceTypeSet = new HashSet<>();
+        try {
+            for (final ServiceConfig serviceConfig : getConfig().getServiceConfigList()) {
+                serviceTypeSet.add(serviceConfig.getServiceTemplate().getType());
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("SupportedServiceTypes", new CouldNotPerformException("Could not generate supported service type list!", ex));
+        }
+        return serviceTypeSet;
     }
 
     @Override
@@ -308,9 +349,11 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         try {
             Snapshot.Builder snapshotBuilder = Snapshot.newBuilder();
             Set<UnitRemote> unitRemoteSet = new HashSet<>();
-            serviceRemoteMap.values().stream().forEach((serviceRemote) -> {
-                unitRemoteSet.addAll(serviceRemote.getInternalUnits());
-            });
+            synchronized (serviceRemoteMapLock) {
+                serviceRemoteMap.values().stream().forEach((serviceRemote) -> {
+                    unitRemoteSet.addAll(serviceRemote.getInternalUnits());
+                });
+            }
             for (UnitRemote remote : unitRemoteSet) {
                 try {
                     if (UnitProcessor.isDalUnit(remote)) {
@@ -333,9 +376,11 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     public Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
         try {
             final Map<String, UnitRemote<?>> unitRemoteMap = new HashMap<>();
-            for (AbstractServiceRemote<?, ?> serviceRemote : serviceRemoteMap.values()) {
-                for (UnitRemote<?> unitRemote : serviceRemote.getInternalUnits()) {
-                    unitRemoteMap.put(unitRemote.getId(), unitRemote);
+            synchronized (serviceRemoteMapLock) {
+                for (AbstractServiceRemote<?, ?> serviceRemote : serviceRemoteMap.values()) {
+                    for (UnitRemote<?> unitRemote : serviceRemote.getInternalUnits()) {
+                        unitRemoteMap.put(unitRemote.getId(), unitRemote);
+                    }
                 }
             }
 
@@ -351,8 +396,10 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     @Override
     public Future<Void> applyAction(final ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
         Collection<Future> futureCollection = new ArrayList<>();
-        for (Service service : serviceRemoteMap.values()) {
-            futureCollection.add(service.applyAction(actionConfig));
+        synchronized (serviceRemoteMapLock) {
+            for (Service service : serviceRemoteMap.values()) {
+                futureCollection.add(service.applyAction(actionConfig));
+            }
         }
         return GlobalCachedExecutorService.allOf(futureCollection, null);
     }
@@ -368,186 +415,260 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
 
     @Override
     public PresenceState getPresenceState() throws NotAvailableException {
-        return getData().getPresenceState();
+        synchronized (serviceRemoteMapLock) {
+            return getData().getPresenceState();
+        }
     }
 
     @Override
     public Future<Void> setBlindState(BlindState blindState, UnitType unitType) throws CouldNotPerformException {
-        return ((BlindStateServiceRemote) serviceRemoteMap.get(ServiceType.BLIND_STATE_SERVICE)).setBlindState(blindState, unitType);
+        synchronized (serviceRemoteMapLock) {
+            return ((BlindStateServiceRemote) serviceRemoteMap.get(ServiceType.BLIND_STATE_SERVICE)).setBlindState(blindState, unitType);
+        }
     }
 
     @Override
     public Future<Void> setBlindState(BlindState blindState) throws CouldNotPerformException {
-        return ((BlindStateServiceRemote) serviceRemoteMap.get(ServiceType.BLIND_STATE_SERVICE)).setBlindState(blindState);
+        synchronized (serviceRemoteMapLock) {
+            return ((BlindStateServiceRemote) serviceRemoteMap.get(ServiceType.BLIND_STATE_SERVICE)).setBlindState(blindState);
+        }
     }
 
     @Override
     public BlindState getBlindState() throws NotAvailableException {
-        return ((BlindStateServiceRemote) serviceRemoteMap.get(ServiceType.BLIND_STATE_SERVICE)).getBlindState();
+        synchronized (serviceRemoteMapLock) {
+            return ((BlindStateServiceRemote) serviceRemoteMap.get(ServiceType.BLIND_STATE_SERVICE)).getBlindState();
+        }
     }
 
     @Override
     public BlindState getBlindState(UnitType unitType) throws NotAvailableException {
-        return ((BlindStateServiceRemote) serviceRemoteMap.get(ServiceType.BLIND_STATE_SERVICE)).getBlindState(unitType);
+        synchronized (serviceRemoteMapLock) {
+            return ((BlindStateServiceRemote) serviceRemoteMap.get(ServiceType.BLIND_STATE_SERVICE)).getBlindState(unitType);
+        }
     }
 
     @Override
     public Future<Void> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
-        return ((BrightnessStateServiceRemote) serviceRemoteMap.get(ServiceType.BRIGHTNESS_STATE_SERVICE)).setBrightnessState(brightnessState);
+        synchronized (serviceRemoteMapLock) {
+            return ((BrightnessStateServiceRemote) serviceRemoteMap.get(ServiceType.BRIGHTNESS_STATE_SERVICE)).setBrightnessState(brightnessState);
+        }
     }
 
     @Override
     public Future<Void> setBrightnessState(BrightnessState brightnessState, UnitType unitType) throws CouldNotPerformException {
-        return ((BrightnessStateServiceRemote) serviceRemoteMap.get(ServiceType.BRIGHTNESS_STATE_SERVICE)).setBrightnessState(brightnessState, unitType);
+        synchronized (serviceRemoteMapLock) {
+            return ((BrightnessStateServiceRemote) serviceRemoteMap.get(ServiceType.BRIGHTNESS_STATE_SERVICE)).setBrightnessState(brightnessState, unitType);
+        }
     }
 
     @Override
     public BrightnessState getBrightnessState() throws NotAvailableException {
-        return ((BrightnessStateServiceRemote) serviceRemoteMap.get(ServiceType.BRIGHTNESS_STATE_SERVICE)).getBrightnessState();
+        synchronized (serviceRemoteMapLock) {
+            return ((BrightnessStateServiceRemote) serviceRemoteMap.get(ServiceType.BRIGHTNESS_STATE_SERVICE)).getBrightnessState();
+        }
     }
 
     @Override
     public BrightnessState getBrightnessState(UnitType unitType) throws NotAvailableException {
-        return ((BrightnessStateServiceRemote) serviceRemoteMap.get(ServiceType.BRIGHTNESS_STATE_SERVICE)).getBrightnessState(unitType);
+        synchronized (serviceRemoteMapLock) {
+            return ((BrightnessStateServiceRemote) serviceRemoteMap.get(ServiceType.BRIGHTNESS_STATE_SERVICE)).getBrightnessState(unitType);
+        }
     }
 
     @Override
     public Future<Void> setColorState(ColorState colorState) throws CouldNotPerformException {
-        return ((ColorStateServiceRemote) serviceRemoteMap.get(ServiceType.COLOR_STATE_SERVICE)).setColorState(colorState);
+        synchronized (serviceRemoteMapLock) {
+            return ((ColorStateServiceRemote) serviceRemoteMap.get(ServiceType.COLOR_STATE_SERVICE)).setColorState(colorState);
+        }
     }
 
     @Override
     public Future<Void> setColorState(ColorState colorState, UnitType unitType) throws CouldNotPerformException {
-        return ((ColorStateServiceRemote) serviceRemoteMap.get(ServiceType.COLOR_STATE_SERVICE)).setColorState(colorState, unitType);
+        synchronized (serviceRemoteMapLock) {
+            return ((ColorStateServiceRemote) serviceRemoteMap.get(ServiceType.COLOR_STATE_SERVICE)).setColorState(colorState, unitType);
+        }
     }
 
     @Override
     public ColorState getColorState() throws NotAvailableException {
-        return ((ColorStateServiceRemote) serviceRemoteMap.get(ServiceType.COLOR_STATE_SERVICE)).getColorState();
+        synchronized (serviceRemoteMapLock) {
+            return ((ColorStateServiceRemote) serviceRemoteMap.get(ServiceType.COLOR_STATE_SERVICE)).getColorState();
+        }
     }
 
     @Override
     public ColorState getColorState(UnitType unitType) throws NotAvailableException {
-        return ((ColorStateServiceRemote) serviceRemoteMap.get(ServiceType.COLOR_STATE_SERVICE)).getColorState(unitType);
+        synchronized (serviceRemoteMapLock) {
+            return ((ColorStateServiceRemote) serviceRemoteMap.get(ServiceType.COLOR_STATE_SERVICE)).getColorState(unitType);
+        }
     }
 
     @Override
     public Future<Void> setPowerState(PowerState powerState) throws CouldNotPerformException {
-        return ((PowerStateServiceRemote) serviceRemoteMap.get(ServiceType.POWER_STATE_SERVICE)).setPowerState(powerState);
+        synchronized (serviceRemoteMapLock) {
+            return ((PowerStateServiceRemote) serviceRemoteMap.get(ServiceType.POWER_STATE_SERVICE)).setPowerState(powerState);
+        }
     }
 
     @Override
     public Future<Void> setPowerState(PowerState powerState, UnitType unitType) throws CouldNotPerformException {
-        return ((PowerStateServiceRemote) serviceRemoteMap.get(ServiceType.POWER_STATE_SERVICE)).setPowerState(powerState, unitType);
+        synchronized (serviceRemoteMapLock) {
+            return ((PowerStateServiceRemote) serviceRemoteMap.get(ServiceType.POWER_STATE_SERVICE)).setPowerState(powerState, unitType);
+        }
     }
 
     @Override
     public PowerState getPowerState() throws NotAvailableException {
-        return ((PowerStateServiceRemote) serviceRemoteMap.get(ServiceType.POWER_STATE_SERVICE)).getPowerState();
+        synchronized (serviceRemoteMapLock) {
+            return ((PowerStateServiceRemote) serviceRemoteMap.get(ServiceType.POWER_STATE_SERVICE)).getPowerState();
+        }
     }
 
     @Override
     public PowerState getPowerState(UnitType unitType) throws NotAvailableException {
-        return ((PowerStateServiceRemote) serviceRemoteMap.get(ServiceType.POWER_STATE_SERVICE)).getPowerState(unitType);
+        synchronized (serviceRemoteMapLock) {
+            return ((PowerStateServiceRemote) serviceRemoteMap.get(ServiceType.POWER_STATE_SERVICE)).getPowerState(unitType);
+        }
     }
 
     @Override
     public Future<Void> setStandbyState(StandbyState standbyState) throws CouldNotPerformException {
-        return ((StandbyStateServiceRemote) serviceRemoteMap.get(ServiceType.STANDBY_STATE_SERVICE)).setStandbyState(standbyState);
+        synchronized (serviceRemoteMapLock) {
+            return ((StandbyStateServiceRemote) serviceRemoteMap.get(ServiceType.STANDBY_STATE_SERVICE)).setStandbyState(standbyState);
+        }
     }
 
     @Override
     public Future<Void> setStandbyState(StandbyState state, UnitType unitType) throws CouldNotPerformException {
-        return ((StandbyStateServiceRemote) serviceRemoteMap.get(ServiceType.STANDBY_STATE_SERVICE)).setStandbyState(state, unitType);
+        synchronized (serviceRemoteMapLock) {
+            return ((StandbyStateServiceRemote) serviceRemoteMap.get(ServiceType.STANDBY_STATE_SERVICE)).setStandbyState(state, unitType);
+        }
     }
 
     @Override
     public StandbyState getStandbyState() throws NotAvailableException {
-        return ((StandbyStateServiceRemote) serviceRemoteMap.get(ServiceType.STANDBY_STATE_SERVICE)).getStandbyState();
+        synchronized (serviceRemoteMapLock) {
+            return ((StandbyStateServiceRemote) serviceRemoteMap.get(ServiceType.STANDBY_STATE_SERVICE)).getStandbyState();
+        }
     }
 
     @Override
     public StandbyState getStandbyState(UnitType unitType) throws NotAvailableException {
-        return ((StandbyStateServiceRemote) serviceRemoteMap.get(ServiceType.STANDBY_STATE_SERVICE)).getStandbyState(unitType);
+        synchronized (serviceRemoteMapLock) {
+            return ((StandbyStateServiceRemote) serviceRemoteMap.get(ServiceType.STANDBY_STATE_SERVICE)).getStandbyState(unitType);
+        }
     }
 
     @Override
     public Future<Void> setTargetTemperatureState(TemperatureState temperatureState) throws CouldNotPerformException {
-        return ((TargetTemperatureStateServiceRemote) serviceRemoteMap.get(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)).setTargetTemperatureState(temperatureState);
+        synchronized (serviceRemoteMapLock) {
+            return ((TargetTemperatureStateServiceRemote) serviceRemoteMap.get(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)).setTargetTemperatureState(temperatureState);
+        }
     }
 
     @Override
     public Future<Void> setTargetTemperatureState(TemperatureState temperatureState, UnitType unitType) throws CouldNotPerformException {
-        return ((TargetTemperatureStateServiceRemote) serviceRemoteMap.get(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)).setTargetTemperatureState(temperatureState, unitType);
+        synchronized (serviceRemoteMapLock) {
+            return ((TargetTemperatureStateServiceRemote) serviceRemoteMap.get(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)).setTargetTemperatureState(temperatureState, unitType);
+        }
     }
 
     @Override
     public TemperatureState getTargetTemperatureState() throws NotAvailableException {
-        return ((TargetTemperatureStateServiceRemote) serviceRemoteMap.get(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)).getTargetTemperatureState();
+        synchronized (serviceRemoteMapLock) {
+            return ((TargetTemperatureStateServiceRemote) serviceRemoteMap.get(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)).getTargetTemperatureState();
+        }
     }
 
     @Override
     public TemperatureState getTargetTemperatureState(UnitType unitType) throws NotAvailableException {
-        return ((TargetTemperatureStateServiceRemote) serviceRemoteMap.get(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)).getTargetTemperatureState(unitType);
+        synchronized (serviceRemoteMapLock) {
+            return ((TargetTemperatureStateServiceRemote) serviceRemoteMap.get(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE)).getTargetTemperatureState(unitType);
+        }
     }
 
     @Override
     public MotionState getMotionState() throws NotAvailableException {
-        return ((MotionStateServiceRemote) serviceRemoteMap.get(ServiceType.MOTION_STATE_SERVICE)).getMotionState();
+        synchronized (serviceRemoteMapLock) {
+            return ((MotionStateServiceRemote) serviceRemoteMap.get(ServiceType.MOTION_STATE_SERVICE)).getMotionState();
+        }
     }
 
     @Override
     public MotionState getMotionState(UnitType unitType) throws NotAvailableException {
-        return ((MotionStateServiceRemote) serviceRemoteMap.get(ServiceType.MOTION_STATE_SERVICE)).getMotionState(unitType);
+        synchronized (serviceRemoteMapLock) {
+            return ((MotionStateServiceRemote) serviceRemoteMap.get(ServiceType.MOTION_STATE_SERVICE)).getMotionState(unitType);
+        }
     }
 
     @Override
     public AlarmState getSmokeAlarmState() throws NotAvailableException {
-        return ((SmokeAlarmStateServiceRemote) serviceRemoteMap.get(ServiceType.SMOKE_ALARM_STATE_SERVICE)).getSmokeAlarmState();
+        synchronized (serviceRemoteMapLock) {
+            return ((SmokeAlarmStateServiceRemote) serviceRemoteMap.get(ServiceType.SMOKE_ALARM_STATE_SERVICE)).getSmokeAlarmState();
+        }
     }
 
     @Override
     public AlarmState getSmokeAlarmState(UnitType unitType) throws NotAvailableException {
-        return ((SmokeAlarmStateServiceRemote) serviceRemoteMap.get(ServiceType.SMOKE_ALARM_STATE_SERVICE)).getSmokeAlarmState(unitType);
+        synchronized (serviceRemoteMapLock) {
+            return ((SmokeAlarmStateServiceRemote) serviceRemoteMap.get(ServiceType.SMOKE_ALARM_STATE_SERVICE)).getSmokeAlarmState(unitType);
+        }
     }
 
     @Override
     public SmokeState getSmokeState() throws NotAvailableException {
-        return ((SmokeStateServiceRemote) serviceRemoteMap.get(ServiceType.SMOKE_STATE_SERVICE)).getSmokeState();
+        synchronized (serviceRemoteMapLock) {
+            return ((SmokeStateServiceRemote) serviceRemoteMap.get(ServiceType.SMOKE_STATE_SERVICE)).getSmokeState();
+        }
     }
 
     @Override
     public SmokeState getSmokeState(UnitType unitType) throws NotAvailableException {
-        return ((SmokeStateServiceRemote) serviceRemoteMap.get(ServiceType.SMOKE_STATE_SERVICE)).getSmokeState(unitType);
+        synchronized (serviceRemoteMapLock) {
+            return ((SmokeStateServiceRemote) serviceRemoteMap.get(ServiceType.SMOKE_STATE_SERVICE)).getSmokeState(unitType);
+        }
     }
 
     @Override
     public TemperatureState getTemperatureState() throws NotAvailableException {
-        return ((TemperatureStateServiceRemote) serviceRemoteMap.get(ServiceType.TEMPERATURE_STATE_SERVICE)).getTemperatureState();
+        synchronized (serviceRemoteMapLock) {
+            return ((TemperatureStateServiceRemote) serviceRemoteMap.get(ServiceType.TEMPERATURE_STATE_SERVICE)).getTemperatureState();
+        }
     }
 
     @Override
     public TemperatureState getTemperatureState(UnitType unitType) throws NotAvailableException {
-        return ((TemperatureStateServiceRemote) serviceRemoteMap.get(ServiceType.TEMPERATURE_STATE_SERVICE)).getTemperatureState(unitType);
+        synchronized (serviceRemoteMapLock) {
+            return ((TemperatureStateServiceRemote) serviceRemoteMap.get(ServiceType.TEMPERATURE_STATE_SERVICE)).getTemperatureState(unitType);
+        }
     }
 
     @Override
     public PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {
-        return ((PowerConsumptionStateServiceRemote) serviceRemoteMap.get(ServiceType.POWER_CONSUMPTION_STATE_SERVICE)).getPowerConsumptionState();
+        synchronized (serviceRemoteMapLock) {
+            return ((PowerConsumptionStateServiceRemote) serviceRemoteMap.get(ServiceType.POWER_CONSUMPTION_STATE_SERVICE)).getPowerConsumptionState();
+        }
     }
 
     @Override
     public PowerConsumptionState getPowerConsumptionState(UnitType unitType) throws NotAvailableException {
-        return ((PowerConsumptionStateServiceRemote) serviceRemoteMap.get(ServiceType.POWER_CONSUMPTION_STATE_SERVICE)).getPowerConsumptionState(unitType);
+        synchronized (serviceRemoteMapLock) {
+            return ((PowerConsumptionStateServiceRemote) serviceRemoteMap.get(ServiceType.POWER_CONSUMPTION_STATE_SERVICE)).getPowerConsumptionState(unitType);
+        }
     }
 
     @Override
     public TamperState getTamperState() throws NotAvailableException {
+        synchronized (serviceRemoteMapLock) {
+        }
         return ((TamperStateServiceRemote) serviceRemoteMap.get(ServiceType.TAMPER_STATE_SERVICE)).getTamperState();
     }
 
     @Override
     public TamperState getTamperState(UnitType unitType) throws NotAvailableException {
-        return ((TamperStateServiceRemote) serviceRemoteMap.get(ServiceType.TAMPER_STATE_SERVICE)).getTamperState(unitType);
+        synchronized (serviceRemoteMapLock) {
+            return ((TamperStateServiceRemote) serviceRemoteMap.get(ServiceType.TAMPER_STATE_SERVICE)).getTamperState(unitType);
+        }
     }
 }

@@ -21,6 +21,7 @@ package org.openbase.bco.manager.location.test.remote.location;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import ch.qos.logback.classic.Level;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.TimeUnit;
@@ -165,7 +166,10 @@ public class LocationRemoteTest {
         return false;
     }
 
-    @Test(timeout = 5000)
+    @Test
+    /**
+     * (timeout = 5000)*
+     */
     public void testUnitToLocationPipeline() throws Exception {
         System.out.println("testUnitToLocationPipeline");
 
@@ -189,9 +193,10 @@ public class LocationRemoteTest {
             temperatureController.updateTemperatureStateProvider(temperatureState);
         }
 
+        locationRemote.ping().get();
         locationRemote.requestData().get();
         while (locationRemote.getTemperatureState().getTemperature() != temperature) {
-            Thread.sleep(50);
+            Thread.sleep(10);
         }
         Assert.assertEquals("Temperature of the location has not been updated!", temperature, locationRemote.getTemperatureState().getTemperature(), 0.01);
     }
