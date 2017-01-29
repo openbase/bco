@@ -37,6 +37,8 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.rsb.scope.ScopeProvider;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
@@ -583,13 +585,16 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
 
     @Override
     public UnitConfig getUnitConfigByScope(ScopeType.Scope scope) throws CouldNotPerformException {
+        if (scope == null) {
+            throw new NotAvailableException("scope");
+        }
         validateData();
         for (UnitConfig unitConfig : getUnitConfigs()) {
             if (unitConfig.getScope().equals(scope)) {
                 return unitConfig;
             }
         }
-        throw new NotAvailableException("No unit config available for given scope!");
+        throw new NotAvailableException("No unit config available for given Scope[" + ScopeGenerator.generateStringRep(scope) + "]!");
     }
 
     @Override
