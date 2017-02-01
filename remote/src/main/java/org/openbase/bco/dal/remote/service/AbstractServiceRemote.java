@@ -117,7 +117,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * @throws NotAvailableException if the service state has not been set at least once.
      */
     public ST getServiceState() throws NotAvailableException {
-        if (serviceStateObservable.isValueAvailable()) {
+        if (!serviceStateObservable.isValueAvailable()) {
             throw new NotAvailableException("ServiceState");
         }
         return serviceStateObservable.getValue();
@@ -213,6 +213,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         for (UnitRemote remote : unitRemoteMap.values()) {
             remote.addDataObserver(dataObserver);
         }
+        updateServiceState();
     }
 
     /**
@@ -264,6 +265,10 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     public Collection<UnitRemote> getInternalUnits() {
         return Collections.unmodifiableCollection(unitRemoteMap.values());
     }
+    
+    public boolean hasInternalRemotes() {
+        return !unitRemoteMap.isEmpty();
+    }
 
     /**
      * Returns a collection of all internally used unit remotes.
@@ -283,6 +288,11 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         if (unitType == UnitType.UNKNOWN) {
             return Collections.unmodifiableCollection(serviceMap.values());
         }
+        
+        if(!unitRemoteTypeMap.containsKey(unitType)) {
+            return new ArrayList<>();
+        }
+        
         return Collections.unmodifiableCollection(unitRemoteTypeMap.get(unitType));
     }
 
@@ -366,6 +376,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * @return is true in case that for every underlying remote data is available.
      */
     public boolean isDataAvailable() {
+        if(!hasInternalRemotes()) {
+            return false;
+        }
         return getInternalUnits().stream().noneMatch((unitRemote) -> (!unitRemote.isDataAvailable()));
     }
 

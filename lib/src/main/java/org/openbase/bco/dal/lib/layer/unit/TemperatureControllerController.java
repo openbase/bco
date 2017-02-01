@@ -93,6 +93,8 @@ public class TemperatureControllerController extends AbstractUnitController<Temp
         logger.debug("Apply actual temperatureState Update[" + temperatureState + "] for " + this + ".");
 
         try (ClosableDataBuilder<TemperatureControllerData.Builder> dataBuilder = getDataBuilder(this)) {
+//            dataBuilder.getInternalBuilder().setTemperatureState(temperatureState);
+//            // todo remove setActualTemperatureState in next release
             dataBuilder.getInternalBuilder().setActualTemperatureState(temperatureState);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply actual temperatureStatee Update[" + temperatureState + "] for " + this + "!", ex);

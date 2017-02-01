@@ -67,7 +67,7 @@ public class Units {
         try {
             unitRemoteRegistry = new RemoteControllerRegistry<>();
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new FatalImplementationErrorException(new org.openbase.jul.exception.InstantiationException(Units.class, ex)), LOGGER);
+            ExceptionPrinter.printHistory(new FatalImplementationErrorException(Units.class, new org.openbase.jul.exception.InstantiationException(Units.class, ex)), LOGGER);
         }
 
         Shutdownable.registerShutdownHook(new Shutdownable() {
@@ -76,7 +76,7 @@ public class Units {
                 try {
                     unitRemoteRegistry.getEntries().forEach(((UnitRemote unitRemote) -> {
                         try {
-                            unitRemote.unlock(unitRemoteRegistryLock);
+                            unitRemote.unlock(unitRemoteRegistry);
                             unitRemote.shutdown();
                         } catch (CouldNotPerformException ex) {
                             ExceptionPrinter.printHistory("Could not properly shutdown " + unitRemote, ex, LOGGER);
