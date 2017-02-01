@@ -66,38 +66,38 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class LocationRemoteTest {
-
+    
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(LocationRemoteTest.class);
-
+    
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static LocationManagerLauncher locationManagerLauncher;
     private static MockRegistry registry;
-
+    
     private static LocationRegistry locationRegistry;
     private static UnitRegistry unitRegistry;
-
+    
     private static LocationRemote locationRemote;
-
+    
     public LocationRemoteTest() {
     }
-
+    
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
         try {
             JPService.setupJUnitTestMode();
             JPService.registerProperty(JPHardwareSimulationMode.class, true);
             registry = MockRegistryHolder.newMockRegistry();
-
+            
             deviceManagerLauncher = new DeviceManagerLauncher();
             deviceManagerLauncher.launch();
             deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
-
+            
             locationManagerLauncher = new LocationManagerLauncher();
             locationManagerLauncher.launch();
-
+            
             locationRegistry = CachedLocationRegistryRemote.getRegistry();
             unitRegistry = CachedUnitRegistryRemote.getRegistry();
-
+            
             locationRemote = new LocationRemote();
             locationRemote.init(locationRegistry.getRootLocationConfig());
             locationRemote.activate();
@@ -106,7 +106,7 @@ public class LocationRemoteTest {
             ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
     }
-
+    
     @AfterClass
     public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
         try {
@@ -121,42 +121,46 @@ public class LocationRemoteTest {
             ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
     }
-
+    
     @Before
     public void setUp() throws InitializationException, InvalidStateException {
-
+        
     }
-
+    
     @After
     public void tearDown() throws CouldNotPerformException {
     }
-
+    
     @Test(timeout = 5000)
     public void testLocationToUnitPipeline() throws Exception {
         System.out.println("testLocationToUnitPipeline");
-
-        List<PowerStateOperationService> powerServiceList = new ArrayList<>();
-        for (UnitConfig dalUnitConfig : unitRegistry.getDalUnitConfigs()) {
-            if (unitHasService(dalUnitConfig, ServiceType.POWER_STATE_SERVICE, ServicePattern.OPERATION)) {
-                UnitController unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dalUnitConfig.getId());
-                powerServiceList.add((PowerStateOperationService) unitController);
+        
+        try {
+            List<PowerStateOperationService> powerServiceList = new ArrayList<>();
+            for (UnitConfig dalUnitConfig : unitRegistry.getDalUnitConfigs()) {
+                if (unitHasService(dalUnitConfig, ServiceType.POWER_STATE_SERVICE, ServicePattern.OPERATION)) {
+                    UnitController unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dalUnitConfig.getId());
+                    powerServiceList.add((PowerStateOperationService) unitController);
+                }
             }
-        }
-
-        PowerState powerOn = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-        PowerState powerOff = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-
-        locationRemote.setPowerState(powerOn).get();
-        for (PowerStateOperationService powerStateService : powerServiceList) {
-            Assert.assertEquals("PowerState of unit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the loationRemote!", powerOn.getValue(), powerStateService.getPowerState().getValue());
-        }
-
-        locationRemote.setPowerState(powerOff).get();
-        for (PowerStateOperationService powerStateService : powerServiceList) {
-            Assert.assertEquals("PowerState of unit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the loationRemote!", powerOff.getValue(), powerStateService.getPowerState().getValue());
+            
+            PowerState powerOn = PowerState.newBuilder().setValue(PowerState.State.ON).build();
+            PowerState powerOff = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
+            
+            locationRemote.setPowerState(powerOn).get();
+            for (PowerStateOperationService powerStateService : powerServiceList) {
+                Assert.assertEquals("PowerState of unit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the loationRemote!", powerOn.getValue(), powerStateService.getPowerState().getValue());
+            }
+            
+            locationRemote.setPowerState(powerOff).get();
+            for (PowerStateOperationService powerStateService : powerServiceList) {
+                Assert.assertEquals("PowerState of unit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the loationRemote!", powerOff.getValue(), powerStateService.getPowerState().getValue());
+            }
+        } catch (Exception ex) {
+            ExceptionPrinter.printHistory(ex, logger);
         }
     }
-
+    
     private boolean unitHasService(UnitConfig unitConfig, ServiceType serviceType, ServicePattern servicePattern) throws CouldNotPerformException {
         for (ServiceTemplate serviceTemplate : unitRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTemplateList()) {
             if (serviceTemplate.getType() == serviceType && serviceTemplate.getPattern() == servicePattern) {
@@ -165,14 +169,14 @@ public class LocationRemoteTest {
         }
         return false;
     }
-
+    
     @Test
     /**
      * (timeout = 5000)*
      */
     public void testUnitToLocationPipeline() throws Exception {
         System.out.println("testUnitToLocationPipeline");
-
+        
         List<TemperatureSensorController> temperatureSensorList = new ArrayList<>();
         List<TemperatureControllerController> temperatureControllerList = new ArrayList<>();
         for (UnitConfig dalUnitConfig : unitRegistry.getDalUnitConfigs()) {
@@ -183,7 +187,7 @@ public class LocationRemoteTest {
                 temperatureControllerList.add((TemperatureControllerController) unitController);
             }
         }
-
+        
         double temperature = 21;
         TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(temperature).build();
         for (TemperatureSensorController temperatureSensor : temperatureSensorList) {
@@ -192,13 +196,17 @@ public class LocationRemoteTest {
         for (TemperatureControllerController temperatureController : temperatureControllerList) {
             temperatureController.updateTemperatureStateProvider(temperatureState);
         }
-
+        System.out.println("ping");
         locationRemote.ping().get();
+        System.out.println("ping done");
+        System.out.println("request data");
         locationRemote.requestData().get();
+        System.out.println("got data");
         while (locationRemote.getTemperatureState().getTemperature() != temperature) {
+//            System.out.println("current state: " + locationRemote.getData());
+            System.out.println("current temp: " + locationRemote.getTemperatureState().getTemperature() + " waiting for: " + temperature);
             Thread.sleep(10);
         }
         Assert.assertEquals("Temperature of the location has not been updated!", temperature, locationRemote.getTemperatureState().getTemperature(), 0.01);
     }
-
 }

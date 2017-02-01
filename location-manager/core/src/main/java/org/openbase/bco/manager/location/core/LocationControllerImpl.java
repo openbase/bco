@@ -31,11 +31,8 @@ import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
 import org.openbase.bco.dal.lib.layer.unit.location.Location;
@@ -56,8 +53,6 @@ import org.openbase.bco.dal.remote.service.TamperStateServiceRemote;
 import org.openbase.bco.dal.remote.service.TargetTemperatureStateServiceRemote;
 import org.openbase.bco.dal.remote.service.TemperatureStateServiceRemote;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
-import org.openbase.bco.dal.remote.unit.Units;
-import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.location.lib.LocationController;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
@@ -66,6 +61,7 @@ import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
@@ -74,8 +70,8 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -207,8 +203,9 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         config = super.applyConfigUpdate(config);
         synchronized (serviceRemoteMapLock) {
             // shutdown all existing instances.
-            for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
-                remote.shutdown();
+            for (AbstractServiceRemote serviceRemote : serviceRemoteMap.values()) {
+                serviceRemote.removeDataObserver(serviceDataObserver);
+                serviceRemote.shutdown();
             }
             serviceRemoteMap.clear();
 
@@ -249,6 +246,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
 
                 // if already active than update the current location state.
                 if (isActive()) {
+                    serviceRemote.addDataObserver(serviceDataObserver);
                     serviceRemote.activate();
                 }
             }
@@ -266,8 +264,8 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         logger.debug("Activate location [" + getLabel() + "]!");
         synchronized (serviceRemoteMapLock) {
             for (AbstractServiceRemote serviceRemote : serviceRemoteMap.values()) {
-                serviceRemote.activate();
                 serviceRemote.addDataObserver(serviceDataObserver);
+                serviceRemote.activate();
             }
             super.activate();
             presenceDetector.activate();
@@ -275,30 +273,39 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         }
     }
 
-    private void updateCurrentState() {
-        List<ServiceType> serviceTypes = new ArrayList<>();
-        try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
-            for (final ServiceType serviceType : serviceTypes) {
-                final Object state;
+    private void updateCurrentState() throws InterruptedException {
+        synchronized (serviceRemoteMapLock) {
+            try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
+                for (final ServiceType serviceType : getSupportedServiceTypes()) {
 
-                try {
-                    state = Service.invokeProviderServiceMethod(serviceType, this);
-                } catch (NotAvailableException ex) {
-                    logger.debug("No service data for type[" + serviceType + "] on location available!", ex);
-                    continue;
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new FatalImplementationErrorException("LocationController does not implement service[" + serviceType + "] method defined for the location unitType!", ex), logger);
-                    continue;
-                }
+                    final Object state;
 
-                try {
-                    Service.invokeOperationServiceMethod(serviceType, dataBuilder.getInternalBuilder(), state);
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new FatalImplementationErrorException("Location RST data type does not contain data for service[" + serviceType + "]!", ex), logger);
+                    try {
+                        final AbstractServiceRemote serviceRemote = serviceRemoteMap.get(serviceType);
+                        if(!serviceRemote.isDataAvailable()) {
+                            continue;
+                        }
+                        state = Service.invokeProviderServiceMethod(serviceType, serviceRemote);
+                    } catch (NotAvailableException ex) {
+                        logger.info("No service data for type[" + serviceType + "] on location available!");
+                        continue;
+                    } catch (NotSupportedException | IllegalArgumentException ex) {
+                        ExceptionPrinter.printHistory(new FatalImplementationErrorException(this, ex), logger);
+                        continue;
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistory("Could not update ServiceState[" + serviceType.name() + "] for " + this, ex, logger);
+                        continue;
+                    }
+
+                    try {
+                        Service.invokeOperationServiceMethod(serviceType, dataBuilder.getInternalBuilder(), state);
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistory(new NotSupportedException("Field[" + serviceType.name().toLowerCase().replace("_service", "") + "] is missing in protobuf type " + getDataClass().getSimpleName() + "!", this, ex), logger);
+                    }
                 }
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), logger, LogLevel.WARN);
             }
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), logger, LogLevel.WARN);
         }
     }
 
