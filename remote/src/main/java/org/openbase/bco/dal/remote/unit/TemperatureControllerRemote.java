@@ -53,7 +53,7 @@ public class TemperatureControllerRemote extends AbstractUnitRemote<TemperatureC
     @Override
     public TemperatureState getTemperatureState() throws NotAvailableException {
         try {
-            return getData().getActualTemperatureState();
+            return getData().getTemperatureState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("TemperatureState", ex);
         }
