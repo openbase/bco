@@ -71,12 +71,13 @@ public class OpenHABConfigGenerator implements Launchable<Void>, VoidInitializab
 
     public OpenHABConfigGenerator() throws InstantiationException, InterruptedException {
         try {
-            this.deviceRegistryRemote = new DeviceRegistryRemote();
-            this.locationRegistryRemote = new LocationRegistryRemote();
-            this.sceneRegistryRemote = new SceneRegistryRemote();
-            this.agentRegistryRemote = new AgentRegistryRemote();
-            this.appRegistryRemote = new AppRegistryRemote();
-            this.unitRegistryRemote = new UnitRegistryRemote();
+            Registries.waitForData();
+            this.deviceRegistryRemote = Registries.getDeviceRegistry();
+            this.locationRegistryRemote = Registries.getLocationRegistry();
+            this.sceneRegistryRemote = Registries.getSceneRegistry();
+            this.agentRegistryRemote = Registries.getAgentRegistry();
+            this.appRegistryRemote = Registries.getAppRegistry();
+            this.unitRegistryRemote = Registries.getUnitRegistry();
             this.itemConfigGenerator = new OpenHABItemConfigGenerator(deviceRegistryRemote, unitRegistryRemote, locationRegistryRemote, sceneRegistryRemote, agentRegistryRemote, appRegistryRemote);
             this.recurrenceGenerationFilter = new RecurrenceEventFilter(TIMEOUT) {
 
