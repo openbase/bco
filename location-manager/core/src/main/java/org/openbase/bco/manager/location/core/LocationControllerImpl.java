@@ -33,6 +33,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
 import org.openbase.bco.dal.lib.layer.unit.location.Location;
@@ -53,6 +55,8 @@ import org.openbase.bco.dal.remote.service.TamperStateServiceRemote;
 import org.openbase.bco.dal.remote.service.TargetTemperatureStateServiceRemote;
 import org.openbase.bco.dal.remote.service.TemperatureStateServiceRemote;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
+import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.location.lib.LocationController;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
@@ -68,10 +72,11 @@ import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -165,16 +170,18 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
 //                        LocationRemote l = new LocationRemote();
 //                        l.init(scope);
 //                        l.activate();
-//                        System.out.println("====== New Remote =========");
+//                        System.out.println("====== New Remote "+ScopeGenerator.generateStringRep(l.getScope())+" =========");
 //                        System.out.println(l + " connnection State: " + l.getConnectionState().name());
 //                        l.waitForData();
+//                        System.out.println(l + " temp State: " + l.getTemperatureState().getTemperature());
 //                        System.out.println(l + " connnection State: " + l.getConnectionState().name());
 //                        l.shutdown();
 //                        System.out.println("====== Pool ================");
 //                        System.out.println(Units.getUnitByScope(scope, false).getConnectionState() + " connnection State: " + Units.getUnitByScope(scope, false).getConnectionState().name());
-//                        System.out.println(Units.getUnitByScope(scope, false).getConnectionState() + " active: " + Units.getUnitByScope(scope, false).isActive());
+//                        System.out.println(Units.getUnitByScope(scope, false).getConnectionState() + " active: " + Units.getUnitByScope(scope, true).isActive());
 //                        System.out.println(Units.getUnitByScope(scope, false).getConnectionState() + " locked: " + Units.getUnitByScope(scope, false).isLocked());
 //                        System.out.println(Units.getUnitByScope(scope, false).getConnectionState() + " data avail: " + Units.getUnitByScope(scope, false).isDataAvailable());
+//                        System.out.println(Units.getUnitByScope(scope, false).getConnectionState() + " temp: " + ((LocationRemote) Units.getUnitByScope(scope, false)).getData().getTemperatureState().getTemperature());
 //                        System.out.println("======================");
 //                    } catch (Exception ex) {
 //                        Logger.getLogger(LocationControllerImpl.class.getName()).log(Level.SEVERE, null, ex);
@@ -184,6 +191,13 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
 //        } catch (Exception ex) {
 //            Logger.getLogger(LocationControllerImpl.class.getName()).log(Level.SEVERE, null, ex);
 //        }
+
+        addDataObserver(new Observer<LocationData>() {
+            @Override
+            public void update(Observable<LocationData> source, LocationData data) throws Exception {
+                System.out.println("#### Location observation temp: " + data.getTemperatureState().getTemperature());
+            }
+        });
     }
 
     @Override
@@ -211,7 +225,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
 
             // init a new set for each supported service type.
             Map<ServiceType, Set<UnitConfig>> serviceMap = new HashMap<>();
-            for (ServiceType serviceType : getSupportedServiceTypes()) {
+            for (ServiceType serviceType : ServiceType.values()) {
                 serviceMap.put(serviceType, new HashSet<>());
             }
 
@@ -228,11 +242,6 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
 
                 // sort dal unit by service type
                 for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-
-                    // filter all services which are not supported by locations.
-                    if (!serviceMap.containsKey(serviceConfig.getServiceTemplate().getType())) {
-                        continue;
-                    }
 
                     // register unit for service type. UnitConfigs are may added twice because of dublicated type of different service pattern but are filtered by the set. 
                     serviceMap.get(serviceConfig.getServiceTemplate().getType()).add(unitConfig);
@@ -278,16 +287,20 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
             try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                 for (final ServiceType serviceType : getSupportedServiceTypes()) {
 
-                    final Object state;
+                    final Object serviceState;
 
                     try {
                         final AbstractServiceRemote serviceRemote = serviceRemoteMap.get(serviceType);
-                        if(!serviceRemote.isDataAvailable()) {
+                        if (!serviceRemote.isDataAvailable()) {
                             continue;
                         }
-                        state = Service.invokeProviderServiceMethod(serviceType, serviceRemote);
+
+                        serviceState = Service.invokeProviderServiceMethod(serviceType, serviceRemote);
+                        if (serviceType == ServiceType.TEMPERATURE_STATE_SERVICE && serviceState.toString().contains("21")) {
+                            System.out.println("Location update: " + serviceState);
+                        }
                     } catch (NotAvailableException ex) {
-                        logger.info("No service data for type[" + serviceType + "] on location available!");
+                        ExceptionPrinter.printHistory("No service data for type[" + serviceType + "] on location available!", ex, logger);
                         continue;
                     } catch (NotSupportedException | IllegalArgumentException ex) {
                         ExceptionPrinter.printHistory(new FatalImplementationErrorException(this, ex), logger);
@@ -298,7 +311,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                     }
 
                     try {
-                        Service.invokeOperationServiceMethod(serviceType, dataBuilder.getInternalBuilder(), state);
+                        Service.invokeOperationServiceMethod(serviceType, dataBuilder.getInternalBuilder(), serviceState);
                     } catch (CouldNotPerformException ex) {
                         ExceptionPrinter.printHistory(new NotSupportedException("Field[" + serviceType.name().toLowerCase().replace("_service", "") + "] is missing in protobuf type " + getDataClass().getSimpleName() + "!", this, ex), logger);
                     }

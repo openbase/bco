@@ -52,6 +52,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -199,9 +200,8 @@ public class LocationRemoteTest {
         System.out.println("ping");
         locationRemote.ping().get();
         System.out.println("ping done");
-        System.out.println("request data");
-        locationRemote.requestData().get();
-        System.out.println("got data");
+        System.out.println("request data of "+ ScopeGenerator.generateStringRep(locationRemote.getScope()));
+        System.out.println("got data: "+locationRemote.requestData().get().getTemperatureState().getTemperature());
         while (locationRemote.getTemperatureState().getTemperature() != temperature) {
 //            System.out.println("current state: " + locationRemote.getData());
             System.out.println("current temp: " + locationRemote.getTemperatureState().getTemperature() + " waiting for: " + temperature);
