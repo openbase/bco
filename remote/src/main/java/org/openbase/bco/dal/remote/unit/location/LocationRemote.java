@@ -34,7 +34,6 @@ import rst.domotic.state.PowerConsumptionStateType;
 import rst.domotic.state.PowerStateType;
 import rst.domotic.state.PowerStateType.PowerState.State;
 import rst.domotic.state.PresenceStateType;
-import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.state.SmokeStateType;
 import rst.domotic.state.SmokeStateType.SmokeState;
 import rst.domotic.state.StandbyStateType;
@@ -97,9 +96,9 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionConfigType.ActionConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Snapshot.getDefaultInstance()));
     }
-    
+
     private final ServiceRemoteManager serviceRemoteManager;
-    
+
     public LocationRemote() {
         super(LocationData.class);
         this.serviceRemoteManager = new ServiceRemoteManager() {
@@ -130,7 +129,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         serviceRemoteManager.activate();
         super.activate();
     }
-    
+
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         serviceRemoteManager.deactivate();
@@ -250,7 +249,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     @Override
     public TemperatureState getTemperatureState() throws NotAvailableException {
         try {
-            return getData().getAcutalTemperatureState();
+            return getData().getTemperatureState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Temperature", ex);
         }

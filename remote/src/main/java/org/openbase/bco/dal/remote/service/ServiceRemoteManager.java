@@ -21,7 +21,6 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -38,10 +37,9 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.service.ServiceConfigType;
-import rst.domotic.service.ServiceTemplateType;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
-import rst.domotic.unit.UnitConfigType;
+import rst.domotic.service.ServiceConfigType.ServiceConfig;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -53,7 +51,7 @@ public abstract class ServiceRemoteManager implements Activatable {
     private boolean active;
     private final SyncObject serviceRemoteMapLock = new SyncObject("ServiceRemoteMapLock");
     private final ServiceRemoteFactory serviceRemoteFactory;
-    private final Map<ServiceTemplateType.ServiceTemplate.ServiceType, AbstractServiceRemote> serviceRemoteMap;
+    private final Map<ServiceType, AbstractServiceRemote> serviceRemoteMap;
     private final Observer serviceDataObserver;
 
     public ServiceRemoteManager() {
@@ -75,8 +73,8 @@ public abstract class ServiceRemoteManager implements Activatable {
             serviceRemoteMap.clear();
 
             // init a new set for each supported service type.
-            Map<ServiceTemplateType.ServiceTemplate.ServiceType, Set<UnitConfigType.UnitConfig>> serviceMap = new HashMap<>();
-            for (ServiceTemplateType.ServiceTemplate.ServiceType serviceType : ServiceTemplateType.ServiceTemplate.ServiceType.values()) {
+            Map<ServiceType, Set<UnitConfig>> serviceMap = new HashMap<>();
+            for (ServiceType serviceType : ServiceType.values()) {
                 serviceMap.put(serviceType, new HashSet<>());
             }
 
@@ -84,7 +82,7 @@ public abstract class ServiceRemoteManager implements Activatable {
             for (final String unitId : unitIDList) {
 
                 // resolve unit config by unit registry
-                final UnitConfigType.UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
+                final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
 
                 // filter non dal units
                 if (!UnitConfigProcessor.isDalUnit(unitConfig)) {
@@ -92,7 +90,7 @@ public abstract class ServiceRemoteManager implements Activatable {
                 }
 
                 // sort dal unit by service type
-                for (ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
 
                     // register unit for service type. UnitConfigs are may added twice because of dublicated type of different service pattern but are filtered by the set. 
                     serviceMap.get(serviceConfig.getServiceTemplate().getType()).add(unitConfig);
@@ -100,7 +98,7 @@ public abstract class ServiceRemoteManager implements Activatable {
             }
 
             // initialize service remotes
-            for (ServiceTemplateType.ServiceTemplate.ServiceType serviceType : getManagedServiceTypes()) {
+            for (ServiceType serviceType : getManagedServiceTypes()) {
                 final AbstractServiceRemote serviceRemote = serviceRemoteFactory.newInitializedInstance(serviceType, serviceMap.get(serviceType));
                 serviceRemoteMap.put(serviceType, serviceRemote);
 
@@ -146,13 +144,13 @@ public abstract class ServiceRemoteManager implements Activatable {
         }
     }
 
-    public AbstractServiceRemote getServiceRemote(final ServiceTemplate.ServiceType serviceType) {
+    public AbstractServiceRemote getServiceRemote(final ServiceType serviceType) {
         synchronized (serviceRemoteMapLock) {
             return serviceRemoteMap.get(serviceType);
         }
     }
 
-    protected abstract Set<ServiceTemplateType.ServiceTemplate.ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException;
+    protected abstract Set<ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException;
 
     protected abstract void notifyServiceUpdate(final Observable source, final Object data) throws NotAvailableException, InterruptedException;
 

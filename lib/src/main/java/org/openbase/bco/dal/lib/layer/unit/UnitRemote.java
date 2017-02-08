@@ -23,17 +23,15 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.dal.lib.layer.service.Service;
-import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.pattern.ConfigurableRemote;
 import rsb.Scope;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.rsb.ScopeType;
 
 /**
- *  TODO Release: remove unused parameter CONFIG
- * 
+ * TODO Release: remove unused parameter CONFIG
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <M> Message
  */
@@ -41,6 +39,7 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit, Service, C
 
     /**
      * Method initializes this unit remote instance via it's remote controller scope.
+     *
      * @param scope the scope which is used to reach the remote controller.
      * @throws InitializationException is thrown in case the remote could not be initialized with the given scope.
      * @throws InterruptedException is thrown in case the thread is externally interrupted.
@@ -49,6 +48,7 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit, Service, C
 
     /**
      * Method initializes this unit remote instance via it's remote controller scope.
+     *
      * @param scope the scope which is used to reach the remote controller.
      * @throws InitializationException is thrown in case the remote could not be initialized with the given scope.
      * @throws InterruptedException is thrown in case the thread is externally interrupted.
@@ -57,6 +57,7 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit, Service, C
 
     /**
      * Method initializes this unit remote instance via the given id.
+     *
      * @param id the unit id which is used to resolve the remote controller scope.
      * @throws InitializationException is thrown in case the remote could not be initialized with the given id.
      * @throws InterruptedException is thrown in case the thread is externally interrupted.
@@ -65,6 +66,7 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit, Service, C
 
     /**
      * Method initializes this unit remote instance via the given label.
+     *
      * @param label the unit label which is used to resolve the remote controller scope.
      * @throws InitializationException is thrown in case the remote could not be initialized with the given label.
      * @throws InterruptedException is thrown in case the thread is externally interrupted.
