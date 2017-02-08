@@ -101,6 +101,7 @@ import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.agent.AgentClassType.AgentClass;
+import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig;
@@ -227,7 +228,8 @@ public class MockRegistry {
         TEMPERATURE_SENSOR(UnitType.TEMPERATURE_SENSOR, TEMPERATURE_SPS),
         BATTERY(UnitType.BATTERY, BATTERY_SPS),
         LOCATION(UnitType.LOCATION, COLOR_SPS, COLOR_SOS, MOTION_SPS, POWER_CONSUMPTION_SPS, POWER_SPS, POWER_SOS, BLIND_SPS, BLIND_SOS, SMOKE_ALARM_SPS,
-                SMOKE_SPS, STANDBY_SPS, STANDBY_SOS, TAMPER_SPS, TARGET_TEMPERATURE_SPS, TARGET_TEMPERATURE_SOS, TEMPERATURE_SPS);
+                SMOKE_SPS, STANDBY_SPS, STANDBY_SOS, TAMPER_SPS, TARGET_TEMPERATURE_SPS, TARGET_TEMPERATURE_SOS, TEMPERATURE_SPS),
+        CONNECTION(UnitType.CONNECTION, CONTACT_SPS);
 
         private final UnitTemplate template;
 
@@ -392,6 +394,8 @@ public class MockRegistry {
                     registerDevices();
                     logger.info("Wait for consistency");
                     deviceRegistry.waitForConsistency();
+
+                    registerConnnections();
                 } catch (CouldNotPerformException | InterruptedException ex) {
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
                 }
@@ -454,6 +458,34 @@ public class MockRegistry {
         try {
             LocationConfig zoneLocationConfig = LocationConfig.newBuilder().setType(LocationConfig.LocationType.ZONE).build();
             paradiseLocation = locationRegistry.registerLocationConfig(UnitConfig.newBuilder().setType(UnitType.LOCATION).setLabel("Paradise").setLocationConfig(zoneLocationConfig).build()).get();
+
+            LocationConfig tileLocationConfig = LocationConfig.newBuilder().setType(LocationConfig.LocationType.TILE).build();
+            PlacementConfig placementConfig = PlacementConfig.newBuilder().setLocationId(paradiseLocation.getId()).build();
+            locationRegistry.registerLocationConfig(UnitConfig.newBuilder().setType(UnitType.LOCATION).setLabel("Heaven").setLocationConfig(tileLocationConfig).setPlacementConfig(placementConfig).build()).get();
+            locationRegistry.registerLocationConfig(UnitConfig.newBuilder().setType(UnitType.LOCATION).setLabel("Hell").setLocationConfig(tileLocationConfig).setPlacementConfig(placementConfig).build()).get();
+        } catch (ExecutionException ex) {
+            throw new CouldNotPerformException(ex);
+        }
+    }
+
+    private void registerConnnections() throws CouldNotPerformException, InterruptedException {
+        try {
+            List<String> tileIds = new ArrayList<>();
+            for (UnitConfig unitConfig : locationRegistry.getLocationConfigs()) {
+                if (unitConfig.getLocationConfig().getType() == LocationConfig.LocationType.TILE) {
+                    tileIds.add(unitConfig.getId());
+                }
+            }
+
+            String reedContactId = "";
+            for (UnitConfig unitConfig : unitRegistry.getDalUnitConfigs()) {
+                if (unitConfig.getType() == UnitType.REED_CONTACT) {
+                    reedContactId = unitConfig.getId();
+                }
+            }
+
+            ConnectionConfig connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
+            locationRegistry.registerConnectionConfig(UnitConfig.newBuilder().setType(UnitType.CONNECTION).setLabel("Moongate").setConnectionConfig(connectionConfig).build()).get();
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
         }
