@@ -21,7 +21,6 @@ package org.openbase.bco.manager.location.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -37,10 +36,11 @@ import java.util.concurrent.TimeoutException;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.layer.unit.location.Location;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
 import org.openbase.bco.dal.remote.service.AbstractServiceRemote;
-import org.openbase.bco.dal.remote.unit.UnitRemote;
+import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
 import static org.openbase.bco.manager.location.core.LocationManagerController.LOGGER;
 import org.openbase.bco.manager.location.lib.LocationController;
 import org.openbase.bco.registry.remote.Registries;
@@ -64,7 +64,6 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionConfigType;
 import rst.domotic.action.ActionConfigType.ActionConfig;
 import rst.domotic.action.SnapshotType.Snapshot;
-import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.AlarmStateType;
@@ -238,9 +237,6 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
                     }
 
                     serviceState = Service.invokeProviderServiceMethod(serviceType, serviceRemote);
-                    if (serviceType == ServiceTemplateType.ServiceTemplate.ServiceType.TEMPERATURE_STATE_SERVICE && serviceState.toString().contains("21")) {
-                        System.out.println("Location update: " + serviceState);
-                    }
                 } catch (NotAvailableException ex) {
                     ExceptionPrinter.printHistory("No service data for type[" + serviceType + "] on location available!", ex, LOGGER);
                     continue;
@@ -333,7 +329,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     public ServiceRemote getServiceRemote(final ServiceType serviceType) {
         return serviceRemoteManager.getServiceRemote(serviceType);
     }
-    
+
     @Override
     public List<String> getNeighborLocationIds() throws CouldNotPerformException {
         List<String> neighborIdList = new ArrayList<>();
