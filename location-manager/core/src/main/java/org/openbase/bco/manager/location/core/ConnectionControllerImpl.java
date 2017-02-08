@@ -163,7 +163,7 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
     }
 
     @Override
-    public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
+    public synchronized UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
         UnitConfig unitConnectionConfig = super.applyConfigUpdate(config);
         serviceRemoteManager.applyConfigUpdate(unitConnectionConfig.getConnectionConfig().getUnitIdList());
 

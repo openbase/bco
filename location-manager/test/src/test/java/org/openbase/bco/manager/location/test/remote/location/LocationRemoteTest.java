@@ -23,6 +23,7 @@ package org.openbase.bco.manager.location.test.remote.location;
  */
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -57,9 +58,12 @@ import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.vision.HSBColorType;
 
 /**
  *
@@ -136,7 +140,7 @@ public class LocationRemoteTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 5000)
+    @Test//(timeout = 5000)
     public void testLocationToUnitPipeline() throws Exception {
         System.out.println("testLocationToUnitPipeline");
 
@@ -161,8 +165,8 @@ public class LocationRemoteTest {
             for (PowerStateOperationService powerStateService : powerServiceList) {
                 Assert.assertEquals("PowerState of unit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the loationRemote!", powerOff.getValue(), powerStateService.getPowerState().getValue());
             }
-        } catch (Exception ex) {
-            ExceptionPrinter.printHistory(ex, logger);
+        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
     }
 
@@ -214,5 +218,18 @@ public class LocationRemoteTest {
             Thread.sleep(10);
         }
         Assert.assertEquals("Temperature of the location has not been updated!", temperature, locationRemote.getTemperatureState().getTemperature(), 0.01);
+    }
+
+    @Test//(timeout = 5000)
+    public void testRecordAndRestoreSnapshots() throws Exception {
+        locationRemote.setBlindState(BlindState.newBuilder().setMovementState(BlindState.MovementState.DOWN).setOpeningRatio(0).build()).get();
+//        locationRemote.setBrightnessState(BrightnessState.newBuilder().setBrightness(100).build()).get();
+        locationRemote.setColor(HSBColorType.HSBColor.newBuilder().setHue(0).setSaturation(100).setBrightness(100).build()).get();
+        locationRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build()).get();
+        locationRemote.setStandbyState(StandbyState.newBuilder().setValue(StandbyState.State.RUNNING).build()).get();
+        locationRemote.setTargetTemperatureState(TemperatureState.newBuilder().setTemperature(20).setTemperatureDataUnit(TemperatureState.DataUnit.CELSIUS).build()).get();
+
+//        Thread.sleep(100);
+        System.out.println("Snapshot:\n" + locationRemote.recordSnapshot().get());
     }
 }

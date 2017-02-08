@@ -80,6 +80,7 @@ import rst.domotic.state.StandbyStateType;
 import rst.domotic.state.TamperStateType;
 import rst.domotic.state.TemperatureStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationDataType;
 import rst.domotic.unit.location.LocationDataType.LocationData;
 import rst.vision.ColorType;
@@ -192,14 +193,14 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     }
 
     @Override
-    public synchronized UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        config = super.applyConfigUpdate(config);
-        serviceRemoteManager.applyConfigUpdate(config.getLocationConfig().getUnitIdList());
+    public synchronized UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        UnitConfig unitConfig = super.applyConfigUpdate(config);
+        serviceRemoteManager.applyConfigUpdate(unitConfig.getLocationConfig().getUnitIdList());
         // if already active than update the current location state.
         if (isActive()) {
             updateCurrentState();
         }
-        return config;
+        return unitConfig;
     }
 
     @Override
@@ -274,18 +275,55 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
 
     @Override
     public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
+        return recordSnapshot(UnitType.UNKNOWN);
+    }
+
+    public Future<Snapshot> recordSnapshot(UnitType unitType) throws CouldNotPerformException, InterruptedException {
         try {
             Snapshot.Builder snapshotBuilder = Snapshot.newBuilder();
             Set<UnitRemote> unitRemoteSet = new HashSet<>();
-            serviceRemoteManager.getServiceRemoteList().stream().forEach((serviceRemote) -> {
-                unitRemoteSet.addAll(serviceRemote.getInternalUnits());
-            });
+
+            if (unitType == UnitType.UNKNOWN) {
+                // if the type is unknown then take the snapshot for all units
+                serviceRemoteManager.getServiceRemoteList().stream().forEach((serviceRemote) -> {
+                    unitRemoteSet.addAll(serviceRemote.getInternalUnits());
+                });
+            } else {
+                // for effiecency reasons only one serviceType implemented by the unitType is regarded because the unitRemote is part of
+                // every abstractServiceRemotes internal units if the serviceType is implemented by the unitType
+                ServiceType serviceType;
+                try {
+                    serviceType = Registries.getUnitRegistry().getUnitTemplateByType(unitType).getServiceTemplateList().get(0).getType();
+                } catch (IndexOutOfBoundsException ex) {
+                    // if there is not at least one serviceType for the unitType then the snapshot is empty
+                    return CompletableFuture.completedFuture(snapshotBuilder.build());
+                }
+
+                for (AbstractServiceRemote abstractServiceRemote : serviceRemoteManager.getServiceRemoteList()) {
+                    if (!(serviceType == abstractServiceRemote.getServiceType())) {
+                        continue;
+                    }
+
+                    Collection<UnitRemote> internalUnits = abstractServiceRemote.getInternalUnits();
+                    for (UnitRemote unitRemote : internalUnits) {
+                        // just add units with the according type
+                        if (unitRemote.getType() == unitType) {
+                            unitRemoteSet.add(unitRemote);
+                        }
+                    }
+                }
+            }
+
+            // take the snapshot
             for (UnitRemote remote : unitRemoteSet) {
                 try {
                     if (UnitProcessor.isDalUnit(remote)) {
                         if (!remote.isConnected()) {
                             throw new NotAvailableException("Unit[" + remote.getLabel() + "] is currently not reachable!");
                         }
+//                        if (remote.getType() == UnitType.COLORABLE_LIGHT) {
+//                            snapshotBuilder.addAllActionConfig(remote.recordSnapshot().get(/*2, TimeUnit.SECONDS*/).getActionConfigList());
+//                        }
                         snapshotBuilder.addAllActionConfig(remote.recordSnapshot().get(2, TimeUnit.SECONDS).getActionConfigList());
                     }
                 } catch (ExecutionException | TimeoutException ex) {
@@ -317,7 +355,8 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
         }
     }
 
-    public Future<Void> applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+    @Override
+    public Future<Void> applyAction(final ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
         Collection<Future> futureCollection = new ArrayList<>();
         for (Service service : serviceRemoteManager.getServiceRemoteList()) {
             futureCollection.add(service.applyAction(actionConfig));
