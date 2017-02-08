@@ -57,6 +57,8 @@ import rst.domotic.state.ColorStateType;
 import rst.domotic.state.MotionStateType;
 import rst.domotic.state.PowerConsumptionStateType;
 import rst.domotic.state.PowerStateType;
+import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.state.PowerStateType.PowerState.State;
 import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.state.SmokeStateType;
 import rst.domotic.state.StandbyStateType;
@@ -113,13 +115,13 @@ public interface Location extends ScopeProvider, LabelProvider, DataProvider<Loc
 
     @Override
     default public PresenceState getPresenceState() throws NotAvailableException {
-       try {
+        try {
             return getData().getPresenceState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("PresenceState", ex);
         }
     }
-    
+
     @Override
     default public Future<Void> setBlindState(BlindState blindState, UnitTemplate.UnitType unitType) throws CouldNotPerformException {
         return ((BlindStateOperationServiceCollection) getServiceRemote(ServiceTemplate.ServiceType.BLIND_STATE_SERVICE)).setBlindState(blindState, unitType);
@@ -139,7 +141,7 @@ public interface Location extends ScopeProvider, LabelProvider, DataProvider<Loc
     default public BlindState getBlindState(final UnitTemplate.UnitType unitType) throws NotAvailableException {
         return ((BlindStateOperationServiceCollection) getServiceRemote(ServiceTemplateType.ServiceTemplate.ServiceType.BLIND_STATE_SERVICE)).getBlindState(unitType);
     }
-    
+
     @Override
     default public Future<Void> setBrightnessState(BrightnessStateType.BrightnessState brightnessState) throws CouldNotPerformException {
         return ((BrightnessStateOperationServiceCollection) getServiceRemote(ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE)).setBrightnessState(brightnessState);
@@ -188,6 +190,10 @@ public interface Location extends ScopeProvider, LabelProvider, DataProvider<Loc
     @Override
     default public Future<Void> setPowerState(PowerStateType.PowerState powerState, UnitTemplate.UnitType unitType) throws CouldNotPerformException {
         return ((PowerStateOperationServiceCollection) getServiceRemote(ServiceTemplate.ServiceType.POWER_STATE_SERVICE)).setPowerState(powerState, unitType);
+    }
+
+    default public void setPowerState(final State state) throws CouldNotPerformException {
+        setPowerState(PowerState.newBuilder().setValue(state).build());
     }
 
     @Override
