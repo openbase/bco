@@ -28,7 +28,6 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.processing.StringProcessor;
-import org.openbase.jul.schedule.WatchDog.ServiceState;
 import rst.domotic.action.ActionConfigType;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -75,8 +74,9 @@ public interface Service {
     /**
      * Method returns the state name of the appurtenant service.
      *
-     * @param template The service template.
+     * @param serviceType the service type which is used to generate the service name.
      * @return The state type name as string.
+     * @throws org.openbase.jul.exception.NotAvailableException is thrown in case the given serviceType is null.
      */
     public static String getServiceStateName(final ServiceType serviceType) throws NotAvailableException {
         try {
@@ -95,6 +95,7 @@ public interface Service {
      *
      * @param template The service template.
      * @return The state type name as string.
+     * @throws org.openbase.jul.exception.NotAvailableException is thrown in case the given template is null.
      */
     public static String getServiceStateName(final ServiceTemplate template) throws NotAvailableException {
         try {

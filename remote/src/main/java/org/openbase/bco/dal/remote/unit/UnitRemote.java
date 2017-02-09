@@ -28,7 +28,7 @@ import com.google.protobuf.GeneratedMessage;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <M> Message
- * @deprecated Please use org.openbase.bco.dal.lib.layer.unit.UnitRemote<M> instead!
+ * @deprecated Please use org.openbase.bco.dal.lib.layer.unit.UnitRemote instead!
  */
 @Deprecated
 public interface UnitRemote<M extends GeneratedMessage> extends org.openbase.bco.dal.lib.layer.unit.UnitRemote<M> {
