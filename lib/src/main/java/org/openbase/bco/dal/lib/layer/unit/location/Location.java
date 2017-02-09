@@ -39,6 +39,7 @@ import org.openbase.bco.dal.lib.layer.service.collection.TamperStateProviderServ
 import org.openbase.bco.dal.lib.layer.service.collection.TargetTemperatureStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.TemperatureStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.provider.PresenceStateProviderService;
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
@@ -73,7 +74,7 @@ import rst.domotic.unit.location.LocationDataType.LocationData;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Location extends ScopeProvider, LabelProvider, DataProvider<LocationData>, Configurable<String, UnitConfig>,
+public interface Location extends ScopeProvider, LabelProvider, DataProvider<LocationData>, Configurable<String, UnitConfig>, Unit,
         PresenceStateProviderService, Snapshotable<Snapshot>,
         BrightnessStateOperationServiceCollection,
         ColorStateOperationServiceCollection,

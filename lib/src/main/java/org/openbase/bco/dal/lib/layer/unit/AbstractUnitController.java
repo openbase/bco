@@ -82,8 +82,6 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionConfig.getDefaultInstance()));
     }
 
-    public static long registerMethodTime = 0;
-    public static long updateMethodVerificationTime = 0;
     public static long initTime = 0;
     public static long constructorTime = 0;
 
@@ -91,12 +89,10 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     private final List<Service> serviceList;
     private final ServiceFactory serviceFactory;
     private final ServiceJSonProcessor serviceJSonProcessor;
-    private final Stopwatch stopWatch = new Stopwatch();
     private UnitTemplate template;
 
     public AbstractUnitController(final Class unitClass, final UnitHost unitHost, final MB builder) throws CouldNotPerformException {
         super(builder);
-        stopWatch.start();
         try {
 
             if (unitHost.getServiceFactory() == null) {
@@ -110,13 +106,6 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
-        }
-        try {
-            synchronized (this) {
-                constructorTime += stopWatch.stop();
-            }
-        } catch (CouldNotPerformException ex) {
-
         }
     }
 
@@ -282,8 +271,10 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
     @Override
     public void registerMethods(RSBLocalServer server) throws CouldNotPerformException {
-        stopWatch.start();
-        // collect service interface methods
+
+        RPCHelper.registerInterface(Unit.class, this, server);
+        
+        // collect and register service interface methods via unit templates
         HashMap<String, ServiceTemplate> serviceInterfaceMap = new HashMap<>();
         for (ServiceTemplate serviceTemplate : getTemplate().getServiceTemplateList()) {
             serviceInterfaceMap.put(StringProcessor.transformUpperCaseToCamelCase(serviceTemplate.getType().name())
@@ -333,10 +324,6 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register Interface[" + serviceInterfaceClass + "] Method [" + serviceInterfaceMapEntry.getKey() + "] for Unit[" + this.getLabel() + "].", ex), logger);
             }
-        }
-
-        synchronized (this) {
-            registerMethodTime += stopWatch.stop();
         }
     }
 
@@ -396,8 +383,6 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
      * least on update method is not available.
      */
     private void verifyUnitConfig() throws VerificationFailedException {
-        stopWatch.start();
-
         try {
             logger.debug("Validating unit update methods...");
 
@@ -429,14 +414,6 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
             MultiException.checkAndThrow("At least one update method missing!", exceptionStack);
         } catch (CouldNotPerformException ex) {
             throw new VerificationFailedException("UnitTemplate is not compatible for configured unit controller!", ex);
-        }
-
-        try {
-            synchronized (this) {
-                updateMethodVerificationTime += stopWatch.stop();
-            }
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Coul not stop StopWatch", ex), logger);
         }
     }
 
