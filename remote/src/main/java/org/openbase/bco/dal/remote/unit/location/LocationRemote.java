@@ -2,35 +2,40 @@ package org.openbase.bco.dal.remote.unit.location;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.Future;
+import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.location.Location;
+import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.pattern.Observable;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionConfigType;
 import rst.domotic.action.SnapshotType.Snapshot;
-import rst.domotic.state.AlarmStateType.AlarmState;
-import rst.domotic.state.MotionStateType.MotionState;
-import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
-import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.state.BlindStateType.BlindState;
-import rst.domotic.state.BrightnessStateType.BrightnessState;
-import rst.domotic.state.ColorStateType.ColorState;
-import rst.domotic.state.PowerStateType.PowerState.State;
+import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.state.AlarmStateType;
+import rst.domotic.state.BlindStateType;
+import rst.domotic.state.BrightnessStateType;
+import rst.domotic.state.ColorStateType;
+import rst.domotic.state.MotionStateType;
+import rst.domotic.state.PowerConsumptionStateType;
+import rst.domotic.state.PowerStateType;
 import rst.domotic.state.PresenceStateType;
-import rst.domotic.state.SmokeStateType.SmokeState;
-import rst.domotic.state.StandbyStateType.StandbyState;
-import rst.domotic.state.TamperStateType.TamperState;
-import rst.domotic.state.TemperatureStateType.TemperatureState;
+import rst.domotic.state.SmokeStateType;
+import rst.domotic.state.StandbyStateType;
+import rst.domotic.state.TamperStateType;
+import rst.domotic.state.TemperatureStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.location.LocationDataType;
 import rst.domotic.unit.location.LocationDataType.LocationData;
-import rst.vision.ColorType.Color;
-import rst.vision.HSBColorType.HSBColor;
-import rst.vision.RGBColorType.RGBColor;
+import rst.vision.ColorType;
+import rst.vision.HSBColorType;
+import rst.vision.RGBColorType;
 
 /*
  * #%L
@@ -60,28 +65,41 @@ import rst.vision.RGBColorType.RGBColor;
 public class LocationRemote extends AbstractUnitRemote<LocationData> implements Location {
 
     static {
-      DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HSBColor.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ColorState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Color.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RGBColor.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AlarmState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BlindState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SmokeState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(StandbyState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationDataType.LocationData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HSBColorType.HSBColor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ColorStateType.ColorState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ColorType.Color.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RGBColorType.RGBColor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerStateType.PowerState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AlarmStateType.AlarmState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionStateType.MotionState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionStateType.PowerConsumptionState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BlindStateType.BlindState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SmokeStateType.SmokeState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(StandbyStateType.StandbyState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperStateType.TamperState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessStateType.BrightnessState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureStateType.TemperatureState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PresenceStateType.PresenceState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionConfigType.ActionConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Snapshot.getDefaultInstance()));
     }
 
+    private final ServiceRemoteManager serviceRemoteManager;
+
     public LocationRemote() {
         super(LocationData.class);
+        this.serviceRemoteManager = new ServiceRemoteManager() {
+            @Override
+            protected Set<ServiceTemplateType.ServiceTemplate.ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
+                return getSupportedServiceTypes();
+            }
+
+            @Override
+            protected void notifyServiceUpdate(Observable source, Object data) throws NotAvailableException, InterruptedException {
+                // anything needed here?
+            }
+        };
     }
 
     @Override
@@ -94,151 +112,23 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     }
 
     @Override
+    public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        UnitConfig unitConfig = super.applyConfigUpdate(config);
+        serviceRemoteManager.applyConfigUpdate(unitConfig.getLocationConfig().getUnitIdList());
+        return unitConfig;
+    }
+
+    @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         CachedLocationRegistryRemote.waitForData();
+        serviceRemoteManager.activate();
         super.activate();
     }
 
     @Override
-    public Future<Void> setBrightnessState(BrightnessState brightness) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(brightness, this, Void.class);
-    }
-
-    @Override
-    public BrightnessState getBrightnessState() throws NotAvailableException {
-        try {
-            return getData().getBrightnessState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Brightness", ex);
-        }
-    }
-
-    @Override
-    public Future<Void> setColorState(ColorState color) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(color, this, Void.class);
-    }
-
-    @Override
-    public ColorState getColorState() throws NotAvailableException {
-        try {
-            return getData().getColorState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Color", ex);
-        }
-    }
-
-    public void setPowerState(final State state) throws CouldNotPerformException {
-        LocationRemote.this.setPowerState(PowerState.newBuilder().setValue(state).build());
-    }
-
-    @Override
-    public Future<Void> setPowerState(final PowerState state) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(state, this, Void.class);
-    }
-
-    @Override
-    public PowerState getPowerState() throws NotAvailableException {
-        try {
-            return getData().getPowerState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("PowerState", ex);
-        }
-    }
-
-    @Override
-    public Future<Void> setBlindState(BlindState state) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(state, this, Void.class);
-    }
-
-    @Override
-    public BlindState getBlindState() throws NotAvailableException {
-        try {
-            return getData().getBlindState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("ShutterState", ex);
-        }
-    }
-
-    @Override
-    public Future<Void> setStandbyState(StandbyState state) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(state, this, Void.class);
-    }
-
-    @Override
-    public StandbyState getStandbyState() throws NotAvailableException {
-        try {
-            return getData().getStandbyState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("StandbyState", ex);
-        }
-    }
-
-    @Override
-    public Future<Void> setTargetTemperatureState(TemperatureState value) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(value, this, Void.class);
-    }
-
-    @Override
-    public TemperatureState getTargetTemperatureState() throws NotAvailableException {
-        try {
-            return getData().getTargetTemperatureState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("TargetTemperature", ex);
-        }
-    }
-
-    @Override
-    public MotionState getMotionState() throws NotAvailableException {
-        try {
-            return getData().getMotionState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("MotionState", ex);
-        }
-    }
-
-    @Override
-    public AlarmState getSmokeAlarmState() throws NotAvailableException {
-        try {
-            return getData().getSmokeAlarmState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("AlarmState", ex);
-        }
-    }
-
-    @Override
-    public SmokeState getSmokeState() throws NotAvailableException {
-        try {
-            return getData().getSmokeState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("SmokeState", ex);
-        }
-    }
-
-    @Override
-    public TemperatureState getTemperatureState() throws NotAvailableException {
-        try {
-            return getData().getAcutalTemperatureState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Temperature", ex);
-        }
-    }
-
-    @Override
-    public PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {
-        try {
-            return getData().getPowerConsumptionState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("PowerConsumptionState", ex);
-        }
-    }
-
-    @Override
-    public TamperState getTamperState() throws NotAvailableException {
-        try {
-            return getData().getTamperState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("TamperState", ex);
-        }
+    public void deactivate() throws InterruptedException, CouldNotPerformException {
+        serviceRemoteManager.deactivate();
+        super.deactivate();
     }
 
     @Override
@@ -257,6 +147,11 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     }
 
     @Override
+    public ServiceRemote getServiceRemote(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) {
+        return serviceRemoteManager.getServiceRemote(serviceType);
+    }
+
+    @Override
     public List<String> getNeighborLocationIds() throws CouldNotPerformException {
         List<String> neighborIdList = new ArrayList<>();
         try {
@@ -267,14 +162,5 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
             throw new CouldNotPerformException("Could not get CachedLocationRegistryRemote!", ex);
         }
         return neighborIdList;
-    }
-
-    @Override
-    public PresenceStateType.PresenceState getPresenceState() throws NotAvailableException {
-       try {
-            return getData().getPresenceState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("PresenceState", ex);
-        }
     }
 }

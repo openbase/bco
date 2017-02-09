@@ -21,11 +21,10 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -33,8 +32,6 @@ import rst.domotic.state.TemperatureStateType.TemperatureState;
  */
 public interface TemperatureStateProviderServiceCollection extends TemperatureStateProviderService {
 
-    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
-    //remove when remote cashing is implemented
     /**
      * Returns the average temperature value for a collection of temperature
      * providers.
@@ -43,19 +40,15 @@ public interface TemperatureStateProviderServiceCollection extends TemperatureSt
      * @throws NotAvailableException
      */
     @Override
-    default public TemperatureState getTemperatureState() throws NotAvailableException {
+    public TemperatureState getTemperatureState() throws NotAvailableException;
 
-        try {
-            Double average = 0d;
-            for (TemperatureStateProviderService service : getTemperatureStateProviderServices()) {
-                average += service.getTemperatureState().getTemperature();
-            }
-            average /= getTemperatureStateProviderServices().size();
-            return TemperatureState.newBuilder().setTemperature(average).build();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Temperature", ex);
-        }
-    }
-
-    public Collection<TemperatureStateProviderService> getTemperatureStateProviderServices() throws CouldNotPerformException;
+    /**
+     * Returns the average temperature value for a collection of temperature
+     * providers with a given unit type.
+     *
+     * @param unitType
+     * @return
+     * @throws NotAvailableException
+     */
+    public TemperatureState getTemperatureState(final UnitType unitType) throws NotAvailableException;
 }

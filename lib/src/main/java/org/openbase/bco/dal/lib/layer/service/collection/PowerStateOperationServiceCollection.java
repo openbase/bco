@@ -21,13 +21,12 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -35,13 +34,8 @@ import rst.domotic.state.PowerStateType.PowerState;
  */
 public interface PowerStateOperationServiceCollection extends PowerStateOperationService {
 
-    @Override
-    default public Future<Void> setPowerState(final PowerState powerState) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf((PowerStateOperationService input) -> input.setPowerState(powerState), getPowerStateOperationServices());
-    }
+    public Future<Void> setPowerState(final PowerState powerState, final UnitType unitType) throws CouldNotPerformException;
 
-    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
-    //remove when remote cashing is implemented
     /**
      * Returns on if at least one of the power services is on and else off.
      *
@@ -49,18 +43,14 @@ public interface PowerStateOperationServiceCollection extends PowerStateOperatio
      * @throws NotAvailableException
      */
     @Override
-    default public PowerState getPowerState() throws NotAvailableException {
-        try {
-            for (PowerStateOperationService service : getPowerStateOperationServices()) {
-                if (service.getPowerState().getValue() == PowerState.State.ON) {
-                    return PowerState.newBuilder().setValue(PowerState.State.ON).build();
-                }
-            }
-            return PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("PowerState", ex);
-        }
-    }
+    public PowerState getPowerState() throws NotAvailableException;
 
-    public Collection<PowerStateOperationService> getPowerStateOperationServices() throws CouldNotPerformException;
+    /**
+     * Returns on if at least one of the powerServices with given unitType is on and else off.
+     *
+     * @param unitType
+     * @return
+     * @throws NotAvailableException
+     */
+    public PowerState getPowerState(final UnitType unitType) throws NotAvailableException;
 }

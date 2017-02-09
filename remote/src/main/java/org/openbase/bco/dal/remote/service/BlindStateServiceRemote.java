@@ -22,13 +22,16 @@ package org.openbase.bco.dal.remote.service;
  * #L%
  */
 import java.util.Collection;
+import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.collection.BlindStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.timing.TimestampType.Timestamp;
 
 /**
@@ -41,20 +44,29 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
         super(ServiceType.BLIND_STATE_SERVICE);
     }
 
-    @Override
     public Collection<BlindStateOperationService> getBlindStateOperationServices() {
         return getServices();
     }
 
     /**
-     * {@inheritDoc}
-     * Computes the average opening ratio and the movement state which appears the most.
+     * {@inheritDoc} Computes the average opening ratio and the movement state which appears the most.
      *
      * @return
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     protected BlindState computeServiceState() throws CouldNotPerformException {
+        return getBlindState(UnitType.UNKNOWN);
+    }
+
+    @Override
+    public BlindState getBlindState() throws NotAvailableException {
+        return getServiceState();
+    }
+
+    // TODO: das filtern nach dem unit typen fehlt noch...
+    @Override
+    public BlindState getBlindState(UnitType unitType) throws NotAvailableException {
         int serviceNumber = getBlindStateOperationServices().size(), stop = 0, down = 0, up = 0;
         float openingRatioAverage = 0;
         for (BlindStateOperationService service : getBlindStateOperationServices()) {
@@ -92,7 +104,12 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
     }
 
     @Override
-    public BlindState getBlindState() throws NotAvailableException {
-        return getServiceState();
+    public Future<Void> setBlindState(final BlindState state) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.allOf((BlindStateOperationService input) -> input.setBlindState(state), super.getServices());
+    }
+
+    @Override
+    public Future<Void> setBlindState(final BlindState state, final UnitType unitType) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.allOf((BlindStateOperationService input) -> input.setBlindState(state), super.getServices(unitType));
     }
 }

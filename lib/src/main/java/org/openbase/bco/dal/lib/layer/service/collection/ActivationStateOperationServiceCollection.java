@@ -21,13 +21,12 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -35,13 +34,8 @@ import rst.domotic.state.ActivationStateType.ActivationState;
  */
 public interface ActivationStateOperationServiceCollection extends ActivationStateOperationService {
 
-    @Override
-    default public Future<Void> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf((ActivationStateOperationService input) -> input.setActivationState(activationState), getActivationStateOperationServices());
-    }
+    public Future<Void> setActivationState(final ActivationState activationState, final UnitType unitType) throws CouldNotPerformException;
 
-    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
-    //remove when remote cashing is implemented
     /**
      * Returns on if at least one of the power services is on and else off.
      *
@@ -49,18 +43,14 @@ public interface ActivationStateOperationServiceCollection extends ActivationSta
      * @throws NotAvailableException
      */
     @Override
-    default public ActivationState getActivationState() throws NotAvailableException {
-        try {
-            for (ActivationStateOperationService service : getActivationStateOperationServices()) {
-                if (service.getActivationState().getValue() == ActivationState.State.ACTIVE) {
-                    return ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build();
-                }
-            }
-            return ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("ActivationState", ex);
-        }
-    }
+    public ActivationState getActivationState() throws NotAvailableException;
 
-    public Collection<ActivationStateOperationService> getActivationStateOperationServices() throws CouldNotPerformException;
+    /**
+     * Returns on if at least one of the power services is on and else off.
+     *
+     * @param unitType the unit type to filter.
+     * @return
+     * @throws NotAvailableException
+     */
+    public ActivationState getActivationState(final UnitType unitType) throws NotAvailableException;
 }

@@ -21,12 +21,10 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.MotionStateType.MotionState;
-import rst.timing.TimestampType;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -34,31 +32,23 @@ import rst.timing.TimestampType;
  */
 public interface MotionStateProviderServiceCollection extends MotionStateProviderService {
 
-    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
-    //remove when remote cashing is implemented
     /**
-     * Returns movement if at least one motion provider returns movement else no
-     * movement.
+     * Computes the motion state as motion if at least one underlying services replies with motion and else no motion.
+     * Additionally the last motion timestamp is set as the latest of the underlying services.
      *
      * @return
      * @throws NotAvailableException
      */
     @Override
-    default public MotionState getMotionState() throws NotAvailableException {
-        try {
-            MotionState.Builder builder = MotionState.newBuilder().setValue(MotionState.State.NO_MOTION);
-            builder.getLastMotionBuilder().setTime(System.currentTimeMillis());
-            for (MotionStateProviderService provider : getMotionStateProviderServices()) {
-                if (provider.getMotionState().getValue() == MotionState.State.MOTION) {
-                    builder.setValue(MotionState.State.MOTION).build();
-                    builder.getLastMotionBuilder().setTime(Math.max(builder.getLastMotion().getTime(), provider.getMotionState().getLastMotion().getTime()));
-                }
-            }
-            return builder.build();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("MotionState", ex);
-        }
-    }
+    public MotionState getMotionState() throws NotAvailableException;
 
-    public Collection<MotionStateProviderService> getMotionStateProviderServices() throws CouldNotPerformException;
+    /**
+     * Computes the motion state as motion if at least one underlying services with given unitType replies with motion and else no motion.
+     * Additionally the last motion timestamp is set as the latest of the underlying services.
+     *
+     * @param unitType
+     * @return
+     * @throws NotAvailableException
+     */
+    public MotionState getMotionState(final UnitType unitType) throws NotAvailableException;
 }

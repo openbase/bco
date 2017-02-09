@@ -29,6 +29,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.AlarmStateType.AlarmState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.timing.TimestampType.Timestamp;
 
 /**
@@ -41,7 +42,6 @@ public class SmokeAlarmStateServiceRemote extends AbstractServiceRemote<SmokeAla
         super(ServiceType.SMOKE_ALARM_STATE_SERVICE);
     }
 
-    @Override
     public Collection<SmokeAlarmStateProviderService> getSmokeAlarmStateProviderServices() {
         return getServices();
     }
@@ -55,8 +55,18 @@ public class SmokeAlarmStateServiceRemote extends AbstractServiceRemote<SmokeAla
      */
     @Override
     protected AlarmState computeServiceState() throws CouldNotPerformException {
+        return getSmokeAlarmState(UnitType.UNKNOWN);
+    }
+
+    @Override
+    public AlarmState getSmokeAlarmState() throws NotAvailableException {
+        return getServiceState();
+    }
+
+    @Override
+    public AlarmState getSmokeAlarmState(final UnitType unitType) throws NotAvailableException {
         AlarmState.State alarmValue = AlarmState.State.NO_ALARM;
-        for (SmokeAlarmStateProviderService provider : getSmokeAlarmStateProviderServices()) {
+        for (SmokeAlarmStateProviderService provider : getServices(unitType)) {
             if (!((UnitRemote) provider).isDataAvailable()) {
                 continue;
             }
@@ -66,10 +76,5 @@ public class SmokeAlarmStateServiceRemote extends AbstractServiceRemote<SmokeAla
             }
         }
         return AlarmState.newBuilder().setValue(alarmValue).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
-    }
-
-    @Override
-    public AlarmState getSmokeAlarmState() throws NotAvailableException {
-        return getServiceState();
     }
 }

@@ -78,7 +78,7 @@ public interface Unit extends Service, LabelProvider, ScopeProvider, Identifiabl
                 }
 
                 // load service attribute by related provider service
-                Object serviceAttribute = Service.invokeServiceMethod(serviceTemplate, this);
+                Object serviceAttribute = Service.invokeServiceMethod(serviceTemplate.getType(), ServiceTemplate.ServicePattern.PROVIDER, this);
 
                 // fill action config
                 final ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();

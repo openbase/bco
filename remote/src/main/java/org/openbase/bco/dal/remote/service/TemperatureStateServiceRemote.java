@@ -29,6 +29,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.timing.TimestampType.Timestamp;
 
 /**
@@ -41,7 +42,6 @@ public class TemperatureStateServiceRemote extends AbstractServiceRemote<Tempera
         super(ServiceType.TEMPERATURE_STATE_SERVICE);
     }
 
-    @Override
     public Collection<TemperatureStateProviderService> getTemperatureStateProviderServices() {
         return getServices();
     }
@@ -55,8 +55,20 @@ public class TemperatureStateServiceRemote extends AbstractServiceRemote<Tempera
      */
     @Override
     protected TemperatureState computeServiceState() throws CouldNotPerformException {
+        return getTemperatureState(UnitType.UNKNOWN);
+    }
+
+    @Override
+    public TemperatureState getTemperatureState() throws NotAvailableException {
+//        System.out.println("getTemperatureState avail:"+ isDataAvailable());
+//        System.out.println("getTemperatureState returns:"+ getServiceState());
+        return getServiceState();
+    }
+
+    @Override
+    public TemperatureState getTemperatureState(final UnitType unitType) throws NotAvailableException {
         Double average = 0d;
-        Collection<TemperatureStateProviderService> temperatureStateProviderServices = getTemperatureStateProviderServices();
+        Collection<TemperatureStateProviderService> temperatureStateProviderServices = getServices(unitType);
         int amount = temperatureStateProviderServices.size();
         for (TemperatureStateProviderService provider : temperatureStateProviderServices) {
             if (!((UnitRemote) provider).isDataAvailable()) {
@@ -69,10 +81,5 @@ public class TemperatureStateServiceRemote extends AbstractServiceRemote<Tempera
         average /= amount;
 
         return TemperatureState.newBuilder().setTemperature(average).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
-    }
-
-    @Override
-    public TemperatureState getTemperatureState() throws NotAvailableException {
-        return getServiceState();
     }
 }

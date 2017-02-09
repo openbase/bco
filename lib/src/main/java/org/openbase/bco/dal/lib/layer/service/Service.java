@@ -21,7 +21,6 @@ package org.openbase.bco.dal.lib.layer.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.Future;
@@ -72,9 +71,9 @@ public interface Service {
                 throw new NotSupportedException(pattern, Service.class);
         }
     }
-    
+
     /**
-     * Method returns the state  name of the appurtenant service.
+     * Method returns the state name of the appurtenant service.
      *
      * @param template The service template.
      * @return The state type name as string.
@@ -116,7 +115,7 @@ public interface Service {
             throw new CouldNotPerformException("Could not detect service method!", ex);
         }
     }
-    
+
     public static Method detectServiceMethod(final ServiceTemplate template, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
         return detectServiceMethod(template.getType(), template.getPattern(), instanceClass, argumentClasses);
     }
@@ -124,24 +123,40 @@ public interface Service {
     public static Object invokeServiceMethod(final ServiceTemplate template, final Service instance, final Object... arguments) throws CouldNotPerformException {
         try {
             return detectServiceMethod(template, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            throw new CouldNotPerformException("Could not invoke service method!", ex);
+        } catch (IllegalAccessException | ExceptionInInitializerError ex) {
+            throw new NotSupportedException("ServiceType[" + template.getType().name() + "] with Pattern[" + template.getPattern() + "]", instance, ex);
+        } catch (NullPointerException ex) {
+            throw new CouldNotPerformException("Invocation failed because given instance is not available!", ex);
+        } catch (InvocationTargetException ex) {
+            if (ex.getTargetException() instanceof CouldNotPerformException) {
+                throw (CouldNotPerformException) ex.getTargetException();
+            } else {
+                throw new CouldNotPerformException("Invocation failed!", ex.getTargetException());
+            }
         }
     }
-    
-    public static Object invokeServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final Object instance, final Object... arguments) throws CouldNotPerformException {
+
+    public static Object invokeServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
         try {
             return detectServiceMethod(serviceType, servicePattern, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            throw new CouldNotPerformException("Could not invoke service method!", ex);
+        } catch (IllegalAccessException | ExceptionInInitializerError ex) {
+            throw new NotSupportedException("ServiceType[" + serviceType.name() + "] with Pattern[" + servicePattern + "]", instance, ex);
+        } catch (NullPointerException ex) {
+            throw new CouldNotPerformException("Invocation failed because given instance is not available!", ex);
+        } catch (InvocationTargetException ex) {
+            if (ex.getTargetException() instanceof CouldNotPerformException) {
+                throw (CouldNotPerformException) ex.getTargetException();
+            } else {
+                throw new CouldNotPerformException("Invocation failed!", ex.getTargetException());
+            }
         }
     }
-    
-    public static Object invokeProviderServiceMethod(final ServiceType serviceType, final Object instance, final Object... arguments) throws CouldNotPerformException {
+
+    public static Object invokeProviderServiceMethod(final ServiceType serviceType, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
         return invokeServiceMethod(serviceType, ServicePattern.PROVIDER, instance, arguments);
     }
-    
-    public static Object invokeOperationServiceMethod(final ServiceType serviceType, final Object instance, final Object... arguments) throws CouldNotPerformException {
+
+    public static Object invokeOperationServiceMethod(final ServiceType serviceType, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
         return invokeServiceMethod(serviceType, ServicePattern.OPERATION, instance, arguments);
     }
 

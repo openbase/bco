@@ -29,6 +29,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ContactStateType.ContactState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.timing.TimestampType.Timestamp;
 
 /**
@@ -41,7 +42,6 @@ public class ContactStateServiceRemote extends AbstractServiceRemote<ContactStat
         super(ServiceType.CONTACT_STATE_SERVICE);
     }
 
-    @Override
     public Collection<ContactStateProviderService> getContactStateProviderServices() {
         return getServices();
     }
@@ -55,8 +55,18 @@ public class ContactStateServiceRemote extends AbstractServiceRemote<ContactStat
      */
     @Override
     protected ContactState computeServiceState() throws CouldNotPerformException {
+        return getContactState(UnitType.UNKNOWN);
+    }
+
+    @Override
+    public ContactState getContactState() throws NotAvailableException {
+        return getServiceState();
+    }
+
+    @Override
+    public ContactState getContactState(final UnitType unitType) throws NotAvailableException {
         ContactState.State contactValue = ContactState.State.CLOSED;
-        for (ContactStateProviderService provider : getContactStateProviderServices()) {
+        for (ContactStateProviderService provider : getServices(unitType)) {
             if (!((UnitRemote) provider).isDataAvailable()) {
                 continue;
             }
@@ -67,10 +77,5 @@ public class ContactStateServiceRemote extends AbstractServiceRemote<ContactStat
         }
 
         return ContactState.newBuilder().setValue(contactValue).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
-    }
-
-    @Override
-    public ContactState getContactState() throws NotAvailableException {
-        return getServiceState();
     }
 }

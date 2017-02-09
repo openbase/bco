@@ -21,13 +21,10 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.provider.PresenceStateProviderService;
-import org.openbase.bco.dal.lib.layer.service.provider.PresenceStateProviderService;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.PresenceStateType.PresenceState;
-import rst.domotic.state.PresenceStateType.PresenceState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -35,30 +32,22 @@ import rst.domotic.state.PresenceStateType.PresenceState;
  */
 public interface PresenceStateProviderServiceCollection extends PresenceStateProviderService {
 
-    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
-    //remove when remote cashing is implemented
     /**
-     * Returns presence if at least one motion provider returns movement else no movement.
+     * Returns presence if at least one presenceDetector returns presence else no no presence.
+     * The most recent lastPresenceTime is also set as the lastPresenceTime.
      *
      * @return
      * @throws NotAvailableException
      */
     @Override
-    default public PresenceState getPresenceState() throws NotAvailableException {
-        try {
-            PresenceState.Builder builder = PresenceState.newBuilder().setValue(PresenceState.State.ABSENT);
-            builder.getLastPresenceBuilder().setTime(System.currentTimeMillis());
-            for (PresenceStateProviderService provider : getPresenceStateProviderServices()) {
-                if (provider.getPresenceState().getValue() == PresenceState.State.PRESENT) {
-                    builder.setValue(PresenceState.State.PRESENT).build();
-                    builder.getLastPresenceBuilder().setTime(Math.max(builder.getLastPresence().getTime(), provider.getPresenceState().getLastPresence().getTime()));
-                }
-            }
-            return builder.build();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("PresenceState", ex);
-        }
-    }
+    public PresenceState getPresenceState() throws NotAvailableException;
 
-    public Collection<PresenceStateProviderService> getPresenceStateProviderServices() throws CouldNotPerformException;
+    /**
+     * Returns presence if at least one presenceDetector with given unitType returns presence else no no presence.
+     * The most recent lastPresenceTime is also set as the lastPresenceTime.
+     *
+     * @return
+     * @throws NotAvailableException
+     */
+    public PresenceState getPresenceState(final UnitType unitType) throws NotAvailableException;
 }

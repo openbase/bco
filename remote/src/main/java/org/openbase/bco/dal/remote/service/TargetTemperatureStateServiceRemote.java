@@ -22,13 +22,16 @@ package org.openbase.bco.dal.remote.service;
  * #L%
  */
 import java.util.Collection;
+import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.collection.TargetTemperatureStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.timing.TimestampType.Timestamp;
 
 /**
@@ -41,9 +44,18 @@ public class TargetTemperatureStateServiceRemote extends AbstractServiceRemote<T
         super(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
     }
 
-    @Override
     public Collection<TargetTemperatureStateOperationService> getTargetTemperatureStateOperationServices() {
         return getServices();
+    }
+
+    @Override
+    public Future<Void> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.allOf((TargetTemperatureStateOperationService input) -> input.setTargetTemperatureState(temperatureState), getServices());
+    }
+
+    @Override
+    public Future<Void> setTargetTemperatureState(final TemperatureState temperatureState, final UnitType unitType) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.allOf((TargetTemperatureStateOperationService input) -> input.setTargetTemperatureState(temperatureState), getServices(unitType));
     }
 
     /**
@@ -55,8 +67,18 @@ public class TargetTemperatureStateServiceRemote extends AbstractServiceRemote<T
      */
     @Override
     protected TemperatureState computeServiceState() throws CouldNotPerformException {
+        return getTargetTemperatureState(UnitType.UNKNOWN);
+    }
+
+    @Override
+    public TemperatureState getTargetTemperatureState() throws NotAvailableException {
+        return getServiceState();
+    }
+
+    @Override
+    public TemperatureState getTargetTemperatureState(final UnitType unitType) throws NotAvailableException {
         Double average = 0d;
-        Collection<TargetTemperatureStateOperationService> targetTemperatureStateOperationServices = getTargetTemperatureStateOperationServices();
+        Collection<TargetTemperatureStateOperationService> targetTemperatureStateOperationServices = getServices(unitType);
         int amount = targetTemperatureStateOperationServices.size();
         for (TargetTemperatureStateOperationService service : targetTemperatureStateOperationServices) {
             if (!((UnitRemote) service).isDataAvailable()) {
@@ -69,10 +91,5 @@ public class TargetTemperatureStateServiceRemote extends AbstractServiceRemote<T
         average /= amount;
 
         return TemperatureState.newBuilder().setTemperature(average).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
-    }
-
-    @Override
-    public TemperatureState getTargetTemperatureState() throws NotAvailableException {
-        return getServiceState();
     }
 }

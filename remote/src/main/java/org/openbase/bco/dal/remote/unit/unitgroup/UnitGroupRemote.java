@@ -70,7 +70,6 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
     public UnitGroupRemote() throws InstantiationException {
         super(UnitGroupData.class);
         serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
-        // todo: reimplement as real remote with manager.
     }
 
     @Override
@@ -101,7 +100,7 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
                     unitConfigsByService.add(unitConfig);
                 });
                 // create serviceRemoteByType and unitCOnfiglist
-                serviceRemoteMap.put(serviceTemplate, serviceRemoteFactory.createAndInitServiceRemote(serviceTemplate.getType(), unitConfigsByService));
+                serviceRemoteMap.put(serviceTemplate, serviceRemoteFactory.newInitializedInstance(serviceTemplate.getType(), unitConfigsByService));
                 unitConfigsByService.clear();
             }
         } catch (CouldNotPerformException ex) {

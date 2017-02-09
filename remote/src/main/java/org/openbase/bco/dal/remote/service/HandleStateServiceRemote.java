@@ -29,6 +29,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.HandleStateType.HandleState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.timing.TimestampType.Timestamp;
 
 /**
@@ -41,7 +42,6 @@ public class HandleStateServiceRemote extends AbstractServiceRemote<HandleStateP
         super(ServiceType.HANDLE_STATE_SERVICE);
     }
 
-    @Override
     public Collection<HandleStateProviderService> getHandleStateProviderServices() {
         return getServices();
     }
@@ -54,10 +54,20 @@ public class HandleStateServiceRemote extends AbstractServiceRemote<HandleStateP
      */
     @Override
     protected HandleState computeServiceState() throws CouldNotPerformException {
+        return getHandleState(UnitType.UNKNOWN);
+    }
+
+    @Override
+    public HandleState getHandleState() throws NotAvailableException {
+        return getServiceState();
+    }
+
+    @Override
+    public HandleState getHandleState(final UnitType unitType) throws NotAvailableException {
         // TODO: rethink position in handle state
         int position = 0;
         //boolean tilted = false;
-        Collection<HandleStateProviderService> handleStateProviderServices = getHandleStateProviderServices();
+        Collection<HandleStateProviderService> handleStateProviderServices = getServices(unitType);
         int amount = handleStateProviderServices.size();
         for (HandleStateProviderService provider : handleStateProviderServices) {
             if (((UnitRemote) provider).isDataAvailable()) {
@@ -69,22 +79,5 @@ public class HandleStateServiceRemote extends AbstractServiceRemote<HandleStateP
 
         position /= amount;
         return HandleState.newBuilder().setPosition(position).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
-        /*for (HandleProviderService provider : getHandleStateProviderServices()) {
-         if (provider.getHandle().getPosition() == HandleState.State.OPEN) {
-         return HandleState.newBuilder().setValue(HandleState.State.OPEN).build();
-         }
-         if (provider.getHandle().getValue() == HandleState.State.TILTED) {
-         tilted = true;
-         }
-         }
-         if (tilted) {
-         return HandleState.newBuilder().setValue(HandleState.State.TILTED).build();
-         }
-         return HandleState.newBuilder().setValue(HandleState.State.CLOSED).build();*/
-    }
-
-    @Override
-    public HandleState getHandleState() throws NotAvailableException {
-        return getServiceState();
     }
 }

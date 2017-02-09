@@ -22,13 +22,16 @@ package org.openbase.bco.dal.remote.service;
  * #L%
  */
 import java.util.Collection;
+import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.collection.StandbyStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.StandbyStateType.StandbyState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.timing.TimestampType.Timestamp;
 
 /**
@@ -42,6 +45,15 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
     }
 
     @Override
+    public Future<Void> setStandbyState(final StandbyState state) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.allOf((StandbyStateOperationService input) -> input.setStandbyState(state), super.getServices());
+    }
+
+    @Override
+    public Future<Void> setStandbyState(final StandbyState state, final UnitType unitType) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.allOf((StandbyStateOperationService input) -> input.setStandbyState(state), super.getServices(unitType));
+    }
+
     public Collection<StandbyStateOperationService> getStandbyStateOperationServices() {
         return getServices();
     }
@@ -55,8 +67,18 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
      */
     @Override
     protected StandbyState computeServiceState() throws CouldNotPerformException {
+        return getStandbyState(UnitType.UNKNOWN);
+    }
+
+    @Override
+    public StandbyState getStandbyState() throws NotAvailableException {
+        return getServiceState();
+    }
+
+    @Override
+    public StandbyState getStandbyState(final UnitType unitType) throws NotAvailableException {
         StandbyState.State standbyValue = StandbyState.State.STANDBY;
-        for (StandbyStateOperationService service : getStandbyStateOperationServices()) {
+        for (StandbyStateOperationService service : getServices(unitType)) {
             if (!((UnitRemote) service).isDataAvailable()) {
                 continue;
             }
@@ -67,10 +89,5 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
         }
 
         return StandbyState.newBuilder().setValue(standbyValue).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
-    }
-
-    @Override
-    public StandbyState getStandbyState() throws NotAvailableException {
-        return getServiceState();
     }
 }

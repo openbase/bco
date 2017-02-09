@@ -21,11 +21,10 @@ package org.openbase.bco.dal.lib.layer.service.collection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderService;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.ContactStateType.ContactState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -33,28 +32,23 @@ import rst.domotic.state.ContactStateType.ContactState;
  */
 public interface ContactStateProviderServiceCollection extends ContactStateProviderService {
 
-    //TODO: is implemented in the service remotes but still used in the LocationController because else it would lead to too many unitRemots
-    //remove when remote cashing is implemented
     /**
-     * Returns open if at least one of the reed switch providers returns open
+     * Returns open if at least one of the contactStateProviders returns open
      * and else no closed.
      *
      * @return
      * @throws NotAvailableException
      */
     @Override
-    default public ContactState getContactState() throws NotAvailableException {
-        try {
-            for (ContactStateProviderService provider : getContactStateProviderServices()) {
-                if (provider.getContactState().getValue() == ContactState.State.OPEN) {
-                    return ContactState.newBuilder().setValue(ContactState.State.OPEN).build();
-                }
-            }
-            return ContactState.newBuilder().setValue(ContactState.State.CLOSED).build();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("ContactState", ex);
-        }
-    }
+    public ContactState getContactState() throws NotAvailableException;
 
-    public Collection<ContactStateProviderService> getContactStateProviderServices() throws CouldNotPerformException;
+    /**
+     * Returns open if at least one of the contactStateProviders with given unitType returns open
+     * and else no closed.
+     *
+     * @param unitType
+     * @return
+     * @throws NotAvailableException
+     */
+    public ContactState getContactState(final UnitType unitType) throws NotAvailableException;
 }

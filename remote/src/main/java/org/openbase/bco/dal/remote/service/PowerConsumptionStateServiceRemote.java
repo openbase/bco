@@ -29,6 +29,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.timing.TimestampType.Timestamp;
 
 /**
@@ -41,7 +42,6 @@ public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<Po
         super(ServiceType.POWER_CONSUMPTION_STATE_SERVICE);
     }
 
-    @Override
     public Collection<PowerConsumptionStateProviderService> getPowerConsumptionStateProviderServices() {
         return getServices();
     }
@@ -55,10 +55,20 @@ public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<Po
      */
     @Override
     protected PowerConsumptionState computeServiceState() throws CouldNotPerformException {
+        return getPowerConsumptionState(UnitType.BATTERY);
+    }
+
+    @Override
+    public PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {
+        return getServiceState();
+    }
+
+    @Override
+    public PowerConsumptionState getPowerConsumptionState(final UnitType unitType) throws NotAvailableException {
         double consumptionSum = 0;
         double averageCurrent = 0;
         double averageVoltage = 0;
-        Collection<PowerConsumptionStateProviderService> powerConsumptionStateProviderServices = getPowerConsumptionStateProviderServices();
+        Collection<PowerConsumptionStateProviderService> powerConsumptionStateProviderServices = getServices(unitType);
         int amount = powerConsumptionStateProviderServices.size();
         for (PowerConsumptionStateProviderService provider : powerConsumptionStateProviderServices) {
             if (!((UnitRemote) provider).isDataAvailable()) {
@@ -74,10 +84,5 @@ public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<Po
         averageVoltage = averageVoltage / amount;
 
         return PowerConsumptionState.newBuilder().setConsumption(consumptionSum).setCurrent(averageCurrent).setVoltage(averageVoltage).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
-    }
-
-    @Override
-    public PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {
-        return getServiceState();
     }
 }
