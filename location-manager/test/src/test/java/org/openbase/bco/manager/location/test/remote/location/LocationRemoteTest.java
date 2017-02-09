@@ -23,6 +23,7 @@ package org.openbase.bco.manager.location.test.remote.location;
  */
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -51,14 +52,18 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.vision.HSBColorType;
 
 /**
  *
@@ -130,29 +135,38 @@ public class LocationRemoteTest {
     public void tearDown() throws CouldNotPerformException {
     }
 
-    @Test(timeout = 5000)
+    /**
+     * Test if changes in locations are published to underlying units.
+     *
+     * @throws Exception
+     */
+    @Test//(timeout = 5000)
     public void testLocationToUnitPipeline() throws Exception {
         System.out.println("testLocationToUnitPipeline");
 
-        List<PowerStateOperationService> powerServiceList = new ArrayList<>();
-        for (UnitConfig dalUnitConfig : unitRegistry.getDalUnitConfigs()) {
-            if (unitHasService(dalUnitConfig, ServiceType.POWER_STATE_SERVICE, ServicePattern.OPERATION)) {
-                UnitController unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dalUnitConfig.getId());
-                powerServiceList.add((PowerStateOperationService) unitController);
+        try {
+            List<PowerStateOperationService> powerServiceList = new ArrayList<>();
+            for (UnitConfig dalUnitConfig : unitRegistry.getDalUnitConfigs()) {
+                if (unitHasService(dalUnitConfig, ServiceType.POWER_STATE_SERVICE, ServicePattern.OPERATION)) {
+                    UnitController unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dalUnitConfig.getId());
+                    powerServiceList.add((PowerStateOperationService) unitController);
+                }
             }
-        }
 
-        PowerState powerOn = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-        PowerState powerOff = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
+            PowerState powerOn = PowerState.newBuilder().setValue(PowerState.State.ON).build();
+            PowerState powerOff = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
 
-        locationRemote.setPowerState(powerOn).get();
-        for (PowerStateOperationService powerStateService : powerServiceList) {
-            Assert.assertEquals("PowerState of unit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the loationRemote!", powerOn.getValue(), powerStateService.getPowerState().getValue());
-        }
+            locationRemote.setPowerState(powerOn).get();
+            for (PowerStateOperationService powerStateService : powerServiceList) {
+                Assert.assertEquals("PowerState of unit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the loationRemote!", powerOn.getValue(), powerStateService.getPowerState().getValue());
+            }
 
-        locationRemote.setPowerState(powerOff).get();
-        for (PowerStateOperationService powerStateService : powerServiceList) {
-            Assert.assertEquals("PowerState of unit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the loationRemote!", powerOff.getValue(), powerStateService.getPowerState().getValue());
+            locationRemote.setPowerState(powerOff).get();
+            for (PowerStateOperationService powerStateService : powerServiceList) {
+                Assert.assertEquals("PowerState of unit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the loationRemote!", powerOff.getValue(), powerStateService.getPowerState().getValue());
+            }
+        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
     }
 
@@ -165,6 +179,11 @@ public class LocationRemoteTest {
         return false;
     }
 
+    /**
+     * Test if changes in unitControllers are published to a location remote.
+     *
+     * @throws Exception
+     */
     @Test(timeout = 5000)
     public void testUnitToLocationPipeline() throws Exception {
         System.out.println("testUnitToLocationPipeline");
@@ -188,12 +207,29 @@ public class LocationRemoteTest {
         for (TemperatureControllerController temperatureController : temperatureControllerList) {
             temperatureController.updateTemperatureStateProvider(temperatureState);
         }
-
-        locationRemote.requestData().get();
+        System.out.println("ping");
+        locationRemote.ping().get();
+        System.out.println("ping done");
+        System.out.println("request data of " + ScopeGenerator.generateStringRep(locationRemote.getScope()));
+        System.out.println("got data: " + locationRemote.requestData().get().getTemperatureState().getTemperature());
         while (locationRemote.getTemperatureState().getTemperature() != temperature) {
-            Thread.sleep(50);
+//            System.out.println("current state: " + locationRemote.getData());
+            System.out.println("current temp: " + locationRemote.getTemperatureState().getTemperature() + " waiting for: " + temperature);
+            Thread.sleep(10);
         }
         Assert.assertEquals("Temperature of the location has not been updated!", temperature, locationRemote.getTemperatureState().getTemperature(), 0.01);
     }
 
+    @Test//(timeout = 5000)
+    public void testRecordAndRestoreSnapshots() throws Exception {
+        locationRemote.setBlindState(BlindState.newBuilder().setMovementState(BlindState.MovementState.DOWN).setOpeningRatio(0).build()).get();
+//        locationRemote.setBrightnessState(BrightnessState.newBuilder().setBrightness(100).build()).get();
+        locationRemote.setColor(HSBColorType.HSBColor.newBuilder().setHue(0).setSaturation(100).setBrightness(100).build()).get();
+        locationRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build()).get();
+        locationRemote.setStandbyState(StandbyState.newBuilder().setValue(StandbyState.State.RUNNING).build()).get();
+        locationRemote.setTargetTemperatureState(TemperatureState.newBuilder().setTemperature(20).setTemperatureDataUnit(TemperatureState.DataUnit.CELSIUS).build()).get();
+
+//        Thread.sleep(100);
+        System.out.println("Snapshot:\n" + locationRemote.recordSnapshot().get());
+    }
 }

@@ -28,6 +28,7 @@ import rst.domotic.unit.location.LocationDataType.LocationData;
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
  * 
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
@@ -42,11 +43,7 @@ import rst.domotic.unit.location.LocationDataType.LocationData;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface LocationController extends Location, MessageController<LocationData, LocationData.Builder>, BrightnessStateOperationServiceCollection,
-        ColorStateOperationServiceCollection, PowerStateOperationServiceCollection, BlindStateOperationServiceCollection, StandbyStateOperationServiceCollection,
-        TargetTemperatureStateOperationServiceCollection, MotionStateProviderServiceCollection, SmokeAlarmStateProviderServiceCollection,
-        SmokeStateProviderServiceCollection, TemperatureStateProviderServiceCollection, PowerConsumptionStateProviderServiceCollection,
-        TamperStateProviderServiceCollection {
+public interface LocationController extends org.openbase.bco.dal.lib.layer.unit.location.Location, MessageController<LocationData, LocationData.Builder> {
 
     public void init(final UnitConfig config) throws InitializationException, InterruptedException;
 }
