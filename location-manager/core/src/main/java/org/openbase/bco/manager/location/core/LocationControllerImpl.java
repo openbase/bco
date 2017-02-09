@@ -80,6 +80,7 @@ import rst.domotic.state.StandbyStateType;
 import rst.domotic.state.TamperStateType;
 import rst.domotic.state.TemperatureStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationDataType;
 import rst.domotic.unit.location.LocationDataType.LocationData;
@@ -376,5 +377,17 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
             neighborIdList.add(locationConfig.getId());
         }
         return neighborIdList;
+    }
+
+    @Override
+    public UnitType getType() throws NotAvailableException {
+        // TODO: extends AbstractUnitController to support this method
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    }
+
+    @Override
+    public UnitTemplateType.UnitTemplate getTemplate() throws NotAvailableException {
+        // TODO: extends AbstractUnitController to support this method
+        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
