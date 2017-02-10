@@ -38,7 +38,6 @@ import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
-import org.openbase.bco.dal.lib.layer.unit.location.Location;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
 import org.openbase.bco.dal.remote.service.AbstractServiceRemote;
 import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
@@ -54,8 +53,6 @@ import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -220,11 +217,6 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
         presenceDetector.deactivate();
     }
 
-    @Override
-    public void registerMethods(RSBLocalServer server) throws CouldNotPerformException {
-        RPCHelper.registerInterface(Location.class, this, server);
-    }
-
     private void updateCurrentState() throws InterruptedException {
         try (ClosableDataBuilder<LocationDataType.LocationData.Builder> dataBuilder = getDataBuilder(this)) {
             for (final ServiceTemplate.ServiceType serviceType : getSupportedServiceTypes()) {
@@ -321,9 +313,6 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
                         if (!remote.isConnected()) {
                             throw new NotAvailableException("Unit[" + remote.getLabel() + "] is currently not reachable!");
                         }
-//                        if (remote.getType() == UnitType.COLORABLE_LIGHT) {
-//                            snapshotBuilder.addAllActionConfig(remote.recordSnapshot().get(/*2, TimeUnit.SECONDS*/).getActionConfigList());
-//                        }
                         snapshotBuilder.addAllActionConfig(remote.recordSnapshot().get(2, TimeUnit.SECONDS).getActionConfigList());
                     }
                 } catch (ExecutionException | TimeoutException ex) {
@@ -346,10 +335,11 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
                 }
             }
 
+            Collection<Future> futureCollection = new ArrayList<>();
             for (final ActionConfig actionConfig : snapshot.getActionConfigList()) {
-                unitRemoteMap.get(actionConfig.getUnitId()).applyAction(actionConfig);
+                futureCollection.add(unitRemoteMap.get(actionConfig.getUnitId()).applyAction(actionConfig));
             }
-            return CompletableFuture.completedFuture(null);
+            return GlobalCachedExecutorService.allOf(futureCollection, null);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not record snapshot!", ex);
         }

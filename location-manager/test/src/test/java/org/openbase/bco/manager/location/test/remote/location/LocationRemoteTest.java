@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -55,15 +56,18 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
+import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
+import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.vision.HSBColorType;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.vision.ColorType.Color;
+import rst.vision.HSBColorType.HSBColor;
 
 /**
  *
@@ -222,14 +226,90 @@ public class LocationRemoteTest {
 
     @Test//(timeout = 5000)
     public void testRecordAndRestoreSnapshots() throws Exception {
-        locationRemote.setBlindState(BlindState.newBuilder().setMovementState(BlindState.MovementState.DOWN).setOpeningRatio(0).build()).get();
-//        locationRemote.setBrightnessState(BrightnessState.newBuilder().setBrightness(100).build()).get();
-        locationRemote.setColor(HSBColorType.HSBColor.newBuilder().setHue(0).setSaturation(100).setBrightness(100).build()).get();
-        locationRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build()).get();
-        locationRemote.setStandbyState(StandbyState.newBuilder().setValue(StandbyState.State.RUNNING).build()).get();
-        locationRemote.setTargetTemperatureState(TemperatureState.newBuilder().setTemperature(20).setTemperatureDataUnit(TemperatureState.DataUnit.CELSIUS).build()).get();
+        BlindState snapshotBlindState = BlindState.newBuilder().setMovementState(BlindState.MovementState.DOWN).setOpeningRatio(0).build();
+        BlindState newBlindState = BlindState.newBuilder().setMovementState(BlindState.MovementState.UP).setOpeningRatio(50).build();
+        ColorState snapshotColorState = ColorState.newBuilder().setColor(Color.newBuilder().setType(Color.Type.HSB).setHsbColor(HSBColor.newBuilder().setBrightness(100).setHue(0).setSaturation(100))).build();
+        ColorState newColorState = ColorState.newBuilder().setColor(Color.newBuilder().setType(Color.Type.HSB).setHsbColor(HSBColor.newBuilder().setBrightness(20).setHue(100).setSaturation(50))).build();
+        PowerState snapshotPowerState = PowerState.newBuilder().setValue(PowerState.State.ON).build();
+        PowerState newPowerState = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
+        TemperatureState snapshotTemperatureState = TemperatureState.newBuilder().setTemperature(20).setTemperatureDataUnit(TemperatureState.DataUnit.CELSIUS).build();
+        TemperatureState newTemperatureState = TemperatureState.newBuilder().setTemperature(22).setTemperatureDataUnit(TemperatureState.DataUnit.CELSIUS).build();
 
-//        Thread.sleep(100);
-        System.out.println("Snapshot:\n" + locationRemote.recordSnapshot().get());
+        locationRemote.setBlindState(snapshotBlindState).get();
+        locationRemote.setColorState(snapshotColorState).get();
+        locationRemote.setPowerState(snapshotPowerState).get();
+        locationRemote.setTargetTemperatureState(snapshotTemperatureState).get();
+
+        Snapshot snapshot = locationRemote.recordSnapshot().get();
+
+        // save location state
+        snapshotBlindState = locationRemote.getBlindState(UnitType.UNKNOWN);
+        snapshotColorState = locationRemote.getColorState(UnitType.UNKNOWN);
+        snapshotPowerState = locationRemote.getPowerState(UnitType.UNKNOWN);
+        snapshotTemperatureState = locationRemote.getTargetTemperatureState(UnitType.UNKNOWN);
+
+        locationRemote.setBlindState(newBlindState).get();
+        locationRemote.setColorState(newColorState).get();
+        locationRemote.setPowerState(newPowerState).get();
+        locationRemote.setTargetTemperatureState(newTemperatureState).get();
+
+        assertTrue("BlindState of location has not changed!", locationRemote.getBlindState(UnitType.UNKNOWN).getMovementState() != snapshotBlindState.getMovementState());
+        assertTrue("ColorState of location has not changed!", !locationRemote.getColorState(UnitType.UNKNOWN).getColor().getHsbColor().equals(snapshotColorState.getColor().getHsbColor()));
+        assertTrue("PowerState of location has not changed!", locationRemote.getPowerState(UnitType.UNKNOWN).getValue() != snapshotPowerState.getValue());
+        assertTrue("TargetTemperatureState of location has not changed!", locationRemote.getTargetTemperatureState(UnitType.UNKNOWN).getTemperature() != snapshotTemperatureState.getTemperature());
+
+        locationRemote.restoreSnapshot(snapshot).get();
+
+        assertTrue("BlindState of location has not been restored through snapshot!", locationRemote.getBlindState(UnitType.UNKNOWN).getMovementState() == snapshotBlindState.getMovementState());
+        assertTrue("ColorState of location has not been restored through snapshot!", locationRemote.getColorState(UnitType.UNKNOWN).getColor().getHsbColor().equals(snapshotColorState.getColor().getHsbColor()));
+        assertTrue("PowerState of location has not been restored through snapshot!", locationRemote.getPowerState(UnitType.UNKNOWN).getValue() == snapshotPowerState.getValue());
+        assertTrue("TargetTemperatureState of location has not been restored through snapshot!", locationRemote.getTargetTemperatureState(UnitType.UNKNOWN).getTemperature() == snapshotTemperatureState.getTemperature());
     }
+
+//    @Test
+//    public void testManipulatingByUnitType() throws Exception {
+//        System.out.println("testManipulatingByUnitType");
+//
+//        try {
+//            List<UnitType> lightTypes = unitRegistry.getSubUnitTypesOfUnitType(UnitType.LIGHT);
+//            lightTypes.add(UnitType.LIGHT);
+//            assertTrue("UnitType not found as subType of LIGHT!", lightTypes.contains(UnitType.LIGHT));
+//            assertTrue("UnitType not found as subType of LIGHT!", lightTypes.contains(UnitType.DIMMABLE_LIGHT));
+//            assertTrue("UnitType not found as subType of LIGHT!", lightTypes.contains(UnitType.COLORABLE_LIGHT));
+//
+//            List<PowerStateOperationService> powerServiceList = new ArrayList<>();
+//            for (UnitConfig dalUnitConfig : unitRegistry.getDalUnitConfigs()) {
+//
+//                if (lightTypes.contains(dalUnitConfig.getType())) {
+//                    UnitController unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dalUnitConfig.getId());
+//                    powerServiceList.add((PowerStateOperationService) unitController);
+//                }
+//            }
+//
+//            PowerState powerOn = PowerState.newBuilder().setValue(PowerState.State.ON).build();
+//            PowerState powerOff = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
+//
+//            locationRemote.setPowerState(powerOn, UnitType.LIGHT).get();
+//            for (PowerStateOperationService powerStateService : powerServiceList) {
+//                Assert.assertEquals("PowerState of lightUnit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the loationRemote!", powerOn.getValue(), powerStateService.getPowerState().getValue());
+//            }
+//
+//            locationRemote.setPowerState(powerOff).get();
+//            for (PowerStateOperationService powerStateService : powerServiceList) {
+//                Assert.assertEquals("PowerState of lightUnit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the loationRemote!", powerOff.getValue(), powerStateService.getPowerState().getValue());
+//            }
+//
+//            for (PowerStateOperationService powerStateOperationService : powerServiceList) {
+//                powerStateOperationService.setPowerState(powerOn).get();
+//            }
+//            Assert.assertEquals("PowerState of location has not been updated!", powerOn.getValue(), locationRemote.getPowerState(UnitType.LIGHT).getValue());
+//
+//            for (PowerStateOperationService powerStateOperationService : powerServiceList) {
+//                powerStateOperationService.setPowerState(powerOff).get();
+//            }
+//            Assert.assertEquals("PowerState of location has not been updated!", powerOff.getValue(), locationRemote.getPowerState(UnitType.LIGHT).getValue());
+//        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+//            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+//        }
+//    }
 }
