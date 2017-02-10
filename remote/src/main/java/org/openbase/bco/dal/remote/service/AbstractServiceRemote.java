@@ -168,16 +168,18 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
             if (!unitRemoteTypeMap.containsKey(remote.getType())) {
                 unitRemoteTypeMap.put(remote.getType(), new ArrayList());
-                for (UnitType subType : Registries.getUnitRegistry().getSubUnitTypesOfUnitType(remote.getType())) {
-                    unitRemoteTypeMap.put(subType, new ArrayList<>());
+                for (UnitType superType : Registries.getUnitRegistry().getSuperUnitTypes(remote.getType())) {
+                    if (!unitRemoteTypeMap.containsKey(superType)) {
+                        unitRemoteTypeMap.put(superType, new ArrayList<>());
+                    }
                 }
             }
 
             try {
                 serviceMap.put(config.getId(), (S) remote);
                 unitRemoteTypeMap.get(remote.getType()).add((S) remote);
-                for (UnitType subType : Registries.getUnitRegistry().getSubUnitTypesOfUnitType(remote.getType())) {
-                    unitRemoteTypeMap.get(subType).add((S) remote);
+                for (UnitType superType : Registries.getUnitRegistry().getSuperUnitTypes(remote.getType())) {
+                    unitRemoteTypeMap.get(superType).add((S) remote);
                 }
             } catch (ClassCastException ex) {
                 throw new NotSupportedException("ServiceInterface[" + serviceType.name() + "]", remote, "Remote does not implement the service interface!", ex);

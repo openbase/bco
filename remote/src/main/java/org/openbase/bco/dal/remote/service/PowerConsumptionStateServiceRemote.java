@@ -24,7 +24,7 @@ package org.openbase.bco.dal.remote.service;
 import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.collection.PowerConsumptionStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionStateProviderService;
-import org.openbase.bco.dal.remote.unit.UnitRemote;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -55,7 +55,7 @@ public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<Po
      */
     @Override
     protected PowerConsumptionState computeServiceState() throws CouldNotPerformException {
-        return getPowerConsumptionState(UnitType.BATTERY);
+        return getPowerConsumptionState(UnitType.UNKNOWN);
     }
 
     @Override
