@@ -1,7 +1,5 @@
 package org.openbase.bco.dal.lib.layer.unit;
 
-import org.openbase.bco.dal.lib.layer.service.ServiceFactoryProvider;
-
 /*
  * #%L
  * BCO DAL Library
@@ -23,13 +21,19 @@ import org.openbase.bco.dal.lib.layer.service.ServiceFactoryProvider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.GeneratedMessage;
+import org.openbase.jul.exception.InstantiationException;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- *
+ * 
  * @param <D> the data type of this unit used for the state synchronization.
+ * @param <DB> the builder used to build the unit data instance.
  */
-public interface UnitHost<D> extends Unit<D>, ServiceFactoryProvider {
+public abstract class AbstractBaseUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractUnitController<D, DB> implements BaseUnitController<D, DB> {
 
+    public AbstractBaseUnitController(final Class unitClass, final DB builder) throws InstantiationException {
+        super(unitClass, builder);
+    }
 }

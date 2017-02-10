@@ -39,14 +39,10 @@ import org.openbase.bco.dal.lib.layer.service.collection.TamperStateProviderServ
 import org.openbase.bco.dal.lib.layer.service.collection.TargetTemperatureStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.TemperatureStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.provider.PresenceStateProviderService;
-import org.openbase.bco.dal.lib.layer.unit.Unit;
+import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rst.iface.ScopeProvider;
-import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Snapshotable;
-import org.openbase.jul.iface.provider.LabelProvider;
-import org.openbase.jul.pattern.provider.DataProvider;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceConfigType;
 import rst.domotic.service.ServiceTemplateType;
@@ -66,7 +62,6 @@ import rst.domotic.state.StandbyStateType;
 import rst.domotic.state.TamperStateType;
 import rst.domotic.state.TemperatureStateType;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.location.LocationDataType.LocationData;
 
@@ -74,7 +69,7 @@ import rst.domotic.unit.location.LocationDataType.LocationData;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Location extends ScopeProvider, LabelProvider, DataProvider<LocationData>, Configurable<String, UnitConfig>, Unit,
+public interface Location extends BaseUnit<LocationData>,
         PresenceStateProviderService, Snapshotable<Snapshot>,
         BrightnessStateOperationServiceCollection,
         ColorStateOperationServiceCollection,

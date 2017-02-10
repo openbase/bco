@@ -35,7 +35,7 @@ import rst.timing.TimestampType;
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class TamperDetectorController extends AbstractUnitController<TamperDetectorData, TamperDetectorData.Builder> implements TamperDetector {
+public class TamperDetectorController extends AbstractDALUnitController<TamperDetectorData, TamperDetectorData.Builder> implements TamperDetector {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperDetectorData.getDefaultInstance()));

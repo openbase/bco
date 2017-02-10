@@ -26,21 +26,18 @@ import java.util.Set;
 import org.openbase.bco.dal.lib.layer.service.provider.DoorStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.PassageStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.WindowStateProviderService;
+import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rst.iface.ScopeProvider;
-import org.openbase.jul.iface.Configurable;
-import org.openbase.jul.iface.provider.LabelProvider;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface Connection extends ScopeProvider, LabelProvider, Configurable<String, UnitConfig>,
-        DoorStateProviderService, PassageStateProviderService, WindowStateProviderService {
+public interface Connection extends BaseUnit<ConnectionData>, DoorStateProviderService, PassageStateProviderService, WindowStateProviderService {
 
     default public Set<ServiceType> getSupportedServiceTypes() throws NotAvailableException, InterruptedException {
         final Set<ServiceType> serviceTypeSet = new HashSet<>();

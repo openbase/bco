@@ -35,7 +35,7 @@ import rst.rsb.ScopeType;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <M> Message
  */
-public interface UnitRemote<M extends GeneratedMessage> extends Unit, Service, ConfigurableRemote<String, M, UnitConfig> {
+public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, Service, ConfigurableRemote<String, M, UnitConfig> {
 
     /**
      * Method initializes this unit remote instance via it's remote controller scope.

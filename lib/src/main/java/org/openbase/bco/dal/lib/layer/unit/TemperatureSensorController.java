@@ -35,7 +35,7 @@ import rst.domotic.unit.dal.TemperatureSensorDataType.TemperatureSensorData;
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class TemperatureSensorController extends AbstractUnitController<TemperatureSensorData, TemperatureSensorData.Builder> implements TemperatureSensor {
+public class TemperatureSensorController extends AbstractDALUnitController<TemperatureSensorData, TemperatureSensorData.Builder> implements TemperatureSensor {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureSensorData.getDefaultInstance()));

@@ -22,14 +22,13 @@ package org.openbase.bco.dal.lib.layer.unit.scene;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
-import org.openbase.jul.iface.Configurable;
-import org.openbase.jul.iface.Identifiable;
-import rst.domotic.unit.UnitConfigType;
+import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
+import rst.domotic.unit.scene.SceneDataType.SceneData;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Scene extends Identifiable<String>, Configurable<String, UnitConfigType.UnitConfig>, ActivationStateOperationService {
+public interface Scene extends BaseUnit<SceneData>, ActivationStateOperationService {
 
 }

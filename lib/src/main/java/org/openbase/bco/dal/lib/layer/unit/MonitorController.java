@@ -40,7 +40,7 @@ import rst.domotic.unit.UnitConfigType;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class MonitorController extends AbstractUnitController<MonitorData, MonitorData.Builder> implements Monitor {
+public class MonitorController extends AbstractDALUnitController<MonitorData, MonitorData.Builder> implements Monitor {
     
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MonitorData.getDefaultInstance()));

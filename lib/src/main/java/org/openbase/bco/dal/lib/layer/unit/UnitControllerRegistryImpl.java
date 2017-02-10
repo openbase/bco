@@ -21,6 +21,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.GeneratedMessage;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -36,17 +37,20 @@ import org.openbase.jul.storage.registry.RegistryImpl;
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ *
+ * @param <D> the data type of the units used for the state synchronization.
+ * @param <DB> the builder used to build the unit data instances.
  */
-public class UnitControllerRegistryImpl extends RegistryImpl<String, UnitController> implements UnitControllerRegistry {
+public class UnitControllerRegistryImpl<D extends GeneratedMessage, DB extends D.Builder<DB>> extends RegistryImpl<String, UnitController<D, DB>> implements UnitControllerRegistry<D, DB> {
 
-    public final Map<String, UnitController> scopeControllerMap;
+    public final Map<String, UnitController<D, DB>> scopeControllerMap;
 
     public UnitControllerRegistryImpl() throws InstantiationException {
         this.scopeControllerMap = new HashMap<>();
         addObserver(new UnitControllerSynchronizer());
     }
 
-    public UnitControllerRegistryImpl(HashMap<String, UnitController> entryMap) throws InstantiationException {
+    public UnitControllerRegistryImpl(HashMap<String, UnitController<D, DB>> entryMap) throws InstantiationException {
         super(entryMap);
         this.scopeControllerMap = new HashMap<>();
         addObserver(new UnitControllerSynchronizer());
@@ -69,19 +73,19 @@ public class UnitControllerRegistryImpl extends RegistryImpl<String, UnitControl
     /**
      * Class to synchronize the scope controller map with the unit controller registry.
      */
-    private class UnitControllerSynchronizer implements Observer<Map<String, UnitController>> {
+    private class UnitControllerSynchronizer implements Observer<Map<String, UnitController<D, DB>>> {
 
         @Override
-        public void update(Observable<Map<String, UnitController>> source, Map<String, UnitController> data) throws Exception {
+        public void update(Observable<Map<String, UnitController<D, DB>>> source, Map<String, UnitController<D, DB>> data) throws Exception {
 
-            final Collection<UnitController> unitControllerCollection = data.values();
+            final Collection<UnitController<D, DB>> unitControllerCollection = data.values();
             // add new entries to the scope controller map
-            for (UnitController controller : unitControllerCollection) {
+            for (UnitController<D, DB> controller : unitControllerCollection) {
                 scopeControllerMap.put(ScopeGenerator.generateStringRep(controller.getScope()), controller);
             }
 
             // remove controller which are no longer provided by the registry
-            for (UnitController controller : new ArrayList<>(scopeControllerMap.values())) {
+            for (UnitController<D, DB> controller : new ArrayList<>(scopeControllerMap.values())) {
                 if (unitControllerCollection.contains(controller)) {
                     continue;
                 }

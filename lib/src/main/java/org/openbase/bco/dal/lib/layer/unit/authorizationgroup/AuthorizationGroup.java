@@ -22,16 +22,17 @@ package org.openbase.bco.dal.lib.layer.unit.authorizationgroup;
  * #L%
  */
 import java.util.concurrent.Future;
+import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.iface.Identifiable;
 import rst.domotic.state.UserPresenceStateType.UserPresenceState;
+import rst.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface AuthorizationGroup extends Identifiable<String> {
+public interface AuthorizationGroup extends BaseUnit<AuthorizationGroupData> {
 
     public UserPresenceState getUserPresenceState() throws NotAvailableException;
 

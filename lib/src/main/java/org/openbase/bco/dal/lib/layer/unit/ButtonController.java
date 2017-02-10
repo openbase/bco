@@ -35,7 +35,7 @@ import rst.timing.TimestampType;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class ButtonController extends AbstractUnitController<ButtonData, ButtonData.Builder> implements Button {
+public class ButtonController extends AbstractDALUnitController<ButtonData, ButtonData.Builder> implements Button {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonData.getDefaultInstance()));

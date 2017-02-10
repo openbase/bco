@@ -34,7 +34,7 @@ import rst.domotic.unit.dal.BatteryDataType.BatteryData;
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class BatteryController extends AbstractUnitController<BatteryData, BatteryData.Builder> implements Battery {
+public class BatteryController extends AbstractDALUnitController<BatteryData, BatteryData.Builder> implements Battery {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BatteryData.getDefaultInstance()));

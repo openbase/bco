@@ -46,7 +46,7 @@ import rst.vision.RGBColorType.RGBColor;
  * * @author Tamino Huxohl
  * * @author Marian Pohling
  */
-public class ColorableLightController extends AbstractUnitController<ColorableLightData, ColorableLightData.Builder> implements ColorableLight {
+public class ColorableLightController extends AbstractDALUnitController<ColorableLightData, ColorableLightData.Builder> implements ColorableLight {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ColorableLightData.getDefaultInstance()));

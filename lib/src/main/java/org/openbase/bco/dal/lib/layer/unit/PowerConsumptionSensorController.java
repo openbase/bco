@@ -36,7 +36,7 @@ import rst.domotic.unit.dal.PowerConsumptionSensorDataType.PowerConsumptionSenso
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class PowerConsumptionSensorController extends AbstractUnitController<PowerConsumptionSensorData, PowerConsumptionSensorData.Builder> implements PowerConsumptionSensor {
+public class PowerConsumptionSensorController extends AbstractDALUnitController<PowerConsumptionSensorData, PowerConsumptionSensorData.Builder> implements PowerConsumptionSensor {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionSensorData.getDefaultInstance()));

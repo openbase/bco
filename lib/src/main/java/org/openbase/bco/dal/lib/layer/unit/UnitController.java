@@ -21,19 +21,34 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import com.google.protobuf.GeneratedMessage;
 import java.lang.reflect.Method;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.extension.protobuf.MessageController;
 import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * 
+ * @param <D> the data type of this unit used for the state synchronization.
+ * @param <DB> the builder used to build the unit data instance.
  */
-public interface UnitController extends Unit {
+public interface UnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends Unit<D>, MessageController<D, DB> {
 
     /**
+     * Method initialize this controller with the given unit configuration.
+     * @param config the unit configuration
+     * @throws InitializationException is throw if any error occurs during the initialization phase.
+     * @throws InterruptedException is thrown if the current thread was externally interrupted.
+     */
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException;
+    
+    /**
      * Returns the service state update method for the given service type.
+     *
      * @param serviceType
      * @param serviceArgumentClass
      * @return
@@ -43,6 +58,7 @@ public interface UnitController extends Unit {
 
     /**
      * Applies the given service state update for this unit.
+     *
      * @param serviceType
      * @param serviceArgument
      * @throws CouldNotPerformException

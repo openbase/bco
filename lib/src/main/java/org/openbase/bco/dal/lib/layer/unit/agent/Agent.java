@@ -22,14 +22,13 @@ package org.openbase.bco.dal.lib.layer.unit.agent;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
-import org.openbase.jul.iface.Configurable;
-import org.openbase.jul.iface.Identifiable;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
+import rst.domotic.unit.agent.AgentDataType.AgentData;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Agent extends Identifiable<String>, Configurable<String, UnitConfig>, ActivationStateOperationService{
+public interface Agent extends BaseUnit<AgentData>, ActivationStateOperationService{
 
 }

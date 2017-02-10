@@ -38,7 +38,7 @@ import rst.domotic.unit.UnitConfigType;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class PowerSwitchController extends AbstractUnitController<PowerSwitchData, PowerSwitchData.Builder> implements PowerSwitch {
+public class PowerSwitchController extends AbstractDALUnitController<PowerSwitchData, PowerSwitchData.Builder> implements PowerSwitch {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerSwitchData.getDefaultInstance()));

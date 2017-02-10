@@ -40,7 +40,7 @@ import rst.domotic.unit.UnitConfigType;
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class DimmerController extends AbstractUnitController<DimmerData, DimmerData.Builder> implements Dimmer {
+public class DimmerController extends AbstractDALUnitController<DimmerData, DimmerData.Builder> implements Dimmer {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DimmerData.getDefaultInstance()));

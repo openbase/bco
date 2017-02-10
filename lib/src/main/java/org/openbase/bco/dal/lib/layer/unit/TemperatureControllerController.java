@@ -39,7 +39,7 @@ import rst.domotic.unit.UnitConfigType;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class TemperatureControllerController extends AbstractUnitController<TemperatureControllerData, TemperatureControllerData.Builder> implements TemperatureController {
+public class TemperatureControllerController extends AbstractDALUnitController<TemperatureControllerData, TemperatureControllerData.Builder> implements TemperatureController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureControllerData.getDefaultInstance()));

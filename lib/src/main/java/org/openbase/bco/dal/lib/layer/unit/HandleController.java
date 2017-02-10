@@ -36,7 +36,7 @@ import rst.domotic.unit.dal.HandleDataType.HandleData;
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class HandleController extends AbstractUnitController<HandleData, HandleData.Builder> implements Handle {
+public class HandleController extends AbstractDALUnitController<HandleData, HandleData.Builder> implements Handle {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleData.getDefaultInstance()));

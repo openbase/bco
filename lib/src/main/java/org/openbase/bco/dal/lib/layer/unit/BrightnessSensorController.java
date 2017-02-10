@@ -34,7 +34,7 @@ import rst.domotic.unit.dal.BrightnessSensorDataType.BrightnessSensorData;
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class BrightnessSensorController extends AbstractUnitController<BrightnessSensorData, BrightnessSensorData.Builder> implements BrightnessSensor {
+public class BrightnessSensorController extends AbstractDALUnitController<BrightnessSensorData, BrightnessSensorData.Builder> implements BrightnessSensor {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessSensorData.getDefaultInstance()));

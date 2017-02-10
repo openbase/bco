@@ -32,19 +32,19 @@ import org.openbase.jul.exception.VerificationFailedException;
  */
 public class UnitProcessor {
 
-    public static boolean isHostUnit(final Unit unit) throws CouldNotPerformException {
+    public static boolean isHostUnit(final Unit<?> unit) throws CouldNotPerformException {
         return UnitConfigProcessor.isHostUnit(unit.getConfig());
     }
 
-    public static boolean isDalUnit(final Unit unit) throws CouldNotPerformException {
+    public static boolean isDalUnit(final Unit<?> unit) throws CouldNotPerformException {
         return UnitConfigProcessor.isDalUnit(unit.getConfig());
     }
 
-    public static boolean isBaseUnit(final Unit unit) throws CouldNotPerformException {
+    public static boolean isBaseUnit(final Unit<?> unit) throws CouldNotPerformException {
         return UnitConfigProcessor.isBaseUnit(unit.getConfig());
     }
 
-    public static void verifyUnitType(final Unit unit) throws VerificationFailedException {
+    public static void verifyUnitType(final Unit<?> unit) throws VerificationFailedException {
         try {
             UnitConfigProcessor.verifyUnitType(unit.getConfig(), unit.getType());
         } catch (NotAvailableException ex) {
@@ -52,7 +52,7 @@ public class UnitProcessor {
         }
     }
 
-    public static void verifyUnitConfig(final Unit unit) throws VerificationFailedException {
+    public static void verifyUnitConfig(final Unit<?> unit) throws VerificationFailedException {
         try {
             UnitConfigProcessor.verifyUnitConfig(unit.getConfig(), unit.getType());
         } catch (NotAvailableException ex) {
@@ -60,7 +60,7 @@ public class UnitProcessor {
         }
     }
 
-    public static void verifyUnit(final Unit unit) throws VerificationFailedException {
+    public static void verifyUnit(final Unit<?> unit) throws VerificationFailedException {
         verifyUnitConfig(unit);
         verifyUnitType(unit);
     }

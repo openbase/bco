@@ -38,7 +38,7 @@ import rst.domotic.unit.UnitConfigType;
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class RollerShutterController extends AbstractUnitController<RollerShutterData, RollerShutterData.Builder> implements RollerShutter {
+public class RollerShutterController extends AbstractDALUnitController<RollerShutterData, RollerShutterData.Builder> implements RollerShutter {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RollerShutterData.getDefaultInstance()));

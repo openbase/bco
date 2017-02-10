@@ -32,12 +32,11 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
-import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
-import org.openbase.bco.dal.lib.layer.service.ServiceFactoryProvider;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -69,14 +68,16 @@ import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.registry.UnitRegistryDataType;
+import rst.domotic.state.EnablingStateType;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- * @param <M> Underling message type.
- * @param <MB> Message related builder.
+ *
+ * @param <D> the data type of this unit used for the state synchronization.
+ * @param <DB> the builder used to build the unit data instance.
  */
-public abstract class AbstractUnitController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends AbstractConfigurableController<M, MB, UnitConfig> implements UnitController, ServiceFactoryProvider {
+public abstract class AbstractUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionConfig.getDefaultInstance()));
@@ -85,28 +86,16 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     public static long initTime = 0;
     public static long constructorTime = 0;
 
-    private final UnitHost unitHost;
+    protected UnitRegistryRemote unitRegistry;
+
     private final List<Service> serviceList;
-    private final ServiceFactory serviceFactory;
     private final ServiceJSonProcessor serviceJSonProcessor;
     private UnitTemplate template;
 
-    public AbstractUnitController(final Class unitClass, final UnitHost unitHost, final MB builder) throws CouldNotPerformException {
+    public AbstractUnitController(final Class unitClass, final DB builder) throws InstantiationException {
         super(builder);
-        try {
-
-            if (unitHost.getServiceFactory() == null) {
-                throw new NotAvailableException("service factory");
-            }
-            this.serviceJSonProcessor = new ServiceJSonProcessor();
-            this.unitHost = unitHost;
-
-            this.serviceFactory = unitHost.getServiceFactory();
-            this.serviceList = new ArrayList<>();
-
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(this, ex);
-        }
+        this.serviceJSonProcessor = new ServiceJSonProcessor();
+        this.serviceList = new ArrayList<>();
     }
 
     @Override
@@ -138,8 +127,6 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
 
     @Override
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
-        Stopwatch stopwatchTmp = new Stopwatch();
-        stopwatchTmp.start();
         try {
             if (config == null) {
                 throw new NotAvailableException("config");
@@ -171,22 +158,14 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
-
-        try {
-            synchronized (this) {
-                initTime += stopwatchTmp.stop();
-            }
-        } catch (CouldNotPerformException ex) {
-
-        }
     }
 
     @Override
     protected void postInit() throws InitializationException, InterruptedException {
         try {
             super.postInit();
-            CachedUnitRegistryRemote.waitForData();
-            ((UnitRegistryRemote) CachedUnitRegistryRemote.getRegistry()).addDataObserver((Observable<UnitRegistryDataType.UnitRegistryData> source, UnitRegistryDataType.UnitRegistryData data) -> {
+            this.unitRegistry = CachedUnitRegistryRemote.getRegistry();
+            this.unitRegistry.addDataObserver((Observable<UnitRegistryDataType.UnitRegistryData> source, UnitRegistryDataType.UnitRegistryData data) -> {
                 try {
                     final UnitConfig newUnitConfig = CachedUnitRegistryRemote.getRegistry().getUnitConfigById(getId());
                     if (!newUnitConfig.equals(getConfig())) {
@@ -199,6 +178,19 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
+    }
+
+    public boolean isEnabled() {
+        try {
+            return getConfig().getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED);
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(ex, logger);
+        }
+        return false;
+    }
+
+    public UnitRegistryRemote getUnitRegistry() {
+        return unitRegistry;
     }
 
     @Override
@@ -257,10 +249,6 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         return template;
     }
 
-    public UnitHost getUnitHost() {
-        return unitHost;
-    }
-
     public Collection<Service> getServices() {
         return Collections.unmodifiableList(serviceList);
     }
@@ -273,7 +261,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
     public void registerMethods(RSBLocalServer server) throws CouldNotPerformException {
 
         RPCHelper.registerInterface(Unit.class, this, server);
-        
+
         // collect and register service interface methods via unit templates
         HashMap<String, ServiceTemplate> serviceInterfaceMap = new HashMap<>();
         for (ServiceTemplate serviceTemplate : getTemplate().getServiceTemplateList()) {
@@ -325,11 +313,6 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register Interface[" + serviceInterfaceClass + "] Method [" + serviceInterfaceMapEntry.getKey() + "] for Unit[" + this.getLabel() + "].", ex), logger);
             }
         }
-    }
-
-    @Override
-    public ServiceFactory getServiceFactory() throws NotAvailableException {
-        return serviceFactory;
     }
 
     @Override
@@ -422,6 +405,7 @@ public abstract class AbstractUnitController<M extends GeneratedMessage, MB exte
         try {
             logger.info("applyAction: " + actionConfig.getLabel());
             final Object attribute = serviceJSonProcessor.deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType());
+
             // Since its an action it has to be an operation service pattern
             final ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(actionConfig.getServiceType()).setPattern(ServiceTemplate.ServicePattern.OPERATION).build();
 

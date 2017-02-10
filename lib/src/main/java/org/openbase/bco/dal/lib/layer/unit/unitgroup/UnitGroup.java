@@ -28,11 +28,12 @@ import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationServi
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
-import org.openbase.jul.iface.Identifiable;
+import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
+import rst.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface UnitGroup extends BrightnessStateOperationService, ColorStateOperationService, PowerStateOperationService, BlindStateOperationService, StandbyStateOperationService, TargetTemperatureStateOperationService, Identifiable<String> {
+public interface UnitGroup extends BaseUnit<UnitGroupData>, BrightnessStateOperationService, ColorStateOperationService, PowerStateOperationService, BlindStateOperationService, StandbyStateOperationService, TargetTemperatureStateOperationService {
 
 }

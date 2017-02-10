@@ -38,7 +38,7 @@ import rst.domotic.unit.UnitConfigType;
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class LightController extends AbstractUnitController<LightData, LightData.Builder> implements Light {
+public class LightController extends AbstractDALUnitController<LightData, LightData.Builder> implements Light {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LightData.getDefaultInstance()));

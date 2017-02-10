@@ -22,17 +22,18 @@ package org.openbase.bco.dal.lib.layer.unit.user;
  * #L%
  */
 import java.util.concurrent.Future;
+import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.iface.Identifiable;
 import rst.domotic.state.UserActivityStateType.UserActivityState;
 import rst.domotic.state.UserPresenceStateType.UserPresenceState;
+import rst.domotic.unit.user.UserDataType.UserData;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface User extends Identifiable<String> {
+public interface User extends BaseUnit<UserData> {
 
     public final static String TYPE_FIELD_USER_NAME = "user_name";
 

@@ -29,10 +29,11 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
+import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Identifiable;
 import org.openbase.jul.iface.Snapshotable;
-import org.openbase.jul.iface.provider.ConfigProvider;
 import org.openbase.jul.iface.provider.LabelProvider;
+import org.openbase.jul.pattern.provider.DataProvider;
 import rst.domotic.action.ActionAuthorityType;
 import rst.domotic.action.ActionConfigType;
 import rst.domotic.action.ActionPriorityType;
@@ -43,10 +44,11 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * 
+ * @param <D> the data type of this unit used for the state synchronization.
  */
-public interface Unit extends Service, LabelProvider, ScopeProvider, Identifiable<String>, ConfigProvider<UnitConfig>, Snapshotable<Snapshot> {
+public interface Unit<D> extends Service, LabelProvider, ScopeProvider, Identifiable<String>, Configurable<String, UnitConfig>, DataProvider<D>, Snapshotable<Snapshot> {
 
     /**
      * Returns the unit type.
@@ -95,7 +97,7 @@ public interface Unit extends Service, LabelProvider, ScopeProvider, Identifiabl
         MultiException.checkAndThrow("Could not record snapshot!", exceptionStack);
         return CompletableFuture.completedFuture(snapshotBuilder.build());
     }
-
+    
     @Override
     public default Future<Void> restoreSnapshot(Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
         try {

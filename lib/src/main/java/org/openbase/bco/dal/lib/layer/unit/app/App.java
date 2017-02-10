@@ -1,8 +1,9 @@
 package org.openbase.bco.dal.lib.layer.unit.app;
 
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
-import org.openbase.jul.iface.Configurable;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
+import org.openbase.bco.dal.lib.layer.unit.UnitHost;
+import rst.domotic.unit.app.AppDataType.AppData;
 
 /*
  * #%L
@@ -29,5 +30,5 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface App extends Configurable<String, UnitConfig>, ActivationStateOperationService {
+public interface App extends BaseUnit<AppData>, ActivationStateOperationService {
 }
