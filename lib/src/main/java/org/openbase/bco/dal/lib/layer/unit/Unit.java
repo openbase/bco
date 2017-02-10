@@ -21,6 +21,8 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
@@ -34,6 +36,7 @@ import org.openbase.jul.iface.Identifiable;
 import org.openbase.jul.iface.Snapshotable;
 import org.openbase.jul.iface.provider.LabelProvider;
 import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.action.ActionAuthorityType;
 import rst.domotic.action.ActionConfigType;
 import rst.domotic.action.ActionPriorityType;
@@ -45,7 +48,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- * 
+ *
  * @param <D> the data type of this unit used for the state synchronization.
  */
 public interface Unit<D> extends Service, LabelProvider, ScopeProvider, Identifiable<String>, Configurable<String, UnitConfig>, DataProvider<D>, Snapshotable<Snapshot> {
@@ -97,14 +100,16 @@ public interface Unit<D> extends Service, LabelProvider, ScopeProvider, Identifi
         MultiException.checkAndThrow("Could not record snapshot!", exceptionStack);
         return CompletableFuture.completedFuture(snapshotBuilder.build());
     }
-    
+
     @Override
     public default Future<Void> restoreSnapshot(Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
+        System.out.println("Restore snapshot on unit");
         try {
+            Collection<Future> futureCollection = new ArrayList<>();
             for (final ActionConfigType.ActionConfig actionConfig : snapshot.getActionConfigList()) {
-                applyAction(actionConfig);
+                futureCollection.add(applyAction(actionConfig));
             }
-            return CompletableFuture.completedFuture(null);
+            return GlobalCachedExecutorService.allOf(futureCollection, null);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not record snapshot!", ex);
         }

@@ -36,39 +36,35 @@ import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
-import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
-import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
+import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.processing.StringProcessor;
-import org.openbase.jul.schedule.Stopwatch;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionConfigType;
 import rst.domotic.action.ActionConfigType.ActionConfig;
+import rst.domotic.registry.UnitRegistryDataType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.state.EnablingStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import rst.domotic.registry.UnitRegistryDataType;
-import rst.domotic.state.EnablingStateType;
 
 /**
  *
@@ -149,12 +145,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             }
 
             super.init(config);
-
-            try {
-                verifyUnitConfig();
-            } catch (VerificationFailedException ex) {
-                ExceptionPrinter.printHistory(new InvalidStateException(this + " is not valid!", ex), logger);
-            }
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -358,52 +348,10 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
-    /**
-     * Verify if all provider service update methods are registered for given
-     * configuration.
-     *
-     * @throws VerificationFailedException is thrown if the check fails or at
-     * least on update method is not available.
-     */
-    private void verifyUnitConfig() throws VerificationFailedException {
-        try {
-            logger.debug("Validating unit update methods...");
-
-            MultiException.ExceptionStack exceptionStack = null;
-            List<String> unitMethods = new ArrayList<>();
-            String updateMethod;
-
-            // === Load unit methods. ===
-            for (Method medhod : getClass().getMethods()) {
-                unitMethods.add(medhod.getName());
-            }
-
-            // === Verify if all update methods are registered. ===
-            for (ServiceTemplate serviceTemplate : getTemplate().getServiceTemplateList()) {
-
-                // filter other services than provider
-                if (serviceTemplate.getPattern() != ServiceTemplate.ServicePattern.PROVIDER) {
-                    continue;
-                }
-
-                // verify
-                updateMethod = ProviderService.getUpdateMethodName(serviceTemplate.getType());
-                if (!unitMethods.contains(updateMethod)) {
-                    exceptionStack = MultiException.push(serviceTemplate, new NotAvailableException("Method", updateMethod), exceptionStack);
-                }
-            }
-
-            // === throw multi exception in error case. ===
-            MultiException.checkAndThrow("At least one update method missing!", exceptionStack);
-        } catch (CouldNotPerformException ex) {
-            throw new VerificationFailedException("UnitTemplate is not compatible for configured unit controller!", ex);
-        }
-    }
-
     @Override
     public Future<Void> applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
         try {
-            logger.info("applyAction: " + actionConfig.getLabel());
+            logger.debug("applyAction: " + actionConfig.getLabel());
             final Object attribute = serviceJSonProcessor.deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType());
 
             // Since its an action it has to be an operation service pattern

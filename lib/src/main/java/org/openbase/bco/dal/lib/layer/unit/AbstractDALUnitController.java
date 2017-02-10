@@ -22,11 +22,22 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.List;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactoryProvider;
+import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.MultiException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.unit.UnitConfigType;
 
 /**
  *
@@ -56,8 +67,61 @@ public abstract class AbstractDALUnitController<M extends GeneratedMessage, MB e
     public ServiceFactory getServiceFactory() throws NotAvailableException {
         return serviceFactory;
     }
-    
+
     public UnitHost getUnitHost() {
         return unitHost;
+    }
+
+    @Override
+    public void init(final UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
+        super.init(config);
+
+        try {
+            verifyUnitConfig();
+        } catch (VerificationFailedException ex) {
+            ExceptionPrinter.printHistory(new InvalidStateException(this + " is not valid!", ex), logger);
+        }
+    }
+
+    /**
+     * Verify if all provider service update methods are registered for given
+     * configuration.
+     *
+     * @throws VerificationFailedException is thrown if the check fails or at
+     * least on update method is not available.
+     */
+    private void verifyUnitConfig() throws VerificationFailedException {
+        try {
+            logger.debug("Validating unit update methods...");
+
+            MultiException.ExceptionStack exceptionStack = null;
+            List<String> unitMethods = new ArrayList<>();
+            String updateMethod;
+
+            // === Load unit methods. ===
+            for (Method medhod : getClass().getMethods()) {
+                unitMethods.add(medhod.getName());
+            }
+
+            // === Verify if all update methods are registered. ===
+            for (ServiceTemplateType.ServiceTemplate serviceTemplate : getTemplate().getServiceTemplateList()) {
+
+                // filter other services than provider
+                if (serviceTemplate.getPattern() != ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER) {
+                    continue;
+                }
+
+                // verify
+                updateMethod = ProviderService.getUpdateMethodName(serviceTemplate.getType());
+                if (!unitMethods.contains(updateMethod)) {
+                    exceptionStack = MultiException.push(serviceTemplate, new NotAvailableException("Method", updateMethod), exceptionStack);
+                }
+            }
+
+            // === throw multi exception in error case. ===
+            MultiException.checkAndThrow("At least one update method missing!", exceptionStack);
+        } catch (CouldNotPerformException ex) {
+            throw new VerificationFailedException("UnitTemplate is not compatible for configured unit controller!", ex);
+        }
     }
 }

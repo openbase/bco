@@ -21,8 +21,6 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -32,8 +30,8 @@ import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
-import rst.domotic.unit.dal.TemperatureControllerDataType.TemperatureControllerData;
 import rst.domotic.unit.UnitConfigType;
+import rst.domotic.unit.dal.TemperatureControllerDataType.TemperatureControllerData;
 
 /**
  *
@@ -78,15 +76,11 @@ public class TemperatureControllerController extends AbstractDALUnitController<T
     }
 
     public void updateTargetTemperatureStateProvider(final TemperatureState temperatureState) throws CouldNotPerformException {
-        logger.info("Apply targetTemperatureState Update[" + temperatureState + "] for " + this + ".");
-
         try (ClosableDataBuilder<TemperatureControllerData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setTargetTemperatureState(temperatureState);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply target temperature Update[" + temperatureState + "] for " + this + "!", ex);
         }
-        
-        logger.info("Target temperature update applied");
     }
 
     public void updateTemperatureStateProvider(final TemperatureState temperatureState) throws CouldNotPerformException {

@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.collection.StandbyStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
-import org.openbase.bco.dal.remote.unit.UnitRemote;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;

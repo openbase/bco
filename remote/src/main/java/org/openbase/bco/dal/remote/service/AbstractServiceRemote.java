@@ -21,7 +21,6 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import com.google.protobuf.GeneratedMessage;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -32,8 +31,10 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.Service;
-import org.openbase.bco.dal.remote.unit.UnitRemote;
+import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.MultiException;
@@ -107,11 +108,11 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         synchronized (syncObject) {
             serviceState = computeServiceState();
         }
-        
-        if(serviceState.toString().contains("21")) {
-            System.out.println("Service update: "+serviceState);
+
+        if (serviceState.toString().contains("21")) {
+            System.out.println("Service update: " + serviceState);
         }
-        
+
         serviceStateObservable.notifyObservers(serviceState);
         assert serviceStateObservable.isValueAvailable();
     }
@@ -167,11 +168,17 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
             if (!unitRemoteTypeMap.containsKey(remote.getType())) {
                 unitRemoteTypeMap.put(remote.getType(), new ArrayList());
+                for (UnitType subType : Registries.getUnitRegistry().getSubUnitTypesOfUnitType(remote.getType())) {
+                    unitRemoteTypeMap.put(subType, new ArrayList<>());
+                }
             }
 
             try {
                 serviceMap.put(config.getId(), (S) remote);
                 unitRemoteTypeMap.get(remote.getType()).add((S) remote);
+                for (UnitType subType : Registries.getUnitRegistry().getSubUnitTypesOfUnitType(remote.getType())) {
+                    unitRemoteTypeMap.get(subType).add((S) remote);
+                }
             } catch (ClassCastException ex) {
                 throw new NotSupportedException("ServiceInterface[" + serviceType.name() + "]", remote, "Remote does not implement the service interface!", ex);
             }
