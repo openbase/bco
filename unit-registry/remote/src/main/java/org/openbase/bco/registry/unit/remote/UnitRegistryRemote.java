@@ -38,7 +38,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.jul.extension.rsb.scope.ScopeProvider;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
@@ -604,6 +603,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         for (UnitTemplate template : unitTemplateRemoteRegistry.getMessages()) {
             if (template.getIncludedTypeList().contains(type)) {
                 unitTypes.add(template.getType());
+                unitTypes.addAll(getSubUnitTypesOfUnitType(template.getType()));
             }
         }
         return unitTypes;

@@ -212,6 +212,7 @@ public class MockRegistry {
     public enum MockUnitTemplate {
 
         COLORABLE_LIGHT(UnitType.COLORABLE_LIGHT, COLOR_SOS, COLOR_SPS, POWER_SOS, POWER_SPS, BRIGHTNESS_SOS, BRIGHTNESS_SPS),
+        DIMMABLE_LIGHT(UnitType.DIMMABLE_LIGHT, POWER_SOS, POWER_SPS, BRIGHTNESS_SOS, BRIGHTNESS_SPS),
         LIGHT(UnitType.LIGHT, POWER_SOS, POWER_SPS),
         MOTION_DETECTOR(UnitType.MOTION_DETECTOR, MOTION_SPS),
         BRIGHTNESS_SENSOR(UnitType.BRIGHTNESS_SENSOR, BRIGHTNESS_SPS),
@@ -233,12 +234,22 @@ public class MockRegistry {
 
         private final UnitTemplate template;
 
-        MockUnitTemplate(UnitTemplate.UnitType type, MockServiceTemplate... serviceTemplates) {
+        MockUnitTemplate(UnitType type, MockServiceTemplate... serviceTemplates) {
             UnitTemplate.Builder templateBuilder = UnitTemplate.newBuilder();
             templateBuilder.setType(type);
             for (MockServiceTemplate serviceTemplate : serviceTemplates) {
                 templateBuilder.addServiceTemplate(serviceTemplate.getTemplate());
             }
+
+            switch (type) {
+                case COLORABLE_LIGHT:
+                    templateBuilder.addIncludedType(UnitType.DIMMABLE_LIGHT);
+                    break;
+                case DIMMABLE_LIGHT:
+                    templateBuilder.addIncludedType(UnitType.LIGHT);
+                    break;
+            }
+
             this.template = templateBuilder.build();
         }
 
@@ -485,7 +496,7 @@ public class MockRegistry {
             }
 
             ConnectionConfig connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
-            locationRegistry.registerConnectionConfig(UnitConfig.newBuilder().setType(UnitType.CONNECTION).setLabel("Moongate").setConnectionConfig(connectionConfig).build()).get();
+            locationRegistry.registerConnectionConfig(UnitConfig.newBuilder().setType(UnitType.CONNECTION).setLabel("Gate").setConnectionConfig(connectionConfig).build()).get();
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
         }
