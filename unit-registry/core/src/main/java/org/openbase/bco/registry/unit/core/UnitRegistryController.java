@@ -946,25 +946,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     /**
      * {@inheritDoc}
      *
-     * @param type
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public List<UnitType> getSubUnitTypesOfUnitType(final UnitType type) throws CouldNotPerformException {
-        List<UnitType> unitTypes = new ArrayList<>();
-        for (UnitTemplate template : unitTemplateRegistry.getMessages()) {
-            if (template.getIncludedTypeList().contains(type)) {
-                unitTypes.add(template.getType());
-                unitTypes.addAll(getSubUnitTypesOfUnitType(template.getType()));
-            }
-        }
-        return unitTypes;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
      * @return
      * @throws CouldNotPerformException
      */
@@ -1139,5 +1120,44 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
     public DeviceRegistryRemote getDeviceRegistryRemote() {
         return deviceRegistryRemote;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param type
+     * @return
+     * @throws CouldNotPerformException
+     */
+    @Override
+    public List<UnitTemplate.UnitType> getSubUnitTypes(UnitTemplate.UnitType type) throws CouldNotPerformException {
+        List<UnitTemplate.UnitType> unitTypes = new ArrayList<>();
+        for (UnitTemplate template : unitTemplateRegistry.getMessages()) {
+            if (template.getIncludedTypeList().contains(type)) {
+                unitTypes.add(template.getType());
+                unitTypes.addAll(getSubUnitTypes(template.getType()));
+            }
+        }
+        return unitTypes;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param type
+     * @return
+     * @throws CouldNotPerformException
+     */
+    @Override
+    public List<UnitTemplate.UnitType> getSuperUnitTypes(UnitTemplate.UnitType type) throws CouldNotPerformException {
+        UnitTemplate unitTemplate = getUnitTemplateByType(type);
+        List<UnitTemplate.UnitType> unitTypes = new ArrayList<>();
+        for (UnitTemplate template : unitTemplateRegistry.getMessages()) {
+            if (unitTemplate.getIncludedTypeList().contains(template.getType())) {
+                unitTypes.add(template.getType());
+                unitTypes.addAll(getSuperUnitTypes(template.getType()));
+            }
+        }
+        return unitTypes;
     }
 }

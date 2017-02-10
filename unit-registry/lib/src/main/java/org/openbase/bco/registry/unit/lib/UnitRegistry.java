@@ -153,7 +153,39 @@ public interface UnitRegistry extends Shutdownable {
      */
     public UnitConfig getUnitConfigByScope(final Scope scope) throws CouldNotPerformException;
 
-    public List<UnitType> getSubUnitTypesOfUnitType(final UnitType type) throws CouldNotPerformException;
+    /**
+     * Get all sub types of a unit type. E.g. COLORABLE_LIGHT and DIMMABLE_LIGHT are
+     * sub types of LIGHT.
+     *
+     * @param type the super type whose sub types are searched
+     * @return all types of which the given type is a super type
+     * @throws CouldNotPerformException
+     * @deprecated please use getSubUnitTypes instead
+     */
+    @Deprecated
+    public default List<UnitType> getSubUnitTypesOfUnitType(final UnitType type) throws CouldNotPerformException {
+        return getSubUnitTypes(type);
+    }
+
+    /**
+     * Get all sub types of a unit type. E.g. COLORABLE_LIGHT and DIMMABLE_LIGHT are
+     * sub types of LIGHT.
+     *
+     * @param type the super type whose sub types are searched
+     * @return all types of which the given type is a super type
+     * @throws CouldNotPerformException
+     */
+    public List<UnitType> getSubUnitTypes(final UnitType type) throws CouldNotPerformException;
+
+    /**
+     * Get all super types of a unit type. E.g. DIMMABLE_LIGHT and LIGHT are
+     * super types of COLORABLE_LIGHT.
+     *
+     * @param type the type whose super types are returned
+     * @return all super types of a given unit type
+     * @throws CouldNotPerformException
+     */
+    public List<UnitType> getSuperUnitTypes(final UnitType type) throws CouldNotPerformException;
 
     public default void verifyUnitGroupUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
         UnitConfigProcessor.verifyUnitConfig(unitConfig, UnitType.UNIT_GROUP);

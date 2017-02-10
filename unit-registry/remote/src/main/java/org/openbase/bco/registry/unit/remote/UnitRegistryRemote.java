@@ -597,19 +597,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     }
 
     @Override
-    public List<UnitTemplate.UnitType> getSubUnitTypesOfUnitType(final UnitTemplate.UnitType type) throws CouldNotPerformException {
-        validateData();
-        List<UnitTemplate.UnitType> unitTypes = new ArrayList<>();
-        for (UnitTemplate template : unitTemplateRemoteRegistry.getMessages()) {
-            if (template.getIncludedTypeList().contains(type)) {
-                unitTypes.add(template.getType());
-                unitTypes.addAll(getSubUnitTypesOfUnitType(template.getType()));
-            }
-        }
-        return unitTypes;
-    }
-
-    @Override
     public Boolean isDalUnitConfigRegistryReadOnly() throws CouldNotPerformException {
         validateData();
         try {
@@ -847,5 +834,32 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not check consistency!", ex);
         }
+    }
+
+    @Override
+    public List<UnitTemplate.UnitType> getSubUnitTypes(UnitTemplate.UnitType type) throws CouldNotPerformException {
+        validateData();
+        List<UnitTemplate.UnitType> unitTypes = new ArrayList<>();
+        for (UnitTemplate template : unitTemplateRemoteRegistry.getMessages()) {
+            if (template.getIncludedTypeList().contains(type)) {
+                unitTypes.add(template.getType());
+                unitTypes.addAll(getSubUnitTypes(template.getType()));
+            }
+        }
+        return unitTypes;
+    }
+
+    @Override
+    public List<UnitTemplate.UnitType> getSuperUnitTypes(UnitTemplate.UnitType type) throws CouldNotPerformException {
+        validateData();
+        UnitTemplate unitTemplate = getUnitTemplateByType(type);
+        List<UnitTemplate.UnitType> unitTypes = new ArrayList<>();
+        for (UnitTemplate template : unitTemplateRemoteRegistry.getMessages()) {
+            if (unitTemplate.getIncludedTypeList().contains(template.getType())) {
+                unitTypes.add(template.getType());
+                unitTypes.addAll(getSuperUnitTypes(template.getType()));
+            }
+        }
+        return unitTypes;
     }
 }
