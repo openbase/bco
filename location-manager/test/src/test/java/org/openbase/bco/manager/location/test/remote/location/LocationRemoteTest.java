@@ -34,9 +34,12 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.bco.dal.lib.layer.unit.MotionDetectorController;
+import org.openbase.bco.dal.lib.layer.unit.PowerConsumptionSensorController;
 import org.openbase.bco.dal.lib.layer.unit.TemperatureControllerController;
 import org.openbase.bco.dal.lib.layer.unit.TemperatureSensorController;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
+import org.openbase.bco.dal.remote.detector.PresenceDetector;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.manager.location.core.LocationManagerLauncher;
@@ -62,7 +65,10 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.state.ColorStateType.ColorState;
+import rst.domotic.state.MotionStateType.MotionState;
+import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
 import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -144,7 +150,7 @@ public class LocationRemoteTest {
      *
      * @throws Exception
      */
-    @Test//(timeout = 5000)
+    @Test(timeout = 5000)
     public void testLocationToUnitPipeline() throws Exception {
         System.out.println("testLocationToUnitPipeline");
 
@@ -194,12 +200,15 @@ public class LocationRemoteTest {
 
         List<TemperatureSensorController> temperatureSensorList = new ArrayList<>();
         List<TemperatureControllerController> temperatureControllerList = new ArrayList<>();
+        List<PowerConsumptionSensorController> powerConsumptionSensorList = new ArrayList<>();
         for (UnitConfig dalUnitConfig : unitRegistry.getDalUnitConfigs()) {
             UnitController unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dalUnitConfig.getId());
             if (unitController instanceof TemperatureSensorController) {
                 temperatureSensorList.add((TemperatureSensorController) unitController);
             } else if (unitController instanceof TemperatureControllerController) {
                 temperatureControllerList.add((TemperatureControllerController) unitController);
+            } else if (unitController instanceof PowerConsumptionSensorController) {
+                powerConsumptionSensorList.add((PowerConsumptionSensorController) unitController);
             }
         }
 
@@ -217,14 +226,28 @@ public class LocationRemoteTest {
         System.out.println("request data of " + ScopeGenerator.generateStringRep(locationRemote.getScope()));
         System.out.println("got data: " + locationRemote.requestData().get().getTemperatureState().getTemperature());
         while (locationRemote.getTemperatureState().getTemperature() != temperature) {
-//            System.out.println("current state: " + locationRemote.getData());
             System.out.println("current temp: " + locationRemote.getTemperatureState().getTemperature() + " waiting for: " + temperature);
             Thread.sleep(10);
         }
         Assert.assertEquals("Temperature of the location has not been updated!", temperature, locationRemote.getTemperatureState().getTemperature(), 0.01);
+
+        System.out.println("PowerConsumptionSensors: " + powerConsumptionSensorList.size());
+        PowerConsumptionState powerConsumptionState = PowerConsumptionState.newBuilder().setVoltage(240).setConsumption(10).setCurrent(1).build();
+        for (PowerConsumptionSensorController powerConsumptionSensor : powerConsumptionSensorList) {
+            powerConsumptionSensor.updatePowerConsumptionStateProvider(powerConsumptionState);
+            System.out.println("Updated powerConsumptionState of [" + powerConsumptionSensor.toString() + "] to [" + powerConsumptionSensor.getPowerConsumptionState() + "]");
+        }
+
+        while (locationRemote.getPowerConsumptionState().getCurrent() != powerConsumptionState.getCurrent()) {
+            System.out.println("Waiting for locationRemote powerConsumptionState update!");
+            Thread.sleep(10);
+        }
+        Assert.assertEquals("Voltage of location has not been updated!", powerConsumptionState.getVoltage(), locationRemote.getPowerConsumptionState().getVoltage(), 0.01);
+        Assert.assertEquals("Current of location has not been updated!", powerConsumptionState.getCurrent(), locationRemote.getPowerConsumptionState().getCurrent(), 0.01);
+        Assert.assertEquals("Consumption of location has not been updated!", powerConsumptionState.getConsumption() * powerConsumptionSensorList.size(), locationRemote.getPowerConsumptionState().getConsumption(), 0.01);
     }
 
-    @Test//(timeout = 5000)
+    @Test(timeout = 5000)
     public void testRecordAndRestoreSnapshots() throws Exception {
         BlindState snapshotBlindState = BlindState.newBuilder().setMovementState(BlindState.MovementState.DOWN).setOpeningRatio(0).build();
         BlindState newBlindState = BlindState.newBuilder().setMovementState(BlindState.MovementState.UP).setOpeningRatio(50).build();
@@ -266,50 +289,98 @@ public class LocationRemoteTest {
         assertTrue("TargetTemperatureState of location has not been restored through snapshot!", locationRemote.getTargetTemperatureState(UnitType.UNKNOWN).getTemperature() == snapshotTemperatureState.getTemperature());
     }
 
-//    @Test
-//    public void testManipulatingByUnitType() throws Exception {
-//        System.out.println("testManipulatingByUnitType");
-//
-//        try {
-//            List<UnitType> lightTypes = unitRegistry.getSubUnitTypesOfUnitType(UnitType.LIGHT);
-//            lightTypes.add(UnitType.LIGHT);
-//            assertTrue("UnitType not found as subType of LIGHT!", lightTypes.contains(UnitType.LIGHT));
-//            assertTrue("UnitType not found as subType of LIGHT!", lightTypes.contains(UnitType.DIMMABLE_LIGHT));
-//            assertTrue("UnitType not found as subType of LIGHT!", lightTypes.contains(UnitType.COLORABLE_LIGHT));
-//
-//            List<PowerStateOperationService> powerServiceList = new ArrayList<>();
-//            for (UnitConfig dalUnitConfig : unitRegistry.getDalUnitConfigs()) {
-//
-//                if (lightTypes.contains(dalUnitConfig.getType())) {
-//                    UnitController unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dalUnitConfig.getId());
-//                    powerServiceList.add((PowerStateOperationService) unitController);
-//                }
-//            }
-//
-//            PowerState powerOn = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-//            PowerState powerOff = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-//
-//            locationRemote.setPowerState(powerOn, UnitType.LIGHT).get();
-//            for (PowerStateOperationService powerStateService : powerServiceList) {
-//                Assert.assertEquals("PowerState of lightUnit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the loationRemote!", powerOn.getValue(), powerStateService.getPowerState().getValue());
-//            }
-//
-//            locationRemote.setPowerState(powerOff).get();
-//            for (PowerStateOperationService powerStateService : powerServiceList) {
-//                Assert.assertEquals("PowerState of lightUnit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the loationRemote!", powerOff.getValue(), powerStateService.getPowerState().getValue());
-//            }
-//
-//            for (PowerStateOperationService powerStateOperationService : powerServiceList) {
-//                powerStateOperationService.setPowerState(powerOn).get();
-//            }
-//            Assert.assertEquals("PowerState of location has not been updated!", powerOn.getValue(), locationRemote.getPowerState(UnitType.LIGHT).getValue());
-//
-//            for (PowerStateOperationService powerStateOperationService : powerServiceList) {
-//                powerStateOperationService.setPowerState(powerOff).get();
-//            }
-//            Assert.assertEquals("PowerState of location has not been updated!", powerOff.getValue(), locationRemote.getPowerState(UnitType.LIGHT).getValue());
-//        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
-//            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
-//        }
-//    }
+    @Test(timeout = 5000)
+    public void testManipulatingByUnitType() throws Exception {
+        System.out.println("testManipulatingByUnitType");
+
+        try {
+            List<UnitType> lightTypes = unitRegistry.getSubUnitTypes(UnitType.LIGHT);
+            lightTypes.add(UnitType.LIGHT);
+            assertTrue("UnitType not found as subType of LIGHT!", lightTypes.contains(UnitType.LIGHT));
+            assertTrue("UnitType not found as subType of LIGHT!", lightTypes.contains(UnitType.DIMMABLE_LIGHT));
+            assertTrue("UnitType not found as subType of LIGHT!", lightTypes.contains(UnitType.COLORABLE_LIGHT));
+
+            List<PowerStateOperationService> powerServiceList = new ArrayList<>();
+            for (UnitConfig dalUnitConfig : unitRegistry.getDalUnitConfigs()) {
+
+                if (lightTypes.contains(dalUnitConfig.getType())) {
+                    UnitController unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dalUnitConfig.getId());
+                    powerServiceList.add((PowerStateOperationService) unitController);
+                }
+            }
+
+            PowerState powerOn = PowerState.newBuilder().setValue(PowerState.State.ON).build();
+            PowerState powerOff = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
+
+            locationRemote.setPowerState(powerOn, UnitType.LIGHT).get();
+            for (PowerStateOperationService powerStateService : powerServiceList) {
+                Assert.assertEquals("PowerState of lightUnit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the loationRemote!", powerOn.getValue(), powerStateService.getPowerState().getValue());
+            }
+
+            locationRemote.setPowerState(powerOff).get();
+            for (PowerStateOperationService powerStateService : powerServiceList) {
+                Assert.assertEquals("PowerState of lightUnit [" + ((UnitController) powerStateService).getLabel() + "] has not been updated by the loationRemote!", powerOff.getValue(), powerStateService.getPowerState().getValue());
+            }
+
+            for (PowerStateOperationService powerStateOperationService : powerServiceList) {
+                powerStateOperationService.setPowerState(powerOn).get();
+            }
+            while (locationRemote.getPowerState(UnitType.LIGHT).getValue() != powerOn.getValue()) {
+                System.out.println("Waiting for locationRemote update!");
+                Thread.sleep(10);
+            }
+            Assert.assertEquals("PowerState of location has not been updated!", powerOn.getValue(), locationRemote.getPowerState(UnitType.LIGHT).getValue());
+
+            for (PowerStateOperationService powerStateOperationService : powerServiceList) {
+                powerStateOperationService.setPowerState(powerOff).get();
+            }
+
+            while (locationRemote.getPowerState(UnitType.LIGHT).getValue() != powerOff.getValue()) {
+                System.out.println("Waiting for locationRemote update!");
+                Thread.sleep(10);
+            }
+            Assert.assertEquals("PowerState of location has not been updated!", powerOff.getValue(), locationRemote.getPowerState(UnitType.LIGHT).getValue());
+        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+        }
+    }
+
+    @Test(timeout = 5000)
+    public void testPresenceState() throws Exception {
+        System.out.println("testPresenceState");
+
+        try {
+            MotionDetectorController motionDetectorController = null;
+            for (UnitConfig dalUnitConfig : unitRegistry.getDalUnitConfigs()) {
+                UnitController unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dalUnitConfig.getId());
+                if (unitController instanceof MotionDetectorController) {
+                    motionDetectorController = (MotionDetectorController) unitController;
+                }
+            }
+
+            if (motionDetectorController == null) {
+                Assert.fail("Mock registry does not contain a motionDetector!");
+                return;
+            }
+
+            motionDetectorController.updateMotionStateProvider(MotionState.newBuilder().setValue(MotionState.State.MOTION).build());
+
+            while (locationRemote.getPresenceState().getValue() != PresenceState.State.PRESENT) {
+                System.out.println("Waiting for locationRemote presenceState update!");
+                Thread.sleep(10);
+            }
+            Assert.assertEquals("PresenceState of location has not been updated!", PresenceState.State.PRESENT, locationRemote.getPresenceState().getValue());
+
+            motionDetectorController.updateMotionStateProvider(MotionState.newBuilder().setValue(MotionState.State.NO_MOTION).build());
+
+            Thread.sleep(PresenceDetector.PRESENCE_TIMEOUT);
+            while (locationRemote.getPresenceState().getValue() != PresenceState.State.ABSENT) {
+                System.out.println("Waiting for locationRemote presenceState update!");
+                Thread.sleep(10);
+            }
+            Assert.assertEquals("PresenceState of location has not been updated!", PresenceState.State.ABSENT, locationRemote.getPresenceState().getValue());
+        } catch (CouldNotPerformException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+        }
+    }
 }

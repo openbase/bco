@@ -127,6 +127,29 @@ public class ColorableLightRemoteTest {
         assertEquals("Color has not been set in time!", HSBColorToRGBColorTransformer.transform(color), colorableLightRemote.getData().getColorState().getColor().getHsbColor());
     }
 
+//    @Test(timeout = 5000)
+//    public void testViaLightRemote() throws Exception {
+//        System.out.println("testViaLightRemote");
+//
+//        LightRemote lightRemote = new LightRemote();
+//        System.out.println("init");
+//        lightRemote.initByLabel(label);
+//        System.out.println("activate");
+//        lightRemote.activate();
+//        System.out.println("wait for connection");
+//        lightRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+//        System.out.println("connection");
+//
+//        lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build()).get();
+//        colorableLightRemote.requestData().get();
+//
+//        assertEquals(lightRemote.getPowerState(), colorableLightRemote.getPowerState());
+//
+//        lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build()).get();
+//        colorableLightRemote.requestData().get();
+//
+//        assertEquals(lightRemote.getPowerState(), colorableLightRemote.getPowerState());
+//    }
     /**
      * Test of setColor method, of class AmbientLightRemote.
      *
