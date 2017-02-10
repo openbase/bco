@@ -49,10 +49,9 @@ public class TemperatureSensorController extends AbstractDALUnitController<Tempe
 
     public void updateTemperatureStateProvider(final TemperatureState temperatureState) throws CouldNotPerformException {
         logger.debug("Apply temperatureState Update[" + temperatureState + "] for " + this + ".");
-        System.out.println("Apply temperatureState Update[" + temperatureState + "] for " + this + ".");
         try (ClosableDataBuilder<TemperatureSensorData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setTemperatureState(temperatureState);
-            System.out.println(this+ " state: "+getData());
+            System.out.println(this + " state: " + getData());
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply temperatureState Update[" + temperatureState + "] for " + this + "!", ex);
         }
@@ -69,7 +68,6 @@ public class TemperatureSensorController extends AbstractDALUnitController<Tempe
 
     public void updateTemperatureAlarmStateProvider(final AlarmState value) throws CouldNotPerformException {
         logger.debug("Apply temperatureAlarmState Update[" + value + "] for " + this + ".");
-
         try (ClosableDataBuilder<TemperatureSensorData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setTemperatureAlarmState(value);
         } catch (Exception ex) {
