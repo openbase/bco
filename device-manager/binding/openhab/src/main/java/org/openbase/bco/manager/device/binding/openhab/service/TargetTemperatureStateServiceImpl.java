@@ -35,7 +35,7 @@ import rst.domotic.state.TemperatureStateType.TemperatureState;
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  * @param <ST> Related service type.
  */
-public class TargetTemperatureStateServiceImpl<ST extends TargetTemperatureStateOperationService & Unit> extends OpenHABService<ST> implements TargetTemperatureStateOperationService {
+public class TargetTemperatureStateServiceImpl<ST extends TargetTemperatureStateOperationService & Unit<?>> extends OpenHABService<ST> implements TargetTemperatureStateOperationService {
 
     public TargetTemperatureStateServiceImpl(final ST unit) throws InstantiationException {
         super(unit);

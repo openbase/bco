@@ -36,7 +36,7 @@ import rst.domotic.state.BrightnessStateType.BrightnessState;
  @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <UNIT> Related unit.
  */
-public class BrightnessStateServiceImpl<UNIT extends BrightnessStateOperationService & Unit> extends OpenHABService<UNIT> implements BrightnessStateOperationService {
+public class BrightnessStateServiceImpl<UNIT extends BrightnessStateOperationService & Unit<?>> extends OpenHABService<UNIT> implements BrightnessStateOperationService {
 
     public BrightnessStateServiceImpl(final UNIT unit) throws InstantiationException {
         super(unit);

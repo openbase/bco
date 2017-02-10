@@ -1,5 +1,7 @@
 package org.openbase.bco.manager.device.lib;
 
+import rst.domotic.unit.device.DeviceDataType.DeviceData;
+
 /*
  * #%L
  * BCO Manager Device Library

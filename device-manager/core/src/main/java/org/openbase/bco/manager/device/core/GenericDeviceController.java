@@ -23,8 +23,6 @@ package org.openbase.bco.manager.device.core;
  */
 
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
-import org.openbase.bco.registry.device.lib.DeviceRegistry;
-import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -39,13 +37,10 @@ import rst.domotic.unit.device.DeviceDataType.DeviceData;
  */
 public class GenericDeviceController extends AbstractDeviceController {
 
-    static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceData.getDefaultInstance()));
-    }
-
     private final ServiceFactory serviceFactory;
 
     public GenericDeviceController(final ServiceFactory serviceFactory) throws InstantiationException, CouldNotPerformException {
+        super(GenericDeviceController.class);
         try {
             if (serviceFactory == null) {
                 throw new NotAvailableException("service factory");

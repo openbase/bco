@@ -22,8 +22,7 @@ package org.openbase.bco.manager.app.core.preset;
  * #L%
  */
 import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
-import org.openbase.bco.manager.app.core.AbstractApp;
-import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
+import org.openbase.bco.manager.app.core.AbstractAppController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -43,7 +42,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class SoundScapeApp extends AbstractApp {
+public class SoundScapeApp extends AbstractAppController {
 
     private enum SoundScape {
 
@@ -58,7 +57,7 @@ public class SoundScapeApp extends AbstractApp {
     private final WatchDog listenerWatchDog;
     private final Scope scope = new Scope("/app/soundscape/theme/");
     private final ActivationStateType.ActivationState activate = ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.ACTIVE).build();
-    private final ActivationStateType.ActivationState deactive = ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.ACTIVE).build();
+    private final ActivationStateType.ActivationState deactive = ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.DEACTIVE).build();
 
 //    final AgentRemote agentBathAmbientColorBeachBottomRemote;
     final AgentRemote agentBathAmbientColorBeachCeiling;
@@ -67,8 +66,7 @@ public class SoundScapeApp extends AbstractApp {
     final AgentRemote agentBathAmbientColorZen;
 
     public SoundScapeApp() throws CouldNotPerformException, InterruptedException {
-        super(true);
-
+        super(SoundScapeApp.class);
 //        agentBathAmbientColorBeachBottomRemote = new AgentRemote();
         agentBathAmbientColorBeachCeiling = new AgentRemote();
         agentBathAmbientColorForest = new AgentRemote();

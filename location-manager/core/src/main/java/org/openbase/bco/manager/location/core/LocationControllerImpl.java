@@ -35,6 +35,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
+import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.layer.unit.location.Location;
@@ -53,7 +54,6 @@ import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
-import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.pattern.Observable;
@@ -80,7 +80,6 @@ import rst.domotic.state.StandbyStateType;
 import rst.domotic.state.TamperStateType;
 import rst.domotic.state.TemperatureStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationDataType;
 import rst.domotic.unit.location.LocationDataType.LocationData;
@@ -92,7 +91,7 @@ import rst.vision.RGBColorType;
  *
  * UnitConfig
  */
-public class LocationControllerImpl extends AbstractConfigurableController<LocationData, LocationData.Builder, UnitConfig> implements LocationController {
+public class LocationControllerImpl extends AbstractBaseUnitController<LocationData, LocationData.Builder> implements LocationController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationDataType.LocationData.getDefaultInstance()));
@@ -119,7 +118,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
     private final ServiceRemoteManager serviceRemoteManager;
 
     public LocationControllerImpl() throws InstantiationException {
-        super(LocationData.newBuilder());
+        super(LocationControllerImpl.class, LocationData.newBuilder());
         this.serviceRemoteManager = new ServiceRemoteManager() {
             @Override
             protected Set<ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
@@ -316,7 +315,7 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
             }
 
             // take the snapshot
-            for (UnitRemote remote : unitRemoteSet) {
+            for (UnitRemote<?> remote : unitRemoteSet) {
                 try {
                     if (UnitProcessor.isDalUnit(remote)) {
                         if (!remote.isConnected()) {
@@ -377,17 +376,5 @@ public class LocationControllerImpl extends AbstractConfigurableController<Locat
             neighborIdList.add(locationConfig.getId());
         }
         return neighborIdList;
-    }
-
-    @Override
-    public UnitType getType() throws NotAvailableException {
-        // TODO: extends AbstractUnitController to support this method
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public UnitTemplateType.UnitTemplate getTemplate() throws NotAvailableException {
-        // TODO: extends AbstractUnitController to support this method
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }

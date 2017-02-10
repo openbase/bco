@@ -29,9 +29,6 @@ import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistryImpl;
 import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.bco.manager.device.lib.DeviceFactory;
 import org.openbase.bco.manager.device.lib.DeviceManager;
-import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
-import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
-import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -47,6 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.InventoryStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.device.DeviceDataType.DeviceData;
 
 /**
  *
@@ -185,7 +183,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
     }
 
     @Override
-    public UnitControllerRegistry getUnitControllerRegistry() {
+    public UnitControllerRegistry<?,?> getUnitControllerRegistry() {
         return unitControllerRegistry;
     }
 

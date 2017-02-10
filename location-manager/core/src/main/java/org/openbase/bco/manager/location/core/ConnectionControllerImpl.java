@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Set;
 import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderService;
+import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.layer.unit.connection.Connection;
 import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
@@ -39,7 +40,6 @@ import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
-import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
@@ -60,7 +60,7 @@ import rst.timing.TimestampType.Timestamp;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class ConnectionControllerImpl extends AbstractConfigurableController<ConnectionData, ConnectionData.Builder, UnitConfig> implements ConnectionController {
+public class ConnectionControllerImpl extends AbstractBaseUnitController<ConnectionData, ConnectionData.Builder> implements ConnectionController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ConnectionData.getDefaultInstance()));
@@ -126,7 +126,7 @@ public class ConnectionControllerImpl extends AbstractConfigurableController<Con
     private final ServiceRemoteManager serviceRemoteManager;
 
     public ConnectionControllerImpl() throws InstantiationException {
-        super(ConnectionData.newBuilder());
+        super(ConnectionControllerImpl.class, ConnectionData.newBuilder());
         this.contactDoorPositionMap = new HashMap<>();
         this.contactWindowPositionMap = new HashMap<>();
 

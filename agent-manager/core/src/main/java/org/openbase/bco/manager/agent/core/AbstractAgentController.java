@@ -21,44 +21,40 @@ package org.openbase.bco.manager.agent.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.unit.AbstractExecutableBaseUnitController;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.extension.rsb.com.AbstractExecutableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.agent.AgentDataType;
 import rst.domotic.unit.agent.AgentDataType.AgentData;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
-public abstract class AbstractAgent extends AbstractExecutableController<AgentDataType.AgentData, AgentDataType.AgentData.Builder, UnitConfig> implements AgentController {
+public abstract class AbstractAgentController extends AbstractExecutableBaseUnitController<AgentData, AgentData.Builder> implements AgentController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
     }
 
-    public AbstractAgent() throws InstantiationException {
-        super(AgentDataType.AgentData.newBuilder());
+    public AbstractAgentController(final Class unitClass) throws InstantiationException {
+        super(unitClass, AgentDataType.AgentData.newBuilder());
     }
 
     @Override
     public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
         RPCHelper.registerInterface(org.openbase.bco.dal.lib.layer.unit.agent.Agent.class, this, server);
     }
-    
+
     @Override
     protected boolean isAutostartEnabled() throws CouldNotPerformException {
         return getConfig().getAgentConfig().getAutostart();
-    }   
+    }
 }

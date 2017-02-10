@@ -24,7 +24,7 @@ package org.openbase.bco.manager.agent.core.preset;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.openbase.bco.manager.agent.core.AbstractAgent;
+import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -42,7 +42,7 @@ import rst.domotic.unit.location.LocationDataType;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class StandbyAgent extends AbstractAgent {
+public class StandbyAgent extends AbstractAgentController {
 
     /**
      * 15 min default standby timeout
@@ -58,7 +58,7 @@ public class StandbyAgent extends AbstractAgent {
     private Snapshot snapshot;
 
     public StandbyAgent() throws InstantiationException, CouldNotPerformException, InterruptedException {
-        super();
+        super(StandbyAgent.class);
 
         this.standby = false;
 

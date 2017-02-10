@@ -36,7 +36,7 @@ import rst.domotic.state.IntensityStateType.IntensityState;
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  * @param <UNIT>
  */
-public class IntensityStateServiceImpl<UNIT extends IntensityStateOperationService & Unit> extends OpenHABService<UNIT> implements IntensityStateOperationService {
+public class IntensityStateServiceImpl<UNIT extends IntensityStateOperationService & Unit<?>> extends OpenHABService<UNIT> implements IntensityStateOperationService {
 
     public IntensityStateServiceImpl(final UNIT unit) throws InstantiationException {
         super(unit);

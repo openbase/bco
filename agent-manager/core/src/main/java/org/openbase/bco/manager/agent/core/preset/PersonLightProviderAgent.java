@@ -21,7 +21,7 @@ package org.openbase.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.manager.agent.core.AbstractAgent;
+import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -38,13 +38,13 @@ import rst.domotic.unit.location.LocationDataType;
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class PersonLightProviderAgent extends AbstractAgent {
+public class PersonLightProviderAgent extends AbstractAgentController {
 
     public static final double MINIMUM_LIGHT_THRESHOLD = 100;
     private LocationRemote locationRemote;
 
     public PersonLightProviderAgent() throws InstantiationException, CouldNotPerformException, InterruptedException {
-        super();
+        super(PersonLightProviderAgent.class);
     }
 
     @Override

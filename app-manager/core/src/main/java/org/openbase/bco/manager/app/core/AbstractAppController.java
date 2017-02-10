@@ -21,47 +21,56 @@ package org.openbase.bco.manager.app.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.manager.app.lib.App;
+import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
+import org.openbase.bco.dal.lib.layer.unit.AbstractExecutableBaseUnitController;
 import org.openbase.bco.manager.app.lib.AppController;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.extension.rsb.com.AbstractExecutableController;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.app.AppDataType.AppData;
 
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public abstract class AbstractApp extends AbstractExecutableController<AppData, AppData.Builder, UnitConfig> implements AppController {
+public abstract class AbstractAppController extends AbstractExecutableBaseUnitController<AppData, AppData.Builder> implements AppController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
     }
 
-    public AbstractApp(boolean autostart) throws org.openbase.jul.exception.InstantiationException {
-        super(AppData.newBuilder());
+    private final ServiceFactory serviceFactory;
+
+    public AbstractAppController(final Class unitClass) throws org.openbase.jul.exception.InstantiationException {
+        this(unitClass, null);
+    }
+
+    public AbstractAppController(final Class unitClass, final ServiceFactory serviceFactory) throws org.openbase.jul.exception.InstantiationException {
+        super(unitClass, AppData.newBuilder());
+        this.serviceFactory = serviceFactory;
     }
 
     @Override
-    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
-        super.init(config);
-        logger.info("Initializing " + getClass().getSimpleName() + "[" + config.getId() + "]");
+    public ServiceFactory getServiceFactory() throws NotAvailableException {
+        if(serviceFactory == null) {
+            throw new NotAvailableException("ServiceFactory", new NotSupportedException("Unit hosting", this));
+        }
+        return serviceFactory;
     }
 
     @Override
     public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
-        RPCHelper.registerInterface(App.class, this, server);
+        RPCHelper.registerInterface(org.openbase.bco.dal.lib.layer.unit.app.App.class, this, server);
     }
 
     @Override
     protected boolean isAutostartEnabled() throws CouldNotPerformException {
         return getConfig().getAppConfig().getAutostart();
-    }    
+    }
 }

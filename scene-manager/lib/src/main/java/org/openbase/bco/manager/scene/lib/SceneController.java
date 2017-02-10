@@ -21,18 +21,15 @@ package org.openbase.bco.manager.scene.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.extension.protobuf.MessageController;
+import org.openbase.bco.dal.lib.layer.unit.BaseUnitController;
 import org.openbase.jul.iface.Enableable;
 import org.openbase.jul.iface.Identifiable;
 import rst.domotic.unit.scene.SceneDataType.SceneData;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface SceneController extends Identifiable<String>, Enableable, Scene, MessageController<SceneData, SceneData.Builder> {
-
-    public void init(final UnitConfig config) throws InitializationException, InterruptedException;
+public interface SceneController extends Enableable, org.openbase.bco.dal.lib.layer.unit.scene.Scene, BaseUnitController<SceneData, SceneData.Builder> {
+    
 }

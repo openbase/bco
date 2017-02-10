@@ -35,7 +35,7 @@ import rst.domotic.state.BlindStateType.BlindState;
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  * @param <ST> Related service type.
  */
-public class BlindStateServiceImpl<ST extends BlindStateOperationService & Unit> extends OpenHABService<ST> implements BlindStateOperationService {
+public class BlindStateServiceImpl<ST extends BlindStateOperationService & Unit<?>> extends OpenHABService<ST> implements BlindStateOperationService {
 
     public BlindStateServiceImpl(final ST unit) throws InstantiationException {
         super(unit);

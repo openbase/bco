@@ -21,7 +21,6 @@ package org.openbase.bco.manager.device.binding.openhab.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -36,16 +35,15 @@ import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.binding.openhab.OpenhabCommandType;
-import rst.domotic.service.ServiceConfigType;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <ST> related service type
  */
-public abstract class OpenHABService<ST extends Service & Unit> implements Service {
+public abstract class OpenHABService<ST extends Service & Unit<?>> implements Service {
 
     private OpenHABRemote openHABRemote;
 
@@ -68,8 +66,8 @@ public abstract class OpenHABService<ST extends Service & Unit> implements Servi
         }
     }
 
-    private ServiceConfigType.ServiceConfig loadServiceConfig() throws CouldNotPerformException {
-        for (ServiceConfigType.ServiceConfig serviceConfig : ((Unit) unit).getConfig().getServiceConfigList()) {
+    private ServiceConfig loadServiceConfig() throws CouldNotPerformException {
+        for (final ServiceConfig serviceConfig : ((Unit<?>) unit).getConfig().getServiceConfigList()) {
             if (serviceConfig.getServiceTemplate().getType().equals(serviceType)) {
                 return serviceConfig;
             }
@@ -88,7 +86,7 @@ public abstract class OpenHABService<ST extends Service & Unit> implements Servi
     public String getItemID() {
         return itemName;
     }
-    
+
     public Future executeCommand(final OpenhabCommandType.OpenhabCommand.Builder command) throws CouldNotPerformException {
         if (itemName == null) {
             throw new NotAvailableException("itemID");

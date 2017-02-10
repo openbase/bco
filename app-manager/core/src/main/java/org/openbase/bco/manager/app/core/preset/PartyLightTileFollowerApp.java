@@ -30,7 +30,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.openbase.bco.manager.app.core.AbstractApp;
+import org.openbase.bco.manager.app.core.AbstractAppController;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
@@ -48,12 +48,12 @@ import rst.vision.HSBColorType.HSBColor;
 /**
  * UnitConfig
  */
-public class PartyLightTileFollowerApp extends AbstractApp {
+public class PartyLightTileFollowerApp extends AbstractAppController {
 
     private Map<String, LocationRemote> locationRemoteMap;
 
     public PartyLightTileFollowerApp() throws InstantiationException, InterruptedException {
-        super(true);
+        super(PartyLightTileFollowerApp.class);
         try {
             Registries.getLocationRegistry().waitForData();
             this.locationRemoteMap = new HashMap<>();

@@ -21,16 +21,18 @@ package org.openbase.bco.manager.scene.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.GeneratedMessage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
+import org.openbase.bco.dal.lib.layer.unit.AbstractExecutableBaseUnitController;
 import org.openbase.bco.dal.remote.control.action.Action;
 import org.openbase.bco.dal.remote.unit.ButtonRemote;
-import org.openbase.bco.manager.scene.lib.Scene;
 import org.openbase.bco.manager.scene.lib.SceneController;
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
@@ -39,11 +41,11 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rsb.com.AbstractExecutableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -60,7 +62,7 @@ import rst.domotic.unit.scene.SceneDataType.SceneData;
  *
  * UnitConfig
  */
-public class SceneControllerImpl extends AbstractExecutableController<SceneData, SceneData.Builder, UnitConfig> implements SceneController {
+public class SceneControllerImpl extends AbstractExecutableBaseUnitController<SceneData, SceneData.Builder> implements SceneController {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneData.getDefaultInstance()));
@@ -76,10 +78,9 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
     private DeviceRegistry deviceRegistry;
 
     public SceneControllerImpl() throws org.openbase.jul.exception.InstantiationException {
-        super(SceneData.newBuilder());
+        super(SceneControllerImpl.class, SceneData.newBuilder());
         this.buttonRemoteList = new ArrayList<>();
         this.actionList = new ArrayList<>();
-
         this.buttonObserver = (final Observable<ButtonData> source, ButtonData data) -> {
             if (data.getButtonState().getValue().equals(ButtonState.State.PRESSED)) {
                 setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
@@ -99,7 +100,8 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
     }
 
     @Override
-    public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
+    public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        config = super.applyConfigUpdate(config);
         synchronized (triggerListSync) {
             try {
                 for (ButtonRemote buttonRemote : buttonRemoteList) {
@@ -157,7 +159,7 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
         }
-        return super.applyConfigUpdate(config);
+        return config;
     }
 
     @Override
@@ -182,7 +184,8 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
 
     @Override
     public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
-        RPCHelper.registerInterface(Scene.class, this, server);
+        RPCHelper.registerInterface(org.openbase.bco.dal.lib.layer.unit.scene.Scene.class, this, server);
+        super.registerMethods(server);
     }
 
     @Override
@@ -194,10 +197,9 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
             }
         }
 
-        Thread thread = new Thread() {
-
+        GlobalCachedExecutorService.submit(new Callable<Void>() {
             @Override
-            public void run() {
+            public Void call() throws Exception {
                 try {
                     logger.info("Waiting for action finalisation...");
                     synchronized (actionListSync) {
@@ -212,14 +214,13 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
                         }
                     }
                     logger.info("All Actions are finished. Deactivate scene...");
-                    setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not wait for actions!", ex), logger);
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not wait for actions!", ex), logger);
                 }
+                setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
+                return null;
             }
-        };
-        thread.start();
-//        setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
+        });
     }
 
     @Override
@@ -240,9 +241,9 @@ public class SceneControllerImpl extends AbstractExecutableController<SceneData,
             throw new CouldNotPerformException("Could not apply action!", ex);
         }
     }
-    
+
     @Override
     protected boolean isAutostartEnabled() throws CouldNotPerformException {
         return false;
-    }   
+    }
 }

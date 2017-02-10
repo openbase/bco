@@ -29,7 +29,7 @@ import java.util.List;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactory;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
-import org.openbase.bco.manager.agent.core.AbstractAgent;
+import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -49,7 +49,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class PowerStateSynchroniserAgent extends AbstractAgent {
+public class PowerStateSynchroniserAgent extends AbstractAgentController {
 
     public static final String SOURCE_KEY = "SOURCE";
     public static final String TARGET_KEY = "TARGET";
@@ -82,7 +82,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgent {
     private UnitRegistry unitRegistry;
 
     public PowerStateSynchroniserAgent() throws InstantiationException, CouldNotPerformException {
-        super();
+        super(PowerStateSynchroniserAgent.class);
         this.factory = UnitRemoteFactoryImpl.getInstance();
 
         // initialize observer

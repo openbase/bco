@@ -35,7 +35,7 @@ import rst.domotic.state.PowerStateType.PowerState;
  @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <ST> Related service type.
  */
-public class PowerStateServiceImpl<ST extends PowerStateOperationService & Unit> extends OpenHABService<ST> implements org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService {
+public class PowerStateServiceImpl<ST extends PowerStateOperationService & Unit<?>> extends OpenHABService<ST> implements org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService {
 
     public PowerStateServiceImpl(final ST unit) throws InstantiationException {
         super(unit);

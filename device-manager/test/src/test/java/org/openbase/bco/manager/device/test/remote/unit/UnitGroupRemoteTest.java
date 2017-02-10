@@ -62,30 +62,30 @@ import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class UnitGroupRemoteTest {
-    
+
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(UnitGroupRemoteTest.class);
-    
+
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static UnitGroupRemote unitGroupRemote;
     private static final List<Unit> unitList = new ArrayList<>();
-    
+
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
         try {
             JPService.setupJUnitTestMode();
             JPService.registerProperty(JPHardwareSimulationMode.class, true);
             MockRegistryHolder.newMockRegistry();
-            
+
             deviceManagerLauncher = new DeviceManagerLauncher();
             deviceManagerLauncher.launch();
             deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
-            
+
             unitGroupRemote = new UnitGroupRemote();
             ServiceTemplate powerStateOperationService = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.OPERATION).build();
             ServiceTemplate powerStateProviderService = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.PROVIDER).build();
             UnitGroupConfig.Builder unitGroupConfig = UnitGroupConfig.newBuilder().addServiceTemplate(powerStateOperationService).addServiceTemplate(powerStateProviderService);
             assert !deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().isEmpty();
-            for (Unit unit : deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().getEntries()) {
+            for (Unit<?> unit : deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().getEntries()) {
                 if (allServiceTemplatesImplementedByUnit(unitGroupConfig, unit)) {
                     unitList.add(unit);
                     unitGroupConfig.addMemberId(unit.getConfig().getId());
@@ -101,7 +101,7 @@ public class UnitGroupRemoteTest {
             ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
     }
-    
+
     @AfterClass
     public static void tearDownClass() throws Throwable {
         try {
@@ -116,42 +116,42 @@ public class UnitGroupRemoteTest {
             ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
     }
-    
-    private static boolean allServiceTemplatesImplementedByUnit(UnitGroupConfig.Builder unitGroup, final Unit unit) throws NotAvailableException {
+
+    private static boolean allServiceTemplatesImplementedByUnit(UnitGroupConfig.Builder unitGroup, final Unit<?> unit) throws NotAvailableException {
         List<ServiceConfig> unitServiceConfigList = unit.getConfig().getServiceConfigList();
         Set<ServiceType> unitServiceTypeList = new HashSet<>();
         unitServiceConfigList.stream().forEach((serviceConfig) -> {
             unitServiceTypeList.add(serviceConfig.getServiceTemplate().getType());
         });
-        
+
         boolean servicePatternValid;
         for (ServiceTemplate serviceTemplate : unitGroup.getServiceTemplateList()) {
             if (!unitServiceTypeList.contains(serviceTemplate.getType())) {
                 return false;
             }
-            
+
             servicePatternValid = false;
             for (ServiceConfig serviceConfig : unit.getConfig().getServiceConfigList()) {
                 if (serviceConfig.getServiceTemplate().getPattern().equals(serviceTemplate.getPattern())) {
                     servicePatternValid = true;
                 }
             }
-            
+
             if (!servicePatternValid) {
                 return false;
             }
         }
         return true;
     }
-    
+
     @Before
     public void setUp() throws InitializationException, InvalidStateException {
-        
+
     }
-    
+
     @After
     public void tearDown() throws CouldNotPerformException {
-        
+
     }
 
     /**
@@ -165,14 +165,14 @@ public class UnitGroupRemoteTest {
         unitGroupRemote.waitForData();
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
         unitGroupRemote.setPowerState(state).get();
-        
-        for (Unit unit : unitList) {
+
+        for (final Unit<?> unit : unitList) {
             assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state.getValue(), ((PowerStateOperationService) unit).getPowerState().getValue());
         }
-        
+
         state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         unitGroupRemote.setPowerState(state).get();
-        for (Unit unit : unitList) {
+        for (final Unit<?> unit : unitList) {
             assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state.getValue(), ((PowerStateOperationService) unit).getPowerState().getValue());
         }
     }

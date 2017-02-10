@@ -42,7 +42,7 @@ public class OpenHABCommandExecutor {
     public static final String ITEM_SUBSEGMENT_DELIMITER = "_";
     public static final String ITEM_SEGMENT_DELIMITER = "__";
 
-    private static final Logger logger = LoggerFactory.getLogger(OpenHABCommandExecutor.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(OpenHABCommandExecutor.class);
 
     private final UnitControllerRegistry unitControllerRegistry;
 
@@ -100,7 +100,7 @@ public class OpenHABCommandExecutor {
     }
 
     public void receiveUpdate(OpenhabCommandType.OpenhabCommand command) throws CouldNotPerformException {
-        logger.info("receiveUpdate [" + command.getItem() + "=" + command.getType() + "]");
+        LOGGER.info("receiveUpdate [" + command.getItem() + "=" + command.getType() + "]");
         OpenhabCommandMetaData metaData = new OpenhabCommandMetaData(command);
         Object serviceData = OpenhabCommandTransformer.getServiceData(command, metaData.getServiceType());
         UnitController unitController = unitControllerRegistry.getUnitByScope(metaData.getUnitScope());

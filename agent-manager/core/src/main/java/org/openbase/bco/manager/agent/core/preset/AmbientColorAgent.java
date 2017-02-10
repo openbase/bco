@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import org.openbase.bco.dal.remote.service.ColorStateServiceRemote;
-import org.openbase.bco.manager.agent.core.AbstractAgent;
+import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -44,7 +44,7 @@ import rst.vision.HSBColorType.HSBColor;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
-public class AmbientColorAgent extends AbstractAgent {
+public class AmbientColorAgent extends AbstractAgentController {
 
 //    List<HSVColorType.HSVColor> colorList = new ArrayList<>();
 //        colorList.add(HSVColorType.HSVColor.newBuilder().setHue(0).setSaturation(100).setValue(20).build());
@@ -138,7 +138,7 @@ public class AmbientColorAgent extends AbstractAgent {
     private final Random random;
 
     public AmbientColorAgent() throws InstantiationException, InterruptedException, CouldNotPerformException {
-        super();
+        super(AmbientColorAgent.class);
         logger.info("Creating AmbienColorAgent");
         random = new Random();
     }

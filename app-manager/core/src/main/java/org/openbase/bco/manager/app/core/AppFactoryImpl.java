@@ -73,7 +73,7 @@ public class AppFactoryImpl implements AppFactory {
         try {
             Registries.getAppRegistry().waitForData();
             AppClass appClass = Registries.getAppRegistry().getAppClassById(appUnitConfig.getAppConfig().getAppClassId());
-            return AbstractApp.class.getPackage().getName() + "."
+            return AbstractAppController.class.getPackage().getName() + "."
                     + "preset."
                     + appClass.getLabel()
                     + "App";

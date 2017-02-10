@@ -23,6 +23,7 @@ package org.openbase.bco.manager.device.core;
  */
 import org.openbase.bco.dal.lib.layer.unit.AbstractHostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
+import org.openbase.bco.dal.lib.layer.unit.UnitHost;
 import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
@@ -30,6 +31,8 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.unit.device.DeviceDataType.DeviceData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -37,41 +40,23 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractDeviceController extends AbstractHostUnitController<DeviceData, DeviceData.Builder, UnitConfig> implements DeviceController {
+public abstract class AbstractDeviceController extends AbstractHostUnitController<DeviceData, DeviceData.Builder> implements DeviceController {
 
-    public AbstractDeviceController() throws InstantiationException, CouldNotTransformException {
-        super(DeviceData.newBuilder());
+    static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceData.getDefaultInstance()));
+    }
+    
+    public AbstractDeviceController(final Class deviceClass) throws InstantiationException, CouldNotTransformException {
+        super(deviceClass, DeviceData.newBuilder());
     }
 
     @Override
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         try {
-            if (config == null) {
-                throw new NotAvailableException("config");
-            }
-
-            if (!config.hasId()) {
-                throw new NotAvailableException("config.id");
-            }
-
-            if (config.getId().isEmpty()) {
-                throw new NotAvailableException("Field config.id is empty!");
-            }
-
-            if (!config.hasLabel()) {
-                throw new NotAvailableException("config.label");
-            }
-
-            if (config.getLabel().isEmpty()) {
-                throw new NotAvailableException("Field config.label is emty!");
-            }
-
             super.init(config);
-
             try {
                 registerUnitsById(config.getDeviceConfig().getUnitIdList());
-
-                for (UnitController unit : getUnits()) {
+                for (final UnitController unit : getHostedUnits()) {
                     DeviceManagerController.getDeviceManager().getUnitControllerRegistry().register(unit);
                 }
             } catch (CouldNotPerformException ex) {
@@ -81,47 +66,5 @@ public abstract class AbstractDeviceController extends AbstractHostUnitControlle
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
-    }
-
-    @Override
-    public final String getId() throws NotAvailableException {
-        try {
-            UnitConfig tmpConfig = getConfig();
-            if (!tmpConfig.hasId()) {
-                throw new NotAvailableException("unitconfig.id");
-            }
-
-            if (tmpConfig.getId().isEmpty()) {
-                throw new InvalidStateException("unitconfig.id is empty");
-            }
-
-            return tmpConfig.getId();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("id", ex);
-        }
-    }
-
-    @Override
-    public String getLabel() throws NotAvailableException {
-        try {
-            UnitConfig tmpConfig = getConfig();
-            if (!tmpConfig.hasId()) {
-                throw new NotAvailableException("unitconfig.label");
-            }
-
-            if (tmpConfig.getId().isEmpty()) {
-                throw new InvalidStateException("unitconfig.label is empty");
-            }
-            return getConfig().getLabel();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("label", ex);
-        }
-    }
-
-    @Override
-    public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        //TODO: which changes need to be applied here and in the AbstractSystemUnitController?
-
-        return super.applyConfigUpdate(config);
     }
 }

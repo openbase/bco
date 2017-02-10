@@ -28,14 +28,14 @@ import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.manager.user.lib.User;
+import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
+import org.openbase.bco.dal.lib.layer.unit.user.User;
 import org.openbase.bco.manager.user.lib.UserController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
-import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -57,7 +57,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
-public class UserControllerImpl extends AbstractConfigurableController<UserData, UserData.Builder, UnitConfig> implements UserController {
+public class UserControllerImpl extends AbstractBaseUnitController<UserData, UserData.Builder> implements UserController {
     
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserData.getDefaultInstance()));
@@ -68,34 +68,17 @@ public class UserControllerImpl extends AbstractConfigurableController<UserData,
     private boolean enabled;
     private final Object netDeviceDetectorMapLock = new SyncObject("NetDeviceDetectorMapLock");
     
-    protected UnitConfig config;
     private final Map<String, NetDeviceDetector> netDeviceDetectorMap;
     
     public UserControllerImpl() throws org.openbase.jul.exception.InstantiationException {
-        super(UserData.newBuilder());
+        super(UserControllerImpl.class, UserData.newBuilder());
         this.netDeviceDetectorMap = new HashMap<>();
-    }
-    
-    @Override
-    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
-        this.config = config;
-        logger.info("Initializing " + getClass().getSimpleName() + "[" + config.getId() + "] with scope [" + config.getScope().toString() + "]");
-        super.init(config);
     }
     
     @Override
     public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
         RPCHelper.registerInterface(User.class, this, server);
-    }
-    
-    @Override
-    public String getId() throws NotAvailableException {
-        return config.getId();
-    }
-    
-    @Override
-    public UnitConfig getConfig() throws NotAvailableException {
-        return config;
+        super.registerMethods(server);
     }
     
     @Override
@@ -187,10 +170,7 @@ public class UserControllerImpl extends AbstractConfigurableController<UserData,
     @Override
     public String getUserName() throws NotAvailableException {
         try {
-            if (config == null) {
-                throw new NotAvailableException("userconfig");
-            }
-            return config.getUserConfig().getUserName();
+            return getConfig().getUserConfig().getUserName();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("username", ex);
         }

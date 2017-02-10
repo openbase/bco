@@ -84,7 +84,7 @@ public class AgentFactoryImpl implements AgentFactory {
         try {
             Registries.getAgentRegistry().waitForData();
             AgentClass agentClass = Registries.getAgentRegistry().getAgentClassById(agentUnitConfig.getAgentConfig().getAgentClassId());
-            return AbstractAgent.class.getPackage().getName() + "."
+            return AbstractAgentController.class.getPackage().getName() + "."
                     + "preset."
                     + agentClass.getLabel()
                     + "Agent";
