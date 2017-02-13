@@ -28,6 +28,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperation
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
@@ -77,7 +78,7 @@ public class ActivationStateServiceRemote extends AbstractServiceRemote<Activati
                     activationStateValue = ActivationState.State.ACTIVE;
                 }
             }
-            return ActivationState.newBuilder().setValue(activationStateValue).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+            return TimestampProcessor.updateTimeStampWithCurrentTime(ActivationState.newBuilder().setValue(activationStateValue)).build();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("ActivationState", ex);
         }
