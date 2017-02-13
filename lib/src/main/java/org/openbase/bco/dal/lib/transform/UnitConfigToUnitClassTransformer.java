@@ -21,9 +21,10 @@ package org.openbase.bco.dal.lib.transform;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.dal.lib.layer.unit.AbstractUnitController;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -33,13 +34,17 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public class UnitConfigToUnitClassTransformer {
 
-    public static Class<? extends AbstractUnitController> transform(final UnitConfig config) throws CouldNotTransformException {
+    public static Class<? extends AbstractUnitController> transform(final UnitConfig unitConfig) throws CouldNotTransformException {
 
-        String className = AbstractUnitController.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(config.getType().name()) + "Controller";
+        String className = AbstractUnitController.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name()) + "Controller";
         try {
             return (Class<? extends AbstractUnitController>) Class.forName(className);
         } catch (ClassNotFoundException ex) {
-            throw new CouldNotTransformException(config, AbstractUnitController.class, ex);
+            try {
+                throw new CouldNotTransformException(ScopeGenerator.generateStringRep(unitConfig.getScope()), AbstractUnitController.class, ex);
+            } catch (CouldNotPerformException ex1) {
+                throw new CouldNotTransformException(unitConfig.getLabel(), AbstractUnitController.class, ex);
+            }
         }
     }
 }

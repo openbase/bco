@@ -42,6 +42,12 @@ public class ContactStateServiceRemote extends AbstractServiceRemote<ContactStat
         super(ServiceType.CONTACT_STATE_SERVICE);
     }
 
+    /**
+     * 
+     * @return
+     * @deprecated please use getServices() instead!
+     */
+    @Deprecated
     public Collection<ContactStateProviderService> getContactStateProviderServices() {
         return getServices();
     }

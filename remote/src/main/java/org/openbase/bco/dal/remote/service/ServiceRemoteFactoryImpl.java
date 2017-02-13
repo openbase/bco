@@ -47,25 +47,25 @@ public class ServiceRemoteFactoryImpl implements ServiceRemoteFactory {
     }
 
     @Override
-    public AbstractServiceRemote newInitializedInstance(ServiceType serviceType, Collection<UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException {
+    public AbstractServiceRemote newInitializedInstance(final ServiceType serviceType, final Collection<UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException {
         AbstractServiceRemote serviceRemote = newInstance(serviceType);
         serviceRemote.init(unitConfigs);
         return serviceRemote;
     }
 
     @Override
-    public AbstractServiceRemote newInitializedInstance(ServiceType serviceType, UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
+    public AbstractServiceRemote newInitializedInstance(final ServiceType serviceType, final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         AbstractServiceRemote serviceRemote = newInstance(serviceType);
         serviceRemote.init(unitConfig);
         return serviceRemote;
     }
 
     @Override
-    public AbstractServiceRemote newInstance(ServiceType serviceType) throws org.openbase.jul.exception.InstantiationException {
+    public AbstractServiceRemote newInstance(final ServiceType serviceType) throws org.openbase.jul.exception.InstantiationException {
         try {
             return instantiatServiceRemote(loadServiceRemoteClass(serviceType));
         } catch (CouldNotPerformException ex) {
-            throw new org.openbase.jul.exception.InstantiationException("Could not create service remote!", ex);
+            throw new org.openbase.jul.exception.InstantiationException(AbstractServiceRemote.class, serviceType.name(), ex);
         }
     }
 
@@ -83,22 +83,22 @@ public class ServiceRemoteFactoryImpl implements ServiceRemoteFactory {
             AbstractServiceRemote remote = serviceRemoteClass.newInstance();
             return remote;
         } catch (InstantiationException | IllegalAccessException ex) {
-            throw new org.openbase.jul.exception.InstantiationException("Could not instantiate service remote out of Class[" + serviceRemoteClass.getName() + "]", ex);
+            throw new org.openbase.jul.exception.InstantiationException(serviceRemoteClass, ex);
         }
     }
 
     @Override
-    public AbstractServiceRemote createAndInitServiceRemote(ServiceType serviceType, Collection<UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException {
+    public AbstractServiceRemote createAndInitServiceRemote(final ServiceType serviceType, final Collection<UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException {
         return newInitializedInstance(serviceType, unitConfigs);
     }
 
     @Override
-    public AbstractServiceRemote createAndInitServiceRemote(ServiceType serviceType, UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
+    public AbstractServiceRemote createAndInitServiceRemote(final ServiceType serviceType, final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         return newInitializedInstance(serviceType, unitConfig);
     }
 
     @Override
-    public AbstractServiceRemote createServiceRemote(ServiceType serviceType) throws CouldNotPerformException {
+    public AbstractServiceRemote createServiceRemote(final ServiceType serviceType) throws CouldNotPerformException {
         return newInstance(serviceType);
     }
 }

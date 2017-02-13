@@ -44,7 +44,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Snapshotable;
 import rst.domotic.action.SnapshotType.Snapshot;
-import rst.domotic.service.ServiceConfigType;
+import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.state.AlarmStateType;
@@ -96,9 +96,9 @@ public interface Location extends BaseUnit<LocationData>,
     public List<String> getNeighborLocationIds() throws CouldNotPerformException;
 
     default public Set<ServiceTemplateType.ServiceTemplate.ServiceType> getSupportedServiceTypes() throws NotAvailableException, InterruptedException {
-        final Set<ServiceTemplateType.ServiceTemplate.ServiceType> serviceTypeSet = new HashSet<>();
+        final Set<ServiceTemplate.ServiceType> serviceTypeSet = new HashSet<>();
         try {
-            for (final ServiceConfigType.ServiceConfig serviceConfig : getConfig().getServiceConfigList()) {
+            for (final ServiceConfig serviceConfig : getConfig().getServiceConfigList()) {
                 serviceTypeSet.add(serviceConfig.getServiceTemplate().getType());
             }
         } catch (CouldNotPerformException ex) {
