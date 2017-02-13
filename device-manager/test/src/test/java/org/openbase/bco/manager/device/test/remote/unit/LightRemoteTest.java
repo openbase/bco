@@ -61,7 +61,7 @@ public class LightRemoteTest {
         try {
             JPService.setupJUnitTestMode();
             JPService.registerProperty(JPHardwareSimulationMode.class, true);
-            System.out.println("setUpClass thread: " + Thread.currentThread().getName());
+//            System.out.println("setUpClass thread: " + Thread.currentThread().getName());
             registry = MockRegistryHolder.newMockRegistry();
 
             deviceManagerLauncher = new DeviceManagerLauncher();
@@ -73,9 +73,9 @@ public class LightRemoteTest {
             lightRemote = new LightRemote();
             lightRemote.initByLabel(label);
             lightRemote.activate();
-            System.out.println("#### wait for light remote...");
+//            System.out.println("#### wait for light remote...");
             lightRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED, 30000);
-            System.out.println("#### successfull started!");
+//            System.out.println("#### successfull started!");
         } catch (Throwable ex) {
             ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }

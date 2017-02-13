@@ -128,12 +128,10 @@ public class SceneRemoteTest {
         sceneRemote.init(config);
         sceneRemote.activate();
         sceneRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
-        System.out.println("SceneRemote for scene [" + config.getLabel() + "] connected");
+//        System.out.println("SceneRemote for scene [" + config.getLabel() + "] connected");
 
         sceneRemote.setActivationState(ActivationStateType.ActivationState.State.ACTIVE).get();
-        System.out.println("Scene Activated");
-
-        Thread.sleep(2000);
+//        System.out.println("Scene Activated");
 
         sceneRemote.shutdown();
         sceneRegistry.shutdown();
