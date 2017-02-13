@@ -46,13 +46,6 @@ public class TemperatureSensorRemote extends AbstractUnitRemote<TemperatureSenso
     }
 
     @Override
-    public void notifyDataUpdate(TemperatureSensorData data) {
-        if(data.toString().contains("21")) {
-            System.out.println("Remote got update: "+data);
-        }
-    }
-
-    @Override
     public TemperatureState getTemperatureState() throws NotAvailableException {
         try {
             return getData().getTemperatureState();

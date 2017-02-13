@@ -51,7 +51,6 @@ public class TemperatureSensorController extends AbstractDALUnitController<Tempe
         logger.debug("Apply temperatureState Update[" + temperatureState + "] for " + this + ".");
         try (ClosableDataBuilder<TemperatureSensorData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setTemperatureState(temperatureState);
-            System.out.println(this + " state: " + getData());
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply temperatureState Update[" + temperatureState + "] for " + this + "!", ex);
         }

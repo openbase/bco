@@ -60,8 +60,6 @@ public class TemperatureStateServiceRemote extends AbstractServiceRemote<Tempera
 
     @Override
     public TemperatureState getTemperatureState() throws NotAvailableException {
-//        System.out.println("getTemperatureState avail:"+ isDataAvailable());
-//        System.out.println("getTemperatureState returns:"+ getServiceState());
         return getServiceState();
     }
 
