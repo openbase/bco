@@ -1,5 +1,5 @@
 #!/bin/bash
 set -ev
-echo try to deploy...
-mvn clean deploy -Pdeploy,sonatype --settings .travis/settings.xml -DskipTests=true -U #-B
-echo deployment ok
+echo ### start deployment...
+mvn deploy -Pdeploy,sonatype --settings .travis/settings.xml -DskipTests=true -B -q
+echo ### deployment successfully finished
