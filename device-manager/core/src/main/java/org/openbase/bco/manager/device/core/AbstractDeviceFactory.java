@@ -77,7 +77,7 @@ public abstract class AbstractDeviceFactory implements DeviceFactory {
             genericDeviceController.init(deviceUnitConfig);
             return genericDeviceController;
         } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(Device.class, deviceUnitConfig.getId(), ex);
+            throw new InstantiationException(org.openbase.bco.dal.lib.layer.unit.device.Device.class, deviceUnitConfig.getId(), ex);
         }
     }
 }

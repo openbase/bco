@@ -104,7 +104,7 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
     public void activate() throws CouldNotPerformException, InterruptedException {
         locationRegistryRemote.activate();
 //        CachedLocationRegistryRemote.waitForData();
-        // TODO: pleminoq: let us analyse why this wait For Datta is needed. Without the sychnchronizer sync task is interrupted. And why is this never happening in the unit tests???
+        // TODO: pleminoq: let us analyse why this waitForData is needed. Without the sychnchronizer sync task is interrupted. And why is this never happening in the unit tests???
         locationRegistryRemote.waitForData();
 //        System.out.println("Locations: "+CachedLocationRegistryRemote.getRegistry().getLocationConfigs().size());
 //        System.out.println("Connection: "+CachedLocationRegistryRemote.getRegistry().getConnectionConfigs().size());

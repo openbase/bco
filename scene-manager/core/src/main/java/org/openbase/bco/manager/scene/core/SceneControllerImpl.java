@@ -126,13 +126,8 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
                 }
                 if (isEnabled()) {
                     for (ButtonRemote button : buttonRemoteList) {
-                        button.activate();
-                        try {
-                            button.waitForData(2, TimeUnit.SECONDS);
-                        } catch (CouldNotPerformException ex) {
-                            ExceptionPrinter.printHistory(new CouldNotPerformException("Initial button sync failed!", ex), logger);
-                        }
                         button.addDataObserver(buttonObserver);
+                        button.activate();
                     }
                 }
             } catch (CouldNotPerformException ex) {
@@ -167,8 +162,8 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         logger.info("enable " + getConfig().getLabel());
         super.enable();
         for (ButtonRemote button : buttonRemoteList) {
-            button.activate();
             button.addDataObserver(buttonObserver);
+            button.activate();
         }
     }
 

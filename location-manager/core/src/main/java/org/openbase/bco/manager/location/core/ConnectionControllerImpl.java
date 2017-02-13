@@ -30,6 +30,7 @@ import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.layer.unit.connection.Connection;
 import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
+import static org.openbase.bco.manager.location.core.LocationManagerController.LOGGER;
 import org.openbase.bco.manager.location.lib.ConnectionController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -144,16 +145,9 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
         };
     }
 
-    private boolean isSupportedServiceType(final ServiceType serviceType) throws CouldNotPerformException, InterruptedException {
-        if (serviceType == null) {
-            assert false;
-            throw new NotAvailableException("ServiceType");
-        }
-        return getSupportedServiceTypes().contains(serviceType);
-    }
-
     @Override
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
+        LOGGER.debug("Init connection [" + config.getLabel() + "]");
         try {
             Registries.getUnitRegistry().waitForData();
         } catch (CouldNotPerformException ex) {
@@ -220,7 +214,18 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
 
     @Override
     public void registerMethods(RSBLocalServer server) throws CouldNotPerformException {
+        // TODO Tamino: Make sure the unit template of connections already contains all services which are defined in the connection interface.
+        // afterwarts remove this method because all services should be registered by the abstract unit class. Please make sure the mock registry registeres these services as well. 
         RPCHelper.registerInterface(Connection.class, this, server);
+        super.registerMethods(server);
+    }
+
+    private boolean isSupportedServiceType(final ServiceType serviceType) throws CouldNotPerformException, InterruptedException {
+        if (serviceType == null) {
+            assert false;
+            throw new NotAvailableException("ServiceType");
+        }
+        return getSupportedServiceTypes().contains(serviceType);
     }
 
     @Override

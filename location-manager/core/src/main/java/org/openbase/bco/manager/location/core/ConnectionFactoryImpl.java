@@ -54,7 +54,7 @@ public class ConnectionFactoryImpl implements ConnectionFactory {
             connectionController.init(config);
             return connectionController;
         } catch (InstantiationException | NotAvailableException | InitializationException ex) {
-            throw new InstantiationException(LocationControllerImpl.class, config.getId(), ex);
+            throw new InstantiationException(ConnectionControllerImpl.class, config.getId(), ex);
         }
     }
 }
