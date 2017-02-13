@@ -118,7 +118,7 @@ public class PowerSwitchRemoteTest {
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
         powerSwitchRemote.setPowerState(state).get();
         powerSwitchRemote.requestData().get();
-        assertEquals("Power state has not been set in time!", state, powerSwitchRemote.getData().getPowerState());
+        assertEquals("Power state has not been set in time!", state.getValue(), powerSwitchRemote.getData().getPowerState().getValue());
     }
 
     /**
@@ -132,7 +132,7 @@ public class PowerSwitchRemoteTest {
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         ((PowerSwitchController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(powerSwitchRemote.getId())).updatePowerStateProvider(state);
         powerSwitchRemote.requestData().get();
-        assertEquals("The getter for the power state returns the wrong value!", state, powerSwitchRemote.getPowerState());
+        assertEquals("The getter for the power state returns the wrong value!", state.getValue(), powerSwitchRemote.getPowerState().getValue());
     }
 
     /**

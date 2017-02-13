@@ -204,7 +204,7 @@ public class ColorableLightRemoteTest {
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
         colorableLightRemote.setPowerState(state).get();
         colorableLightRemote.requestData().get();
-        assertEquals("Power state has not been set in time!", state, colorableLightRemote.getData().getPowerState());
+        assertEquals("Power state has not been set in time!", state.getValue(), colorableLightRemote.getData().getPowerState().getValue());
     }
 
     /**
@@ -218,7 +218,7 @@ public class ColorableLightRemoteTest {
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         colorableLightRemote.setPowerState(state).get();
         colorableLightRemote.requestData().get();
-        assertEquals("Power state has not been set in time or the return value from the getter is different!", state, colorableLightRemote.getPowerState());
+        assertEquals("Power state has not been set in time or the return value from the getter is different!", state.getValue(), colorableLightRemote.getPowerState().getValue());
     }
 
     /**

@@ -36,10 +36,6 @@ import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
@@ -117,7 +113,7 @@ public class RollerShutterRemoteTest {
         BlindState state = BlindState.newBuilder().setMovementState(BlindState.MovementState.DOWN).build();
         rollerShutterRemote.setBlindState(state).get();
         rollerShutterRemote.requestData().get();
-        assertEquals("Shutter has not been set in time!", state, rollerShutterRemote.getData().getBlindState());
+        assertEquals("Shutter movement state has not been set in time!", state.getMovementState(), rollerShutterRemote.getData().getBlindState().getMovementState());
     }
 
     /**
@@ -131,7 +127,7 @@ public class RollerShutterRemoteTest {
         BlindState state = BlindState.newBuilder().setMovementState(BlindState.MovementState.UP).build();
         ((RollerShutterController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(rollerShutterRemote.getId())).updateBlindStateProvider(state);
         rollerShutterRemote.requestData().get();
-        assertEquals("Shutter has not been set in time!", rollerShutterRemote.getBlindState(), state);
+        assertEquals("Shutter has not been set in time!", rollerShutterRemote.getBlindState().getMovementState(), state.getMovementState());
     }
 
     /**
