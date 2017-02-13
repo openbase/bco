@@ -571,7 +571,7 @@ public class DeviceRegistryTest {
                 while (!deviceRegistryRemote.containsDeviceClass(deviceClass)) {
                     LOCK.wait();
                 }
-                System.out.println("Device class [" + deviceClass.getLabel() + "] registered in remote registry!");
+//                System.out.println("Device class [" + deviceClass.getLabel() + "] registered in remote registry!");
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
             }
