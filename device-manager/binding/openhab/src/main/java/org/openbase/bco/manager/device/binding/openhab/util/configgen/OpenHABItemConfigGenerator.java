@@ -187,7 +187,7 @@ public class OpenHABItemConfigGenerator {
                             || serviceTemplate.getType() == ServiceType.POWER_CONSUMPTION_STATE_SERVICE) {
                         LocationItemEntry entry = new LocationItemEntry(locationUnitConfig, serviceTemplate);
                         itemEntryList.add(entry);
-                        logger.info("Added location entry [" + entry.buildStringRep() + "]");
+                        logger.debug("Added location entry [" + entry.buildStringRep() + "]");
                     }
                 }
             }
@@ -270,18 +270,9 @@ public class OpenHABItemConfigGenerator {
                 }
             }
 
-            for(AbstractItemEntry entry : itemEntryList) {
-                logger.info("============ entry : "+entry.getUnitConfig().getType()+" "+ entry.getUnitConfig().getLabel());
-            }
-            
-            logger.info("################################ sort ######################################");
             // sort items by command type and label
             Collections.sort(itemEntryList);
             
-            for(AbstractItemEntry entry : itemEntryList) {
-                logger.info("============ entry : "+entry.getUnitConfig().getType()+" "+ entry.getUnitConfig().getLabel());
-            }
-
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not generate item entries.", ex);
         }

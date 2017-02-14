@@ -30,7 +30,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
-import org.openbase.jul.storage.registry.ControllerRegistry;
+import org.openbase.jul.storage.registry.ControllerRegistryImpl;
 import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -47,7 +47,7 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
 
     private static AppManagerController instance;
     private final AppFactory factory;
-    private final ControllerRegistry<String, AppController> appRegistry;
+    private final ControllerRegistryImpl<String, AppController> appRegistry;
     private final AppRegistryRemote appRegistryRemote;
     private final EnableableEntryRegistrySynchronizer<String, AppController, UnitConfig, UnitConfig.Builder> appRegistrySynchronizer;
 
@@ -55,7 +55,7 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
         try {
             this.instance = this;
             this.factory = AppFactoryImpl.getInstance();
-            this.appRegistry = new ControllerRegistry<>();
+            this.appRegistry = new ControllerRegistryImpl<>();
             this.appRegistryRemote = new AppRegistryRemote();
 
             this.appRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AppController, UnitConfig, UnitConfig.Builder>(appRegistry, appRegistryRemote.getAppConfigRemoteRegistry(), factory) {

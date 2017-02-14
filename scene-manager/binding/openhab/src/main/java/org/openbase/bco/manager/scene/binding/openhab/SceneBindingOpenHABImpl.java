@@ -34,8 +34,8 @@ import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.openhab.binding.AbstractOpenHABBinding;
 import org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote;
 import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
-import org.openbase.jul.storage.registry.RegistryImpl;
 import org.openbase.jul.storage.registry.RegistrySynchronizer;
+import org.openbase.jul.storage.registry.RemoteControllerRegistryImpl;
 import rst.domotic.binding.openhab.OpenhabCommandType.OpenhabCommand;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -53,14 +53,14 @@ public class SceneBindingOpenHABImpl extends AbstractOpenHABBinding {
     private final SceneRegistryRemote sceneRegistryRemote;
     private final SceneRemoteFactoryImpl factory;
     private final RegistrySynchronizer<String, SceneRemote, UnitConfig, UnitConfig.Builder> registrySynchronizer;
-    private final RegistryImpl<String, SceneRemote> registry;
+    private final RemoteControllerRegistryImpl<String, SceneRemote> registry;
     private final boolean hardwareSimulationMode;
     private boolean active;
 
     public SceneBindingOpenHABImpl() throws InstantiationException, JPNotAvailableException, InterruptedException {
         super();
         sceneRegistryRemote = new SceneRegistryRemote();
-        registry = new RegistryImpl<>();
+        registry = new RemoteControllerRegistryImpl<>();
         factory = new SceneRemoteFactoryImpl();
         hardwareSimulationMode = JPService.getProperty(JPHardwareSimulationMode.class).getValue();
 

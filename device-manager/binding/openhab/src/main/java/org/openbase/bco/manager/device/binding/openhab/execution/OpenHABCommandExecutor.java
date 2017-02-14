@@ -24,6 +24,7 @@ package org.openbase.bco.manager.device.binding.openhab.execution;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.openhab.binding.transform.OpenhabCommandTransformer;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
@@ -103,7 +104,17 @@ public class OpenHABCommandExecutor {
         LOGGER.info("receiveUpdate [" + command.getItem() + "=" + command.getType() + "]");
         OpenhabCommandMetaData metaData = new OpenhabCommandMetaData(command);
         Object serviceData = OpenhabCommandTransformer.getServiceData(command, metaData.getServiceType());
-        UnitController unitController = unitControllerRegistry.getUnitByScope(metaData.getUnitScope());
+        
+        final UnitController unitController;
+        try {
+            unitController = unitControllerRegistry.getUnitByScope(metaData.getUnitScope());
+        } catch (NotAvailableException ex) {
+            if (!unitControllerRegistry.isInitiallySynchronized()) {
+                LOGGER.debug("ItemUpdate[" + command.getItem() + "=" + command.getType() + "] skipped because controller registry was not ready yet!");
+                return;
+            }
+            throw ex;
+        }
         unitController.applyDataUpdate(metaData.getServiceType(), serviceData);
     }
 }

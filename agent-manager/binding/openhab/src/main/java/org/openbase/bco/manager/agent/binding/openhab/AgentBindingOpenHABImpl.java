@@ -36,6 +36,7 @@ import org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote;
 import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.openbase.jul.storage.registry.RegistryImpl;
 import org.openbase.jul.storage.registry.RegistrySynchronizer;
+import org.openbase.jul.storage.registry.RemoteControllerRegistryImpl;
 import rst.domotic.binding.openhab.OpenhabCommandType.OpenhabCommand;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -53,14 +54,14 @@ public class AgentBindingOpenHABImpl extends AbstractOpenHABBinding {
     private final AgentRegistryRemote agentRegistryRemote;
     private final AgentRemoteFactoryImpl factory;
     private final RegistrySynchronizer<String, AgentRemote, UnitConfig, UnitConfig.Builder> registrySynchronizer;
-    private final RegistryImpl<String, AgentRemote> registry;
+    private final RemoteControllerRegistryImpl<String, AgentRemote> registry;
     private final boolean hardwareSimulationMode;
     private boolean active;
 
     public AgentBindingOpenHABImpl() throws InstantiationException, JPNotAvailableException, InterruptedException {
         super();
         agentRegistryRemote = new AgentRegistryRemote();
-        registry = new RegistryImpl<>();
+        registry = new RemoteControllerRegistryImpl<>();
         factory = new AgentRemoteFactoryImpl();
         hardwareSimulationMode = JPService.getProperty(JPHardwareSimulationMode.class).getValue();
 

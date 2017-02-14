@@ -29,6 +29,7 @@ import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistryImpl;
 import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.bco.manager.device.lib.DeviceFactory;
 import org.openbase.bco.manager.device.lib.DeviceManager;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -38,7 +39,7 @@ import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
-import org.openbase.jul.storage.registry.ControllerRegistry;
+import org.openbase.jul.storage.registry.ControllerRegistryImpl;
 import org.openbase.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -60,9 +61,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
     private final DeviceFactory deviceFactory;
     private final ServiceFactory serviceFactory;
 
-    private final UnitRegistryRemote unitRegistryRemote;
-
-    private final ControllerRegistry<String, DeviceController> deviceControllerRegistry;
+    private final ControllerRegistryImpl<String, DeviceController> deviceControllerRegistry;
     private final UnitControllerRegistryImpl unitControllerRegistry;
 
     private final ActivatableEntryRegistrySynchronizer<String, DeviceController, UnitConfig, UnitConfig.Builder> deviceRegistrySynchronizer;
@@ -90,16 +89,14 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
             this.serviceFactory = serviceFactory;
 
             this.unitControllerRegistry = new UnitControllerRegistryImpl();
-            this.deviceControllerRegistry = new ControllerRegistry<>();
+            this.deviceControllerRegistry = new ControllerRegistryImpl<>();
             
-            CachedUnitRegistryRemote.waitForData();
+            Registries.getUnitRegistry().waitForData();
             
-            this.unitRegistryRemote = CachedUnitRegistryRemote.getRegistry();
-
-            this.deviceRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, DeviceController, UnitConfig, UnitConfig.Builder>(deviceControllerRegistry, unitRegistryRemote.getDeviceUnitConfigRemoteRegistry(), deviceFactory) {
+            this.deviceRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, DeviceController, UnitConfig, UnitConfig.Builder>(deviceControllerRegistry, Registries.getUnitRegistry().getDeviceUnitConfigRemoteRegistry(), deviceFactory) {
 
                 @Override
-                public boolean activationCondition(UnitConfig config) {
+                public boolean activationCondition(final UnitConfig config) {
                     return true;
                 }
 
@@ -137,17 +134,14 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
 
     @Override
     public void init() throws InitializationException, InterruptedException {
-//        try {
-//        } catch (CouldNotPerformException ex) {
-//            throw new InitializationException(this, ex);
-//        }
+        // is overwrite is needed to overwrite the default implementation!
     }
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         active = true;
         // TODO: pleminoq: let us analyse why this wait For data is needed. Without the sychnchronizer sync task is interrupted. And why is this never happening in the unit tests???
-        unitRegistryRemote.waitForData();
+        Registries.getUnitRegistry().waitForData();
         deviceRegistrySynchronizer.activate();
     }
 
@@ -173,8 +167,8 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
     }
 
     @Override
-    public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
-        unitRegistryRemote.waitForData(timeout, timeUnit);
+    public void waitForInit(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        Registries.getUnitRegistry().waitForData(timeout, timeUnit);
     }
 
     @Override
@@ -196,7 +190,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
      * @throws CouldNotPerformException
      */
     @Override
-    public boolean isSupported(UnitConfig config) throws CouldNotPerformException {
+    public boolean isSupported(final UnitConfig config) throws CouldNotPerformException {
         return true;
     }
 

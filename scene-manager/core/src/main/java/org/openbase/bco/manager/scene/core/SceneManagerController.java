@@ -31,7 +31,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
-import org.openbase.jul.storage.registry.ControllerRegistry;
+import org.openbase.jul.storage.registry.ControllerRegistryImpl;
 import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.openbase.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
@@ -49,7 +49,7 @@ public class SceneManagerController implements SceneRegistryProvider, SceneManag
 
     private static SceneManagerController instance;
     private final SceneFactory factory;
-    private final ControllerRegistry<String, SceneController> sceneRegistry;
+    private final ControllerRegistryImpl<String, SceneController> sceneRegistry;
     private final SceneRegistryRemote sceneRegistryRemote;
     private final EnableableEntryRegistrySynchronizer<String, SceneController, UnitConfig, UnitConfig.Builder> sceneRegistrySynchronizer;
 
@@ -57,7 +57,7 @@ public class SceneManagerController implements SceneRegistryProvider, SceneManag
         try {
             this.instance = this;
             this.factory = SceneFactoryImpl.getInstance();
-            this.sceneRegistry = new ControllerRegistry<>();
+            this.sceneRegistry = new ControllerRegistryImpl<>();
             this.sceneRegistryRemote = new SceneRegistryRemote();
 
             this.sceneRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, SceneController, UnitConfig, UnitConfig.Builder>(sceneRegistry, sceneRegistryRemote.getSceneConfigRemoteRegistry(), factory) {

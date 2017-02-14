@@ -32,7 +32,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
-import org.openbase.jul.storage.registry.ControllerRegistry;
+import org.openbase.jul.storage.registry.ControllerRegistryImpl;
 import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,7 +49,7 @@ public class UserManagerController implements UserRegistryProvider, UserManager,
 
     private static UserManagerController instance;
     private final UserFactory factory;
-    private final ControllerRegistry<String, UserController> userRegistry;
+    private final ControllerRegistryImpl<String, UserController> userRegistry;
     private final UserRegistryRemote userRegistryRemote;
     private final EnableableEntryRegistrySynchronizer<String, UserController, UnitConfig, UnitConfig.Builder> registrySynchronizer;
 
@@ -57,7 +57,7 @@ public class UserManagerController implements UserRegistryProvider, UserManager,
         try {
             this.instance = this;
             this.factory = UserFactoryImpl.getInstance();
-            this.userRegistry = new ControllerRegistry<>();
+            this.userRegistry = new ControllerRegistryImpl<>();
             this.userRegistryRemote = new UserRegistryRemote();
 
             this.registrySynchronizer = new EnableableEntryRegistrySynchronizer<String, UserController, UnitConfig, UnitConfig.Builder>(userRegistry, userRegistryRemote.getUserConfigRemoteRegistry(), factory) {

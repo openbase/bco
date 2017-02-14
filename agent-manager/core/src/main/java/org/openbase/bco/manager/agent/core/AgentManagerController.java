@@ -34,7 +34,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
-import org.openbase.jul.storage.registry.ControllerRegistry;
+import org.openbase.jul.storage.registry.ControllerRegistryImpl;
 import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,7 +48,7 @@ public class AgentManagerController implements AgentManager, Launchable<Void>, V
     private static AgentManagerController instance;
 
     private final AgentFactory factory;
-    private final ControllerRegistry<String, AgentController> agentRegistry;
+    private final ControllerRegistryImpl<String, AgentController> agentRegistry;
     private final AgentRegistryRemote agentRegistryRemote;
     private final EnableableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder> agentRegistrySynchronizer;
 
@@ -56,7 +56,7 @@ public class AgentManagerController implements AgentManager, Launchable<Void>, V
         try {
             this.instance = this;
             this.factory = AgentFactoryImpl.getInstance();
-            this.agentRegistry = new ControllerRegistry<>();
+            this.agentRegistry = new ControllerRegistryImpl<>();
             this.agentRegistryRemote = new AgentRegistryRemote();
 
             this.agentRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder>(agentRegistry, agentRegistryRemote.getAgentConfigRemoteRegistry(), factory) {

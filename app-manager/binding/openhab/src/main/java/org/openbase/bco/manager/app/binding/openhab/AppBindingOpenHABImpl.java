@@ -34,8 +34,8 @@ import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.openhab.binding.AbstractOpenHABBinding;
 import org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote;
 import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
-import org.openbase.jul.storage.registry.RegistryImpl;
 import org.openbase.jul.storage.registry.RegistrySynchronizer;
+import org.openbase.jul.storage.registry.RemoteControllerRegistryImpl;
 import rst.domotic.binding.openhab.OpenhabCommandType.OpenhabCommand;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -52,14 +52,14 @@ public class AppBindingOpenHABImpl extends AbstractOpenHABBinding {
     private final AppRegistryRemote appRegistryRemote;
     private final AppRemoteFactoryImpl factory;
     private final RegistrySynchronizer<String, AppRemote, UnitConfig, UnitConfig.Builder> registrySynchronizer;
-    private final RegistryImpl<String, AppRemote> registry;
+    private final RemoteControllerRegistryImpl<String, AppRemote> registry;
     private final boolean hardwareSimulationMode;
     private boolean active;
 
     public AppBindingOpenHABImpl() throws InstantiationException, JPNotAvailableException, InterruptedException {
         super();
         appRegistryRemote = new AppRegistryRemote();
-        registry = new RegistryImpl<>();
+        registry = new RemoteControllerRegistryImpl<>();
         factory = new AppRemoteFactoryImpl();
         hardwareSimulationMode = JPService.getProperty(JPHardwareSimulationMode.class).getValue();
 

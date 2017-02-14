@@ -45,7 +45,7 @@ import org.openbase.jul.extension.rsb.com.RSBRemoteService;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
-import org.openbase.jul.storage.registry.RegistryImpl;
+import org.openbase.jul.storage.registry.RemoteControllerRegistryImpl;
 import rst.domotic.binding.openhab.OpenhabCommandType.OpenhabCommand;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -65,8 +65,8 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
     private final ConnectionRemoteFactoryImpl connectionRemoteFactory;
     private final ActivatableEntryRegistrySynchronizer<String, LocationRemote, UnitConfig, UnitConfig.Builder> locationRegistrySynchronizer;
     private final ActivatableEntryRegistrySynchronizer<String, ConnectionRemote, UnitConfig, UnitConfig.Builder> connectionRegistrySynchronizer;
-    private final RegistryImpl<String, LocationRemote> locationRegistry;
-    private final RegistryImpl<String, ConnectionRemote> connectionRegistry;
+    private final RemoteControllerRegistryImpl<String, LocationRemote> locationRegistry;
+    private final RemoteControllerRegistryImpl<String, ConnectionRemote> connectionRegistry;
     private final boolean hardwareSimulationMode;
     private boolean active;
 
@@ -74,8 +74,8 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
         super();
         hardwareSimulationMode = JPService.getProperty(JPHardwareSimulationMode.class).getValue();
         locationRegistryRemote = new LocationRegistryRemote();
-        locationRegistry = new RegistryImpl<>();
-        connectionRegistry = new RegistryImpl<>();
+        locationRegistry = new RemoteControllerRegistryImpl<>();
+        connectionRegistry = new RemoteControllerRegistryImpl<>();
         locationRemoteFactory = new LocationRemoteFactoryImpl();
         connectionRemoteFactory = new ConnectionRemoteFactoryImpl();
         this.locationRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, LocationRemote, UnitConfig, UnitConfig.Builder>(locationRegistry, locationRegistryRemote.getLocationConfigRemoteRegistry(), locationRemoteFactory) {

@@ -34,7 +34,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
-import org.openbase.jul.storage.registry.ControllerRegistry;
+import org.openbase.jul.storage.registry.ControllerRegistryImpl;
 import org.openbase.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -52,8 +52,8 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
     private final LocationRegistryRemote locationRegistryRemote;
     private final LocationFactory locationFactory;
     private final ConnectionFactory connectionFactory;
-    private final ControllerRegistry<String, LocationController> locationRegistry;
-    private final ControllerRegistry<String, ConnectionController> connectionRegistry;
+    private final ControllerRegistryImpl<String, LocationController> locationRegistry;
+    private final ControllerRegistryImpl<String, ConnectionController> connectionRegistry;
     private final ActivatableEntryRegistrySynchronizer<String, LocationController, UnitConfig, UnitConfig.Builder> locationRegistrySynchronizer;
     private final ActivatableEntryRegistrySynchronizer<String, ConnectionController, UnitConfig, UnitConfig.Builder> connectionRegistrySynchronizer;
 
@@ -63,8 +63,8 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
             this.locationRegistryRemote = new LocationRegistryRemote();
             this.locationFactory = LocationFactoryImpl.getInstance();
             this.connectionFactory = ConnectionFactoryImpl.getInstance();
-            this.locationRegistry = new ControllerRegistry<>();
-            this.connectionRegistry = new ControllerRegistry<>();
+            this.locationRegistry = new ControllerRegistryImpl<>();
+            this.connectionRegistry = new ControllerRegistryImpl<>();
             this.locationRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, LocationController, UnitConfig, UnitConfig.Builder>(locationRegistry, locationRegistryRemote.getLocationConfigRemoteRegistry(), locationFactory) {
 
                 @Override
