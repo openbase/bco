@@ -23,7 +23,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.storage.registry.Registry;
+import org.openbase.jul.storage.registry.SynchronizableRegistry;
 
 /**
  *
@@ -32,7 +32,7 @@ import org.openbase.jul.storage.registry.Registry;
  * @param <D> the data type of the units used for the state synchronization.
  * @param <DB> the builder used to build the unit data instances.
  */
-public interface UnitControllerRegistry<D extends GeneratedMessage, DB extends D.Builder<DB>> extends Registry<String, UnitController<D, DB>> {
+public interface UnitControllerRegistry<D extends GeneratedMessage, DB extends D.Builder<DB>> extends SynchronizableRegistry<String, UnitController<D, DB>> {
 
     /**
      * Returns a unit controller instance with the given scope.

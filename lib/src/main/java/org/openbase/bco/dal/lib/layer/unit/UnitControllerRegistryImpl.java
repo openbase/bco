@@ -32,7 +32,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.storage.registry.RegistryImpl;
+import org.openbase.jul.storage.registry.ControllerRegistryImpl;
 
 /**
  *
@@ -41,16 +41,16 @@ import org.openbase.jul.storage.registry.RegistryImpl;
  * @param <D> the data type of the units used for the state synchronization.
  * @param <DB> the builder used to build the unit data instances.
  */
-public class UnitControllerRegistryImpl<D extends GeneratedMessage, DB extends D.Builder<DB>> extends RegistryImpl<String, UnitController<D, DB>> implements UnitControllerRegistry<D, DB> {
+public class UnitControllerRegistryImpl<D extends GeneratedMessage, DB extends D.Builder<DB>> extends ControllerRegistryImpl<String, UnitController<D, DB>> implements UnitControllerRegistry<D, DB> {
 
-    public final Map<String, UnitController<D, DB>> scopeControllerMap;
+    private final Map<String, UnitController<D, DB>> scopeControllerMap;
 
     public UnitControllerRegistryImpl() throws InstantiationException {
         this.scopeControllerMap = new HashMap<>();
         addObserver(new UnitControllerSynchronizer());
     }
 
-    public UnitControllerRegistryImpl(HashMap<String, UnitController<D, DB>> entryMap) throws InstantiationException {
+    public UnitControllerRegistryImpl(final HashMap<String, UnitController<D, DB>> entryMap) throws InstantiationException {
         super(entryMap);
         this.scopeControllerMap = new HashMap<>();
         addObserver(new UnitControllerSynchronizer());
@@ -76,16 +76,16 @@ public class UnitControllerRegistryImpl<D extends GeneratedMessage, DB extends D
     private class UnitControllerSynchronizer implements Observer<Map<String, UnitController<D, DB>>> {
 
         @Override
-        public void update(Observable<Map<String, UnitController<D, DB>>> source, Map<String, UnitController<D, DB>> data) throws Exception {
+        public void update(final Observable<Map<String, UnitController<D, DB>>> source, final Map<String, UnitController<D, DB>> data) throws Exception {
 
             final Collection<UnitController<D, DB>> unitControllerCollection = data.values();
             // add new entries to the scope controller map
-            for (UnitController<D, DB> controller : unitControllerCollection) {
+            for (final UnitController<D, DB> controller : unitControllerCollection) {
                 scopeControllerMap.put(ScopeGenerator.generateStringRep(controller.getScope()), controller);
             }
 
             // remove controller which are no longer provided by the registry
-            for (UnitController<D, DB> controller : new ArrayList<>(scopeControllerMap.values())) {
+            for (final UnitController<D, DB> controller : new ArrayList<>(scopeControllerMap.values())) {
                 if (unitControllerCollection.contains(controller)) {
                     continue;
                 }
