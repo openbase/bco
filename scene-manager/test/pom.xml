@@ -80,5 +80,11 @@
             <artifactId>manager.scene.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>registry.util</artifactId>
+            <version>${dependency.bco.registry.version}</version>
+            <scope>test</scope>
+        </dependency>
     </dependencies>
 </project>
