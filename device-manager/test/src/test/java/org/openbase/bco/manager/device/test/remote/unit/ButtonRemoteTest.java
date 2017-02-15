@@ -38,10 +38,6 @@ import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.schedule.Stopwatch;
@@ -123,11 +119,16 @@ public class ButtonRemoteTest {
      */
     @Test(timeout = 10000)
     public void testGetButtonState() throws Exception {
-        LOGGER.debug("getButtonState");
-        ButtonState buttonState = ButtonState.newBuilder().setValue(ButtonState.State.PRESSED).build();
-        ((ButtonController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId())).updateButtonStateProvider(buttonState);
-        buttonRemote.requestData().get();
-        assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
+        try {
+            LOGGER.debug("getButtonState");
+            ButtonState buttonState = ButtonState.newBuilder().setValue(ButtonState.State.PRESSED).build();
+            ((ButtonController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId())).updateButtonStateProvider(buttonState);
+            buttonRemote.requestData().get();
+            assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
+        } catch (Exception ex) {
+            ExceptionPrinter.printHistory(ex, LOGGER);
+            assertTrue("Unexpected exception during test!", false);
+        }
     }
 
     /**
@@ -136,42 +137,47 @@ public class ButtonRemoteTest {
      * @throws java.lang.Exception
      */
     @Test(timeout = 10000)
-    public void testGetButtonStateTimestamp() throws Exception {
-        LOGGER.debug("testGetButtonStateTimestamp");
-        long timestamp;
-        ButtonState buttonState = ButtonState.newBuilder().setValue(ButtonState.State.DOUBLE_PRESSED).build();
-        Stopwatch stopwatch = new Stopwatch();
+    public void testGetButtonStateTimestamp() {
+        try {
+            LOGGER.debug("testGetButtonStateTimestamp");
+            long timestamp;
+            ButtonState buttonState = ButtonState.newBuilder().setValue(ButtonState.State.DOUBLE_PRESSED).build();
+            Stopwatch stopwatch = new Stopwatch();
 
-        stopwatch.start();
-        ((ButtonController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId())).updateButtonStateProvider(buttonState);
-        stopwatch.stop();
-        buttonRemote.requestData().get();
-        assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
-        timestamp = buttonRemote.getButtonState().getLastPressed().getTime();
-        assertTrue("The timestamp of the button state has not been updated!", (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
+            stopwatch.start();
+            ((ButtonController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId())).updateButtonStateProvider(buttonState);
+            stopwatch.stop();
+            buttonRemote.requestData().get();
+            assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
+            timestamp = buttonRemote.getButtonState().getLastPressed().getTime();
+            assertTrue("The timestamp of the button state has not been updated!", (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
 
-        // just to be safe that the next test does not set the motion state in the same millisecond 
-        Thread.sleep(1);
+            // just to be safe that the next test does not set the motion state in the same millisecond 
+            Thread.sleep(1);
 
-        buttonState = ButtonState.newBuilder().setValue(ButtonState.State.PRESSED).build();
-        stopwatch.start();
-        ((ButtonController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId())).updateButtonStateProvider(buttonState);
-        stopwatch.stop();
-        buttonRemote.requestData().get();
-        assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
-        timestamp = buttonRemote.getButtonState().getLastPressed().getTime();
-        assertTrue("The timestamp of the button state has not been updated!", (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
+            buttonState = ButtonState.newBuilder().setValue(ButtonState.State.PRESSED).build();
+            stopwatch.start();
+            ((ButtonController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId())).updateButtonStateProvider(buttonState);
+            stopwatch.stop();
+            buttonRemote.requestData().get();
+            assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
+            timestamp = buttonRemote.getButtonState().getLastPressed().getTime();
+            assertTrue("The timestamp of the button state has not been updated!", (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
 
-        // just to be safe that the next test does not set the motion state in the same millisecond 
-        Thread.sleep(1);
+            // just to be safe that the next test does not set the motion state in the same millisecond 
+            Thread.sleep(1);
 
-        buttonState = ButtonState.newBuilder().setValue(ButtonState.State.RELEASED).build();
-        stopwatch.start();
-        ((ButtonController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId())).updateButtonStateProvider(buttonState);
-        stopwatch.stop();
-        buttonRemote.requestData().get();
-        assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
-        timestamp = buttonRemote.getButtonState().getLastPressed().getTime();
-        assertFalse("The timestamp of the button state has been updated even though it sould not!", (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
+            buttonState = ButtonState.newBuilder().setValue(ButtonState.State.RELEASED).build();
+            stopwatch.start();
+            ((ButtonController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId())).updateButtonStateProvider(buttonState);
+            stopwatch.stop();
+            buttonRemote.requestData().get();
+            assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
+            timestamp = buttonRemote.getButtonState().getLastPressed().getTime();
+            assertFalse("The timestamp of the button state has been updated even though it sould not!", (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
+        } catch (Exception ex) {
+            ExceptionPrinter.printHistory(ex, LOGGER);
+            assertTrue("Unexpected exception during test!", false);
+        }
     }
 }

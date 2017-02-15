@@ -90,7 +90,7 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         appRegistryRemote.activate();
-        
+
         // TODO: pleminoq: let us analyse why this wait For data is needed. Without the sychnchronizer sync task is interrupted. And why is this never happening in the unit tests???
         appRegistryRemote.waitForData();
         appRegistrySynchronizer.activate();

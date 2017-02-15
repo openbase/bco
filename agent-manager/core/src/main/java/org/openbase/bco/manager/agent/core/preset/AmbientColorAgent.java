@@ -26,7 +26,6 @@ import java.util.List;
 import java.util.Random;
 import org.openbase.bco.dal.remote.service.ColorStateServiceRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
-import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -148,7 +147,6 @@ public class AmbientColorAgent extends AbstractAgentController {
         try {
             super.init(config);
             CachedUnitRegistryRemote.waitForData();
-            UnitRegistry unitRegistry = CachedUnitRegistryRemote.getRegistry();
 
             MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("AmbientColorAgent", config.getMetaConfig());
 
@@ -193,16 +191,10 @@ public class AmbientColorAgent extends AbstractAgentController {
     }
 
     @Override
-    public void activate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activating [" + getClass().getSimpleName() + "]");
+    public void execute() throws CouldNotPerformException, InterruptedException {
         for (ColorStateServiceRemote colorRemote : colorRemotes) {
             colorRemote.activate();
         }
-        super.activate();
-    }
-
-    @Override
-    public void execute() throws CouldNotPerformException {
         initColorStates();
         setExecutionThread();
         thread.start();
@@ -210,6 +202,9 @@ public class AmbientColorAgent extends AbstractAgentController {
 
     @Override
     public void stop() throws CouldNotPerformException, InterruptedException {
+        for (ColorStateServiceRemote colorRemote : colorRemotes) {
+            colorRemote.deactivate();
+        }
         thread.interrupt();
         thread.join(10000);
         if (thread.isAlive()) {

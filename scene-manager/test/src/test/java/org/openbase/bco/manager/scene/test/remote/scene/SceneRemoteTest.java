@@ -24,17 +24,20 @@ package org.openbase.bco.manager.scene.test.remote.scene;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.remote.service.ColorStateServiceRemote;
 import org.openbase.bco.dal.remote.service.PowerStateServiceRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.scene.SceneRemote;
+import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.manager.scene.core.SceneManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
@@ -74,6 +77,7 @@ public class SceneRemoteTest {
     private static SceneRemote sceneRemote;
     private static MockRegistry registry;
     private static UnitConfig unitSceneConfig;
+    private static DeviceManagerLauncher deviceManagerLauncher;
 
     private static PowerStateServiceRemote powerStateServiceRemote;
     private static ColorStateServiceRemote colorStateServiceRemote;
@@ -91,6 +95,10 @@ public class SceneRemoteTest {
             JPService.registerProperty(JPHardwareSimulationMode.class, true);
             JPService.registerProperty(JPRSBTransport.class, JPRSBTransport.TransportType.SPREAD);
             registry = MockRegistryHolder.newMockRegistry();
+
+            deviceManagerLauncher = new DeviceManagerLauncher();
+            deviceManagerLauncher.launch();
+            deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
             sceneManagerLauncher = new SceneManagerLauncher();
             sceneManagerLauncher.launch();
@@ -188,7 +196,8 @@ public class SceneRemoteTest {
      *
      * @throws Exception
      */
-    //@Test(timeout = 10000)
+    @Test
+    /** (timeout = 10000)* */
     public void testTriggerScenePerRemote() throws Exception {
         System.out.println("testTriggerScenePerRemote");
 

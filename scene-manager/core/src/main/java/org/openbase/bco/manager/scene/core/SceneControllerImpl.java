@@ -23,7 +23,6 @@ package org.openbase.bco.manager.scene.core;
  */
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
@@ -152,17 +151,17 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     public void enable() throws CouldNotPerformException, InterruptedException {
         logger.info("enable " + getConfig().getLabel());
         super.enable();
-        for (final ButtonRemote button : buttonRemoteList) {
+        buttonRemoteList.stream().forEach((button) -> {
             button.addDataObserver(buttonObserver);
-        }
+        });
     }
 
     @Override
     public void disable() throws CouldNotPerformException, InterruptedException {
         logger.info("disable " + getConfig().getLabel());
-        for (final ButtonRemote button : buttonRemoteList) {
+        buttonRemoteList.stream().forEach((button) -> {
             button.removeDataObserver(buttonObserver);
-        }
+        });
         super.disable();
     }
 
@@ -175,29 +174,26 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
             }
         }
 
-        GlobalCachedExecutorService.submit(new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                try {
-                    logger.info("Waiting for action finalisation...");
-                    synchronized (actionListSync) {
-                        for (Action action : actionList) {
-                            try {
-                                logger.info("Waiting for action [" + action.getConfig().getServiceAttributeType() + "]");
-                                action.waitForFinalization();
-                            } catch (InterruptedException ex) {
-                                ExceptionPrinter.printHistory(ex, logger);
-                                break;
-                            }
+        GlobalCachedExecutorService.submit(() -> {
+            try {
+                logger.info("Waiting for action finalisation...");
+                synchronized (actionListSync) {
+                    for (Action action : actionList) {
+                        try {
+                            logger.info("Waiting for action [" + action.getConfig().getServiceAttributeType() + "]");
+                            action.waitForFinalization();
+                        } catch (InterruptedException ex) {
+                            ExceptionPrinter.printHistory(ex, logger);
+                            break;
                         }
                     }
-                    logger.info("All Actions are finished. Deactivate scene...");
-                } catch (CouldNotPerformException ex) {
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not wait for actions!", ex), logger);
                 }
-                setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
-                return null;
+                logger.info("All Actions are finished. Deactivate scene...");
+            } catch (CouldNotPerformException ex) {
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not wait for actions!", ex), logger);
             }
+            setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
+            return null;
         });
     }
 

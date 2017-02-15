@@ -69,16 +69,25 @@
             <groupId>org.openbase.bco</groupId>
             <artifactId>manager.scene.lib</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.openbase.bco</groupId>
             <artifactId>manager.scene.core</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.openbase.bco</groupId>
             <artifactId>manager.scene.remote</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>manager.device.core</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.openbase.bco</groupId>

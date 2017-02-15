@@ -262,6 +262,9 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
         try {
             Collection<UnitRemote> contactUnits = serviceRemoteManager.getServiceRemote(ServiceType.CONTACT_STATE_SERVICE).getInternalUnits();
             for (UnitRemote contactStateProvider : contactUnits) {
+                if (!contactStateProvider.isDataAvailable()) {
+                    continue;
+                }
                 ContactState.State contactState = ((ContactStateProviderService) contactStateProvider).getContactState().getValue();
                 DoorState.State correspondingDoorState = contactDoorPositionMap.get((String) contactStateProvider.getId()).getCorrespondingDoorState();
                 switch (contactState) {
@@ -303,6 +306,9 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
         try {
             Collection<UnitRemote> contactUnits = serviceRemoteManager.getServiceRemote(ServiceType.CONTACT_STATE_SERVICE).getInternalUnits();
             for (UnitRemote contactStateProvider : contactUnits) {
+                if (!contactStateProvider.isDataAvailable()) {
+                    continue;
+                }
                 ContactState.State contactState = ((ContactStateProviderService) contactStateProvider).getContactState().getValue();
                 WindowState.State correspondingDoorState = contactWindowPositionMap.get((String) contactStateProvider.getId()).getCorrespondingWindowState();
                 switch (contactState) {

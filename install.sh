@@ -1,5 +1,5 @@
 #!/bin/bash
-APP_NAME='core-manager'
+APP_NAME='bco-manager'
 clear &&
 echo "=== clean ${APP_NAME} ===" &&
 mvn clean $@ &&

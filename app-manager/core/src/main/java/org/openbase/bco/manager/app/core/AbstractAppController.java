@@ -27,8 +27,6 @@ import org.openbase.bco.manager.app.lib.AppController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.ActivationStateType.ActivationState;
@@ -58,15 +56,10 @@ public abstract class AbstractAppController extends AbstractExecutableBaseUnitCo
 
     @Override
     public ServiceFactory getServiceFactory() throws NotAvailableException {
-        if(serviceFactory == null) {
+        if (serviceFactory == null) {
             throw new NotAvailableException("ServiceFactory", new NotSupportedException("Unit hosting", this));
         }
         return serviceFactory;
-    }
-
-    @Override
-    public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
-        RPCHelper.registerInterface(org.openbase.bco.dal.lib.layer.unit.app.App.class, this, server);
     }
 
     @Override
