@@ -21,16 +21,10 @@ package org.openbase.bco.dal.lib.layer.unit.connection;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.HashSet;
-import java.util.Set;
 import org.openbase.bco.dal.lib.layer.service.provider.DoorStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.PassageStateProviderService;
 import org.openbase.bco.dal.lib.layer.service.provider.WindowStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.service.ServiceConfigType.ServiceConfig;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
 
 /**
@@ -39,15 +33,4 @@ import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
  */
 public interface Connection extends BaseUnit<ConnectionData>, DoorStateProviderService, PassageStateProviderService, WindowStateProviderService {
 
-    default public Set<ServiceType> getSupportedServiceTypes() throws NotAvailableException, InterruptedException {
-        final Set<ServiceType> serviceTypeSet = new HashSet<>();
-        try {
-            for (final ServiceConfig serviceConfig : getConfig().getServiceConfigList()) {
-                serviceTypeSet.add(serviceConfig.getServiceTemplate().getType());
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("SupportedServiceTypes", new CouldNotPerformException("Could not generate supported service type list!", ex));
-        }
-        return serviceTypeSet;
-    }
 }
