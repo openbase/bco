@@ -25,7 +25,6 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.unit.Light;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.protobuf.processing.GenericMessageProcessor;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -45,7 +44,6 @@ public class LightRemote extends AbstractUnitRemote<LightData> implements Light 
 
     public LightRemote() {
         super(LightData.class);
-        this.setMessageProcessor(new GenericMessageProcessor<>(LightData.newBuilder(), LightData.class));
     }
 
     @Override
