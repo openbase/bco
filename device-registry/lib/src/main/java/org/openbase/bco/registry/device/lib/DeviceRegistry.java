@@ -52,21 +52,63 @@ public interface DeviceRegistry {
 
     public Future<DeviceClass> removeDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException;
 
+    /**
+     * 
+     * @param unitTemplate
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public Future<UnitTemplate> updateUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException;
 
+    /**
+     * 
+     * @param groupConfig
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public Future<UnitConfig> registerUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
 
+    /**
+     * 
+     * @param groupConfig
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public Future<UnitConfig> updateUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
 
+    /**
+     * 
+     * @param groupConfig
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public Future<UnitConfig> removeUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
 
+    /**
+     * 
+     * @param unitTemplate
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public Boolean containsUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException;
 
+    /**
+     * 
+     * @param unitTemplateId
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public Boolean containsUnitTemplateById(final String unitTemplateId) throws CouldNotPerformException;
 
@@ -78,6 +120,14 @@ public interface DeviceRegistry {
 
     public Boolean containsDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException;
 
+    /**
+     * 
+     * @param unitTemplate
+     * @return
+     * @throws CouldNotPerformException
+     * @throws InterruptedException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public UnitTemplate getUnitTemplateById(final String unitTemplate) throws CouldNotPerformException, InterruptedException;
 
@@ -85,6 +135,14 @@ public interface DeviceRegistry {
 
     public UnitConfig getDeviceConfigById(final String deviceConfigId) throws CouldNotPerformException, InterruptedException;
 
+    /**
+     * 
+     * @param unitConfigId
+     * @return
+     * @throws CouldNotPerformException
+     * @throws InterruptedException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException, InterruptedException;
 
@@ -95,10 +153,17 @@ public interface DeviceRegistry {
      * @param unitConfigLabel
      * @return
      * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
      */
     @Deprecated
     public List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException;
 
+    /**
+     * 
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException;
 
@@ -106,21 +171,60 @@ public interface DeviceRegistry {
 
     public List<UnitConfig> getDeviceConfigs() throws CouldNotPerformException;
 
+    /**
+     * 
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException;
 
+    /**
+     * 
+     * @param type
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException;
 
+    /**
+     * 
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException;
 
+    /**
+     * 
+     * @param serviceType
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public List<ServiceConfig> getServiceConfigs(final ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException;
 
+    /**
+     * 
+     * @param type
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public UnitTemplate getUnitTemplateByType(final UnitType type) throws CouldNotPerformException;
 
+    /**
+     * 
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public Boolean isUnitTemplateRegistryReadOnly() throws CouldNotPerformException;
 
@@ -128,9 +232,21 @@ public interface DeviceRegistry {
 
     public Boolean isDeviceConfigRegistryReadOnly() throws CouldNotPerformException;
 
+    /**
+     * 
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public Boolean isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException;
 
+    /**
+     * 
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public Boolean isUnitTemplateRegistryConsistent() throws CouldNotPerformException;
 
@@ -138,33 +254,102 @@ public interface DeviceRegistry {
 
     public Boolean isDeviceConfigRegistryConsistent() throws CouldNotPerformException;
 
+    /**
+     * 
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public Boolean isUnitGroupConfigRegistryConsistent() throws CouldNotPerformException;
 
+    /**
+     * 
+     * @param groupConfig
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public Boolean containsUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
 
+    /**
+     * 
+     * @param groupConfigId
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public Boolean containsUnitGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
 
+    /**
+     * 
+     * @param groupConfigId
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public UnitConfig getUnitGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
 
+    /**
+     * 
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public List<UnitConfig> getUnitGroupConfigs() throws CouldNotPerformException;
 
+    /**
+     * 
+     * @param unitConfig
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public List<UnitConfig> getUnitGroupConfigsbyUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
 
+    /**
+     * 
+     * @param type
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated
+     */
     @Deprecated
     public List<UnitConfig> getUnitGroupConfigsByUnitType(final UnitType type) throws CouldNotPerformException;
 
+    /**
+     * 
+     * @param serviceTypes
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated
+     */
     @Deprecated
     public List<UnitConfig> getUnitGroupConfigsByServiceTypes(final List<ServiceType> serviceTypes) throws CouldNotPerformException;
 
+    /**
+     * 
+     * @param groupConfig
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated
+     */
     @Deprecated
     public List<UnitConfig> getUnitConfigsByUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
 
+    /**
+     * 
+     * @param type
+     * @param serviceTypes
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated
+     */
     @Deprecated
     public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType type, final List<ServiceType> serviceTypes) throws CouldNotPerformException;
 
@@ -176,15 +361,28 @@ public interface DeviceRegistry {
      * @param scope
      * @return the unit config matching the given scope.
      * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
      */
     @Deprecated
     public UnitConfig getUnitConfigByScope(final Scope scope) throws CouldNotPerformException;
 
+    /**
+     * 
+     * @param type
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public List<UnitType> getSubUnitTypesOfUnitType(final UnitType type) throws CouldNotPerformException;
 
     public void shutdown();
 
+    /**
+     * 
+     * @throws InterruptedException
+     * @deprecated this method has been moved to the unit registry.
+     */
     @Deprecated
     public default void waitForConsistency() throws InterruptedException {
         while (!Thread.currentThread().isInterrupted()) {
