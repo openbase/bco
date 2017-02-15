@@ -46,6 +46,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBTransport;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionConfigType.ActionConfig;
@@ -88,6 +89,7 @@ public class SceneRemoteTest {
         try {
             JPService.setupJUnitTestMode();
             JPService.registerProperty(JPHardwareSimulationMode.class, true);
+            JPService.registerProperty(JPRSBTransport.class, JPRSBTransport.TransportType.SPREAD);
             registry = MockRegistryHolder.newMockRegistry();
 
             sceneManagerLauncher = new SceneManagerLauncher();
@@ -186,11 +188,12 @@ public class SceneRemoteTest {
      *
      * @throws Exception
      */
-    // @Test(timeout = 10000)
+    //@Test(timeout = 10000)
     public void testTriggerScenePerRemote() throws Exception {
         System.out.println("testTriggerScenePerRemote");
 
         System.out.println("Connecting SceneRemote...");
+        System.out.println(unitSceneConfig.getScope());
         sceneRemote = Units.getUnit(unitSceneConfig, true, SceneRemote.class);
         System.out.println("SceneRemote connected!");
 

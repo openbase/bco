@@ -21,13 +21,11 @@ package org.openbase.bco.manager.scene.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.google.protobuf.GeneratedMessage;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.unit.AbstractExecutableBaseUnitController;
@@ -35,16 +33,12 @@ import org.openbase.bco.dal.remote.control.action.Action;
 import org.openbase.bco.dal.remote.unit.ButtonRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.scene.lib.SceneController;
-import org.openbase.bco.registry.device.lib.DeviceRegistry;
-import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -173,12 +167,6 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     }
 
     @Override
-    public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
-        RPCHelper.registerInterface(org.openbase.bco.dal.lib.layer.unit.scene.Scene.class, this, server);
-        super.registerMethods(server);
-    }
-
-    @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
         logger.info("Activate scene: " + getConfig().getLabel());
         synchronized (actionListSync) {
@@ -234,6 +222,8 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
 
     @Override
     protected boolean isAutostartEnabled() throws CouldNotPerformException {
+        //TODO: this does not only set the activation state but also activates the controller instance
+        // so a sceneController is never activated...
         return false;
     }
 }
