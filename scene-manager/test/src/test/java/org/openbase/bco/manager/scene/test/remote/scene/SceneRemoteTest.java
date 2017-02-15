@@ -21,32 +21,45 @@ package org.openbase.bco.manager.scene.test.remote.scene;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
+import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
+import org.openbase.bco.dal.remote.service.ColorStateServiceRemote;
+import org.openbase.bco.dal.remote.service.PowerStateServiceRemote;
+import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.scene.SceneRemote;
-import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
+import org.openbase.bco.manager.scene.core.SceneManagerLauncher;
+import org.openbase.bco.registry.mock.MockRegistry;
+import org.openbase.bco.registry.mock.MockRegistryHolder;
+import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.pattern.Remote;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
-import rsb.Event;
-import rsb.Factory;
-import rsb.Informer;
-import rsb.Scope;
-import rsb.config.ParticipantConfig;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.ActivationStateType;
-import rst.domotic.state.ButtonStateType.ButtonState;
+import rst.domotic.action.ActionAuthorityType.ActionAuthority;
+import rst.domotic.action.ActionConfigType.ActionConfig;
+import rst.domotic.action.ActionPriorityType.ActionPriority;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.state.ColorStateType.ColorState;
+import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.dal.ButtonDataType.ButtonData;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
+import rst.spatial.PlacementConfigType.PlacementConfig;
+import rst.vision.ColorType;
+import rst.vision.HSBColorType.HSBColor;
 
 /**
  *
@@ -54,18 +67,108 @@ import rst.domotic.unit.dal.ButtonDataType.ButtonData;
  */
 public class SceneRemoteTest {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(SceneRemoteTest.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SceneRemoteTest.class);
+
+    private static SceneManagerLauncher sceneManagerLauncher;
+    private static SceneRemote sceneRemote;
+    private static MockRegistry registry;
+    private static UnitConfig unitSceneConfig;
+
+    private static PowerStateServiceRemote powerStateServiceRemote;
+    private static ColorStateServiceRemote colorStateServiceRemote;
+
+    private static final PowerState.State powerValue = PowerState.State.ON;
+    private static final HSBColor colorValue = HSBColor.newBuilder().setBrightness(100).setSaturation(90).setHue(10).build();
 
     public SceneRemoteTest() {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
-        JPService.setupJUnitTestMode();
+    public static void setUpClass() throws Exception {
+        try {
+            JPService.setupJUnitTestMode();
+            JPService.registerProperty(JPHardwareSimulationMode.class, true);
+            registry = MockRegistryHolder.newMockRegistry();
+
+            sceneManagerLauncher = new SceneManagerLauncher();
+            sceneManagerLauncher.launch();
+//            sceneManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+
+            powerStateServiceRemote = new PowerStateServiceRemote();
+            colorStateServiceRemote = new ColorStateServiceRemote();
+
+            registerScene();
+
+            powerStateServiceRemote.activate();
+            colorStateServiceRemote.activate();
+        } catch (JPServiceException | CouldNotPerformException | InterruptedException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
     }
 
     @AfterClass
-    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
+    public static void tearDownClass() throws Exception {
+        try {
+            if (sceneManagerLauncher != null) {
+                sceneManagerLauncher.shutdown();
+            }
+            if (powerStateServiceRemote != null) {
+                powerStateServiceRemote.shutdown();
+            }
+            if (colorStateServiceRemote != null) {
+                colorStateServiceRemote.shutdown();
+            }
+            MockRegistryHolder.shutdownMockRegistry();
+        } catch (Exception ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
+    }
+
+    private static void registerScene() throws CouldNotPerformException {
+        try {
+            ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();
+            UnitRegistryRemote unitRegistry = Registries.getUnitRegistry();
+
+            List<ActionConfig> actionConfigList = new ArrayList<>();
+
+            ActionConfig.Builder actionConfigBuilder = ActionConfig.newBuilder();
+            actionConfigBuilder.setActionAuthority(ActionAuthority.newBuilder().setAuthority(ActionAuthority.Authority.USER)).setActionPriority(ActionPriority.newBuilder().setPriority(ActionPriority.Priority.NORMAL));
+
+            PowerState powerState = PowerState.newBuilder().setValue(powerValue).build();
+            actionConfigBuilder.setServiceType(ServiceType.POWER_STATE_SERVICE);
+            actionConfigBuilder.setServiceAttribute(serviceJSonProcessor.serialize(powerState));
+            actionConfigBuilder.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(powerState));
+            for (UnitConfig unitConfig : unitRegistry.getDalUnitConfigs()) {
+                if (unitRegistry.getSubUnitTypes(UnitType.LIGHT).contains(unitConfig.getType()) || unitConfig.getType() == UnitType.LIGHT || unitConfig.getType() == UnitType.POWER_SWITCH) {
+                    actionConfigBuilder.clearUnitId();
+                    actionConfigBuilder.setUnitId(unitConfig.getId());
+                    actionConfigList.add(actionConfigBuilder.build());
+                    powerStateServiceRemote.init(unitConfig);
+                }
+            }
+
+            ColorType.Color color = ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(colorValue).build();
+            ColorState colorState = ColorState.newBuilder().setColor(color).build();
+            actionConfigBuilder.setServiceType(ServiceType.COLOR_STATE_SERVICE);
+            actionConfigBuilder.setServiceAttribute(serviceJSonProcessor.serialize(colorState));
+            actionConfigBuilder.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(colorState));
+            for (UnitConfig unitConfig : unitRegistry.getDalUnitConfigs()) {
+                if (unitConfig.getType() == UnitType.COLORABLE_LIGHT) {
+                    actionConfigBuilder.clearUnitId();
+                    actionConfigBuilder.setUnitId(unitConfig.getId());
+                    actionConfigList.add(actionConfigBuilder.build());
+                    colorStateServiceRemote.init(unitConfig);
+                }
+            }
+
+            String label = "testScene";
+            PlacementConfig placementConfig = PlacementConfig.newBuilder().setLocationId(Registries.getLocationRegistry().getRootLocationConfig().getId()).build();
+            SceneConfig sceneConfig = SceneConfig.newBuilder().addAllActionConfig(actionConfigList).build();
+            UnitConfig unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
+            unitSceneConfig = unitRegistry.registerUnitConfig(unitConfig).get();
+        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+            throw new CouldNotPerformException("Could not register scene!", ex);
+        }
     }
 
     @Before
@@ -79,61 +182,29 @@ public class SceneRemoteTest {
     }
 
     /**
-     * Used to test the activation of a scene via a button
+     * Test triggering a scene per remote.
      *
-     * @throws java.lang.Exception
+     * @throws Exception
      */
-    //@Test
-    public void testScene() throws Exception {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonData.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonState.getDefaultInstance()));
-
-        ParticipantConfig config = Factory.getInstance().getDefaultParticipantConfig();
-        final String scope = "/home/sports/button/pathwaybelowbutton_3/status";
-
-        Informer<ButtonData> informer = Factory.getInstance().createInformer(scope, config);
-        informer.activate();
-
-        ButtonData button = ButtonData.newBuilder().setButtonState(ButtonState.newBuilder().setValue(ButtonState.State.PRESSED).build()).build();
-        informer.send(button);
-        Event event = new Event(new Scope("/home/sports/button/pathwaybelowbutton_3/status/hallo"), String.class, "Hallo");
-//        System.out.println("event:"+event);
-        informer.send(event);
-
-    }
-
-    /**
-     * ONLY ACTIVATE WHEN USED TO TEST DURING A RUNNING SYSTEM. OTHERWISE IT
-     * WILL FAIL WITH A TIMEOUT.
-     */
-    //@Test(timeout = 5000)
+    // @Test(timeout = 10000)
     public void testTriggerScenePerRemote() throws Exception {
-        SceneRegistryRemote sceneRegistry = new SceneRegistryRemote();
-        sceneRegistry.init();
-        sceneRegistry.activate();
-        sceneRegistry.waitForData();
+        System.out.println("testTriggerScenePerRemote");
 
-        UnitConfig config = null;
-        for (UnitConfig sceneConfig : sceneRegistry.getSceneConfigs()) {
-            if (sceneConfig.getLabel().equals("TestScene")) {
-                config = sceneConfig;
-            }
-        }
+        System.out.println("Connecting SceneRemote...");
+        sceneRemote = Units.getUnit(unitSceneConfig, true, SceneRemote.class);
+        System.out.println("SceneRemote connected!");
 
-        if (config == null) {
-            throw new NotAvailableException("ScneConfig with label TestScene");
-        }
+        ActivationState activationState = ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build();
+        sceneRemote.setActivationState(activationState).get();
 
-        SceneRemote sceneRemote = new SceneRemote();
-        sceneRemote.init(config);
-        sceneRemote.activate();
-        sceneRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
-//        System.out.println("SceneRemote for scene [" + config.getLabel() + "] connected");
+        System.out.println("Wait for powerStateServiceRemote");
+        powerStateServiceRemote.waitForData();
+        System.out.println("Wait for colorStateServiceRemote");
+        colorStateServiceRemote.waitForData();
+        System.out.println("Waiting finished!");
 
-        sceneRemote.setActivationState(ActivationStateType.ActivationState.State.ACTIVE).get();
-//        System.out.println("Scene Activated");
-
-        sceneRemote.shutdown();
-        sceneRegistry.shutdown();
+        assertEquals("Scene has not been deactivated after execution!", ActivationState.State.DEACTIVE, sceneRemote.getActivationState().getValue());
+        assertEquals("PowerState have not been updated by scene!", powerValue, powerStateServiceRemote.getPowerState().getValue());
+        assertEquals("ColorState have not been updated by scene!", colorValue, colorStateServiceRemote.getColorState().getColor().getHsbColor());
     }
 }

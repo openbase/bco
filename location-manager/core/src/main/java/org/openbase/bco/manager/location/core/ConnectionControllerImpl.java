@@ -23,6 +23,7 @@ package org.openbase.bco.manager.location.core;
  */
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderService;
@@ -125,17 +126,20 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
     private final Map<String, ContactWindowPosition> contactWindowPositionMap;
 
     private final ServiceRemoteManager serviceRemoteManager;
+    private final Set<ServiceType> supportedServiceTypes;
 
     public ConnectionControllerImpl() throws InstantiationException {
         super(ConnectionControllerImpl.class, ConnectionData.newBuilder());
         this.contactDoorPositionMap = new HashMap<>();
         this.contactWindowPositionMap = new HashMap<>();
+        this.supportedServiceTypes = new HashSet<>();
+        this.supportedServiceTypes.add(ServiceType.CONTACT_STATE_SERVICE);
 
         this.serviceRemoteManager = new ServiceRemoteManager() {
 
             @Override
             protected Set<ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
-                return ConnectionControllerImpl.this.getSupportedServiceTypes();
+                return supportedServiceTypes;
             }
 
             @Override
@@ -225,7 +229,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
             assert false;
             throw new NotAvailableException("ServiceType");
         }
-        return getSupportedServiceTypes().contains(serviceType);
+        return this.supportedServiceTypes.contains(serviceType);
     }
 
     @Override
