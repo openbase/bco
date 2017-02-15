@@ -1,5 +1,5 @@
 #!/bin/bash
-APP_NAME='bco.registry'
+APP_NAME='bco-registry'
 clear &&
 echo "=== clean ${APP_NAME} ===" &&
 mvn clean $@ &&

@@ -26,7 +26,6 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -60,7 +59,7 @@ import rst.domotic.state.ActivationStateType.ActivationState;
  */
 public abstract class AbstractLauncher<L extends Launchable> extends AbstractIdentifiableController<ActivationState, ActivationState.Builder> implements Launcher, VoidInitializable, NameProvider {
 
-    //TODO should be moved to jul pattern after modularisation of the pattern project to avoid direct rsb comm dependencies for the patter project.
+    //TODO major release: should be moved to jul pattern after modularisation of the pattern project to avoid direct rsb comm dependencies for the patter project.
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     public static final long LAUNCHER_TIMEOUT = 60000;

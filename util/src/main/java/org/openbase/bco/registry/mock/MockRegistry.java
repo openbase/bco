@@ -96,6 +96,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.InventoryStateType;
+import rst.domotic.state.InventoryStateType.InventoryState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
@@ -522,11 +523,13 @@ public class MockRegistry {
 
     private void registerDevices() throws CouldNotPerformException, InterruptedException {
         try {
-            // ambient light
-            DeviceClass ambientLightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Philips_Hue_E27", "KV01_18U", "Philips", UnitType.COLORABLE_LIGHT)).get();
-            waitForDeviceClass(ambientLightClass);
+            // colorable light
+            DeviceClass colorableLightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Philips_Hue_E27", "KV01_18U", "Philips", UnitType.COLORABLE_LIGHT)).get();
+            waitForDeviceClass(colorableLightClass);
 
-            registerDeviceUnitConfig(getDeviceConfig("PH_Hue_E27_Device", serialNumber, ambientLightClass));
+            registerDeviceUnitConfig(getDeviceConfig("PH_Hue_E27_Device", serialNumber, colorableLightClass));
+
+            registerDeviceUnitConfig(getDeviceConfig("PH_Hue_E27_Device_BORROWED", serialNumber, InventoryState.State.BORROWED, colorableLightClass));
 
             // battery, brightnessSensor, motionSensor, tamperSwitch, temperatureSensor
             DeviceClass motionSensorClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_MotionSensor", "FGMS_001", "Fibaro", UnitType.MOTION_DETECTOR, UnitType.BATTERY, UnitType.BRIGHTNESS_SENSOR, UnitType.TEMPERATURE_SENSOR, UnitType.TAMPER_DETECTOR)).get();
@@ -615,6 +618,12 @@ public class MockRegistry {
     private static void updateUnitLabel(final List<String> unitIds) throws CouldNotPerformException, InterruptedException, ExecutionException {
         for (String unitId : unitIds) {
             UnitConfig tmp = unitRegistry.getUnitConfigById(unitId);
+
+            // ignore disabled test unit otherwise they would registered twice with the same label if another enabled instance of the same class exists.
+            if (tmp.getEnablingState().getValue().equals(EnablingState.State.DISABLED)) {
+                continue;
+            }
+
             unitRegistry.updateUnitConfig(tmp.toBuilder().setLabel(UNIT_TYPE_LABEL_MAP.get(tmp.getType())).build()).get();
         }
     }
@@ -641,10 +650,14 @@ public class MockRegistry {
     }
 
     public static UnitConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz) {
+        return getDeviceConfig(label, serialNumber, InventoryState.State.INSTALLED, clazz);
+    }
+
+    public static UnitConfig getDeviceConfig(String label, String serialNumber, InventoryState.State inventoryState, DeviceClass clazz) {
         DeviceConfig tmp = DeviceConfig.newBuilder()
                 .setSerialNumber(serialNumber)
                 .setDeviceClassId(clazz.getId())
-                .setInventoryState(InventoryStateType.InventoryState.newBuilder().setValue(InventoryStateType.InventoryState.State.INSTALLED))
+                .setInventoryState(InventoryStateType.InventoryState.newBuilder().setValue(inventoryState))
                 .build();
         return UnitConfig.newBuilder()
                 .setPlacementConfig(getDefaultPlacement())
