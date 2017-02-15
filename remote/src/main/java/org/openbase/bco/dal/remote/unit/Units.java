@@ -24,7 +24,7 @@ package org.openbase.bco.dal.remote.unit;
 import com.google.protobuf.GeneratedMessage;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.logging.Level;
+import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -145,7 +145,7 @@ public class Units {
 
             // The activation is not synchronized by the unitRemoteRegistryLock out of performance reasons. 
             // By this, new unit remotes can be requested independend from the activation state of other units.
-            if (newInstance) {
+            if (newInstance && unitRemote.isEnabled()) {
                 unitRemote.activate();
                 unitRemote.lock(unitRemoteRegistry);
             }
@@ -186,7 +186,7 @@ public class Units {
 
             // The activation is not synchronized by the unitRemoteRegistryLock out of performance reasons. 
             // By this, new unit remotes can be requested independend from the activation state of other units.
-            if (newInstance) {
+            if (newInstance && unitRemote.isEnabled()) {
                 unitRemote.activate();
                 unitRemote.lock(unitRemoteRegistry);
             }
@@ -300,7 +300,7 @@ public class Units {
      *
      * @see #getUnit(java.lang.String, boolean)
      */
-    public static <UR extends UnitRemote> UR getUnit(final String unitId, boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
+    public static <UR extends UnitRemote<?>> UR getUnit(final String unitId, boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
         try {
             return (UR) getUnit(unitId, waitForData);
         } catch (ClassCastException ex) {
@@ -343,6 +343,28 @@ public class Units {
     }
 
     /**
+     *
+     * This method is a wrapper for {@link #getUnit(java.lang.String, boolean) getUnit(String, boolean)} and casts the result to the given {@code unitRemoteClass}.
+     *
+     * @param <UR> the unit remote class type.
+     * @param label Checkout wrapped method doc {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
+     * @param waitForData Checkout wrapped method doc {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
+     * @param unitRemoteClass the unit remote class.
+     * @return an instance of the given remote class.
+     * @throws NotAvailableException Is thrown if the remote instance is not compatible with the given class. See {@link #getUnit(java.lang.String, boolean) getUnit(String, boolean)} for further cases.
+     * @throws InterruptedException Checkout wrapped method doc {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
+     *
+     * @see #getUnitByLabel(java.lang.String, boolean)
+     */
+    public static <UR extends UnitRemote<?>> UnitRemote<?> getUnitByLabel(final String label, boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
+        try {
+            return (UR) getUnit(label, waitForData);
+        } catch (ClassCastException ex) {
+            throw new NotAvailableException("Unit[" + label + "]", new InvalidStateException("Requested Unit[" + label + "] is not compatible with defined UnitRemoteClass[" + unitRemoteClass + "]!", ex));
+        }
+    }
+
+    /**
      * Method establishes a connection to the unit referred by the given unit scope.
      * The returned unit remote object is fully synchronized with the unit controller and all states locally cached.
      * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
@@ -356,7 +378,7 @@ public class Units {
      * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
      * @throws InterruptedException is thrown in case the thread is externally interrupted.
      */
-    public static UnitRemote getUnitByScope(final ScopeType.Scope scope, boolean waitForData) throws NotAvailableException, InterruptedException {
+    public static UnitRemote<?> getUnitByScope(final ScopeType.Scope scope, boolean waitForData) throws NotAvailableException, InterruptedException {
         try {
             if (scope == null) {
                 assert false;
@@ -386,7 +408,7 @@ public class Units {
      * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
      * @throws InterruptedException is thrown in case the thread is externally interrupted.
      */
-    public static UnitRemote getUnitByScope(final Scope scope, boolean waitForData) throws NotAvailableException, InterruptedException {
+    public static UnitRemote<?> getUnitByScope(final Scope scope, boolean waitForData) throws NotAvailableException, InterruptedException {
         try {
             if (scope == null) {
                 assert false;
@@ -483,7 +505,54 @@ public class Units {
 //            throw new NotAvailableException("Unit[" + unitId + "]", new InvalidStateException("Requested Unit[" + unitId + "] is not compatible with defined UnitRemoteClass[" + unitRemoteClass + "]!", ex));
 //        }
 //    }
+    /**
+     * @param unitConfig
+     * @param waitForData
+     * @return
+     * @throws NotAvailableException
+     * @throws InterruptedException
+     * @deprecated this method is just a prototype, using this method does not guarantee API stability.
+     */
+    @Deprecated
     public static LightRemote getLightUnit(final UnitConfig unitConfig, boolean waitForData) throws NotAvailableException, InterruptedException {
         return getUnit(unitConfig, waitForData, LightRemote.class);
+    }
+
+    /**
+     * @param unitConfig
+     * @param waitForData
+     * @return
+     * @throws NotAvailableException
+     * @throws InterruptedException
+     * @deprecated this method is just a prototype, using this method does not guarantee API stability.
+     */
+    @Deprecated
+    public static LightRemote getLight(final UnitConfig unitConfig, boolean waitForData) throws NotAvailableException, InterruptedException {
+        return getUnit(unitConfig, waitForData, LightRemote.class);
+    }
+
+    /**
+     * @param unitConfig
+     * @param waitForData
+     * @return
+     * @throws NotAvailableException
+     * @throws InterruptedException
+     * @deprecated this method is just a prototype, using this method does not guarantee API stability.
+     */
+    public static AgentRemote getAgent(final UnitConfig unitConfig, boolean waitForData) throws NotAvailableException, InterruptedException {
+        return getUnit(unitConfig, waitForData, AgentRemote.class);
+    }
+
+    /**
+     *
+     * @param label
+     * @param waitForData
+     * @return
+     * @throws NotAvailableException
+     * @throws InterruptedException
+     * @deprecated this method is just a prototype, using this method does not guarantee API stability.
+     */
+    public static AgentRemote getAgent(final String label, boolean waitForData) throws NotAvailableException, InterruptedException {
+        return getUnit(label, waitForData, AgentRemote.class);
     }
 }

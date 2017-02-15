@@ -21,7 +21,6 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessage;
 import java.util.concurrent.Callable;
@@ -35,8 +34,6 @@ import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
-import org.openbase.jul.extension.rsb.com.AbstractEnableableConfigurableController;
-import org.openbase.jul.extension.rsb.com.AbstractExecutableController;
 import org.openbase.jul.iface.Enableable;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -50,7 +47,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  * @param <D> the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
  */
-public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractBaseUnitController<D, DB> implements Enableable{
+public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractBaseUnitController<D, DB> implements Enableable {
 
     public static final String FIELD_ACTIVATION_STATE = "activation_state";
     public static final String FIELD_AUTOSTART = "autostart";
@@ -133,9 +130,9 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
     public void enable() throws CouldNotPerformException, InterruptedException {
         try {
             synchronized (enablingLock) {
+                activate();
                 if (detectAutostart()) {
                     setActivationState(ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.ACTIVE).build()).get();
-                    activate();
                 } else {
                     setActivationState(ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.DEACTIVE).build()).get();
                 }

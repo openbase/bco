@@ -23,9 +23,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.pattern.ConfigurableRemote;
+import org.slf4j.LoggerFactory;
 import rsb.Scope;
+import rst.domotic.state.EnablingStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.rsb.ScopeType;
 
@@ -72,4 +75,22 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, Service
      * @throws InterruptedException is thrown in case the thread is externally interrupted.
      */
     void initByLabel(final String label) throws InitializationException, InterruptedException;
+
+    /**
+     * This method returns if the unit of this remote is enabled.
+     * An unit is marked as disabled if the related unit host is not available. For instance all units are automatically disabled when the providing device is currently borrowed or at least marked as not installed.
+     *
+     * Note: Method returns false if the state could not be detected. This can happen if the unit was never initialized or the related unit configuration is not available.
+     *
+     * @return returns true if the unit is enabled otherwise false.
+     */
+    public default boolean isEnabled() {
+        try {
+            return getConfig().getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED);
+        } catch (CouldNotPerformException ex) {
+            LoggerFactory.getLogger(UnitRemote.class).warn("isEnabled() was called on non initialized unit!");
+            assert false;
+        }
+        return false;
+    }
 }

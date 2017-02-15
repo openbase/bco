@@ -1,5 +1,5 @@
 #!/bin/bash
-APP_NAME='dal'
+APP_NAME='bco-dal'
 clear &&
 echo "=== clean ${APP_NAME} ===" &&
 mvn clean $@ &&

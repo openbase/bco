@@ -24,10 +24,13 @@ package org.openbase.bco.dal.remote.unit;
 import com.google.protobuf.GeneratedMessage;
 import java.util.List;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
-import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -63,8 +66,8 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
     protected UnitRegistry getUnitRegistry() throws InterruptedException, CouldNotPerformException {
         if (unitRegistry == null) {
-            unitRegistry = CachedUnitRegistryRemote.getRegistry();
-            CachedUnitRegistryRemote.waitForData();
+            unitRegistry = Registries.getUnitRegistry();
+            Registries.getUnitRegistry().waitForData();
         }
         return unitRegistry;
     }
@@ -165,6 +168,12 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @throws InitializationException {@inheritDoc}
+     * @throws InterruptedException {@inheritDoc}
+     */
     @Override
     protected void postInit() throws InitializationException, InterruptedException {
         super.postInit();
@@ -184,10 +193,10 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     /**
      * {@inheritDoc}
      *
-     * @param config
-     * @return
-     * @throws org.openbase.jul.exception.CouldNotPerformException
-     * @throws java.lang.InterruptedException
+     * @param config {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
+     * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
@@ -205,6 +214,56 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         }
         template = getUnitRegistry().getUnitTemplateByType(config.getType());
         return super.applyConfigUpdate(config);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws InterruptedException {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public void activate() throws InterruptedException, CouldNotPerformException {
+        if (!isEnabled()) {
+            throw new InvalidStateException("The activation of an remote is not allowed if the referred unit is disabled!");
+        }
+        super.activate();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws InterruptedException {@inheritDoc}
+     */
+    @Override
+    public void waitForData() throws CouldNotPerformException, InterruptedException {
+        verifyEnablingState();
+        super.waitForData();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param timeout {@inheritDoc}
+     * @param timeUnit {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws java.lang.InterruptedException {@inheritDoc}
+     */
+    @Override
+    public void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        verifyEnablingState();
+        super.waitForData(timeout, timeUnit);
+    }
+
+    private void verifyEnablingState() throws FatalImplementationErrorException {
+        if (!isEnabled()) {
+            if (JPService.testMode()) {
+                throw new FatalImplementationErrorException("Waiting for data of an disabled unit should be avoided!", "Calling instance");
+            } else {
+                logger.warn("Waiting for data of an disabled unit should be avoided! Probably this method will block forever!");
+            }
+        }
     }
 
     /**

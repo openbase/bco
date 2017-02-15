@@ -183,6 +183,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             unitRemoteMap.put(config.getId(), remote);
 
             if (active) {
+                if (!remote.isEnabled()) {
+                    logger.warn("Using a disabled " + remote + " in " + this + " is not recommended and should be avoided!");
+                }
                 remote.addDataObserver(dataObserver);
             }
         } catch (CouldNotPerformException ex) {
@@ -223,9 +226,14 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         active = true;
-        for (UnitRemote remote : unitRemoteMap.values()) {
+        unitRemoteMap.values().stream().map((remote) -> {
+            if (!remote.isEnabled()) {
+                logger.warn("Using a disabled " + remote + " in " + this + " is not recommended and should be avoided!");
+            }
+            return remote;
+        }).forEach((remote) -> {
             remote.addDataObserver(dataObserver);
-        }
+        });
         updateServiceState();
     }
 
@@ -238,9 +246,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         active = false;
-        for (UnitRemote remote : unitRemoteMap.values()) {
+        unitRemoteMap.values().stream().forEach((remote) -> {
             remote.removeDataObserver(dataObserver);
-        }
+        });
     }
 
     /**

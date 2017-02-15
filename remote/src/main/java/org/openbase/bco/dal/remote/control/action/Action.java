@@ -28,13 +28,14 @@ import java.util.concurrent.FutureTask;
 import org.openbase.bco.dal.remote.service.AbstractServiceRemote;
 import org.openbase.bco.dal.remote.service.ServiceRemoteFactory;
 import org.openbase.bco.dal.remote.service.ServiceRemoteFactoryImpl;
-import org.openbase.bco.registry.device.lib.DeviceRegistry;
-import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.iface.Initializable;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
@@ -45,6 +46,8 @@ import rst.domotic.action.ActionConfigType.ActionConfig;
 import rst.domotic.action.ActionDataType.ActionData;
 import rst.domotic.state.ActionStateType;
 import rst.domotic.state.ActionStateType.ActionState;
+import rst.domotic.state.EnablingStateType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -55,9 +58,9 @@ public class Action implements ActionService, Initializable<ActionConfig> {
     private static final Logger logger = LoggerFactory.getLogger(Action.class);
 
     private ActionConfig.Builder config;
+    private UnitConfig unitConfig;
     private final ActionData.Builder data;
     private ServiceRemoteFactory serviceRemoteFactory;
-    private DeviceRegistry deviceRegistry;
     private AbstractServiceRemote serviceRemote;
     private Future executionFuture;
     private final SyncObject executionSync = new SyncObject(Action.class);
@@ -71,13 +74,24 @@ public class Action implements ActionService, Initializable<ActionConfig> {
         try {
             this.config = config.toBuilder();
             this.data.setLabel(config.getLabel());
-            this.deviceRegistry = CachedDeviceRegistryRemote.getRegistry();
             this.serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
-            CachedDeviceRegistryRemote.waitForData();
-            this.serviceRemote = serviceRemoteFactory.newInitializedInstance(config.getServiceType(), deviceRegistry.getUnitConfigById(config.getUnitId()));
+            Registries.getUnitRegistry().waitForData();
+            this.unitConfig = Registries.getUnitRegistry().getUnitConfigById(config.getUnitId());
+            this.verifyUnitConfig(unitConfig);
+            this.serviceRemote = serviceRemoteFactory.newInitializedInstance(config.getServiceType(), unitConfig);
             serviceRemote.activate();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
+        }
+    }
+
+    private void verifyUnitConfig(final UnitConfig unitConfig) throws VerificationFailedException {
+        if (!unitConfig.getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED)) {
+            try {
+                throw new VerificationFailedException("Referred Unit[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "] is disabled!");
+            } catch (CouldNotPerformException ex) {
+                throw new VerificationFailedException("Referred Unit[" + unitConfig.getLabel() + "] is disabled!");
+            }
         }
     }
 

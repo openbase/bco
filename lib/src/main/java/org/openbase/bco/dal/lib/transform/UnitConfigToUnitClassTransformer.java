@@ -24,6 +24,7 @@ package org.openbase.bco.dal.lib.transform;
 import org.openbase.bco.dal.lib.layer.unit.AbstractUnitController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -41,9 +42,9 @@ public class UnitConfigToUnitClassTransformer {
             return (Class<? extends AbstractUnitController>) Class.forName(className);
         } catch (ClassNotFoundException ex) {
             try {
-                throw new CouldNotTransformException(ScopeGenerator.generateStringRep(unitConfig.getScope()), AbstractUnitController.class, ex);
+                throw new CouldNotTransformException(ScopeGenerator.generateStringRep(unitConfig.getScope()), AbstractUnitController.class, new NotAvailableException("Class", ex));
             } catch (CouldNotPerformException ex1) {
-                throw new CouldNotTransformException(unitConfig.getLabel(), AbstractUnitController.class, ex);
+                throw new CouldNotTransformException(unitConfig.getLabel(), AbstractUnitController.class, new NotAvailableException("Class", ex));
             }
         }
     }
