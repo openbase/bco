@@ -33,9 +33,11 @@ import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.unit.AbstractExecutableBaseUnitController;
 import org.openbase.bco.dal.remote.control.action.Action;
 import org.openbase.bco.dal.remote.unit.ButtonRemote;
+import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.scene.lib.SceneController;
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.MultiException;
@@ -75,7 +77,6 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     private final SyncObject triggerListSync = new SyncObject("TriggerListSync");
     private final SyncObject actionListSync = new SyncObject("ActionListSync");
     private final Observer<ButtonData> buttonObserver;
-    private DeviceRegistry deviceRegistry;
 
     public SceneControllerImpl() throws org.openbase.jul.exception.InstantiationException {
         super(SceneControllerImpl.class, SceneData.newBuilder());
@@ -91,8 +92,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     @Override
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         try {
-            CachedDeviceRegistryRemote.waitForData();
-            this.deviceRegistry = CachedDeviceRegistryRemote.getRegistry();
+            Registries.getUnitRegistry().waitForData();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -104,30 +104,27 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         config = super.applyConfigUpdate(config);
         synchronized (triggerListSync) {
             try {
-                for (ButtonRemote buttonRemote : buttonRemoteList) {
-                    buttonRemote.deactivate();
+                for (final ButtonRemote buttonRemote : buttonRemoteList) {
                     buttonRemote.removeDataObserver(buttonObserver);
                 }
                 buttonRemoteList.clear();
                 ButtonRemote buttonRemote;
 
-                for (UnitConfig unitConfig : deviceRegistry.getUnitConfigsByLabel(config.getLabel())) {
+                for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLabel(config.getLabel())) {
                     //TODO implement deviceregistry method get unit by label and type.
                     if (unitConfig.getType() != UnitTemplate.UnitType.BUTTON) {
                         continue;
                     }
                     try {
-                        buttonRemote = new ButtonRemote();
-                        buttonRemote.init(unitConfig);
+                        buttonRemote = Units.getUnit(unitConfig, false, ButtonRemote.class);
                         buttonRemoteList.add(buttonRemote);
-                    } catch (InitializationException ex) {
+                    } catch (CouldNotPerformException ex) {
                         ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register remote for Button[" + unitConfig.getLabel() + "]!", ex), logger);
                     }
                 }
                 if (isEnabled()) {
-                    for (ButtonRemote button : buttonRemoteList) {
+                    for (final ButtonRemote button : buttonRemoteList) {
                         button.addDataObserver(buttonObserver);
-                        button.activate();
                     }
                 }
             } catch (CouldNotPerformException ex) {
@@ -161,18 +158,16 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     public void enable() throws CouldNotPerformException, InterruptedException {
         logger.info("enable " + getConfig().getLabel());
         super.enable();
-        for (ButtonRemote button : buttonRemoteList) {
+        for (final ButtonRemote button : buttonRemoteList) {
             button.addDataObserver(buttonObserver);
-            button.activate();
         }
     }
 
     @Override
     public void disable() throws CouldNotPerformException, InterruptedException {
         logger.info("disable " + getConfig().getLabel());
-        for (ButtonRemote button : buttonRemoteList) {
+        for (final ButtonRemote button : buttonRemoteList) {
             button.removeDataObserver(buttonObserver);
-            button.deactivate();
         }
         super.disable();
     }
