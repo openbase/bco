@@ -23,6 +23,8 @@ package org.openbase.bco.dal.example;
  */
 import java.awt.Color;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
+import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -41,12 +43,14 @@ public class ControlAmbientLightViaRemoteLib {
 
     public void notifyAlarm() throws CouldNotPerformException, InterruptedException {
 
-        final ColorableLightRemote testLight = new ColorableLightRemote();
-
+        final ColorableLightRemote testLight;
         try {
-            testLight.init(new Scope("/home/control/ambientlight/testunit_0/"));
-            testLight.activate();
-
+            Registries.waitForData();
+            Units.getUnit(Registries.getUnitRegistry().getUnitConfigById("59ca561e-a44d-406b-84ad-27a344cc2eb8"), false);
+            testLight = (ColorableLightRemote) Units.getUnit("53b59c91-dd89-4a24-95ae-0ba841634039", false);
+            System.out.println("got lamp");
+            testLight.waitForData();
+            System.out.println("git lamp data");
             int delay = 500;
             int rounds = 100;
 
@@ -63,7 +67,6 @@ public class ControlAmbientLightViaRemoteLib {
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not notify alarm!", ex);
         } finally {
-            testLight.shutdown();
         }
     }
 
