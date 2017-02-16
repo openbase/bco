@@ -24,7 +24,7 @@ package org.openbase.bco.dal.remote.service;
 import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.collection.SmokeStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.provider.SmokeStateProviderService;
-import org.openbase.bco.dal.remote.unit.UnitRemote;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -72,7 +72,7 @@ public class SmokeStateServiceRemote extends AbstractServiceRemote<SmokeStatePro
         int amount = smokeStateProviderServices.size();
         double averageSmokeLevel = 0;
         for (SmokeStateProviderService provider : getServices(unitType)) {
-            if (((UnitRemote) provider).isDataAvailable()) {
+            if (!((UnitRemote) provider).isDataAvailable()) {
                 amount--;
                 continue;
             }

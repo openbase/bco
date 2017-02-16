@@ -70,7 +70,7 @@ public class HandleStateServiceRemote extends AbstractServiceRemote<HandleStateP
         Collection<HandleStateProviderService> handleStateProviderServices = getServices(unitType);
         int amount = handleStateProviderServices.size();
         for (HandleStateProviderService provider : handleStateProviderServices) {
-            if (((UnitRemote) provider).isDataAvailable()) {
+            if (!((UnitRemote) provider).isDataAvailable()) {
                 amount--;
                 continue;
             }
