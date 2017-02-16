@@ -196,7 +196,7 @@ public class SceneRemoteTest {
      *
      * @throws Exception
      */
-    @Test
+//    @Test
     /** (timeout = 10000)* */
     public void testTriggerScenePerRemote() throws Exception {
         System.out.println("testTriggerScenePerRemote");
