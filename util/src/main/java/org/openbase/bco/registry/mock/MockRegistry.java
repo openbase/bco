@@ -43,6 +43,8 @@ import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.location.core.LocationRegistryLauncher;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.ACTIVATION_SOS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.ACTIVATION_SPS;
 import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.BATTERY_SPS;
 import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.BLIND_SOS;
 import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.BLIND_SPS;
@@ -171,6 +173,8 @@ public class MockRegistry {
         // SOS = STATE_OPERATION_SERVICE
         // SPS = STATE_PROVIDER_SERVICE
         // SCS = STATE_CONSUMER_SERVICE
+        ACTIVATION_SPS(ServiceType.ACTIVATION_STATE_SERVICE, ServicePattern.PROVIDER),
+        ACTIVATION_SOS(ServiceType.ACTIVATION_STATE_SERVICE, ServicePattern.OPERATION),
         BATTERY_SPS(ServiceType.BATTERY_STATE_SERVICE, ServicePattern.PROVIDER),
         BLIND_SOS(ServiceType.BLIND_STATE_SERVICE, ServicePattern.OPERATION),
         BLIND_SPS(ServiceType.BLIND_STATE_SERVICE, ServicePattern.PROVIDER),
@@ -231,7 +235,10 @@ public class MockRegistry {
         BATTERY(UnitType.BATTERY, BATTERY_SPS),
         LOCATION(UnitType.LOCATION, COLOR_SPS, COLOR_SOS, MOTION_SPS, POWER_CONSUMPTION_SPS, POWER_SPS, POWER_SOS, BLIND_SPS, BLIND_SOS, SMOKE_ALARM_SPS,
                 SMOKE_SPS, STANDBY_SPS, STANDBY_SOS, TAMPER_SPS, TARGET_TEMPERATURE_SPS, TARGET_TEMPERATURE_SOS, TEMPERATURE_SPS),
-        CONNECTION(UnitType.CONNECTION);
+        CONNECTION(UnitType.CONNECTION),
+        SCENE(UnitType.SCENE, ACTIVATION_SPS, ACTIVATION_SOS),
+        AGENT(UnitType.AGENT, ACTIVATION_SPS, ACTIVATION_SOS),
+        APP(UnitType.APP, ACTIVATION_SPS, ACTIVATION_SOS);
 
         private final UnitTemplate template;
 
