@@ -63,9 +63,9 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  * @param <ST> the corresponding state for the service type of this remote.
  */
 public abstract class AbstractServiceRemote<S extends Service, ST extends GeneratedMessage> implements ServiceRemote<S, ST> {
-
+    
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-
+    
     private boolean active;
     private final ServiceType serviceType;
     private final Map<String, UnitRemote> unitRemoteMap;
@@ -88,13 +88,16 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         this.dataObserver = (Observer) (Observable source, Object data) -> {
             updateServiceState();
         };
+        this.serviceStateObservable.setExecutorService(GlobalCachedExecutorService.getInstance().getExecutorService());
     }
 
     /**
-     * Compute the service state of this service collection if an underlying service changes.
+     * Compute the service state of this service collection if an underlying
+     * service changes.
      *
      * @return the computed server state is returned.
-     * @throws CouldNotPerformException if an underlying service throws an exception
+     * @throws CouldNotPerformException if an underlying service throws an
+     * exception
      */
     protected abstract ST computeServiceState() throws CouldNotPerformException;
 
@@ -115,7 +118,8 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     /**
      *
      * @return the current service state
-     * @throws NotAvailableException if the service state has not been set at least once.
+     * @throws NotAvailableException if the service state has not been set at
+     * least once.
      */
     @Override
     public ST getServiceState() throws NotAvailableException {
@@ -158,9 +162,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             if (!verifyServiceCompatibility(config, serviceType)) {
                 throw new NotSupportedException("UnitTemplate[" + serviceType.name() + "]", config.getLabel());
             }
-
+            
             UnitRemote remote = Units.getUnit(config, false);
-
+            
             if (!unitRemoteTypeMap.containsKey(remote.getType())) {
                 unitRemoteTypeMap.put(remote.getType(), new ArrayList());
                 for (UnitType superType : Registries.getUnitRegistry().getSuperUnitTypes(remote.getType())) {
@@ -169,7 +173,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                     }
                 }
             }
-
+            
             try {
                 serviceMap.put(config.getId(), (S) remote);
                 unitRemoteTypeMap.get(remote.getType()).add((S) remote);
@@ -179,9 +183,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             } catch (ClassCastException ex) {
                 throw new NotSupportedException("ServiceInterface[" + serviceType.name() + "]", remote, "Remote does not implement the service interface!", ex);
             }
-
+            
             unitRemoteMap.put(config.getId(), remote);
-
+            
             if (active) {
                 if (!remote.isEnabled()) {
                     logger.warn("Using a disabled " + remote + " in " + this + " is not recommended and should be avoided!");
@@ -194,11 +198,15 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     }
 
     /**
-     * Initializes this service remote with a set of unit configurations. Each of the units referred by the given configurations should provide the service type of this service remote.
+     * Initializes this service remote with a set of unit configurations. Each
+     * of the units referred by the given configurations should provide the
+     * service type of this service remote.
      *
      * @param configs a set of unit configurations.
-     * @throws InitializationException is thrown if the service remote could not be initialized.
-     * @throws InterruptedException is thrown if the current thread is externally interrupted.
+     * @throws InitializationException is thrown if the service remote could not
+     * be initialized.
+     * @throws InterruptedException is thrown if the current thread is
+     * externally interrupted.
      */
     @Override
     public void init(final Collection<UnitConfig> configs) throws InitializationException, InterruptedException {
@@ -272,7 +280,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     public boolean isActive() {
         return active;
     }
-
+    
     @Override
     public void removeUnit(UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         unitRemoteMap.get(unitConfig.getId()).removeDataObserver(dataObserver);
@@ -288,7 +296,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     public Collection<org.openbase.bco.dal.lib.layer.unit.UnitRemote> getInternalUnits() {
         return Collections.unmodifiableCollection(unitRemoteMap.values());
     }
-
+    
     @Override
     public boolean hasInternalRemotes() {
         return !unitRemoteMap.isEmpty();
@@ -305,7 +313,8 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     }
 
     /**
-     * Returns a collection of all internally used unit remotes filtered by the given unit type.
+     * Returns a collection of all internally used unit remotes filtered by the
+     * given unit type.
      *
      * @return a collection of unit remotes limited to the service interface.
      */
@@ -314,11 +323,11 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         if (unitType == UnitType.UNKNOWN) {
             return Collections.unmodifiableCollection(serviceMap.values());
         }
-
+        
         if (!unitRemoteTypeMap.containsKey(unitType)) {
             return new ArrayList<>();
         }
-
+        
         return Collections.unmodifiableCollection(unitRemoteTypeMap.get(unitType));
     }
 
@@ -331,16 +340,16 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     public ServiceType getServiceType() {
         return serviceType;
     }
-
+    
     @Override
     public Future<Void> applyAction(final ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
         try {
             if (!actionConfig.getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
-
+            
             List<Future> actionFutureList = new ArrayList<>();
-
+            
             for (org.openbase.bco.dal.lib.layer.unit.UnitRemote remote : getInternalUnits()) {
                 actionFutureList.add(remote.applyAction(actionConfig));
 //                remote.callMethod("set" + StringProcessor.transformUpperCaseToCamelCase(serviceType.toString()).replaceAll("Service", ""),
@@ -353,17 +362,19 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     }
 
     /**
-     * Method blocks until an initial data message was dataObserverreceived from every remote controller.
+     * Method blocks until an initial data message was dataObserverreceived from
+     * every remote controller.
      *
      * @throws CouldNotPerformException is thrown if any error occurs.
-     * @throws InterruptedException is thrown in case the thread is externally interrupted.
+     * @throws InterruptedException is thrown in case the thread is externally
+     * interrupted.
      */
     @Override
     public void waitForData() throws CouldNotPerformException, InterruptedException {
         if (unitRemoteMap.isEmpty()) {
             return;
         }
-
+        
         for (UnitRemote remote : unitRemoteMap.values()) {
             remote.waitForData();
         }
@@ -371,12 +382,17 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     }
 
     /**
-     * Method blocks until an initial data message was received from every remote controller or the given timeout is reached.
+     * Method blocks until an initial data message was received from every
+     * remote controller or the given timeout is reached.
      *
-     * @param timeout maximal time to wait for the main controller data. After the timeout is reached a TimeoutException is thrown.
+     * @param timeout maximal time to wait for the main controller data. After
+     * the timeout is reached a TimeoutException is thrown.
      * @param timeUnit the time unit of the timeout.
-     * @throws CouldNotPerformException is thrown in case the any error occurs, or if the given timeout is reached. In this case a TimeoutException is thrown.
-     * @throws InterruptedException is thrown in case the thread is externally interrupted.
+     * @throws CouldNotPerformException is thrown in case the any error occurs,
+     * or if the given timeout is reached. In this case a TimeoutException is
+     * thrown.
+     * @throws InterruptedException is thrown in case the thread is externally
+     * interrupted.
      */
     @Override
     public void waitForData(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
@@ -393,7 +409,8 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     /**
      * Checks if a server connection is established for every underlying remote.
      *
-     * @return is true in case that the connection for every underlying remote it established.
+     * @return is true in case that the connection for every underlying remote
+     * it established.
      */
     @Override
     public boolean isConnected() {
@@ -401,9 +418,11 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     }
 
     /**
-     * Check if the data object is already available for every underlying remote.
+     * Check if the data object is already available for every underlying
+     * remote.
      *
-     * @return is true in case that for every underlying remote data is available.
+     * @return is true in case that for every underlying remote data is
+     * available.
      */
     @Override
     public boolean isDataAvailable() {
@@ -412,7 +431,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         }
         return serviceStateObservable.isValueAvailable();
     }
-
+    
     public static boolean verifyServiceCompatibility(final UnitConfig unitConfig, final ServiceType serviceType) {
         return unitConfig.getServiceConfigList().stream().anyMatch((serviceConfig) -> (serviceConfig.getServiceTemplate().getType() == serviceType));
     }

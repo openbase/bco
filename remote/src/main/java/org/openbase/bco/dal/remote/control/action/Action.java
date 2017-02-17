@@ -116,7 +116,7 @@ public class Action implements ActionService, Initializable<ActionConfig> {
                         // Execute
                         updateActionState(ActionState.State.EXECUTING);
                         try {
-                            serviceRemote.applyAction(getConfig());
+                            serviceRemote.applyAction(getConfig()).get();
                             updateActionState(ActionState.State.FINISHING);
                             releaseService();
                             updateActionState(ActionState.State.FINISHED);
