@@ -191,17 +191,26 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
 
     @Override
     public synchronized UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        System.out.println("Apply config update for location["+config.getLabel()+"]");
         UnitConfig unitConfig = super.applyConfigUpdate(config);
+        System.out.println("Applied super config update!");
         serviceRemoteManager.applyConfigUpdate(unitConfig.getLocationConfig().getUnitIdList());
+        System.out.println("ServiceRemoteManager applied config update");
         // if already active than update the current location state.
         if (isActive()) {
+            System.out.println("update current status....");
             updateCurrentState();
+            System.out.println("updated current status!");
         }
         return unitConfig;
     }
 
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
+        if (isActive()) {
+            System.out.println("Skipp controller activations because is already active...");
+            return;
+        }
         LOGGER.debug("Activate location [" + getLabel() + "]!");
         serviceRemoteManager.activate();
         super.activate();
@@ -225,6 +234,14 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
 
                 try {
                     final AbstractServiceRemote serviceRemote = serviceRemoteManager.getServiceRemote(serviceType);
+                    /* When the locationRemote is active and a config update occurs the serviceRemoteManager clears 
+                     * its map of service remotes and fills it with new ones. When they are activated an update is triggered while
+                     * the map is not completely filled. Therefore the serviceRemote can be null.
+                     */
+                    if (serviceRemote == null) {
+//                        System.out.println("Update for serviceRemote of type["+serviceType.name()+"] because not initialized by serviceRemoteManager");
+                        continue;
+                    }
                     if (!serviceRemote.isDataAvailable()) {
                         continue;
                     }
@@ -347,11 +364,14 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
 
     @Override
     public Future<Void> applyAction(final ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
-        Collection<Future> futureCollection = new ArrayList<>();
-        for (Service service : serviceRemoteManager.getServiceRemoteList()) {
-            futureCollection.add(service.applyAction(actionConfig));
-        }
-        return GlobalCachedExecutorService.allOf(futureCollection, null);
+//        Collection<Future> futureCollection = new ArrayList<>();
+//        for (Service service : serviceRemoteManager.getServiceRemoteList(actionConfig.getServiceType())) {
+//            futureCollection.add(service.applyAction(actionConfig));
+//        }
+        System.out.println("ActionType: [" + actionConfig.getServiceType() + "]");
+        System.out.println("ServiceRemote: [" + serviceRemoteManager.getServiceRemote(actionConfig.getServiceType()) + "]");
+        return serviceRemoteManager.getServiceRemote(actionConfig.getServiceType()).applyAction(actionConfig);
+//        return GlobalCachedExecutorService.allOf(futureCollection, null);
     }
 
     @Override
