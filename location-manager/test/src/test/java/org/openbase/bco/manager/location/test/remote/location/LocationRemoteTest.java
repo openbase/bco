@@ -65,6 +65,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.state.ColorStateType.ColorState;
+import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.MotionStateType.MotionState;
 import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
 import rst.domotic.state.PowerStateType.PowerState;
@@ -157,6 +158,10 @@ public class LocationRemoteTest {
         try {
             List<PowerStateOperationService> powerServiceList = new ArrayList<>();
             for (UnitConfig dalUnitConfig : unitRegistry.getDalUnitConfigs()) {
+                if (dalUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
+                    continue;
+                }
+
                 if (unitHasService(dalUnitConfig, ServiceType.POWER_STATE_SERVICE, ServicePattern.OPERATION)) {
                     UnitController unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dalUnitConfig.getId());
                     powerServiceList.add((PowerStateOperationService) unitController);
@@ -202,6 +207,10 @@ public class LocationRemoteTest {
         List<TemperatureControllerController> temperatureControllerList = new ArrayList<>();
         List<PowerConsumptionSensorController> powerConsumptionSensorList = new ArrayList<>();
         for (UnitConfig dalUnitConfig : unitRegistry.getDalUnitConfigs()) {
+            if (dalUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
+                continue;
+            }
+
             UnitController unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dalUnitConfig.getId());
             if (unitController instanceof TemperatureSensorController) {
                 temperatureSensorList.add((TemperatureSensorController) unitController);
@@ -302,6 +311,9 @@ public class LocationRemoteTest {
 
             List<PowerStateOperationService> powerServiceList = new ArrayList<>();
             for (UnitConfig dalUnitConfig : unitRegistry.getDalUnitConfigs()) {
+                if (dalUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
+                    continue;
+                }
 
                 if (lightTypes.contains(dalUnitConfig.getType())) {
                     UnitController unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dalUnitConfig.getId());
@@ -352,6 +364,10 @@ public class LocationRemoteTest {
         try {
             MotionDetectorController motionDetectorController = null;
             for (UnitConfig dalUnitConfig : unitRegistry.getDalUnitConfigs()) {
+                if (dalUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
+                    continue;
+                }
+
                 UnitController unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dalUnitConfig.getId());
                 if (unitController instanceof MotionDetectorController) {
                     motionDetectorController = (MotionDetectorController) unitController;
