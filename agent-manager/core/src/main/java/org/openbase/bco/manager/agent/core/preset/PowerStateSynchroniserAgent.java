@@ -26,21 +26,22 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
-import org.openbase.bco.dal.remote.unit.UnitRemote;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactory;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
-import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
+import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -79,7 +80,6 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
     private PowerState.State targetLatestPowerState;
     private UnitRemote sourceRemote;
     private PowerStateSyncBehaviour sourceBehaviour, targetBehaviour;
-    private UnitRegistry unitRegistry;
 
     public PowerStateSynchroniserAgent() throws InstantiationException, CouldNotPerformException {
         super(PowerStateSynchroniserAgent.class);
@@ -98,29 +98,36 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
         try {
-            logger.debug("Creating PowerStateSynchroniserAgent[" + config.getLabel() + "]");
+            logger.debug("Initializing PowerStateSynchroniserAgent[" + config.getLabel() + "]");
             CachedUnitRegistryRemote.waitForData();
-            unitRegistry = CachedUnitRegistryRemote.getRegistry();
 
             MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("PowerStateSynchroniserAgent", config.getMetaConfig());
 
-            sourceRemote = factory.newInitializedInstance(unitRegistry.getUnitConfigById(configVariableProvider.getValue(SOURCE_KEY)));
+            UnitConfig sourceUnitConfig = CachedUnitRegistryRemote.getRegistry().getUnitConfigById(configVariableProvider.getValue(SOURCE_KEY));
+            if (sourceUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
+                throw new NotAvailableException("Source[" + ScopeGenerator.generateStringRep(sourceUnitConfig.getScope()) + "] is not enabled");
+            }
+            sourceRemote = factory.newInitializedInstance(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(configVariableProvider.getValue(SOURCE_KEY)));
             int i = 1;
             String unitId;
             try {
                 while (!(unitId = configVariableProvider.getValue(TARGET_KEY + "_" + i)).isEmpty()) {
-                    logger.info("Found target id [" + unitId + "] with key [" + TARGET_KEY + "_" + i + "]");
-                    targetRemotes.add(factory.newInitializedInstance(unitRegistry.getUnitConfigById(unitId)));
                     i++;
+                    logger.info("Found target id [" + unitId + "] with key [" + TARGET_KEY + "_" + i + "]");
+                    UnitConfig targetUnitConfig = CachedUnitRegistryRemote.getRegistry().getUnitConfigById(unitId);
+                    if (targetUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
+                        logger.warn("TargetUnit[" + ScopeGenerator.generateStringRep(targetUnitConfig.getScope()) + "] "
+                                + "of powerStateSynchroniserAgent[" + ScopeGenerator.generateStringRep(config.getScope()) + "] is disabled and therefore skipped!");
+                        continue;
+                    }
+                    targetRemotes.add(factory.newInitializedInstance(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(unitId)));
                 }
             } catch (NotAvailableException ex) {
                 i--;
-                logger.info("Found [" + i + "] target/s");
+                logger.debug("Found [" + i + "] target/s");
             }
             sourceBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(SOURCE_BEHAVIOUR_KEY));
             targetBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(TARGET_BEHAVIOUR_KEY));
-
-            logger.info("Initializing observers");
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -160,7 +167,6 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
     }
 
     private void handleSourcePowerStateUpdate(final PowerState.State sourcePowerState, final Object target) {
-//        try {
         synchronized (AGENT_LOCK) {
             this.sourceLatestPowerState = sourcePowerState;
             logger.info("Handle new Value[" + sourcePowerState + "] for Source[" + target + "]");
@@ -191,10 +197,6 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
                 }
             }
         }
-//        } catch (CouldNotPerformException ex) {
-//            ExceptionPrinter.printHistory("Could not handle source power state update!", ex, logger);
-//        }
-
     }
 
     /**
