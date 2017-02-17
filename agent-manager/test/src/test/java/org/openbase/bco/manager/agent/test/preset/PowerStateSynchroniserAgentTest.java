@@ -33,9 +33,9 @@ import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.DimmerRemote;
 import org.openbase.bco.dal.remote.unit.PowerSwitchRemote;
+import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.manager.agent.core.AgentManagerLauncher;
 import org.openbase.bco.manager.agent.core.preset.PowerStateSynchroniserAgent;
-import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
@@ -47,7 +47,6 @@ import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
 import rst.configuration.EntryType.Entry;
@@ -234,7 +233,11 @@ public class PowerStateSynchroniserAgentTest {
         Entry.Builder sourceBehaviour = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.SOURCE_BEHAVIOUR_KEY).setValue("OFF");
         Entry.Builder targetBehaviour = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.TARGET_BEHAVIOUR_KEY).setValue("ON");
 
-        for (UnitConfig unit : unitRegistry.getUnitConfigs()) {
+        for (UnitConfig unit : unitRegistry.getDalUnitConfigs()) {
+            if (unit.getEnablingState().getValue() != EnablingState.State.ENABLED) {
+                continue;
+            }
+
             if (unit.getType() == UnitType.DIMMER && source.getValue().isEmpty()) {
                 sourceId = unit.getId();
                 source.setValue(unit.getId());
