@@ -38,11 +38,9 @@ import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rst.processing.TimestampJavaTimeTransform;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.schedule.Stopwatch;
 import org.slf4j.LoggerFactory;
@@ -124,7 +122,7 @@ public class TamperDetectorRemoteTest {
     @Test(timeout = 10000)
     public void testGetTamperState() throws Exception {
         System.out.println("getTamperState");
-        TamperState tamperState = TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
+        TamperState tamperState =  TimestampProcessor.updateTimestampWithCurrentTime(TamperState.newBuilder().setValue(TamperState.State.TAMPER)).build();
         ((TamperDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId())).updateTamperStateProvider(tamperState);
         tamperDetectorRemote.requestData().get();
         assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
@@ -139,28 +137,28 @@ public class TamperDetectorRemoteTest {
     public void testGetTamperStateTimestamp() throws Exception {
         LOGGER.debug("testGetTamperStateTimestamp");
         long timestamp;
-        TamperState tamperState = TamperState.newBuilder().setValue(TamperState.State.TAMPER).build();
         Stopwatch stopwatch = new Stopwatch();
 
         stopwatch.start();
+        TamperState tamperState = TimestampProcessor.updateTimestampWithCurrentTime(TamperState.newBuilder().setValue(TamperState.State.TAMPER)).build();
         ((TamperDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId())).updateTamperStateProvider(tamperState);
         stopwatch.stop();
         tamperDetectorRemote.requestData().get();
         assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
-        timestamp = tamperDetectorRemote.getTamperState().getLastDetection().getTime();
+        timestamp = TimestampJavaTimeTransform.transform(tamperDetectorRemote.getTamperState().getLastDetection());
         String comparision = "Timestamp: " + timestamp + ", interval: [" + stopwatch.getStartTime() + ", " + stopwatch.getEndTime() + "]";
         assertTrue("The last detection timestamp has not been updated! " + comparision, (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
 
         // just to be safe that the next test does not set the motion state in the same millisecond 
         Thread.sleep(1);
 
-        tamperState = TamperState.newBuilder().setValue(TamperState.State.NO_TAMPER).build();
         stopwatch.start();
+        tamperState = TimestampProcessor.updateTimestampWithCurrentTime(TamperState.newBuilder().setValue(TamperState.State.NO_TAMPER)).build();
         ((TamperDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId())).updateTamperStateProvider(tamperState);
         stopwatch.stop();
         tamperDetectorRemote.requestData().get();
         assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
-        timestamp = tamperDetectorRemote.getTamperState().getLastDetection().getTime();
+        timestamp = TimestampJavaTimeTransform.transform(tamperDetectorRemote.getTamperState().getLastDetection());
         comparision = "Timestamp: " + timestamp + ", interval: [" + stopwatch.getStartTime() + ", " + stopwatch.getEndTime() + "]";
         assertFalse("The last detection timestamp has been updated even though it sould not! " + comparision, (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
     }

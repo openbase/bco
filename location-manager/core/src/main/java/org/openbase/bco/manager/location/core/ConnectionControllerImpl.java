@@ -45,6 +45,7 @@ import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observable;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -259,18 +260,20 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
 
     private void updateDoorState() throws CouldNotPerformException {
         DoorState.State doorState = null;
+        long timestamp = 0;
         try {
             Collection<UnitRemote> contactUnits = serviceRemoteManager.getServiceRemote(ServiceType.CONTACT_STATE_SERVICE).getInternalUnits();
             for (UnitRemote contactStateProvider : contactUnits) {
                 if (!contactStateProvider.isDataAvailable()) {
                     continue;
                 }
-                ContactState.State contactState = ((ContactStateProviderService) contactStateProvider).getContactState().getValue();
+                ContactState contactState = ((ContactStateProviderService) contactStateProvider).getContactState();
                 DoorState.State correspondingDoorState = contactDoorPositionMap.get((String) contactStateProvider.getId()).getCorrespondingDoorState();
-                switch (contactState) {
+                switch (contactState.getValue()) {
                     case CLOSED:
                         if (doorState == null) {
                             doorState = correspondingDoorState;
+                            timestamp = Math.max(timestamp, contactState.getTimestamp().getTime());
                         } else if (doorState != correspondingDoorState) {
                             throw new CouldNotPerformException("Contradicting contact values for the door state!");
                         }
@@ -278,6 +281,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
                     case OPEN:
                         if (doorState == null) {
                             doorState = DoorState.State.OPEN;
+                            timestamp = Math.max(timestamp, contactState.getTimestamp().getTime());
                         }
                         break;
                     case UNKNOWN:
@@ -295,7 +299,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
         }
 
         try (ClosableDataBuilder<ConnectionData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setDoorState(DoorState.newBuilder().setValue(doorState).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())));
+            TimestampProcessor.updateTimestamp(timestamp, dataBuilder.getInternalBuilder().setDoorState(DoorState.newBuilder().setValue(doorState)), logger).build();
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply brightness data change!", ex);
         }
@@ -303,18 +307,20 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
 
     private void updateWindowState() throws CouldNotPerformException {
         WindowState.State windowState = null;
+        long timestamp = 0;
         try {
             Collection<UnitRemote> contactUnits = serviceRemoteManager.getServiceRemote(ServiceType.CONTACT_STATE_SERVICE).getInternalUnits();
             for (UnitRemote contactStateProvider : contactUnits) {
                 if (!contactStateProvider.isDataAvailable()) {
                     continue;
                 }
-                ContactState.State contactState = ((ContactStateProviderService) contactStateProvider).getContactState().getValue();
+                ContactState contactState = ((ContactStateProviderService) contactStateProvider).getContactState();
                 WindowState.State correspondingDoorState = contactWindowPositionMap.get((String) contactStateProvider.getId()).getCorrespondingWindowState();
-                switch (contactState) {
+                switch (contactState.getValue()) {
                     case CLOSED:
                         if (windowState == null) {
                             windowState = correspondingDoorState;
+                            timestamp = Math.max(timestamp, contactState.getTimestamp().getTime());
                         } else if (windowState != correspondingDoorState) {
                             throw new CouldNotPerformException("Contradicting contact values for the window state!");
                         }
@@ -322,6 +328,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
                     case OPEN:
                         if (windowState == null) {
                             windowState = WindowState.State.OPEN;
+                            timestamp = Math.max(timestamp, contactState.getTimestamp().getTime());
                         }
                         break;
                     case UNKNOWN:
@@ -339,7 +346,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
         }
 
         try (ClosableDataBuilder<ConnectionData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setWindowState(WindowState.newBuilder().setValue(windowState).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())));
+             TimestampProcessor.updateTimestamp(timestamp, dataBuilder.getInternalBuilder().setWindowState(WindowState.newBuilder().setValue(windowState)), logger).build();
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply brightness data change!", ex);
         }
