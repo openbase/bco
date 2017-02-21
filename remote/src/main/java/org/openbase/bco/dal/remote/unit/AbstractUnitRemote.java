@@ -259,7 +259,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     private void verifyEnablingState() throws FatalImplementationErrorException {
         if (!isEnabled()) {
             if (JPService.testMode()) {
-                throw new FatalImplementationErrorException("Waiting for data of an disabled unit should be avoided!", "Calling instance");
+                throw new FatalImplementationErrorException("Waiting for data of a disabled unit should be avoided!", "Calling instance");
             } else {
                 logger.warn("Waiting for data of an disabled unit should be avoided! Probably this method will block forever!");
             }
