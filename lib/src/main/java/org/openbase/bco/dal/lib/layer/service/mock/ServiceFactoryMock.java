@@ -80,7 +80,7 @@ public class ServiceFactoryMock implements ServiceFactory {
 
             @Override
             public Future<Void> setBrightnessState(BrightnessState state) throws CouldNotPerformException {
-                return update(TimestampProcessor.updateTimeStampWithCurrentTime(state), unit);
+                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
             }
         };
     }
@@ -122,7 +122,7 @@ public class ServiceFactoryMock implements ServiceFactory {
 
             @Override
             public Future<Void> setColorState(ColorState state) throws CouldNotPerformException {
-                return update(TimestampProcessor.updateTimeStampWithCurrentTime(state), unit);
+                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
             }
         };
     }
@@ -142,7 +142,7 @@ public class ServiceFactoryMock implements ServiceFactory {
 
             @Override
             public Future<Void> setPowerState(PowerState state) throws CouldNotPerformException {
-                return update(TimestampProcessor.updateTimeStampWithCurrentTime(state), unit);
+                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
             }
         };
     }
@@ -158,7 +158,7 @@ public class ServiceFactoryMock implements ServiceFactory {
 
             @Override
             public Future<Void> setBlindState(BlindState state) throws CouldNotPerformException {
-                return update(TimestampProcessor.updateTimeStampWithCurrentTime(state), unit);
+                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
             }
         };
     }
@@ -174,7 +174,7 @@ public class ServiceFactoryMock implements ServiceFactory {
 
             @Override
             public Future<Void> setStandbyState(StandbyStateType.StandbyState state) throws CouldNotPerformException {
-                return update(TimestampProcessor.updateTimeStampWithCurrentTime(state), unit);
+                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
             }
         };
     }
@@ -190,7 +190,7 @@ public class ServiceFactoryMock implements ServiceFactory {
 
             @Override
             public Future<Void> setTargetTemperatureState(TemperatureState state) throws CouldNotPerformException {
-                return update(TimestampProcessor.updateTimeStampWithCurrentTime(state), unit);
+                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
             }
         };
     }
@@ -201,7 +201,7 @@ public class ServiceFactoryMock implements ServiceFactory {
 
             @Override
             public Future<Void> setIntensityState(IntensityStateType.IntensityState state) throws CouldNotPerformException {
-                return update(TimestampProcessor.updateTimeStampWithCurrentTime(state), unit);
+                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
             }
 
             @Override

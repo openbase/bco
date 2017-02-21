@@ -29,6 +29,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotInitializedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
@@ -141,6 +142,7 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
 
     private synchronized void updatePresenceState(final PresenceStateOrBuilder presenceState) throws CouldNotPerformException {
 
+        // TODO?
         // so wird das timeout durch das erste present setzten des detectors selbst nochmal restarted...
         // vorher nach motion state filtern (inklusive lastMotion) und wenn gleich das presence update skippen?
         // update Timestemp and reset timer
@@ -155,7 +157,7 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
         }
 
         // update value
-        this.presenceState.getTimestampBuilder().setTime(System.currentTimeMillis());
+        TimestampProcessor.updateTimestampWithCurrentTime(presenceState, logger);
         this.presenceState.setValue(presenceState.getValue());
 
         // notify

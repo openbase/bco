@@ -28,6 +28,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationServi
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType.PowerState;
@@ -78,6 +79,7 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
     @Override
     public PowerState getPowerState(final UnitType unitType) throws NotAvailableException {
         PowerState.State powerStateValue = PowerState.State.OFF;
+        long timestamp = 0;
         for (PowerStateOperationService service : getServices(unitType)) {
             if (!((UnitRemote) service).isDataAvailable()) {
                 continue;
@@ -86,8 +88,10 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
             if (service.getPowerState().getValue() == PowerState.State.ON) {
                 powerStateValue = PowerState.State.ON;
             }
+            
+            timestamp = Math.max(timestamp, service.getPowerState().getTimestamp().getTime());
         }
 
-        return PowerState.newBuilder().setValue(powerStateValue).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return TimestampProcessor.updateTimestamp(timestamp, PowerState.newBuilder().setValue(powerStateValue), logger).build();
     }
 }

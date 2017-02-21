@@ -27,6 +27,7 @@ import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionStateProv
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -68,21 +69,23 @@ public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<Po
         double consumptionSum = 0;
         double averageCurrent = 0;
         double averageVoltage = 0;
+        long timestamp = 0;
         Collection<PowerConsumptionStateProviderService> powerConsumptionStateProviderServices = getServices(unitType);
         int amount = powerConsumptionStateProviderServices.size();
-        for (PowerConsumptionStateProviderService provider : powerConsumptionStateProviderServices) {
-            if (!((UnitRemote) provider).isDataAvailable()) {
+        for (PowerConsumptionStateProviderService service : powerConsumptionStateProviderServices) {
+            if (!((UnitRemote) service).isDataAvailable()) {
                 amount--;
                 continue;
             }
 
-            consumptionSum += provider.getPowerConsumptionState().getConsumption();
-            averageCurrent += provider.getPowerConsumptionState().getCurrent();
-            averageVoltage += provider.getPowerConsumptionState().getVoltage();
+            consumptionSum += service.getPowerConsumptionState().getConsumption();
+            averageCurrent += service.getPowerConsumptionState().getCurrent();
+            averageVoltage += service.getPowerConsumptionState().getVoltage();
+            timestamp = Math.max(timestamp, service.getPowerConsumptionState().getTimestamp().getTime());
         }
         averageCurrent = averageCurrent / amount;
         averageVoltage = averageVoltage / amount;
 
-        return PowerConsumptionState.newBuilder().setConsumption(consumptionSum).setCurrent(averageCurrent).setVoltage(averageVoltage).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return TimestampProcessor.updateTimestamp(timestamp, PowerConsumptionState.newBuilder().setConsumption(consumptionSum).setCurrent(averageCurrent).setVoltage(averageVoltage), logger).build();
     }
 }

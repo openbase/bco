@@ -31,6 +31,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.rst.processing.TimestampJavaTimeTransform;
 import org.openbase.jul.processing.StringProcessor;
 
 /**
@@ -150,12 +151,12 @@ public class PresenceStateServicePanel extends AbstractServicePanel<PresenceStat
                 if(getProviderService().getPresenceState().getLastPresence().getTime() <= 0) {
                     lastPresenceValueLabel.setText("Never");
                 } else {
-                lastPresenceValueLabel.setText(dateFormat.format(new Date(getProviderService().getPresenceState().getLastPresence().getTime())));
+                lastPresenceValueLabel.setText(dateFormat.format(new Date(TimestampJavaTimeTransform.transform(getProviderService().getPresenceState().getLastPresence()))));
                     
                 }
             } catch (Exception ex) {
                 lastPresenceValueLabel.setText("N/A");
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not format: [" + getProviderService().getPresenceState().getLastPresence() + "]!", ex), logger, LogLevel.ERROR);
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not format: [" + getProviderService().getPresenceState().getLastPresence().getTime() + "]!", ex), logger, LogLevel.ERROR);
             }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);

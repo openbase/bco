@@ -24,13 +24,13 @@ package org.openbase.bco.dal.remote.service;
 import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.collection.SmokeAlarmStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.provider.SmokeAlarmStateProviderService;
-import org.openbase.bco.dal.remote.unit.UnitRemote;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.AlarmStateType.AlarmState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.timing.TimestampType.Timestamp;
 
 /**
  *
@@ -66,15 +66,18 @@ public class SmokeAlarmStateServiceRemote extends AbstractServiceRemote<SmokeAla
     @Override
     public AlarmState getSmokeAlarmState(final UnitType unitType) throws NotAvailableException {
         AlarmState.State alarmValue = AlarmState.State.NO_ALARM;
-        for (SmokeAlarmStateProviderService provider : getServices(unitType)) {
-            if (!((UnitRemote) provider).isDataAvailable()) {
+        long timestamp = 0;
+        for (SmokeAlarmStateProviderService service : getServices(unitType)) {
+            if (!((UnitRemote) service).isDataAvailable()) {
                 continue;
             }
 
-            if (provider.getSmokeAlarmState().getValue() == AlarmState.State.ALARM) {
+            if (service.getSmokeAlarmState().getValue() == AlarmState.State.ALARM) {
                 alarmValue = AlarmState.State.ALARM;
             }
+            
+            timestamp = Math.max(timestamp, service.getSmokeAlarmState().getTimestamp().getTime());
         }
-        return AlarmState.newBuilder().setValue(alarmValue).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return TimestampProcessor.updateTimestamp(timestamp, AlarmState.newBuilder().setValue(alarmValue), logger).build();
     }
 }

@@ -27,6 +27,7 @@ import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderServic
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.MotionStateType.MotionState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -68,12 +69,13 @@ public class MotionStateServiceRemote extends AbstractServiceRemote<MotionStateP
     public MotionState getMotionState(UnitType unitType) throws NotAvailableException {
         MotionState.State motionValue = MotionState.State.NO_MOTION;
         long lastMotion = 0;
-        for (MotionStateProviderService provider : getServices(unitType)) {
-            if (!((UnitRemote) provider).isDataAvailable()) {
+        long timestamp = 0;
+        for (MotionStateProviderService service : getServices(unitType)) {
+            if (!((UnitRemote) service).isDataAvailable()) {
                 continue;
             }
 
-            MotionState motionState = provider.getMotionState();
+            MotionState motionState = service.getMotionState();
             if (motionState.getValue() == MotionState.State.MOTION) {
                 motionValue = MotionState.State.MOTION;
             }
@@ -81,8 +83,9 @@ public class MotionStateServiceRemote extends AbstractServiceRemote<MotionStateP
             if (motionState.hasLastMotion() && motionState.getLastMotion().getTime() > lastMotion) {
                 lastMotion = motionState.getLastMotion().getTime();
             }
+            
+            timestamp = Math.max(timestamp, motionState.getTimestamp().getTime());
         }
-
-        return MotionState.newBuilder().setValue(motionValue).setLastMotion(Timestamp.newBuilder().setTime(lastMotion)).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return TimestampProcessor.updateTimestamp(timestamp, MotionState.newBuilder().setValue(motionValue).setLastMotion(Timestamp.newBuilder().setTime(lastMotion)), logger).build();
     }
 }

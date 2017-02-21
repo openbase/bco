@@ -24,13 +24,13 @@ package org.openbase.bco.dal.remote.service;
 import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.collection.TemperatureStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
-import org.openbase.bco.dal.remote.unit.UnitRemote;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.timing.TimestampType.Timestamp;
 
 /**
  *
@@ -68,16 +68,18 @@ public class TemperatureStateServiceRemote extends AbstractServiceRemote<Tempera
         Double average = 0d;
         Collection<TemperatureStateProviderService> temperatureStateProviderServices = getServices(unitType);
         int amount = temperatureStateProviderServices.size();
-        for (TemperatureStateProviderService provider : temperatureStateProviderServices) {
-            if (!((UnitRemote) provider).isDataAvailable()) {
+        long timestamp = 0;
+        for (TemperatureStateProviderService service : temperatureStateProviderServices) {
+            if (!((UnitRemote) service).isDataAvailable()) {
                 amount--;
                 continue;
             }
 
-            average += provider.getTemperatureState().getTemperature();
+            average += service.getTemperatureState().getTemperature();
+            timestamp = Math.max(timestamp, service.getTemperatureState().getTimestamp().getTime());
         }
         average /= amount;
 
-        return TemperatureState.newBuilder().setTemperature(average).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return TimestampProcessor.updateTimestamp(timestamp, TemperatureState.newBuilder().setTemperature(average), logger).build();
     }
 }

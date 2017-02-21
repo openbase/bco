@@ -27,6 +27,7 @@ import org.openbase.bco.dal.lib.layer.service.provider.SmokeStateProviderService
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.SmokeStateType.SmokeState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -71,13 +72,14 @@ public class SmokeStateServiceRemote extends AbstractServiceRemote<SmokeStatePro
         Collection<SmokeStateProviderService> smokeStateProviderServices = getSmokeStateProviderServices();
         int amount = smokeStateProviderServices.size();
         double averageSmokeLevel = 0;
-        for (SmokeStateProviderService provider : getServices(unitType)) {
-            if (!((UnitRemote) provider).isDataAvailable()) {
+        long timestamp = 0;
+        for (SmokeStateProviderService service : getServices(unitType)) {
+            if (!((UnitRemote) service).isDataAvailable()) {
                 amount--;
                 continue;
             }
 
-            SmokeState smokeState = provider.getSmokeState();
+            SmokeState smokeState = service.getSmokeState();
             if (smokeState.getValue() == SmokeState.State.SMOKE) {
                 smokeValue = SmokeState.State.SMOKE;
                 break;
@@ -86,6 +88,7 @@ public class SmokeStateServiceRemote extends AbstractServiceRemote<SmokeStatePro
             }
 
             averageSmokeLevel += smokeState.getSmokeLevel();
+            timestamp = Math.max(timestamp, smokeState.getTimestamp().getTime());
         }
 
         if (someSmoke) {
@@ -93,6 +96,6 @@ public class SmokeStateServiceRemote extends AbstractServiceRemote<SmokeStatePro
         }
         averageSmokeLevel /= amount;
 
-        return SmokeState.newBuilder().setValue(smokeValue).setSmokeLevel(averageSmokeLevel).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return TimestampProcessor.updateTimestamp(timestamp, SmokeState.newBuilder().setValue(smokeValue).setSmokeLevel(averageSmokeLevel), logger).build();
     }
 }

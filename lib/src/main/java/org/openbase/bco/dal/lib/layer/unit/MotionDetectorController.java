@@ -24,6 +24,7 @@ package org.openbase.bco.dal.lib.layer.unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.MotionStateType.MotionState;
@@ -58,7 +59,11 @@ public class MotionDetectorController extends AbstractDALUnitController<MotionDe
 
             // Update timestemp if necessary
             if (state.getValue() == MotionState.State.MOTION) {
-                motionStateBuilder.setLastMotion(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()));
+                if (!state.hasTimestamp()) {
+                    logger.warn("State[" + state.getClass().getSimpleName() + "] of " + this + " does not contain any state related timestampe!");
+                    state = TimestampProcessor.updateTimestampWithCurrentTime(state, logger);
+                }
+                motionStateBuilder.setLastMotion(state.getTimestamp());
             }
 
             dataBuilder.getInternalBuilder().setMotionState(motionStateBuilder);

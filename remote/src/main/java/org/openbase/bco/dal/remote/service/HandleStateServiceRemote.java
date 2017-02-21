@@ -27,6 +27,7 @@ import org.openbase.bco.dal.lib.layer.service.provider.HandleStateProviderServic
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.HandleStateType.HandleState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -69,15 +70,17 @@ public class HandleStateServiceRemote extends AbstractServiceRemote<HandleStateP
         //boolean tilted = false;
         Collection<HandleStateProviderService> handleStateProviderServices = getServices(unitType);
         int amount = handleStateProviderServices.size();
-        for (HandleStateProviderService provider : handleStateProviderServices) {
-            if (!((UnitRemote) provider).isDataAvailable()) {
+        long timestamp = 0;
+        for (HandleStateProviderService service : handleStateProviderServices) {
+            if (!((UnitRemote) service).isDataAvailable()) {
                 amount--;
                 continue;
             }
-            position += provider.getHandleState().getPosition();
+            position += service.getHandleState().getPosition();
+            timestamp = Math.max(timestamp, service.getHandleState().getTimestamp().getTime());
         }
 
         position /= amount;
-        return HandleState.newBuilder().setPosition(position).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return TimestampProcessor.updateTimestamp(timestamp, HandleState.newBuilder().setPosition(position), logger).build();
     }
 }

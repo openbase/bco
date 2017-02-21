@@ -28,6 +28,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOp
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
@@ -80,6 +81,7 @@ public class TargetTemperatureStateServiceRemote extends AbstractServiceRemote<T
         Double average = 0d;
         Collection<TargetTemperatureStateOperationService> targetTemperatureStateOperationServices = getServices(unitType);
         int amount = targetTemperatureStateOperationServices.size();
+        long timestamp = 0;
         for (TargetTemperatureStateOperationService service : targetTemperatureStateOperationServices) {
             if (!((UnitRemote) service).isDataAvailable()) {
                 amount--;
@@ -87,9 +89,10 @@ public class TargetTemperatureStateServiceRemote extends AbstractServiceRemote<T
             }
 
             average += service.getTargetTemperatureState().getTemperature();
+            timestamp = Math.max(timestamp, service.getTargetTemperatureState().getTimestamp().getTime());
         }
         average /= amount;
 
-        return TemperatureState.newBuilder().setTemperature(average).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return TimestampProcessor.updateTimestamp(timestamp, TemperatureState.newBuilder().setTemperature(average), logger).build();
     }
 }

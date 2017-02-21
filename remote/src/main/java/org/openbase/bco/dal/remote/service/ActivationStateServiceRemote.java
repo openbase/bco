@@ -78,7 +78,7 @@ public class ActivationStateServiceRemote extends AbstractServiceRemote<Activati
                     activationStateValue = ActivationState.State.ACTIVE;
                 }
             }
-            return TimestampProcessor.updateTimeStampWithCurrentTime(ActivationState.newBuilder().setValue(activationStateValue)).build();
+            return TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(activationStateValue)).build();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("ActivationState", ex);
         }

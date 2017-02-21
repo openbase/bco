@@ -28,6 +28,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperation
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
@@ -81,14 +82,16 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
         Collection<BrightnessStateOperationService> brightnessStateOperationServices = getServices(UnitType.BATTERY);
         int serviceNumber = brightnessStateOperationServices.size();
         Double average = 0d;
+        long timestamp = 0;
         for (BrightnessStateOperationService service : brightnessStateOperationServices) {
             if (!((UnitRemote) service).isDataAvailable()) {
                 serviceNumber--;
                 continue;
             }
             average += service.getBrightnessState().getBrightness();
+            timestamp = Math.max(timestamp, service.getBrightnessState().getTimestamp().getTime());
         }
         average /= serviceNumber;
-        return BrightnessState.newBuilder().setBrightness(average).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return TimestampProcessor.updateTimestamp(timestamp, BrightnessState.newBuilder().setBrightness(average), logger).build();
     }
 }

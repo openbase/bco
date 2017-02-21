@@ -25,6 +25,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.ButtonStateType.ButtonState;
@@ -46,10 +47,8 @@ public class ButtonController extends AbstractDALUnitController<ButtonData, Butt
         super(ButtonController.class, unitHost, builder);
     }
 
-    public void updateButtonStateProvider(final ButtonState state) throws CouldNotPerformException {
-
+    public void updateButtonStateProvider(ButtonState state) throws CouldNotPerformException {
         logger.debug("Apply buttonState Update[" + state + "] for " + this + ".");
-
         try (ClosableDataBuilder<ButtonData.Builder> dataBuilder = getDataBuilder(this)) {
 
             ButtonState.Builder buttonState = dataBuilder.getInternalBuilder().getButtonStateBuilder();
@@ -59,7 +58,11 @@ public class ButtonController extends AbstractDALUnitController<ButtonData, Butt
 
             // Update timestemp if necessary
             if (state.getValue() == ButtonState.State.PRESSED || state.getValue() == ButtonState.State.DOUBLE_PRESSED) {
-                buttonState.setLastPressed(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()));
+                if (!state.hasTimestamp()) {
+                    logger.warn("State[" + state.getClass().getSimpleName() + "] of " + this + " does not contain any state related timestampe!");
+                    state = TimestampProcessor.updateTimestampWithCurrentTime(state, logger);
+                }
+                buttonState.setLastPressed(state.getTimestamp());
             }
 
             dataBuilder.getInternalBuilder().setButtonState(buttonState);

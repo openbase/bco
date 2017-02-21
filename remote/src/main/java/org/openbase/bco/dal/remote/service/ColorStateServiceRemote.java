@@ -26,17 +26,17 @@ import java.util.Collection;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.collection.ColorStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.transform.HSBColorToRGBColorTransformer;
-import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.TypeNotSupportedException;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.timing.TimestampType.Timestamp;
 import rst.vision.ColorType;
 import rst.vision.HSBColorType.HSBColor;
 
@@ -88,6 +88,7 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
             double averageGreen = 0;
             double averageBlue = 0;
             int amount = getColorStateOperationServices().size();
+            long timestamp = 0;
             Collection<ColorStateOperationService> colorStateOperationServicCollection = getServices(unitType);
             for (ColorStateOperationService service : colorStateOperationServicCollection) {
                 if (!((UnitRemote) service).isDataAvailable()) {
@@ -99,14 +100,14 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
                 averageRed += color.getRed();
                 averageGreen += color.getGreen();
                 averageBlue += color.getBlue();
-
+                timestamp = Math.max(timestamp, service.getColorState().getTimestamp().getTime());
             }
             averageRed = averageRed / amount;
             averageGreen = averageGreen / amount;
             averageBlue = averageBlue / amount;
 
             HSBColor hsbColor = HSBColorToRGBColorTransformer.transform(new Color((int) averageRed, (int) averageGreen, (int) averageBlue));
-            return ColorState.newBuilder().setColor(ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(hsbColor)).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+            return TimestampProcessor.updateTimestamp(timestamp, ColorState.newBuilder().setColor(ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(hsbColor)), logger).build();
         } catch (CouldNotTransformException | TypeNotSupportedException ex) {
             throw new NotAvailableException("Could not transform from HSB to RGB or vice-versa!", ex);
         }

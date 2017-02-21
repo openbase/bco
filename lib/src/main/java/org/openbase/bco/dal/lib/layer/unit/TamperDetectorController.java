@@ -25,6 +25,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.TamperStateType.TamperState;
@@ -46,7 +47,7 @@ public class TamperDetectorController extends AbstractDALUnitController<TamperDe
         super(TamperDetectorController.class, unitHost, builder);
     }
 
-    public void updateTamperStateProvider(final TamperState state) throws CouldNotPerformException {
+    public void updateTamperStateProvider(TamperState state) throws CouldNotPerformException {
 
         logger.debug("Apply tamperState Update[" + state + "] for " + this + ".");
 
@@ -59,7 +60,11 @@ public class TamperDetectorController extends AbstractDALUnitController<TamperDe
 
             // Update timestemp if necessary
             if (state.getValue() == TamperState.State.TAMPER) {
-                tamperStateBuilder.setLastDetection(TimestampType.Timestamp.newBuilder().setTime(System.currentTimeMillis()));
+                if (!state.hasTimestamp()) {
+                    logger.warn("State[" + state.getClass().getSimpleName() + "] of " + this + " does not contain any state related timestampe!");
+                    state = TimestampProcessor.updateTimestampWithCurrentTime(state, logger);
+                }
+                tamperStateBuilder.setLastDetection(state.getTimestamp());
             }
 
             dataBuilder.getInternalBuilder().setTamperState(tamperStateBuilder);

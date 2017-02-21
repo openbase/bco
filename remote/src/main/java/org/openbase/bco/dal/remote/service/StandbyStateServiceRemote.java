@@ -28,6 +28,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationSer
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.StandbyStateType.StandbyState;
@@ -78,6 +79,7 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
     @Override
     public StandbyState getStandbyState(final UnitType unitType) throws NotAvailableException {
         StandbyState.State standbyValue = StandbyState.State.STANDBY;
+        long timestamp = 0;
         for (StandbyStateOperationService service : getServices(unitType)) {
             if (!((UnitRemote) service).isDataAvailable()) {
                 continue;
@@ -86,8 +88,10 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
             if (service.getStandbyState().getValue() == StandbyState.State.RUNNING) {
                 standbyValue = StandbyState.State.RUNNING;
             }
+            
+            timestamp = Math.max(timestamp, service.getStandbyState().getTimestamp().getTime());
         }
 
-        return StandbyState.newBuilder().setValue(standbyValue).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return TimestampProcessor.updateTimestamp(timestamp, StandbyState.newBuilder().setValue(standbyValue), logger).build();
     }
 }

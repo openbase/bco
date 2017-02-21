@@ -24,9 +24,10 @@ package org.openbase.bco.dal.remote.service;
 import java.util.Collection;
 import org.openbase.bco.dal.lib.layer.service.collection.TamperStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.provider.TamperStateProviderService;
-import org.openbase.bco.dal.remote.unit.UnitRemote;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.TamperStateType.TamperState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -68,12 +69,13 @@ public class TamperStateServiceRemote extends AbstractServiceRemote<TamperStateP
     public TamperState getTamperState(final UnitType unitType) throws NotAvailableException {
         TamperState.State tamperValue = TamperState.State.NO_TAMPER;
         long lastDetection = 0;
-        for (TamperStateProviderService provider : getServices(unitType)) {
-            if (!((UnitRemote) provider).isDataAvailable()) {
+        long timestamp = 0;
+        for (TamperStateProviderService service : getServices(unitType)) {
+            if (!((UnitRemote) service).isDataAvailable()) {
                 continue;
             }
 
-            TamperState tamperState = provider.getTamperState();
+            TamperState tamperState = service.getTamperState();
             if (tamperState.getValue() == TamperState.State.TAMPER) {
                 tamperValue = TamperState.State.TAMPER;
             }
@@ -81,8 +83,10 @@ public class TamperStateServiceRemote extends AbstractServiceRemote<TamperStateP
             if (tamperState.getLastDetection().getTime() > lastDetection) {
                 lastDetection = tamperState.getLastDetection().getTime();
             }
+            
+            timestamp = Math.max(timestamp, tamperState.getTimestamp().getTime());
         }
 
-        return TamperState.newBuilder().setValue(tamperValue).setLastDetection(Timestamp.newBuilder().setTime(lastDetection)).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return TimestampProcessor.updateTimestamp(timestamp, TamperState.newBuilder().setValue(tamperValue).setLastDetection(Timestamp.newBuilder().setTime(lastDetection)), logger).build();
     }
 }

@@ -23,11 +23,15 @@ package org.openbase.bco.dal.remote.service;
  */
 import java.util.Collection;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openbase.bco.dal.lib.layer.service.collection.BlindStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
@@ -68,6 +72,7 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
     @Override
     public BlindState getBlindState(UnitType unitType) throws NotAvailableException {
         int serviceNumber = getBlindStateOperationServices().size(), stop = 0, down = 0, up = 0;
+        long timestamp = 0;
         float openingRatioAverage = 0;
         for (BlindStateOperationService service : getBlindStateOperationServices()) {
             if (!((UnitRemote) service).isDataAvailable()) {
@@ -88,6 +93,7 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
             }
 
             openingRatioAverage += service.getBlindState().getOpeningRatio();
+            timestamp = Math.max(timestamp, service.getBlindState().getTimestamp().getTime());
         }
 
         openingRatioAverage /= serviceNumber;
@@ -100,7 +106,7 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
             mostOccurences = BlindState.MovementState.DOWN;
         }
 
-        return BlindState.newBuilder().setMovementState(mostOccurences).setOpeningRatio(openingRatioAverage).setTimestamp(Timestamp.newBuilder().setTime(System.currentTimeMillis())).build();
+        return TimestampProcessor.updateTimestamp(timestamp, BlindState.newBuilder().setMovementState(mostOccurences).setOpeningRatio(openingRatioAverage), logger).build();
     }
 
     @Override
