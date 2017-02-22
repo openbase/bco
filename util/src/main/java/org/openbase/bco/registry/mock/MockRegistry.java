@@ -528,8 +528,16 @@ public class MockRegistry {
         }
     }
 
+    final SyncObject LOCK = new SyncObject("WaitForDeviceClassLock");
+    final Observer notifyChangeObserver = (Observer) (Observable source, Object data) -> {
+        synchronized (LOCK) {
+            LOCK.notifyAll();
+        }
+    };
+
     private void registerDevices() throws CouldNotPerformException, InterruptedException {
         try {
+            deviceRegistryRemote.addDataObserver(notifyChangeObserver);
             // colorable light
             DeviceClass colorableLightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Philips_Hue_E27", "KV01_18U", "Philips", UnitType.COLORABLE_LIGHT)).get();
             waitForDeviceClass(colorableLightClass);
@@ -597,20 +605,22 @@ public class MockRegistry {
             waitForDeviceClass(temperatureControllerClass);
 
             registerDeviceUnitConfig(getDeviceConfig("Gire_TemperatureController_Device", serialNumber, temperatureControllerClass));
+            
+            deviceRegistryRemote.removeDataObserver(notifyChangeObserver);
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
         }
     }
 
     private void waitForDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
-        final SyncObject LOCK = new SyncObject("WaitForDeviceClassLock");
-        final Observer notifyChangeObserver = (Observer) (Observable source, Object data) -> {
-            synchronized (LOCK) {
-                LOCK.notifyAll();
-            }
-        };
+//        final SyncObject LOCK = new SyncObject("WaitForDeviceClassLock");
+//        final Observer notifyChangeObserver = (Observer) (Observable source, Object data) -> {
+//            synchronized (LOCK) {
+//                LOCK.notifyAll();
+//            }
+//        };
         synchronized (LOCK) {
-            deviceRegistryRemote.addDataObserver(notifyChangeObserver);
+//            deviceRegistryRemote.addDataObserver(notifyChangeObserver);
             try {
                 while (!deviceRegistryRemote.containsDeviceClass(deviceClass)) {
                     LOCK.wait();
@@ -619,7 +629,7 @@ public class MockRegistry {
                 Thread.currentThread().interrupt();
             }
         }
-        deviceRegistryRemote.removeDataObserver(notifyChangeObserver);
+//        deviceRegistryRemote.removeDataObserver(notifyChangeObserver);
     }
 
     private static void updateUnitLabel(final List<String> unitIds) throws CouldNotPerformException, InterruptedException, ExecutionException {
