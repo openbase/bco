@@ -364,14 +364,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
 
     @Override
     public Future<Void> applyAction(final ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
-//        Collection<Future> futureCollection = new ArrayList<>();
-//        for (Service service : serviceRemoteManager.getServiceRemoteList(actionConfig.getServiceType())) {
-//            futureCollection.add(service.applyAction(actionConfig));
-//        }
-        System.out.println("ActionType: [" + actionConfig.getServiceType() + "]");
-        System.out.println("ServiceRemote: [" + serviceRemoteManager.getServiceRemote(actionConfig.getServiceType()) + "]");
         return serviceRemoteManager.getServiceRemote(actionConfig.getServiceType()).applyAction(actionConfig);
-//        return GlobalCachedExecutorService.allOf(futureCollection, null);
     }
 
     @Override

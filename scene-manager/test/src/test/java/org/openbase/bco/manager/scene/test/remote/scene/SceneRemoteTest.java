@@ -230,7 +230,7 @@ public class SceneRemoteTest {
      *
      * @throws Exception
      */
-    //@Test(timeout = 10000)
+    @Test(timeout = 10000)
     public void testTriggerScenePerRemote() throws Exception {
         System.out.println("testTriggerScenePerRemote");
 
@@ -256,7 +256,7 @@ public class SceneRemoteTest {
      *
      * @throws Exception
      */
-    //@Test(timeout = 10000)
+    @Test(timeout = 10000)
     public void testTriggerSceneWithLocationActionPerRemote() throws Exception {
         System.out.println("testTriggerSceneWithLocationActionPerRemote");
 
