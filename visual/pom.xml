@@ -55,15 +55,8 @@
                             </platforms>
                         </program>
                         <program>
-                            <mainClass>org.openbase.bco.dal.visual.DalKNXActuatorCheck</mainClass>
-                            <id>dal-knx-actuator-check</id>
-                            <platforms>
-                                <platform>unix</platform>
-                            </platforms>
-                        </program>
-                        <program>
-                            <mainClass>org.openbase.bco.dal.visual.DalRegisteredDevicePrinter</mainClass>
-                            <id>dal-registered-device-printer</id>
+                            <mainClass>org.openbase.bco.dal.visual.DalVisualRemote</mainClass>
+                            <id>bco-visual-remote</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>

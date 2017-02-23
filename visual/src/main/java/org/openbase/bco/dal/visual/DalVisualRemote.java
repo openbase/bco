@@ -107,7 +107,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
         }
 
         setDefaultCloseOperation(javax.swing.WindowConstants.EXIT_ON_CLOSE);
-        setTitle("Dal Visual Remote");
+        setTitle("BCO Visual Remote");
 
         jPanel1.add(selectorPanel);
 
