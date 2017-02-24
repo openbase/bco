@@ -122,8 +122,7 @@ public class SceneRemoteTest {
 
             powerStateServiceRemote.activate();
             colorStateServiceRemote.activate();
-            
-            
+
         } catch (JPServiceException | CouldNotPerformException | InterruptedException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
@@ -235,6 +234,7 @@ public class SceneRemoteTest {
         System.out.println("testTriggerScenePerRemote");
 
         SceneRemote sceneRemote = Units.getUnit(unitSceneConfig, true, SceneRemote.class);
+        sceneRemote.addDataObserver(notifyChangeObserver);
 
         ActivationState activationState = ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build();
         sceneRemote.setActivationState(activationState).get();
@@ -249,6 +249,7 @@ public class SceneRemoteTest {
         assertEquals("Brightness has not been updated by scene!", COLOR_VALUE.getBrightness(), colorStateServiceRemote.getColorState().getColor().getHsbColor().getBrightness(), 0.5);
         assertEquals("Hue has not been updated by scene!", COLOR_VALUE.getHue(), colorStateServiceRemote.getColorState().getColor().getHsbColor().getHue(), 0.5);
         assertEquals("Saturation has not been updated by scene!", COLOR_VALUE.getSaturation(), colorStateServiceRemote.getColorState().getColor().getHsbColor().getSaturation(), 0.5);
+        sceneRemote.removeDataObserver(notifyChangeObserver);
     }
 
     /**
@@ -264,32 +265,45 @@ public class SceneRemoteTest {
         assertTrue("LocationState has the correct temperature to begin with!", locationRemote.getTargetTemperatureState().getTemperature() != TEMPERATURE);
 
         SceneRemote sceneRemote = Units.getUnit(unitLocationSceneConfig, true, SceneRemote.class);
+        sceneRemote.addDataObserver(notifyChangeObserver);
 
         ActivationState activationState = ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build();
         sceneRemote.setActivationState(activationState).get();
         waitForSceneExecution(sceneRemote);
 
         assertEquals("Scene has not been deactivated after execution!", ActivationState.State.DEACTIVE, sceneRemote.getActivationState().getValue());
-        while(locationRemote.getTargetTemperatureState().getTemperature() != TEMPERATURE) {
-            System.out.println("locationTemperature["+locationRemote.getTargetTemperatureState().getTemperature()+"] differs!");
+        while (locationRemote.getTargetTemperatureState().getTemperature() != TEMPERATURE) {
+            System.out.println("locationTemperature[" + locationRemote.getTargetTemperatureState().getTemperature() + "] differs!");
             Thread.sleep(50);
         }
         assertEquals("TemperatureState has not been updated in location by scene!", TEMPERATURE, locationRemote.getTargetTemperatureState().getTemperature(), 0.1);
+        sceneRemote.removeDataObserver(notifyChangeObserver);
     }
 
-    private void waitForSceneExecution(SceneRemote sceneRemote) throws CouldNotPerformException {
-        final SyncObject LOCK = new SyncObject("WaitForDeviceClassLock");
-        final Observer notifyChangeObserver = new Observer() {
+    final SyncObject LOCK = new SyncObject("waitForSceneExecution");
+    final Observer notifyChangeObserver = new Observer() {
 
-            @Override
-            public void update(Observable source, Object data) throws Exception {
-                synchronized (LOCK) {
-                    LOCK.notifyAll();
-                }
+        @Override
+        public void update(Observable source, Object data) throws Exception {
+            synchronized (LOCK) {
+                LOCK.notifyAll();
             }
-        };
+        }
+    };
+
+    private void waitForSceneExecution(SceneRemote sceneRemote) throws CouldNotPerformException {
+//        final SyncObject LOCK = new SyncObject("WaitForDeviceClassLock");
+//        final Observer notifyChangeObserver = new Observer() {
+//
+//            @Override
+//            public void update(Observable source, Object data) throws Exception {
+//                synchronized (LOCK) {
+//                    LOCK.notifyAll();
+//                }
+//            }
+//        };
         synchronized (LOCK) {
-            sceneRemote.addDataObserver(notifyChangeObserver);
+//            sceneRemote.addDataObserver(notifyChangeObserver);
             try {
                 while (sceneRemote.getActivationState().getValue() != ActivationState.State.DEACTIVE) {
                     LOCK.wait();
@@ -298,6 +312,6 @@ public class SceneRemoteTest {
                 Thread.currentThread().interrupt();
             }
         }
-        sceneRemote.removeDataObserver(notifyChangeObserver);
+//        sceneRemote.removeDataObserver(notifyChangeObserver);
     }
 }
