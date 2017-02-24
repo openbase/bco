@@ -174,22 +174,26 @@ public interface Location extends BaseUnit<LocationData>,
     }
 
     @Override
-    default public ColorStateType.ColorState getColorState(UnitTemplate.UnitType unitType) throws NotAvailableException {
+    default public ColorStateType.ColorState getColorState(final UnitTemplate.UnitType unitType) throws NotAvailableException {
         return ((ColorStateOperationServiceCollection) getServiceRemote(ServiceTemplate.ServiceType.COLOR_STATE_SERVICE)).getColorState(unitType);
     }
 
     @Override
-    default public Future<Void> setPowerState(PowerStateType.PowerState powerState) throws CouldNotPerformException {
+    default public Future<Void> setPowerState(final PowerStateType.PowerState powerState) throws CouldNotPerformException {
         return ((PowerStateOperationServiceCollection) getServiceRemote(ServiceTemplate.ServiceType.POWER_STATE_SERVICE)).setPowerState(powerState);
     }
 
     @Override
-    default public Future<Void> setPowerState(PowerStateType.PowerState powerState, UnitTemplate.UnitType unitType) throws CouldNotPerformException {
+    default public Future<Void> setPowerState(final PowerStateType.PowerState powerState, final UnitTemplate.UnitType unitType) throws CouldNotPerformException {
         return ((PowerStateOperationServiceCollection) getServiceRemote(ServiceTemplate.ServiceType.POWER_STATE_SERVICE)).setPowerState(powerState, unitType);
     }
 
-    default public void setPowerState(final State state) throws CouldNotPerformException {
-        setPowerState(PowerState.newBuilder().setValue(state).build());
+    default public Future<Void>  setPowerState(final State state) throws CouldNotPerformException {
+        return setPowerState(PowerState.newBuilder().setValue(state).build());
+    }
+
+    default public Future<Void>  setPowerState(final State state, final UnitTemplate.UnitType unitType) throws CouldNotPerformException {
+        return setPowerState(PowerState.newBuilder().setValue(state).build(), unitType);
     }
 
     @Override
