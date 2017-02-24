@@ -479,4 +479,18 @@ public class LocationRegistryTest {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
     }
+
+    @Test(timeout = 5000)
+    public void testGetLocationUnitConfigByScope() throws Exception {
+        System.out.println("testGetLocationUnitConfigByScope");
+
+        String label = "RootLocation";
+        try {
+            UnitConfig rootLocation = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationType.ZONE).setLabel(label).build()).get();
+
+            assertEquals("Could not resolve locationUnitConfig by its scope!", rootLocation, unitRegistry.getUnitConfigByScope(rootLocation.getScope()));
+        } catch (CouldNotPerformException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
+    }
 }

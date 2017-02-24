@@ -393,7 +393,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         connectionUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
 
         agentUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
-        agentUnitConfigRegistry.registerDependency(agentRegistryRemote.getAgentConfigRemoteRegistry());
+        agentUnitConfigRegistry.registerDependency(agentRegistryRemote.getAgentClassRemoteRegistry());
 
         sceneUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
 
