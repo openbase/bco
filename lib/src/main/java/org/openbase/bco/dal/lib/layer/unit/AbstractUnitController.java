@@ -22,6 +22,8 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
+import de.citec.csra.allocation.IntervalUtils;
+import de.citec.csra.allocation.cli.AllocatableResource;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -30,6 +32,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.UUID;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
@@ -54,9 +57,11 @@ import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import rsb.RSBException;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.communicationpatterns.ResourceAllocationType.*;
 import rst.domotic.action.ActionConfigType.ActionConfig;
 import rst.domotic.registry.UnitRegistryDataType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -64,6 +69,11 @@ import rst.domotic.state.EnablingStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
+
+import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM;
+import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.Policy.PRESERVE;
+import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.State.REQUESTED;
+import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.Priority.LOW;
 
 /**
  *
@@ -363,6 +373,37 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }
+    }
+    
+    private AllocatableResource allocate(ResourceAllocation allocation) throws CouldNotPerformException {
+        final AllocatableResource allocatableResource = new AllocatableResource(allocation);
+        try {
+            allocatableResource.startup();
+        } catch (RSBException ex) {
+            throw new CouldNotPerformException("Could not start Allocation!", ex);
+        }
+        return allocatableResource;
+    }
+
+    private AllocatableResource allocateResource(Scope scope) throws CouldNotPerformException {
+        final String id = UUID.randomUUID().toString();
+        ResourceAllocation allocation = ResourceAllocation.newBuilder().
+                setId(id).setState(REQUESTED).
+                setDescription("Generated Allocation").
+                setPolicy(PRESERVE).
+                setPriority(LOW).
+                setInitiator(SYSTEM).
+                setSlot(IntervalUtils.buildRelativeRst(0, 2000)).
+                addResourceIds(ScopeGenerator.generateStringRep(scope)).
+                build();
+
+        final AllocatableResource allocatableResource = new AllocatableResource(allocation);
+        try {
+            allocatableResource.startup();
+        } catch (RSBException ex) {
+            throw new CouldNotPerformException("Could not start Allocation!", ex);
+        }
+        return allocatableResource;
     }
 
     @Override

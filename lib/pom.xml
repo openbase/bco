@@ -96,6 +96,12 @@
             <artifactId>jul.extension.protobuf</artifactId>
             <version>${dependency.jul.version}</version>
             <type>jar</type>
-        </dependency>        
+        </dependency>
+        <dependency>
+            <groupId>de.citec.csra</groupId>
+            <artifactId>arbitration-service</artifactId>
+            <version>0.11-SNAPSHOT</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 </project>
