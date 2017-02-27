@@ -86,6 +86,7 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, Service
      */
     public default boolean isEnabled() {
         try {
+            assert (getConfig() instanceof UnitConfig);
             return getConfig().getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED);
         } catch (CouldNotPerformException ex) {
             LoggerFactory.getLogger(UnitRemote.class).warn("isEnabled() was called on non initialized unit!");
