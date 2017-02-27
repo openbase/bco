@@ -83,14 +83,5 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, Service
      *
      * @return returns true if the unit is enabled otherwise false.
      */
-    public default boolean isEnabled() {
-        try {
-            assert (getConfig() instanceof UnitConfig);
-            return getConfig().getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED);
-        } catch (CouldNotPerformException ex) {
-            LoggerFactory.getLogger(UnitRemote.class).warn("isEnabled() was called on non initialized unit!");
-            assert false;
-        }
-        return false;
-    }
+    boolean isEnabled();
 }

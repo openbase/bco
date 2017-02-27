@@ -42,10 +42,12 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.pattern.Observable;
+import org.slf4j.LoggerFactory;
 import rsb.Scope;
 import rst.domotic.action.ActionConfigType;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.state.EnablingStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
@@ -254,6 +256,23 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     public void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
         verifyEnablingState();
         super.waitForData(timeout, timeUnit);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public boolean isEnabled() {
+        try {
+            assert (getConfig() instanceof UnitConfig);
+            return getConfig().getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED);
+        } catch (CouldNotPerformException ex) {
+            LoggerFactory.getLogger(org.openbase.bco.dal.lib.layer.unit.UnitRemote.class).warn("isEnabled() was called on non initialized unit!");
+            assert false;
+        }
+        return false;
     }
 
     private void verifyEnablingState() throws FatalImplementationErrorException {
