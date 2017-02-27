@@ -33,7 +33,6 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.rsb.ScopeType;
 
 /**
- * TODO Release: remove unused parameter CONFIG
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <M> Message
