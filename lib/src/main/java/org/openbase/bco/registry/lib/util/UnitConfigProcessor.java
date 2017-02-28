@@ -22,6 +22,8 @@ package org.openbase.bco.registry.lib.util;
  * #L%
  */
 import java.lang.reflect.InvocationTargetException;
+import java.util.ArrayList;
+import java.util.List;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.processing.StringProcessor;
@@ -112,5 +114,18 @@ public class UnitConfigProcessor {
     public static void verifyUnit(final UnitConfig unitConfig) throws VerificationFailedException {
         verifyUnitConfig(unitConfig, unitConfig.getType());
         verifyUnitType(unitConfig, unitConfig.getType());
+    }
+
+    private static final List<UnitType> dalUnitTypeList = new ArrayList<>();
+
+    public synchronized static List<UnitType> getDalUnitTypes() {
+        if (dalUnitTypeList.isEmpty()) {
+            for (final UnitType unitType : UnitType.values()) {
+                if (isDalUnit(unitType)) {
+                    dalUnitTypeList.add(unitType);
+                }
+            }
+        }
+        return dalUnitTypeList;
     }
 }
