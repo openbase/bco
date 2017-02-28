@@ -27,6 +27,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
@@ -191,7 +192,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
 
     @Override
     public synchronized UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        System.out.println("Apply config update for location["+config.getLabel()+"]");
+        System.out.println("Apply config update for location[" + config.getLabel() + "]");
         UnitConfig unitConfig = super.applyConfigUpdate(config);
         System.out.println("Applied super config update!");
         serviceRemoteManager.applyConfigUpdate(unitConfig.getLocationConfig().getUnitIdList());
@@ -324,16 +325,26 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
             }
 
             // take the snapshot
-            for (UnitRemote<?> remote : unitRemoteSet) {
+            final Map<UnitRemote, Future<Snapshot>> snapshotFutureMap = new HashMap<UnitRemote, Future<Snapshot>>();
+            for (final UnitRemote<?> remote : unitRemoteSet) {
                 try {
                     if (UnitProcessor.isDalUnit(remote)) {
                         if (!remote.isConnected()) {
                             throw new NotAvailableException("Unit[" + remote.getLabel() + "] is currently not reachable!");
                         }
-                        snapshotBuilder.addAllActionConfig(remote.recordSnapshot().get(2, TimeUnit.SECONDS).getActionConfigList());
+                        snapshotFutureMap.put(remote, remote.recordSnapshot());
                     }
-                } catch (ExecutionException | TimeoutException ex) {
+                } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Could not record snapshot of " + remote.getLabel(), ex), LOGGER);
+                }
+            }
+
+            // build snapshot
+            for (final Entry<UnitRemote, Future<Snapshot>> snapshotFutureEntry : snapshotFutureMap.entrySet()) {
+                try {
+                    snapshotBuilder.addAllActionConfig(snapshotFutureEntry.getValue().get(5, TimeUnit.SECONDS).getActionConfigList());
+                } catch (ExecutionException | TimeoutException ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not record snapshot of " + snapshotFutureEntry.getKey().getLabel(), ex), LOGGER);
                 }
             }
             return CompletableFuture.completedFuture(snapshotBuilder.build());

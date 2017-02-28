@@ -21,15 +21,10 @@ package org.openbase.bco.manager.util.launch;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.manager.agent.binding.openhab.AgentBindingOpenHABLauncher;
 import org.openbase.bco.manager.agent.core.AgentManagerLauncher;
-import org.openbase.bco.manager.app.binding.openhab.AppBindingOpenHABLauncher;
 import org.openbase.bco.manager.app.core.AppManagerLauncher;
-import org.openbase.bco.manager.device.binding.openhab.DeviceBindingOpenHABLauncher;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.bco.manager.location.binding.openhab.LocationBindingOpenHABLauncher;
 import org.openbase.bco.manager.location.core.LocationManagerLauncher;
-import org.openbase.bco.manager.scene.binding.openhab.SceneBindingOpenHABLauncher;
 import org.openbase.bco.manager.scene.core.SceneManagerLauncher;
 import org.openbase.bco.manager.user.core.UserManagerLauncher;
 import org.openbase.bco.registry.agent.core.AgentRegistryLauncher;

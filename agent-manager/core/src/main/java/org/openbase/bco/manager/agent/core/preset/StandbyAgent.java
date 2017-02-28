@@ -138,7 +138,7 @@ public class StandbyAgent extends AbstractAgentController {
             try {
                 try {
                     logger.info("Create snapshot of " + locationRemote.getLabel() + " state.");
-                    snapshot = locationRemote.recordSnapshot().get(10, TimeUnit.SECONDS);
+                    snapshot = locationRemote.recordSnapshot().get(60, TimeUnit.SECONDS);
                 } catch (ExecutionException | CouldNotPerformException | TimeoutException ex) {
                     ExceptionPrinter.printHistory("Could not create snapshot!", ex, logger);
                 }
