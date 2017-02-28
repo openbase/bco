@@ -21,6 +21,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
@@ -28,7 +29,9 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
+import org.openbase.jul.processing.FutureProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.PowerStateType.PowerState;
@@ -66,20 +69,24 @@ public class MonitorController extends AbstractDALUnitController<MonitorData, Mo
         }
     }
     
-    public void updatePowerStateProvider(final PowerState powerState) throws CouldNotPerformException {
-        logger.debug("Apply powerState Update[" + powerState + "] for " + this + ".");
-        
+    public void updatePowerStateProvider(final PowerState state) throws CouldNotPerformException {
+        logger.debug("Apply powerState Update[" + state + "] for " + this + ".");
         try (ClosableDataBuilder<MonitorData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setPowerState(powerState);
+            dataBuilder.getInternalBuilder().setPowerState(state);
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply powerState Update[" + powerState + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply powerState Update[" + state + "] for " + this + "!", ex);
         }
     }
     
     @Override
-    public Future<Void> setPowerState(final PowerState powerState) throws CouldNotPerformException {
-        logger.debug("Setting [" + getLabel() + "] to PowerState [" + powerState + "]");
-        return powerStateService.setPowerState(powerState);
+    public Future<Void> setPowerState(final PowerState state) throws CouldNotPerformException {
+        logger.debug("Setting [" + getLabel() + "] to PowerState [" + state + "]");
+        try {
+            verifyOperationServiceStateValue(state.getValue());
+        } catch(VerificationFailedException ex) {
+            return FutureProcessor.canceledFuture(Void.class, ex);
+        }
+        return powerStateService.setPowerState(state);
     }
     
     @Override
@@ -94,6 +101,11 @@ public class MonitorController extends AbstractDALUnitController<MonitorData, Mo
     @Override
     public Future<Void> setStandbyState(StandbyState state) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to StandbyState [" + state + "]");
+        try {
+            verifyOperationServiceStateValue(state.getValue());
+        } catch(VerificationFailedException ex) {
+            return FutureProcessor.canceledFuture(Void.class, ex);
+        }
         return standbyStateService.setStandbyState(state);
     }
     

@@ -29,7 +29,9 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
+import org.openbase.jul.processing.FutureProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
@@ -47,7 +49,7 @@ import rst.vision.RGBColorType.RGBColor;
  * * @author Marian Pohling
  */
 public class ColorableLightController extends AbstractDALUnitController<ColorableLightData, ColorableLightData.Builder> implements ColorableLight {
-
+    
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ColorableLightData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HSBColor.getDefaultInstance()));
@@ -56,15 +58,15 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ColorState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
     }
-
+    
     private ColorStateOperationService colorService;
     private BrightnessStateOperationService brightnessService;
     private PowerStateOperationService powerService;
-
+    
     public ColorableLightController(final UnitHost unitHost, final ColorableLightData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(ColorableLightController.class, unitHost, builder);
     }
-
+    
     @Override
     public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
@@ -76,23 +78,28 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
             throw new InitializationException(this, ex);
         }
     }
-
+    
     public void updatePowerStateProvider(final PowerState value) throws CouldNotPerformException {
         logger.debug("Apply powerState Update[" + value + "] for " + this + ".");
-
+        
         try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setPowerState(value);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply powerState Update[" + value + "] for " + this + "!", ex);
         }
     }
-
+    
     @Override
     public Future<Void> setPowerState(final PowerState state) throws CouldNotPerformException {
         logger.debug("Set " + getType().name() + "[" + getLabel() + "] to PowerState [" + state + "]");
+        try {
+            verifyOperationServiceStateValue(state.getValue());
+        } catch(VerificationFailedException ex) {
+            return FutureProcessor.canceledFuture(Void.class, ex);
+        }
         return powerService.setPowerState(state);
     }
-
+    
     @Override
     public PowerState getPowerState() throws NotAvailableException {
         try {
@@ -101,10 +108,10 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
             throw new NotAvailableException("powerState", ex);
         }
     }
-
+    
     public void updateColorStateProvider(final ColorState colorState) throws CouldNotPerformException {
         logger.debug("Apply colorState Update[" + colorState + "] for " + this + ".");
-
+        
         try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setColorState(colorState);
             dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.ON);
@@ -112,12 +119,12 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
             throw new CouldNotPerformException("Could not apply colorState Update[" + colorState + "] for " + this + "!", ex);
         }
     }
-
+    
     @Override
     public Future<Void> setColorState(final ColorState colorState) throws CouldNotPerformException {
         return colorService.setColorState(colorState);
     }
-
+    
     @Override
     public ColorState getColorState() throws NotAvailableException {
         try {
@@ -126,10 +133,10 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
             throw new NotAvailableException("colorState", ex);
         }
     }
-
+    
     public void updateBrightnessStateProvider(BrightnessState brightnessState) throws CouldNotPerformException {
         logger.debug("Apply brightnessState Update[" + brightnessState + "] for " + this + ".");
-
+        
         try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
             HSBColor hsb = dataBuilder.getInternalBuilder().getColorState().getColor().getHsbColor().toBuilder().setBrightness(brightnessState.getBrightness()).build();
             Color color = Color.newBuilder().setType(Color.Type.HSB).setHsbColor(hsb).build();
@@ -143,13 +150,13 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
             throw new CouldNotPerformException("Could not apply brightnessState Update[" + brightnessState + "] for " + this + "!", ex);
         }
     }
-
+    
     @Override
     public Future<Void> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
         logger.debug("Set " + getType().name() + "[" + getLabel() + "] to BrightnessState[" + brightnessState + "]");
         return brightnessService.setBrightnessState(brightnessState);
     }
-
+    
     @Override
     public BrightnessState getBrightnessState() throws NotAvailableException {
         try {

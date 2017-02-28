@@ -21,15 +21,22 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.io.NotActiveException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Identifiable;
@@ -37,6 +44,7 @@ import org.openbase.jul.iface.Snapshotable;
 import org.openbase.jul.iface.provider.LabelProvider;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionAuthorityType;
 import rst.domotic.action.ActionConfigType;
 import rst.domotic.action.ActionPriorityType;
@@ -69,6 +77,38 @@ public interface Unit<D> extends Service, LabelProvider, ScopeProvider, Identifi
      */
     public UnitTemplate getTemplate() throws NotAvailableException;
 
+    public default void verifyOperationServiceState(final Object serviceState) throws VerificationFailedException {
+
+        if (serviceState == null) {
+            throw new VerificationFailedException(new NotAvailableException("ServiceState"));
+        }
+
+        final Method valueMethod;
+        try {
+            valueMethod = serviceState.getClass().getMethod("getValue");
+        } catch (NoSuchMethodException ex) {
+            // service state does contain any value so verification is not possible.
+            return;
+        }
+
+        try {
+            verifyOperationServiceStateValue((Enum) valueMethod.invoke(serviceState));
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | ClassCastException ex) {
+            ExceptionPrinter.printHistory("Operation service verification phase failed!", ex, LoggerFactory.getLogger(getClass()));
+        }
+    }
+
+    public default void verifyOperationServiceStateValue(final Enum value) throws VerificationFailedException {
+
+        if (value == null) {
+            throw new VerificationFailedException(new NotAvailableException("ServiceStateValue"));
+        }
+
+        if (value.name().equals("UNKNOWN")) {
+            throw new VerificationFailedException("UNKNOWN." + value.getClass().getSimpleName() + " is an invalid operation service state of " + this + "!");
+        }
+    }
+
     @Override
     public default Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
         MultiException.ExceptionStack exceptionStack = null;
@@ -82,8 +122,11 @@ public interface Unit<D> extends Service, LabelProvider, ScopeProvider, Identifi
                     continue;
                 }
 
-                // load service attribute by related provider service
+                // load operation service attribute by related provider service
                 Object serviceAttribute = Service.invokeServiceMethod(serviceTemplate.getType(), ServiceTemplate.ServicePattern.PROVIDER, this);
+
+                // verify operation service state (e.g. ignore UNKNOWN service states)
+                verifyOperationServiceState(serviceAttribute);
 
                 // fill action config
                 final ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();
