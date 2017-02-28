@@ -76,6 +76,12 @@ public class DeviceOpenHABRemote extends AbstractOpenHABRemote {
         if (command.getItem().startsWith("Hager") || command.getItem().startsWith("Gira")) {
             internalReceiveUpdate(command);
         }
+        
+        // because the hue feedback channel is because of the polling strategy to slow, we hack the by redirecting the command channel on the feedback channel.
+        if (command.getItem().startsWith("Philips")) {
+            internalReceiveUpdate(command);
+        }
+        
         // do nothing...
     }
 }
