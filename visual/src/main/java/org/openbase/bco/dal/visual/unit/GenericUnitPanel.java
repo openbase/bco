@@ -137,7 +137,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
                                 statusPanel.setStatus("Waiting for " + StringProcessor.transformUpperCaseToCamelCase(getRemoteService().getType().name()) + " connection...", StatusType.INFO, true);
                                 getRemoteService().waitForConnectionState(ConnectionState.CONNECTED);
                                 statusPanel.setStatus("Connection to " + StringProcessor.transformUpperCaseToCamelCase(getRemoteService().getType().name()) + " established.", StatusType.INFO, 3);
-                            } catch (NotAvailableException | InterruptedException ex) {
+                            } catch (CouldNotPerformException | InterruptedException ex) {
                                 statusPanel.setError(ex);
                             }
                         }
@@ -215,10 +215,10 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
                             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service panel for ServiceType[" + serviceConfig.getServiceTemplate().getType().name() + "]", ex), logger, LogLevel.ERROR);
                         }
                     }
-                    
+
                     // bind service
-                    if(!servicePanelMap.containsKey(serviceConfig.getServiceTemplate().getType())) {
-                        logger.error("Skip Service["+serviceConfig.getServiceTemplate().getType()+"] binding because no related service panel registered!");
+                    if (!servicePanelMap.containsKey(serviceConfig.getServiceTemplate().getType())) {
+                        logger.error("Skip Service[" + serviceConfig.getServiceTemplate().getType() + "] binding because no related service panel registered!");
                         continue;
                     }
                     servicePanelMap.get(serviceConfig.getServiceTemplate().getType()).bindServiceConfig(serviceConfig);
@@ -230,8 +230,8 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
             for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                 if (!serviceTypeSet.contains(serviceConfig.getServiceTemplate().getType())) {
                     serviceTypeSet.add(serviceConfig.getServiceTemplate().getType());
-                    if(!servicePanelMap.containsKey(serviceConfig.getServiceTemplate().getType())) {
-                        logger.error("Skip Service["+serviceConfig.getServiceTemplate().getType()+"] activation because no related service panel registered!");
+                    if (!servicePanelMap.containsKey(serviceConfig.getServiceTemplate().getType())) {
+                        logger.error("Skip Service[" + serviceConfig.getServiceTemplate().getType() + "] activation because no related service panel registered!");
                         continue;
                     }
                     servicePanelMap.get(serviceConfig.getServiceTemplate().getType()).initObserver();
