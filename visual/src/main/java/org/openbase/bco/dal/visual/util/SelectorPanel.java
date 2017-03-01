@@ -10,12 +10,12 @@ package org.openbase.bco.dal.visual.util;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -27,7 +27,6 @@ import java.util.Collections;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
-import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
@@ -35,7 +34,6 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.MultiException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
@@ -278,21 +276,6 @@ public class SelectorPanel extends javax.swing.JPanel {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update all dynamic components!", ex), logger);
         } finally {
             updateComponentLock.writeLock().unlock();
-        }
-    }
-
-    private UnitType detectUnitTypeOutOfScope(Scope scope) throws NotAvailableException {
-        for (String element : scope.getComponentList()) {
-            for (UnitType type : UnitType.values()) {
-                if (element.equalsIgnoreCase(StringProcessor.transformUpperCaseToCamelCase(type.name()))) {
-                    return type;
-                }
-            }
-        }
-        try {
-            throw new NotAvailableException("Could not detect unit type for Scope[" + ScopeGenerator.generateStringRep(scope) + "]!");
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Could not detect unit type!");
         }
     }
 
@@ -700,7 +683,6 @@ public class SelectorPanel extends javax.swing.JPanel {
 
         try {
             Scope scope = ScopeTransformer.transform(new rsb.Scope(text));
-            detectUnitTypeOutOfScope(scope);
             unitRegistryRemote.getUnitConfigByScope(scope);
             validScope = true;
         } catch (CouldNotPerformException | IllegalArgumentException | NullPointerException ex) {
