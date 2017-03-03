@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
+import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
@@ -33,40 +34,58 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public interface UserRegistry extends Shutdownable {
 
+    @RPCMethod
     public Future<UnitConfig> registerUserConfig(UnitConfig userConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean containsUserConfig(UnitConfig userConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean containsUserConfigById(String userConfigId) throws CouldNotPerformException;
 
+    @RPCMethod
     public Future<UnitConfig> updateUserConfig(UnitConfig userConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Future<UnitConfig> removeUserConfig(UnitConfig userConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public UnitConfig getUserConfigById(final String userConfigId) throws CouldNotPerformException;
 
+    @RPCMethod
     public List<UnitConfig> getUserConfigs() throws CouldNotPerformException;
 
+    @RPCMethod
     public List<UnitConfig> getUserConfigsByAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isUserConfigRegistryReadOnly() throws CouldNotPerformException;
 
+    @RPCMethod
     public Future<UnitConfig> registerAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean containsAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean containsAuthorizationGroupConfigById(String groupConfigId) throws CouldNotPerformException;
 
+    @RPCMethod
     public Future<UnitConfig> updateAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Future<UnitConfig> removeAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public UnitConfig getAuthorizationGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
 
+    @RPCMethod
     public List<UnitConfig> getAuthorizationGroupConfigs() throws CouldNotPerformException;
 
+    @RPCMethod
     public List<UnitConfig> getAuthorizationGroupConfigsbyUserConfig(UnitConfig userConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isAuthorizationGroupConfigRegistryReadOnly() throws CouldNotPerformException;
 
     /**
@@ -75,6 +94,7 @@ public interface UserRegistry extends Shutdownable {
      * @return if the user config registry is consistent
      * @throws CouldNotPerformException if the check fails
      */
+    @RPCMethod
     public Boolean isUserConfigRegistryConsistent() throws CouldNotPerformException;
 
     /**
@@ -83,5 +103,6 @@ public interface UserRegistry extends Shutdownable {
      * @return if the authorization group config registry is consistent
      * @throws CouldNotPerformException if the check fails
      */
+    @RPCMethod
     public Boolean isAuthorizationGroupConfigRegistryConsistent() throws CouldNotPerformException;
 }

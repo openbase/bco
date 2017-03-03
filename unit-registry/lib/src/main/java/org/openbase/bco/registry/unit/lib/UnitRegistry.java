@@ -29,6 +29,7 @@ import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.iface.Shutdownable;
+import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -39,20 +40,28 @@ import rst.rsb.ScopeType.Scope;
 
 public interface UnitRegistry extends Shutdownable {
 
+    @RPCMethod
     public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean containsUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean containsUnitConfigById(final String unitConfigId) throws CouldNotPerformException;
 
+    @RPCMethod
     public UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException;
 
+    @RPCMethod
     public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isUnitConfigRegistryReadOnly() throws CouldNotPerformException;
 
     /**
@@ -61,32 +70,46 @@ public interface UnitRegistry extends Shutdownable {
      * @return if the UnitConfig registry is consistent
      * @throws CouldNotPerformException if the check fails
      */
+    @RPCMethod
     public Boolean isUnitConfigRegistryConsistent() throws CouldNotPerformException;
 
+    @RPCMethod
     public Future<UnitTemplate> updateUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean containsUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean containsUnitTemplateById(final String unitTemplateId) throws CouldNotPerformException;
 
+    @RPCMethod
     public UnitTemplate getUnitTemplateById(final String unitTemplate) throws CouldNotPerformException;
 
+    @RPCMethod
     public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException;
 
+    @RPCMethod
     public UnitTemplate getUnitTemplateByType(final UnitType type) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isUnitTemplateRegistryReadOnly() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isUnitTemplateRegistryConsistent() throws CouldNotPerformException;
 
+    @RPCMethod
     public Future<UnitConfig> registerUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Future<UnitConfig> updateUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Future<UnitConfig> removeUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean containsUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean containsUnitGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
 
     /**
@@ -97,8 +120,10 @@ public interface UnitRegistry extends Shutdownable {
      * @return
      * @throws CouldNotPerformException
      */
+    @RPCMethod
     public List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException;
 
+    @RPCMethod
     public List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException;
 
     /**
@@ -109,6 +134,7 @@ public interface UnitRegistry extends Shutdownable {
      * @return a list of dal units.
      * @throws CouldNotPerformException is thrown in case something goes wrong during the request.
      */
+    @RPCMethod
     public List<UnitConfig> getDalUnitConfigs() throws CouldNotPerformException;
 
     /**
@@ -118,28 +144,40 @@ public interface UnitRegistry extends Shutdownable {
      * @return a list of base units.
      * @throws CouldNotPerformException is thrown in case something goes wrong during the request.
      */
+    @RPCMethod
     public List<UnitConfig> getBaseUnitConfigs() throws CouldNotPerformException;
 
+    @RPCMethod
     public List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException;
 
+    @RPCMethod
     public List<ServiceConfig> getServiceConfigs(final ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isUnitGroupConfigRegistryConsistent() throws CouldNotPerformException;
 
+    @RPCMethod
     public UnitConfig getUnitGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
 
+    @RPCMethod
     public List<UnitConfig> getUnitGroupConfigs() throws CouldNotPerformException;
 
+    @RPCMethod
     public List<UnitConfig> getUnitGroupConfigsByUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public List<UnitConfig> getUnitGroupConfigsByUnitType(final UnitType type) throws CouldNotPerformException;
 
+    @RPCMethod
     public List<UnitConfig> getUnitGroupConfigsByServiceTypes(final List<ServiceType> serviceTypes) throws CouldNotPerformException;
 
+    @RPCMethod
     public List<UnitConfig> getUnitConfigsByUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType type, final List<ServiceType> serviceTypes) throws CouldNotPerformException;
 
     /**
@@ -151,6 +189,7 @@ public interface UnitRegistry extends Shutdownable {
      * @return the unit config matching the given scope.
      * @throws CouldNotPerformException
      */
+    @RPCMethod
     public UnitConfig getUnitConfigByScope(final Scope scope) throws CouldNotPerformException;
 
     /**
@@ -162,6 +201,7 @@ public interface UnitRegistry extends Shutdownable {
      * @throws CouldNotPerformException
      * @deprecated please use getSubUnitTypes instead
      */
+    @RPCMethod
     @Deprecated
     public default List<UnitType> getSubUnitTypesOfUnitType(final UnitType type) throws CouldNotPerformException {
         return getSubUnitTypes(type);
@@ -175,6 +215,7 @@ public interface UnitRegistry extends Shutdownable {
      * @return all types of which the given type is a super type
      * @throws CouldNotPerformException
      */
+    @RPCMethod
     public List<UnitType> getSubUnitTypes(final UnitType type) throws CouldNotPerformException;
 
     /**
@@ -185,49 +226,70 @@ public interface UnitRegistry extends Shutdownable {
      * @return all super types of a given unit type
      * @throws CouldNotPerformException
      */
+    @RPCMethod
     public List<UnitType> getSuperUnitTypes(final UnitType type) throws CouldNotPerformException;
 
     public default void verifyUnitGroupUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
         UnitConfigProcessor.verifyUnitConfig(unitConfig, UnitType.UNIT_GROUP);
     }
 
+    @RPCMethod
     public Boolean isDalUnitConfigRegistryReadOnly() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isUserUnitRegistryReadOnly() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isAuthorizationGroupUnitRegistryReadOnly() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isDeviceUnitRegistryReadOnly() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isUnitGroupUnitRegistryReadOnly() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isLocationUnitRegistryReadOnly() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isConnectionUnitRegistryReadOnly() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isAgentUnitRegistryReadOnly() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isAppUnitRegistryReadOnly() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isSceneUnitRegistryReadOnly() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isDalUnitConfigRegistryConsistent() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isUserUnitRegistryConsistent() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isAuthorizationGroupUnitRegistryConsistent() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isDeviceUnitRegistryConsistent() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isUnitGroupUnitRegistryConsistent() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isLocationUnitRegistryConsistent() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isConnectionUnitRegistryConsistent() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isAgentUnitRegistryConsistent() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isAppUnitRegistryConsistent() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isSceneUnitRegistryConsistent() throws CouldNotPerformException;
 }

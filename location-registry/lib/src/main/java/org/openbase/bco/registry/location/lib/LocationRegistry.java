@@ -25,6 +25,8 @@ import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.iface.Shutdownable;
+import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -37,7 +39,7 @@ import rst.tracking.PointingRay3DFloatType.PointingRay3DFloat;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface LocationRegistry {
+public interface LocationRegistry extends Shutdownable {
 
     /**
      * This method registers the given location config in the registry.
@@ -46,6 +48,7 @@ public interface LocationRegistry {
      * @return the registered location config
      * @throws CouldNotPerformException is thrown if the entry already exists or results in an inconsistent registry
      */
+    @RPCMethod
     public Future<UnitConfig> registerLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException;
 
     /**
@@ -56,6 +59,7 @@ public interface LocationRegistry {
      * @return
      * @throws CouldNotPerformException
      */
+    @RPCMethod
     public UnitConfig getLocationConfigById(final String locationId) throws CouldNotPerformException;
 
     /**
@@ -66,6 +70,7 @@ public interface LocationRegistry {
      * @return
      * @throws CouldNotPerformException
      */
+    @RPCMethod
     public List<UnitConfig> getLocationConfigsByLabel(final String locationLabel) throws CouldNotPerformException;
 
     /**
@@ -77,6 +82,7 @@ public interface LocationRegistry {
      * @return
      * @throws CouldNotPerformException
      */
+    @RPCMethod
     public Boolean containsLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException;
 
     /**
@@ -87,6 +93,7 @@ public interface LocationRegistry {
      * @return
      * @throws CouldNotPerformException
      */
+    @RPCMethod
     public Boolean containsLocationConfigById(final String locationId) throws CouldNotPerformException;
 
     /**
@@ -96,6 +103,7 @@ public interface LocationRegistry {
      * @return the updated location config.
      * @throws CouldNotPerformException
      */
+    @RPCMethod
     public Future<UnitConfig> updateLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException;
 
     /**
@@ -105,6 +113,7 @@ public interface LocationRegistry {
      * @return The removed location config.
      * @throws CouldNotPerformException
      */
+    @RPCMethod
     public Future<UnitConfig> removeLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException;
 
     /**
@@ -114,6 +123,7 @@ public interface LocationRegistry {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
+    @RPCMethod
     public List<UnitConfig> getLocationConfigs() throws CouldNotPerformException;
 
     /**
@@ -125,6 +135,7 @@ public interface LocationRegistry {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
+    @RPCMethod
     public List<UnitConfig> getUnitConfigsByLocation(final String locationId) throws CouldNotPerformException;
 
     /**
@@ -137,6 +148,7 @@ public interface LocationRegistry {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
+    @RPCMethod
     public List<UnitConfig> getUnitConfigsByLocationLabel(final String locationLabel) throws CouldNotPerformException;
 
     /**
@@ -150,6 +162,7 @@ public interface LocationRegistry {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
+    @RPCMethod
     public List<UnitConfig> getUnitConfigsByLocationLabel(final UnitType unitType, final String locationLabel) throws CouldNotPerformException;
 
     /**
@@ -162,6 +175,7 @@ public interface LocationRegistry {
      * @return
      * @throws CouldNotPerformException
      */
+    @RPCMethod
     public List<UnitConfig> getUnitConfigsByLabelAndLocation(final String unitLabel, final String locationId) throws CouldNotPerformException;
 
     /**
@@ -175,6 +189,7 @@ public interface LocationRegistry {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
+    @RPCMethod
     public List<UnitConfig> getUnitConfigsByLocation(final UnitType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException;
 
     /**
@@ -187,6 +202,7 @@ public interface LocationRegistry {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
+    @RPCMethod
     public List<UnitConfig> getUnitConfigsByLocation(final ServiceType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException;
 
     /**
@@ -199,6 +215,7 @@ public interface LocationRegistry {
      * @throws NotAvailableException is thrown if the given location config id
      * is unknown.
      */
+    @RPCMethod
     public List<ServiceConfig> getServiceConfigsByLocation(final String locationId) throws CouldNotPerformException;
 
     /**
@@ -209,6 +226,7 @@ public interface LocationRegistry {
      * @return
      * @throws CouldNotPerformException
      */
+    @RPCMethod
     public Boolean isLocationConfigRegistryReadOnly() throws CouldNotPerformException;
 
     /**
@@ -219,10 +237,8 @@ public interface LocationRegistry {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
+    @RPCMethod
     public UnitConfig getRootLocationConfig() throws CouldNotPerformException, NotAvailableException;
-
-    // TODO mpohling: should be moved with init in a own interface.
-    public void shutdown();
 
     /**
      * This method registers the given connection config in the registry.
@@ -232,6 +248,7 @@ public interface LocationRegistry {
      * @throws CouldNotPerformException is thrown in case if the registered
      * entry already exists or is inconsistent.
      */
+    @RPCMethod
     public Future<UnitConfig> registerConnectionConfig(final UnitConfig connectionConfig) throws CouldNotPerformException;
 
     /**
@@ -242,6 +259,7 @@ public interface LocationRegistry {
      * @return
      * @throws CouldNotPerformException
      */
+    @RPCMethod
     public UnitConfig getConnectionConfigById(final String connectionId) throws CouldNotPerformException;
 
     /**
@@ -252,6 +270,7 @@ public interface LocationRegistry {
      * @return
      * @throws CouldNotPerformException
      */
+    @RPCMethod
     public List<UnitConfig> getConnectionConfigsByLabel(final String connectionLabel) throws CouldNotPerformException;
 
     /**
@@ -263,6 +282,7 @@ public interface LocationRegistry {
      * @return
      * @throws CouldNotPerformException
      */
+    @RPCMethod
     public Boolean containsConnectionConfig(final UnitConfig connectionConfig) throws CouldNotPerformException;
 
     /**
@@ -273,6 +293,7 @@ public interface LocationRegistry {
      * @return
      * @throws CouldNotPerformException
      */
+    @RPCMethod
     public Boolean containsConnectionConfigById(final String connectionId) throws CouldNotPerformException;
 
     /**
@@ -282,6 +303,7 @@ public interface LocationRegistry {
      * @return the updated connection config.
      * @throws CouldNotPerformException
      */
+    @RPCMethod
     public Future<UnitConfig> updateConnectionConfig(final UnitConfig connectionConfig) throws CouldNotPerformException;
 
     /**
@@ -291,6 +313,7 @@ public interface LocationRegistry {
      * @return The removed connection config.
      * @throws CouldNotPerformException
      */
+    @RPCMethod
     public Future<UnitConfig> removeConnectionConfig(final UnitConfig connectionConfig) throws CouldNotPerformException;
 
     /**
@@ -300,6 +323,7 @@ public interface LocationRegistry {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
+    @RPCMethod
     public List<UnitConfig> getConnectionConfigs() throws CouldNotPerformException;
 
     /**
@@ -311,6 +335,7 @@ public interface LocationRegistry {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
+    @RPCMethod
     public List<UnitConfig> getUnitConfigsByConnection(final String connectionConfigId) throws CouldNotPerformException;
 
     /**
@@ -323,6 +348,7 @@ public interface LocationRegistry {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
+    @RPCMethod
     public List<UnitConfig> getUnitConfigsByConnection(final UnitType type, final String connectionConfigId) throws CouldNotPerformException, NotAvailableException;
 
     /**
@@ -335,6 +361,7 @@ public interface LocationRegistry {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
+    @RPCMethod
     public List<UnitConfig> getUnitConfigsByConnection(final ServiceType type, final String connectionConfigId) throws CouldNotPerformException, NotAvailableException;
 
     /**
@@ -347,6 +374,7 @@ public interface LocationRegistry {
      * @throws NotAvailableException is thrown if the given connection config id
      * is unknown.
      */
+    @RPCMethod
     public List<ServiceConfig> getServiceConfigsByConnection(final String connectionConfigId) throws CouldNotPerformException;
 
     /**
@@ -357,6 +385,7 @@ public interface LocationRegistry {
      * @return
      * @throws CouldNotPerformException
      */
+    @RPCMethod
     public Boolean isConnectionConfigRegistryReadOnly() throws CouldNotPerformException;
 
     /**
@@ -367,6 +396,7 @@ public interface LocationRegistry {
      * @return all neighbor tiles
      * @throws CouldNotPerformException
      */
+    @RPCMethod
     public List<UnitConfig> getNeighborLocations(String locationId) throws CouldNotPerformException;
 
     /**
@@ -375,6 +405,7 @@ public interface LocationRegistry {
      * @return if the location config registry is consistent
      * @throws CouldNotPerformException if the check fails
      */
+    @RPCMethod
     public Boolean isLocationConfigRegistryConsistent() throws CouldNotPerformException;
 
     /**
@@ -383,25 +414,28 @@ public interface LocationRegistry {
      * @return if the connection config registry is consistent
      * @throws CouldNotPerformException if the check fails
      */
+    @RPCMethod
     public Boolean isConnectionConfigRegistryConsistent() throws CouldNotPerformException;
 
     /**
-     * Method returns a list of probably intersected units by the given 3D ray. 
+     * Method returns a list of probably intersected units by the given 3D ray.
      * This could for example be useful for selecting units by pointing gestures.
-     * 
-     * @param pointingRay3DFloat ray which probably intersects with a specific unit priorized by a given certainty. 
+     *
+     * @param pointingRay3DFloat ray which probably intersects with a specific unit priorized by a given certainty.
      * @return a collection of probably intersected units referred by there id.
-     * @throws CouldNotPerformException is thrown in case the computation could not be performed.  
+     * @throws CouldNotPerformException is thrown in case the computation could not be performed.
      */
+    @RPCMethod
     public Future<UnitProbabilityCollection> computeUnitIntersection(final PointingRay3DFloat pointingRay3DFloat) throws CouldNotPerformException;
-    
+
     /**
      * Method returns a list of probably intersected units by the given 3D rays.
      * This could for example be useful for selecting units by pointing gestures.
-     * 
-     * @param pointingRay3DFloatCollection a collection of rays which probably intersects with a specific unit priorized by a given certainty. 
+     *
+     * @param pointingRay3DFloatCollection a collection of rays which probably intersects with a specific unit priorized by a given certainty.
      * @return a collection of probably intersected units referred by there id.
-     * @throws CouldNotPerformException is thrown in case the computation could not be performed. 
+     * @throws CouldNotPerformException is thrown in case the computation could not be performed.
      */
+    @RPCMethod
     public Future<UnitProbabilityCollection> computeUnitIntersection(final PointingRay3DFloatCollection pointingRay3DFloatCollection) throws CouldNotPerformException;
 }

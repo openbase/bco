@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
+import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
@@ -33,20 +34,28 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public interface SceneRegistry extends Shutdownable {
 
+    @RPCMethod
     public Future<UnitConfig> registerSceneConfig(UnitConfig sceneUnitConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean containsSceneConfig(UnitConfig sceneUnitConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean containsSceneConfigById(String sceneUnitConfigId) throws CouldNotPerformException;
 
+    @RPCMethod
     public Future<UnitConfig> updateSceneConfig(UnitConfig sceneUnitConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Future<UnitConfig> removeSceneConfig(UnitConfig sceneUnitConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public UnitConfig getSceneConfigById(final String sceneUnitConfigId) throws CouldNotPerformException;
 
+    @RPCMethod
     public List<UnitConfig> getSceneConfigs() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isSceneConfigRegistryReadOnly() throws CouldNotPerformException;
 
     /**
@@ -55,5 +64,6 @@ public interface SceneRegistry extends Shutdownable {
      * @return if the scene config registry is consistent
      * @throws CouldNotPerformException if the check fails
      */
+    @RPCMethod
     public Boolean isSceneConfigRegistryConsistent() throws CouldNotPerformException;
 }

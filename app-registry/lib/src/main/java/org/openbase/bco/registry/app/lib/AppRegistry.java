@@ -24,6 +24,8 @@ package org.openbase.bco.registry.app.lib;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.iface.Shutdownable;
+import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.unit.app.AppClassType.AppClass;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -31,42 +33,60 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface AppRegistry {
+public interface AppRegistry extends Shutdownable {
 
+    @RPCMethod
     public Future<UnitConfig> registerAppConfig(UnitConfig appUnitConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean containsAppConfig(UnitConfig appUnitConfig) throws CouldNotPerformException, InterruptedException;
 
+    @RPCMethod
     public Boolean containsAppConfigById(String appConfigId) throws CouldNotPerformException, InterruptedException;
 
+    @RPCMethod
     public Future<UnitConfig> updateAppConfig(UnitConfig appUnitConfigId) throws CouldNotPerformException;
 
+    @RPCMethod
     public Future<UnitConfig> removeAppConfig(UnitConfig appUnitConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public UnitConfig getAppConfigById(final String appUnitConfigId) throws CouldNotPerformException, InterruptedException;
 
+    @RPCMethod
     public List<UnitConfig> getAppConfigs() throws CouldNotPerformException, InterruptedException;
 
+    @RPCMethod
     public List<UnitConfig> getAppConfigsByAppClass(AppClass appClass) throws CouldNotPerformException, InterruptedException;
 
+    @RPCMethod
     public List<UnitConfig> getAppConfigsByAppClassId(String appClassId) throws CouldNotPerformException, InterruptedException;
 
+    @RPCMethod
     public Boolean isAppConfigRegistryReadOnly() throws CouldNotPerformException, InterruptedException;
 
+    @RPCMethod
     public Future<AppClass> registerAppClass(AppClass appClass) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean containsAppClass(AppClass appClass) throws CouldNotPerformException, InterruptedException;
 
+    @RPCMethod
     public Boolean containsAppClassById(String appClassId) throws CouldNotPerformException, InterruptedException;
 
+    @RPCMethod
     public Future<AppClass> updateAppClass(AppClass appClass) throws CouldNotPerformException;
 
+    @RPCMethod
     public Future<AppClass> removeAppClass(AppClass appClass) throws CouldNotPerformException;
 
+    @RPCMethod
     public AppClass getAppClassById(final String appClassId) throws CouldNotPerformException, InterruptedException;
 
+    @RPCMethod
     public List<AppClass> getAppClasses() throws CouldNotPerformException, InterruptedException;
 
+    @RPCMethod
     public Boolean isAppClassRegistryReadOnly() throws CouldNotPerformException, InterruptedException;
 
     /**
@@ -75,6 +95,7 @@ public interface AppRegistry {
      * @return if the app class registry is consistent
      * @throws CouldNotPerformException if the check fails
      */
+    @RPCMethod
     public Boolean isAppClassRegistryConsistent() throws CouldNotPerformException;
 
     /**
@@ -83,7 +104,6 @@ public interface AppRegistry {
      * @return if the app config registry is consistent
      * @throws CouldNotPerformException if the check fails
      */
+    @RPCMethod
     public Boolean isAppConfigRegistryConsistent() throws CouldNotPerformException;
-
-    public void shutdown();
 }

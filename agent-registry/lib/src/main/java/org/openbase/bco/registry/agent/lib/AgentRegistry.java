@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
+import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.agent.AgentClassType.AgentClass;
 
@@ -34,40 +35,58 @@ import rst.domotic.unit.agent.AgentClassType.AgentClass;
  */
 public interface AgentRegistry extends Shutdownable {
 
+    @RPCMethod
     public Future<UnitConfig> registerAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean containsAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean containsAgentConfigById(String agentUnitConfigId) throws CouldNotPerformException;
 
+    @RPCMethod
     public Future<UnitConfig> updateAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public Future<UnitConfig> removeAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException;
 
+    @RPCMethod
     public UnitConfig getAgentConfigById(final String agentUnitConfigId) throws CouldNotPerformException;
 
+    @RPCMethod
     public List<UnitConfig> getAgentConfigs() throws CouldNotPerformException;
 
+    @RPCMethod
     public List<UnitConfig> getAgentConfigsByAgentClass(AgentClass agentClass) throws CouldNotPerformException;
 
+    @RPCMethod
     public List<UnitConfig> getAgentConfigsByAgentClassId(String agentClassId) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isAgentConfigRegistryReadOnly() throws CouldNotPerformException;
 
+    @RPCMethod
     public Future<AgentClass> registerAgentClass(AgentClass agentClass) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean containsAgentClass(AgentClass agentClass) throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean containsAgentClassById(String agentClassId) throws CouldNotPerformException;
 
+    @RPCMethod
     public Future<AgentClass> updateAgentClass(AgentClass agentClass) throws CouldNotPerformException;
 
+    @RPCMethod
     public Future<AgentClass> removeAgentClass(AgentClass agentClass) throws CouldNotPerformException;
 
+    @RPCMethod
     public List<AgentClass> getAgentClasses() throws CouldNotPerformException;
 
+    @RPCMethod
     public Boolean isAgentClassRegistryReadOnly() throws CouldNotPerformException;
 
+    @RPCMethod
     public AgentClass getAgentClassById(final String agentClassId) throws CouldNotPerformException;
 
     /**
@@ -76,6 +95,7 @@ public interface AgentRegistry extends Shutdownable {
      * @return if the agent class registry is consistent
      * @throws CouldNotPerformException if the check fails
      */
+    @RPCMethod
     public Boolean isAgentClassRegistryConsistent() throws CouldNotPerformException;
 
     /**
@@ -84,6 +104,7 @@ public interface AgentRegistry extends Shutdownable {
      * @return if the agent config registry is consistent
      * @throws CouldNotPerformException if the check fails
      */
+    @RPCMethod
     public Boolean isAgentConfigRegistryConsistent() throws CouldNotPerformException;
 
 }
