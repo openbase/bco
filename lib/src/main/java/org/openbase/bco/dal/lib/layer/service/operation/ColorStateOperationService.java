@@ -25,6 +25,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.provider.ColorStateProviderService;
 import org.openbase.bco.dal.lib.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.vision.ColorType.Color;
 import rst.vision.HSBColorType.HSBColor;
@@ -36,6 +37,7 @@ import rst.vision.RGBColorType.RGBColor;
  */
 public interface ColorStateOperationService extends OperationService, ColorStateProviderService {
 
+    @RPCMethod
     public Future<Void> setColorState(final ColorState colorState) throws CouldNotPerformException;
 
     default public Future<Void> setColor(final Color color) throws CouldNotPerformException {
@@ -49,7 +51,7 @@ public interface ColorStateOperationService extends OperationService, ColorState
     default public Future<Void> setColor(final RGBColor color) throws CouldNotPerformException {
         return setColor(Color.newBuilder().setType(Color.Type.RGB).setRgbColor(color).build());
     }
-    
+
     default public Future<Void> setColor(final java.awt.Color color) throws CouldNotPerformException {
         return setColor(HSBColorToRGBColorTransformer.transform(color));
     }

@@ -24,6 +24,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
 import org.openbase.bco.dal.lib.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.vision.ColorType.Color;
 import rst.vision.HSBColorType.HSBColor;
 import rst.vision.RGBColorType.RGBColor;
@@ -35,6 +36,7 @@ import rst.domotic.state.ColorStateType.ColorState;
  */
 public interface ColorStateProviderService extends ProviderService {
 
+    @RPCMethod
     public ColorState getColorState() throws NotAvailableException;
 
     default public Color getColor() throws NotAvailableException {
