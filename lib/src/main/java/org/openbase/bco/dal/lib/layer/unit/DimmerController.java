@@ -1,12 +1,15 @@
 package org.openbase.bco.dal.lib.layer.unit;
 
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.IntensityStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
+import org.openbase.jul.processing.FutureProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.IntensityStateType.IntensityState;
@@ -67,8 +70,13 @@ public class DimmerController extends AbstractDALUnitController<DimmerData, Dimm
     }
 
     @Override
-    public Future<Void> setPowerState(PowerState powerState) throws CouldNotPerformException {
-        return powerStateService.setPowerState(powerState);
+    public Future<Void> setPowerState(PowerState state) throws CouldNotPerformException {
+        try {
+            verifyOperationServiceStateValue(state.getValue());
+        } catch(VerificationFailedException ex) {
+            return FutureProcessor.canceledFuture(Void.class, ex);
+        }
+        return powerStateService.setPowerState(state);
     }
 
     @Override

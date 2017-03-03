@@ -21,13 +21,16 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
+import org.openbase.jul.processing.FutureProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
@@ -78,6 +81,11 @@ public class DimmableLightController extends AbstractDALUnitController<DimmableL
     @Override
     public Future<Void> setPowerState(final PowerState state) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to PowerState [" + state + "]");
+        try {
+            verifyOperationServiceStateValue(state.getValue());
+        } catch(VerificationFailedException ex) {
+            return FutureProcessor.canceledFuture(Void.class, ex);
+        }
         return powerService.setPowerState(state);
     }
 

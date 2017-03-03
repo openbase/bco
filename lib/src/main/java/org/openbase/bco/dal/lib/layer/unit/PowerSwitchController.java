@@ -27,7 +27,9 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
+import org.openbase.jul.processing.FutureProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.PowerStateType.PowerState;
@@ -72,9 +74,14 @@ public class PowerSwitchController extends AbstractDALUnitController<PowerSwitch
     }
 
     @Override
-    public Future<Void> setPowerState(final PowerState powerState) throws CouldNotPerformException {
-        logger.debug("Setting [" + getLabel() + "] to PowerState [" + powerState + "]");
-        return powerService.setPowerState(powerState);
+    public Future<Void> setPowerState(final PowerState state) throws CouldNotPerformException {
+        logger.debug("Setting [" + getLabel() + "] to PowerState [" + state + "]");
+        try {
+            verifyOperationServiceStateValue(state.getValue());
+        } catch(VerificationFailedException ex) {
+            return FutureProcessor.canceledFuture(Void.class, ex);
+        }
+        return powerService.setPowerState(state);
     }
 
     @Override

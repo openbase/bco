@@ -33,7 +33,6 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.rsb.ScopeType;
 
 /**
- * TODO Release: remove unused parameter CONFIG
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <M> Message
@@ -84,13 +83,5 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, Service
      *
      * @return returns true if the unit is enabled otherwise false.
      */
-    public default boolean isEnabled() {
-        try {
-            return getConfig().getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED);
-        } catch (CouldNotPerformException ex) {
-            LoggerFactory.getLogger(UnitRemote.class).warn("isEnabled() was called on non initialized unit!");
-            assert false;
-        }
-        return false;
-    }
+    boolean isEnabled();
 }
