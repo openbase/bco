@@ -213,8 +213,8 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
             return;
         }
         LOGGER.debug("Activate location [" + getLabel() + "]!");
-        serviceRemoteManager.activate();
         super.activate();
+        serviceRemoteManager.activate();
         presenceDetector.activate();
         updateCurrentState();
     }
@@ -235,7 +235,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
 
                 try {
                     final AbstractServiceRemote serviceRemote = serviceRemoteManager.getServiceRemote(serviceType);
-                    /* When the locationRemote is active and a config update occurs the serviceRemoteManager clears 
+                    /* When the locationRemote is active and a config update occurs the serviceRemoteManager clears
                      * its map of service remotes and fills it with new ones. When they are activated an update is triggered while
                      * the map is not completely filled. Therefore the serviceRemote can be null.
                      */
