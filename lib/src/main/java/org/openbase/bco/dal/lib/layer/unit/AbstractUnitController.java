@@ -30,13 +30,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map.Entry;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -45,7 +45,6 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
-import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -63,7 +62,6 @@ import rst.domotic.action.ActionConfigType.ActionConfig;
 import rst.domotic.registry.UnitRegistryDataType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.state.EnablingStateType;
-import rst.domotic.state.PowerStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
@@ -108,7 +106,8 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     @Override
     public void init(ScopeType.Scope scope) throws InitializationException, InterruptedException {
         try {
-            CachedUnitRegistryRemote.waitForData();
+            this.unitRegistry = Registries.getUnitRegistry();
+            this.unitRegistry.waitForData();
             super.init(CachedUnitRegistryRemote.getRegistry().getUnitConfigByScope(scope));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
@@ -117,6 +116,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     public void init(final String label, final ScopeProvider location) throws InitializationException, InterruptedException {
         try {
+            this.unitRegistry = Registries.getUnitRegistry();
             init(ScopeGenerator.generateScope(label, getClass().getSimpleName(), location.getScope()));
         } catch (CouldNotPerformException | NullPointerException ex) {
             throw new InitializationException(this, ex);
@@ -146,6 +146,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 throw new NotAvailableException("Field config.label is emty!");
             }
 
+            this.unitRegistry = Registries.getUnitRegistry();
             super.init(config);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
@@ -156,7 +157,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     protected void postInit() throws InitializationException, InterruptedException {
         try {
             super.postInit();
-            this.unitRegistry = CachedUnitRegistryRemote.getRegistry();
             this.unitRegistry.addDataObserver((Observable<UnitRegistryDataType.UnitRegistryData> source, UnitRegistryDataType.UnitRegistryData data) -> {
                 try {
                     final UnitConfig newUnitConfig = CachedUnitRegistryRemote.getRegistry().getUnitConfigById(getId());
@@ -188,8 +188,8 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     @Override
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
         assert config != null;
-        CachedUnitRegistryRemote.waitForData();
-        template = CachedUnitRegistryRemote.getRegistry().getUnitTemplateByType(config.getType());
+        unitRegistry.waitForData();
+        template = unitRegistry.getUnitTemplateByType(config.getType());
         return super.applyConfigUpdate(config);
     }
 
