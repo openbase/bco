@@ -23,10 +23,13 @@ package org.openbase.bco.registry.unit.lib;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.annotations.RPCMethod;
@@ -122,6 +125,16 @@ public interface UnitRegistry extends Shutdownable {
      */
     @RPCMethod
     public List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException;
+
+    @RPCMethod
+    public default List<UnitConfig> getUnitConfigsByLabelAndUnitType(final String unitConfigLabel, final UnitTemplate.UnitType unitType) throws CouldNotPerformException {
+        validateData();
+        List<UnitConfig> unitConfigs = Collections.synchronizedList(new ArrayList<>());
+        getUnitConfigs().parallelStream().filter((unitConfig) -> (unitConfig.getType().equals(unitType) && unitConfig.getLabel().equalsIgnoreCase(unitConfigLabel))).forEach((unitConfig) -> {
+            unitConfigs.add(unitConfig);
+        });
+        return unitConfigs;
+    }
 
     @RPCMethod
     public List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException;
@@ -292,4 +305,6 @@ public interface UnitRegistry extends Shutdownable {
 
     @RPCMethod
     public Boolean isSceneUnitRegistryConsistent() throws CouldNotPerformException;
+
+    public void validateData() throws InvalidStateException;
 }
