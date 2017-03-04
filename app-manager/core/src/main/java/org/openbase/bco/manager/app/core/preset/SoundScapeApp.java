@@ -84,10 +84,10 @@ public class SoundScapeApp extends AbstractAppController {
     public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
         listenerWatchDog.activate();
-        agentBathAmbientColorBeachCeiling = Units.getAgent("BathAmbientColorBeachCeiling", false);
-        agentBathAmbientColorForest = Units.getAgent("BathAmbientColorForest", false);
-        agentBathAmbientColorNight = Units.getAgent("BathAmbientColorNight", false);
-        agentBathAmbientColorZen = Units.getAgent("BathAmbientColorZen", false);
+        agentBathAmbientColorBeachCeiling = Units.getUnit("BathAmbientColorBeachCeiling", false, Units.UNIT_BASE_AGENT);
+        agentBathAmbientColorForest = Units.getUnit("BathAmbientColorForest", false, Units.UNIT_BASE_AGENT);
+        agentBathAmbientColorNight = Units.getUnit("BathAmbientColorNight", false, Units.UNIT_BASE_AGENT);
+        agentBathAmbientColorZen = Units.getUnit("BathAmbientColorZen", false, Units.UNIT_BASE_AGENT);
     }
 
     @Override

@@ -26,6 +26,7 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABConfiguration;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABDistribution;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABItemConfig;
+import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPPrefix;
@@ -54,6 +55,7 @@ public class OpenHABConfigGeneratorLauncher extends AbstractLauncher<OpenHABConf
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
     public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
+        BCO.printLogo();
         AbstractLauncher.main(args, OpenHABConfigGenerator.class, OpenHABConfigGeneratorLauncher.class);
     }
 }

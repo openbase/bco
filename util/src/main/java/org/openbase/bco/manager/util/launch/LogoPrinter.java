@@ -1,7 +1,8 @@
-
 package org.openbase.bco.manager.util.launch;
 
-/*
+import org.openbase.bco.registry.lib.BCO;
+
+/*-
  * #%L
  * BCO Manager Utility
  * %%
@@ -24,8 +25,16 @@ package org.openbase.bco.manager.util.launch;
  */
 
 /**
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface BCO {
+public class LogoPrinter {
 
+    /**
+     * @param args the command line arguments
+     */
+    public static void main(String[] args) {
+        BCO.printLogo();
+    }
+    
 }

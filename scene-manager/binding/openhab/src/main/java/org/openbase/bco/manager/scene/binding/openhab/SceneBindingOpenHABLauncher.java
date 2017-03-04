@@ -22,6 +22,7 @@ package org.openbase.bco.manager.scene.binding.openhab;
  * #L%
  */
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
+import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.bco.registry.scene.lib.jp.JPSceneRegistryScope;
 import org.openbase.jps.core.JPService;
@@ -50,6 +51,7 @@ public class SceneBindingOpenHABLauncher extends AbstractLauncher<SceneBindingOp
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
     public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
+        BCO.printLogo();
         AbstractLauncher.main(args, SceneBindingOpenHABLauncher.class, SceneBindingOpenHABLauncher.class);
     }
 }

@@ -22,6 +22,7 @@ package org.openbase.bco.manager.location.core;
  * #L%
  */
 import org.openbase.bco.manager.location.lib.LocationManager;
+import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 
 /**
@@ -41,5 +42,6 @@ public class LocationManagerLauncher extends AbstractLauncher<LocationManagerCon
 
     public static void main(String args[]) throws Throwable {
         main(args, LocationManager.class, LocationManagerLauncher.class);
+        BCO.printLogo();
     }
 }

@@ -22,6 +22,7 @@ package org.openbase.bco.manager.user.core;
  * #L%
  */
 import org.openbase.bco.manager.user.lib.UserManager;
+import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -46,6 +47,7 @@ public class UserManagerLauncher extends AbstractLauncher<UserManagerController>
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
     public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
+        BCO.printLogo();
         AbstractLauncher.main(args, UserManager.class, UserManagerLauncher.class);
     }
 }

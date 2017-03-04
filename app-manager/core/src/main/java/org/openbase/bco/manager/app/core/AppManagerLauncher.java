@@ -1,6 +1,7 @@
 package org.openbase.bco.manager.app.core;
 
 import org.openbase.bco.manager.app.lib.AppManager;
+import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import static org.openbase.bco.registry.lib.launch.AbstractLauncher.main;
 
@@ -40,5 +41,6 @@ public class AppManagerLauncher extends AbstractLauncher<AppManagerController> {
 
     public static void main(String args[]) throws Throwable {
         main(args, AppManager.class, AppManagerLauncher.class);
+        BCO.printLogo();
     }
 }

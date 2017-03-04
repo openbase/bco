@@ -25,6 +25,7 @@ package org.openbase.bco.manager.agent.core;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 import org.openbase.bco.manager.agent.lib.AgentManager;
+import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -46,6 +47,7 @@ public class AgentManagerLauncher extends AbstractLauncher<AgentManagerControlle
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
     public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
+        BCO.printLogo();
         AbstractLauncher.main(args, AgentManager.class, AgentManagerLauncher.class);
     }
 }

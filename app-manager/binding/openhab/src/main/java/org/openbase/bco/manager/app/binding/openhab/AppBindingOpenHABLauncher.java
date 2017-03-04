@@ -22,6 +22,7 @@ package org.openbase.bco.manager.app.binding.openhab;
  * #L%
  */
 import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
+import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -48,6 +49,7 @@ public class AppBindingOpenHABLauncher extends AbstractLauncher<AppBindingOpenHA
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
     public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
+        BCO.printLogo();
         AbstractLauncher.main(args, AppBindingOpenHABLauncher.class, AppBindingOpenHABLauncher.class);
     }
 }

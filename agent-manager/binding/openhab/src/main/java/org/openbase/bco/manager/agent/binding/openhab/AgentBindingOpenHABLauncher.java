@@ -23,6 +23,7 @@ package org.openbase.bco.manager.agent.binding.openhab;
  */
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
+import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -50,6 +51,7 @@ public class AgentBindingOpenHABLauncher extends AbstractLauncher<AgentBindingOp
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
     public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
+        BCO.printLogo();
         AbstractLauncher.main(args, AgentBindingOpenHABLauncher.class, AgentBindingOpenHABLauncher.class);
     }
 }

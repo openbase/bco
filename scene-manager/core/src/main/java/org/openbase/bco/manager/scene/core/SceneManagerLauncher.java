@@ -22,6 +22,7 @@ package org.openbase.bco.manager.scene.core;
  * #L%
  */
 import org.openbase.bco.manager.scene.lib.SceneManager;
+import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import static org.openbase.bco.registry.lib.launch.AbstractLauncher.main;
 
@@ -41,6 +42,7 @@ public class SceneManagerLauncher extends AbstractLauncher<SceneManagerControlle
     }
 
     public static void main(String args[]) throws Throwable {
+        BCO.printLogo();
         main(args, SceneManager.class, SceneManagerLauncher.class);
     }
 }

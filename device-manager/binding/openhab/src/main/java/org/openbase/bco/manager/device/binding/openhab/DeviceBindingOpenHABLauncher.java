@@ -23,6 +23,7 @@ package org.openbase.bco.manager.device.binding.openhab;
  */
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
+import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.openbase.jps.core.JPService;
@@ -52,6 +53,7 @@ public class DeviceBindingOpenHABLauncher extends AbstractLauncher<DeviceBinding
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
     public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
+        BCO.printLogo();
         AbstractLauncher.main(args, DeviceBindingOpenHABLauncher.class, DeviceBindingOpenHABLauncher.class);
     }
 }

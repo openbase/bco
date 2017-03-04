@@ -24,6 +24,7 @@ package org.openbase.bco.manager.device.core;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.manager.device.lib.DeviceManager;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
+import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.openbase.jps.core.JPService;
@@ -47,6 +48,7 @@ public class DeviceManagerLauncher extends AbstractLauncher<DeviceManagerControl
     }
 
     public static void main(String args[]) throws Throwable {
+        BCO.printLogo();
         main(args, DeviceManager.class, DeviceManagerLauncher.class);
     }
 }

@@ -22,6 +22,7 @@ package org.openbase.bco.manager.location.binding.openhab;
  * #L%
  */
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
+import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.openbase.jps.core.JPService;
@@ -50,6 +51,7 @@ public class LocationBindingOpenHABLauncher extends AbstractLauncher<LocationBin
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
     public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
+        BCO.printLogo();
         AbstractLauncher.main(args, LocationBindingOpenHABLauncher.class, LocationBindingOpenHABLauncher.class);
     }
 }
