@@ -63,11 +63,11 @@ public class SoundScapeApp extends AbstractAppController {
 
     public SoundScapeApp() throws CouldNotPerformException, InterruptedException {
         super(SoundScapeApp.class);
-        logger.info("Creating sound scape app with scope [" + themeScope.toString() + "]!");
+        logger.debug("Creating sound scape app with scope [" + themeScope.toString() + "]!");
         this.listener = RSBFactoryImpl.getInstance().createSynchronizedListener(themeScope, RSBSharedConnectionConfig.getParticipantConfig());
         this.listenerWatchDog = new WatchDog(listener, "RSBListener[" + themeScope.concat(RSBCommunicationService.SCOPE_SUFFIX_STATUS) + "]");
         listener.addHandler((Event event) -> {
-            logger.info("Got data [" + event.getData() + "]");
+            logger.debug("Got data [" + event.getData() + "]");
             if (event.getData() instanceof String) {
                 try {
                     controlAmbienAgents(SoundScape.valueOf(StringProcessor.transformToUpperCase((String) event.getData())));
@@ -122,35 +122,35 @@ public class SoundScapeApp extends AbstractAppController {
     private void controlAmbienAgents(SoundScape soundScape) throws CouldNotPerformException {
         switch (soundScape) {
             case BEACH:
-                logger.info("Case BEACH");
+                logger.debug("Case BEACH");
                 agentBathAmbientColorBeachCeiling.setActivationState(activate);
                 agentBathAmbientColorForest.setActivationState(deactive);
                 agentBathAmbientColorNight.setActivationState(deactive);
                 agentBathAmbientColorZen.setActivationState(deactive);
                 break;
             case FOREST:
-                logger.info("Case FOREST");
+                logger.debug("Case FOREST");
                 agentBathAmbientColorBeachCeiling.setActivationState(deactive);
                 agentBathAmbientColorForest.setActivationState(activate);
                 agentBathAmbientColorNight.setActivationState(deactive);
                 agentBathAmbientColorZen.setActivationState(deactive);
                 break;
             case NIGHT:
-                logger.info("Case NIGHT");
+                logger.debug("Case NIGHT");
                 agentBathAmbientColorBeachCeiling.setActivationState(deactive);
                 agentBathAmbientColorForest.setActivationState(deactive);
                 agentBathAmbientColorNight.setActivationState(activate);
                 agentBathAmbientColorZen.setActivationState(deactive);
                 break;
             case ZEN:
-                logger.info("Case ZEN");
+                logger.debug("Case ZEN");
                 agentBathAmbientColorBeachCeiling.setActivationState(deactive);
                 agentBathAmbientColorForest.setActivationState(deactive);
                 agentBathAmbientColorNight.setActivationState(deactive);
                 agentBathAmbientColorZen.setActivationState(activate);
                 break;
             case OFF:
-                logger.info("Case OFF");
+                logger.debug("Case OFF");
                 agentBathAmbientColorBeachCeiling.setActivationState(deactive);
                 agentBathAmbientColorForest.setActivationState(deactive);
                 agentBathAmbientColorNight.setActivationState(deactive);

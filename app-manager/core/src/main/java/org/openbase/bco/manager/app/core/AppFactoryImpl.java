@@ -60,7 +60,7 @@ public class AppFactoryImpl implements AppFactory {
             }
 
             final Class appClass = Thread.currentThread().getContextClassLoader().loadClass(getAppClass(config));
-            logger.info("Creating app of type [" + appClass.getSimpleName() + "]");
+            logger.debug("Creating app of type [" + appClass.getSimpleName() + "]");
             app = (AppController) appClass.newInstance();
             app.init(config);
         } catch (CouldNotPerformException | ClassNotFoundException | SecurityException | java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException | InterruptedException ex) {
