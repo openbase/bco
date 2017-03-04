@@ -41,12 +41,14 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.iface.Shutdownable;
+import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.storage.registry.RemoteControllerRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
 import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 
 /**
@@ -361,6 +363,41 @@ public class Units {
      * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
      *
      * @param label the label to identify the unit.
+     * @param unitType the type of the unit.
+     * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
+     * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
+     * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
+     * @throws InterruptedException is thrown in case the thread is externally interrupted.
+     */
+    public static UnitRemote getUnitByLabelAndType(final String label, final UnitType unitType, boolean waitForData) throws NotAvailableException, InterruptedException {
+        try {
+            if (label == null) {
+                assert false;
+                throw new NotAvailableException("UnitName");
+            }
+            final List<UnitConfigType.UnitConfig> unitConfigList = getUnitRegistry().getUnitConfigsByLabelAndUnitType(label, unitType);
+
+            if (unitConfigList.isEmpty()) {
+                throw new NotAvailableException("No configuration found in registry!");
+            } else if (unitConfigList.size() > 1) {
+                throw new InvalidStateException("Unit is not unique! Please specify the unit location in order to unique resolve the unit configuration.");
+            }
+
+            return getUnit(unitConfigList.get(0), waitForData);
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Unit[" + label + "]", ex);
+        }
+    }
+
+    /**
+     * Method establishes a connection to the unit referred by the given unit label.
+     * The returned unit remote object is fully synchronized with the unit controller and all states locally cached.
+     * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
+     * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
+     * To force a resynchronization call {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the remote instance.
+     * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
+     *
+     * @param label the label to identify the unit.
      * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
      * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
      * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
@@ -402,9 +439,21 @@ public class Units {
      */
     public static <UR extends UnitRemote<?>> UR getUnitByLabel(final String label, boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
         try {
-            return (UR) getUnitByLabel(label, waitForData);
-        } catch (ClassCastException ex) {
-            throw new NotAvailableException("Unit[" + label + "]", new InvalidStateException("Requested Unit[" + label + "] is not compatible with defined UnitRemoteClass[" + unitRemoteClass + "]!", ex));
+            try {
+                return (UR) getUnitByLabelAndType(label, Units.getUnitTypeByRemoteClass(unitRemoteClass), waitForData);
+            } catch (ClassCastException ex) {
+                throw new InvalidStateException("Requested Unit[" + label + "] is not compatible with defined UnitRemoteClass[" + unitRemoteClass + "]!", ex);
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Unit[" + label + "]", ex);
+        }
+    }
+
+    public static UnitType getUnitTypeByRemoteClass(final Class<? extends UnitRemote<?>> unitRemoteClass) throws CouldNotPerformException {
+        try {
+            return UnitType.valueOf(StringProcessor.transformToUpperCase(unitRemoteClass.getSimpleName().replaceAll("Remote", "")));
+        } catch (NullPointerException | IllegalArgumentException ex) {
+            throw new CouldNotPerformException("Could not resolve unit type out of UnitRemoteClass[" + unitRemoteClass.getName() + "]", ex);
         }
     }
 

@@ -90,6 +90,7 @@ public class Action implements ActionService, Initializable<ActionConfig> {
             try {
                 throw new VerificationFailedException("Referred Unit[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "] is disabled!");
             } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
                 throw new VerificationFailedException("Referred Unit[" + unitConfig.getLabel() + "] is disabled!");
             }
         }
