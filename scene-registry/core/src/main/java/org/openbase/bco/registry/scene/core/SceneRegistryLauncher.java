@@ -21,6 +21,7 @@ package org.openbase.bco.registry.scene.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
 import org.openbase.bco.registry.scene.lib.SceneRegistry;
@@ -49,6 +50,7 @@ public class SceneRegistryLauncher extends AbstractRegistryLauncher<SceneRegistr
     }
 
     public static void main(String args[]) throws Throwable {
+        BCO.printLogo();
         AbstractLauncher.main(args, SceneRegistry.class, SceneRegistryLauncher.class);
     }
 }

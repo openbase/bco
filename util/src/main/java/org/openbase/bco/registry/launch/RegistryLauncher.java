@@ -27,6 +27,7 @@ package org.openbase.bco.registry.launch;
 import org.openbase.bco.registry.agent.core.AgentRegistryLauncher;
 import org.openbase.bco.registry.app.core.AppRegistryLauncher;
 import org.openbase.bco.registry.device.core.DeviceRegistryLauncher;
+import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.user.core.UserRegistryLauncher;
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.bco.registry.location.core.LocationRegistryLauncher;
@@ -40,6 +41,7 @@ public class RegistryLauncher {
      * @param args the command line arguments
      */
     public static void main(final String[] args) {
+        BCO.printLogo();
         AbstractLauncher.main(args, Registry.class,
                 DeviceRegistryLauncher.class,
                 AppRegistryLauncher.class,

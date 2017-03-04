@@ -24,6 +24,7 @@ package org.openbase.bco.registry.app.core;
 import org.openbase.bco.registry.app.lib.AppRegistry;
 import org.openbase.bco.registry.app.lib.jp.JPAppClassDatabaseDirectory;
 import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
+import org.openbase.bco.registry.lib.BCO;
 import static org.openbase.bco.registry.lib.launch.AbstractLauncher.main;
 import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
 import org.openbase.jps.core.JPService;
@@ -59,6 +60,7 @@ public class AppRegistryLauncher extends AbstractRegistryLauncher<AppRegistryCon
     }
 
     public static void main(String args[]) throws Throwable {
+        BCO.printLogo();
         main(args, AppRegistry.class, AppRegistryLauncher.class);
     }
 }

@@ -21,6 +21,7 @@ package org.openbase.bco.registry.user.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
 import org.openbase.bco.registry.user.lib.UserRegistry;
@@ -50,6 +51,7 @@ public class UserRegistryLauncher extends AbstractRegistryLauncher<UserRegistryC
     }
 
     public static void main(String args[]) throws Throwable {
+        BCO.printLogo();
         AbstractLauncher.main(args, UserRegistry.class, UserRegistryLauncher.class);
     }
 }

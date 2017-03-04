@@ -24,6 +24,7 @@ package org.openbase.bco.registry.agent.core;
 import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentClassDatabaseDirectory;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
+import org.openbase.bco.registry.lib.BCO;
 import static org.openbase.bco.registry.lib.launch.AbstractLauncher.main;
 import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
 import org.openbase.jps.core.JPService;
@@ -59,6 +60,7 @@ public class AgentRegistryLauncher extends AbstractRegistryLauncher<AgentRegistr
     }    
     
     public static void main(String args[]) throws Throwable {
+        BCO.printLogo();
         main(args, AgentRegistry.class, AgentRegistryLauncher.class);
     }
     

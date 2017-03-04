@@ -24,6 +24,7 @@ package org.openbase.bco.registry.device.core;
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceClassDatabaseDirectory;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
+import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
@@ -59,6 +60,7 @@ public class DeviceRegistryLauncher extends AbstractRegistryLauncher<DeviceRegis
     }    
     
     public static void main(String args[]) throws Throwable {
+        BCO.printLogo();
         main(args, DeviceRegistry.class, DeviceRegistryLauncher.class);
     }
 }

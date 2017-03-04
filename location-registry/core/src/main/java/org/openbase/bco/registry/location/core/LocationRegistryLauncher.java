@@ -21,8 +21,7 @@ package org.openbase.bco.registry.location.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.registry.lib.com.AbstractRegistryController;
-import org.openbase.bco.registry.lib.launch.AbstractLauncher;
+import org.openbase.bco.registry.lib.BCO;
 import static org.openbase.bco.registry.lib.launch.AbstractLauncher.main;
 import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
@@ -51,6 +50,7 @@ public class LocationRegistryLauncher extends AbstractRegistryLauncher<LocationR
     }
 
     public static void main(String args[]) throws Throwable {
+        BCO.printLogo();
         main(args, LocationRegistry.class, LocationRegistryLauncher.class);
     }
 }
