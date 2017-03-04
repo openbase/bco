@@ -285,7 +285,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
                         }
                         break;
                     case UNKNOWN:
-                        logger.warn("Ignoring unknown ConnectionState for DoorState update!");
+                        logger.debug("Ignoring unknown ConnectionState for DoorState update!");
                         break;
                     default:
                         break;
@@ -332,7 +332,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
                         }
                         break;
                     case UNKNOWN:
-                        logger.warn("Ignoring unknown ConnectionState for DoorState update!");
+                        logger.debug("Ignoring unknown ConnectionState for DoorState update!");
                         break;
                     default:
                         break;

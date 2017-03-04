@@ -113,7 +113,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
             try {
                 while (!(unitId = configVariableProvider.getValue(TARGET_KEY + "_" + i)).isEmpty()) {
                     i++;
-                    logger.info("Found target id [" + unitId + "] with key [" + TARGET_KEY + "_" + i + "]");
+                    logger.debug("Found target id [" + unitId + "] with key [" + TARGET_KEY + "_" + i + "]");
                     UnitConfig targetUnitConfig = CachedUnitRegistryRemote.getRegistry().getUnitConfigById(unitId);
                     if (targetUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                         logger.warn("TargetUnit[" + ScopeGenerator.generateStringRep(targetUnitConfig.getScope()) + "] "
@@ -136,7 +136,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
     private void handleTargetPowerStateUpdate(final PowerState.State targetPowerState, final Object target) {
         synchronized (AGENT_LOCK) {
             try {
-                logger.info("Received new Value[" + targetPowerState + "] for Target[" + target + "]");
+                logger.debug("Received new Value[" + targetPowerState + "] for Target[" + target + "]");
                 if (!updateLatestTargetPowerState(targetPowerState, target)) {
                     return;
                 }
@@ -169,7 +169,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
     private void handleSourcePowerStateUpdate(final PowerState.State sourcePowerState, final Object target) {
         synchronized (AGENT_LOCK) {
             this.sourceLatestPowerState = sourcePowerState;
-            logger.info("Handle new Value[" + sourcePowerState + "] for Source[" + target + "]");
+            logger.debug("Handle new Value[" + sourcePowerState + "] for Source[" + target + "]");
             if (sourceLatestPowerState == PowerState.State.OFF) {
                 if (targetLatestPowerState != PowerState.State.OFF) {
                     targetRemotes.stream().forEach((targetRemote) -> {
@@ -206,7 +206,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
      * @throws CouldNotPerformException
      */
     private boolean updateLatestTargetPowerState(final PowerState.State targetPowerState, final Object source) throws CouldNotPerformException {
-        logger.info("Received new Value[" + targetPowerState + "] for Source[" + source + "]");
+        logger.debug("Received new Value[" + targetPowerState + "] for Source[" + source + "]");
         if (targetLatestPowerState == PowerState.State.UNKNOWN) {
             targetLatestPowerState = targetPowerState;
             return true;
@@ -231,7 +231,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
     }
 
     private void invokeSetPower(final UnitRemote remote, final PowerState powerState) {
-        logger.info("Switch " + remote + " to " + powerState.getValue().name());
+        logger.debug("Switch " + remote + " to " + powerState.getValue().name());
         try {
             Method method = remote.getClass().getMethod("setPowerState", PowerState.class);
             method.invoke(remote, powerState);
@@ -253,7 +253,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
-        logger.info("Executing PowerStateSynchroniser agent");
+        logger.debug("Executing PowerStateSynchroniser agent");
         sourceRemote.activate();
         sourceRemote.waitForData();
         String targetIds = "";
@@ -276,13 +276,13 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
         sourceRemote.addDataObserver(sourceObserver);
         handleSourcePowerStateUpdate(invokeGetPowerState(sourceRemote.getData()).getValue(), sourceRemote);
 
-        logger.info("Source [" + sourceRemote.getLabel() + "] behaviour [" + sourceBehaviour + "]");
-        logger.info("Targets [" + targetIds + "] behaviour [" + targetBehaviour + "]");
+        logger.debug("Source [" + sourceRemote.getLabel() + "] behaviour [" + sourceBehaviour + "]");
+        logger.debug("Targets [" + targetIds + "] behaviour [" + targetBehaviour + "]");
     }
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
-        logger.info("Stopping PowerStateSynchroniserAgent...");
+        logger.debug("Stopping PowerStateSynchroniserAgent...");
         sourceRemote.removeDataObserver(sourceObserver);
         for (UnitRemote targetRemote : targetRemotes) {
             targetRemote.removeDataObserver(sourceObserver);

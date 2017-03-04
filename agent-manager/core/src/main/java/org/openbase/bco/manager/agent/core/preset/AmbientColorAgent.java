@@ -138,7 +138,6 @@ public class AmbientColorAgent extends AbstractAgentController {
 
     public AmbientColorAgent() throws InstantiationException, InterruptedException, CouldNotPerformException {
         super(AmbientColorAgent.class);
-        logger.info("Creating AmbienColorAgent");
         random = new Random();
     }
 
@@ -154,7 +153,7 @@ public class AmbientColorAgent extends AbstractAgentController {
             String unitId;
             try {
                 while (!(unitId = configVariableProvider.getValue(UNIT_KEY + "_" + i)).isEmpty()) {
-                    logger.info("Found unit id [" + unitId + "] with key [" + UNIT_KEY + "_" + i + "]");
+                    logger.debug("Found unit id [" + unitId + "] with key [" + UNIT_KEY + "_" + i + "]");
                     ColorStateServiceRemote remote = new ColorStateServiceRemote();
                     remote.init(unitRegistry.getUnitConfigById(unitId));
                     colorRemotes.add(remote);
@@ -162,13 +161,13 @@ public class AmbientColorAgent extends AbstractAgentController {
                 }
             } catch (NotAvailableException ex) {
                 i--;
-                logger.info("Found [" + i + "] unit/s");
+                logger.debug("Found [" + i + "] unit/s");
             }
             i = 1;
             String colorString;
             try {
                 while (!(colorString = configVariableProvider.getValue(COLOR_KEY + "_" + i)).isEmpty()) {
-                    logger.info("Found color [" + colorString + "] with key [" + COLOR_KEY + "_" + i + "]");
+                    logger.debug("Found color [" + colorString + "] with key [" + COLOR_KEY + "_" + i + "]");
                     String[] split = colorString.split(SEPERATOR);
                     double hue = Double.parseDouble(split[0]);
                     double saturation = Double.parseDouble(split[1]);
@@ -178,7 +177,7 @@ public class AmbientColorAgent extends AbstractAgentController {
                 }
             } catch (NotAvailableException ex) {
                 i--;
-                logger.info("Found [" + i + "] color/s");
+                logger.debug("Found [" + i + "] color/s");
             } catch (NumberFormatException | ArrayIndexOutOfBoundsException ex) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Error while parsing color. Use following patter [KEY,VALUE] => [" + COLOR_KEY + ",<hue>;<saturation>;<brightness>]", ex), logger, LogLevel.WARN);
             }
@@ -241,7 +240,6 @@ public class AmbientColorAgent extends AbstractAgentController {
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getClass().getSimpleName() + "]");
         super.deactivate();
         for (ColorStateServiceRemote colorRemote : colorRemotes) {
             colorRemote.deactivate();
@@ -292,7 +290,7 @@ public class AmbientColorAgent extends AbstractAgentController {
                     }
                     Thread.sleep(holdingTime);
                 }
-                logger.info("Execution thread finished.");
+                logger.debug("Execution thread finished.");
             } catch (Exception ex) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Execution thread canceled!", ex), logger);
             }

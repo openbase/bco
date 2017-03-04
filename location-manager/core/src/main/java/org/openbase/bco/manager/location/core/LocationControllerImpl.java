@@ -192,16 +192,11 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
 
     @Override
     public synchronized UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        System.out.println("Apply config update for location[" + config.getLabel() + "]");
         UnitConfig unitConfig = super.applyConfigUpdate(config);
-        System.out.println("Applied super config update!");
         serviceRemoteManager.applyConfigUpdate(unitConfig.getLocationConfig().getUnitIdList());
-        System.out.println("ServiceRemoteManager applied config update");
         // if already active than update the current location state.
         if (isActive()) {
-            System.out.println("update current status....");
             updateCurrentState();
-            System.out.println("updated current status!");
         }
         return unitConfig;
     }
@@ -209,7 +204,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         if (isActive()) {
-            System.out.println("Skipp controller activations because is already active...");
+            LOGGER.debug("Skipp location controller activations because is already active...");
             return;
         }
         LOGGER.debug("Activate location [" + getLabel() + "]!");

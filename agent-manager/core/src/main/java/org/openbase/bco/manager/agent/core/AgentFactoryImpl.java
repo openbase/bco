@@ -71,7 +71,7 @@ public class AgentFactoryImpl implements AgentFactory {
             }
             CachedAgentRegistryRemote.waitForData();
             final Class agentClass = Thread.currentThread().getContextClassLoader().loadClass(getAgentClass(agentUnitConfig));
-            logger.info("Creating agent of type [" + agentClass.getSimpleName() + "] on scope [" + ScopeGenerator.generateStringRep(agentUnitConfig.getScope()) + "]");
+            logger.debug("Creating agent of type [" + agentClass.getSimpleName() + "] on scope [" + ScopeGenerator.generateStringRep(agentUnitConfig.getScope()) + "]");
             agent = (AgentController) agentClass.newInstance();
             agent.init(agentUnitConfig);
         } catch (CouldNotPerformException | ClassNotFoundException | SecurityException | java.lang.InstantiationException | IllegalAccessException | IllegalArgumentException | InterruptedException ex) {

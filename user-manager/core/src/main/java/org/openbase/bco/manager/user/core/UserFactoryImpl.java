@@ -59,7 +59,7 @@ public class UserFactoryImpl implements UserFactory {
             if (config == null) {
                 throw new NotAvailableException("unitconfig");
             }
-            logger.info("Creating user [" + config.getUserConfig().getUserName() + "]");
+            logger.debug("Creating user [" + config.getUserConfig().getUserName() + "]");
             user = new UserControllerImpl();
             user.init(config);
         } catch (CouldNotPerformException | SecurityException | IllegalArgumentException | InterruptedException ex) {

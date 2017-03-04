@@ -59,7 +59,7 @@ public class SceneFactoryImpl implements SceneFactory {
             if (config == null) {
                 throw new NotAvailableException("UnitConfig");
             }
-            logger.info("Creating scene [" + config.getId() + "]");
+            logger.debug("Creating scene [" + config.getId() + "]");
             scene = new SceneControllerImpl();
             scene.init(config);
         } catch (CouldNotPerformException | SecurityException | IllegalArgumentException | InterruptedException ex) {

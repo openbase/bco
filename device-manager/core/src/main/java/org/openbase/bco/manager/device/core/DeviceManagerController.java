@@ -30,8 +30,6 @@ import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.bco.manager.device.lib.DeviceFactory;
 import org.openbase.bco.manager.device.lib.DeviceManager;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
-import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -45,7 +43,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.InventoryStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.device.DeviceDataType.DeviceData;
 
 /**
  *
@@ -111,7 +108,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
 
                         // verify device state.
                         if (config.getDeviceConfig().getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
-                            LOGGER.info("Skip Device[" + config.getLabel() + "] because it is currently not installed!");
+                            LOGGER.debug("Skip Device[" + config.getLabel() + "] because it is currently not installed!");
                             return false;
                         }
                         return true;

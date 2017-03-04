@@ -22,7 +22,9 @@ package org.openbase.bco.manager.scene.core;
  * #L%
  */
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
@@ -49,7 +51,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.ButtonStateType.ButtonState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.dal.ButtonDataType.ButtonData;
 import rst.domotic.unit.scene.SceneDataType.SceneData;
 
@@ -65,7 +67,8 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionConfig.getDefaultInstance()));
     }
 
-    private final List<ButtonRemote> buttonRemoteList;
+    private final Object buttonObserverLock = new SyncObject("ButtonObserverLock");
+    private final Set<ButtonRemote> buttonRemoteSet;
     private final List<Action> actionList;
     private final SyncObject triggerListSync = new SyncObject("TriggerListSync");
     private final SyncObject actionListSync = new SyncObject("ActionListSync");
@@ -73,7 +76,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
 
     public SceneControllerImpl() throws org.openbase.jul.exception.InstantiationException {
         super(SceneControllerImpl.class, SceneData.newBuilder());
-        this.buttonRemoteList = new ArrayList<>();
+        this.buttonRemoteSet = new HashSet<>();
         this.actionList = new ArrayList<>();
         this.buttonObserver = (final Observable<ButtonData> source, ButtonData data) -> {
             if (data.getButtonState().getValue().equals(ButtonState.State.PRESSED)) {
@@ -97,27 +100,26 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         config = super.applyConfigUpdate(config);
         synchronized (triggerListSync) {
             try {
-                for (final ButtonRemote buttonRemote : buttonRemoteList) {
-                    buttonRemote.removeDataObserver(buttonObserver);
-                }
-                buttonRemoteList.clear();
-                ButtonRemote buttonRemote;
+                synchronized (buttonObserverLock) {
+                    for (final ButtonRemote buttonRemote : buttonRemoteSet) {
+                        buttonRemote.removeDataObserver(buttonObserver);
+                    }
 
-                for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLabel(config.getLabel())) {
-                    //TODO implement deviceregistry method get unit by label and type.
-                    if (unitConfig.getType() != UnitTemplate.UnitType.BUTTON) {
-                        continue;
+                    buttonRemoteSet.clear();
+                    ButtonRemote buttonRemote;
+
+                    for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(config.getLabel(), UnitType.BUTTON)) {
+                        try {
+                            buttonRemote = Units.getUnit(unitConfig, false, Units.BUTTON);
+                            buttonRemoteSet.add(buttonRemote);
+                        } catch (CouldNotPerformException ex) {
+                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register remote for Button[" + unitConfig.getLabel() + "]!", ex), logger);
+                        }
                     }
-                    try {
-                        buttonRemote = Units.getUnit(unitConfig, false, ButtonRemote.class);
-                        buttonRemoteList.add(buttonRemote);
-                    } catch (CouldNotPerformException ex) {
-                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register remote for Button[" + unitConfig.getLabel() + "]!", ex), logger);
-                    }
-                }
-                if (isEnabled()) {
-                    for (final ButtonRemote button : buttonRemoteList) {
-                        button.addDataObserver(buttonObserver);
+                    if (isEnabled()) {
+                        for (final ButtonRemote button : buttonRemoteSet) {
+                            button.addDataObserver(buttonObserver);
+                        }
                     }
                 }
             } catch (CouldNotPerformException ex) {
@@ -149,19 +151,23 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
 
     @Override
     public void enable() throws CouldNotPerformException, InterruptedException {
-        logger.info("enable " + getConfig().getLabel());
+        logger.debug("enable " + getConfig().getLabel());
         super.enable();
-        buttonRemoteList.stream().forEach((button) -> {
-            button.addDataObserver(buttonObserver);
-        });
+        synchronized (buttonObserverLock) {
+            buttonRemoteSet.stream().forEach((button) -> {
+                button.addDataObserver(buttonObserver);
+            });
+        }
     }
 
     @Override
     public void disable() throws CouldNotPerformException, InterruptedException {
         logger.info("disable " + getConfig().getLabel());
-        buttonRemoteList.stream().forEach((button) -> {
-            button.removeDataObserver(buttonObserver);
-        });
+        synchronized (buttonObserverLock) {
+            buttonRemoteSet.stream().forEach((button) -> {
+                button.removeDataObserver(buttonObserver);
+            });
+        }
         super.disable();
     }
 
@@ -169,7 +175,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     protected void execute() throws CouldNotPerformException, InterruptedException {
         logger.info("Activate scene: " + getConfig().getLabel());
         synchronized (actionListSync) {
-            for (Action action : actionList) {
+            for (final Action action : actionList) {
                 action.execute();
             }
         }
