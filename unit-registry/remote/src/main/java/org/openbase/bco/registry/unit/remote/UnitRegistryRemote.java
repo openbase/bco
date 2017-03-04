@@ -358,7 +358,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                 return unitTemplate;
             }
         }
-        throw new NotAvailableException("unit template", "No UnitTemplate with given Type[" + type + "] registered!");
+        throw new NotAvailableException("UnitTemplate", type.name(), "No UnitTemplate with given Type[" + type + "] registered!");
     }
 
     @Override
