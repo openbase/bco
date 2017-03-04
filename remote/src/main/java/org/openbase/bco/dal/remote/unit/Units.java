@@ -25,6 +25,12 @@ import com.google.protobuf.GeneratedMessage;
 import java.util.List;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
+import org.openbase.bco.dal.remote.unit.app.AppRemote;
+import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
+import org.openbase.bco.dal.remote.unit.device.DeviceRemote;
+import org.openbase.bco.dal.remote.unit.location.LocationRemote;
+import org.openbase.bco.dal.remote.unit.scene.SceneRemote;
+import org.openbase.bco.dal.remote.unit.user.UserRemote;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -54,6 +60,44 @@ import rst.rsb.ScopeType;
 public class Units {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Units.class);
+
+    /**
+     * DAL Unit remote-class-constants which can be used to request unit remotes.
+     */
+    public static final Class<? extends LightRemote> LIGHT = LightRemote.class;
+    public static final Class<? extends ColorableLightRemote> LIGHT_COLORABLE = ColorableLightRemote.class;
+    public static final Class<? extends DimmableLightRemote> LIGHT_DIMMABLE = DimmableLightRemote.class;
+    public static final Class<? extends MotionDetectorRemote> MOTION_DETECTOR = MotionDetectorRemote.class;
+    public static final Class<? extends PowerSwitchRemote> POWER_SWITCH = PowerSwitchRemote.class;
+    public static final Class<? extends PowerConsumptionSensorRemote> POWER_CONSUMPTION_SENSOR = PowerConsumptionSensorRemote.class;
+    public static final Class<? extends ButtonRemote> BUTTON = ButtonRemote.class;
+    public static final Class<? extends TemperatureControllerRemote> TEMPERATURE_CONTROLLER = TemperatureControllerRemote.class;
+    public static final Class<? extends TemperatureSensorRemote> TEMPERATURE_SENSOR = TemperatureSensorRemote.class;
+    public static final Class<? extends BatteryRemote> BATTERY = BatteryRemote.class;
+
+    public static final Class<? extends HandleRemote> HANDLE = HandleRemote.class;
+    public static final Class<? extends MonitorRemote> MONITOR = MonitorRemote.class;
+    public static final Class<? extends ReedContactRemote> REED_CONTACT = ReedContactRemote.class;
+    public static final Class<? extends RollerShutterRemote> ROLLER_SHUTTER = RollerShutterRemote.class;
+    public static final Class<? extends SmokeDetectorRemote> SMOKE_DETECTOR = SmokeDetectorRemote.class;
+    public static final Class<? extends TamperDetectorRemote> TAMPER_DETECTOR = TamperDetectorRemote.class;
+//    public static final Class<? extends VideoRgbSourceRemote> VIDEO_RGB_SOURCE = VideoRgbSourceRemote.class;
+//    public static final Class<? extends VideoDepthSourceRemote> VIDEO_DEPTH_SOURCE = VideoDepthSourceRemote.class;
+//    public static final Class<? extends AudioSourceRemote> AUDIO_SOURCE = AudioSourceRemote.class;
+
+    /**
+     * BASE Unit remote-class-constants which can be used to request unit remotes.
+     */
+    public static final Class<? extends AgentRemote> UNIT_BASE_AGENT = AgentRemote.class;
+    public static final Class<? extends AppRemote> UNIT_BASE_APP = AppRemote.class;
+    public static final Class<? extends SceneRemote> UNIT_BASE_SCENE = SceneRemote.class;
+    public static final Class<? extends UserRemote> UNIT_BASE_USER = UserRemote.class;
+    public static final Class<? extends DeviceRemote> UNIT_BASE_DEVICE = DeviceRemote.class;
+    public static final Class<? extends LocationRemote> UNIT_BASE_LOCATION = LocationRemote.class;
+    public static final Class<? extends ConnectionRemote> UNIT_BASE_CONNECTION_DOOR = ConnectionRemote.class;
+    public static final Class<? extends ConnectionRemote> UNIT_BASE_CONNECTION_WINDOW = ConnectionRemote.class;
+    public static final Class<? extends ConnectionRemote> UNIT_BASE_CONNECTION_PASSAGE = ConnectionRemote.class;
+    public static final Class<? extends ConnectionRemote> BASE_UNIT_CONNECTION = ConnectionRemote.class;
 
     public static Units instance;
 
@@ -356,9 +400,9 @@ public class Units {
      *
      * @see #getUnitByLabel(java.lang.String, boolean)
      */
-    public static <UR extends UnitRemote<?>> UnitRemote<?> getUnitByLabel(final String label, boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
+    public static <UR extends UnitRemote<?>> UR getUnitByLabel(final String label, boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
         try {
-            return (UR) getUnit(label, waitForData);
+            return (UR) getUnitByLabel(label, waitForData);
         } catch (ClassCastException ex) {
             throw new NotAvailableException("Unit[" + label + "]", new InvalidStateException("Requested Unit[" + label + "] is not compatible with defined UnitRemoteClass[" + unitRemoteClass + "]!", ex));
         }
@@ -482,77 +526,5 @@ public class Units {
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Unit[" + label + "]", ex);
         }
-    }
-
-//    public enum UnitClass {
-//        LIGHT(LightRemote.class);
-//
-//        final Class unitRemoteClass;
-//
-//        private UnitClass(final Class unitRemoteClass) {
-//            this.unitRemoteClass = unitRemoteClass;
-//        }
-//
-//        public Class getUnitClass() {
-//            return unitRemoteClass;
-//        }
-//    }
-//    
-//    public static <UR extends UnitRemote> UR getUnit(final String unitId, boolean waitForData, final UnitClass unitClass) throws NotAvailableException, InterruptedException {
-//        try {
-//            return (UR) getUnit(unitId, waitForData, unitClass.getUnitClass());
-//        } catch (ClassCastException ex) {
-//            throw new NotAvailableException("Unit[" + unitId + "]", new InvalidStateException("Requested Unit[" + unitId + "] is not compatible with defined UnitRemoteClass[" + unitRemoteClass + "]!", ex));
-//        }
-//    }
-    /**
-     * @param unitConfig
-     * @param waitForData
-     * @return
-     * @throws NotAvailableException
-     * @throws InterruptedException
-     * @deprecated this method is just a prototype, using this method does not guarantee API stability.
-     */
-    @Deprecated
-    public static LightRemote getLightUnit(final UnitConfig unitConfig, boolean waitForData) throws NotAvailableException, InterruptedException {
-        return getUnit(unitConfig, waitForData, LightRemote.class);
-    }
-
-    /**
-     * @param unitConfig
-     * @param waitForData
-     * @return
-     * @throws NotAvailableException
-     * @throws InterruptedException
-     * @deprecated this method is just a prototype, using this method does not guarantee API stability.
-     */
-    @Deprecated
-    public static LightRemote getLight(final UnitConfig unitConfig, boolean waitForData) throws NotAvailableException, InterruptedException {
-        return getUnit(unitConfig, waitForData, LightRemote.class);
-    }
-
-    /**
-     * @param unitConfig
-     * @param waitForData
-     * @return
-     * @throws NotAvailableException
-     * @throws InterruptedException
-     * @deprecated this method is just a prototype, using this method does not guarantee API stability.
-     */
-    public static AgentRemote getAgent(final UnitConfig unitConfig, boolean waitForData) throws NotAvailableException, InterruptedException {
-        return getUnit(unitConfig, waitForData, AgentRemote.class);
-    }
-
-    /**
-     *
-     * @param label
-     * @param waitForData
-     * @return
-     * @throws NotAvailableException
-     * @throws InterruptedException
-     * @deprecated this method is just a prototype, using this method does not guarantee API stability.
-     */
-    public static AgentRemote getAgent(final String label, boolean waitForData) throws NotAvailableException, InterruptedException {
-        return getUnit(label, waitForData, AgentRemote.class);
     }
 }
