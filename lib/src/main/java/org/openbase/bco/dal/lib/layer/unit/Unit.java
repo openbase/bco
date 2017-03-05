@@ -142,11 +142,10 @@ public interface Unit<D> extends Service, LabelProvider, ScopeProvider, Identifi
         MultiException.checkAndThrow("Could not record snapshot!", exceptionStack);
         return CompletableFuture.completedFuture(snapshotBuilder.build());
     }
-
+    
     @RPCMethod
     @Override
-    public default Future<Void> restoreSnapshot(Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
-        System.out.println("Restore snapshot on unit");
+    public default Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
         try {
             Collection<Future> futureCollection = new ArrayList<>();
             for (final ActionConfigType.ActionConfig actionConfig : snapshot.getActionConfigList()) {

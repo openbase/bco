@@ -43,6 +43,7 @@ import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Snapshotable;
+import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType;
@@ -305,4 +306,7 @@ public interface Location extends BaseUnit<LocationData>,
     default public TamperStateType.TamperState getTamperState(UnitTemplate.UnitType unitType) throws NotAvailableException {
         return ((TamperStateProviderServiceCollection) getServiceRemote(ServiceTemplate.ServiceType.TAMPER_STATE_SERVICE)).getTamperState(unitType);
     }
+    
+    @RPCMethod
+    public Future<Snapshot> recordSnapshot(final UnitTemplate.UnitType unitType) throws CouldNotPerformException, InterruptedException;
 }

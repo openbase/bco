@@ -31,6 +31,7 @@ import rst.domotic.state.StandbyStateType;
 import rst.domotic.state.TamperStateType;
 import rst.domotic.state.TemperatureStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.location.LocationDataType;
 import rst.domotic.unit.location.LocationDataType.LocationData;
 import rst.vision.ColorType;
@@ -136,6 +137,11 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         return RPCHelper.callRemoteMethod(this, Snapshot.class);
     }
 
+    @Override
+    public Future<Snapshot> recordSnapshot(UnitTemplateType.UnitTemplate.UnitType unitType) throws CouldNotPerformException, InterruptedException {
+        return RPCHelper.callRemoteMethod(unitType, this, Snapshot.class);
+    }
+    
     @Override
     public Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
         return RPCHelper.callRemoteMethod(snapshot, this, Void.class);
