@@ -21,6 +21,8 @@ package org.openbase.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.ArrayList;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -33,6 +35,8 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
+import rst.domotic.action.ActionConfigType;
+import rst.domotic.action.ActionConfigType.ActionConfig;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.state.PowerStateType;
 import rst.domotic.state.PresenceStateType;
@@ -139,6 +143,19 @@ public class StandbyAgent extends AbstractAgentController {
                 try {
                     logger.info("Create snapshot of " + locationRemote.getLabel() + " state.");
                     snapshot = locationRemote.recordSnapshot().get(60, TimeUnit.SECONDS);
+
+                    // filter OFF values
+                    List<ActionConfigType.ActionConfig> actionConfigList = new ArrayList<>();
+                    for (ActionConfig actionConfig : snapshot.getActionConfigList()) {
+                        if (actionConfig.getServiceAttribute().contains("OFF")) {
+                            logger.info("ignore " + actionConfig.getUnitId() + " because unit is off.");
+                            continue;
+                        }
+                        logger.info("store for standby: " + actionConfig);
+                        actionConfigList.add(actionConfig);
+                    }
+                    snapshot.toBuilder().clearActionConfig().addAllActionConfig(actionConfigList);
+
                 } catch (ExecutionException | CouldNotPerformException | TimeoutException ex) {
                     ExceptionPrinter.printHistory("Could not create snapshot!", ex, logger);
                 }

@@ -283,7 +283,8 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
         return recordSnapshot(UnitType.UNKNOWN);
     }
 
-    public Future<Snapshot> recordSnapshot(UnitType unitType) throws CouldNotPerformException, InterruptedException {
+    @Override
+    public Future<Snapshot> recordSnapshot(final UnitType unitType) throws CouldNotPerformException, InterruptedException {
         try {
             Snapshot.Builder snapshotBuilder = Snapshot.newBuilder();
             Set<UnitRemote> unitRemoteSet = new HashSet<>();

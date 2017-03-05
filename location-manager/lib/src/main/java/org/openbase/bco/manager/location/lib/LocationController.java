@@ -1,17 +1,5 @@
 package org.openbase.bco.manager.location.lib;
 
-import org.openbase.bco.dal.lib.layer.service.collection.BlindStateOperationServiceCollection;
-import org.openbase.bco.dal.lib.layer.service.collection.BrightnessStateOperationServiceCollection;
-import org.openbase.bco.dal.lib.layer.service.collection.ColorStateOperationServiceCollection;
-import org.openbase.bco.dal.lib.layer.service.collection.MotionStateProviderServiceCollection;
-import org.openbase.bco.dal.lib.layer.service.collection.PowerConsumptionStateProviderServiceCollection;
-import org.openbase.bco.dal.lib.layer.service.collection.PowerStateOperationServiceCollection;
-import org.openbase.bco.dal.lib.layer.service.collection.SmokeAlarmStateProviderServiceCollection;
-import org.openbase.bco.dal.lib.layer.service.collection.SmokeStateProviderServiceCollection;
-import org.openbase.bco.dal.lib.layer.service.collection.StandbyStateOperationServiceCollection;
-import org.openbase.bco.dal.lib.layer.service.collection.TamperStateProviderServiceCollection;
-import org.openbase.bco.dal.lib.layer.service.collection.TargetTemperatureStateOperationServiceCollection;
-import org.openbase.bco.dal.lib.layer.service.collection.TemperatureStateProviderServiceCollection;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.MessageController;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
