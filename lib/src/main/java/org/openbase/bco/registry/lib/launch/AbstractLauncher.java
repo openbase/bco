@@ -29,7 +29,10 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.openbase.bco.registry.lib.launch.jp.JPExcludeLauncher;
+import org.openbase.bco.registry.lib.launch.jp.JPPrintLauncher;
 import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.MultiException;
@@ -45,6 +48,7 @@ import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.iface.provider.NameProvider;
 import org.openbase.jul.pattern.Launcher;
+import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
@@ -258,13 +262,58 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
             launcher.loadProperties();
         }
 
+        // regsiter launcher jps
+        JPService.registerProperty(JPPrintLauncher.class);
+        JPService.registerProperty(JPExcludeLauncher.class);
+
         JPService.parseAndExitOnError(args);
+
+        // print launcher end exit
+        try {
+            if (JPService.getProperty(JPPrintLauncher.class).getValue()) {
+                if (launcherMap.isEmpty()) {
+                    System.out.println(JPService.getApplicationName() + " does not provide any launcher!");
+                    System.exit(255);
+                }
+                System.out.println("Available launcher:");
+                System.out.println("");
+                int maxLauncherNameSize = 0;
+                for (final Entry<Class<? extends AbstractLauncher>, AbstractLauncher> launcherEntry : launcherMap.entrySet()) {
+                    maxLauncherNameSize = Math.max(maxLauncherNameSize, launcherEntry.getKey().getSimpleName().length());
+                }
+                for (final Entry<Class<? extends AbstractLauncher>, AbstractLauncher> launcherEntry : launcherMap.entrySet()) {
+                    System.out.println("\t• " + StringProcessor.fillWithSpaces(launcherEntry.getKey().getSimpleName(), maxLauncherNameSize) + "  ⊳  " + launcherEntry.getKey().getName());
+                }
+                System.out.println("");
+                System.exit(0);
+            }
+        } catch (JPNotAvailableException ex) {
+            ExceptionPrinter.printHistory("Could not check if launcher should be printed.", ex, logger);
+        }
 
         logger.info("Start " + JPService.getApplicationName() + "...");
 
         final Map<Entry<Class<? extends AbstractLauncher>, AbstractLauncher>, Future> launchableFutureMap = new HashMap<>();
         try {
             for (final Entry<Class<? extends AbstractLauncher>, AbstractLauncher> launcherEntry : launcherMap.entrySet()) {
+
+                // check if launcher was excluded
+                boolean exclude = false;
+                try {
+                    //filter excluded launcher
+                    for (String exclusionPatter : JPService.getProperty(JPExcludeLauncher.class).getValue()) {
+                        if (launcherEntry.getKey().getName().toLowerCase().contains(exclusionPatter.toLowerCase())) {
+                            exclude = true;
+                        }
+                    }
+                } catch (JPNotAvailableException ex) {
+                    ExceptionPrinter.printHistory("Could not process launcher exclusion!", ex, logger);
+                }
+                if (exclude) {
+                    logger.info(launcherEntry.getKey().getSimpleName() + " excluded from execution.");
+                    continue;
+                }
+
                 launchableFutureMap.put(launcherEntry, GlobalCachedExecutorService.submit(new Callable<Void>() {
 
                     @Override
