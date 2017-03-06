@@ -43,6 +43,9 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jps.preset.JPForce;
 import org.openbase.jps.preset.JPReadOnly;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBHost;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBPort;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBTransport;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPlugin;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
 import org.openbase.jul.storage.registry.jp.JPInitializeDB;
@@ -74,6 +77,10 @@ public class UnitRegistryLauncher extends AbstractRegistryLauncher<UnitRegistryC
         JPService.registerProperty(JPUnitGroupDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
+        
+        JPService.registerProperty(JPRSBHost.class);
+        JPService.registerProperty(JPRSBPort.class);
+        JPService.registerProperty(JPRSBTransport.class);
     }
 
     public static void main(String args[]) throws Throwable {
