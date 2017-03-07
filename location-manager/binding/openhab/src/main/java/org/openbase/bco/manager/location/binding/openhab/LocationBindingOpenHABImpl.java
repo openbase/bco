@@ -94,7 +94,10 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
         };
     }
 
+    @Override
     public void init() throws InitializationException, InterruptedException {
+        // TODO: the implementation of AbstractOpenHABRemote should be transfered to a seperate class. Else getClass().getSimpleName() is empty which leads to confusing logging
+        // This is also an issue in all the other openHABBindings
         init(LOCATION_MANAGER_ITEM_FILTER, new AbstractOpenHABRemote(hardwareSimulationMode) {
 
             @Override
