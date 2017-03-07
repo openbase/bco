@@ -21,7 +21,6 @@ package org.openbase.bco.registry.lib.launch;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.List;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
 import org.openbase.jps.core.JPService;
@@ -37,7 +36,7 @@ import org.openbase.jul.storage.registry.RemoteRegistry;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <L>
  */
- public abstract class AbstractRegistryLauncher<L extends AbstractRegistryController> extends AbstractLauncher<L> {
+public abstract class AbstractRegistryLauncher<L extends AbstractRegistryController> extends AbstractLauncher<L> {
 
     public AbstractRegistryLauncher(Class applicationClass, Class<L> launchableClass) throws InstantiationException {
         super(applicationClass, launchableClass);

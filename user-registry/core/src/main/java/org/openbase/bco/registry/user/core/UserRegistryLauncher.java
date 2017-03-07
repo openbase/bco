@@ -31,6 +31,9 @@ import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jps.preset.JPForce;
 import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBHost;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBPort;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBTransport;
 
 /**
  *
@@ -48,6 +51,10 @@ public class UserRegistryLauncher extends AbstractRegistryLauncher<UserRegistryC
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);
+
+        JPService.registerProperty(JPRSBHost.class);
+        JPService.registerProperty(JPRSBPort.class);
+        JPService.registerProperty(JPRSBTransport.class);
     }
 
     public static void main(String args[]) throws Throwable {

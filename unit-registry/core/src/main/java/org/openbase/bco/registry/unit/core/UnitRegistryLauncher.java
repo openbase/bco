@@ -77,7 +77,7 @@ public class UnitRegistryLauncher extends AbstractRegistryLauncher<UnitRegistryC
         JPService.registerProperty(JPUnitGroupDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
-        
+
         JPService.registerProperty(JPRSBHost.class);
         JPService.registerProperty(JPRSBPort.class);
         JPService.registerProperty(JPRSBTransport.class);
