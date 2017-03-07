@@ -53,13 +53,10 @@ public interface AgentRegistry extends Shutdownable {
     @RPCMethod
     public UnitConfig getAgentConfigById(final String agentUnitConfigId) throws CouldNotPerformException;
 
-    @RPCMethod
     public List<UnitConfig> getAgentConfigs() throws CouldNotPerformException;
 
-    @RPCMethod
     public List<UnitConfig> getAgentConfigsByAgentClass(AgentClass agentClass) throws CouldNotPerformException;
 
-    @RPCMethod
     public List<UnitConfig> getAgentConfigsByAgentClassId(String agentClassId) throws CouldNotPerformException;
 
     @RPCMethod
@@ -80,7 +77,6 @@ public interface AgentRegistry extends Shutdownable {
     @RPCMethod
     public Future<AgentClass> removeAgentClass(AgentClass agentClass) throws CouldNotPerformException;
 
-    @RPCMethod
     public List<AgentClass> getAgentClasses() throws CouldNotPerformException;
 
     @RPCMethod

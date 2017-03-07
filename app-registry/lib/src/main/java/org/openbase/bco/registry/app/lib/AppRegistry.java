@@ -53,13 +53,10 @@ public interface AppRegistry extends Shutdownable {
     @RPCMethod
     public UnitConfig getAppConfigById(final String appUnitConfigId) throws CouldNotPerformException, InterruptedException;
 
-    @RPCMethod
     public List<UnitConfig> getAppConfigs() throws CouldNotPerformException, InterruptedException;
 
-    @RPCMethod
     public List<UnitConfig> getAppConfigsByAppClass(AppClass appClass) throws CouldNotPerformException, InterruptedException;
 
-    @RPCMethod
     public List<UnitConfig> getAppConfigsByAppClassId(String appClassId) throws CouldNotPerformException, InterruptedException;
 
     @RPCMethod
@@ -83,7 +80,6 @@ public interface AppRegistry extends Shutdownable {
     @RPCMethod
     public AppClass getAppClassById(final String appClassId) throws CouldNotPerformException, InterruptedException;
 
-    @RPCMethod
     public List<AppClass> getAppClasses() throws CouldNotPerformException, InterruptedException;
 
     @RPCMethod

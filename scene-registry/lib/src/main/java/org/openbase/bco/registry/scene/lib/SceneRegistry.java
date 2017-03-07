@@ -52,7 +52,6 @@ public interface SceneRegistry extends Shutdownable {
     @RPCMethod
     public UnitConfig getSceneConfigById(final String sceneUnitConfigId) throws CouldNotPerformException;
 
-    @RPCMethod
     public List<UnitConfig> getSceneConfigs() throws CouldNotPerformException;
 
     @RPCMethod

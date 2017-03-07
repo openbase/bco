@@ -61,7 +61,6 @@ public interface UnitRegistry extends Shutdownable {
     @RPCMethod
     public UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException;
 
-    @RPCMethod
     public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException;
 
     @RPCMethod
@@ -88,7 +87,6 @@ public interface UnitRegistry extends Shutdownable {
     @RPCMethod
     public UnitTemplate getUnitTemplateById(final String unitTemplate) throws CouldNotPerformException;
 
-    @RPCMethod
     public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException;
 
     @RPCMethod
@@ -123,10 +121,8 @@ public interface UnitRegistry extends Shutdownable {
      * @return
      * @throws CouldNotPerformException
      */
-    @RPCMethod
     public List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException;
 
-    @RPCMethod
     public default List<UnitConfig> getUnitConfigsByLabelAndUnitType(final String unitConfigLabel, final UnitTemplate.UnitType unitType) throws CouldNotPerformException {
         validateData();
         List<UnitConfig> unitConfigs = Collections.synchronizedList(new ArrayList<>());
@@ -136,7 +132,6 @@ public interface UnitRegistry extends Shutdownable {
         return unitConfigs;
     }
 
-    @RPCMethod
     public List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException;
 
     /**
@@ -147,7 +142,6 @@ public interface UnitRegistry extends Shutdownable {
      * @return a list of dal units.
      * @throws CouldNotPerformException is thrown in case something goes wrong during the request.
      */
-    @RPCMethod
     public List<UnitConfig> getDalUnitConfigs() throws CouldNotPerformException;
 
     /**
@@ -157,13 +151,10 @@ public interface UnitRegistry extends Shutdownable {
      * @return a list of base units.
      * @throws CouldNotPerformException is thrown in case something goes wrong during the request.
      */
-    @RPCMethod
     public List<UnitConfig> getBaseUnitConfigs() throws CouldNotPerformException;
 
-    @RPCMethod
     public List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException;
 
-    @RPCMethod
     public List<ServiceConfig> getServiceConfigs(final ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException;
 
     @RPCMethod
@@ -175,22 +166,16 @@ public interface UnitRegistry extends Shutdownable {
     @RPCMethod
     public UnitConfig getUnitGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
 
-    @RPCMethod
     public List<UnitConfig> getUnitGroupConfigs() throws CouldNotPerformException;
 
-    @RPCMethod
     public List<UnitConfig> getUnitGroupConfigsByUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
 
-    @RPCMethod
     public List<UnitConfig> getUnitGroupConfigsByUnitType(final UnitType type) throws CouldNotPerformException;
 
-    @RPCMethod
     public List<UnitConfig> getUnitGroupConfigsByServiceTypes(final List<ServiceType> serviceTypes) throws CouldNotPerformException;
 
-    @RPCMethod
     public List<UnitConfig> getUnitConfigsByUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
 
-    @RPCMethod
     public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType type, final List<ServiceType> serviceTypes) throws CouldNotPerformException;
 
     /**
@@ -214,7 +199,6 @@ public interface UnitRegistry extends Shutdownable {
      * @throws CouldNotPerformException
      * @deprecated please use getSubUnitTypes instead
      */
-    @RPCMethod
     @Deprecated
     public default List<UnitType> getSubUnitTypesOfUnitType(final UnitType type) throws CouldNotPerformException {
         return getSubUnitTypes(type);
@@ -228,7 +212,6 @@ public interface UnitRegistry extends Shutdownable {
      * @return all types of which the given type is a super type
      * @throws CouldNotPerformException
      */
-    @RPCMethod
     public List<UnitType> getSubUnitTypes(final UnitType type) throws CouldNotPerformException;
 
     /**
@@ -239,7 +222,6 @@ public interface UnitRegistry extends Shutdownable {
      * @return all super types of a given unit type
      * @throws CouldNotPerformException
      */
-    @RPCMethod
     public List<UnitType> getSuperUnitTypes(final UnitType type) throws CouldNotPerformException;
 
     public default void verifyUnitGroupUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {

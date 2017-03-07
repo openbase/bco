@@ -177,7 +177,6 @@ public interface DeviceRegistry extends Shutdownable {
      * @throws CouldNotPerformException
      * @deprecated this method has been moved to the unit registry.
      */
-    @RPCMethod
     @Deprecated
     public List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException;
 
@@ -187,14 +186,11 @@ public interface DeviceRegistry extends Shutdownable {
      * @throws CouldNotPerformException
      * @deprecated this method has been moved to the unit registry.
      */
-    @RPCMethod
     @Deprecated
     public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException;
 
-    @RPCMethod
     public List<DeviceClass> getDeviceClasses() throws CouldNotPerformException;
 
-    @RPCMethod
     public List<UnitConfig> getDeviceConfigs() throws CouldNotPerformException;
 
     /**
@@ -203,7 +199,6 @@ public interface DeviceRegistry extends Shutdownable {
      * @throws CouldNotPerformException
      * @deprecated this method has been moved to the unit registry.
      */
-    @RPCMethod
     @Deprecated
     public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException;
 
@@ -214,7 +209,6 @@ public interface DeviceRegistry extends Shutdownable {
      * @throws CouldNotPerformException
      * @deprecated this method has been moved to the unit registry.
      */
-    @RPCMethod
     @Deprecated
     public List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException;
 
@@ -224,7 +218,6 @@ public interface DeviceRegistry extends Shutdownable {
      * @throws CouldNotPerformException
      * @deprecated this method has been moved to the unit registry.
      */
-    @RPCMethod
     @Deprecated
     public List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException;
 
@@ -246,7 +239,6 @@ public interface DeviceRegistry extends Shutdownable {
      * @throws CouldNotPerformException
      * @deprecated this method has been moved to the unit registry.
      */
-    @RPCMethod
     @Deprecated
     public UnitTemplate getUnitTemplateByType(final UnitType type) throws CouldNotPerformException;
 

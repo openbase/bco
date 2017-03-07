@@ -52,10 +52,8 @@ public interface UserRegistry extends Shutdownable {
     @RPCMethod
     public UnitConfig getUserConfigById(final String userConfigId) throws CouldNotPerformException;
 
-    @RPCMethod
     public List<UnitConfig> getUserConfigs() throws CouldNotPerformException;
 
-    @RPCMethod
     public List<UnitConfig> getUserConfigsByAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException;
 
     @RPCMethod
@@ -79,10 +77,8 @@ public interface UserRegistry extends Shutdownable {
     @RPCMethod
     public UnitConfig getAuthorizationGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
 
-    @RPCMethod
     public List<UnitConfig> getAuthorizationGroupConfigs() throws CouldNotPerformException;
 
-    @RPCMethod
     public List<UnitConfig> getAuthorizationGroupConfigsbyUserConfig(UnitConfig userConfig) throws CouldNotPerformException;
 
     @RPCMethod

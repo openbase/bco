@@ -70,7 +70,6 @@ public interface LocationRegistry extends Shutdownable {
      * @return
      * @throws CouldNotPerformException
      */
-    @RPCMethod
     public List<UnitConfig> getLocationConfigsByLabel(final String locationLabel) throws CouldNotPerformException;
 
     /**
@@ -123,7 +122,6 @@ public interface LocationRegistry extends Shutdownable {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
-    @RPCMethod
     public List<UnitConfig> getLocationConfigs() throws CouldNotPerformException;
 
     /**
@@ -135,7 +133,6 @@ public interface LocationRegistry extends Shutdownable {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
-    @RPCMethod
     public List<UnitConfig> getUnitConfigsByLocation(final String locationId) throws CouldNotPerformException;
 
     /**
@@ -148,7 +145,6 @@ public interface LocationRegistry extends Shutdownable {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
-    @RPCMethod
     public List<UnitConfig> getUnitConfigsByLocationLabel(final String locationLabel) throws CouldNotPerformException;
 
     /**
@@ -162,7 +158,6 @@ public interface LocationRegistry extends Shutdownable {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
-    @RPCMethod
     public List<UnitConfig> getUnitConfigsByLocationLabel(final UnitType unitType, final String locationLabel) throws CouldNotPerformException;
 
     /**
@@ -175,7 +170,6 @@ public interface LocationRegistry extends Shutdownable {
      * @return
      * @throws CouldNotPerformException
      */
-    @RPCMethod
     public List<UnitConfig> getUnitConfigsByLabelAndLocation(final String unitLabel, final String locationId) throws CouldNotPerformException;
 
     /**
@@ -189,7 +183,6 @@ public interface LocationRegistry extends Shutdownable {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
-    @RPCMethod
     public List<UnitConfig> getUnitConfigsByLocation(final UnitType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException;
 
     /**
@@ -202,7 +195,6 @@ public interface LocationRegistry extends Shutdownable {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
-    @RPCMethod
     public List<UnitConfig> getUnitConfigsByLocation(final ServiceType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException;
 
     /**
@@ -215,7 +207,6 @@ public interface LocationRegistry extends Shutdownable {
      * @throws NotAvailableException is thrown if the given location config id
      * is unknown.
      */
-    @RPCMethod
     public List<ServiceConfig> getServiceConfigsByLocation(final String locationId) throws CouldNotPerformException;
 
     /**
@@ -226,7 +217,6 @@ public interface LocationRegistry extends Shutdownable {
      * @return
      * @throws CouldNotPerformException
      */
-    @RPCMethod
     public Boolean isLocationConfigRegistryReadOnly() throws CouldNotPerformException;
 
     /**
@@ -237,7 +227,6 @@ public interface LocationRegistry extends Shutdownable {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
-    @RPCMethod
     public UnitConfig getRootLocationConfig() throws CouldNotPerformException, NotAvailableException;
 
     /**
@@ -270,7 +259,6 @@ public interface LocationRegistry extends Shutdownable {
      * @return
      * @throws CouldNotPerformException
      */
-    @RPCMethod
     public List<UnitConfig> getConnectionConfigsByLabel(final String connectionLabel) throws CouldNotPerformException;
 
     /**
@@ -323,7 +311,6 @@ public interface LocationRegistry extends Shutdownable {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
-    @RPCMethod
     public List<UnitConfig> getConnectionConfigs() throws CouldNotPerformException;
 
     /**
@@ -335,7 +322,6 @@ public interface LocationRegistry extends Shutdownable {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
-    @RPCMethod
     public List<UnitConfig> getUnitConfigsByConnection(final String connectionConfigId) throws CouldNotPerformException;
 
     /**
@@ -348,7 +334,6 @@ public interface LocationRegistry extends Shutdownable {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
-    @RPCMethod
     public List<UnitConfig> getUnitConfigsByConnection(final UnitType type, final String connectionConfigId) throws CouldNotPerformException, NotAvailableException;
 
     /**
@@ -361,7 +346,6 @@ public interface LocationRegistry extends Shutdownable {
      * @throws CouldNotPerformException
      * @throws NotAvailableException
      */
-    @RPCMethod
     public List<UnitConfig> getUnitConfigsByConnection(final ServiceType type, final String connectionConfigId) throws CouldNotPerformException, NotAvailableException;
 
     /**
@@ -374,7 +358,6 @@ public interface LocationRegistry extends Shutdownable {
      * @throws NotAvailableException is thrown if the given connection config id
      * is unknown.
      */
-    @RPCMethod
     public List<ServiceConfig> getServiceConfigsByConnection(final String connectionConfigId) throws CouldNotPerformException;
 
     /**
@@ -396,7 +379,6 @@ public interface LocationRegistry extends Shutdownable {
      * @return all neighbor tiles
      * @throws CouldNotPerformException
      */
-    @RPCMethod
     public List<UnitConfig> getNeighborLocations(String locationId) throws CouldNotPerformException;
 
     /**
