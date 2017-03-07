@@ -31,6 +31,9 @@ import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jps.preset.JPForce;
 import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBHost;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBPort;
+import org.openbase.jul.extension.rsb.com.jp.JPRSBTransport;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPlugin;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
 import org.openbase.jul.storage.registry.jp.JPInitializeDB;
@@ -45,7 +48,7 @@ public class DeviceRegistryLauncher extends AbstractRegistryLauncher<DeviceRegis
     public DeviceRegistryLauncher() throws InstantiationException {
         super(DeviceRegistry.class, DeviceRegistryController.class);
     }
-    
+
     @Override
     public void loadProperties() {
         JPService.registerProperty(JPDeviceRegistryScope.class);
@@ -57,8 +60,12 @@ public class DeviceRegistryLauncher extends AbstractRegistryLauncher<DeviceRegis
         JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
-    }    
-    
+
+        JPService.registerProperty(JPRSBHost.class);
+        JPService.registerProperty(JPRSBPort.class);
+        JPService.registerProperty(JPRSBTransport.class);
+    }
+
     public static void main(String args[]) throws Throwable {
         BCO.printLogo();
         main(args, DeviceRegistry.class, DeviceRegistryLauncher.class);
