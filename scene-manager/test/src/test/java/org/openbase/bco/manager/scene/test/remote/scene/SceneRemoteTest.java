@@ -292,18 +292,7 @@ public class SceneRemoteTest {
     };
 
     private void waitForSceneExecution(SceneRemote sceneRemote) throws CouldNotPerformException {
-//        final SyncObject LOCK = new SyncObject("WaitForDeviceClassLock");
-//        final Observer notifyChangeObserver = new Observer() {
-//
-//            @Override
-//            public void update(Observable source, Object data) throws Exception {
-//                synchronized (LOCK) {
-//                    LOCK.notifyAll();
-//                }
-//            }
-//        };
         synchronized (LOCK) {
-//            sceneRemote.addDataObserver(notifyChangeObserver);
             try {
                 while (sceneRemote.getActivationState().getValue() != ActivationState.State.DEACTIVE) {
                     LOCK.wait();
@@ -312,6 +301,5 @@ public class SceneRemoteTest {
                 Thread.currentThread().interrupt();
             }
         }
-//        sceneRemote.removeDataObserver(notifyChangeObserver);
     }
 }
