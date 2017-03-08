@@ -66,6 +66,11 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
     }
 
     @Override
+    public Future<Void> setNeutralWhite() throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(this, Void.class);
+    }
+
+    @Override
     public Future<Void> setBrightnessState(BrightnessState value) throws CouldNotPerformException {
         return RPCHelper.callRemoteMethod(value, this, Void.class);
     }

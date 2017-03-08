@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.layer.service.operation;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -37,8 +37,16 @@ import rst.vision.RGBColorType.RGBColor;
  */
 public interface ColorStateOperationService extends OperationService, ColorStateProviderService {
 
+    public static final String NEUTRAL_WHITE_KEY = "NEUTRAL_WHITE";
+    public static final RGBColor DEFAULT_NEUTRAL_WHITE = RGBColor.newBuilder().setRed(200).setGreen(200).setBlue(200).build();
+
     @RPCMethod
     public Future<Void> setColorState(final ColorState colorState) throws CouldNotPerformException;
+
+    @RPCMethod
+    default public Future<Void> setNeutralWhite() throws CouldNotPerformException {
+        return setColor(DEFAULT_NEUTRAL_WHITE);
+    }
 
     default public Future<Void> setColor(final Color color) throws CouldNotPerformException {
         return setColorState(ColorState.newBuilder().setColor(color).build());

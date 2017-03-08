@@ -25,20 +25,31 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.rst.processing.MetaConfigPool;
+import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.processing.FutureProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.service.ServiceConfigType.ServiceConfig;
+import rst.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
+import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 import rst.vision.ColorType.Color;
 import rst.vision.HSBColorType.HSBColor;
 import rst.vision.RGBColorType.RGBColor;
@@ -49,7 +60,7 @@ import rst.vision.RGBColorType.RGBColor;
  * * @author Marian Pohling
  */
 public class ColorableLightController extends AbstractDALUnitController<ColorableLightData, ColorableLightData.Builder> implements ColorableLight {
-    
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ColorableLightData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HSBColor.getDefaultInstance()));
@@ -58,15 +69,16 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ColorState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
     }
-    
+
     private ColorStateOperationService colorService;
     private BrightnessStateOperationService brightnessService;
     private PowerStateOperationService powerService;
-    
+    private Color neutralWhite;
+
     public ColorableLightController(final UnitHost unitHost, final ColorableLightData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(ColorableLightController.class, unitHost, builder);
     }
-    
+
     @Override
     public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
@@ -78,28 +90,103 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
             throw new InitializationException(this, ex);
         }
     }
-    
+
+    @Override
+    public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        try {
+            final MetaConfigPool configPool = new MetaConfigPool();
+            configPool.register(new MetaConfigVariableProvider("UnitConfig", config.getMetaConfig()));
+
+            // add meta config of service config with type ColorStateService
+            ServiceConfig colorStateServiceConfig = null;
+            for (ServiceConfig serviceConfig : config.getServiceConfigList()) {
+                if (serviceConfig.getServiceTemplate().getType() == ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE) {
+                    colorStateServiceConfig = serviceConfig;
+                }
+            }
+            if (colorStateServiceConfig != null) {
+                configPool.register(new MetaConfigVariableProvider("ServiceConfig", colorStateServiceConfig.getMetaConfig()));
+            }
+
+            // add meta config of device
+            UnitConfig deviceUnitConfig = unitRegistry.getUnitConfigById(config.getUnitHostId());
+            configPool.register(new MetaConfigVariableProvider("DeviceUnitConfig", deviceUnitConfig.getMetaConfig()));
+
+            // add meta config of device class
+            DeviceClass deviceClass = Registries.getDeviceRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
+            configPool.register(new MetaConfigVariableProvider("DeviceClass", deviceClass.getMetaConfig()));
+
+            // add meta config of service template config in unit template of deviceClass
+            ServiceTemplateConfig colorStateServiceTemplateConfig = null;
+            for (UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
+                if (unitTemplateConfig.getId().equals(config.getUnitTemplateConfigId())) {
+                    for (ServiceTemplateConfig serviceTempalteConfig : unitTemplateConfig.getServiceTemplateConfigList()) {
+                        if (serviceTempalteConfig.getServiceType() == ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE) {
+                            colorStateServiceTemplateConfig = serviceTempalteConfig;
+                        }
+                    }
+                    break;
+                }
+            }
+            if (colorStateServiceTemplateConfig != null) {
+                configPool.register(new MetaConfigVariableProvider("ServiceTemplateConfig", colorStateServiceTemplateConfig.getMetaConfig()));
+            }
+
+            try {
+                String neutralWhiteString = configPool.getValue(NEUTRAL_WHITE_KEY);
+                try {
+                    String[] split = neutralWhiteString.replace(" ", "").split(",");
+                    if (split.length != 3) {
+                        throw new CouldNotPerformException("NeutralWhite for [" + ScopeGenerator.generateStringRep(config.getScope()) + "] has the wrong number of parameters!");
+                    }
+                    double hue = Double.parseDouble(split[0]);
+                    double saturation = Double.parseDouble(split[1]);
+                    double brightness = Double.parseDouble(split[2]);
+                    HSBColor hsbColor = HSBColor.newBuilder().setHue(hue).setSaturation(saturation).setBrightness(brightness).build();
+                    neutralWhite = Color.newBuilder().setType(Color.Type.HSB).setHsbColor(hsbColor).build();
+                } catch (CouldNotPerformException ex) {
+                    logger.warn("Could not parse [" + neutralWhiteString + "] as neutral white! Please define as <h, s, b>", ex);
+                    throw new NotAvailableException("NeutralWhite");
+                } catch (NumberFormatException ex) {
+                    logger.warn("Could not parse [" + neutralWhiteString + "] as doubles and thus as NeutralWhite!", ex);
+                    throw new NotAvailableException("NeutralWhite");
+                }
+            } catch (NotAvailableException ex) {
+                neutralWhite = Color.newBuilder().setType(Color.Type.RGB).setRgbColor(DEFAULT_NEUTRAL_WHITE).build();
+            }
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not find NeutralWhite!", ex), logger);
+        }
+
+        return super.applyConfigUpdate(config);
+    }
+
+    @Override
+    public Future<Void> setNeutralWhite() throws CouldNotPerformException {
+        return setColor(neutralWhite);
+    }
+
     public void updatePowerStateProvider(final PowerState value) throws CouldNotPerformException {
         logger.debug("Apply powerState Update[" + value + "] for " + this + ".");
-        
+
         try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setPowerState(value);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply powerState Update[" + value + "] for " + this + "!", ex);
         }
     }
-    
+
     @Override
     public Future<Void> setPowerState(final PowerState state) throws CouldNotPerformException {
         logger.debug("Set " + getType().name() + "[" + getLabel() + "] to PowerState [" + state + "]");
         try {
             verifyOperationServiceStateValue(state.getValue());
-        } catch(VerificationFailedException ex) {
+        } catch (VerificationFailedException ex) {
             return FutureProcessor.canceledFuture(Void.class, ex);
         }
         return powerService.setPowerState(state);
     }
-    
+
     @Override
     public PowerState getPowerState() throws NotAvailableException {
         try {
@@ -108,10 +195,10 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
             throw new NotAvailableException("powerState", ex);
         }
     }
-    
+
     public void updateColorStateProvider(final ColorState colorState) throws CouldNotPerformException {
         logger.debug("Apply colorState Update[" + colorState + "] for " + this + ".");
-        
+
         try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setColorState(colorState);
             dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.ON);
@@ -119,12 +206,12 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
             throw new CouldNotPerformException("Could not apply colorState Update[" + colorState + "] for " + this + "!", ex);
         }
     }
-    
+
     @Override
     public Future<Void> setColorState(final ColorState colorState) throws CouldNotPerformException {
         return colorService.setColorState(colorState);
     }
-    
+
     @Override
     public ColorState getColorState() throws NotAvailableException {
         try {
@@ -133,10 +220,10 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
             throw new NotAvailableException("colorState", ex);
         }
     }
-    
+
     public void updateBrightnessStateProvider(BrightnessState brightnessState) throws CouldNotPerformException {
         logger.debug("Apply brightnessState Update[" + brightnessState + "] for " + this + ".");
-        
+
         try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
             HSBColor hsb = dataBuilder.getInternalBuilder().getColorState().getColor().getHsbColor().toBuilder().setBrightness(brightnessState.getBrightness()).build();
             Color color = Color.newBuilder().setType(Color.Type.HSB).setHsbColor(hsb).build();
@@ -150,13 +237,13 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
             throw new CouldNotPerformException("Could not apply brightnessState Update[" + brightnessState + "] for " + this + "!", ex);
         }
     }
-    
+
     @Override
     public Future<Void> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
         logger.debug("Set " + getType().name() + "[" + getLabel() + "] to BrightnessState[" + brightnessState + "]");
         return brightnessService.setBrightnessState(brightnessState);
     }
-    
+
     @Override
     public BrightnessState getBrightnessState() throws NotAvailableException {
         try {
