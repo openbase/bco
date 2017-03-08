@@ -21,7 +21,7 @@ package org.openbase.bco.manager.device.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.manager.device.binding.openhab.comm.OpenHABRemoteImpl;
+import org.openbase.bco.manager.device.binding.openhab.comm.DeviceOpenHABRemote;
 import org.openbase.bco.manager.device.binding.openhab.service.OpenhabServiceFactory;
 import org.openbase.bco.manager.device.core.DeviceManagerController;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
@@ -55,7 +55,7 @@ public class DeviceBindingOpenHABImpl extends AbstractOpenHABBinding {
 
     public void init() throws InitializationException, InterruptedException {
         try {
-            init(DEVICE_MANAGER_ITEM_FILTER, new OpenHABRemoteImpl());
+            init(DEVICE_MANAGER_ITEM_FILTER, new DeviceOpenHABRemote());
         } catch (InstantiationException | JPNotAvailableException ex) {
             throw new InitializationException(this, ex);
         }

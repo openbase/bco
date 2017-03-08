@@ -21,10 +21,6 @@ package org.openbase.bco.manager.location.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
@@ -34,20 +30,9 @@ import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.openhab.binding.AbstractOpenHABBinding;
-import org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote;
-import static org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote.ITEM_SEGMENT_DELIMITER;
-import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
-import org.openbase.jul.extension.openhab.binding.transform.OpenhabCommandTransformer;
-import org.openbase.jul.extension.rsb.com.RSBRemoteService;
-import org.openbase.jul.processing.StringProcessor;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
 import org.openbase.jul.storage.registry.RemoteControllerRegistryImpl;
-import rst.domotic.binding.openhab.OpenhabCommandType.OpenhabCommand;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
@@ -96,78 +81,7 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
 
     @Override
     public void init() throws InitializationException, InterruptedException {
-        // TODO: the implementation of AbstractOpenHABRemote should be transfered to a seperate class. Else getClass().getSimpleName() is empty which leads to confusing logging
-        // This is also an issue in all the other openHABBindings
-        init(LOCATION_MANAGER_ITEM_FILTER, new AbstractOpenHABRemote(hardwareSimulationMode) {
-
-            @Override
-            public void internalReceiveUpdate(OpenhabCommand command) throws CouldNotPerformException {
-                logger.debug("Ignore update for location manager openhab binding.");
-            }
-
-            @Override
-            public void internalReceiveCommand(OpenhabCommand command) throws CouldNotPerformException {
-                //TODO:paramite; compare this to the implementation in the device manager openhab binding
-                try {
-                    RSBRemoteService remote = null;
-                    if (command.getItem().startsWith("Location")) {
-                        logger.debug("Received command for location [" + command.getItem() + "] from openhab");
-                        remote = locationRegistry.get(getIdFromOpenHABCommand(command));
-                    } else if (command.getItem().startsWith("Connection")) {
-                        logger.debug("Received command for connection [" + command.getItem() + "] from openhab");
-                        remote = connectionRegistry.get(getIdFromOpenHABCommand(command));
-                    }
-
-                    if (remote == null) {
-                        throw new NotAvailableException("No remote for item [" + command.getItem() + "] found");
-                    }
-
-                    Future returnValue;
-                    ServiceType serviceType = getServiceTypeForCommand(command);
-                    String methodName = "set" + StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replaceAll("Provider", "").replaceAll("Service", "");
-                    Object serviceData = OpenhabCommandTransformer.getServiceData(command, serviceType);
-                    Method relatedMethod;
-                    try {
-                        relatedMethod = remote.getClass().getMethod(methodName, serviceData.getClass());
-                        if (relatedMethod == null) {
-                            throw new NotAvailableException(relatedMethod);
-                        }
-                    } catch (NoSuchMethodException | SecurityException | NotAvailableException ex) {
-                        throw new NotAvailableException("Method " + remote + "." + methodName + "(" + serviceData.getClass() + ")", ex);
-                    }
-
-                    try {
-                        returnValue = (Future) relatedMethod.invoke(remote, serviceData);
-                    } catch (IllegalAccessException ex) {
-                        throw new CouldNotPerformException("Cannot access related Method [" + relatedMethod.getName() + "]", ex);
-                    } catch (IllegalArgumentException ex) {
-                        throw new CouldNotPerformException("Does not match [" + relatedMethod.getParameterTypes()[0].getName() + "] which is needed by [" + relatedMethod.getName() + "]!", ex);
-                    } catch (InvocationTargetException ex) {
-                        throw new CouldNotPerformException("The related method [" + relatedMethod.getName() + "] throws an exception during invocation!", ex);
-                    }
-
-                    GlobalCachedExecutorService.applyErrorHandling(returnValue, (Exception input) -> {
-                        ExceptionPrinter.printHistory(new CouldNotPerformException("Waiting for result on method failed with exception", input), logger);
-                        return null;
-                    }, 30, TimeUnit.SECONDS);
-                } catch (NotAvailableException ex) {
-                    throw new CouldNotPerformException(ex);
-                }
-            }
-        });
-    }
-
-    private String getIdFromOpenHABCommand(OpenhabCommand command) {
-        return command.getItemBindingConfig().split(":")[1];
-    }
-
-    private ServiceType getServiceTypeForCommand(OpenhabCommand command) {
-        return ServiceType.valueOf(StringProcessor.transformToUpperCase(command.getItem().split(ITEM_SEGMENT_DELIMITER)[1]));
-    }
-
-    @Override
-    public void init(String itemFilter, OpenHABRemote openHABRemote) throws InitializationException, InterruptedException {
-        super.init(itemFilter, openHABRemote);
+        super.init(LOCATION_MANAGER_ITEM_FILTER, new LocationBindingOpenHABRemote(hardwareSimulationMode, locationRegistry, connectionRegistry));
         try {
             locationRemoteFactory.init(openHABRemote);
             locationRegistryRemote.init();

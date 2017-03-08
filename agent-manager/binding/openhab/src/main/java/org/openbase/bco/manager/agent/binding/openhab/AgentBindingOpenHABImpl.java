@@ -22,7 +22,6 @@ package org.openbase.bco.manager.agent.binding.openhab;
  * #L%
  */
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.openbase.bco.manager.agent.binding.openhab.transform.ActivationStateTransformer;
 import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
 import org.openbase.jps.core.JPService;
@@ -32,12 +31,8 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.openhab.binding.AbstractOpenHABBinding;
-import org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote;
-import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
-import org.openbase.jul.storage.registry.RegistryImpl;
 import org.openbase.jul.storage.registry.RegistrySynchronizer;
 import org.openbase.jul.storage.registry.RemoteControllerRegistryImpl;
-import rst.domotic.binding.openhab.OpenhabCommandType.OpenhabCommand;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -72,41 +67,11 @@ public class AgentBindingOpenHABImpl extends AbstractOpenHABBinding {
                 return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
             }
         };
-
-    }
-
-    private String getIdFromOpenHABItem(OpenhabCommand command) {
-        return command.getItemBindingConfig().split(":")[1];
     }
 
     @Override
     public void init() throws InitializationException, InterruptedException {
-        init(AGENT_MANAGER_ITEM_FILTER, new AbstractOpenHABRemote(hardwareSimulationMode) {
-
-            @Override
-            public void internalReceiveUpdate(OpenhabCommand command) throws CouldNotPerformException {
-                logger.debug("Ignore update for agent manager openhab binding.");
-            }
-
-            @Override
-            public void internalReceiveCommand(OpenhabCommand command) throws CouldNotPerformException {
-                try {
-                    if (!command.hasOnOff() || !command.getOnOff().hasState()) {
-                        throw new CouldNotPerformException("Command does not have an onOff value required for agents");
-                    }
-                    logger.debug("Received command for agent [" + command.getItem() + "] from openhab");
-                    registry.get(getIdFromOpenHABItem(command)).setActivationState(ActivationStateTransformer.transform(command.getOnOff().getState()));
-                } catch (CouldNotPerformException ex) {
-                    throw new CouldNotPerformException("Skip item update [" + command.getItem() + " = " + command.getOnOff() + "]!", ex);
-                }
-            }
-
-        });
-    }
-
-    @Override
-    public void init(String itemFilter, OpenHABRemote openHABRemote) throws InitializationException, InterruptedException {
-        super.init(itemFilter, openHABRemote);
+        super.init(AGENT_MANAGER_ITEM_FILTER, new AgentBindingOpenHABRemote(hardwareSimulationMode, registry));
         try {
             factory.init(openHABRemote);
             agentRegistryRemote.init();

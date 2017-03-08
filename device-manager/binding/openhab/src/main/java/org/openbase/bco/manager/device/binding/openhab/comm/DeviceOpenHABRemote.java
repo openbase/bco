@@ -37,11 +37,11 @@ import rst.domotic.binding.openhab.OpenhabCommandType.OpenhabCommand;
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class OpenHABRemoteImpl extends AbstractOpenHABRemote {
+public class DeviceOpenHABRemote extends AbstractOpenHABRemote {
 
     private OpenHABCommandExecutor commandExecutor;
 
-    public OpenHABRemoteImpl() throws InstantiationException, JPNotAvailableException {
+    public DeviceOpenHABRemote() throws InstantiationException, JPNotAvailableException {
         super(JPService.getProperty(JPHardwareSimulationMode.class).getValue());
     }
 

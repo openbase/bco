@@ -22,7 +22,6 @@ package org.openbase.bco.manager.scene.binding.openhab;
  * #L%
  */
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.openbase.bco.manager.scene.binding.openhab.transform.ActivationStateTransformer;
 import org.openbase.bco.dal.remote.unit.scene.SceneRemote;
 import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
 import org.openbase.jps.core.JPService;
@@ -32,8 +31,6 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.openhab.binding.AbstractOpenHABBinding;
-import org.openbase.jul.extension.openhab.binding.AbstractOpenHABRemote;
-import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.openbase.jul.storage.registry.RegistrySynchronizer;
 import org.openbase.jul.storage.registry.RemoteControllerRegistryImpl;
 import rst.domotic.binding.openhab.OpenhabCommandType.OpenhabCommand;
@@ -77,34 +74,9 @@ public class SceneBindingOpenHABImpl extends AbstractOpenHABBinding {
         return command.getItemBindingConfig().split(":")[1];
     }
 
-    public void init() throws InitializationException, InterruptedException {
-        init(SCENE_MANAGER_ITEM_FILTER, new AbstractOpenHABRemote(hardwareSimulationMode) {
-
-            @Override
-            public void internalReceiveUpdate(OpenhabCommand command) throws CouldNotPerformException {
-                logger.debug("Ignore update for scene manager openhab binding.");
-            }
-
-            @Override
-            public void internalReceiveCommand(OpenhabCommand command) throws CouldNotPerformException {
-                try {
-
-                    if (!command.hasOnOff() || !command.getOnOff().hasState()) {
-                        throw new CouldNotPerformException("Command does not have an onOff value required for scenes");
-                    }
-                    logger.debug("Received command for scene [" + command.getItem() + "] from openhab");
-                    registry.get(getSceneIdFromOpenHABItem(command)).setActivationState(ActivationStateTransformer.transform(command.getOnOff().getState()));
-                } catch (CouldNotPerformException ex) {
-                    throw new CouldNotPerformException("Skip item update [" + command.getItem() + " = " + command.getOnOff() + "]!", ex);
-                }
-            }
-
-        });
-    }
-
     @Override
-    public void init(String itemFilter, OpenHABRemote openHABRemote) throws InitializationException, InterruptedException {
-        super.init(itemFilter, openHABRemote);
+    public void init() throws InitializationException, InterruptedException {
+        super.init(SCENE_MANAGER_ITEM_FILTER, new SceneBindingOpenHABRemote(hardwareSimulationMode, registry));
         try {
             factory.init(openHABRemote);
             sceneRegistryRemote.init();
