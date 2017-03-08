@@ -29,6 +29,7 @@ import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.service.collection.BlindStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.BrightnessStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.ColorStateOperationServiceCollection;
+import org.openbase.bco.dal.lib.layer.service.collection.IlluminanceStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.MotionStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.PowerConsumptionStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.collection.PowerStateOperationServiceCollection;
@@ -52,6 +53,7 @@ import rst.domotic.state.AlarmStateType;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.state.BrightnessStateType;
 import rst.domotic.state.ColorStateType;
+import rst.domotic.state.IlluminanceStateType.IlluminanceState;
 import rst.domotic.state.MotionStateType;
 import rst.domotic.state.PowerConsumptionStateType;
 import rst.domotic.state.PowerStateType;
@@ -83,7 +85,8 @@ public interface Location extends BaseUnit<LocationData>,
         SmokeStateProviderServiceCollection,
         TemperatureStateProviderServiceCollection,
         PowerConsumptionStateProviderServiceCollection,
-        TamperStateProviderServiceCollection {
+        TamperStateProviderServiceCollection,
+        IlluminanceStateProviderServiceCollection {
 
     /**
      * TODO: Will return controller/remotes in the final implementation. Waiting for a
@@ -189,11 +192,11 @@ public interface Location extends BaseUnit<LocationData>,
         return ((PowerStateOperationServiceCollection) getServiceRemote(ServiceTemplate.ServiceType.POWER_STATE_SERVICE)).setPowerState(powerState, unitType);
     }
 
-    default public Future<Void>  setPowerState(final State state) throws CouldNotPerformException {
+    default public Future<Void> setPowerState(final State state) throws CouldNotPerformException {
         return setPowerState(PowerState.newBuilder().setValue(state).build());
     }
 
-    default public Future<Void>  setPowerState(final State state, final UnitTemplate.UnitType unitType) throws CouldNotPerformException {
+    default public Future<Void> setPowerState(final State state, final UnitTemplate.UnitType unitType) throws CouldNotPerformException {
         return setPowerState(PowerState.newBuilder().setValue(state).build(), unitType);
     }
 
@@ -306,7 +309,17 @@ public interface Location extends BaseUnit<LocationData>,
     default public TamperStateType.TamperState getTamperState(UnitTemplate.UnitType unitType) throws NotAvailableException {
         return ((TamperStateProviderServiceCollection) getServiceRemote(ServiceTemplate.ServiceType.TAMPER_STATE_SERVICE)).getTamperState(unitType);
     }
-    
+
+    @Override
+    public default IlluminanceState getIlluminanceState() throws NotAvailableException {
+        return ((IlluminanceStateProviderServiceCollection) getServiceRemote(ServiceTemplate.ServiceType.ILLUMINANCE_STATE_SERVICE)).getIlluminanceState();
+    }
+
+    @Override
+    public default IlluminanceState getIlluminanceState(UnitTemplate.UnitType unitType) throws NotAvailableException {
+        return ((IlluminanceStateProviderServiceCollection) getServiceRemote(ServiceTemplate.ServiceType.ILLUMINANCE_STATE_SERVICE)).getIlluminanceState(unitType);
+    }
+
     @RPCMethod
     public Future<Snapshot> recordSnapshot(final UnitTemplate.UnitType unitType) throws CouldNotPerformException, InterruptedException;
 }

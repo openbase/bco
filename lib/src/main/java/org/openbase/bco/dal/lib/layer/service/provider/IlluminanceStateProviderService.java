@@ -1,6 +1,11 @@
-package org.openbase.bco.dal.lib.layer.unit;
-
 /*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.openbase.bco.dal.lib.layer.service.provider;
+
+/*-
  * #%L
  * BCO DAL Library
  * %%
@@ -21,18 +26,16 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.provider.BrightnessStateProviderService;
 import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.state.BrightnessStateType.BrightnessState;
-import org.openbase.bco.dal.lib.layer.service.provider.IlluminanceStateProviderService;
+import org.openbase.jul.iface.annotations.RPCMethod;
+import rst.domotic.state.IlluminanceStateType.IlluminanceState;
 
 /**
  *
- * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @author pleminoq
  */
-public interface BrightnessSensor extends IlluminanceStateProviderService, BrightnessStateProviderService {
+public interface IlluminanceStateProviderService extends ProviderService {
 
-    @Deprecated
-    @Override
-    public BrightnessState getBrightnessState() throws NotAvailableException;
+    @RPCMethod
+    public IlluminanceState getIlluminanceState() throws NotAvailableException;
 }

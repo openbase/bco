@@ -32,6 +32,7 @@ import org.openbase.bco.dal.remote.service.AbstractServiceRemote;
 import org.openbase.bco.dal.remote.service.BlindStateServiceRemote;
 import org.openbase.bco.dal.remote.service.BrightnessStateServiceRemote;
 import org.openbase.bco.dal.remote.service.ColorStateServiceRemote;
+import org.openbase.bco.dal.remote.service.IlluminanceStateServiceRemote;
 import org.openbase.bco.dal.remote.service.PowerStateServiceRemote;
 import org.openbase.bco.dal.remote.service.ServiceRemoteFactory;
 import org.openbase.bco.dal.remote.service.ServiceRemoteFactoryImpl;
@@ -52,6 +53,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType.ColorState;
+import rst.domotic.state.IlluminanceStateType.IlluminanceState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
@@ -254,5 +256,12 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
         return unitConfig.getServiceConfigList().stream().anyMatch((serviceConfig) -> (serviceConfig.getServiceTemplate().getType().equals(serviceTemplate.getType())
                 && serviceConfig.getServiceTemplate().getPattern().equals(serviceTemplate.getPattern())));
         //return unitConfig.getServiceConfigList().stream().anyMatch((serviceConfig) -> (serviceConfig.getServiceTemplate().equals(serviceTemplate)));
+    }
+
+    @Override
+    public IlluminanceState getIlluminanceState() throws NotAvailableException {
+        ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(ServiceType.ILLUMINANCE_STATE_SERVICE).setPattern(ServicePattern.PROVIDER).build();
+        testServiceAvailability(serviceTemplate);
+        return ((IlluminanceStateServiceRemote) serviceRemoteMap.get(serviceTemplate)).getIlluminanceState();
     }
 }

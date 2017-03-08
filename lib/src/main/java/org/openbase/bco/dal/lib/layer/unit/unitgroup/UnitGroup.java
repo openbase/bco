@@ -21,19 +21,21 @@ package org.openbase.bco.dal.lib.layer.unit.unitgroup;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.provider.IlluminanceStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import rst.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface UnitGroup extends BaseUnit<UnitGroupData>, BrightnessStateOperationService, ColorStateOperationService, PowerStateOperationService, BlindStateOperationService, StandbyStateOperationService, TargetTemperatureStateOperationService {
+public interface UnitGroup extends BaseUnit<UnitGroupData>, BrightnessStateOperationService,
+        ColorStateOperationService, PowerStateOperationService, BlindStateOperationService,
+        StandbyStateOperationService, TargetTemperatureStateOperationService, IlluminanceStateProviderService {
 
 }

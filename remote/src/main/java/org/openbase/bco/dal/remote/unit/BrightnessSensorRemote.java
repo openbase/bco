@@ -28,6 +28,7 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.unit.dal.BrightnessSensorDataType.BrightnessSensorData;
 import org.openbase.bco.dal.lib.layer.unit.BrightnessSensor;
+import rst.domotic.state.IlluminanceStateType.IlluminanceState;
 
 /**
  *
@@ -38,6 +39,7 @@ public class BrightnessSensorRemote extends AbstractUnitRemote<BrightnessSensorD
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessSensorData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(IlluminanceState.getDefaultInstance()));
     }
 
     public BrightnessSensorRemote() {
@@ -52,6 +54,15 @@ public class BrightnessSensorRemote extends AbstractUnitRemote<BrightnessSensorD
     public BrightnessState getBrightnessState() throws NotAvailableException {
         try {
             return getData().getBrightnessState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("BrightnessState", ex);
+        }
+    }
+
+    @Override
+    public IlluminanceState getIlluminanceState() throws NotAvailableException {
+        try {
+            return getData().getIlluminanceState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("BrightnessState", ex);
         }
