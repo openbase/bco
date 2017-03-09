@@ -378,15 +378,4 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
         return RPCHelper.callRemoteMethod(this, Snapshot.class);
     }
-
-    @Override
-    public void shutdown() {
-        try {
-            System.out.println("SHUTDOWN " + getLabel());
-        } catch (NotAvailableException ex) {
-            System.out.println("SHUTDOWN ?");
-        }
-        super.shutdown();
-    }
-
 }
