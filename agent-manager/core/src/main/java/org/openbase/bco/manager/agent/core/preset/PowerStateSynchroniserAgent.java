@@ -27,8 +27,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
-import org.openbase.bco.dal.remote.unit.UnitRemoteFactory;
-import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
+import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -75,7 +74,6 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
      * OFF when all targets are off. ON when at least one target is one.
      */
     private final List<UnitRemote> targetRemotes = new ArrayList<>();
-    private final UnitRemoteFactory factory;
     private final Observer<GeneratedMessage> sourceObserver, targetObserver;
     private PowerState.State targetLatestPowerState;
     private UnitRemote sourceRemote;
@@ -83,7 +81,6 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
 
     public PowerStateSynchroniserAgent() throws InstantiationException, CouldNotPerformException {
         super(PowerStateSynchroniserAgent.class);
-        this.factory = UnitRemoteFactoryImpl.getInstance();
 
         // initialize observer
         sourceObserver = (final Observable<GeneratedMessage> source, GeneratedMessage data) -> {
@@ -107,7 +104,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
             if (sourceUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                 throw new NotAvailableException("Source[" + ScopeGenerator.generateStringRep(sourceUnitConfig.getScope()) + "] is not enabled");
             }
-            sourceRemote = factory.newInitializedInstance(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(configVariableProvider.getValue(SOURCE_KEY)));
+            sourceRemote = Units.getUnit(configVariableProvider.getValue(SOURCE_KEY), false);
             int i = 1;
             String unitId;
             try {
@@ -120,7 +117,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
                                 + "of powerStateSynchroniserAgent[" + ScopeGenerator.generateStringRep(config.getScope()) + "] is disabled and therefore skipped!");
                         continue;
                     }
-                    targetRemotes.add(factory.newInitializedInstance(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(unitId)));
+                    targetRemotes.add(Units.getUnit(unitId, false));
                 }
             } catch (NotAvailableException ex) {
                 i--;
@@ -254,12 +251,10 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
         logger.debug("Executing PowerStateSynchroniser agent");
-        sourceRemote.activate();
         sourceRemote.waitForData();
         String targetIds = "";
         targetLatestPowerState = PowerState.State.UNKNOWN;
         for (UnitRemote targetRemote : targetRemotes) {
-            targetRemote.activate();
             targetRemote.waitForData();
             targetIds += "[" + targetRemote.getLabel() + "]";
             if ((targetLatestPowerState == PowerState.State.OFF || targetLatestPowerState == PowerState.State.UNKNOWN) && invokeGetPowerState(targetRemote.getData()).getValue() == PowerState.State.ON) {
@@ -286,9 +281,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
         sourceRemote.removeDataObserver(sourceObserver);
         for (UnitRemote targetRemote : targetRemotes) {
             targetRemote.removeDataObserver(sourceObserver);
-            targetRemote.deactivate();
         }
-        sourceRemote.deactivate();
     }
 
     public UnitRemote getSourceRemote() {
