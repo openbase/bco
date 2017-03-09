@@ -240,8 +240,8 @@ public class SceneRemoteTest {
         sceneRemote.setActivationState(activationState).get();
         waitForSceneExecution(sceneRemote);
 
-        powerStateServiceRemote.waitForData();
-        colorStateServiceRemote.waitForData();
+        powerStateServiceRemote.requestData();
+        colorStateServiceRemote.requestData();
 
         assertEquals("Scene has not been deactivated after execution!", ActivationState.State.DEACTIVE, sceneRemote.getActivationState().getValue());
         assertEquals("PowerState has not been updated by scene!", POWER_ON, powerStateServiceRemote.getPowerState().getValue());
