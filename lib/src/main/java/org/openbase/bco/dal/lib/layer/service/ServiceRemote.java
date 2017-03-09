@@ -48,6 +48,7 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
      *
      * @param observer the observer which is notified
      */
+    @Override
     void addDataObserver(final Observer<ST> observer);
 
     /**
@@ -104,6 +105,7 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
      *
      * @return is true in case that the connection for every underlying remote it established.
      */
+    @Override
     boolean isConnected();
 
     /**
@@ -111,6 +113,7 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
      *
      * @return is true in case that for every underlying remote data is available.
      */
+    @Override
     boolean isDataAvailable();
 
     /**
@@ -118,6 +121,7 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
      *
      * @param observer the observer which has been registered
      */
+    @Override
     void removeDataObserver(final Observer<ST> observer);
 
     /**
@@ -135,6 +139,7 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
      * @throws CouldNotPerformException is thrown if any error occurs.
      * @throws InterruptedException is thrown in case the thread is externally interrupted.
      */
+    @Override
     void waitForData() throws CouldNotPerformException, InterruptedException;
 
     /**
@@ -145,7 +150,8 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
      * @throws CouldNotPerformException is thrown in case the any error occurs, or if the given timeout is reached. In this case a TimeoutException is thrown.
      * @throws InterruptedException is thrown in case the thread is externally interrupted.
      */
-    void waitForData(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException;
+    @Override
+    public void waitForData(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException;
 
     @Override
     public default void activate(boolean waitForData) throws CouldNotPerformException, InterruptedException {
@@ -217,7 +223,6 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
     /**
      * Method request the data of all internal unit remotes.
      *
-     * @param failOnError flag decides if an exception should be thrown in case one data request fails.
      * @return the recalculated server state data based on the newly requested data.
      * @throws CouldNotPerformException is thrown if any error occurs during the request.
      */
