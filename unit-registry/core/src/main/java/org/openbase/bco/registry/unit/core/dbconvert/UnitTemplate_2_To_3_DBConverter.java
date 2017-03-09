@@ -27,7 +27,6 @@ package org.openbase.bco.registry.unit.core.dbconvert;
  * #L%
  */
 import com.google.gson.JsonArray;
-import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.io.File;
 import java.util.Map;
@@ -49,26 +48,23 @@ public class UnitTemplate_2_To_3_DBConverter extends AbstractGlobalDBVersionConv
 
     private static final String DEVICE_CLASS_DB_ID = "device-class-db";
     private static final String DAL_UNIT_CONFIG_DB_ID = "dal-unit-config-db";
-    private static final String UNIT_TEMPLAET_CONFIG_DB_ID = "unit-template-config-db";
 
     private static final String LIGHT_SENSOR_TYPE = "LIGHT_SENSOR";
     private static final String BRIGHTNESS_SENSOR_TYPE = "BRIGHTNESS_SENSOR";
-    private static final String BRIGHTNESS_STATE_TYPE = "BRIGHTNESS_STATE_SERVICE";
     private static final String ILLUMINANCE_STATE_TYPE = "ILLUMINANCE_STATE_SERVICE";
     private static final String PROVIDER_PATTERN = "PROVIDER";
 
     private static final String TYPE_FIELD = "type";
-    private static final String SERVICE_TYPE_FIELD = "service_type";
     private static final String ID_FIELD = "id";
     private static final String PATTERN_FIELD = "pattern";
-
     private static final String SERVICE_TEMPLATE_FIELD = "service_template";
-    private static final String UNIT_TEMPLATE_CONFIG_FIELD = "unit_template_config";
-    private static final String SERVICE_TEMPLATE_CONFIG_FIELD = "service_template_config";
     private static final String SERVICE_CONFIG_FIELD = "service_config";
+    private static final String UNIT_TEMPLATE_CONFIG_ID_FIELD = "unit_template_config_id";
 
     private boolean init;
     private final UnitConfigIdGenerator idGenerator;
+    private int deviceClassDBVersion = 0;
+    private static final int LEAST_DEVICE_CLASS_VERSION = 2;
 
     public UnitTemplate_2_To_3_DBConverter(DBVersionControl versionControl) {
         super(versionControl);
@@ -79,6 +75,17 @@ public class UnitTemplate_2_To_3_DBConverter extends AbstractGlobalDBVersionConv
     @Override
     public JsonObject upgrade(JsonObject outdatedDBEntry, Map<File, JsonObject> dbSnapshot, Map<String, Map<File, DatabaseEntryDescriptor>> globalDbSnapshots) throws CouldNotPerformException {
         if (!init) {
+            if (deviceClassDBVersion < LEAST_DEVICE_CLASS_VERSION) {
+                if (!globalDbSnapshots.get(DEVICE_CLASS_DB_ID).isEmpty()) {
+                    for (DatabaseEntryDescriptor entry : globalDbSnapshots.get(DEVICE_CLASS_DB_ID).values()) {
+                        if (entry.getVersion() < LEAST_DEVICE_CLASS_VERSION) {
+                            throw new CouldNotPerformException("Could not upgrade UnitTemplate DB to version 3! DeviceClass DB version 2 or newer is needed for this upgrade!");
+                        }
+                    }
+                }
+                deviceClassDBVersion = LEAST_DEVICE_CLASS_VERSION;
+            }
+
             // Add a unitTemplate with unitType LIGHT_SENSOR and serviceTemplate ILLUMINANCE_STATE_SERVICE, PROVIDER
             JsonObject unitTemplate = new JsonObject();
             String id = idGenerator.generateId(null);
@@ -99,29 +106,6 @@ public class UnitTemplate_2_To_3_DBConverter extends AbstractGlobalDBVersionConv
                 throw new CouldNotPerformException("Could not acces unitTemplate directory!", ex);
             }
 
-            // Find all deviceClasses with unitTemplateConfig for unitType BRIGHTNESS_SENSOR and adjust their type and serviceTemplateConfig
-            // TODO: this does not seem to work yet... does the unit registry just not save changes for this?
-            if (!globalDbSnapshots.get(DEVICE_CLASS_DB_ID).isEmpty()) {
-                for (DatabaseEntryDescriptor entry : globalDbSnapshots.get(DEVICE_CLASS_DB_ID).values()) {
-                    JsonObject deviceClass = entry.getEntry();
-                    if (!deviceClass.has(UNIT_TEMPLATE_CONFIG_FIELD)) {
-                        continue;
-                    }
-
-                    for (JsonElement unitTemplateConfigElem : deviceClass.getAsJsonArray(UNIT_TEMPLATE_CONFIG_FIELD)) {
-                        JsonObject unitTemplateConfig = unitTemplateConfigElem.getAsJsonObject();
-                        if (unitTemplateConfig.get(TYPE_FIELD).getAsString().equals(BRIGHTNESS_SENSOR_TYPE)) {
-                            unitTemplateConfig.remove(TYPE_FIELD);
-                            unitTemplateConfig.addProperty(TYPE_FIELD, LIGHT_SENSOR_TYPE);
-
-                            JsonObject serviceTemplateConfig = unitTemplateConfig.getAsJsonArray(SERVICE_TEMPLATE_CONFIG_FIELD).get(0).getAsJsonObject();
-                            serviceTemplateConfig.remove(SERVICE_TYPE_FIELD);
-                            serviceTemplateConfig.addProperty(SERVICE_TYPE_FIELD, ILLUMINANCE_STATE_TYPE);
-                        }
-                    }
-                }
-            }
-
             // Find all dalUnitConfigs with unitType BRIGHTNESS_SENSOR and adjust their type and serviceTemplateConfig
             if (!globalDbSnapshots.get(DAL_UNIT_CONFIG_DB_ID).isEmpty()) {
                 for (DatabaseEntryDescriptor entry : globalDbSnapshots.get(DAL_UNIT_CONFIG_DB_ID).values()) {
@@ -129,6 +113,10 @@ public class UnitTemplate_2_To_3_DBConverter extends AbstractGlobalDBVersionConv
                     if (unitConfig.get(TYPE_FIELD).getAsString().equals(BRIGHTNESS_SENSOR_TYPE)) {
                         unitConfig.remove(TYPE_FIELD);
                         unitConfig.addProperty(TYPE_FIELD, LIGHT_SENSOR_TYPE);
+
+                        String unitTemplateConfigId = unitConfig.get(UNIT_TEMPLATE_CONFIG_ID_FIELD).getAsString();
+                        unitConfig.remove(UNIT_TEMPLATE_CONFIG_ID_FIELD);
+                        unitConfig.addProperty(UNIT_TEMPLATE_CONFIG_ID_FIELD, unitTemplateConfigId.replace(BRIGHTNESS_SENSOR_TYPE, LIGHT_SENSOR_TYPE));
 
                         JsonObject serviceConfig = unitConfig.getAsJsonArray(SERVICE_CONFIG_FIELD).get(0).getAsJsonObject();
                         JsonObject serviceTemplate2 = serviceConfig.getAsJsonObject(SERVICE_TEMPLATE_FIELD);
