@@ -23,10 +23,11 @@ package org.openbase.bco.dal.visual.util;
  */
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
-import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
+import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
@@ -89,10 +90,23 @@ public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends java
         return remoteService;
     }
 
+    /**
+     *
+     * @param unitType
+     * @param scope
+     * @throws CouldNotPerformException
+     * @throws InterruptedException
+     * @deprecated please use setUnitRemote(final Scope scope) because type is auto detected.
+     */
+    @Deprecated
     public void setUnitRemote(final UnitType unitType, final Scope scope) throws CouldNotPerformException, InterruptedException {
-        logger.info("Setup unit remote: " + unitType + ".");
+        setUnitRemote(scope);
+    }
+
+    public void setUnitRemote(final Scope scope) throws CouldNotPerformException, InterruptedException {
         try {
-            RS remote = (RS) UnitRemoteFactoryImpl.getInstance().newInitializedInstance(scope, unitType);
+            logger.info("Setup unit remote: " + ScopeGenerator.generateStringRep(scope));
+            RS remote = (RS) Units.getUnitByScope(scope, false);
             remote.activate();
             setRemoteService(remote);
         } catch (CouldNotPerformException ex) {
@@ -103,8 +117,7 @@ public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends java
     public RS setUnitRemote(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         logger.info("Setup unit remote: " + unitConfig.getId());
         try {
-            RS remote = (RS) UnitRemoteFactoryImpl.getInstance().newInitializedInstance(unitConfig);
-            remote.activate();
+            RS remote = (RS) Units.getUnit(unitConfig, false);
             setRemoteService((RS) remote);
             return remote;
         } catch (CouldNotPerformException ex) {

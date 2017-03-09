@@ -77,6 +77,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
 
     public ColorableLightController(final UnitHost unitHost, final ColorableLightData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(ColorableLightController.class, unitHost, builder);
+        this.neutralWhite = Color.newBuilder().setType(Color.Type.RGB).setRgbColor(DEFAULT_NEUTRAL_WHITE).build();
     }
 
     @Override
@@ -92,7 +93,12 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
     }
 
     @Override
-    public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
+    public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        updateNeutralWhiteValue(config);
+        return super.applyConfigUpdate(config);
+    }
+
+    public void updateNeutralWhiteValue(final UnitConfig config) throws InterruptedException {
         try {
             final MetaConfigPool configPool = new MetaConfigPool();
             configPool.register(new MetaConfigVariableProvider("UnitConfig", config.getMetaConfig()));
@@ -113,6 +119,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
             configPool.register(new MetaConfigVariableProvider("DeviceUnitConfig", deviceUnitConfig.getMetaConfig()));
 
             // add meta config of device class
+            Registries.getDeviceRegistry().waitForData();
             DeviceClass deviceClass = Registries.getDeviceRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
             configPool.register(new MetaConfigVariableProvider("DeviceClass", deviceClass.getMetaConfig()));
 
@@ -157,8 +164,6 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not find NeutralWhite!", ex), logger);
         }
-
-        return super.applyConfigUpdate(config);
     }
 
     @Override

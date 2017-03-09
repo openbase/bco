@@ -42,6 +42,7 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.processing.StringProcessor;
+import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.RemoteControllerRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,6 +51,7 @@ import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -106,8 +108,10 @@ public class Units {
     private static final ReentrantReadWriteLock unitRemoteRegistryLock = new ReentrantReadWriteLock();
     private static final UnitRemoteFactory unitRemoteFactory = UnitRemoteFactoryImpl.getInstance();
 
-    private static RemoteControllerRegistry<String, UnitRemote<? extends GeneratedMessage>> unitRemoteRegistry;
+    private static RemoteControllerRegistry<String, org.openbase.bco.dal.lib.layer.unit.UnitRemote<? extends GeneratedMessage>> unitRemoteRegistry;
     private static UnitRegistry unitRegistry;
+
+    public static final SyncObject UNIT_POOL_LOCK = new SyncObject("UnitPoolLock");
 
     static {
         try {
@@ -120,15 +124,18 @@ public class Units {
             @Override
             public void shutdown() {
                 try {
-                    unitRemoteRegistry.getEntries().forEach(((UnitRemote unitRemote) -> {
+                    unitRemoteRegistry.getEntries().stream().parallel().forEach(((org.openbase.bco.dal.lib.layer.unit.UnitRemote unitRemote) -> {
                         try {
+                            LOGGER.info("SHUTTING_DOWN remote " + unitRemote.getLabel() + " - " + Thread.currentThread().getName() + " UNLOCK");
                             unitRemote.unlock(unitRemoteRegistry);
+                            LOGGER.info("SHUTTING_DOWN remote " + unitRemote.getLabel() + " - " + Thread.currentThread().getName() + " SHUTDOWN");
                             unitRemote.shutdown();
+                            LOGGER.info("SHUTTING_DOWN remote " + unitRemote.getLabel() + " - " + Thread.currentThread().getName() + " DONE!");
                         } catch (CouldNotPerformException ex) {
                             ExceptionPrinter.printHistory("Could not properly shutdown " + unitRemote, ex, LOGGER);
                         }
                     }));
-                } catch (CouldNotPerformException ex) {
+                } catch (Exception ex) {
                     ExceptionPrinter.printHistory("Could not properly shutdown remote pool!", ex, LOGGER);
                 } finally {
                     unitRemoteRegistry.shutdown();
@@ -575,5 +582,9 @@ public class Units {
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Unit[" + label + "]", ex);
         }
+    }
+    
+    public static boolean contains(final UnitRemote<? extends GeneratedMessage> unitRemote) throws CouldNotPerformException {
+        return unitRemoteRegistry.contains(unitRemote);
     }
 }

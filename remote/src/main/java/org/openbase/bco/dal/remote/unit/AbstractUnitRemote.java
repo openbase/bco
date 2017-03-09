@@ -229,6 +229,9 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         if (!isEnabled()) {
             throw new InvalidStateException("The activation of an remote is not allowed if the referred unit is disabled!");
         }
+        if (!Units.contains(this)) {
+            logger.warn("You are using a unit remote which is not maintained by the global unit remote pool! This is extremely inefficient! Please use \"Units.getUnit(...)\" instead creating your own instances!");
+        }
         super.activate();
     }
 
@@ -375,4 +378,15 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
         return RPCHelper.callRemoteMethod(this, Snapshot.class);
     }
+
+    @Override
+    public void shutdown() {
+        try {
+            System.out.println("SHUTDOWN " + getLabel());
+        } catch (NotAvailableException ex) {
+            System.out.println("SHUTDOWN ?");
+        }
+        super.shutdown();
+    }
+
 }
