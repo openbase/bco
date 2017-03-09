@@ -206,6 +206,7 @@ public abstract class AbstractItemEntry implements ItemEntry, Comparable<Abstrac
             case SMOKE_STATE_SERVICE:
             case TEMPERATURE_ALARM_STATE_SERVICE:
             case TARGET_TEMPERATURE_STATE_SERVICE:
+            case ILLUMINANCE_STATE_SERVICE:
                 return "Number";
             case BLIND_STATE_SERVICE:
                 return "Rollershutter";
@@ -219,11 +220,7 @@ public abstract class AbstractItemEntry implements ItemEntry, Comparable<Abstrac
             case HANDLE_STATE_SERVICE:
                 return "String";
             case BRIGHTNESS_STATE_SERVICE:
-                if (serviceTemplate.getPattern() == ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION) {
-                    return "Dimmer";
-                } else {
-                    return "Number";
-                }
+                return "Dimmer";
             default:
                 logger.warn("Unkown Service Type: " + serviceTemplate);
                 return "";
