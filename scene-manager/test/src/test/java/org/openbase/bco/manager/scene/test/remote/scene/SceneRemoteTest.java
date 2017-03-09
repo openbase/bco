@@ -270,6 +270,7 @@ public class SceneRemoteTest {
         ActivationState activationState = ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build();
         sceneRemote.setActivationState(activationState).get();
         waitForSceneExecution(sceneRemote);
+        sceneRemote.requestData();
 
         assertEquals("Scene has not been deactivated after execution!", ActivationState.State.DEACTIVE, sceneRemote.getActivationState().getValue());
         while (locationRemote.getTargetTemperatureState().getTemperature() != TEMPERATURE) {
