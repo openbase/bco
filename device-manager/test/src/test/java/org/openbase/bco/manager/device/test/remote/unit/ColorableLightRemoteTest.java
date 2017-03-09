@@ -253,7 +253,7 @@ public class ColorableLightRemoteTest {
         BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).build();
         colorableLightRemote.setBrightnessState(brightnessState).get();
         colorableLightRemote.requestData().get();
-        assertEquals("Brightness has not been set in time or the return value from the getter is different!", brightnessState.getBrightness(), colorableLightRemote.getBrightnessState().getBrightness());
+        assertEquals("Brightness has not been set in time or the return value from the getter is different!", brightnessState.getBrightness(), colorableLightRemote.getBrightnessState().getBrightness(), 0.1);
     }
 
     @Test(timeout = 10000)
