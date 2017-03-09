@@ -104,7 +104,11 @@ public class OpenHABCommandExecutor {
         LOGGER.info("receiveUpdate [" + command.getItem() + "=" + command.getType() + "]");
         OpenhabCommandMetaData metaData = new OpenhabCommandMetaData(command);
         Object serviceData = OpenhabCommandTransformer.getServiceData(command, metaData.getServiceType());
-        
+
+        if (serviceData == null) {
+            return;
+        }
+
         final UnitController unitController;
         try {
             unitController = unitControllerRegistry.getUnitByScope(metaData.getUnitScope());
