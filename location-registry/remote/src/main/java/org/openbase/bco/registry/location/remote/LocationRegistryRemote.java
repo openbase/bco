@@ -95,18 +95,6 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
 
     /**
      * {@inheritDoc}
-     *
-     * @throws java.lang.InterruptedException {@inheritDoc}
-     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     */
-    @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        CachedUnitRegistryRemote.waitForData();
-        super.activate();
-    }
-
-    /**
-     * {@inheritDoc}
      */
     @Override
     public void shutdown() {

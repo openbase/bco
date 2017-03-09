@@ -93,12 +93,6 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
     }
 
     @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        CachedUnitRegistryRemote.waitForData();
-        super.activate();
-    }
-
-    @Override
     protected void registerRemoteRegistries() throws CouldNotPerformException {
         registerRemoteRegistry(deviceClassRemoteRegistry);
         registerRemoteRegistry(deviceUnitConfigRemoteRegistry);
