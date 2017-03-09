@@ -31,6 +31,7 @@ import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryController;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -45,12 +46,12 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.registry.AppRegistryDataType.AppRegistryData;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.app.AppClassType.AppClass;
 import rst.domotic.unit.app.AppConfigType.AppConfig;
-import rst.domotic.registry.AppRegistryDataType.AppRegistryData;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 
 /**
@@ -80,6 +81,12 @@ public class AppRegistryController extends AbstractVirtualRegistryController<App
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
+    }
+
+    @Override
+    public void waitForData() throws CouldNotPerformException, InterruptedException {
+        CachedUnitRegistryRemote.waitForData();
+        super.waitForData();
     }
 
     /**

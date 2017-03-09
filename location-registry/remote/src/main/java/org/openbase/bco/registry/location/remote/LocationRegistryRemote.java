@@ -45,14 +45,14 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitProbabilityCollectionType.UnitProbabilityCollection;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig;
-import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
-import rst.domotic.unit.UnitProbabilityCollectionType.UnitProbabilityCollection;
 import rst.tracking.PointingRay3DFloatCollectionType.PointingRay3DFloatCollection;
 import rst.tracking.PointingRay3DFloatType;
 
@@ -95,18 +95,6 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
 
     /**
      * {@inheritDoc}
-     *
-     * @throws java.lang.InterruptedException {@inheritDoc}
-     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     */
-    @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        CachedUnitRegistryRemote.waitForData();
-        super.activate();
-    }
-
-    /**
-     * {@inheritDoc}
      */
     @Override
     public void shutdown() {
@@ -115,6 +103,12 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
         } finally {
             super.shutdown();
         }
+    }
+
+    @Override
+    public void waitForData() throws CouldNotPerformException, InterruptedException {
+        CachedUnitRegistryRemote.waitForData();
+        super.waitForData(); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override

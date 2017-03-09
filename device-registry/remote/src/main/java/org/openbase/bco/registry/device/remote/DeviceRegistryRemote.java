@@ -42,15 +42,15 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.unit.device.DeviceClassType.DeviceClass;
-import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
 import rst.domotic.registry.DeviceRegistryDataType.DeviceRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
+import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
+import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
 import rst.rsb.ScopeType;
 
 /**
@@ -93,12 +93,6 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
     }
 
     @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        CachedUnitRegistryRemote.waitForData();
-        super.activate();
-    }
-
-    @Override
     protected void registerRemoteRegistries() throws CouldNotPerformException {
         registerRemoteRegistry(deviceClassRemoteRegistry);
         registerRemoteRegistry(deviceUnitConfigRemoteRegistry);
@@ -110,6 +104,12 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
 
     public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getDeviceConfigRemoteRegistry() {
         return deviceUnitConfigRemoteRegistry;
+    }
+
+    @Override
+    public void waitForData() throws CouldNotPerformException, InterruptedException {
+        CachedUnitRegistryRemote.waitForData();
+        super.waitForData();
     }
 
     /**
