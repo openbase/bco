@@ -118,6 +118,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
     @Override
     public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
         UnitConfig unitConfig = super.applyConfigUpdate(config);
+        unitRegistry.waitForData();
 
         hostedUnitDiff.diff(getHostedUnits());
 

@@ -201,6 +201,9 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
 
         try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setColorState(colorState);
+
+            BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(colorState.getColor().getHsbColor().getBrightness()).build();
+            dataBuilder.getInternalBuilder().setBrightnessState(brightnessState);
             dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.ON);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply colorState Update[" + colorState + "] for " + this + "!", ex);
@@ -225,9 +228,12 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
         logger.debug("Apply brightnessState Update[" + brightnessState + "] for " + this + ".");
 
         try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().setBrightnessState(brightnessState);
+
             HSBColor hsb = dataBuilder.getInternalBuilder().getColorState().getColor().getHsbColor().toBuilder().setBrightness(brightnessState.getBrightness()).build();
             Color color = Color.newBuilder().setType(Color.Type.HSB).setHsbColor(hsb).build();
             dataBuilder.getInternalBuilder().setColorState(dataBuilder.getInternalBuilder().getColorState().toBuilder().setColor(color).build());
+
             if (brightnessState.getBrightness() == 0) {
                 dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.OFF);
             } else {
@@ -247,7 +253,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
     @Override
     public BrightnessState getBrightnessState() throws NotAvailableException {
         try {
-            return BrightnessState.newBuilder().setBrightness(getData().getColorState().getColor().getHsbColor().getBrightness()).build();
+            return getData().getBrightnessState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("brightnessState", ex);
         }

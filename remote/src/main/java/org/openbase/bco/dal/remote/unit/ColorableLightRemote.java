@@ -105,7 +105,7 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
     @Override
     public BrightnessState getBrightnessState() throws NotAvailableException {
         try {
-            return BrightnessState.newBuilder().setBrightness(getData().getColorState().getColor().getHsbColor().getBrightness()).build();
+            return getData().getBrightnessState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("BrightnessState", ex);
         }
