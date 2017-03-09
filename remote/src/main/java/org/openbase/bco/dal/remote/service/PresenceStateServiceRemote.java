@@ -39,7 +39,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 public class PresenceStateServiceRemote extends AbstractServiceRemote<PresenceStateProviderService, PresenceState> implements PresenceStateProviderServiceCollection {
 
     public PresenceStateServiceRemote() {
-        super(ServiceType.PRESENCE_STATE_SERVICE);
+        super(ServiceType.PRESENCE_STATE_SERVICE, PresenceState.class);
     }
 
     /**

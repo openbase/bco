@@ -1,4 +1,3 @@
-
 package org.openbase.bco.dal.lib.layer.service;
 
 /*-
@@ -22,9 +21,9 @@ package org.openbase.bco.dal.lib.layer.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import com.google.protobuf.GeneratedMessage;
 import java.util.Collection;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -32,6 +31,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.Remote;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitTemplateType;
@@ -41,8 +41,7 @@ import rst.domotic.unit.UnitTemplateType;
  * @param <S>
  * @param <ST>
  */
-public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> extends Manageable<UnitConfigType.UnitConfig>, Service {
-
+public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> extends Manageable<UnitConfigType.UnitConfig>, Service, Remote<ST> {
 
     /**
      * Add an observer to get notifications when the service state changes.
@@ -62,7 +61,9 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
      *
      * @return the current service state
      * @throws NotAvailableException if the service state has not been set at least once.
+     * @deprecated please use getData instead.
      */
+    @Deprecated
     ST getServiceState() throws NotAvailableException;
 
     /**
@@ -119,6 +120,13 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
      */
     void removeDataObserver(final Observer<ST> observer);
 
+    /**
+     * Removes the internal unit remote referred by the given config.
+     *
+     * @param unitConfig
+     * @throws CouldNotPerformException
+     * @throws InterruptedException
+     */
     void removeUnit(UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException;
 
     /**
@@ -138,5 +146,93 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
      * @throws InterruptedException is thrown in case the thread is externally interrupted.
      */
     void waitForData(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException;
+
+    @Override
+    public default void activate(boolean waitForData) throws CouldNotPerformException, InterruptedException {
+        activate();
+        waitForData();
+    }
+
+    /**
+     * Method adds the given observer to all internal unit remotes.
+     *
+     * @param observer the observer to observe the connection state of the internal unit remotes.
+     */
+    @Override
+    public default void addConnectionStateObserver(Observer<ConnectionState> observer) {
+        for (Remote remote : getInternalUnits()) {
+            remote.addConnectionStateObserver(observer);
+        }
+    }
+
+    /**
+     * Method removes the given observer on all internal unit remotes.
+     *
+     * @param observer the observer to remove.
+     */
+    @Override
+    public default void removeConnectionStateObserver(Observer<ConnectionState> observer) {
+        for (final Remote remote : getInternalUnits()) {
+            remote.removeConnectionStateObserver(observer);
+        }
+    }
+
+    /**
+     * Method returns the connection state of the internal unit remotes.
+     *
+     * Note: While unit remotes return ConnectionState.CONNECTING if they try to reach the remote controller this getConnectionState method returns connecting if at least one internal unit remote is already connected.
+     *
+     * @return Method returns DISCONNECTED if non of the internal unit remotes is connected. It returns CONNECTING if at least one remote is connected and returns CONNECTED if all internal unit remotes are successfully connected.
+     */
+    @Override
+    public default ConnectionState getConnectionState() {
+        boolean disconnectedRemoteDetected = false;
+        boolean connectedRemoteDetected = false;
+
+        for (final Remote remote : getInternalUnits()) {
+            switch (remote.getConnectionState()) {
+                case CONNECTED:
+                    connectedRemoteDetected = true;
+                    break;
+                case CONNECTING:
+                case DISCONNECTED:
+                    disconnectedRemoteDetected = true;
+                    break;
+                default:
+                //ignore unknown connection state";
+            }
+        }
+
+        if (disconnectedRemoteDetected && connectedRemoteDetected) {
+            return ConnectionState.CONNECTING;
+        } else if (disconnectedRemoteDetected) {
+            return ConnectionState.DISCONNECTED;
+        } else if (connectedRemoteDetected) {
+            return ConnectionState.CONNECTED;
+        } else {
+            return ConnectionState.UNKNOWN;
+        }
+    }
+
+    /**
+     * Method request the data of all internal unit remotes.
+     *
+     * @param failOnError flag decides if an exception should be thrown in case one data request fails.
+     * @return the recalculated server state data based on the newly requested data.
+     * @throws CouldNotPerformException is thrown if any error occurs during the request.
+     */
+    @Override
+    public default CompletableFuture<ST> requestData() throws CouldNotPerformException {
+        return requestData(true);
+    }
+
+    /**
+     * Method request the data of all internal unit remotes.
+     *
+     * @param failOnError flag decides if an exception should be thrown in case one data request fails.
+     * @return the recalculated server state data based on the newly requested data.
+     * @throws CouldNotPerformException is thrown if non of the request was successful. In case the failOnError is set to true any request error throws an CouldNotPerformException.
+     */
+    public CompletableFuture<ST> requestData(final boolean failOnError) throws CouldNotPerformException;
 
 }

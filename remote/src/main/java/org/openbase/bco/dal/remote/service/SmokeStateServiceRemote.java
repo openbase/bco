@@ -31,7 +31,6 @@ import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.SmokeStateType.SmokeState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.timing.TimestampType.Timestamp;
 
 /**
  *
@@ -40,7 +39,7 @@ import rst.timing.TimestampType.Timestamp;
 public class SmokeStateServiceRemote extends AbstractServiceRemote<SmokeStateProviderService, SmokeState> implements SmokeStateProviderServiceCollection {
 
     public SmokeStateServiceRemote() {
-        super(ServiceType.SMOKE_STATE_SERVICE);
+        super(ServiceType.SMOKE_STATE_SERVICE, SmokeState.class);
     }
 
     public Collection<SmokeStateProviderService> getSmokeStateProviderServices() {

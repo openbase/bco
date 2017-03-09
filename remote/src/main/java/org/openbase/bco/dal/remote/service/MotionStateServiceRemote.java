@@ -40,7 +40,7 @@ import rst.timing.TimestampType.Timestamp;
 public class MotionStateServiceRemote extends AbstractServiceRemote<MotionStateProviderService, MotionState> implements MotionStateProviderServiceCollection {
 
     public MotionStateServiceRemote() {
-        super(ServiceType.MOTION_STATE_SERVICE);
+        super(ServiceType.MOTION_STATE_SERVICE, MotionState.class);
     }
 
     public Collection<MotionStateProviderService> getMotionStateProviderServices() {
@@ -83,7 +83,7 @@ public class MotionStateServiceRemote extends AbstractServiceRemote<MotionStateP
             if (motionState.hasLastMotion() && motionState.getLastMotion().getTime() > lastMotion) {
                 lastMotion = motionState.getLastMotion().getTime();
             }
-            
+
             timestamp = Math.max(timestamp, motionState.getTimestamp().getTime());
         }
         return TimestampProcessor.updateTimestamp(timestamp, MotionState.newBuilder().setValue(motionValue).setLastMotion(Timestamp.newBuilder().setTime(lastMotion)), logger).build();

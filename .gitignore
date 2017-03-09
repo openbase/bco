@@ -4,3 +4,4 @@ build
 */target/
 **/*/nbactions.xml
 /target/
+/lib/nbproject/

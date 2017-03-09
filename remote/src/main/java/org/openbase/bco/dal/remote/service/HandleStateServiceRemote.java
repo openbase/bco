@@ -31,7 +31,6 @@ import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.HandleStateType.HandleState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.timing.TimestampType.Timestamp;
 
 /**
  *
@@ -40,7 +39,7 @@ import rst.timing.TimestampType.Timestamp;
 public class HandleStateServiceRemote extends AbstractServiceRemote<HandleStateProviderService, HandleState> implements HandleStateProviderServiceCollection {
 
     public HandleStateServiceRemote() {
-        super(ServiceType.HANDLE_STATE_SERVICE);
+        super(ServiceType.HANDLE_STATE_SERVICE, HandleState.class);
     }
 
     public Collection<HandleStateProviderService> getHandleStateProviderServices() {

@@ -31,7 +31,6 @@ import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.timing.TimestampType.Timestamp;
 
 /**
  *
@@ -40,7 +39,7 @@ import rst.timing.TimestampType.Timestamp;
 public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<PowerConsumptionStateProviderService, PowerConsumptionState> implements PowerConsumptionStateProviderServiceCollection {
 
     public PowerConsumptionStateServiceRemote() {
-        super(ServiceType.POWER_CONSUMPTION_STATE_SERVICE);
+        super(ServiceType.POWER_CONSUMPTION_STATE_SERVICE, PowerConsumptionState.class);
     }
 
     public Collection<PowerConsumptionStateProviderService> getPowerConsumptionStateProviderServices() {

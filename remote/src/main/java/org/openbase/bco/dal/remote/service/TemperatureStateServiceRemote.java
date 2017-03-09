@@ -39,7 +39,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 public class TemperatureStateServiceRemote extends AbstractServiceRemote<TemperatureStateProviderService, TemperatureState> implements TemperatureStateProviderServiceCollection {
 
     public TemperatureStateServiceRemote() {
-        super(ServiceType.TEMPERATURE_STATE_SERVICE);
+        super(ServiceType.TEMPERATURE_STATE_SERVICE, TemperatureState.class);
     }
 
     public Collection<TemperatureStateProviderService> getTemperatureStateProviderServices() {

@@ -28,6 +28,8 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.Service;
@@ -43,9 +45,11 @@ import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.ShutdownException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
@@ -63,25 +67,30 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  * @param <ST> the corresponding state for the service type of this remote.
  */
 public abstract class AbstractServiceRemote<S extends Service, ST extends GeneratedMessage> implements ServiceRemote<S, ST> {
-    
+
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-    
+
     private boolean active;
     private final ServiceType serviceType;
+    private final Class<ST> serviceDataClass;
     private final Map<String, UnitRemote> unitRemoteMap;
     private final Map<UnitType, List<S>> unitRemoteTypeMap;
     private final Map<String, S> serviceMap;
     private final Observer dataObserver;
     protected final ObservableImpl<ST> serviceStateObservable = new ObservableImpl<>();
     private final SyncObject syncObject = new SyncObject("ServiceStateComputationLock");
+    private final SyncObject maintainerLock = new SyncObject("MaintainerLock");
+    protected Object maintainer;
 
     /**
      * AbstractServiceRemote constructor.
      *
      * @param serviceType The remote service type.
+     * @param serviceDataClass The service data class.
      */
-    public AbstractServiceRemote(final ServiceType serviceType) {
+    public AbstractServiceRemote(final ServiceType serviceType, final Class<ST> serviceDataClass) {
         this.serviceType = serviceType;
+        this.serviceDataClass = serviceDataClass;
         this.unitRemoteMap = new HashMap<>();
         this.unitRemoteTypeMap = new HashMap<>();
         this.serviceMap = new HashMap<>();
@@ -120,11 +129,27 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * @return the current service state
      * @throws NotAvailableException if the service state has not been set at
      * least once.
+     * @deprecated please use getData instead.
      */
     @Override
+    @Deprecated
     public ST getServiceState() throws NotAvailableException {
         if (!serviceStateObservable.isValueAvailable()) {
             throw new NotAvailableException("ServiceState");
+        }
+        return serviceStateObservable.getValue();
+    }
+
+    /**
+     *
+     * @return the current service state
+     * @throws NotAvailableException if the service state data has not been set at
+     * least once.
+     */
+    @Override
+    public ST getData() throws NotAvailableException {
+        if (!serviceStateObservable.isValueAvailable()) {
+            throw new NotAvailableException("Data");
         }
         return serviceStateObservable.getValue();
     }
@@ -149,6 +174,61 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         serviceStateObservable.removeObserver(observer);
     }
 
+    @Override
+    public Class<ST> getDataClass() {
+        return serviceDataClass;
+    }
+
+    /**
+     * Method request the data of all internal unit remotes.
+     *
+     * @param failOnError flag decides if an exception should be thrown in case one data request fails.
+     * @return the recalculated server state data based on the newly requested data.
+     * @throws CouldNotPerformException is thrown if non of the request was successful. In case the failOnError is set to true any request error throws an CouldNotPerformException.
+     */
+    public CompletableFuture<ST> requestData(final boolean failOnError) throws CouldNotPerformException {
+        final CompletableFuture<ST> requestDataFuture = new CompletableFuture<>();
+        GlobalCachedExecutorService.submit(new Runnable() {
+            @Override
+            public void run() {
+                try {
+                    final List<Future> taskList = new ArrayList<>();
+                    MultiException.ExceptionStack exceptionStack = null;
+                    for (final Remote remote : getInternalUnits()) {
+                        try {
+                            taskList.add(remote.requestData());
+                        } catch (CouldNotPerformException ex) {
+                            MultiException.push(remote, ex, exceptionStack);
+                        }
+                    }
+                    boolean noResponse = true;
+                    for (final Future task : taskList) {
+                        try {
+                            task.get();
+                            noResponse = false;
+                        } catch (ExecutionException ex) {
+                            MultiException.push(task, ex, exceptionStack);
+                        }
+                    }
+
+                    try {
+                        MultiException.checkAndThrow("Could not request status of all internal remotes!", exceptionStack);
+                    } catch (MultiException ex) {
+                        if (failOnError || noResponse) {
+                            throw ex;
+                        }
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not request data of all internal unit remotes!", ex), logger, LogLevel.WARN);
+                    }
+                    requestDataFuture.complete(getData());
+                } catch (InterruptedException | CouldNotPerformException ex) {
+                    requestDataFuture.completeExceptionally(ex);
+                }
+            }
+        });
+
+        return requestDataFuture;
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -159,12 +239,13 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     @Override
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         try {
+            verifyMaintainability();
             if (!verifyServiceCompatibility(config, serviceType)) {
                 throw new NotSupportedException("UnitTemplate[" + serviceType.name() + "]", config.getLabel());
             }
-            
+
             UnitRemote remote = Units.getUnit(config, false);
-            
+
             if (!unitRemoteTypeMap.containsKey(remote.getType())) {
                 unitRemoteTypeMap.put(remote.getType(), new ArrayList());
                 for (UnitType superType : Registries.getUnitRegistry().getSuperUnitTypes(remote.getType())) {
@@ -173,7 +254,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                     }
                 }
             }
-            
+
             try {
                 serviceMap.put(config.getId(), (S) remote);
                 unitRemoteTypeMap.get(remote.getType()).add((S) remote);
@@ -183,9 +264,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             } catch (ClassCastException ex) {
                 throw new NotSupportedException("ServiceInterface[" + serviceType.name() + "]", remote, "Remote does not implement the service interface!", ex);
             }
-            
+
             unitRemoteMap.put(config.getId(), remote);
-            
+
             if (active) {
                 if (!remote.isEnabled()) {
                     logger.warn("Using a disabled " + remote + " in " + this + " is not recommended and should be avoided!");
@@ -211,6 +292,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     @Override
     public void init(final Collection<UnitConfig> configs) throws InitializationException, InterruptedException {
         try {
+            verifyMaintainability();
             MultiException.ExceptionStack exceptionStack = null;
             for (UnitConfig config : configs) {
                 try {
@@ -233,6 +315,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      */
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
+        verifyMaintainability();
         active = true;
         unitRemoteMap.values().stream().map((remote) -> {
             if (!remote.isEnabled()) {
@@ -253,6 +336,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      */
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
+        verifyMaintainability();
         active = false;
         unitRemoteMap.values().stream().forEach((remote) -> {
             remote.removeDataObserver(dataObserver);
@@ -265,6 +349,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     @Override
     public void shutdown() {
         try {
+            verifyMaintainability();
             deactivate();
         } catch (CouldNotPerformException | InterruptedException ex) {
             ExceptionPrinter.printHistory(new ShutdownException(this, ex), logger);
@@ -280,7 +365,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     public boolean isActive() {
         return active;
     }
-    
+
     @Override
     public void removeUnit(UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         unitRemoteMap.get(unitConfig.getId()).removeDataObserver(dataObserver);
@@ -296,7 +381,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     public Collection<org.openbase.bco.dal.lib.layer.unit.UnitRemote> getInternalUnits() {
         return Collections.unmodifiableCollection(unitRemoteMap.values());
     }
-    
+
     @Override
     public boolean hasInternalRemotes() {
         return !unitRemoteMap.isEmpty();
@@ -323,11 +408,11 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         if (unitType == UnitType.UNKNOWN) {
             return Collections.unmodifiableCollection(serviceMap.values());
         }
-        
+
         if (!unitRemoteTypeMap.containsKey(unitType)) {
             return new ArrayList<>();
         }
-        
+
         return Collections.unmodifiableCollection(unitRemoteTypeMap.get(unitType));
     }
 
@@ -340,16 +425,16 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     public ServiceType getServiceType() {
         return serviceType;
     }
-    
+
     @Override
     public Future<Void> applyAction(final ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
         try {
             if (!actionConfig.getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
-            
+
             List<Future> actionFutureList = new ArrayList<>();
-            
+
             for (org.openbase.bco.dal.lib.layer.unit.UnitRemote remote : getInternalUnits()) {
                 actionFutureList.add(remote.applyAction(actionConfig));
 //                remote.callMethod("set" + StringProcessor.transformUpperCaseToCamelCase(serviceType.toString()).replaceAll("Service", ""),
@@ -374,7 +459,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         if (unitRemoteMap.isEmpty()) {
             return;
         }
-        
+
         for (UnitRemote remote : unitRemoteMap.values()) {
             remote.waitForData();
         }
@@ -431,11 +516,68 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         }
         return serviceStateObservable.isValueAvailable();
     }
-    
+
     public static boolean verifyServiceCompatibility(final UnitConfig unitConfig, final ServiceType serviceType) {
         return unitConfig.getServiceConfigList().stream().anyMatch((serviceConfig) -> (serviceConfig.getServiceTemplate().getType() == serviceType));
     }
-    
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws VerificationFailedException {@inheritDoc}
+     */
+    @Override
+    public void verifyMaintainability() throws VerificationFailedException {
+        if (isLocked()) {
+            throw new VerificationFailedException("Manipulation of " + this + "is currently not valid because the maintains is protected by another instance! "
+                    + "Did you try to modify an instance which is locked by a managed instance pool?");
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public boolean isLocked() {
+        synchronized (maintainerLock) {
+            return maintainer != null;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public void lock(final Object maintainer) throws CouldNotPerformException {
+        synchronized (maintainerLock) {
+            if (this.maintainer != null) {
+                throw new CouldNotPerformException("Could not lock remote for because remote is already locked by another instance!");
+            }
+            this.maintainer = maintainer;
+        }
+    }
+
+    /**
+     * Method unlocks this instance.
+     *
+     * @param maintainer the instance which currently holds the lock.
+     * @throws CouldNotPerformException is thrown if the instance could not be
+     * unlocked.
+     */
+    @Override
+    public void unlock(final Object maintainer) throws CouldNotPerformException {
+        synchronized (maintainerLock) {
+            if (this.maintainer != null && this.maintainer != maintainer) {
+                throw new CouldNotPerformException("Could not unlock remote for because remote is locked by another instance!");
+            }
+            this.maintainer = null;
+        }
+    }
+
     /**
      * Returns a short instance description.
      *

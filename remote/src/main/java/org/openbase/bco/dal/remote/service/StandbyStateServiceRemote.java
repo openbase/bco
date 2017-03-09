@@ -33,7 +33,6 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.timing.TimestampType.Timestamp;
 
 /**
  *
@@ -42,7 +41,7 @@ import rst.timing.TimestampType.Timestamp;
 public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStateOperationService, StandbyState> implements StandbyStateOperationServiceCollection {
 
     public StandbyStateServiceRemote() {
-        super(ServiceType.STANDBY_STATE_SERVICE);
+        super(ServiceType.STANDBY_STATE_SERVICE, StandbyState.class);
     }
 
     @Override
@@ -88,7 +87,7 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
             if (service.getStandbyState().getValue() == StandbyState.State.RUNNING) {
                 standbyValue = StandbyState.State.RUNNING;
             }
-            
+
             timestamp = Math.max(timestamp, service.getStandbyState().getTimestamp().getTime());
         }
 

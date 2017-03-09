@@ -33,7 +33,6 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.timing.TimestampType.Timestamp;
 
 /**
  *
@@ -42,7 +41,7 @@ import rst.timing.TimestampType.Timestamp;
 public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOperationService, PowerState> implements PowerStateOperationServiceCollection {
 
     public PowerStateServiceRemote() {
-        super(ServiceType.POWER_STATE_SERVICE);
+        super(ServiceType.POWER_STATE_SERVICE, PowerState.class);
     }
 
     public Collection<PowerStateOperationService> getPowerStateOperationServices() {
@@ -88,7 +87,7 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
             if (service.getPowerState().getValue() == PowerState.State.ON) {
                 powerStateValue = PowerState.State.ON;
             }
-            
+
             timestamp = Math.max(timestamp, service.getPowerState().getTimestamp().getTime());
         }
 

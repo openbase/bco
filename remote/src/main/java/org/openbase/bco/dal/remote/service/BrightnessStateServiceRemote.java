@@ -33,7 +33,6 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.timing.TimestampType.Timestamp;
 
 // TODO pleminoq: This seems to cause in problems because units using this service in different ways.
 /**
@@ -43,7 +42,7 @@ import rst.timing.TimestampType.Timestamp;
 public class BrightnessStateServiceRemote extends AbstractServiceRemote<BrightnessStateOperationService, BrightnessState> implements BrightnessStateOperationServiceCollection {
 
     public BrightnessStateServiceRemote() {
-        super(ServiceType.BRIGHTNESS_STATE_SERVICE);
+        super(ServiceType.BRIGHTNESS_STATE_SERVICE, BrightnessState.class);
     }
 
     public Collection<BrightnessStateOperationService> getBrightnessStateOperationServices() throws CouldNotPerformException {

@@ -40,7 +40,7 @@ import rst.timing.TimestampType.Timestamp;
 public class TamperStateServiceRemote extends AbstractServiceRemote<TamperStateProviderService, TamperState> implements TamperStateProviderServiceCollection {
 
     public TamperStateServiceRemote() {
-        super(ServiceType.TAMPER_STATE_SERVICE);
+        super(ServiceType.TAMPER_STATE_SERVICE, TamperState.class);
     }
 
     public Collection<TamperStateProviderService> getTamperStateProviderServices() {
@@ -83,7 +83,7 @@ public class TamperStateServiceRemote extends AbstractServiceRemote<TamperStateP
             if (tamperState.getLastDetection().getTime() > lastDetection) {
                 lastDetection = tamperState.getLastDetection().getTime();
             }
-            
+
             timestamp = Math.max(timestamp, tamperState.getTimestamp().getTime());
         }
 
