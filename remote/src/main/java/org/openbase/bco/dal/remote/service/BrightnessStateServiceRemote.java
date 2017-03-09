@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.collection.BrightnessStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
-import org.openbase.bco.dal.remote.unit.UnitRemote;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
@@ -73,12 +73,12 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
 
     @Override
     public BrightnessState getBrightnessState() throws NotAvailableException {
-        return getServiceState();
+        return getData();
     }
 
     @Override
     public BrightnessState getBrightnessState(final UnitType unitType) throws NotAvailableException {
-        Collection<BrightnessStateOperationService> brightnessStateOperationServices = getServices(UnitType.BATTERY);
+        Collection<BrightnessStateOperationService> brightnessStateOperationServices = getServices(unitType);
         int serviceNumber = brightnessStateOperationServices.size();
         Double average = 0d;
         long timestamp = 0;

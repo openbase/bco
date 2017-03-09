@@ -32,9 +32,11 @@ import rst.domotic.state.IlluminanceStateType.IlluminanceState;
 import rst.domotic.unit.dal.BrightnessSensorDataType.BrightnessSensorData;
 
 /**
+ * Is not supported anymore. Use LightSensorController instead.
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
+@Deprecated
 public class BrightnessSensorController extends AbstractDALUnitController<BrightnessSensorData, BrightnessSensorData.Builder> implements BrightnessSensor {
 
     static {

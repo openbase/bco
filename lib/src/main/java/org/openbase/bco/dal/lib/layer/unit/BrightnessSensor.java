@@ -22,14 +22,16 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.service.provider.BrightnessStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.IlluminanceStateProviderService;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
-import org.openbase.bco.dal.lib.layer.service.provider.IlluminanceStateProviderService;
 
 /**
+ * Is not supported anymore. Use LightSensor instead.
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
+@Deprecated
 public interface BrightnessSensor extends IlluminanceStateProviderService, BrightnessStateProviderService {
 
     @Deprecated

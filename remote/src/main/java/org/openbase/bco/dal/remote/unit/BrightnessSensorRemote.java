@@ -21,19 +21,21 @@ package org.openbase.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.unit.BrightnessSensor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
-import rst.domotic.unit.dal.BrightnessSensorDataType.BrightnessSensorData;
-import org.openbase.bco.dal.lib.layer.unit.BrightnessSensor;
 import rst.domotic.state.IlluminanceStateType.IlluminanceState;
+import rst.domotic.unit.dal.BrightnessSensorDataType.BrightnessSensorData;
 
 /**
+ * Is not supported anymore. Used LightSensorRemote instead.
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
+@Deprecated
 public class BrightnessSensorRemote extends AbstractUnitRemote<BrightnessSensorData> implements BrightnessSensor {
 
     static {
