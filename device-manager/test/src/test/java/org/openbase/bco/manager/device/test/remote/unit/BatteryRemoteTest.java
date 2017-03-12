@@ -122,6 +122,6 @@ public class BatteryRemoteTest {
         BatteryState state = BatteryState.newBuilder().setLevel(level).setValue(BatteryState.State.OK).build();
         ((BatteryController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(batteryRemote.getId())).updateBatteryStateProvider(state);
         batteryRemote.requestData().get();
-        assertEquals("The getter for the battery level returns the wrong value!", state, batteryRemote.getBatteryState());
+        assertEquals("The getter for the battery level returns the wrong value!", state.getValue(), batteryRemote.getBatteryState().getValue());
     }
 }
