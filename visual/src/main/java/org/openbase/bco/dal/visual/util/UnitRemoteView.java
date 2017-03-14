@@ -46,7 +46,7 @@ public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends java
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private RS remoteService;
+    private RS unitRemote;
 
     /**
      * Creates new form RSBViewService
@@ -56,22 +56,20 @@ public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends java
     }
 
     private synchronized void setRemoteService(final RS remoteService) {
-
-        if (this.remoteService != null) {
-            this.remoteService.shutdown();
+        if (this.unitRemote != null) {
+            this.unitRemote.removeDataObserver(this);
         }
 
-        this.remoteService = remoteService;
+        this.unitRemote = remoteService;
         remoteService.addDataObserver(this);
     }
 
     @Override
     public synchronized void shutdown() {
-        if (remoteService == null) {
+        if (unitRemote == null) {
             return;
         }
-
-        remoteService.shutdown();
+        unitRemote.removeDataObserver(this);
     }
 
     @Override
@@ -84,10 +82,10 @@ public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends java
     }
 
     public RS getRemoteService() throws NotAvailableException {
-        if (remoteService == null) {
+        if (unitRemote == null) {
             throw new NotAvailableException("remoteService");
         }
-        return remoteService;
+        return unitRemote;
     }
 
     /**
@@ -107,7 +105,6 @@ public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends java
         try {
             logger.info("Setup unit remote: " + ScopeGenerator.generateStringRep(scope));
             RS remote = (RS) Units.getUnitByScope(scope, false);
-            remote.activate();
             setRemoteService(remote);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not setup unit remote config!", ex);

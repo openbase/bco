@@ -33,6 +33,7 @@ import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -62,7 +63,6 @@ public class SelectorPanel extends javax.swing.JPanel {
 
     protected static final Logger logger = LoggerFactory.getLogger(SelectorPanel.class);
 
-//    private final DeviceRegistryRemote deviceRegistryRemote;
     private final UnitRegistryRemote unitRegistryRemote;
     private final LocationRegistryRemote locationRegistryRemote;
 
@@ -216,7 +216,7 @@ public class SelectorPanel extends javax.swing.JPanel {
                 UnitType selectedUnitType = ((UnitTypeHolder) unitTypeComboBox.getSelectedItem()).getType();
                 if (selectedUnitType == UnitType.UNKNOWN) {
                     if (selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
-                        for (UnitConfig config : locationRegistryRemote.getUnitConfigsByLocation(selectedLocationConfigHolder.getConfig().getId())) {
+                        for (final UnitConfig config : locationRegistryRemote.getUnitConfigsByLocation(selectedLocationConfigHolder.getConfig().getId())) {
                             try {
                                 unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
                             } catch (CouldNotPerformException ex) {
@@ -229,6 +229,9 @@ public class SelectorPanel extends javax.swing.JPanel {
                                 // ignore disabled units
                                 if (config.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                                     continue;
+                                }
+                                if (config.getPlacementConfig().getLocationId().isEmpty()) {
+                                    throw new InvalidStateException("Could not load location unit of " + config.getLabel() + " because its not configured!");
                                 }
                                 unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
                             } catch (CouldNotPerformException ex) {

@@ -37,7 +37,6 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -90,11 +89,10 @@ public abstract class ServiceRemoteManager implements Activatable {
                 }
 
                 // sort dal unit by service type
-                for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-
+                unitConfig.getServiceConfigList().stream().forEach((serviceConfig) -> {
                     // register unit for service type. UnitConfigs are may added twice because of dublicated type of different service pattern but are filtered by the set. 
                     serviceMap.get(serviceConfig.getServiceTemplate().getType()).add(unitConfig);
-                }
+                });
             }
 
             // initialize service remotes
