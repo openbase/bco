@@ -52,6 +52,7 @@ public interface ColorStateOperationService extends OperationService, ColorState
         return setColorState(ColorState.newBuilder().setColor(color).build());
     }
 
+    @RPCMethod
     default public Future<Void> setColor(final HSBColor color) throws CouldNotPerformException {
         return setColor(Color.newBuilder().setType(Color.Type.HSB).setHsbColor(color).build());
     }
