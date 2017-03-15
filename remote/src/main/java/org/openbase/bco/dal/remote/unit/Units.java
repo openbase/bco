@@ -66,43 +66,104 @@ public class Units {
     private static final Logger LOGGER = LoggerFactory.getLogger(Units.class);
 
     /**
+     * BASE Unit remote-class-constants which can be used to request unit remotes.
+     */
+    public static final Class<? extends AgentRemote> BASE_UNIT_AGENT = AgentRemote.class;
+    public static final Class<? extends AppRemote> BASE_UNIT_APP = AppRemote.class;
+    public static final Class<? extends SceneRemote> BASE_UNIT_SCENE = SceneRemote.class;
+    public static final Class<? extends UserRemote> BASE_UNIT_USER = UserRemote.class;
+    public static final Class<? extends DeviceRemote> BASE_UNIT_DEVICE = DeviceRemote.class;
+    public static final Class<? extends LocationRemote> BASE_UNIT_LOCATION = LocationRemote.class;
+    public static final Class<? extends ConnectionRemote> BASE_UNIT_CONNECTION = ConnectionRemote.class;
+    public static final Class<? extends ConnectionRemote> BASE_UNIT_CONNECTION_DOOR = ConnectionRemote.class;
+    public static final Class<? extends ConnectionRemote> BASE_UNIT_CONNECTION_WINDOW = ConnectionRemote.class;
+    public static final Class<? extends ConnectionRemote> BASE_UNIT_CONNECTION_PASSAGE = ConnectionRemote.class;
+
+    // comfort
+    public static final Class<? extends AgentRemote> UNIT_BASE_AGENT = BASE_UNIT_AGENT;
+    public static final Class<? extends AppRemote> UNIT_BASE_APP = BASE_UNIT_APP;
+    public static final Class<? extends SceneRemote> UNIT_BASE_SCENE = BASE_UNIT_SCENE;
+    public static final Class<? extends UserRemote> UNIT_BASE_USER = BASE_UNIT_USER;
+    public static final Class<? extends DeviceRemote> UNIT_BASE_DEVICE = BASE_UNIT_DEVICE;
+    public static final Class<? extends LocationRemote> UNIT_BASE_LOCATION = BASE_UNIT_LOCATION;
+    public static final Class<? extends ConnectionRemote> UNIT_BASE_CONNECTION = BASE_UNIT_CONNECTION;
+    public static final Class<? extends ConnectionRemote> UNIT_BASE_CONNECTION_DOOR = BASE_UNIT_CONNECTION;
+    public static final Class<? extends ConnectionRemote> UNIT_BASE_CONNECTION_WINDOW = BASE_UNIT_CONNECTION;
+    public static final Class<? extends ConnectionRemote> UNIT_BASE_CONNECTION_PASSAGE = BASE_UNIT_CONNECTION;
+
+    // simple
+    public static final Class<? extends AgentRemote> AGENT = BASE_UNIT_AGENT;
+    public static final Class<? extends AppRemote> APP = BASE_UNIT_APP;
+    public static final Class<? extends SceneRemote> SCENE = BASE_UNIT_SCENE;
+    public static final Class<? extends UserRemote> USER = BASE_UNIT_USER;
+    public static final Class<? extends DeviceRemote> DEVICE = BASE_UNIT_DEVICE;
+    public static final Class<? extends LocationRemote> LOCATION = BASE_UNIT_LOCATION;
+    public static final Class<? extends ConnectionRemote> DOOR = BASE_UNIT_CONNECTION;
+    public static final Class<? extends ConnectionRemote> WINDOW = BASE_UNIT_CONNECTION;
+    public static final Class<? extends ConnectionRemote> PASSAGE = BASE_UNIT_CONNECTION;
+    public static final Class<? extends ConnectionRemote> CONNECTION = BASE_UNIT_CONNECTION;
+
+    /**
      * DAL Unit remote-class-constants which can be used to request unit remotes.
      */
-    public static final Class<? extends LightRemote> LIGHT = LightRemote.class;
-    public static final Class<? extends ColorableLightRemote> LIGHT_COLORABLE = ColorableLightRemote.class;
-    public static final Class<? extends DimmableLightRemote> LIGHT_DIMMABLE = DimmableLightRemote.class;
-    public static final Class<? extends MotionDetectorRemote> MOTION_DETECTOR = MotionDetectorRemote.class;
-    public static final Class<? extends PowerSwitchRemote> POWER_SWITCH = PowerSwitchRemote.class;
-    public static final Class<? extends PowerConsumptionSensorRemote> POWER_CONSUMPTION_SENSOR = PowerConsumptionSensorRemote.class;
-    public static final Class<? extends ButtonRemote> BUTTON = ButtonRemote.class;
-    public static final Class<? extends TemperatureControllerRemote> TEMPERATURE_CONTROLLER = TemperatureControllerRemote.class;
-    public static final Class<? extends TemperatureSensorRemote> TEMPERATURE_SENSOR = TemperatureSensorRemote.class;
-    public static final Class<? extends BatteryRemote> BATTERY = BatteryRemote.class;
+    public static final Class<? extends LightRemote> DAL_UNIT_LIGHT = LightRemote.class;
+    public static final Class<? extends ColorableLightRemote> DAL_UNIT_COLORABLE_LIGHT = ColorableLightRemote.class;
+    public static final Class<? extends DimmableLightRemote> DAL_UNIT_DIMMABLE_LIGHT = DimmableLightRemote.class;
+    public static final Class<? extends MotionDetectorRemote> DAL_UNIT_MOTION_DETECTOR = MotionDetectorRemote.class;
+    public static final Class<? extends PowerSwitchRemote> DAL_UNIT_POWER_SWITCH = PowerSwitchRemote.class;
+    public static final Class<? extends PowerConsumptionSensorRemote> DAL_UNIT_POWER_CONSUMPTION_SENSOR = PowerConsumptionSensorRemote.class;
+    public static final Class<? extends ButtonRemote> DAL_UNIT_BUTTON = ButtonRemote.class;
+    public static final Class<? extends TemperatureControllerRemote> DAL_UNIT_TEMPERATURE_CONTROLLER = TemperatureControllerRemote.class;
+    public static final Class<? extends TemperatureSensorRemote> DAL_UNIT_TEMPERATURE_SENSOR = TemperatureSensorRemote.class;
+    public static final Class<? extends BatteryRemote> DAL_UNIT_BATTERY = BatteryRemote.class;
+    public static final Class<? extends HandleRemote> DAL_UNIT_HANDLE = HandleRemote.class;
+    public static final Class<? extends MonitorRemote> DAL_UNIT_MONITOR = MonitorRemote.class;
+    public static final Class<? extends ReedContactRemote> DAL_UNIT_REED_CONTACT = ReedContactRemote.class;
+    public static final Class<? extends RollerShutterRemote> DAL_UNIT_ROLLER_SHUTTER = RollerShutterRemote.class;
+    public static final Class<? extends SmokeDetectorRemote> DAL_UNIT_SMOKE_DETECTOR = SmokeDetectorRemote.class;
+    public static final Class<? extends TamperDetectorRemote> DAL_UNIT_TAMPER_DETECTOR = TamperDetectorRemote.class;
 
-    public static final Class<? extends HandleRemote> HANDLE = HandleRemote.class;
-    public static final Class<? extends MonitorRemote> MONITOR = MonitorRemote.class;
-    public static final Class<? extends ReedContactRemote> REED_CONTACT = ReedContactRemote.class;
-    public static final Class<? extends RollerShutterRemote> ROLLER_SHUTTER = RollerShutterRemote.class;
-    public static final Class<? extends SmokeDetectorRemote> SMOKE_DETECTOR = SmokeDetectorRemote.class;
-    public static final Class<? extends TamperDetectorRemote> TAMPER_DETECTOR = TamperDetectorRemote.class;
+    // comfort
+    public static final Class<? extends LightRemote> UNIT_DAL_LIGHT = DAL_UNIT_LIGHT;
+    public static final Class<? extends ColorableLightRemote> UNIT_DAL_LIGHT_COLORABLE = DAL_UNIT_COLORABLE_LIGHT;
+    public static final Class<? extends DimmableLightRemote> UNIT_DAL_LIGHT_DIMMABLE = DAL_UNIT_DIMMABLE_LIGHT;
+    public static final Class<? extends MotionDetectorRemote> UNIT_DAL_MOTION_DETECTOR = DAL_UNIT_MOTION_DETECTOR;
+    public static final Class<? extends PowerSwitchRemote> UNIT_DAL_POWER_SWITCH = DAL_UNIT_POWER_SWITCH;
+    public static final Class<? extends PowerConsumptionSensorRemote> UNIT_DAL_POWER_CONSUMPTION_SENSOR = DAL_UNIT_POWER_CONSUMPTION_SENSOR;
+    public static final Class<? extends ButtonRemote> UNIT_DAL_BUTTON = DAL_UNIT_BUTTON;
+    public static final Class<? extends TemperatureControllerRemote> UNIT_DAL_TEMPERATURE_CONTROLLER = DAL_UNIT_TEMPERATURE_CONTROLLER;
+    public static final Class<? extends TemperatureSensorRemote> UNIT_DAL_TEMPERATURE_SENSOR = DAL_UNIT_TEMPERATURE_SENSOR;
+    public static final Class<? extends BatteryRemote> UNIT_DAL_BATTERY = DAL_UNIT_BATTERY;
+    public static final Class<? extends HandleRemote> UNIT_DAL_HANDLE = DAL_UNIT_HANDLE;
+    public static final Class<? extends MonitorRemote> UNIT_DAL_MONITOR = DAL_UNIT_MONITOR;
+    public static final Class<? extends ReedContactRemote> UNIT_DAL_REED_CONTACT = DAL_UNIT_REED_CONTACT;
+    public static final Class<? extends RollerShutterRemote> UNIT_DAL_ROLLER_SHUTTER = DAL_UNIT_ROLLER_SHUTTER;
+    public static final Class<? extends SmokeDetectorRemote> UNIT_DAL_SMOKE_DETECTOR = DAL_UNIT_SMOKE_DETECTOR;
+    public static final Class<? extends TamperDetectorRemote> UNIT_DAL_TAMPER_DETECTOR = DAL_UNIT_TAMPER_DETECTOR;
+
+    //simple
+    public static final Class<? extends LightRemote> LIGHT = DAL_UNIT_LIGHT;
+    public static final Class<? extends ColorableLightRemote> LIGHT_COLORABLE = DAL_UNIT_COLORABLE_LIGHT;
+    public static final Class<? extends ColorableLightRemote> COLORABLE_LIGHT = DAL_UNIT_COLORABLE_LIGHT;
+    public static final Class<? extends DimmableLightRemote> LIGHT_DIMMABLE = DAL_UNIT_DIMMABLE_LIGHT;
+    public static final Class<? extends DimmableLightRemote> DIMMABLE_LIGHT = DAL_UNIT_DIMMABLE_LIGHT;
+    public static final Class<? extends MotionDetectorRemote> MOTION_DETECTOR = DAL_UNIT_MOTION_DETECTOR;
+    public static final Class<? extends PowerSwitchRemote> POWER_SWITCH = DAL_UNIT_POWER_SWITCH;
+    public static final Class<? extends PowerConsumptionSensorRemote> POWER_CONSUMPTION_SENSOR = DAL_UNIT_POWER_CONSUMPTION_SENSOR;
+    public static final Class<? extends ButtonRemote> BUTTON = DAL_UNIT_BUTTON;
+    public static final Class<? extends TemperatureControllerRemote> TEMPERATURE_CONTROLLER = DAL_UNIT_TEMPERATURE_CONTROLLER;
+    public static final Class<? extends TemperatureSensorRemote> TEMPERATURE_SENSOR = DAL_UNIT_TEMPERATURE_SENSOR;
+    public static final Class<? extends BatteryRemote> BATTERY = DAL_UNIT_BATTERY;
+    public static final Class<? extends HandleRemote> HANDLE = DAL_UNIT_HANDLE;
+    public static final Class<? extends MonitorRemote> MONITOR = DAL_UNIT_MONITOR;
+    public static final Class<? extends ReedContactRemote> REED_CONTACT = DAL_UNIT_REED_CONTACT;
+    public static final Class<? extends RollerShutterRemote> ROLLER_SHUTTER = DAL_UNIT_ROLLER_SHUTTER;
+    public static final Class<? extends SmokeDetectorRemote> SMOKE_DETECTOR = DAL_UNIT_SMOKE_DETECTOR;
+    public static final Class<? extends TamperDetectorRemote> TAMPER_DETECTOR = DAL_UNIT_TAMPER_DETECTOR;
+
 //    public static final Class<? extends VideoRgbSourceRemote> VIDEO_RGB_SOURCE = VideoRgbSourceRemote.class;
 //    public static final Class<? extends VideoDepthSourceRemote> VIDEO_DEPTH_SOURCE = VideoDepthSourceRemote.class;
 //    public static final Class<? extends AudioSourceRemote> AUDIO_SOURCE = AudioSourceRemote.class;
-
-    /**
-     * BASE Unit remote-class-constants which can be used to request unit remotes.
-     */
-    public static final Class<? extends AgentRemote> UNIT_BASE_AGENT = AgentRemote.class;
-    public static final Class<? extends AppRemote> UNIT_BASE_APP = AppRemote.class;
-    public static final Class<? extends SceneRemote> UNIT_BASE_SCENE = SceneRemote.class;
-    public static final Class<? extends UserRemote> UNIT_BASE_USER = UserRemote.class;
-    public static final Class<? extends DeviceRemote> UNIT_BASE_DEVICE = DeviceRemote.class;
-    public static final Class<? extends LocationRemote> UNIT_BASE_LOCATION = LocationRemote.class;
-    public static final Class<? extends ConnectionRemote> UNIT_BASE_CONNECTION_DOOR = ConnectionRemote.class;
-    public static final Class<? extends ConnectionRemote> UNIT_BASE_CONNECTION_WINDOW = ConnectionRemote.class;
-    public static final Class<? extends ConnectionRemote> UNIT_BASE_CONNECTION_PASSAGE = ConnectionRemote.class;
-    public static final Class<? extends ConnectionRemote> BASE_UNIT_CONNECTION = ConnectionRemote.class;
-
     public static Units instance;
 
     private static final ReentrantReadWriteLock unitRemoteRegistryLock = new ReentrantReadWriteLock();
@@ -126,11 +187,8 @@ public class Units {
                 try {
                     unitRemoteRegistry.getEntries().stream().parallel().forEach(((org.openbase.bco.dal.lib.layer.unit.UnitRemote unitRemote) -> {
                         try {
-                            LOGGER.info("SHUTTING_DOWN remote " + unitRemote.getLabel() + " - " + Thread.currentThread().getName() + " UNLOCK");
                             unitRemote.unlock(unitRemoteRegistry);
-                            LOGGER.info("SHUTTING_DOWN remote " + unitRemote.getLabel() + " - " + Thread.currentThread().getName() + " SHUTDOWN");
                             unitRemote.shutdown();
-                            LOGGER.info("SHUTTING_DOWN remote " + unitRemote.getLabel() + " - " + Thread.currentThread().getName() + " DONE!");
                         } catch (CouldNotPerformException ex) {
                             ExceptionPrinter.printHistory("Could not properly shutdown " + unitRemote, ex, LOGGER);
                         }
@@ -583,7 +641,7 @@ public class Units {
             throw new NotAvailableException("Unit[" + label + "]", ex);
         }
     }
-    
+
     public static boolean contains(final UnitRemote<? extends GeneratedMessage> unitRemote) throws CouldNotPerformException {
         return unitRemoteRegistry.contains(unitRemote);
     }
