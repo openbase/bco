@@ -39,6 +39,7 @@ import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.AbstractIdentifiableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
@@ -336,7 +337,7 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
                     } catch (InterruptedException ex) {
                         throw ex;
                     } catch (TimeoutException ex) {
-                        ExceptionPrinter.printHistory(new CouldNotPerformException("Launcher " + launcherEntry.getKey().getKey().getSimpleName() + " startup delay detected!", ex), logger);
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Launcher " + launcherEntry.getKey().getKey().getSimpleName() + " startup delay detected!"), logger, LogLevel.WARN);
                     } catch (Exception ex) {
                         // remove from stack because launcher failed and generate exception report.
                         launchableFutureMap.remove(launcherEntry.getKey());
