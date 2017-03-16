@@ -96,6 +96,6 @@
             <artifactId>jul.extension.protobuf</artifactId>
             <version>${dependency.jul.version}</version>
             <type>jar</type>
-        </dependency>        
+        </dependency>
     </dependencies>
 </project>
