@@ -40,7 +40,7 @@ public class AppManagerLauncher extends AbstractLauncher<AppManagerController> {
     }
 
     public static void main(String args[]) throws Throwable {
-        main(args, AppManager.class, AppManagerLauncher.class);
         BCO.printLogo();
+        main(args, AppManager.class, AppManagerLauncher.class);
     }
 }

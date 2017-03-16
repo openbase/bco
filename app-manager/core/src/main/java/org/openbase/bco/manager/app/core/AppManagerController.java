@@ -24,7 +24,8 @@ package org.openbase.bco.manager.app.core;
 import org.openbase.bco.manager.app.lib.AppController;
 import org.openbase.bco.manager.app.lib.AppFactory;
 import org.openbase.bco.manager.app.lib.AppManager;
-import org.openbase.bco.registry.app.remote.AppRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -48,7 +49,7 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
     private static AppManagerController instance;
     private final AppFactory factory;
     private final ControllerRegistryImpl<String, AppController> appRegistry;
-    private final AppRegistryRemote appRegistryRemote;
+    private final UnitRegistryRemote unitRegistryRemote;
     private final EnableableEntryRegistrySynchronizer<String, AppController, UnitConfig, UnitConfig.Builder> appRegistrySynchronizer;
 
     public AppManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
@@ -56,9 +57,9 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
             this.instance = this;
             this.factory = AppFactoryImpl.getInstance();
             this.appRegistry = new ControllerRegistryImpl<>();
-            this.appRegistryRemote = new AppRegistryRemote();
+            this.unitRegistryRemote = Registries.getUnitRegistry();
 
-            this.appRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AppController, UnitConfig, UnitConfig.Builder>(appRegistry, appRegistryRemote.getAppConfigRemoteRegistry(), factory) {
+            this.appRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AppController, UnitConfig, UnitConfig.Builder>(appRegistry, unitRegistryRemote.getAppUnitConfigRemoteRegistry(), factory) {
 
                 @Override
                 public boolean enablingCondition(final UnitConfig config) {
@@ -81,7 +82,7 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
     @Override
     public void init() throws InitializationException, InterruptedException {
         try {
-            appRegistryRemote.init();
+            unitRegistryRemote.waitForData();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -89,28 +90,22 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        appRegistryRemote.activate();
-
-        // TODO: pleminoq: let us analyse why this wait For data is needed. Without the sychnchronizer sync task is interrupted. And why is this never happening in the unit tests???
-        appRegistryRemote.waitForData();
         appRegistrySynchronizer.activate();
     }
 
     @Override
     public boolean isActive() {
-        return appRegistryRemote.isActive();
+        return appRegistrySynchronizer.isActive();
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         appRegistrySynchronizer.deactivate();
-        appRegistryRemote.deactivate();
     }
 
     @Override
     public void shutdown() {
         appRegistrySynchronizer.shutdown();
-        appRegistryRemote.shutdown();
         instance = null;
     }
 }
