@@ -147,7 +147,7 @@ public class StandbyAgent extends AbstractAgentController {
                     // filter OFF values
                     List<ActionConfigType.ActionConfig> actionConfigList = new ArrayList<>();
                     for (ActionConfig actionConfig : snapshot.getActionConfigList()) {
-                        if (actionConfig.getServiceAttribute().contains("OFF")) {
+                        if (actionConfig.getServiceAttribute().toLowerCase().contains("off")) {
                             logger.info("ignore " + actionConfig.getUnitId() + " because unit is off.");
                             continue;
                         }
