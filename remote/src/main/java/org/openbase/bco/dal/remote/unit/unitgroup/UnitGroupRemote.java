@@ -39,7 +39,7 @@ import org.openbase.bco.dal.remote.service.ServiceRemoteFactoryImpl;
 import org.openbase.bco.dal.remote.service.StandbyStateServiceRemote;
 import org.openbase.bco.dal.remote.service.TargetTemperatureStateServiceRemote;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
-import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -77,7 +77,7 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
     @Override
     public void init(final UnitConfig unitGroupUnitConfig) throws InitializationException, InterruptedException {
         try {
-            CachedDeviceRegistryRemote.waitForData();
+            Registries.getUnitRegistry().waitForData();
 
             if (!unitGroupUnitConfig.hasUnitGroupConfig()) {
                 throw new VerificationFailedException("Given unit config does not contain a unit group config!");
@@ -89,7 +89,7 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
 
             List<UnitConfig> unitConfigs = new ArrayList<>();
             for (String unitConfigId : unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList()) {
-                unitConfigs.add(CachedDeviceRegistryRemote.getRegistry().getUnitConfigById(unitConfigId));
+                unitConfigs.add(Registries.getUnitRegistry().getUnitConfigById(unitConfigId));
             }
 
             if (unitConfigs.isEmpty()) {

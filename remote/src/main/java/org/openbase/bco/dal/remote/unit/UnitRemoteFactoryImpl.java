@@ -117,7 +117,7 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
             String remoteClassName = null;
             // check unit type and load related class.
             if (UnitConfigProcessor.isBaseUnit(unitType)) {
-                remoteClassName = "org.openbase.bco.dal.remote.unit." + unitType.name().toLowerCase() + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
+                remoteClassName = "org.openbase.bco.dal.remote.unit." + unitType.name().toLowerCase().replaceAll("_", "") + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
             } else if (UnitConfigProcessor.isDalUnit(unitType)) {
                 remoteClassName = AbstractUnitRemote.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
             } else {
