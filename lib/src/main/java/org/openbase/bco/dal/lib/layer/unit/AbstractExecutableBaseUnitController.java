@@ -88,7 +88,11 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
 
                                     @Override
                                     public Void call() throws Exception {
-                                        execute();
+                                        try {
+                                            execute();
+                                        } catch (CouldNotPerformException ex) {
+                                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not execute [" + getLabel() + "]", ex), logger);
+                                        }
                                         return null;
                                     }
                                 });
