@@ -220,7 +220,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
 
     private void updateUnitData() throws InterruptedException {
         try (ClosableDataBuilder<LocationDataType.LocationData.Builder> dataBuilder = getDataBuilder(this)) {
-            serviceRemoteManager.updateBuilderWithAvailableServiceStates(dataBuilder, getDataClass(), getSupportedServiceTypes());
+            serviceRemoteManager.updateBuilderWithAvailableServiceStates(dataBuilder.getInternalBuilder(), getDataClass(), getSupportedServiceTypes());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), LOGGER, LogLevel.WARN);
         }
