@@ -34,7 +34,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
@@ -46,11 +45,9 @@ import static org.openbase.bco.manager.location.core.LocationManagerController.L
 import org.openbase.bco.manager.location.lib.LocationController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
@@ -62,7 +59,6 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionConfigType;
 import rst.domotic.action.ActionConfigType.ActionConfig;
 import rst.domotic.action.SnapshotType.Snapshot;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.AlarmStateType;
 import rst.domotic.state.BlindStateType;
@@ -117,7 +113,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
 
     public LocationControllerImpl() throws InstantiationException {
         super(LocationControllerImpl.class, LocationData.newBuilder());
-        this.serviceRemoteManager = new ServiceRemoteManager() {
+        this.serviceRemoteManager = new ServiceRemoteManager(this) {
             @Override
             protected Set<ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
                 return LocationControllerImpl.this.getSupportedServiceTypes();
@@ -125,7 +121,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
 
             @Override
             protected void notifyServiceUpdate(Observable source, Object data) throws NotAvailableException, InterruptedException {
-                updateCurrentState();
+                updateUnitData();
             }
         };
         this.presenceDetector = new PresenceDetector();
@@ -196,7 +192,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
         serviceRemoteManager.applyConfigUpdate(unitConfig.getLocationConfig().getUnitIdList());
         // if already active than update the current location state.
         if (isActive()) {
-            updateCurrentState();
+            updateUnitData();
         }
         return unitConfig;
     }
@@ -211,7 +207,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
         super.activate();
         serviceRemoteManager.activate();
         presenceDetector.activate();
-        updateCurrentState();
+        updateUnitData();
     }
 
     @Override
@@ -222,44 +218,9 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
         presenceDetector.deactivate();
     }
 
-    private void updateCurrentState() throws InterruptedException {
+    private void updateUnitData() throws InterruptedException {
         try (ClosableDataBuilder<LocationDataType.LocationData.Builder> dataBuilder = getDataBuilder(this)) {
-            for (final ServiceTemplate.ServiceType serviceType : getSupportedServiceTypes()) {
-
-                final Object serviceState;
-
-                try {
-                    final AbstractServiceRemote serviceRemote = serviceRemoteManager.getServiceRemote(serviceType);
-                    /* When the locationRemote is active and a config update occurs the serviceRemoteManager clears
-                     * its map of service remotes and fills it with new ones. When they are activated an update is triggered while
-                     * the map is not completely filled. Therefore the serviceRemote can be null.
-                     */
-                    if (serviceRemote == null) {
-//                        System.out.println("Update for serviceRemote of type["+serviceType.name()+"] because not initialized by serviceRemoteManager");
-                        continue;
-                    }
-                    if (!serviceRemote.isDataAvailable()) {
-                        continue;
-                    }
-
-                    serviceState = Service.invokeProviderServiceMethod(serviceType, serviceRemote);
-                } catch (NotAvailableException ex) {
-                    ExceptionPrinter.printHistory("No service data for type[" + serviceType + "] on location available!", ex, LOGGER);
-                    continue;
-                } catch (NotSupportedException | IllegalArgumentException ex) {
-                    ExceptionPrinter.printHistory(new FatalImplementationErrorException(this, ex), LOGGER);
-                    continue;
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory("Could not update ServiceState[" + serviceType.name() + "] for " + this, ex, LOGGER);
-                    continue;
-                }
-
-                try {
-                    Service.invokeOperationServiceMethod(serviceType, dataBuilder.getInternalBuilder(), serviceState);
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new NotSupportedException("Field[" + serviceType.name().toLowerCase().replace("_service", "") + "] is missing in protobuf type " + getDataClass().getSimpleName() + "!", this, ex), LOGGER);
-                }
-            }
+            serviceRemoteManager.updateBuilderWithAvailableServiceStates(dataBuilder, getDataClass(), getSupportedServiceTypes());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), LOGGER, LogLevel.WARN);
         }
@@ -375,7 +336,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
     }
 
     @Override
-    public ServiceRemote getServiceRemote(final ServiceType serviceType) {
+    public ServiceRemote getServiceRemote(final ServiceType serviceType) throws NotAvailableException {
         return serviceRemoteManager.getServiceRemote(serviceType);
     }
 

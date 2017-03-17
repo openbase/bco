@@ -55,6 +55,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
 
 /**
@@ -92,7 +93,7 @@ public class UnitGroupRemoteTest {
                 }
             }
             assert unitGroupConfig.getMemberIdList().size() > 0;
-            UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setUnitGroupConfig(unitGroupConfig).setLabel("testGroup");
+            UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setUnitGroupConfig(unitGroupConfig).setLabel("testGroup").setType(UnitTemplateType.UnitTemplate.UnitType.UNIT_GROUP);
             LOGGER.info("Unit group [" + unitGroupConfig.build() + "]");
             unitGroupRemote.init(unitConfig.build());
             unitGroupRemote.activate();
@@ -212,6 +213,24 @@ public class UnitGroupRemoteTest {
         try {
             unitGroupRemote.setBrightnessState(brightnessState).get();
             fail("Brighntess service has been used even though the group config is only defined for power service");
+        } catch (CouldNotPerformException ex) {
+        }
+    }
+
+    /**
+     * Test of setBrightness method, of class UnitGroupRemote.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 10000)
+    public void testGetData() throws Exception {
+        System.out.println("setBrightness");
+        unitGroupRemote.waitForData();
+        Double brightness = 30d;
+        BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).setBrightnessDataUnit(BrightnessState.DataUnit.PERCENT).build();
+        try {
+            unitGroupRemote.setBrightnessState(brightnessState).get();
+            assertEquals("BrightnessState  has not been set in time or the return value from the unit data is different!", brightness, unitGroupRemote.getData().getBrightnessState().getBrightness(), 0.1d);
         } catch (CouldNotPerformException ex) {
         }
     }

@@ -57,7 +57,6 @@ import rst.domotic.state.WindowStateType.WindowState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType;
 import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
-import rst.timing.TimestampType.Timestamp;
 
 /**
  *
@@ -136,7 +135,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
         this.supportedServiceTypes = new HashSet<>();
         this.supportedServiceTypes.add(ServiceType.CONTACT_STATE_SERVICE);
 
-        this.serviceRemoteManager = new ServiceRemoteManager() {
+        this.serviceRemoteManager = new ServiceRemoteManager(this) {
 
             @Override
             protected Set<ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
