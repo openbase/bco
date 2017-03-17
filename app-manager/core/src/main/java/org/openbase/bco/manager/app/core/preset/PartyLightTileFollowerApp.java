@@ -31,8 +31,8 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.openbase.bco.dal.remote.unit.Units;
-import org.openbase.bco.manager.app.core.AbstractAppController;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
+import org.openbase.bco.manager.app.core.AbstractAppController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -88,7 +88,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
     protected void execute() throws CouldNotPerformException, InterruptedException {
         System.out.println("execute party light...");
         // verify
-        if (!Registries.getLocationRegistry().getLocationConfigById(getConfig().getId()).getLocationConfig().getType().equals(LocationConfigType.LocationConfig.LocationType.TILE)) {
+        if (!Registries.getLocationRegistry().getLocationConfigById(getConfig().getPlacementConfig().getLocationId()).getLocationConfig().getType().equals(LocationConfigType.LocationConfig.LocationType.TILE)) {
             throw new InvalidStateException("App location is not a tile!");
         }
 
@@ -111,7 +111,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
 
     public class TileFollower implements Callable<Void> {
 
-        private List<String> processedLocations = new ArrayList<>();
+        private final List<String> processedLocations = new ArrayList<>();
 
         @Override
         public Void call() throws CouldNotPerformException, InterruptedException {
