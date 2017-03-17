@@ -72,6 +72,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
     @Override
     public void shutdown() {
         // shutdown tile remotes
+        stop();
         locationRemoteMap.clear();
         super.shutdown();
     }
@@ -102,7 +103,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
     }
 
     @Override
-    protected void stop() throws CouldNotPerformException, InterruptedException {
+    protected void stop() {
         if (tileFollowerFuture != null) {
             tileFollowerFuture.cancel(true);
             tileFollowerFuture = null;
