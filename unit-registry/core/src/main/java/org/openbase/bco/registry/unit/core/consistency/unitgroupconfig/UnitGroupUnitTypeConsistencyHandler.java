@@ -23,18 +23,19 @@ package org.openbase.bco.registry.unit.core.consistency.unitgroupconfig;
  */
 import java.util.List;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
 
 /**
  *
@@ -55,7 +56,7 @@ public class UnitGroupUnitTypeConsistencyHandler extends AbstractProtoBufRegistr
 
         if (unitGroup.hasUnitType() && !(unitGroup.getUnitType() == UnitType.UNKNOWN)) {
             if (unitGroup.getServiceTemplateList().isEmpty()) {
-                unitGroup.addAllServiceTemplate(unitTemplateRegistry.get(unitGroup.getUnitType().toString()).getMessage().getServiceTemplateList());
+                unitGroup.addAllServiceTemplate(getUnitTemplateByType(unitGroup.getUnitType()).getServiceTemplateList());
                 throw new EntryModification(entry.setMessage(unitGroupUnitConfig), this);
             }
             if (!unitTemplateHasSameServices(unitGroup.getUnitType(), unitGroup.getServiceTemplateList())) {
@@ -66,10 +67,19 @@ public class UnitGroupUnitTypeConsistencyHandler extends AbstractProtoBufRegistr
     }
 
     private boolean unitTemplateHasSameServices(UnitType unitType, List<ServiceTemplate> serviceTemplates) throws CouldNotPerformException {
-        UnitTemplate unitTemplate = unitTemplateRegistry.get(unitType.toString()).getMessage();
+        UnitTemplate unitTemplate = getUnitTemplateByType(unitType);
         if (!serviceTemplates.stream().noneMatch((serviceTemplate) -> (!unitTemplate.getServiceTemplateList().contains(serviceTemplate)))) {
             return false;
         }
         return unitTemplate.getServiceTemplateList().stream().noneMatch((serviceType) -> (!serviceTemplates.contains(serviceType)));
+    }
+
+    private UnitTemplate getUnitTemplateByType(UnitType unitType) throws CouldNotPerformException {
+        for (UnitTemplate unitTemplate : unitTemplateRegistry.getMessages()) {
+            if (unitTemplate.getType() == unitType) {
+                return unitTemplate;
+            }
+        }
+        throw new NotAvailableException(UnitTemplate.class, unitType.name());
     }
 }
