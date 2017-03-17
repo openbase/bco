@@ -92,7 +92,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
 
     public LocationRemote() {
         super(LocationData.class);
-        this.serviceRemoteManager = new ServiceRemoteManager() {
+        this.serviceRemoteManager = new ServiceRemoteManager(this) {
             @Override
             protected Set<ServiceTemplateType.ServiceTemplate.ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
                 return getSupportedServiceTypes();
@@ -147,7 +147,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     }
 
     @Override
-    public ServiceRemote getServiceRemote(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) {
+    public ServiceRemote getServiceRemote(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws NotAvailableException {
         return serviceRemoteManager.getServiceRemote(serviceType);
     }
 

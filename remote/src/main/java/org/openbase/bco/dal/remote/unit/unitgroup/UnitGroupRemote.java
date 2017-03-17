@@ -36,7 +36,11 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionConfigType;
@@ -88,11 +92,12 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SnapshotType.Snapshot.getDefaultInstance()));
     }
     
+    private static final Logger LOGGER = LoggerFactory.getLogger(UnitGroupRemote.class);
     private final ServiceRemoteManager serviceRemoteManager;
 
     public UnitGroupRemote() throws InstantiationException {
         super(UnitGroupData.class);
-        this.serviceRemoteManager = new ServiceRemoteManager() {
+        this.serviceRemoteManager = new ServiceRemoteManager(this) {
             @Override
             protected Set<ServiceTemplateType.ServiceTemplate.ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
                 return getSupportedServiceTypes();
@@ -100,7 +105,7 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
 
             @Override
             protected void notifyServiceUpdate(Observable source, Object data) throws NotAvailableException, InterruptedException {
-                // anything needed here?
+                updateUnitData();
             }
         };
     }
@@ -129,6 +134,7 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
+        super.init(unitGroupUnitConfig);
     }
     
     @Override
@@ -142,6 +148,7 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         serviceRemoteManager.activate();
+        updateUnitData();
         // super activation is disabled because unit remote is not a RSBRemoteService
         // TODO: Refactor to support UnitRemotes which are not extended RSBRemoteService instances.
         
@@ -181,6 +188,7 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
             for (AbstractServiceRemote remote : serviceRemoteManager.getServiceRemoteList()) {
                 remote.waitForData(timeout, timeUnit);
             }
+            updateUnitData();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("ServiceData", ex);
         }
@@ -193,10 +201,22 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
         for (AbstractServiceRemote remote : serviceRemoteManager.getServiceRemoteList()) {
             remote.waitForData();
         }
+        updateUnitData();
+    }
+    
+    private void updateUnitData() throws InterruptedException {
+        try {
+            UnitGroupData.Builder dataBuilder = UnitGroupData.newBuilder();
+            dataBuilder.setId(getConfig().getId());
+            dataBuilder.setLabel(getConfig().getLabel());
+            applyExternalDataUpdate(serviceRemoteManager.updateBuilderWithAvailableServiceStates(dataBuilder, getDataClass(), getSupportedServiceTypes()).build());
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), LOGGER, LogLevel.WARN);
+        }
     }
     
     @Override
-    public ServiceRemote getServiceRemote(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) {
+    public ServiceRemote getServiceRemote(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws NotAvailableException {
         return serviceRemoteManager.getServiceRemote(serviceType);
     }
 }

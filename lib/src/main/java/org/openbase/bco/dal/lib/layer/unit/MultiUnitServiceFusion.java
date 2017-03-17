@@ -21,7 +21,6 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.Set;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
@@ -71,11 +70,10 @@ public interface MultiUnitServiceFusion extends BrightnessStateOperationServiceC
         PowerConsumptionStateProviderServiceCollection,
         TamperStateProviderServiceCollection,
         IlluminanceStateProviderServiceCollection {
-    
-    
+
     public Set<ServiceTemplateType.ServiceTemplate.ServiceType> getSupportedServiceTypes() throws NotAvailableException, InterruptedException;
 
-    public ServiceRemote getServiceRemote(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType);
+    public ServiceRemote getServiceRemote(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws NotAvailableException;
 
     @Override
     default public Future<Void> setBlindState(BlindStateType.BlindState blindState, UnitTemplateType.UnitTemplate.UnitType unitType) throws CouldNotPerformException {

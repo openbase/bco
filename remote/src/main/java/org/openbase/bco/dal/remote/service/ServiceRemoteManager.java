@@ -27,16 +27,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.NotSupportedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Activatable;
+import org.openbase.jul.iface.provider.LabelProvider;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -52,8 +58,14 @@ public abstract class ServiceRemoteManager implements Activatable {
     private final ServiceRemoteFactory serviceRemoteFactory;
     private final Map<ServiceType, AbstractServiceRemote> serviceRemoteMap;
     private final Observer serviceDataObserver;
+    private final LabelProvider responsibleInstance;
 
     public ServiceRemoteManager() {
+        this(null);
+    }
+
+    public ServiceRemoteManager(final LabelProvider responsibleInstance) {
+        this.responsibleInstance = responsibleInstance;
         this.serviceRemoteMap = new HashMap<>();
         this.serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
 
@@ -142,10 +154,66 @@ public abstract class ServiceRemoteManager implements Activatable {
         }
     }
 
-    public AbstractServiceRemote getServiceRemote(final ServiceType serviceType) {
+    public AbstractServiceRemote getServiceRemote(final ServiceType serviceType) throws NotAvailableException {
         synchronized (serviceRemoteMapLock) {
-            return serviceRemoteMap.get(serviceType);
+            AbstractServiceRemote serviceRemote = serviceRemoteMap.get(serviceType);
+            if (serviceRemote == null) {
+                String responsible;
+                try {
+                    responsible = (responsibleInstance != null ? responsibleInstance.getLabel() : "the underlying instance");
+                } catch (NotAvailableException ex) {
+                    responsible = "the underlying instance";
+                }
+                throw new NotAvailableException("ServiceRemote", serviceType.name(), new NotSupportedException("ServiceType[" + serviceType + "]", responsible));
+            }
+            return serviceRemote;
         }
+    }
+
+    public <B> B updateBuilderWithAvailableServiceStates(final B builder, final Class dataClass, final Set<ServiceType> supportedServiceTypeSet) throws InterruptedException {
+        try {
+            for (final ServiceTemplateType.ServiceTemplate.ServiceType serviceType : supportedServiceTypeSet) {
+
+                final Object serviceState;
+
+                try {
+                    final AbstractServiceRemote serviceRemote = getServiceRemote(serviceType);
+                    /* When the locationRemote is active and a config update occurs the serviceRemoteManager clears
+                     * its map of service remotes and fills it with new ones. When they are activated an update is triggered while
+                     * the map is not completely filled. Therefore the serviceRemote can be null.
+                     */
+                    if (serviceRemote == null) {
+                        continue;
+                    }
+                    if (!serviceRemote.isDataAvailable()) {
+                        continue;
+                    }
+
+                    serviceState = Service.invokeProviderServiceMethod(serviceType, serviceRemote);
+                } catch (NotAvailableException ex) {
+                    ExceptionPrinter.printHistory("No service data for type[" + serviceType + "] on location available!", ex, LOGGER);
+                    continue;
+                } catch (NotSupportedException | IllegalArgumentException ex) {
+                    ExceptionPrinter.printHistory(new FatalImplementationErrorException(this, ex), LOGGER);
+                    continue;
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not update ServiceState[" + serviceType.name() + "] for " + this, ex, LOGGER);
+                    continue;
+                }
+
+                try {
+                    Service.invokeOperationServiceMethod(serviceType, builder, serviceState);
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(new NotSupportedException("Field[" + serviceType.name().toLowerCase().replace("_service", "") + "] is missing in protobuf type " + dataClass + "!", this, ex), LOGGER);
+                }
+            }
+        } catch (Exception ex) {
+            if (ex instanceof InterruptedException) {
+                throw (InterruptedException) ex;
+            }
+            new CouldNotPerformException("Could not update current status!", ex);
+        }
+        return builder;
     }
 
     protected abstract Set<ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException;
