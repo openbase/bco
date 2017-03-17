@@ -26,7 +26,6 @@ import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
-import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -42,6 +41,7 @@ import rst.vision.HSBColorType.HSBColor;
  *
  * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
  */
+@Deprecated
 public class ColorLoopControl {
 
     public final static Random random = new Random();

@@ -42,6 +42,7 @@ import rst.vision.HSBColorType.HSBColor;
  *
  * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
  */
+@Deprecated
 public class RandomColorLoopControl {
 
     public final static Random random = new Random();
