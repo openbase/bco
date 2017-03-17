@@ -71,8 +71,6 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
 
     @Override
     public void shutdown() {
-        // shutdown tile remotes
-        stop();
         locationRemoteMap.clear();
         super.shutdown();
     }
