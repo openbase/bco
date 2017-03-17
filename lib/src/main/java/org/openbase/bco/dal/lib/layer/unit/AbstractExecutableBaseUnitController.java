@@ -168,6 +168,12 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
         }
     }
 
+    @Override
+    public void deactivate() throws InterruptedException, CouldNotPerformException {
+        stop();
+        super.deactivate();
+    }
+
     protected abstract boolean isAutostartEnabled() throws CouldNotPerformException;
 
     protected abstract void execute() throws CouldNotPerformException, InterruptedException;
