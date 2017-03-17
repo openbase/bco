@@ -142,7 +142,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
             }
         }
         try {
-            MultiException.checkAndThrow("Could not activate service remotes for some actions", exceptionStack);
+            MultiException.checkAndThrow("Could not fully init units of " + this, exceptionStack);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
         }
