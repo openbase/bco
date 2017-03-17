@@ -36,7 +36,7 @@ import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.unit.UnitConfigType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
@@ -74,17 +74,17 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
     }
 
     @Override
-    public void init(final UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         try {
             // check if infrastructure filter is enabled
             if (filterInfrastructureUnits) {
-
+                Registries.getUnitRegistry().waitForData();
                 final MetaConfigPool metaConfigPool = new MetaConfigPool();
                 metaConfigPool.register(new MetaConfigVariableProvider("UnitConfig", config.getMetaConfig()));
                 metaConfigPool.register(new MetaConfigVariableProvider("UnitHost", Registries.getUnitRegistry().getUnitConfigById(config.getUnitHostId()).getMetaConfig()));
                 try {
                     //check if the unit is marked as infrastructure
-                    if (Boolean.getBoolean(metaConfigPool.getValue(META_CONFIG_UNIT_INFRASTRUCTURE_FLAG))) {
+                    if (Boolean.parseBoolean(metaConfigPool.getValue(META_CONFIG_UNIT_INFRASTRUCTURE_FLAG))) {
                         // do not handle infrastructure unit.
                         return;
                     }
