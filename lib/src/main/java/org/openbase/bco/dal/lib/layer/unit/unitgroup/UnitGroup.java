@@ -21,21 +21,31 @@ package org.openbase.bco.dal.lib.layer.unit.unitgroup;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.provider.IlluminanceStateProviderService;
+import java.util.HashSet;
+import java.util.Set;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
+import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
+import org.openbase.bco.dal.lib.layer.unit.MultiUnitServiceFusion;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface UnitGroup extends BaseUnit<UnitGroupData>, BrightnessStateOperationService,
-        ColorStateOperationService, PowerStateOperationService, BlindStateOperationService,
-        StandbyStateOperationService, TargetTemperatureStateOperationService, IlluminanceStateProviderService {
+public interface UnitGroup extends BaseUnit<UnitGroupData>, MultiUnitServiceFusion {
 
+    @Override
+    default public Set<ServiceTemplateType.ServiceTemplate.ServiceType> getSupportedServiceTypes() throws NotAvailableException, InterruptedException {
+        final Set<ServiceTemplateType.ServiceTemplate.ServiceType> serviceTypeSet = new HashSet<>();
+        try {
+            for (final ServiceTemplate serviceTemplate : getConfig().getUnitGroupConfig().getServiceTemplateList()) {
+                serviceTypeSet.add(serviceTemplate.getType());
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("SupportedServiceTypes", new CouldNotPerformException("Could not generate supported service type list!", ex));
+        }
+        return serviceTypeSet;
+    }
 }

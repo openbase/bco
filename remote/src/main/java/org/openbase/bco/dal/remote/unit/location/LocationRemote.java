@@ -8,6 +8,8 @@ import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.location.Location;
 import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
+import org.openbase.bco.dal.remote.unit.Units;
+import static org.openbase.bco.dal.remote.unit.Units.LOCATION;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -104,15 +106,6 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     }
 
     @Override
-    public String getLabel() throws NotAvailableException {
-        try {
-            return getConfig().getLabel();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("label", ex);
-        }
-    }
-
-    @Override
     public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
         UnitConfig unitConfig = super.applyConfigUpdate(config);
         serviceRemoteManager.applyConfigUpdate(unitConfig.getLocationConfig().getUnitIdList());
@@ -121,6 +114,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
 
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
+        // TODO is this wait for data realy needed? blocking activation method is some kind of bad behaviour.
         CachedLocationRegistryRemote.waitForData();
         serviceRemoteManager.activate();
         super.activate();
@@ -141,7 +135,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     public Future<Snapshot> recordSnapshot(UnitTemplateType.UnitTemplate.UnitType unitType) throws CouldNotPerformException, InterruptedException {
         return RPCHelper.callRemoteMethod(unitType, this, Snapshot.class);
     }
-    
+
     @Override
     public Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
         return RPCHelper.callRemoteMethod(snapshot, this, Void.class);
@@ -158,6 +152,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     }
 
     @Override
+    @Deprecated
     public List<String> getNeighborLocationIds() throws CouldNotPerformException {
         List<String> neighborIdList = new ArrayList<>();
         try {
@@ -168,5 +163,17 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
             throw new CouldNotPerformException("Could not get CachedLocationRegistryRemote!", ex);
         }
         return neighborIdList;
+    }
+
+    public List<LocationRemote> getNeighborLocationList(final boolean waitForData) throws CouldNotPerformException {
+        List<LocationRemote> neighborList = new ArrayList<>();
+        try {
+            for (UnitConfig locationUnitConfig : CachedLocationRegistryRemote.getRegistry().getNeighborLocations(getId())) {
+                neighborList.add(Units.getUnit(locationUnitConfig, waitForData, LOCATION));
+            }
+        } catch (InterruptedException ex) {
+            throw new CouldNotPerformException("Could not get all neighbors!", ex);
+        }
+        return neighborList;
     }
 }
