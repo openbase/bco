@@ -79,7 +79,7 @@ public class DeviceRegistryController extends AbstractVirtualRegistryController<
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> deviceUnitConfigRemoteRegistry;
 
     public DeviceRegistryController() throws InstantiationException, InterruptedException {
-        super(JPDeviceRegistryScope.class, DeviceRegistryData.newBuilder());
+        super(JPDeviceRegistryScope.class, DeviceRegistryData.newBuilder(), SPARSELY_REGISTRY_DATA_NOTIFIED);
         try {
             deviceClassRegistry = new ProtoBufFileSynchronizedRegistry<>(DeviceClass.class, getBuilderSetup(), getDataFieldDescriptor(DeviceRegistryData.DEVICE_CLASS_FIELD_NUMBER), new DeviceClassIdGenerator(), JPService.getProperty(JPDeviceClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             unitRegistryRemote = new UnitRegistryRemote();

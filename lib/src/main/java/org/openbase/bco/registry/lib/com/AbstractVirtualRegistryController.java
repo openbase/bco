@@ -41,25 +41,33 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
 
     private final VirtualRegistrySynchronizer virtualRegistrySynchronizer;
 
+    /**
+     * Constructor creates a new RegistryController based on the given scope and publishing registry data of the given builder.
+     *
+     * Node: By default this constructor filters sparsely registry data.
+     * If you want to publish data of internal registries even if other internal registries are not ready
+     * yet, use can use the other constructor of this class and set the filterSparselyRegistryData flag to false.
+     *
+     * @param jpScopePropery the scope which is used for registry communication and data publishing.
+     * @param builder the builder to build the registry data message.
+     * @throws InstantiationException
+     */
     public AbstractVirtualRegistryController(Class<? extends JPScope> jpScopePropery, MB builder) throws InstantiationException {
         super(jpScopePropery, builder);
         this.virtualRegistrySynchronizer = new VirtualRegistrySynchronizer();
     }
 
-    @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-//        getRegistryRemotes().forEach((registryRemote) -> {
-//            registryRemote.addDataObserver(virtualRegistrySynchronizer);
-//        });
-        super.activate();
-    }
-
-    @Override
-    public void deactivate() throws InterruptedException, CouldNotPerformException {
-//        getRegistryRemotes().forEach((registryRemote) -> {
-//            registryRemote.removeDataObserver(virtualRegistrySynchronizer);
-//        });
-        super.deactivate();
+    /**
+     * Constructor creates a new RegistryController based on the given scope and publishing registry data of the given builder.
+     *
+     * @param jpScopePropery the scope which is used for registry communication and data publishing.
+     * @param builder the builder to build the registry data message.
+     * @param filterSparselyRegistryData if this flag is true the registry data is only published if non of the internal registries is busy.
+     * @throws InstantiationException
+     */
+    public AbstractVirtualRegistryController(final Class<? extends JPScope> jpScopePropery, MB builder, final boolean filterSparselyRegistryData) throws InstantiationException {
+        super(jpScopePropery, builder, filterSparselyRegistryData);
+        this.virtualRegistrySynchronizer = new VirtualRegistrySynchronizer();
     }
 
     @Override

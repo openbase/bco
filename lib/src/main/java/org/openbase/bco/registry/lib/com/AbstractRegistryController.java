@@ -57,15 +57,43 @@ import rst.rsb.ScopeType.Scope;
  */
 public abstract class AbstractRegistryController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> implements RegistryController<M>, Launchable<Scope> {
 
+    public static final boolean SPARSELY_REGISTRY_DATA_FILTERED = true;
+    public static final boolean SPARSELY_REGISTRY_DATA_NOTIFIED = false;
+    
     protected ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
 
     private final List<RegistryRemote> registryRemoteList;
     private final List<RemoteRegistry> remoteRegistryList;
     private final List<ProtoBufFileSynchronizedRegistry> registryList;
     private final Class<? extends JPScope> jpScopePropery;
+    private final boolean filterSparselyRegistryData;
 
+    /**
+     * Constructor creates a new RegistryController based on the given scope and publishing registry data of the given builder.
+     *
+     * Node: By default this constructor filters sparsely registry data.
+     * If you want to publish data of internal registries even if other internal registries are not ready
+     * yet, use can use the other constructor of this class and set the filterSparselyRegistryData flag to false.
+     *
+     * @param jpScopePropery the scope which is used for registry communication and data publishing.
+     * @param builder the builder to build the registry data message.
+     * @throws InstantiationException
+     */
     public AbstractRegistryController(final Class<? extends JPScope> jpScopePropery, MB builder) throws InstantiationException {
+        this(jpScopePropery, builder, SPARSELY_REGISTRY_DATA_FILTERED);
+    }
+
+    /**
+     * Constructor creates a new RegistryController based on the given scope and publishing registry data of the given builder.
+     *
+     * @param jpScopePropery the scope which is used for registry communication and data publishing.
+     * @param builder the builder to build the registry data message.
+     * @param filterSparselyRegistryData if this flag is true the registry data is only published if non of the internal registries is busy.
+     * @throws InstantiationException
+     */
+    public AbstractRegistryController(final Class<? extends JPScope> jpScopePropery, MB builder, final boolean filterSparselyRegistryData) throws InstantiationException {
         super(builder);
+        this.filterSparselyRegistryData = filterSparselyRegistryData;
         this.jpScopePropery = jpScopePropery;
         this.registryRemoteList = new ArrayList<>();
         this.registryList = new ArrayList<>();
@@ -181,6 +209,18 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
 
     @Override
     public void notifyChange() throws CouldNotPerformException, InterruptedException {
+        if (filterSparselyRegistryData) {
+            // filter notification if any internal registry is busy to avoid spreading incomplete registry context.
+            for (ProtoBufFileSynchronizedRegistry registry : getRegistries()) {
+                if (registry.isBusy()) {
+                    // skip notification
+                    logger.error("========= CHANGE UPDATE SKIPPTED!");
+                    return;
+                }
+            }
+        }
+
+        // continue notification
         syncRegistryFlags();
         super.notifyChange();
     }
@@ -259,7 +299,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     private void performInitialConsistencyCheck() throws CouldNotPerformException, InterruptedException {
         for (final ProtoBufFileSynchronizedRegistry registry : registryList) {
             try {
-                logger.debug("Trigger inital consistency check of "+registry+ " with "+registry.getEntries().size() + " entries.");
+                logger.debug("Trigger inital consistency check of " + registry + " with " + registry.getEntries().size() + " entries.");
                 registry.checkConsistency();
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger);
