@@ -77,7 +77,7 @@ public abstract class AbstractDeviceController extends AbstractHostUnitControlle
                 unitConfigs.add(unitRegistry.getUnitConfigById(unitId));
             }
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Could not get hosted units of device.", "unitConfig", ex);
+            throw new NotAvailableException("Hosted units description of Device", this, ex);
         }
         return unitConfigs;
     }

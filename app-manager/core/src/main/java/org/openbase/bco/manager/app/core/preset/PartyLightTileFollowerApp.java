@@ -55,6 +55,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
         super(PartyLightTileFollowerApp.class);
         try {
             Registries.getLocationRegistry().waitForData();
+            Registries.getUnitRegistry().waitForData();
             this.locationRemoteMap = new HashMap<>();
 
             // init tile remotes
@@ -85,7 +86,6 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
-        System.out.println("execute party light...");
         // verify
         if (!Registries.getLocationRegistry().getLocationConfigById(getConfig().getPlacementConfig().getLocationId()).getLocationConfig().getType().equals(LocationConfigType.LocationConfig.LocationType.TILE)) {
             throw new InvalidStateException("App location is not a tile!");
@@ -93,7 +93,6 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
 
         // execute
         if (tileFollowerFuture != null) {
-            logger.warn(this + " is already executing!");
             return;
         }
         tileFollowerFuture = GlobalCachedExecutorService.submit(new TileFollower());
@@ -114,7 +113,6 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
 
         @Override
         public Void call() throws CouldNotPerformException, InterruptedException {
-            logger.info("Execute " + this);
             if (locationRemoteMap.isEmpty()) {
                 throw new CouldNotPerformException("No Locations found!");
             }
@@ -126,7 +124,6 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
                 try {
                     // apply updates for next iteration
                     colorIndex = ++colorIndex % colors.length;
-                    System.out.println("color index:" + colorIndex);
                     processedLocations.clear();
 
                     // select inital room
@@ -137,15 +134,12 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Skip animation run!", ex), logger);
                 }
-
-                logger.info("#########################");
-
             }
             return null;
         }
 
         public void processRoom(final LocationRemote locationRemote, final HSBColor color) throws CouldNotPerformException, InterruptedException {
-            logger.info("Set " + locationRemote + " to " + color + "...");
+            logger.debug("Set " + locationRemote + " to " + color + "...");
             try {
 
                 // skip if no colorable light is present
@@ -165,13 +159,13 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
 
                 // process neighbors
                 LocationRemote neighborRemote;
-                for (String neighborsId : locationRemote.getNeighborLocationIds()) {
+                for (UnitConfig neighborConfig : Registries.getLocationRegistry().getNeighborLocations(locationRemote.getId())) {
                     // skip if already processed
-                    if (processedLocations.contains(neighborsId)) {
+                    if (processedLocations.contains(neighborConfig.getId())) {
                         continue;
                     }
 
-                    neighborRemote = locationRemoteMap.get(neighborsId);
+                    neighborRemote = locationRemoteMap.get(neighborConfig.getId());
 
                     // process remote 
                     processRoom(neighborRemote, color);

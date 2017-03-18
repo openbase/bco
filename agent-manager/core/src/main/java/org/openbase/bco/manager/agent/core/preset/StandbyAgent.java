@@ -181,7 +181,8 @@ public class StandbyAgent extends AbstractAgentController {
             }
 
             try {
-                logger.info("restore snapshot up");
+                logger.info("restore snapshot: "+snapshot);
+                
                 locationRemote.restoreSnapshot(snapshot).get();
                 snapshot = null;
 
