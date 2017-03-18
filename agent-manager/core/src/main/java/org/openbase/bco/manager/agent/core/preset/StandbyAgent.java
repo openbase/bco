@@ -26,13 +26,14 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
 import rst.domotic.action.ActionConfigType;
@@ -41,6 +42,7 @@ import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.state.PowerStateType;
 import rst.domotic.state.PresenceStateType;
 import rst.domotic.unit.location.LocationDataType;
+import rst.domotic.unit.location.LocationDataType.LocationData;
 
 /**
  *
@@ -58,6 +60,7 @@ public class StandbyAgent extends AbstractAgentController {
     private final Timeout timeout;
     private final SyncObject standbySync = new SyncObject("StandbySync");
     private boolean standby;
+    private final Observer<LocationData> locationDataObserver;
 
     private Snapshot snapshot;
 
@@ -77,23 +80,31 @@ public class StandbyAgent extends AbstractAgentController {
                 }
             }
         };
+
+        this.locationDataObserver = new Observer<LocationData>() {
+            @Override
+            public void update(Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) throws Exception {
+                triggerPresenceChange(data);
+            }
+        };
     }
 
     @Override
-    public void activate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activating [" + getConfig().getLabel() + "]");
-        locationRemote = new LocationRemote();
-        CachedLocationRegistryRemote.waitForData();
-        locationRemote.init(CachedLocationRegistryRemote.getRegistry().getLocationConfigById(getConfig().getPlacementConfig().getLocationId()));
-        locationRemote.addDataObserver((Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
-            triggerPresenceChange(data);
-        });
-        super.activate();
+    protected void execute() throws CouldNotPerformException, InterruptedException {
+        locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), true, Units.LOCATION);
+        locationRemote.addDataObserver(locationDataObserver);
+        locationRemote.waitForData();
+        triggerPresenceChange(locationRemote.getData());
+    }
 
+    @Override
+    protected void stop() throws CouldNotPerformException, InterruptedException {
+        locationRemote.removeDataObserver(locationDataObserver);
+        timeout.cancel();
+        locationRemote = null;
     }
 
     public void triggerPresenceChange(LocationDataType.LocationData data) throws InterruptedException {
-//        System.out.println("trigger: " + data.getPresenceState().getValue().name());
         synchronized (standbySync) {
             if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT)) {
                 timeout.cancel();
@@ -106,34 +117,13 @@ public class StandbyAgent extends AbstractAgentController {
                 }
             } else if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.ABSENT)) {
                 if (!timeout.isActive()) {
-//                    System.out.println("timeout start");
                     timeout.start();
                 }
             }
         }
     }
 
-    @Override
-    public void deactivate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getClass().getSimpleName() + "]");
-        locationRemote.deactivate();
-        super.deactivate();
-    }
-
-    @Override
-    protected void execute() throws CouldNotPerformException, InterruptedException {
-        locationRemote.activate();
-        triggerPresenceChange(locationRemote.getData());
-    }
-
-    @Override
-    protected void stop() throws CouldNotPerformException, InterruptedException {
-        timeout.cancel();
-        locationRemote.deactivate();
-    }
-
     private void standby() throws CouldNotPerformException, InterruptedException {
-//        System.out.println("try to standby");
         synchronized (standbySync) {
             if (standby) {
                 return;
@@ -141,26 +131,30 @@ public class StandbyAgent extends AbstractAgentController {
             logger.info("Standby " + locationRemote.getLabel() + "...");
             try {
                 try {
-                    logger.info("Create snapshot of " + locationRemote.getLabel() + " state.");
+                    logger.debug("Create snapshot of " + locationRemote.getLabel() + " state.");
                     snapshot = locationRemote.recordSnapshot().get(60, TimeUnit.SECONDS);
 
                     // filter OFF values
                     List<ActionConfigType.ActionConfig> actionConfigList = new ArrayList<>();
                     for (ActionConfig actionConfig : snapshot.getActionConfigList()) {
+                        // filter devices which are switched OFF
                         if (actionConfig.getServiceAttribute().toLowerCase().contains("off")) {
-                            logger.info("ignore " + actionConfig.getUnitId() + " because unit is off.");
+                            logger.debug("ignore " + actionConfig.getUnitId() + " because unit is off.");
                             continue;
                         }
-                        logger.info("store for standby: " + actionConfig);
+                        if (actionConfig.getServiceAttribute().toLowerCase().contains("brightness: 0.0")) {
+                            logger.debug("ignore " + actionConfig.getUnitId() + " because brightness is 0.");
+                            continue;
+                        }
+
                         actionConfigList.add(actionConfig);
                     }
-                    snapshot.toBuilder().clearActionConfig().addAllActionConfig(actionConfigList);
-
+                    snapshot = snapshot.toBuilder().clearActionConfig().addAllActionConfig(actionConfigList).build();
                 } catch (ExecutionException | CouldNotPerformException | TimeoutException ex) {
                     ExceptionPrinter.printHistory("Could not create snapshot!", ex, logger);
                 }
                 standby = true;
-                logger.info("Switch off all devices...");
+                logger.info("Switch off all devices in the "+locationRemote.getLabel());
                 locationRemote.setPowerState(PowerStateType.PowerState.State.OFF);
                 logger.info(locationRemote.getLabel() + " is now standby.");
             } catch (CouldNotPerformException ex) {
@@ -176,13 +170,13 @@ public class StandbyAgent extends AbstractAgentController {
             standby = false;
 
             if (snapshot == null) {
-                logger.info("skip wake up because no snapshot information available!");
+                logger.debug("skip wake up because no snapshot information available!");
                 return;
             }
 
             try {
-                logger.info("restore snapshot: "+snapshot);
-                
+                logger.debug("restore snapshot: " + snapshot);
+
                 locationRemote.restoreSnapshot(snapshot).get();
                 snapshot = null;
 

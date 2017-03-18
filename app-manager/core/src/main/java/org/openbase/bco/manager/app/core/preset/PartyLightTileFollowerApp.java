@@ -145,7 +145,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
                 // skip if no colorable light is present
                 if (!Registries.getLocationRegistry().getUnitConfigsByLocation(UnitTemplateType.UnitTemplate.UnitType.COLORABLE_LIGHT, locationRemote.getId()).isEmpty()) {
                     try {
-                        if (locationRemote.isConnected()) {
+                        if (locationRemote.isConnected() && locationRemote.isDataAvailable()) {
                             locationRemote.setColor(color).get(1, TimeUnit.SECONDS);
                         }
                     } catch (TimeoutException ex) {
