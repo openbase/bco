@@ -24,7 +24,6 @@ package org.openbase.bco.registry.app.remote;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.openbase.bco.registry.app.lib.AppRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -39,7 +38,7 @@ import org.slf4j.LoggerFactory;
 public class CachedAppRegistryRemote {
 
     private static final Logger logger = LoggerFactory.getLogger(CachedAppRegistryRemote.class);
-    private static AppRegistryRemote appRegistryRemote;
+    private static AppRegistryRemote registryRemote;
     private static boolean shutdown = false;
 
     static {
@@ -56,7 +55,7 @@ public class CachedAppRegistryRemote {
     public static void reinitialize() throws InterruptedException, CouldNotPerformException {
         try {
             getRegistry();
-            appRegistryRemote.requestData().get(10, TimeUnit.SECONDS);
+            registryRemote.requestData().get(10, TimeUnit.SECONDS);
         } catch (ExecutionException | TimeoutException | CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not reinitialize " + CachedAppRegistryRemote.class.getSimpleName() + "!", ex);
         }
@@ -73,43 +72,43 @@ public class CachedAppRegistryRemote {
                 throw new InvalidStateException("Remote service is shutting down!");
             }
 
-            if (appRegistryRemote == null) {
+            if (registryRemote == null) {
                 try {
-                    appRegistryRemote = new AppRegistryRemote();
-                    appRegistryRemote.init();
-                    appRegistryRemote.activate();
+                    registryRemote = new AppRegistryRemote();
+                    registryRemote.init();
+                    registryRemote.activate();
                 } catch (CouldNotPerformException ex) {
-                    if (appRegistryRemote != null) {
-                        appRegistryRemote.shutdown();
-                        appRegistryRemote = null;
+                    if (registryRemote != null) {
+                        registryRemote.shutdown();
+                        registryRemote = null;
                     }
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not start cached app registry remote!", ex), logger);
                 }
             }
-            return appRegistryRemote;
+            return registryRemote;
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("cached app registry", ex);
         }
     }
 
     public static void waitForData() throws InterruptedException, CouldNotPerformException {
-        if (appRegistryRemote == null) {
+        if (registryRemote == null) {
             getRegistry();
         }
-        appRegistryRemote.waitForData();
+        registryRemote.waitForData();
     }
 
     public static void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
-        if (appRegistryRemote == null) {
+        if (registryRemote == null) {
             getRegistry();
         }
-        appRegistryRemote.waitForData(timeout, timeUnit);
+        registryRemote.waitForData(timeout, timeUnit);
     }
 
     public static void shutdown() {
-        if (appRegistryRemote != null) {
-            appRegistryRemote.shutdown();
-            appRegistryRemote = null;
+        if (registryRemote != null) {
+            registryRemote.shutdown();
+            registryRemote = null;
         }
     }
 }

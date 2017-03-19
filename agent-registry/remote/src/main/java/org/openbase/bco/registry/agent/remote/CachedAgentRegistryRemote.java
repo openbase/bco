@@ -24,7 +24,6 @@ package org.openbase.bco.registry.agent.remote;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -39,7 +38,7 @@ import org.slf4j.LoggerFactory;
 public class CachedAgentRegistryRemote {
 
     private static final Logger logger = LoggerFactory.getLogger(CachedAgentRegistryRemote.class);
-    private static AgentRegistryRemote agentRegistryRemote;
+    private static AgentRegistryRemote registryRemote;
     private static boolean shutdown = false;
 
     static {
@@ -56,7 +55,7 @@ public class CachedAgentRegistryRemote {
     public static void reinitialize() throws InterruptedException, CouldNotPerformException {
         try {
             getRegistry();
-            agentRegistryRemote.requestData().get(10, TimeUnit.SECONDS);
+            registryRemote.requestData().get(10, TimeUnit.SECONDS);
         } catch (ExecutionException | TimeoutException | CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not reinitialize " + CachedAgentRegistryRemote.class.getSimpleName() + "!", ex);
         }
@@ -73,43 +72,43 @@ public class CachedAgentRegistryRemote {
                 throw new InvalidStateException("Remote service is shutting down!");
             }
 
-            if (agentRegistryRemote == null) {
+            if (registryRemote == null) {
                 try {
-                    agentRegistryRemote = new AgentRegistryRemote();
-                    agentRegistryRemote.init();
-                    agentRegistryRemote.activate();
+                    registryRemote = new AgentRegistryRemote();
+                    registryRemote.init();
+                    registryRemote.activate();
                 } catch (CouldNotPerformException ex) {
-                    if (agentRegistryRemote != null) {
-                        agentRegistryRemote.shutdown();
-                        agentRegistryRemote = null;
+                    if (registryRemote != null) {
+                        registryRemote.shutdown();
+                        registryRemote = null;
                     }
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not start cached agent registry remote!", ex), logger);
                 }
             }
-            return agentRegistryRemote;
+            return registryRemote;
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("cached agent registry", ex);
         }
     }
 
     public static void waitForData() throws InterruptedException, CouldNotPerformException {
-        if (agentRegistryRemote == null) {
+        if (registryRemote == null) {
             getRegistry();
         }
-        agentRegistryRemote.waitForData();
+        registryRemote.waitForData();
     }
 
     public static void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
-        if (agentRegistryRemote == null) {
+        if (registryRemote == null) {
             getRegistry();
         }
-        agentRegistryRemote.waitForData(timeout, timeUnit);
+        registryRemote.waitForData(timeout, timeUnit);
     }
 
     public static void shutdown() {
-        if (agentRegistryRemote != null) {
-            agentRegistryRemote.shutdown();
-            agentRegistryRemote = null;
+        if (registryRemote != null) {
+            registryRemote.shutdown();
+            registryRemote = null;
         }
     }
 }

@@ -69,6 +69,7 @@ import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.TA
 import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.TARGET_TEMPERATURE_SOS;
 import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.TARGET_TEMPERATURE_SPS;
 import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.TEMPERATURE_SPS;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.scene.core.SceneRegistryLauncher;
 import org.openbase.bco.registry.scene.lib.SceneRegistry;
 import org.openbase.bco.registry.scene.remote.CachedSceneRegistryRemote;
@@ -384,9 +385,11 @@ public class MockRegistry {
             registryStartupTasks.clear();
             logger.info("Virtual registries started!");
 
+            logger.info("Reinitialized remotes!");
+            Registries.reinitialize();
             CachedDeviceRegistryRemote.reinitialize();
             CachedLocationRegistryRemote.reinitialize();
-            logger.info("Reinitialized remotes!");
+            Registries.waitForData();
 
             deviceRegistryRemote = unitRegistryLauncher.getLaunchable().getDeviceRegistryRemote();
 

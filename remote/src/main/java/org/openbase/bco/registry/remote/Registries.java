@@ -154,4 +154,20 @@ public class Registries {
         CachedSceneRegistryRemote.waitForData();
         CachedUserRegistryRemote.waitForData();
     }
+    
+    /**
+     * Method forces a resynchronization on all remote registries.
+     * 
+     * @throws CouldNotPerformException
+     * @throws InterruptedException 
+     */
+    public static void reinitialize() throws CouldNotPerformException, InterruptedException {
+        CachedUnitRegistryRemote.reinitialize();
+        CachedAgentRegistryRemote.reinitialize();
+        CachedAppRegistryRemote.reinitialize();
+        CachedDeviceRegistryRemote.reinitialize();
+        CachedLocationRegistryRemote.reinitialize();
+        CachedSceneRegistryRemote.reinitialize();
+        CachedUserRegistryRemote.reinitialize();
+    }
 }

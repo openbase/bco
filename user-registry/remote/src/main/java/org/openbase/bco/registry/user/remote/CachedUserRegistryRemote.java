@@ -24,7 +24,6 @@ package org.openbase.bco.registry.user.remote;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.openbase.bco.registry.user.lib.UserRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -39,7 +38,7 @@ import org.slf4j.LoggerFactory;
 public class CachedUserRegistryRemote {
 
     private static final Logger logger = LoggerFactory.getLogger(CachedUserRegistryRemote.class);
-    private static UserRegistryRemote userRegistryRemote;
+    private static UserRegistryRemote registryRemote;
     private static boolean shutdown = false;
 
     static {
@@ -56,7 +55,7 @@ public class CachedUserRegistryRemote {
     public static void reinitialize() throws InterruptedException, CouldNotPerformException {
         try {
             getRegistry();
-            userRegistryRemote.requestData().get(10, TimeUnit.SECONDS);
+            registryRemote.requestData().get(10, TimeUnit.SECONDS);
         } catch (ExecutionException | TimeoutException | CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not reinitialize " + CachedUserRegistryRemote.class.getSimpleName() + "!", ex);
         }
@@ -73,43 +72,43 @@ public class CachedUserRegistryRemote {
                 throw new InvalidStateException("Remote service is shutting down!");
             }
 
-            if (userRegistryRemote == null) {
+            if (registryRemote == null) {
                 try {
-                    userRegistryRemote = new UserRegistryRemote();
-                    userRegistryRemote.init();
-                    userRegistryRemote.activate();
+                    registryRemote = new UserRegistryRemote();
+                    registryRemote.init();
+                    registryRemote.activate();
                 } catch (CouldNotPerformException ex) {
-                    if (userRegistryRemote != null) {
-                        userRegistryRemote.shutdown();
-                        userRegistryRemote = null;
+                    if (registryRemote != null) {
+                        registryRemote.shutdown();
+                        registryRemote = null;
                     }
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not start cached user registry remote!", ex), logger);
                 }
             }
-            return userRegistryRemote;
+            return registryRemote;
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("cached user registry", ex);
         }
     }
 
     public static void waitForData() throws InterruptedException, CouldNotPerformException {
-        if (userRegistryRemote == null) {
+        if (registryRemote == null) {
             getRegistry();
         }
-        userRegistryRemote.waitForData();
+        registryRemote.waitForData();
     }
 
     public static void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
-        if (userRegistryRemote == null) {
+        if (registryRemote == null) {
             getRegistry();
         }
-        userRegistryRemote.waitForData(timeout, timeUnit);
+        registryRemote.waitForData(timeout, timeUnit);
     }
 
     public static void shutdown() {
-        if (userRegistryRemote != null) {
-            userRegistryRemote.shutdown();
-            userRegistryRemote = null;
+        if (registryRemote != null) {
+            registryRemote.shutdown();
+            registryRemote = null;
         }
     }
 }

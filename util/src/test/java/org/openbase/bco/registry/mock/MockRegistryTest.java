@@ -30,8 +30,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.schedule.Stopwatch;
 
@@ -67,7 +65,7 @@ public class MockRegistryTest {
      * @throws org.openbase.jul.exception.InstantiationException
      */
     @Test(timeout = 60000)
-    public void testMockRegistryCreation() throws InstantiationException, InterruptedException, CouldNotPerformException {
+    public void testMockRegistryCreation() throws Exception {
         Stopwatch stopwatch = new Stopwatch();
         List<Long> times = new ArrayList<>();
         System.out.println("testMockRegistryCreation");
@@ -80,7 +78,7 @@ public class MockRegistryTest {
                 MockRegistryHolder.shutdownMockRegistry();
                 times.add(stopwatch.stop());
             }
-        } catch (InstantiationException ex) {
+        } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, System.err);
         }
         for (Long time : times) {

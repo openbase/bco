@@ -21,11 +21,9 @@ package org.openbase.bco.registry.scene.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.openbase.bco.registry.scene.lib.SceneRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -40,7 +38,7 @@ import org.slf4j.LoggerFactory;
 public class CachedSceneRegistryRemote {
 
     private static final Logger logger = LoggerFactory.getLogger(CachedSceneRegistryRemote.class);
-    private static SceneRegistryRemote sceneRegistryRemote;
+    private static SceneRegistryRemote registryRemote;
     private static boolean shutdown = false;
 
     static {
@@ -57,7 +55,7 @@ public class CachedSceneRegistryRemote {
     public static void reinitialize() throws InterruptedException, CouldNotPerformException {
         try {
             getRegistry();
-            sceneRegistryRemote.requestData().get(10, TimeUnit.SECONDS);
+            registryRemote.requestData().get(10, TimeUnit.SECONDS);
         } catch (ExecutionException | TimeoutException | CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not reinitialize " + CachedSceneRegistryRemote.class.getSimpleName() + "!", ex);
         }
@@ -74,43 +72,43 @@ public class CachedSceneRegistryRemote {
                 throw new InvalidStateException("Remote service is shutting down!");
             }
 
-            if (sceneRegistryRemote == null) {
+            if (registryRemote == null) {
                 try {
-                    sceneRegistryRemote = new SceneRegistryRemote();
-                    sceneRegistryRemote.init();
-                    sceneRegistryRemote.activate();
+                    registryRemote = new SceneRegistryRemote();
+                    registryRemote.init();
+                    registryRemote.activate();
                 } catch (CouldNotPerformException ex) {
-                    if (sceneRegistryRemote != null) {
-                        sceneRegistryRemote.shutdown();
-                        sceneRegistryRemote = null;
+                    if (registryRemote != null) {
+                        registryRemote.shutdown();
+                        registryRemote = null;
                     }
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not start cached scene registry remote!", ex), logger);
                 }
             }
-            return sceneRegistryRemote;
+            return registryRemote;
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("cached scene registry", ex);
         }
     }
 
     public static void waitForData() throws InterruptedException, CouldNotPerformException {
-        if (sceneRegistryRemote == null) {
+        if (registryRemote == null) {
             getRegistry();
         }
-        sceneRegistryRemote.waitForData();
+        registryRemote.waitForData();
     }
 
     public static void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
-        if (sceneRegistryRemote == null) {
+        if (registryRemote == null) {
             getRegistry();
         }
-        sceneRegistryRemote.waitForData(timeout, timeUnit);
+        registryRemote.waitForData(timeout, timeUnit);
     }
 
     public static void shutdown() {
-        if (sceneRegistryRemote != null) {
-            sceneRegistryRemote.shutdown();
-            sceneRegistryRemote = null;
+        if (registryRemote != null) {
+            registryRemote.shutdown();
+            registryRemote = null;
         }
     }
 }
