@@ -24,6 +24,7 @@ package org.openbase.bco.dal.remote.unit.unitgroup;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.unitgroup.UnitGroup;
@@ -59,6 +60,7 @@ import rst.domotic.state.StandbyStateType;
 import rst.domotic.state.TamperStateType;
 import rst.domotic.state.TemperatureStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.location.LocationDataType;
 import rst.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
 import rst.vision.ColorType;
@@ -151,23 +153,7 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
         updateUnitData();
         // super activation is disabled because unit remote is not a RSBRemoteService
         // TODO: Refactor to support UnitRemotes which are not extended RSBRemoteService instances.
-        
-        
-        // The following part is outdated and should be removed later.
         // super.activate();
-        //        try {
-        //            MultiException.ExceptionStack exceptionStack = null;
-        //            for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
-        //                try {
-        //                    remote.activate();
-        //                } catch (CouldNotPerformException ex) {
-        //                    exceptionStack = MultiException.push(remote, ex, exceptionStack);
-        //                }
-        //            }
-        //            MultiException.checkAndThrow("Could not activate all internal service remotes!", exceptionStack);
-        //        } catch (CouldNotPerformException ex) {
-        //            throw new CouldNotPerformException("Could not activate unit group remote!", ex);
-        //        }
     }
 
     @Override
@@ -196,8 +182,8 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
 
     @Override
     public void waitForData() throws CouldNotPerformException, InterruptedException {
-        // super.waitForData();
-        // disabled because this is not a real remote!
+        // super waitForData is disabled because unit remote is not a RSBRemoteService
+        // TODO: Refactor to support UnitRemotes which are not extended RSBRemoteService instances.
         for (AbstractServiceRemote remote : serviceRemoteManager.getServiceRemoteList()) {
             remote.waitForData();
         }
@@ -213,6 +199,26 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), LOGGER, LogLevel.WARN);
         }
+    }
+    
+    @Override
+    public Future<SnapshotType.Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
+        return serviceRemoteManager.recordSnapshot();
+    }
+
+    @Override
+    public Future<SnapshotType.Snapshot> recordSnapshot(final UnitTemplateType.UnitTemplate.UnitType unitType) throws CouldNotPerformException, InterruptedException {
+        return serviceRemoteManager.recordSnapshot(unitType);
+    }
+
+    @Override
+    public Future<Void> restoreSnapshot(final SnapshotType.Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
+        return serviceRemoteManager.restoreSnapshot(snapshot);
+    }
+
+    @Override
+    public Future<Void> applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+        return serviceRemoteManager.applyAction(actionConfig);
     }
     
     @Override

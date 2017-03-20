@@ -22,12 +22,20 @@ package org.openbase.bco.dal.remote.service;
  * #L%
  */
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -36,20 +44,27 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Activatable;
+import org.openbase.jul.iface.Snapshotable;
 import org.openbase.jul.iface.provider.LabelProvider;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.action.ActionConfigType;
+import rst.domotic.action.ActionConfigType.ActionConfig;
+import rst.domotic.action.SnapshotType;
+import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class ServiceRemoteManager implements Activatable {
+public abstract class ServiceRemoteManager implements Activatable, Snapshotable<Snapshot> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceRemoteManager.class);
 
@@ -214,6 +229,100 @@ public abstract class ServiceRemoteManager implements Activatable {
             new CouldNotPerformException("Could not update current status!", ex);
         }
         return builder;
+    }
+
+    @Override
+    public Future<SnapshotType.Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
+        return recordSnapshot(UnitTemplateType.UnitTemplate.UnitType.UNKNOWN);
+    }
+
+    public Future<SnapshotType.Snapshot> recordSnapshot(final UnitTemplateType.UnitTemplate.UnitType unitType) throws CouldNotPerformException, InterruptedException {
+        try {
+            SnapshotType.Snapshot.Builder snapshotBuilder = SnapshotType.Snapshot.newBuilder();
+            Set<UnitRemote> unitRemoteSet = new HashSet<>();
+
+            if (unitType == UnitTemplateType.UnitTemplate.UnitType.UNKNOWN) {
+                // if the type is unknown then take the snapshot for all units
+                getServiceRemoteList().stream().forEach((serviceRemote) -> {
+                    unitRemoteSet.addAll(serviceRemote.getInternalUnits());
+                });
+            } else {
+                // for effiecency reasons only one serviceType implemented by the unitType is regarded because the unitRemote is part of
+                // every abstractServiceRemotes internal units if the serviceType is implemented by the unitType
+                ServiceType serviceType;
+                try {
+                    serviceType = Registries.getUnitRegistry().getUnitTemplateByType(unitType).getServiceTemplateList().get(0).getType();
+                } catch (IndexOutOfBoundsException ex) {
+                    // if there is not at least one serviceType for the unitType then the snapshot is empty
+                    return CompletableFuture.completedFuture(snapshotBuilder.build());
+                }
+
+                for (AbstractServiceRemote abstractServiceRemote : getServiceRemoteList()) {
+                    if (!(serviceType == abstractServiceRemote.getServiceType())) {
+                        continue;
+                    }
+
+                    Collection<UnitRemote> internalUnits = abstractServiceRemote.getInternalUnits();
+                    for (UnitRemote unitRemote : internalUnits) {
+                        // just add units with the according type
+                        if (unitRemote.getType() == unitType) {
+                            unitRemoteSet.add(unitRemote);
+                        }
+                    }
+                }
+            }
+
+            // take the snapshot
+            final Map<UnitRemote, Future<SnapshotType.Snapshot>> snapshotFutureMap = new HashMap<UnitRemote, Future<SnapshotType.Snapshot>>();
+            for (final UnitRemote<?> remote : unitRemoteSet) {
+                try {
+                    if (UnitProcessor.isDalUnit(remote)) {
+                        if (!remote.isConnected()) {
+                            throw new NotAvailableException("Unit[" + remote.getLabel() + "] is currently not reachable!");
+                        }
+                        snapshotFutureMap.put(remote, remote.recordSnapshot());
+                    }
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not record snapshot of " + remote.getLabel(), ex), LOGGER);
+                }
+            }
+
+            // build snapshot
+            for (final Map.Entry<UnitRemote, Future<SnapshotType.Snapshot>> snapshotFutureEntry : snapshotFutureMap.entrySet()) {
+                try {
+                    snapshotBuilder.addAllActionConfig(snapshotFutureEntry.getValue().get(5, TimeUnit.SECONDS).getActionConfigList());
+                } catch (ExecutionException | TimeoutException ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not record snapshot of " + snapshotFutureEntry.getKey().getLabel(), ex), LOGGER);
+                }
+            }
+            return CompletableFuture.completedFuture(snapshotBuilder.build());
+        } catch (final CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not record snapshot!", ex);
+        }
+    }
+
+    @Override
+    public Future<Void> restoreSnapshot(final SnapshotType.Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
+        try {
+            final Map<String, org.openbase.bco.dal.lib.layer.unit.UnitRemote<?>> unitRemoteMap = new HashMap<>();
+            for (AbstractServiceRemote<?, ?> serviceRemote : this.getServiceRemoteList()) {
+                for (org.openbase.bco.dal.lib.layer.unit.UnitRemote<?> unitRemote : serviceRemote.getInternalUnits()) {
+                    unitRemoteMap.put(unitRemote.getId(), unitRemote);
+                }
+            }
+
+            Collection<Future> futureCollection = new ArrayList<>();
+            for (final ActionConfigType.ActionConfig actionConfig : snapshot.getActionConfigList()) {
+                futureCollection.add(unitRemoteMap.get(actionConfig.getUnitId()).applyAction(actionConfig));
+            }
+            return GlobalCachedExecutorService.allOf(futureCollection, null);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not record snapshot!", ex);
+        }
+    }
+
+    public Future<Void> applyAction(final ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+        return getServiceRemote(actionConfig.getServiceType()).applyAction(actionConfig);
     }
 
     protected abstract Set<ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException;

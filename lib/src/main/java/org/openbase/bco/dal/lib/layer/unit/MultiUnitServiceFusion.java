@@ -39,6 +39,8 @@ import org.openbase.bco.dal.lib.layer.service.collection.TargetTemperatureStateO
 import org.openbase.bco.dal.lib.layer.service.collection.TemperatureStateProviderServiceCollection;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.iface.annotations.RPCMethod;
+import rst.domotic.action.SnapshotType;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.AlarmStateType;
 import rst.domotic.state.BlindStateType;
@@ -75,6 +77,9 @@ public interface MultiUnitServiceFusion extends BrightnessStateOperationServiceC
 
     public ServiceRemote getServiceRemote(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws NotAvailableException;
 
+    @RPCMethod
+    public Future<SnapshotType.Snapshot> recordSnapshot(final UnitTemplateType.UnitTemplate.UnitType unitType) throws CouldNotPerformException, InterruptedException;
+    
     @Override
     default public Future<Void> setBlindState(BlindStateType.BlindState blindState, UnitTemplateType.UnitTemplate.UnitType unitType) throws CouldNotPerformException {
         return ((BlindStateOperationServiceCollection) getServiceRemote(ServiceTemplateType.ServiceTemplate.ServiceType.BLIND_STATE_SERVICE)).setBlindState(blindState, unitType);
