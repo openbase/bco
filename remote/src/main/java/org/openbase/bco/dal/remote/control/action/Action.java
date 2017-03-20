@@ -72,6 +72,11 @@ public class Action implements ActionService, Initializable<ActionConfig> {
     @Override
     public void init(final ActionConfigType.ActionConfig config) throws InitializationException, InterruptedException {
         try {
+
+            if (config.getUnitId().isEmpty()) {
+                throw new InvalidStateException(config.getLabel() + " has not valid unit id!");
+            }
+
             this.config = config.toBuilder();
             this.data.setLabel(config.getLabel());
             this.serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
@@ -144,13 +149,13 @@ public class Action implements ActionService, Initializable<ActionConfig> {
 
     private void acquireService() throws CouldNotPerformException {
         //TODO
-        logger.info("Acquire service for execution of " + this);
+        logger.debug("Acquire service for execution of " + this);
     }
 
     private void releaseService() {
         try {
             // TODO
-            logger.info("Release acquired services of " + this);
+            logger.debug("Release acquired services of " + this);
         } catch (Exception ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("FatalExecutionError: Could not release service!", ex), logger);
         }
@@ -178,7 +183,7 @@ public class Action implements ActionService, Initializable<ActionConfig> {
 
     private void updateActionState(ActionState.State state) {
         data.setActionState(ActionStateType.ActionState.newBuilder().setValue(state));
-        logger.info("Stateupdate[" + state.name() + "] of " + this);
+        logger.debug("Stateupdate[" + state.name() + "] of " + this);
     }
 
     @Override

@@ -81,7 +81,10 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
                 Registries.getUnitRegistry().waitForData();
                 final MetaConfigPool metaConfigPool = new MetaConfigPool();
                 metaConfigPool.register(new MetaConfigVariableProvider("UnitConfig", config.getMetaConfig()));
-                metaConfigPool.register(new MetaConfigVariableProvider("UnitHost", Registries.getUnitRegistry().getUnitConfigById(config.getUnitHostId()).getMetaConfig()));
+                if (config.hasUnitHostId() && !config.getUnitHostId().isEmpty()) {
+                    metaConfigPool.register(new MetaConfigVariableProvider("UnitHost", Registries.getUnitRegistry().getUnitConfigById(config.getUnitHostId()).getMetaConfig()));
+                }
+
                 try {
                     //check if the unit is marked as infrastructure
                     if (Boolean.parseBoolean(metaConfigPool.getValue(META_CONFIG_UNIT_INFRASTRUCTURE_FLAG))) {

@@ -55,6 +55,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
     private final SyncObject enablingLock = new SyncObject(AbstractExecutableBaseUnitController.class);
     private Future<Void> executionFuture;
     private boolean executing;
+    private boolean enabled;
 
     public AbstractExecutableBaseUnitController(final Class unitClass, final DB builder) throws org.openbase.jul.exception.InstantiationException {
         super(unitClass, builder);
@@ -131,9 +132,15 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
     }
 
     @Override
+    public boolean isEnabled() {
+        return enabled;
+    }
+
+    @Override
     public void enable() throws CouldNotPerformException, InterruptedException {
         try {
             synchronized (enablingLock) {
+                enabled = true;
                 activate();
                 if (detectAutostart()) {
                     setActivationState(ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.ACTIVE).build()).get();
@@ -151,6 +158,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
         try {
             synchronized (enablingLock) {
                 executing = false;
+                enabled = false;
                 setActivationState(ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.DEACTIVE).build()).get();
                 deactivate();
             }
