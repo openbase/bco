@@ -21,16 +21,13 @@ package org.openbase.bco.registry.unit.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -78,17 +75,7 @@ public class CachedUnitRegistryRemote {
                 try {
                     registryRemote = new UnitRegistryRemote();
                     registryRemote.init();
-                    GlobalCachedExecutorService.submit(new Callable<Void>() {
-                        @Override
-                        public Void call() throws Exception {
-                            try {
-                                registryRemote.activate();
-                            } catch (CouldNotPerformException ex) {
-                               throw new FatalImplementationErrorException("Cached registry remote could not be activated!", this, ex);
-                            }
-                            return null;
-                        }
-                    });
+                    registryRemote.activate();
                 } catch (CouldNotPerformException ex) {
                     if (registryRemote != null) {
                         registryRemote.shutdown();
