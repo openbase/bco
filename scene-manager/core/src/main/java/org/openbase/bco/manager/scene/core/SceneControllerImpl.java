@@ -25,8 +25,10 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.unit.AbstractExecutableBaseUnitController;
@@ -38,6 +40,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.MultiException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
@@ -101,8 +104,13 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         synchronized (triggerListSync) {
             try {
                 synchronized (buttonObserverLock) {
-                    for (final ButtonRemote buttonRemote : buttonRemoteSet) {
-                        buttonRemote.removeDataObserver(buttonObserver);
+                    for (final ButtonRemote button : buttonRemoteSet) {
+                        try {
+                            logger.info("update: remove " + getConfig().getLabel() + " for button  " + button.getLabel());
+                        } catch (NotAvailableException ex) {
+                            Logger.getLogger(SceneControllerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        button.removeDataObserver(buttonObserver);
                     }
 
                     buttonRemoteSet.clear();
@@ -116,8 +124,13 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
                             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register remote for Button[" + unitConfig.getLabel() + "]!", ex), logger);
                         }
                     }
-                    if (isEnabled()) {
+                    if (isActive()) {
                         for (final ButtonRemote button : buttonRemoteSet) {
+                            try {
+                                logger.info("update: register " + getConfig().getLabel() + " for button  " + button.getLabel());
+                            } catch (NotAvailableException ex) {
+                                Logger.getLogger(SceneControllerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                            }
                             button.addDataObserver(buttonObserver);
                         }
                     }
@@ -150,9 +163,8 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     }
 
     @Override
-    public void enable() throws CouldNotPerformException, InterruptedException {
-        logger.debug("enable " + getConfig().getLabel());
-        super.enable();
+    public void activate() throws InterruptedException, CouldNotPerformException {
+        super.activate();
         synchronized (buttonObserverLock) {
             buttonRemoteSet.stream().forEach((button) -> {
                 button.addDataObserver(buttonObserver);
@@ -161,19 +173,19 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     }
 
     @Override
-    public void disable() throws CouldNotPerformException, InterruptedException {
-        logger.info("disable " + getConfig().getLabel());
+    public void deactivate() throws InterruptedException, CouldNotPerformException {
+        logger.debug("deactivate " + getConfig().getLabel());
         synchronized (buttonObserverLock) {
             buttonRemoteSet.stream().forEach((button) -> {
                 button.removeDataObserver(buttonObserver);
             });
         }
-        super.disable();
+        super.deactivate();
     }
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activate scene: " + getConfig().getLabel());
+        logger.info("Activate Scene[" + getConfig().getLabel() + "]");
         synchronized (actionListSync) {
             for (final Action action : actionList) {
                 action.execute();
@@ -182,23 +194,23 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
 
         GlobalCachedExecutorService.submit(() -> {
             try {
-                logger.info("Waiting for action finalisation...");
-                synchronized (actionListSync) {
-                    for (Action action : actionList) {
-                        try {
-                            logger.info("Waiting for action [" + action.getConfig().getServiceAttributeType() + "]");
+                try {
+                    logger.debug("Waiting for action finalisation...");
+                    synchronized (actionListSync) {
+                        for (Action action : actionList) {
+                            logger.debug("Waiting for action [" + action.getConfig().getServiceAttributeType() + "]");
                             action.waitForFinalization();
-                        } catch (InterruptedException ex) {
-                            ExceptionPrinter.printHistory(ex, logger);
-                            break;
                         }
                     }
+                    logger.info("Deactivate Scene[" + getConfig().getLabel() + "] because all actions are sucessfully executed.");
+                } catch (CouldNotPerformException ex) {
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not execute all actions of Scene[" + getConfig().getLabel() + "]!", ex), logger);
+                } finally {
+                    setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
                 }
-                logger.info("All Actions are finished. Deactivate scene...");
-            } catch (CouldNotPerformException ex) {
-                throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not wait for actions!", ex), logger);
+            } catch (InterruptedException ex) {
+                // GlobalCachedExecutorService shutdown...
             }
-            setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
             return null;
         });
     }
@@ -210,16 +222,21 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
 
     @Override
     public Future<Void> applyAction(final ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
-        try {
-            logger.info("applyAction: " + actionConfig.getLabel());
-            Object attribute = new ServiceJSonProcessor().deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType());
-            // Since its an action it has to be an operation service pattern
-            ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(actionConfig.getServiceType()).setPattern(ServiceTemplate.ServicePattern.OPERATION).build();
-            Service.invokeServiceMethod(serviceTemplate, this, attribute);
-            return CompletableFuture.completedFuture(null); // TODO Should be asynchron!
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not apply action!", ex);
-        }
+        return GlobalCachedExecutorService.submit(new Callable<Void>() {
+            @Override
+            public Void call() throws Exception {
+                try {
+                    logger.info("applyAction: " + actionConfig.getLabel());
+                    final Object attribute = new ServiceJSonProcessor().deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType());
+                    // Since its an action it has to be an operation service pattern
+                    final ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(actionConfig.getServiceType()).setPattern(ServiceTemplate.ServicePattern.OPERATION).build();
+                    Service.invokeServiceMethod(serviceTemplate, SceneControllerImpl.this, attribute);
+                    return null;
+                } catch (CouldNotPerformException ex) {
+                    throw new CouldNotPerformException("Could not apply action!", ex);
+                }
+            }
+        });
     }
 
     @Override
