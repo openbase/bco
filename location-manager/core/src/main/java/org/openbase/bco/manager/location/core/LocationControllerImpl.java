@@ -22,24 +22,12 @@ package org.openbase.bco.manager.location.core;
  * #L%
  */
 import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
-import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
-import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
-import org.openbase.bco.dal.remote.service.AbstractServiceRemote;
 import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
 import static org.openbase.bco.manager.location.core.LocationManagerController.LOGGER;
 import org.openbase.bco.manager.location.lib.LocationController;
@@ -53,7 +41,6 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionConfigType;
@@ -135,43 +122,6 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
                 }
             }
         });
-
-//        try {
-//            GlobalScheduledExecutorService.scheduleAtFixedRate(new Runnable() {
-//                @Override
-//                public void run() {
-//                    try {
-//                        System.out.println(this + " connnection State: " + getControllerAvailabilityState().name());
-//                        LocationRemote l = new LocationRemote();
-//                        l.init(scope);
-//                        l.activate();
-//                        System.out.println("====== New Remote "+ScopeGenerator.generateStringRep(l.getScope())+" =========");
-//                        System.out.println(l + " connnection State: " + l.getConnectionState().name());
-//                        l.waitForData();
-//                        System.out.println(l + " temp State: " + l.getTemperatureState().getTemperature());
-//                        System.out.println(l + " connnection State: " + l.getConnectionState().name());
-//                        l.shutdown();
-//                        System.out.println("====== Pool ================");
-//                        System.out.println(Units.getUnitByScope(scope, false).getConnectionState() + " connnection State: " + Units.getUnitByScope(scope, false).getConnectionState().name());
-//                        System.out.println(Units.getUnitByScope(scope, false).getConnectionState() + " active: " + Units.getUnitByScope(scope, true).isActive());
-//                        System.out.println(Units.getUnitByScope(scope, false).getConnectionState() + " locked: " + Units.getUnitByScope(scope, false).isLocked());
-//                        System.out.println(Units.getUnitByScope(scope, false).getConnectionState() + " data avail: " + Units.getUnitByScope(scope, false).isDataAvailable());
-//                        System.out.println(Units.getUnitByScope(scope, false).getConnectionState() + " temp: " + ((LocationRemote) Units.getUnitByScope(scope, false)).getData().getTemperatureState().getTemperature());
-//                        System.out.println("======================");
-//                    } catch (Exception ex) {
-//                        Logger.getLogger(LocationControllerImpl.class.getName()).log(Level.SEVERE, null, ex);
-//                    }
-//                }
-//            }, 1, 5000, TimeUnit.MILLISECONDS);
-//        } catch (Exception ex) {
-//            Logger.getLogger(LocationControllerImpl.class.getName()).log(Level.SEVERE, null, ex);
-//        }
-//        addDataObserver(new Observer<LocationData>() {
-//            @Override
-//            public void update(Observable<LocationData> source, LocationData data) throws Exception {
-//                System.out.println("#### Location observation temp: " + data.getTemperatureState().getTemperature());
-//            }
-//        });
     }
 
     @Override
@@ -241,98 +191,22 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
 
     @Override
     public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
-        return recordSnapshot(UnitType.UNKNOWN);
+        return serviceRemoteManager.recordSnapshot();
     }
 
     @Override
     public Future<Snapshot> recordSnapshot(final UnitType unitType) throws CouldNotPerformException, InterruptedException {
-        try {
-            Snapshot.Builder snapshotBuilder = Snapshot.newBuilder();
-            Set<UnitRemote> unitRemoteSet = new HashSet<>();
-
-            if (unitType == UnitType.UNKNOWN) {
-                // if the type is unknown then take the snapshot for all units
-                serviceRemoteManager.getServiceRemoteList().stream().forEach((serviceRemote) -> {
-                    unitRemoteSet.addAll(serviceRemote.getInternalUnits());
-                });
-            } else {
-                // for effiecency reasons only one serviceType implemented by the unitType is regarded because the unitRemote is part of
-                // every abstractServiceRemotes internal units if the serviceType is implemented by the unitType
-                ServiceType serviceType;
-                try {
-                    serviceType = Registries.getUnitRegistry().getUnitTemplateByType(unitType).getServiceTemplateList().get(0).getType();
-                } catch (IndexOutOfBoundsException ex) {
-                    // if there is not at least one serviceType for the unitType then the snapshot is empty
-                    return CompletableFuture.completedFuture(snapshotBuilder.build());
-                }
-
-                for (AbstractServiceRemote abstractServiceRemote : serviceRemoteManager.getServiceRemoteList()) {
-                    if (!(serviceType == abstractServiceRemote.getServiceType())) {
-                        continue;
-                    }
-
-                    Collection<UnitRemote> internalUnits = abstractServiceRemote.getInternalUnits();
-                    for (UnitRemote unitRemote : internalUnits) {
-                        // just add units with the according type
-                        if (unitRemote.getType() == unitType) {
-                            unitRemoteSet.add(unitRemote);
-                        }
-                    }
-                }
-            }
-
-            // take the snapshot
-            final Map<UnitRemote, Future<Snapshot>> snapshotFutureMap = new HashMap<UnitRemote, Future<Snapshot>>();
-            for (final UnitRemote<?> remote : unitRemoteSet) {
-                try {
-                    if (UnitProcessor.isDalUnit(remote)) {
-                        if (!remote.isConnected()) {
-                            throw new NotAvailableException("Unit[" + remote.getLabel() + "] is currently not reachable!");
-                        }
-                        snapshotFutureMap.put(remote, remote.recordSnapshot());
-                    }
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not record snapshot of " + remote.getLabel(), ex), LOGGER);
-                }
-            }
-
-            // build snapshot
-            for (final Entry<UnitRemote, Future<Snapshot>> snapshotFutureEntry : snapshotFutureMap.entrySet()) {
-                try {
-                    snapshotBuilder.addAllActionConfig(snapshotFutureEntry.getValue().get(5, TimeUnit.SECONDS).getActionConfigList());
-                } catch (ExecutionException | TimeoutException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not record snapshot of " + snapshotFutureEntry.getKey().getLabel(), ex), LOGGER);
-                }
-            }
-            return CompletableFuture.completedFuture(snapshotBuilder.build());
-        } catch (final CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not record snapshot!", ex);
-        }
+        return serviceRemoteManager.recordSnapshot(unitType);
     }
 
     @Override
     public Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
-        try {
-            final Map<String, org.openbase.bco.dal.lib.layer.unit.UnitRemote<?>> unitRemoteMap = new HashMap<>();
-            for (AbstractServiceRemote<?, ?> serviceRemote : serviceRemoteManager.getServiceRemoteList()) {
-                for (org.openbase.bco.dal.lib.layer.unit.UnitRemote<?> unitRemote : serviceRemote.getInternalUnits()) {
-                    unitRemoteMap.put(unitRemote.getId(), unitRemote);
-                }
-            }
-
-            Collection<Future> futureCollection = new ArrayList<>();
-            for (final ActionConfig actionConfig : snapshot.getActionConfigList()) {
-                futureCollection.add(unitRemoteMap.get(actionConfig.getUnitId()).applyAction(actionConfig));
-            }
-            return GlobalCachedExecutorService.allOf(futureCollection, null);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not record snapshot!", ex);
-        }
+        return serviceRemoteManager.restoreSnapshot(snapshot);
     }
 
     @Override
     public Future<Void> applyAction(final ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
-        return serviceRemoteManager.getServiceRemote(actionConfig.getServiceType()).applyAction(actionConfig);
+        return serviceRemoteManager.applyAction(actionConfig);
     }
 
     @Override

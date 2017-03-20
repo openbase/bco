@@ -66,6 +66,13 @@
                     <programs>
                         <program>
                             <mainClass>org.openbase.bco.manager.scene.visual.SceneEditor</mainClass>
+                            <id>bco-scene-editor</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.manager.scene.visual.SceneEditor</mainClass>
                             <id>scene-editor</id>
                             <platforms>
                                 <platform>unix</platform>
