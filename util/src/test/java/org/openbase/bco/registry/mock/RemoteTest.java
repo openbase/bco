@@ -74,7 +74,7 @@ public class RemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test(timeout = 15000)
     public void testRestartingDeviceRegistryRemotes() throws Exception {
         System.out.println("testRestartingDeviceRegistryRemotes");
         DeviceRegistryRemote deviceRemoteAlwaysOn = new DeviceRegistryRemote();
@@ -89,7 +89,7 @@ public class RemoteTest {
 
         int testNumber = 1;
         for (int i = 0; i < testNumber; ++i) {
-            deviceRemoteToggle.shutdown();
+            deviceRemoteToggle.deactivate();
             deviceRemoteToggle.waitForConnectionState(Remote.ConnectionState.DISCONNECTED);
 
             assertEquals("Remote has been shutdown with another in the [" + i + "]s try!", Remote.ConnectionState.CONNECTED, deviceRemoteAlwaysOn.getConnectionState());

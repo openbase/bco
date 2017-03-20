@@ -214,7 +214,6 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             for (ProtoBufFileSynchronizedRegistry registry : getRegistries()) {
                 if (registry.isBusy()) {
                     // skip notification
-                    logger.error("========= CHANGE UPDATE SKIPPTED!");
                     return;
                 }
             }
