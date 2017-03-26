@@ -114,7 +114,11 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
 
                 String unitHostLabel;
                 try {
-                    unitHostLabel = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId()).getLabel();
+                    if (unitConfig.hasUnitHostId() && !unitConfig.getUnitHostId().isEmpty()) {
+                        unitHostLabel = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId()).getLabel();
+                    } else {
+                        unitHostLabel = "";
+                    }
                 } catch (CouldNotPerformException ex) {
                     unitHostLabel = "?";
                 }
@@ -129,7 +133,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
                 remoteLabel = unitConfig.getLabel()
                         + " (" + StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name()) + ")"
                         + " @ " + locationLabel
-                        + " of " + unitHostLabel
+                        + (unitHostLabel.isEmpty() ? "" : "of " + unitHostLabel)
                         + (unitConfig.getDescription().isEmpty() ? "" : "[" + unitConfig.getDescription() + "]");
             } catch (CouldNotPerformException ex) {
                 remoteLabel = "";

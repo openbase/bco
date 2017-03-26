@@ -31,6 +31,7 @@ import rst.domotic.state.IntensityStateType.IntensityState;
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
+@Deprecated
 public interface IntensityStateOperationService extends OperationService, IntensityStateProviderService {
 
     @RPCMethod

@@ -22,6 +22,7 @@ package org.openbase.bco.dal.remote.control.action;
  * #L%
  */
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -102,7 +103,7 @@ public class Action implements ActionService, Initializable<ActionConfig> {
     }
 
     @Override
-    public void execute() throws CouldNotPerformException {
+    public Future<Void> execute() throws CouldNotPerformException {
         synchronized (executionSync) {
             FutureTask task = new FutureTask(new Callable<Void>() {
 
@@ -126,7 +127,7 @@ public class Action implements ActionService, Initializable<ActionConfig> {
                             updateActionState(ActionState.State.FINISHING);
                             releaseService();
                             updateActionState(ActionState.State.FINISHED);
-                        } catch (InterruptedException ex) {
+                        } catch (InterruptedException | CancellationException ex) {
                             updateActionState(ActionState.State.ABORTING);
                             releaseService();
                             updateActionState(ActionState.State.ABORTED);
@@ -145,6 +146,7 @@ public class Action implements ActionService, Initializable<ActionConfig> {
             });
             executionFuture = GlobalCachedExecutorService.submit(task);
         }
+        return executionFuture;
     }
 
     private void acquireService() throws CouldNotPerformException {
@@ -183,7 +185,7 @@ public class Action implements ActionService, Initializable<ActionConfig> {
 
     private void updateActionState(ActionState.State state) {
         data.setActionState(ActionStateType.ActionState.newBuilder().setValue(state));
-        logger.debug("Stateupdate[" + state.name() + "] of " + this);
+        logger.info("Stateupdate[" + state.name() + "] of " + this);
     }
 
     @Override

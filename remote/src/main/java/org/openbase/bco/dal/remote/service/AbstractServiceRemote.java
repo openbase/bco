@@ -435,10 +435,8 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
             List<Future> actionFutureList = new ArrayList<>();
 
-            for (org.openbase.bco.dal.lib.layer.unit.UnitRemote remote : getInternalUnits()) {
+            for (final UnitRemote remote : getInternalUnits()) {
                 actionFutureList.add(remote.applyAction(actionConfig));
-//                remote.callMethod("set" + StringProcessor.transformUpperCaseToCamelCase(serviceType.toString()).replaceAll("Service", ""),
-//                        ServiceJSonProcessor.deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType()));
             }
             return GlobalCachedExecutorService.allOf(actionFutureList, (Void) null);
         } catch (CouldNotPerformException ex) {

@@ -30,6 +30,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
@@ -123,13 +124,19 @@ public interface Unit<D> extends Service, LabelProvider, ScopeProvider, Identifi
 
                 // load operation service attribute by related provider service
                 Object serviceAttribute = Service.invokeServiceMethod(serviceTemplate.getType(), ServiceTemplate.ServicePattern.PROVIDER, this);
+                System.out.println("load[" + serviceAttribute + "] type: " + serviceAttribute.getClass().getSimpleName());
 
                 // verify operation service state (e.g. ignore UNKNOWN service states)
                 verifyOperationServiceState(serviceAttribute);
 
                 // fill action config
                 final ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();
-                actionConfig.setServiceAttribute(serviceJSonProcessor.serialize(serviceAttribute));
+                try {
+                    actionConfig.setServiceAttribute(serviceJSonProcessor.serialize(serviceAttribute));
+                } catch (InvalidStateException ex) {
+                    // skip if serviceAttribute is empty.
+                    continue;
+                }
                 actionConfig.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
                 actionConfig.setActionAuthority(ActionAuthorityType.ActionAuthority.newBuilder().setAuthority(ActionAuthorityType.ActionAuthority.Authority.USER)).setActionPriority(ActionPriorityType.ActionPriority.newBuilder().setPriority(ActionPriorityType.ActionPriority.Priority.NORMAL));
 
@@ -142,7 +149,7 @@ public interface Unit<D> extends Service, LabelProvider, ScopeProvider, Identifi
         MultiException.checkAndThrow("Could not record snapshot!", exceptionStack);
         return CompletableFuture.completedFuture(snapshotBuilder.build());
     }
-    
+
     @RPCMethod
     @Override
     public default Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {

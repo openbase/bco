@@ -90,6 +90,7 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
     }
 
     public synchronized void applyConfigUpdate(final List<String> unitIDList) throws CouldNotPerformException, InterruptedException {
+        Registries.getUnitRegistry().waitForData();
         synchronized (serviceRemoteMapLock) {
             // shutdown all existing instances.
             for (AbstractServiceRemote serviceRemote : serviceRemoteMap.values()) {
@@ -322,6 +323,7 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
     }
 
     public Future<Void> applyAction(final ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+        System.out.println("location execute action: "+actionConfig);
         return getServiceRemote(actionConfig.getServiceType()).applyAction(actionConfig);
     }
 

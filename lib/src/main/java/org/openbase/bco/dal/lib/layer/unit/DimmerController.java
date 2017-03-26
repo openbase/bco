@@ -1,8 +1,7 @@
 package org.openbase.bco.dal.lib.layer.unit;
 
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.service.operation.IntensityStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -12,7 +11,7 @@ import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.processing.FutureProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.IntensityStateType.IntensityState;
+import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.dal.DimmerDataType.DimmerData;
 import rst.domotic.unit.UnitConfigType;
@@ -38,7 +37,6 @@ import rst.domotic.unit.UnitConfigType;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -48,22 +46,22 @@ public class DimmerController extends AbstractDALUnitController<DimmerData, Dimm
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DimmerData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(IntensityState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessState.getDefaultInstance()));
     }
-    
+
     private PowerStateOperationService powerStateService;
-    private IntensityStateOperationService intensityStateService;
-    
+    private BrightnessStateOperationService brightnessStateService;
+
     public DimmerController(final UnitHost unitHost, DimmerData.Builder builder) throws org.openbase.jul.exception.InstantiationException, CouldNotPerformException {
         super(DimmerController.class, unitHost, builder);
     }
-    
+
     @Override
     public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
         try {
             this.powerStateService = getServiceFactory().newPowerService(this);
-            this.intensityStateService = getServiceFactory().newIntensityStateService(this);
+            this.brightnessStateService = getServiceFactory().newBrightnessService(this);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -73,7 +71,7 @@ public class DimmerController extends AbstractDALUnitController<DimmerData, Dimm
     public Future<Void> setPowerState(PowerState state) throws CouldNotPerformException {
         try {
             verifyOperationServiceStateValue(state.getValue());
-        } catch(VerificationFailedException ex) {
+        } catch (VerificationFailedException ex) {
             return FutureProcessor.canceledFuture(Void.class, ex);
         }
         return powerStateService.setPowerState(state);
@@ -87,7 +85,7 @@ public class DimmerController extends AbstractDALUnitController<DimmerData, Dimm
             throw new NotAvailableException("powerState", ex);
         }
     }
-    
+
     public void updatePowerStateProvider(final PowerState value) throws CouldNotPerformException {
         logger.debug("Apply powerState Update[" + value + "] for " + this + ".");
 
@@ -99,31 +97,31 @@ public class DimmerController extends AbstractDALUnitController<DimmerData, Dimm
     }
 
     @Override
-    public Future<Void> setIntensityState(IntensityState intensityState) throws CouldNotPerformException {
-        return intensityStateService.setIntensityState(intensityState);
+    public Future<Void> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
+        return brightnessStateService.setBrightnessState(brightnessState);
     }
 
     @Override
-    public IntensityState getIntensityState() throws NotAvailableException {
+    public BrightnessState getBrightnessState() throws NotAvailableException {
         try {
-            return getData().getIntensityState();
+            return getData().getBrightnessState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("intensityState", ex);
+            throw new NotAvailableException("brightnessState", ex);
         }
     }
-    
-    public void updateIntensityStateProvider(final IntensityState intensityState) throws CouldNotPerformException {
-        logger.debug("Apply intensityState Update[" + intensityState + "] for " + this + ".");
+
+    public void updateBrightnessStateProvider(final BrightnessState brightnessState) throws CouldNotPerformException {
+        logger.debug("Apply brightnessState Update[" + brightnessState + "] for " + this + ".");
 
         try (ClosableDataBuilder<DimmerData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setIntensityState(intensityState);
-            if (intensityState.getIntensity() == 0) {
+            dataBuilder.getInternalBuilder().setBrightnessState(brightnessState);
+            if (brightnessState.getBrightness() == 0) {
                 dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.OFF);
             } else {
                 dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.ON);
             }
         } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply intensityState Update[" + intensityState + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not apply brightnessState Update[" + brightnessState + "] for " + this + "!", ex);
         }
     }
 }
