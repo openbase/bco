@@ -322,7 +322,7 @@ public class SceneRemoteTest {
      *
      * @throws Exception
      */
-    @Test/*(timeout = 10000)*/
+    @Test(timeout = 30000)
     public void testTriggerSceneWithAllDevicesOfLocationActionPerRemoteAndVerifiesUnitModification() throws Exception {
         System.out.println("testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification");
 
@@ -345,7 +345,7 @@ public class SceneRemoteTest {
         assertTrue("internalLight has not switched off!", internalLight.getPowerState().getValue() == POWER_OFF);
         assertTrue("internalPowerSwitch has not switched off!", internalPowerSwitch.getPowerState().getValue() == POWER_OFF);
 
-        int TEST_ITERATIONS = 100;
+        int TEST_ITERATIONS = 10;
         for (int i = 0; i <= TEST_ITERATIONS; i++) {
             activateScene(SCENE_ROOT_LOCATION_ALL_DEVICES_ON);
             while (locationRemote.getPowerState().getValue() != POWER_ON) {
@@ -379,7 +379,7 @@ public class SceneRemoteTest {
      *
      * @throws Exception
      */
-    @Test/*(timeout = 10000)*/
+    @Test(timeout = 30000)
     public void testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification() throws Exception {
         System.out.println("testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification");
 
@@ -402,7 +402,7 @@ public class SceneRemoteTest {
         assertTrue("internalLight has not switched off!", internalLight.getPowerState().getValue() == POWER_OFF);
         assertTrue("internalPowerSwitch has not switched off!", internalPowerSwitch.getPowerState().getValue() == POWER_OFF);
 
-        int TEST_ITERATIONS = 100;
+        int TEST_ITERATIONS = 10;
         for (int i = 0; i <= TEST_ITERATIONS; i++) {
             activateScene(SCENE_ROOT_LOCATION_ON);
             while (locationRemote.getPowerState().getValue() != POWER_ON) {
