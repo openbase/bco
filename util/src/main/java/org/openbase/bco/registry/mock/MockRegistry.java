@@ -55,8 +55,7 @@ import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.CO
 import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.COLOR_SPS;
 import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.CONTACT_SPS;
 import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.HANDLE_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.INTENSITY_SOS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.INTENSITY_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.ILLUMINANCE_SPS;
 import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.MOTION_SPS;
 import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.POWER_CONSUMPTION_SPS;
 import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.POWER_SOS;
@@ -142,6 +141,7 @@ public class MockRegistry {
     public static final String TEMPERATURE_SENSOR_LABEL = "Temperature_Sensor_Unit_Test";
     public static final String TEMPERATURE_CONTROLLER_LABEL = "Temperature_Controller_Unit_Test";
     public static final String SMOKE_DETECTOR_LABEL = "Smoke_Detector_Unit_Test";
+    public static final String LIGHT_SENSOR_LABEL = "Light_Sensor_Test";
     private final String serialNumber = "1234-5678-9100";
 
     public static final String POWER_STATE_SYNCHRONISER_AGENT_LABEL = "PowerStateSynchroniser";
@@ -181,13 +181,12 @@ public class MockRegistry {
         BLIND_SPS(ServiceType.BLIND_STATE_SERVICE, ServicePattern.PROVIDER),
         BRIGHTNESS_SOS(ServiceType.BRIGHTNESS_STATE_SERVICE, ServicePattern.OPERATION),
         BRIGHTNESS_SPS(ServiceType.BRIGHTNESS_STATE_SERVICE, ServicePattern.PROVIDER),
+        ILLUMINANCE_SPS(ServiceType.ILLUMINANCE_STATE_SERVICE, ServicePattern.PROVIDER),
         BUTTON_SPS(ServiceType.BUTTON_STATE_SERVICE, ServicePattern.PROVIDER),
         COLOR_SOS(ServiceType.COLOR_STATE_SERVICE, ServicePattern.OPERATION),
         COLOR_SPS(ServiceType.COLOR_STATE_SERVICE, ServicePattern.PROVIDER),
         CONTACT_SPS(ServiceType.CONTACT_STATE_SERVICE, ServicePattern.PROVIDER),
         HANDLE_SPS(ServiceType.HANDLE_STATE_SERVICE, ServicePattern.PROVIDER),
-        INTENSITY_SOS(ServiceType.INTENSITY_STATE_SERVICE, ServicePattern.OPERATION),
-        INTENSITY_SPS(ServiceType.INTENSITY_STATE_SERVICE, ServicePattern.PROVIDER),
         MOTION_SPS(ServiceType.MOTION_STATE_SERVICE, ServicePattern.PROVIDER),
         POWER_CONSUMPTION_SPS(ServiceType.POWER_CONSUMPTION_STATE_SERVICE, ServicePattern.PROVIDER),
         POWER_SOS(ServiceType.POWER_STATE_SERVICE, ServicePattern.OPERATION),
@@ -222,8 +221,9 @@ public class MockRegistry {
         LIGHT(UnitType.LIGHT, POWER_SOS, POWER_SPS),
         MOTION_DETECTOR(UnitType.MOTION_DETECTOR, MOTION_SPS),
         BRIGHTNESS_SENSOR(UnitType.BRIGHTNESS_SENSOR, BRIGHTNESS_SPS),
+        LIGHT_SENSOR(UnitType.LIGHT_SENSOR, ILLUMINANCE_SPS),
         BUTTON(UnitType.BUTTON, BUTTON_SPS),
-        DIMMER(UnitType.DIMMER, INTENSITY_SOS, INTENSITY_SPS, POWER_SOS, POWER_SPS),
+        DIMMER(UnitType.DIMMER, BRIGHTNESS_SOS, BRIGHTNESS_SPS, POWER_SOS, POWER_SPS),
         HANDLE(UnitType.HANDLE, HANDLE_SPS),
         POWER_CONSUMPTION_SENSOR(UnitType.POWER_CONSUMPTION_SENSOR, POWER_CONSUMPTION_SPS),
         POWER_SOURCE(UnitType.POWER_SWITCH, POWER_SOS, POWER_SPS),
@@ -294,6 +294,7 @@ public class MockRegistry {
             UNIT_TYPE_LABEL_MAP.put(UnitType.SMOKE_DETECTOR, SMOKE_DETECTOR_LABEL);
             UNIT_TYPE_LABEL_MAP.put(UnitType.TEMPERATURE_SENSOR, TEMPERATURE_SENSOR_LABEL);
             UNIT_TYPE_LABEL_MAP.put(UnitType.BATTERY, BATTERY_LABEL);
+            UNIT_TYPE_LABEL_MAP.put(UnitType.LIGHT_SENSOR, LIGHT_SENSOR_LABEL);
         }
 
         try {
@@ -410,14 +411,20 @@ public class MockRegistry {
 
                     logger.info("Register locations...");
                     registerLocations();
-                    // TODO need to be implemented.
-                    // locationRegistry.waitForConsistency();
+                    logger.info("Wait until registry is ready...");
+                    Registries.waitUntilReady();
+                    
                     logger.info("Register devices...");
                     registerDevices();
-                    logger.info("Wait for consistency");
-                    deviceRegistry.waitForConsistency();
-
+                    logger.info("Wait until registry is ready...");
+                    Registries.waitUntilReady();
+                    
+                    logger.info("Register connections...");
                     registerConnnections();
+                    
+                    logger.info("Wait for final consistency...");
+                    Registries.waitUntilReady();
+
                 } catch (CouldNotPerformException | InterruptedException ex) {
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
                 }
@@ -608,7 +615,7 @@ public class MockRegistry {
             waitForDeviceClass(temperatureControllerClass);
 
             registerDeviceUnitConfig(getDeviceConfig("Gire_TemperatureController_Device", serialNumber, temperatureControllerClass));
-            
+
             deviceRegistryRemote.removeDataObserver(notifyChangeObserver);
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);

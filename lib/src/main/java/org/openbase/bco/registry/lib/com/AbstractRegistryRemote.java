@@ -24,10 +24,15 @@ package org.openbase.bco.registry.lib.com;
 import com.google.protobuf.GeneratedMessage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBRemoteService;
 import org.openbase.jul.extension.rsb.scope.jp.JPScope;
 import org.openbase.jul.storage.registry.RegistryRemote;
@@ -103,6 +108,40 @@ public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends
             });
         } finally {
             super.shutdown();
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws InterruptedException {@inheritDoc}
+     */
+    @Override
+    public Boolean isReady() throws InterruptedException {
+        try {
+            if (!isConnected()) {
+                return false;
+            }
+            return RPCHelper.callRemoteMethod(this, Boolean.class).get(2000, TimeUnit.MILLISECONDS);
+        } catch (CouldNotPerformException | ExecutionException | TimeoutException ex) {
+            ExceptionPrinter.printHistory("Could not check if registry is ready!", ex, logger);
+            return false;
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws InterruptedException {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public void waitUntilReady() throws InterruptedException, CouldNotPerformException {
+        try {
+            RPCHelper.callRemoteMethod(this);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not wait unit registry is ready!", ex);
         }
     }
 

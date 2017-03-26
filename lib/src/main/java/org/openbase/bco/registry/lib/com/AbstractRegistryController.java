@@ -38,6 +38,7 @@ import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rsb.scope.jp.JPScope;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ConsistencyHandler;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
@@ -59,9 +60,14 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
 
     public static final boolean SPARSELY_REGISTRY_DATA_FILTERED = true;
     public static final boolean SPARSELY_REGISTRY_DATA_NOTIFIED = false;
-    
+
     protected ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
 
+    private final SyncObject CHANGE_NOTIFIER = new SyncObject("WaitUntilReadySync");
+
+    /**
+     * These are the depending registries where this registry is based on.
+     */
     private final List<RegistryRemote> registryRemoteList;
     private final List<RemoteRegistry> remoteRegistryList;
     private final List<ProtoBufFileSynchronizedRegistry> registryList;
@@ -129,7 +135,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             try {
                 registerRemoteRegistries();
             } catch (CouldNotPerformException ex) {
-                throw new CouldNotPerformException("Could not activate version control for all internal registries!", ex);
+                throw new CouldNotPerformException("Could register all remote registries!", ex);
             }
 
             try {
@@ -222,6 +228,9 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         // continue notification
         syncRegistryFlags();
         super.notifyChange();
+        synchronized (CHANGE_NOTIFIER) {
+            CHANGE_NOTIFIER.notify();
+        }
     }
 
     private void initRemoteRegistries() throws CouldNotPerformException, InterruptedException {
@@ -249,7 +258,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     }
 
     private void deactivateRemoteRegistries() throws CouldNotPerformException, InterruptedException {
-        for (RemoteRegistry remoteRegistry : remoteRegistryList) {
+        for (final RemoteRegistry remoteRegistry : remoteRegistryList) {
             if (remoteRegistry instanceof SynchronizedRemoteRegistry) {
                 ((SynchronizedRemoteRegistry) remoteRegistry).deactivate();
             }
@@ -355,6 +364,52 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             throw new NotAvailableException("ConverterPackage[" + getClass().getPackage().getName() + "." + DB_CONVERTER_PACKAGE_NAME + ".ConverterPackageIdentifier" + "]", ex);
         }
         return converterPackage;
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws InterruptedException {@inheritDoc}
+     */
+    @Override
+    public void waitUntilReady() throws InterruptedException {
+
+        while (true) {
+            // handle interruption
+            if (Thread.interrupted()) {
+                throw new InterruptedException();
+            }
+
+            synchronized (CHANGE_NOTIFIER) {
+                // check ready state
+                if (isReady()) {
+                    return;
+                }
+                // sleep until change
+                CHANGE_NOTIFIER.wait();
+            }
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Boolean isReady() throws InterruptedException {
+        for (ProtoBufFileSynchronizedRegistry registry : registryList) {
+            if (!registry.isReady()) {
+                return false;
+            }
+        }
+
+        for (RegistryRemote registry : registryRemoteList) {
+            if (!registry.isReady()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     protected abstract void registerConsistencyHandler() throws CouldNotPerformException;

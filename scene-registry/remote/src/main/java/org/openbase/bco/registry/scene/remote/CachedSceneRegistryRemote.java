@@ -104,6 +104,19 @@ public class CachedSceneRegistryRemote {
         }
         registryRemote.waitForData(timeout, timeUnit);
     }
+    
+    /**
+     * Method blocks until the registry is not handling any tasks and is currently consistent.
+     *
+     * @throws InterruptedException is thrown in case the thread was externally interrupted.
+     * @throws org.openbase.jul.exception.CouldNotPerformException is thrown if the wait could not be performed.
+     */
+    public static void waitUntilReady() throws InterruptedException, CouldNotPerformException {
+        if (registryRemote == null) {
+            getRegistry();
+        }
+        registryRemote.waitUntilReady();
+    }
 
     public static void shutdown() {
         if (registryRemote != null) {

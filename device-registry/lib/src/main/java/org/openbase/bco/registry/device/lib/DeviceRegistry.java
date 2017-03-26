@@ -418,23 +418,24 @@ public interface DeviceRegistry extends Shutdownable {
     @Deprecated
     public List<UnitType> getSubUnitTypesOfUnitType(final UnitType type) throws CouldNotPerformException;
 
-    /**
-     *
-     * @throws InterruptedException
-     * @deprecated this method has been moved to the unit registry.
-     */
-    @Deprecated
-    public default void waitForConsistency() throws InterruptedException {
-        while (!Thread.currentThread().isInterrupted()) {
-            try {
-                if (isDeviceClassRegistryConsistent()
-                        && isDeviceConfigRegistryConsistent()
-                        && isUnitGroupConfigRegistryConsistent()
-                        && isUnitTemplateRegistryConsistent()) {
-                    return;
-                }
-            } catch (CouldNotPerformException ex) {
-            }
-        }
-    }
+//    /**
+//     *
+//     * @throws InterruptedException
+//     * @deprecated this method has been moved to the unit registry.
+//     */
+//    @Deprecated
+//    public default void waitForConsistency() throws InterruptedException {
+//        while (!Thread.currentThread().isInterrupted()) {
+//            try {
+//                if (isDeviceClassRegistryConsistent()
+//                        && isDeviceConfigRegistryConsistent()
+//                        && isUnitGroupConfigRegistryConsistent()
+//                        && isUnitTemplateRegistryConsistent()) {
+//                    return;
+//                }
+//                Thread.sleep(5);
+//            } catch (CouldNotPerformException ex) {
+//            }
+//        }
+//    }
 }
