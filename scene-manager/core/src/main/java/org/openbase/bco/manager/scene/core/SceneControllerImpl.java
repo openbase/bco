@@ -22,10 +22,14 @@ package org.openbase.bco.manager.scene.core;
  * #L%
  */
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -43,6 +47,7 @@ import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -186,38 +191,40 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
         logger.info("Activate Scene[" + getConfig().getLabel() + "]");
+
+        final Map<Future<Void>, Action> executionFutureList = new HashMap<>();
         synchronized (actionListSync) {
             for (final Action action : actionList) {
-                action.execute();
+                executionFutureList.put(action.execute(), action);
             }
         }
 
-        GlobalCachedExecutorService.submit(() -> {
-            try {
+        MultiException.ExceptionStack exceptionStack = null;
+
+        try {
+            logger.debug("Waiting for action finalisation...");
+            for (Entry<Future<Void>, Action> futureActionEntry : executionFutureList.entrySet()) {
+                logger.info("Waiting for action [" + futureActionEntry.getValue().getConfig().getServiceAttributeType() + "]");
                 try {
-                    logger.debug("Waiting for action finalisation...");
-                    synchronized (actionListSync) {
-                        for (Action action : actionList) {
-                            logger.debug("Waiting for action [" + action.getConfig().getServiceAttributeType() + "]");
-                            action.waitForFinalization();
-                        }
-                    }
-                    logger.info("Deactivate Scene[" + getConfig().getLabel() + "] because all actions are sucessfully executed.");
-                } catch (CouldNotPerformException ex) {
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not execute all actions of Scene[" + getConfig().getLabel() + "]!", ex), logger);
-                } finally {
-                    setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
+                    futureActionEntry.getKey().get();
+                } catch (ExecutionException ex) {
+                    MultiException.push(this, ex, exceptionStack);
                 }
-            } catch (InterruptedException ex) {
-                // GlobalCachedExecutorService shutdown...
             }
-            return null;
-        });
+            MultiException.checkAndThrow("Could not execute all actions of Scene[" + getConfig().getLabel() + "]!", exceptionStack);
+            logger.info("Deactivate Scene[" + getConfig().getLabel() + "] because all actions are sucessfully executed.");
+        } catch (CouldNotPerformException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+        } finally {
+            try (ClosableDataBuilder<SceneData.Builder> dataBuilder = getDataBuilder(this)) {
+                dataBuilder.getInternalBuilder().getActivationStateBuilder().setValue(ActivationState.State.DEACTIVE);
+            }
+        }
     }
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
-        logger.info("Finished scene: " + getConfig().getLabel());
+        logger.debug("Finished scene: " + getConfig().getLabel());
     }
 
     @Override

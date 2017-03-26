@@ -32,10 +32,11 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.remote.service.ColorStateServiceRemote;
 import org.openbase.bco.dal.remote.service.PowerStateServiceRemote;
+import org.openbase.bco.dal.remote.unit.LightRemote;
+import org.openbase.bco.dal.remote.unit.PowerSwitchRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.unit.scene.SceneRemote;
@@ -79,20 +80,29 @@ import rst.vision.HSBColorType.HSBColor;
 public class SceneRemoteTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SceneRemoteTest.class);
+    public static final ActivationState ACTIVATE = ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build();
 
     private static SceneManagerLauncher sceneManagerLauncher;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static LocationManagerLauncher locationManagerLauncher;
     private static MockRegistry registry;
-    private static UnitConfig unitSceneConfig;
-    private static UnitConfig unitLocationSceneConfig;
 
     private static PowerStateServiceRemote powerStateServiceRemote;
     private static ColorStateServiceRemote colorStateServiceRemote;
 
     private static final PowerState.State POWER_ON = PowerState.State.ON;
+    private static final PowerState.State POWER_OFF = PowerState.State.OFF;
+    private static final PowerState POWER_STATE_ON = PowerState.newBuilder().setValue(POWER_ON).build();
+    private static final PowerState POWER_STATE_OFF = PowerState.newBuilder().setValue(POWER_OFF).build();
     private static final HSBColor COLOR_VALUE = HSBColor.newBuilder().setBrightness(100).setSaturation(90).setHue(10).build();
     private static final double TEMPERATURE = 21.3;
+
+    public static final String SCENE_TEST = "testScene";
+    public static final String SCENE_ROOT_LOCATION = "locationTestScene";
+    public static final String SCENE_ROOT_LOCATION_ALL_DEVICES_OFF = "locationDevicesOffTestScene";
+    public static final String SCENE_ROOT_LOCATION_ALL_DEVICES_ON = "locationDevicesOnTestScene";
+    public static final String SCENE_ROOT_LOCATION_OFF = "locationOffTestScene";
+    public static final String SCENE_ROOT_LOCATION_ON = "locationOnTestScene";
 
     public SceneRemoteTest() {
     }
@@ -101,8 +111,6 @@ public class SceneRemoteTest {
     public static void setUpClass() throws Exception {
         try {
             JPService.setupJUnitTestMode();
-            JPService.registerProperty(JPHardwareSimulationMode.class, true);
-//            JPService.registerProperty(JPRSBTransport.class, JPRSBTransport.TransportType.SPREAD);
             registry = MockRegistryHolder.newMockRegistry();
 
             deviceManagerLauncher = new DeviceManagerLauncher();
@@ -111,6 +119,7 @@ public class SceneRemoteTest {
 
             locationManagerLauncher = new LocationManagerLauncher();
             locationManagerLauncher.launch();
+            locationManagerLauncher.getLaunchable();
 
             sceneManagerLauncher = new SceneManagerLauncher();
             sceneManagerLauncher.launch();
@@ -191,11 +200,11 @@ public class SceneRemoteTest {
                 }
             }
 
-            String label = "testScene";
+            String label = SCENE_TEST;
             PlacementConfig placementConfig = PlacementConfig.newBuilder().setLocationId(Registries.getLocationRegistry().getRootLocationConfig().getId()).build();
             SceneConfig sceneConfig = SceneConfig.newBuilder().addAllActionConfig(actionConfigList).build();
             UnitConfig unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
-            unitSceneConfig = unitRegistry.registerUnitConfig(unitConfig).get();
+            unitRegistry.registerUnitConfig(unitConfig).get();
 
             actionConfigList.clear();
             TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(TEMPERATURE).setTemperatureDataUnit(TemperatureState.DataUnit.CELSIUS).build();
@@ -205,10 +214,50 @@ public class SceneRemoteTest {
             actionConfigBuilder.setUnitId(Registries.getLocationRegistry().getRootLocationConfig().getId());
             actionConfigList.add(actionConfigBuilder.build());
 
-            label = "locationTestScene";
+            label = SCENE_ROOT_LOCATION;
             sceneConfig = SceneConfig.newBuilder().addAllActionConfig(actionConfigList).build();
             unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
-            unitLocationSceneConfig = unitRegistry.registerUnitConfig(unitConfig).get();
+            unitRegistry.registerUnitConfig(unitConfig).get();
+
+            label = SCENE_ROOT_LOCATION_ALL_DEVICES_ON;
+            LocationRemote locationRemote = Units.getUnit(Registries.getLocationRegistry().getRootLocationConfig(), true, LocationRemote.class);
+            locationRemote.setPowerState(POWER_ON).get();
+            locationRemote.requestData().get();
+            sceneConfig = SceneConfig.newBuilder().addAllActionConfig(locationRemote.recordSnapshot().get().getActionConfigList()).build();
+            unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
+            unitRegistry.registerUnitConfig(unitConfig).get();
+
+            label = SCENE_ROOT_LOCATION_ALL_DEVICES_OFF;
+            locationRemote.setPowerState(POWER_OFF).get();
+            locationRemote.requestData().get();
+            sceneConfig = SceneConfig.newBuilder().addAllActionConfig(locationRemote.recordSnapshot().get().getActionConfigList()).build();
+            unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
+            unitRegistry.registerUnitConfig(unitConfig).get();
+
+            label = SCENE_ROOT_LOCATION_ON;
+            actionConfigList.clear();
+            actionConfigBuilder.clear();
+            actionConfigBuilder.setServiceType(ServiceType.POWER_STATE_SERVICE);
+            actionConfigBuilder.setServiceAttribute(serviceJSonProcessor.serialize(POWER_STATE_ON));
+            actionConfigBuilder.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(POWER_STATE_ON));
+            actionConfigBuilder.setUnitId(Registries.getLocationRegistry().getRootLocationConfig().getId());
+            actionConfigList.add(actionConfigBuilder.build());
+            sceneConfig = SceneConfig.newBuilder().addAllActionConfig(actionConfigList).build();
+            unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
+            unitRegistry.registerUnitConfig(unitConfig).get();
+
+            label = SCENE_ROOT_LOCATION_OFF;
+            actionConfigList.clear();
+            actionConfigBuilder.clear();
+            actionConfigBuilder.setServiceType(ServiceType.POWER_STATE_SERVICE);
+            actionConfigBuilder.setServiceAttribute(serviceJSonProcessor.serialize(POWER_STATE_OFF));
+            actionConfigBuilder.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(POWER_STATE_OFF));
+            actionConfigBuilder.setUnitId(Registries.getLocationRegistry().getRootLocationConfig().getId());
+            actionConfigList.add(actionConfigBuilder.build());
+            sceneConfig = SceneConfig.newBuilder().addAllActionConfig(actionConfigList).build();
+            unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
+            unitRegistry.registerUnitConfig(unitConfig).get();
+
         } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
             throw new CouldNotPerformException("Could not register scene!", ex);
         }
@@ -233,23 +282,16 @@ public class SceneRemoteTest {
     public void testTriggerScenePerRemote() throws Exception {
         System.out.println("testTriggerScenePerRemote");
 
-        SceneRemote sceneRemote = Units.getUnit(unitSceneConfig, true, SceneRemote.class);
-        sceneRemote.addDataObserver(notifyChangeObserver);
+        activateScene(SCENE_TEST);
 
-        ActivationState activationState = ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build();
-        sceneRemote.setActivationState(activationState).get();
-        waitForSceneExecution(sceneRemote);
+        powerStateServiceRemote.requestData().get();
+        colorStateServiceRemote.requestData().get();
 
-        powerStateServiceRemote.requestData();
-        colorStateServiceRemote.requestData();
-
-        assertEquals("Scene has not been deactivated after execution!", ActivationState.State.DEACTIVE, sceneRemote.getActivationState().getValue());
         assertEquals("PowerState has not been updated by scene!", POWER_ON, powerStateServiceRemote.getPowerState().getValue());
         // the colorStateServiceRemote computes an average in the rgb space which is why the values have to be compared with a tolerance
         assertEquals("Brightness has not been updated by scene!", COLOR_VALUE.getBrightness(), colorStateServiceRemote.getColorState().getColor().getHsbColor().getBrightness(), 0.5);
         assertEquals("Hue has not been updated by scene!", COLOR_VALUE.getHue(), colorStateServiceRemote.getColorState().getColor().getHsbColor().getHue(), 0.5);
         assertEquals("Saturation has not been updated by scene!", COLOR_VALUE.getSaturation(), colorStateServiceRemote.getColorState().getColor().getHsbColor().getSaturation(), 0.5);
-        sceneRemote.removeDataObserver(notifyChangeObserver);
     }
 
     /**
@@ -264,20 +306,138 @@ public class SceneRemoteTest {
         LocationRemote locationRemote = Units.getUnit(Registries.getLocationRegistry().getRootLocationConfig(), true, LocationRemote.class);
         assertTrue("LocationState has the correct temperature to begin with!", locationRemote.getTargetTemperatureState().getTemperature() != TEMPERATURE);
 
-        SceneRemote sceneRemote = Units.getUnit(unitLocationSceneConfig, true, SceneRemote.class);
-        sceneRemote.addDataObserver(notifyChangeObserver);
+        activateScene(SCENE_ROOT_LOCATION);
+        locationRemote.requestData().get();
 
-        ActivationState activationState = ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build();
-        sceneRemote.setActivationState(activationState).get();
-        waitForSceneExecution(sceneRemote);
-        sceneRemote.requestData();
-
-        assertEquals("Scene has not been deactivated after execution!", ActivationState.State.DEACTIVE, sceneRemote.getActivationState().getValue());
         while (locationRemote.getTargetTemperatureState().getTemperature() != TEMPERATURE) {
             System.out.println("locationTemperature[" + locationRemote.getTargetTemperatureState().getTemperature() + "] differs!");
             Thread.sleep(50);
         }
+
         assertEquals("TemperatureState has not been updated in location by scene!", TEMPERATURE, locationRemote.getTargetTemperatureState().getTemperature(), 0.1);
+    }
+
+    /**
+     * Test triggering a scene with an action regarding a location per remote and check if the change has affected units within the location.
+     *
+     * @throws Exception
+     */
+    @Test/*(timeout = 10000)*/
+    public void testTriggerSceneWithAllDevicesOfLocationActionPerRemoteAndVerifiesUnitModification() throws Exception {
+        System.out.println("testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification");
+
+        LightRemote internalLight = Units.getUnitByLabel(MockRegistry.LIGHT_LABEL, true, Units.LIGHT);
+        PowerSwitchRemote internalPowerSwitch = Units.getUnitByLabel(MockRegistry.POWER_SWITCH_LABEL, true, Units.POWER_SWITCH);
+
+        internalLight.setPowerState(POWER_ON).get();
+        internalPowerSwitch.setPowerState(POWER_ON).get();
+
+        internalLight.requestData().get();
+        internalPowerSwitch.requestData().get();
+        assertTrue("internalLight has not switched off!", internalLight.getPowerState().getValue() == POWER_ON);
+        assertTrue("internalPowerSwitch has not switched off!", internalPowerSwitch.getPowerState().getValue() == POWER_ON);
+
+        LocationRemote locationRemote = Units.getUnit(Registries.getLocationRegistry().getRootLocationConfig(), true, LocationRemote.class);
+        locationRemote.setPowerState(POWER_OFF).get();
+
+        internalLight.requestData().get();
+        internalPowerSwitch.requestData().get();
+        assertTrue("internalLight has not switched off!", internalLight.getPowerState().getValue() == POWER_OFF);
+        assertTrue("internalPowerSwitch has not switched off!", internalPowerSwitch.getPowerState().getValue() == POWER_OFF);
+
+        int TEST_ITERATIONS = 100;
+        for (int i = 0; i <= TEST_ITERATIONS; i++) {
+            activateScene(SCENE_ROOT_LOCATION_ALL_DEVICES_ON);
+            while (locationRemote.getPowerState().getValue() != POWER_ON) {
+                System.out.println("location was not yet switched " + POWER_ON);
+                Thread.sleep(100);
+                locationRemote.requestData();
+            }
+            internalLight.requestData().get();
+            internalPowerSwitch.requestData().get();
+            assertTrue("internalLight has not switched on!", internalLight.getPowerState().getValue() == POWER_ON);
+            assertTrue("internalPowerSwitch has not switched on!", internalPowerSwitch.getPowerState().getValue() == POWER_ON);
+            Thread.sleep(100);
+            activateScene(SCENE_ROOT_LOCATION_ALL_DEVICES_OFF);
+            while (locationRemote.getPowerState().getValue() != POWER_OFF) {
+                System.out.println("location was not yet switched " + POWER_OFF);
+                Thread.sleep(100);
+                locationRemote.requestData();
+            }
+            internalLight.requestData().get();
+            internalPowerSwitch.requestData().get();
+            assertTrue("internalLight has not switched off!", internalLight.getPowerState().getValue() == POWER_OFF);
+            assertTrue("internalPowerSwitch has not switched off!", internalPowerSwitch.getPowerState().getValue() == POWER_OFF);
+
+            System.out.println("=== " + (int) (((double) i / (double) TEST_ITERATIONS) * 100d) + "% passed with iteration " + i + " of location on off test.");
+            Thread.sleep(1000);
+        }
+    }
+    
+    /**
+     * Test triggering a scene with an action regarding a location per remote and check if the change has affected units within the location.
+     *
+     * @throws Exception
+     */
+    @Test/*(timeout = 10000)*/
+    public void testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification() throws Exception {
+        System.out.println("testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification");
+
+        LightRemote internalLight = Units.getUnitByLabel(MockRegistry.LIGHT_LABEL, true, Units.LIGHT);
+        PowerSwitchRemote internalPowerSwitch = Units.getUnitByLabel(MockRegistry.POWER_SWITCH_LABEL, true, Units.POWER_SWITCH);
+
+        internalLight.setPowerState(POWER_ON).get();
+        internalPowerSwitch.setPowerState(POWER_ON).get();
+
+        internalLight.requestData().get();
+        internalPowerSwitch.requestData().get();
+        assertTrue("internalLight has not switched off!", internalLight.getPowerState().getValue() == POWER_ON);
+        assertTrue("internalPowerSwitch has not switched off!", internalPowerSwitch.getPowerState().getValue() == POWER_ON);
+
+        LocationRemote locationRemote = Units.getUnit(Registries.getLocationRegistry().getRootLocationConfig(), true, LocationRemote.class);
+        locationRemote.setPowerState(POWER_OFF).get();
+
+        internalLight.requestData().get();
+        internalPowerSwitch.requestData().get();
+        assertTrue("internalLight has not switched off!", internalLight.getPowerState().getValue() == POWER_OFF);
+        assertTrue("internalPowerSwitch has not switched off!", internalPowerSwitch.getPowerState().getValue() == POWER_OFF);
+
+        int TEST_ITERATIONS = 100;
+        for (int i = 0; i <= TEST_ITERATIONS; i++) {
+            activateScene(SCENE_ROOT_LOCATION_ON);
+            while (locationRemote.getPowerState().getValue() != POWER_ON) {
+                System.out.println("location was not yet switched " + POWER_ON);
+                Thread.sleep(100);
+                locationRemote.requestData();
+            }
+            internalLight.requestData().get();
+            internalPowerSwitch.requestData().get();
+            assertTrue("internalLight has not switched on!", internalLight.getPowerState().getValue() == POWER_ON);
+            assertTrue("internalPowerSwitch has not switched on!", internalPowerSwitch.getPowerState().getValue() == POWER_ON);
+            Thread.sleep(100);
+            activateScene(SCENE_ROOT_LOCATION_OFF);
+            while (locationRemote.getPowerState().getValue() != POWER_OFF) {
+                System.out.println("location was not yet switched " + POWER_OFF);
+                Thread.sleep(100);
+                locationRemote.requestData();
+            }
+            internalLight.requestData().get();
+            internalPowerSwitch.requestData().get();
+            assertTrue("internalLight has not switched off!", internalLight.getPowerState().getValue() == POWER_OFF);
+            assertTrue("internalPowerSwitch has not switched off!", internalPowerSwitch.getPowerState().getValue() == POWER_OFF);
+
+            System.out.println("=== " + (int) (((double) i / (double) TEST_ITERATIONS) * 100d) + "% passed with iteration " + i + " of location on off test.");
+            Thread.sleep(1000);
+        }
+    }
+
+    public void activateScene(String sceneLabel) throws CouldNotPerformException, InterruptedException, ExecutionException {
+        SceneRemote sceneRemote = Units.getUnitByLabel(sceneLabel, true, Units.SCENE);
+        sceneRemote.addDataObserver(notifyChangeObserver);
+        sceneRemote.setActivationState(ACTIVATE).get();
+        waitForSceneExecution(sceneRemote);
+        sceneRemote.requestData().get();
+        assertEquals("Scene has not been deactivated after execution!", ActivationState.State.DEACTIVE, sceneRemote.getActivationState().getValue());
         sceneRemote.removeDataObserver(notifyChangeObserver);
     }
 
