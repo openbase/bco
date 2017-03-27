@@ -31,11 +31,7 @@ import com.google.gson.JsonObject;
 import java.io.File;
 import java.util.Map;
 import org.openbase.bco.registry.unit.lib.generator.UnitConfigIdGenerator;
-import org.openbase.bco.registry.unit.lib.jp.JPUnitTemplateDatabaseDirectory;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.storage.file.filter.JSonFileFilter;
 import org.openbase.jul.storage.registry.version.AbstractGlobalDBVersionConverter;
 import org.openbase.jul.storage.registry.version.DBVersionControl;
 import org.openbase.jul.storage.registry.version.DatabaseEntryDescriptor;
@@ -98,34 +94,6 @@ public class UnitTemplate_2_To_3_DBConverter extends AbstractGlobalDBVersionConv
             serviceTemplate.addProperty(PATTERN_FIELD, PROVIDER_PATTERN);
             serviceTemplates.add(serviceTemplate);
             unitTemplate.add(SERVICE_TEMPLATE_FIELD, serviceTemplates);
-
-            try {
-                File unitTemplateDir = JPService.getProperty(JPUnitTemplateDatabaseDirectory.class).getValue();
-                globalDbSnapshots.get(DAL_UNIT_CONFIG_DB_ID).put(new File(unitTemplateDir, id + JSonFileFilter.FILE_SUFFIX), new DatabaseEntryDescriptor(unitTemplate, getVersionControl()));
-            } catch (JPNotAvailableException ex) {
-                throw new CouldNotPerformException("Could not acces unitTemplate directory!", ex);
-            }
-
-            // Find all dalUnitConfigs with unitType BRIGHTNESS_SENSOR and adjust their type and serviceTemplateConfig
-            if (!globalDbSnapshots.get(DAL_UNIT_CONFIG_DB_ID).isEmpty()) {
-                for (DatabaseEntryDescriptor entry : globalDbSnapshots.get(DAL_UNIT_CONFIG_DB_ID).values()) {
-                    JsonObject unitConfig = entry.getEntry();
-                    if (unitConfig.get(TYPE_FIELD).getAsString().equals(BRIGHTNESS_SENSOR_TYPE)) {
-                        unitConfig.remove(TYPE_FIELD);
-                        unitConfig.addProperty(TYPE_FIELD, LIGHT_SENSOR_TYPE);
-
-                        String unitTemplateConfigId = unitConfig.get(UNIT_TEMPLATE_CONFIG_ID_FIELD).getAsString();
-                        unitConfig.remove(UNIT_TEMPLATE_CONFIG_ID_FIELD);
-                        unitConfig.addProperty(UNIT_TEMPLATE_CONFIG_ID_FIELD, unitTemplateConfigId.replace(BRIGHTNESS_SENSOR_TYPE, LIGHT_SENSOR_TYPE));
-
-                        JsonObject serviceConfig = unitConfig.getAsJsonArray(SERVICE_CONFIG_FIELD).get(0).getAsJsonObject();
-                        JsonObject serviceTemplate2 = serviceConfig.getAsJsonObject(SERVICE_TEMPLATE_FIELD);
-                        serviceTemplate2.remove(TYPE_FIELD);
-                        serviceTemplate2.addProperty(TYPE_FIELD, ILLUMINANCE_STATE_TYPE);
-                    }
-                }
-            }
-
             init = true;
         }
 
