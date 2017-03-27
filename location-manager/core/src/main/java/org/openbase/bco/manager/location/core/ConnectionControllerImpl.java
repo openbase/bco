@@ -298,7 +298,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
         }
 
         try (ClosableDataBuilder<ConnectionData.Builder> dataBuilder = getDataBuilder(this)) {
-            TimestampProcessor.updateTimestamp(timestamp, dataBuilder.getInternalBuilder().setDoorState(DoorState.newBuilder().setValue(doorState)), logger).build();
+            dataBuilder.getInternalBuilder().setDoorState(TimestampProcessor.updateTimestamp(timestamp, dataBuilder.getInternalBuilder().getDoorStateBuilder().setValue(doorState), logger).build());
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply brightness data change!", ex);
         }
@@ -345,7 +345,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
         }
 
         try (ClosableDataBuilder<ConnectionData.Builder> dataBuilder = getDataBuilder(this)) {
-             TimestampProcessor.updateTimestamp(timestamp, dataBuilder.getInternalBuilder().setWindowState(WindowState.newBuilder().setValue(windowState)), logger).build();
+             dataBuilder.getInternalBuilder().setWindowState(TimestampProcessor.updateTimestamp(timestamp, dataBuilder.getInternalBuilder().getWindowStateBuilder().setValue(windowState), logger).build());
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply brightness data change!", ex);
         }
