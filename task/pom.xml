@@ -143,7 +143,7 @@
         <dependency>
             <groupId>de.citec.csra</groupId>
             <artifactId>rta-lib</artifactId>
-            <version>1.0-SNAPSHOT</version>
+            <version>${dependency.rta.lib.version}</version>
         </dependency>
     </dependencies>
 </project>
