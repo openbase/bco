@@ -137,7 +137,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
 
     public boolean isExecuting() {
         synchronized (executionLock) {
-            return executionFuture != null && !executionFuture.isDone();
+            return executionFuture != null;
         }
     }
 
@@ -194,7 +194,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
 
     public void cancelExecution() {
         synchronized (executionLock) {
-            if (isExecuting()) {
+            if (isExecuting() && !executionFuture.isDone()) {
                 executionFuture.cancel(true);
             }
             executionFuture = null;
