@@ -42,6 +42,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.iface.Snapshotable;
@@ -112,8 +113,12 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
                 final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
 
                 // filter non dal units
-                if (!UnitConfigProcessor.isDalUnit(unitConfig)) {
-                    continue;
+                try {
+                    if (!UnitConfigProcessor.isDalUnit(unitConfig)) {
+                        continue;
+                    }
+                } catch (VerificationFailedException ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("UnitConfig[" + unitConfig + "] could not be verified as a dal unit!", ex), LOGGER);
                 }
 
                 // sort dal unit by service type
@@ -323,7 +328,7 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
     }
 
     public Future<Void> applyAction(final ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
-        System.out.println("location execute action: "+actionConfig);
+        System.out.println("location execute action: " + actionConfig);
         return getServiceRemote(actionConfig.getServiceType()).applyAction(actionConfig);
     }
 
