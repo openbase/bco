@@ -203,14 +203,19 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         final Map<Future<Void>, Action> executionFutureList = new HashMap<>();
 
         // dublicate actions to make sure 
-        for (int i = 0; i <= ACTION_REPLAY; i++) {
-            synchronized (actionListSync) {
-                for (final Action action : actionList) {
-                    executionFutureList.put(action.execute(), action);
-                }
+//        for (int i = 0; i <= ACTION_REPLAY; i++) {
+        synchronized (actionListSync) {
+            for (final Action action : actionList) {
+                executionFutureList.put(action.execute(), action);
             }
-            Thread.sleep(ACTION_EXECUTION_DEPLAY);
         }
+        Thread.sleep(11000);
+        synchronized (actionListSync) {
+            for (final Action action : actionList) {
+                executionFutureList.put(action.execute(), action);
+            }
+        }
+//        }
 
         MultiException.ExceptionStack exceptionStack = null;
 
