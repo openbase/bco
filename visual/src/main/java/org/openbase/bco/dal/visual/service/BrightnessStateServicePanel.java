@@ -26,7 +26,6 @@ import java.text.DecimalFormat;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.BrightnessStateProviderService;
-import org.openbase.bco.dal.lib.layer.unit.ColorableLight;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -39,9 +38,6 @@ import rst.domotic.state.BrightnessStateType.BrightnessState;
 public class BrightnessStateServicePanel extends AbstractServicePanel<BrightnessStateProviderService, ConsumerService, BrightnessStateOperationService> {
 
     private final DecimalFormat numberFormat = new DecimalFormat("#.##");
-
-    private final static float MAX_BRIGHTNESS = 32000f;
-    private final static float MIN_BRIGHTNESS = 0f;
 
     /**
      * Creates new form BrightnessService
@@ -165,7 +161,6 @@ public class BrightnessStateServicePanel extends AbstractServicePanel<Brightness
         }
     }//GEN-LAST:event_brightnessSliderStateChanged
 
-
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JProgressBar brightnessBar;
     private javax.swing.JLabel brightnessLevelLabel;
@@ -199,10 +194,13 @@ public class BrightnessStateServicePanel extends AbstractServicePanel<Brightness
                     return;
                 }
 
-                brightnessLevelLabel.setForeground(Color.BLACK);
-                float colorValue = ((float) Math.max(Math.min(MAX_BRIGHTNESS, brightness), MIN_BRIGHTNESS)) / MAX_BRIGHTNESS;
-                brightnessLevelLabelPanel.setBackground(Color.getHSBColor((float) 40 / 360, 1f - colorValue, colorValue));
-                brightnessLevelLabel.setText(numberFormat.format(getProviderService().getBrightnessState().getBrightness()) + getProviderService().getBrightnessState().getBrightnessDataUnit());
+                if (brightness < 50.0) {
+                    brightnessLevelLabel.setForeground(Color.WHITE);
+                } else {
+                    brightnessLevelLabel.setForeground(Color.BLACK);
+                }
+                brightnessLevelLabelPanel.setBackground(Color.getHSBColor(0, 0, (float) (brightness / 100.0)));
+                brightnessLevelLabel.setText(numberFormat.format(getProviderService().getBrightnessState().getBrightness()) + "%");
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
             }
