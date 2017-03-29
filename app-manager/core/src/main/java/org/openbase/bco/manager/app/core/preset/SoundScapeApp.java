@@ -81,25 +81,13 @@ public class SoundScapeApp extends AbstractAppController {
     }
 
     @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        super.activate();
-        listenerWatchDog.activate();
-        agentBathAmbientColorBeachCeiling = Units.getUnit("BathAmbientColorBeachCeiling", false, Units.UNIT_BASE_AGENT);
-        agentBathAmbientColorForest = Units.getUnit("BathAmbientColorForest", false, Units.UNIT_BASE_AGENT);
-        agentBathAmbientColorNight = Units.getUnit("BathAmbientColorNight", false, Units.UNIT_BASE_AGENT);
-        agentBathAmbientColorZen = Units.getUnit("BathAmbientColorZen", false, Units.UNIT_BASE_AGENT);
-    }
-
-    @Override
-    public void deactivate() throws InterruptedException, CouldNotPerformException {
-        super.deactivate();
-        listenerWatchDog.deactivate();
-    }
-
-    @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
         try {
-            super.activate();
+            agentBathAmbientColorBeachCeiling = Units.getUnit("BathAmbientColorBeachCeiling", false, Units.UNIT_BASE_AGENT);
+            agentBathAmbientColorForest = Units.getUnit("BathAmbientColorForest", false, Units.UNIT_BASE_AGENT);
+            agentBathAmbientColorNight = Units.getUnit("BathAmbientColorNight", false, Units.UNIT_BASE_AGENT);
+            agentBathAmbientColorZen = Units.getUnit("BathAmbientColorZen", false, Units.UNIT_BASE_AGENT);
+            listenerWatchDog.activate();
         } catch (InterruptedException | CouldNotPerformException ex) {
             logger.error("Could not activate SoundScopeAgent");
         }
@@ -113,7 +101,6 @@ public class SoundScapeApp extends AbstractAppController {
             agentBathAmbientColorNight.setActivationState(deactive);
             agentBathAmbientColorZen.setActivationState(deactive);
             listenerWatchDog.deactivate();
-            super.deactivate();
         } catch (InterruptedException | CouldNotPerformException ex) {
             logger.error("Could not deactivate SoundScopeAgent");
         }

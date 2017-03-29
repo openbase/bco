@@ -112,12 +112,6 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
         }
     }
 
-    public boolean isExecuting() {
-        synchronized (taskLock) {
-            return tileFollowerFuture != null && !tileFollowerFuture.isDone();
-        }
-    }
-
     public class TileFollower implements Callable<Void> {
 
         private final List<String> processedLocations = new ArrayList<>();

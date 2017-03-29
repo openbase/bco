@@ -51,7 +51,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -85,6 +84,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     private final List<Action> actionList;
     private final SyncObject actionListSync = new SyncObject("ActionListSync");
     private final Observer<ButtonData> buttonObserver;
+    private boolean executing = false;
 
     public SceneControllerImpl() throws org.openbase.jul.exception.InstantiationException {
         super(SceneControllerImpl.class, SceneData.newBuilder());
@@ -198,6 +198,8 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     protected void execute() throws CouldNotPerformException, InterruptedException {
         logger.info("Activate Scene[" + getConfig().getLabel() + "]");
 
+        executing = true;
+
         final Map<Future<Void>, Action> executionFutureList = new HashMap<>();
 
         // dublicate actions to make sure 
@@ -242,15 +244,19 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
                     futureActionEntry.getKey().cancel(true);
                 }
             }
-            try (ClosableDataBuilder<SceneData.Builder> dataBuilder = getDataBuilder(this)) {
-                dataBuilder.getInternalBuilder().getActivationStateBuilder().setValue(ActivationState.State.DEACTIVE);
-            }
+            executing = false;
+            setActivationState(ActivationState.State.DEACTIVE);
         }
     }
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
         logger.debug("Finished scene: " + getConfig().getLabel());
+    }
+
+    @Override
+    public boolean isExecuting() {
+        return executing;
     }
 
     @Override
