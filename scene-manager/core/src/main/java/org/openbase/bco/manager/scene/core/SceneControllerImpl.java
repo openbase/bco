@@ -29,8 +29,11 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openbase.bco.dal.lib.layer.service.Service;
@@ -45,6 +48,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
@@ -75,10 +79,10 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionConfig.getDefaultInstance()));
     }
 
+    private final static long ACTION_EXECUTION_TIMEOUT = 15000;
     private final Object buttonObserverLock = new SyncObject("ButtonObserverLock");
     private final Set<ButtonRemote> buttonRemoteSet;
     private final List<Action> actionList;
-    private final SyncObject triggerListSync = new SyncObject("TriggerListSync");
     private final SyncObject actionListSync = new SyncObject("ActionListSync");
     private final Observer<ButtonData> buttonObserver;
 
@@ -106,43 +110,42 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     @Override
     public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
         config = super.applyConfigUpdate(config);
-        synchronized (triggerListSync) {
-            try {
-                synchronized (buttonObserverLock) {
+
+        try {
+            synchronized (buttonObserverLock) {
+                for (final ButtonRemote button : buttonRemoteSet) {
+                    try {
+                        logger.info("update: remove " + getConfig().getLabel() + " for button  " + button.getLabel());
+                    } catch (NotAvailableException ex) {
+                        Logger.getLogger(SceneControllerImpl.class.getName()).log(Level.SEVERE, null, ex);
+                    }
+                    button.removeDataObserver(buttonObserver);
+                }
+
+                buttonRemoteSet.clear();
+                ButtonRemote buttonRemote;
+
+                for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(config.getLabel(), UnitType.BUTTON)) {
+                    try {
+                        buttonRemote = Units.getUnit(unitConfig, false, Units.BUTTON);
+                        buttonRemoteSet.add(buttonRemote);
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register remote for Button[" + unitConfig.getLabel() + "]!", ex), logger);
+                    }
+                }
+                if (isActive()) {
                     for (final ButtonRemote button : buttonRemoteSet) {
                         try {
-                            logger.info("update: remove " + getConfig().getLabel() + " for button  " + button.getLabel());
+                            logger.info("update: register " + getConfig().getLabel() + " for button  " + button.getLabel());
                         } catch (NotAvailableException ex) {
                             Logger.getLogger(SceneControllerImpl.class.getName()).log(Level.SEVERE, null, ex);
                         }
-                        button.removeDataObserver(buttonObserver);
-                    }
-
-                    buttonRemoteSet.clear();
-                    ButtonRemote buttonRemote;
-
-                    for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(config.getLabel(), UnitType.BUTTON)) {
-                        try {
-                            buttonRemote = Units.getUnit(unitConfig, false, Units.BUTTON);
-                            buttonRemoteSet.add(buttonRemote);
-                        } catch (CouldNotPerformException ex) {
-                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register remote for Button[" + unitConfig.getLabel() + "]!", ex), logger);
-                        }
-                    }
-                    if (isActive()) {
-                        for (final ButtonRemote button : buttonRemoteSet) {
-                            try {
-                                logger.info("update: register " + getConfig().getLabel() + " for button  " + button.getLabel());
-                            } catch (NotAvailableException ex) {
-                                Logger.getLogger(SceneControllerImpl.class.getName()).log(Level.SEVERE, null, ex);
-                            }
-                            button.addDataObserver(buttonObserver);
-                        }
+                        button.addDataObserver(buttonObserver);
                     }
                 }
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not init all related button remotes.", ex), logger);
             }
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not init all related button remotes.", ex), logger);
         }
 
         MultiException.ExceptionStack exceptionStack = null;
@@ -188,34 +191,57 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         super.deactivate();
     }
 
+    public static final int ACTION_REPLAY = 3;
+    public static final int ACTION_EXECUTION_DEPLAY = 2000;
+
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
         logger.info("Activate Scene[" + getConfig().getLabel() + "]");
 
         final Map<Future<Void>, Action> executionFutureList = new HashMap<>();
-        synchronized (actionListSync) {
-            for (final Action action : actionList) {
-                executionFutureList.put(action.execute(), action);
+
+        // dublicate actions to make sure 
+        for (int i = 0; i <= ACTION_REPLAY; i++) {
+            synchronized (actionListSync) {
+                for (final Action action : actionList) {
+                    executionFutureList.put(action.execute(), action);
+                }
             }
+            Thread.sleep(ACTION_EXECUTION_DEPLAY);
         }
 
         MultiException.ExceptionStack exceptionStack = null;
 
         try {
             logger.debug("Waiting for action finalisation...");
+
+            long checkStart = System.currentTimeMillis() + ACTION_EXECUTION_TIMEOUT;
+            long timeout;
             for (Entry<Future<Void>, Action> futureActionEntry : executionFutureList.entrySet()) {
+                if (futureActionEntry.getKey().isDone()) {
+                    continue;
+                }
                 logger.info("Waiting for action [" + futureActionEntry.getValue().getConfig().getServiceAttributeType() + "]");
                 try {
-                    futureActionEntry.getKey().get();
-                } catch (ExecutionException ex) {
+                    timeout = checkStart - System.currentTimeMillis();
+                    if (timeout <= 0) {
+                        throw new RejectedException("Rejected because of scene timeout.");
+                    }
+                    futureActionEntry.getKey().get(timeout, TimeUnit.MILLISECONDS);
+                } catch (ExecutionException | TimeoutException ex) {
                     MultiException.push(this, ex, exceptionStack);
                 }
             }
-            MultiException.checkAndThrow("Could not execute all actions of Scene[" + getConfig().getLabel() + "]!", exceptionStack);
+            MultiException.checkAndThrow("Could not execute all actions!", exceptionStack);
             logger.info("Deactivate Scene[" + getConfig().getLabel() + "] because all actions are sucessfully executed.");
-        } catch (CouldNotPerformException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+        } catch (CouldNotPerformException | CancellationException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Scene[" + getConfig().getLabel() + "] execution failed!"), logger);
         } finally {
+            for (Entry<Future<Void>, Action> futureActionEntry : executionFutureList.entrySet()) {
+                if (!futureActionEntry.getKey().isDone()) {
+                    futureActionEntry.getKey().cancel(true);
+                }
+            }
             try (ClosableDataBuilder<SceneData.Builder> dataBuilder = getDataBuilder(this)) {
                 dataBuilder.getInternalBuilder().getActivationStateBuilder().setValue(ActivationState.State.DEACTIVE);
             }
