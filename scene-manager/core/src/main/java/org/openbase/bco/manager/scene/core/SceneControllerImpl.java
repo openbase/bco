@@ -192,7 +192,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     }
 
     public static final int ACTION_REPLAY = 3;
-    public static final int ACTION_EXECUTION_DEPLAY = 2000;
+    public static final int ACTION_EXECUTION_DEPLAY = 5500;
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
@@ -202,20 +202,18 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
 
         final Map<Future<Void>, Action> executionFutureList = new HashMap<>();
 
-        // dublicate actions to make sure 
-//        for (int i = 0; i <= ACTION_REPLAY; i++) {
-        synchronized (actionListSync) {
-            for (final Action action : actionList) {
-                executionFutureList.put(action.execute(), action);
+        // dublicate actions to make sure all actions are applied.
+        for (int i = 0; i < ACTION_REPLAY; i++) {
+            synchronized (actionListSync) {
+                for (final Action action : actionList) {
+                    executionFutureList.put(action.execute(), action);
+                }
+            }
+            // only wait if another interation is following.
+            if (i + 1 < ACTION_REPLAY) {
+                Thread.sleep(ACTION_EXECUTION_DEPLAY);
             }
         }
-        Thread.sleep(11000);
-        synchronized (actionListSync) {
-            for (final Action action : actionList) {
-                executionFutureList.put(action.execute(), action);
-            }
-        }
-//        }
 
         MultiException.ExceptionStack exceptionStack = null;
 
