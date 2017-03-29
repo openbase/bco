@@ -39,6 +39,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.jul.schedule.SyncObject;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.location.LocationConfigType;
@@ -50,6 +51,7 @@ import rst.vision.HSBColorType.HSBColor;
 public class PartyLightTileFollowerApp extends AbstractAppController {
 
     private Map<String, LocationRemote> locationRemoteMap;
+    private SyncObject taskLock = new SyncObject("TaskLock");
 
     public PartyLightTileFollowerApp() throws InstantiationException, InterruptedException {
         super(PartyLightTileFollowerApp.class);
@@ -91,19 +93,28 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
             throw new InvalidStateException("App location is not a tile!");
         }
 
-        // execute
-        if (tileFollowerFuture != null) {
-            return;
+        synchronized (taskLock) {
+            // execute
+            if (tileFollowerFuture != null) {
+                return;
+            }
+            tileFollowerFuture = GlobalCachedExecutorService.submit(new TileFollower());
         }
-        tileFollowerFuture = GlobalCachedExecutorService.submit(new TileFollower());
-
     }
 
     @Override
     protected void stop() {
-        if (tileFollowerFuture != null) {
-            tileFollowerFuture.cancel(true);
-            tileFollowerFuture = null;
+        synchronized (taskLock) {
+            if (tileFollowerFuture != null) {
+                tileFollowerFuture.cancel(true);
+                tileFollowerFuture = null;
+            }
+        }
+    }
+
+    public boolean isExecuting() {
+        synchronized (taskLock) {
+            return tileFollowerFuture != null && !tileFollowerFuture.isDone();
         }
     }
 
