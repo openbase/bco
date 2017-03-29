@@ -50,7 +50,7 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
     public static final boolean INFRASTRUCTURE_UNITS_FILTERED = true;
     public static final boolean INFRASTRUCTURE_UNITS_HANDELED = false;
 
-    private final boolean filterInfrastructureUnits;
+    private boolean filterInfrastructureUnits;
 
     /**
      * Constructor creates a new service remote.
@@ -150,5 +150,15 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
         }
 
         return TimestampProcessor.updateTimestamp(timestamp, PowerState.newBuilder().setValue(powerStateValue), logger).build();
+    }
+
+    /**
+     * Must be called before init.
+     *
+     * @param enabled
+     */
+    @Override
+    public void setInfrastructureFilter(boolean enabled) {
+        this.filterInfrastructureUnits = enabled;
     }
 }

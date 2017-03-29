@@ -576,6 +576,10 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         }
     }
 
+    public void setInfrastructureFilter(final boolean enabled) {
+        // TODO: just a hack, remove me later
+    }
+
     /**
      * Returns a short instance description.
      *
