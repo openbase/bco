@@ -322,7 +322,7 @@ public class SceneRemoteTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 30000)
+    @Test(timeout = 60000)
     public void testTriggerSceneWithAllDevicesOfLocationActionPerRemoteAndVerifiesUnitModification() throws Exception {
         System.out.println("testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification");
 
@@ -379,7 +379,7 @@ public class SceneRemoteTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 30000)
+    @Test(timeout = 60000)
     public void testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification() throws Exception {
         System.out.println("testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification");
 
