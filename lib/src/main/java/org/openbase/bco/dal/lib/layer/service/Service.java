@@ -21,19 +21,21 @@ package org.openbase.bco.dal.lib.layer.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.GeneratedMessage;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
-import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.action.ActionConfigType;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.ContactStateType;
 
 /**
  *
@@ -42,8 +44,10 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
  */
 public interface Service {
 
+    public static final Package SERVICE_STATE_PACKAGE = ContactStateType.class.getPackage();
     public static final String SERVICE_LABEL = Service.class.getSimpleName();
 
+    @RPCMethod
     public Future<Void> applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException;
 
     /**
@@ -97,6 +101,7 @@ public interface Service {
      * @param template The service template.
      * @return The state type name as string.
      * @throws org.openbase.jul.exception.NotAvailableException is thrown in case the given template is null.
+     * //
      */
     public static String getServiceStateName(final ServiceTemplate template) throws NotAvailableException {
         try {
@@ -107,6 +112,23 @@ public interface Service {
             return getServiceStateName(template.getType());
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("ServiceStateName", ex);
+        }
+    }
+
+    /**
+     * Method detects and returns the service data class.
+     *
+     * @param serviceType the given service type to resolve the class.
+     * @return the service data class.
+     * @throws NotAvailableException is thrown in case the class could not be detected.
+     */
+    public static Class<? extends GeneratedMessage> detectServiceDataClass(final ServiceType serviceType) throws NotAvailableException {
+        final String serviceBaseName = getServiceBaseName(serviceType);
+        final String serviceClassName = SERVICE_STATE_PACKAGE.getName() + "." + serviceBaseName + "Type$" + serviceBaseName;
+        try {
+            return (Class<? extends GeneratedMessage>) Class.forName(serviceClassName);
+        } catch (NullPointerException | ClassNotFoundException | ClassCastException ex) {
+            throw new NotAvailableException("ServiceDataClass", serviceClassName, new CouldNotPerformException("Could not detect class!", ex));
         }
     }
 

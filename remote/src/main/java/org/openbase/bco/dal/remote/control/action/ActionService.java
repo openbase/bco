@@ -23,24 +23,22 @@ package org.openbase.bco.dal.remote.control.action;
  */
 
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.jul.exception.CouldNotPerformException;
-import rst.domotic.action.ActionConfigType;
 
 /**
  *
  * * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
  */
-public interface ActionService extends Service {
+public interface ActionService {
 
-    public void execute() throws CouldNotPerformException;
+    public Future<Void> execute() throws CouldNotPerformException;
 
 
-    // TODO Please check why an action should be a service?? Makes this really sense?
-    @Override
-    public default Future<Void> applyAction(ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
+//    // TODO Please check why an action should be a service?? Makes this really sense?
+//    @Override
+//    public default Future<Void> applyAction(ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+//    }
+//
 
 }

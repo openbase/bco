@@ -31,7 +31,6 @@ import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ContactStateType.ContactState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.timing.TimestampType.Timestamp;
 
 /**
  *
@@ -40,7 +39,7 @@ import rst.timing.TimestampType.Timestamp;
 public class ContactStateServiceRemote extends AbstractServiceRemote<ContactStateProviderService, ContactState> implements ContactStateProviderServiceCollection {
 
     public ContactStateServiceRemote() {
-        super(ServiceType.CONTACT_STATE_SERVICE);
+        super(ServiceType.CONTACT_STATE_SERVICE, ContactState.class);
     }
 
     /**

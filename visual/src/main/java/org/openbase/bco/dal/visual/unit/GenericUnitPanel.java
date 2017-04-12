@@ -40,7 +40,7 @@ import org.openbase.bco.dal.visual.util.StatusPanel;
 import org.openbase.bco.dal.visual.util.StatusPanel.StatusType;
 import org.openbase.bco.dal.visual.util.UnitRemoteView;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
-import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -110,14 +110,33 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
             // build unit label
             String remoteLabel;
             try {
-                UnitConfig unitConfig = ((UnitConfig) getRemoteService().getConfig());
+                final UnitConfig unitConfig = (UnitConfig) getRemoteService().getConfig();
+
+                String unitHostLabel;
+                try {
+                    if (unitConfig.hasUnitHostId() && !unitConfig.getUnitHostId().isEmpty()) {
+                        unitHostLabel = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId()).getLabel();
+                    } else {
+                        unitHostLabel = "";
+                    }
+                } catch (CouldNotPerformException ex) {
+                    unitHostLabel = "?";
+                }
+
+                String locationLabel;
+                try {
+                    locationLabel = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel();
+                } catch (CouldNotPerformException ex) {
+                    locationLabel = "?";
+                }
+
                 remoteLabel = unitConfig.getLabel()
                         + " (" + StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name()) + ")"
-                        + " @ " + CachedUnitRegistryRemote.getRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel()
-                        + " of " + CachedUnitRegistryRemote.getRegistry().getUnitConfigById(((UnitConfig) getRemoteService().getConfig()).getUnitHostId()).getLabel()
+                        + " @ " + locationLabel
+                        + (unitHostLabel.isEmpty() ? "" : "of " + unitHostLabel)
                         + (unitConfig.getDescription().isEmpty() ? "" : "[" + unitConfig.getDescription() + "]");
             } catch (CouldNotPerformException ex) {
-                remoteLabel = "?";
+                remoteLabel = "";
             }
 
             Color textColor = Color.BLACK;

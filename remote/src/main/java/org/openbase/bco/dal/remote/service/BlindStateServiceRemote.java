@@ -23,20 +23,16 @@ package org.openbase.bco.dal.remote.service;
  */
 import java.util.Collection;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openbase.bco.dal.lib.layer.service.collection.BlindStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.timing.TimestampType.Timestamp;
 
 /**
  *
@@ -45,7 +41,7 @@ import rst.timing.TimestampType.Timestamp;
 public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOperationService, BlindState> implements BlindStateOperationServiceCollection {
 
     public BlindStateServiceRemote() {
-        super(ServiceType.BLIND_STATE_SERVICE);
+        super(ServiceType.BLIND_STATE_SERVICE, BlindState.class);
     }
 
     public Collection<BlindStateOperationService> getBlindStateOperationServices() {

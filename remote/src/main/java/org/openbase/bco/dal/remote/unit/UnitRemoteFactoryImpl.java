@@ -28,8 +28,6 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.EnumNotSupportedException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -119,7 +117,7 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
             String remoteClassName = null;
             // check unit type and load related class.
             if (UnitConfigProcessor.isBaseUnit(unitType)) {
-                remoteClassName = "org.openbase.bco.dal.remote.unit." + unitType.name().toLowerCase() + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
+                remoteClassName = "org.openbase.bco.dal.remote.unit." + unitType.name().toLowerCase().replaceAll("_", "") + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
             } else if (UnitConfigProcessor.isDalUnit(unitType)) {
                 remoteClassName = AbstractUnitRemote.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
             } else {

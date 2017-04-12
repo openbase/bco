@@ -34,7 +34,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.TypeNotSupportedException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.vision.ColorType;
@@ -47,7 +47,7 @@ import rst.vision.HSBColorType.HSBColor;
 public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOperationService, ColorState> implements ColorStateOperationServiceCollection {
 
     public ColorStateServiceRemote() {
-        super(ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE);
+        super(ServiceType.COLOR_STATE_SERVICE, ColorState.class);
     }
 
     public Collection<ColorStateOperationService> getColorStateOperationServices() {

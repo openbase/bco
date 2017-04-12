@@ -33,7 +33,6 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.timing.TimestampType.Timestamp;
 
 /**
  *
@@ -42,7 +41,7 @@ import rst.timing.TimestampType.Timestamp;
 public class ActivationStateServiceRemote extends AbstractServiceRemote<ActivationStateOperationService, ActivationState> implements ActivationStateOperationServiceCollection {
 
     public ActivationStateServiceRemote() {
-        super(ServiceType.ACTIVATION_STATE_SERVICE);
+        super(ServiceType.ACTIVATION_STATE_SERVICE, ActivationState.class);
     }
 
     public Collection<ActivationStateOperationService> getActivationStateOperationServices() {

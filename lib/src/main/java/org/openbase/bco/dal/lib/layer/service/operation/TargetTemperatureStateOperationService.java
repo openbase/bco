@@ -24,6 +24,7 @@ package org.openbase.bco.dal.lib.layer.service.operation;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.provider.TargetTemperatureStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 
 /**
@@ -32,5 +33,6 @@ import rst.domotic.state.TemperatureStateType.TemperatureState;
  */
 public interface TargetTemperatureStateOperationService extends OperationService, TargetTemperatureStateProviderService {
 
+    @RPCMethod
     public Future<Void> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException;
 }

@@ -25,7 +25,7 @@ import java.util.Collection;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.collection.BrightnessStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
-import org.openbase.bco.dal.remote.unit.UnitRemote;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
@@ -33,7 +33,6 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.timing.TimestampType.Timestamp;
 
 // TODO pleminoq: This seems to cause in problems because units using this service in different ways.
 /**
@@ -43,7 +42,7 @@ import rst.timing.TimestampType.Timestamp;
 public class BrightnessStateServiceRemote extends AbstractServiceRemote<BrightnessStateOperationService, BrightnessState> implements BrightnessStateOperationServiceCollection {
 
     public BrightnessStateServiceRemote() {
-        super(ServiceType.BRIGHTNESS_STATE_SERVICE);
+        super(ServiceType.BRIGHTNESS_STATE_SERVICE, BrightnessState.class);
     }
 
     public Collection<BrightnessStateOperationService> getBrightnessStateOperationServices() throws CouldNotPerformException {
@@ -74,12 +73,12 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
 
     @Override
     public BrightnessState getBrightnessState() throws NotAvailableException {
-        return getServiceState();
+        return getData();
     }
 
     @Override
     public BrightnessState getBrightnessState(final UnitType unitType) throws NotAvailableException {
-        Collection<BrightnessStateOperationService> brightnessStateOperationServices = getServices(UnitType.BATTERY);
+        Collection<BrightnessStateOperationService> brightnessStateOperationServices = getServices(unitType);
         int serviceNumber = brightnessStateOperationServices.size();
         Double average = 0d;
         long timestamp = 0;

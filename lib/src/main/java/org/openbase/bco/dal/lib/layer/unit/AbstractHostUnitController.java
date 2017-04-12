@@ -29,7 +29,10 @@ import java.lang.reflect.Method;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactoryProvider;
 import org.openbase.bco.dal.lib.transform.UnitConfigToUnitClassTransformer;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
@@ -41,6 +44,7 @@ import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
+import org.openbase.jul.extension.protobuf.ProtobufListDiff;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.unit.UnitConfigType;
@@ -49,17 +53,21 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
- * @param <D> the data type of this unit used for the state synchronization.    
+ * @param <D> the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
  */
 public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractBaseUnitController<D, DB> implements UnitHost<D>, ServiceFactoryProvider {
 
     private final Map<String, AbstractUnitController<?, ?>> unitMap;
+    private final ProtobufListDiff<String, UnitConfig, UnitConfig.Builder> hostedUnitDiff;
 
     public AbstractHostUnitController(final Class unitClass, final DB builder) throws InstantiationException {
         super(unitClass, builder);
         this.unitMap = new HashMap<>();
+        this.hostedUnitDiff = new ProtobufListDiff<>();
     }
+
+    protected abstract List<UnitConfig> getHostedUnits() throws NotAvailableException;
 
     protected <U extends AbstractUnitController<?, ?>> void registerUnit(final U unit) throws CouldNotPerformException {
         try {
@@ -72,7 +80,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
         }
     }
 
-    public AbstractUnitController<?, ?> getHostedUnit(final String id) throws NotAvailableException {
+    public AbstractUnitController<?, ?> getHostedUnitController(final String id) throws NotAvailableException {
         if (!unitMap.containsKey(id)) {
             throw new NotAvailableException("Unit[" + id + "]", this + " has no registered unit with given name!");
         }
@@ -107,6 +115,81 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
         MultiException.checkAndThrow("Could not deactivate all hosted units of " + this, exceptionStack);
     }
 
+    @Override
+    public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        UnitConfig unitConfig = super.applyConfigUpdate(config);
+        unitRegistry.waitForData();
+
+        hostedUnitDiff.diff(getHostedUnits());
+
+        try {
+            MultiException.ExceptionStack removeExceptionStack = null;
+            for (UnitConfig removedUnitConfig : hostedUnitDiff.getRemovedMessageMap().getMessages()) {
+                try {
+                    unitMap.remove(removedUnitConfig.getId()).deactivate();
+                } catch (CouldNotPerformException ex) {
+                    removeExceptionStack = MultiException.push(this, ex, removeExceptionStack);
+                }
+            }
+
+            /*
+             * unitController handle their update themselves
+             */
+            MultiException.ExceptionStack registerExceptionStack = null;
+            for (UnitConfig newUnitConfig : hostedUnitDiff.getNewMessageMap().getMessages()) {
+                try {
+                    registerUnit(newUnitConfig);
+                } catch (CouldNotPerformException ex) {
+                    registerExceptionStack = MultiException.push(this, ex, registerExceptionStack);
+                }
+            }
+
+            MultiException.ExceptionStack exceptionStack = null;
+            int counter;
+            try {
+                if (removeExceptionStack != null) {
+                    counter = removeExceptionStack.size();
+                } else {
+                    counter = 0;
+                }
+                MultiException.checkAndThrow("Could not remove " + counter + " unitController!", removeExceptionStack);
+            } catch (CouldNotPerformException ex) {
+                exceptionStack = MultiException.push(this, ex, exceptionStack);
+            }
+            try {
+                if (registerExceptionStack != null) {
+                    counter = registerExceptionStack.size();
+                } else {
+                    counter = 0;
+                }
+                MultiException.checkAndThrow("Could not register " + counter + " unitController!", registerExceptionStack);
+            } catch (CouldNotPerformException ex) {
+                exceptionStack = MultiException.push(this, ex, exceptionStack);
+            }
+            MultiException.checkAndThrow("Could not update unitHostController!", exceptionStack);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not applyConfigUpdate for UnitHost[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "]");
+        }
+
+        return unitConfig;
+    }
+
+    protected Set<String> getRemovedUnitIds() {
+        Set<String> removedUnitIds = new HashSet<>();
+        hostedUnitDiff.getRemovedMessageMap().getMessages().forEach((removedUnitConfig) -> {
+            removedUnitIds.add(removedUnitConfig.getId());
+        });
+        return removedUnitIds;
+    }
+
+    protected Set<AbstractUnitController> getNewUnitController() {
+        Set<AbstractUnitController> newUnitController = new HashSet<>();
+        hostedUnitDiff.getNewMessageMap().getMessages().forEach((newUnitConfig) -> {
+            newUnitController.add(unitMap.get(newUnitConfig.getId()));
+        });
+        return newUnitController;
+    }
+
     public final void registerUnits(final Collection<UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException {
         MultiException.ExceptionStack exceptionStack = null;
         for (UnitConfigType.UnitConfig unitConfig : unitConfigs) {
@@ -133,8 +216,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
         MultiException.checkAndThrow("Could not register all hosted units of " + this, exceptionStack);
     }
 
-    //TODO mpohling: implement unit factory instead! 
-    //TODO mpohling: verify that new Units are dynamically added and removed in case the undelying unit templade changes, if not use the ProtobufMessageDiff helper for the synchronization like implemented in the controller manager. 
+    //TODO mpohling: implement unit factory instead!
     public final void registerUnit(final UnitConfig unitConfig) throws CouldNotPerformException, InitializationException, InterruptedException {
         try {
             GeneratedMessage.Builder unitMessageBuilder = registerUnitBuilder(unitConfig);
@@ -159,7 +241,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
     }
 
     private <B extends GeneratedMessage.Builder> B registerUnitBuilder(final UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException {
-        try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
+        try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this, isActive())) {
             DB builder = dataBuilder.getInternalBuilder();
             Class builderClass = builder.getClass();
             String unitTypeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name());
@@ -190,7 +272,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
                 throw new CouldNotPerformException("Could not create Builder!", ex);
             }
 
-        } catch (Exception ex) {
+        } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could register UnitBuilder[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "]!", ex);
         }
     }
@@ -219,7 +301,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
         return builder;
     }
 
-    public Collection<AbstractUnitController> getHostedUnits() {
+    public Collection<AbstractUnitController> getHostedUnitController() {
         return Collections.unmodifiableCollection(unitMap.values());
     }
 }

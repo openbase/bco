@@ -39,7 +39,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 public class SmokeAlarmStateServiceRemote extends AbstractServiceRemote<SmokeAlarmStateProviderService, AlarmState> implements SmokeAlarmStateProviderServiceCollection {
 
     public SmokeAlarmStateServiceRemote() {
-        super(ServiceType.SMOKE_ALARM_STATE_SERVICE);
+        super(ServiceType.SMOKE_ALARM_STATE_SERVICE, AlarmState.class);
     }
 
     public Collection<SmokeAlarmStateProviderService> getSmokeAlarmStateProviderServices() {
@@ -75,7 +75,7 @@ public class SmokeAlarmStateServiceRemote extends AbstractServiceRemote<SmokeAla
             if (service.getSmokeAlarmState().getValue() == AlarmState.State.ALARM) {
                 alarmValue = AlarmState.State.ALARM;
             }
-            
+
             timestamp = Math.max(timestamp, service.getSmokeAlarmState().getTimestamp().getTime());
         }
         return TimestampProcessor.updateTimestamp(timestamp, AlarmState.newBuilder().setValue(alarmValue), logger).build();

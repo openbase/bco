@@ -22,6 +22,7 @@ package org.openbase.bco.dal.remote.control.action;
  * #L%
  */
 import java.util.concurrent.Callable;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -54,9 +55,9 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  * * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
  */
 public class Action implements ActionService, Initializable<ActionConfig> {
-
+    
     private static final Logger logger = LoggerFactory.getLogger(Action.class);
-
+    
     private ActionConfig.Builder config;
     private UnitConfig unitConfig;
     private final ActionData.Builder data;
@@ -64,42 +65,50 @@ public class Action implements ActionService, Initializable<ActionConfig> {
     private AbstractServiceRemote serviceRemote;
     private Future executionFuture;
     private final SyncObject executionSync = new SyncObject(Action.class);
-
+    
     public Action() {
         data = ActionData.newBuilder();
     }
-
+    
     @Override
     public void init(final ActionConfigType.ActionConfig config) throws InitializationException, InterruptedException {
         try {
+            
+            if (config.getUnitId().isEmpty()) {
+                throw new InvalidStateException(config.getLabel() + " has not valid unit id!");
+            }
+            
             this.config = config.toBuilder();
             this.data.setLabel(config.getLabel());
             this.serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
             Registries.getUnitRegistry().waitForData();
             this.unitConfig = Registries.getUnitRegistry().getUnitConfigById(config.getUnitId());
             this.verifyUnitConfig(unitConfig);
-            this.serviceRemote = serviceRemoteFactory.newInitializedInstance(config.getServiceType(), unitConfig);
+            this.serviceRemote = serviceRemoteFactory.newInstance(config.getServiceType());
+            this.serviceRemote.setInfrastructureFilter(false);
+            this.serviceRemote.init(unitConfig);
             serviceRemote.activate();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
-
+    
     private void verifyUnitConfig(final UnitConfig unitConfig) throws VerificationFailedException {
         if (!unitConfig.getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED)) {
             try {
                 throw new VerificationFailedException("Referred Unit[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "] is disabled!");
             } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
                 throw new VerificationFailedException("Referred Unit[" + unitConfig.getLabel() + "] is disabled!");
             }
         }
     }
-
+    
     @Override
-    public void execute() throws CouldNotPerformException {
+    public Future<Void> execute() throws CouldNotPerformException {
         synchronized (executionSync) {
             FutureTask task = new FutureTask(new Callable<Void>() {
-
+                
                 @Override
                 public Void call() throws Exception {
                     try {
@@ -120,7 +129,7 @@ public class Action implements ActionService, Initializable<ActionConfig> {
                             updateActionState(ActionState.State.FINISHING);
                             releaseService();
                             updateActionState(ActionState.State.FINISHED);
-                        } catch (InterruptedException ex) {
+                        } catch (InterruptedException | CancellationException ex) {
                             updateActionState(ActionState.State.ABORTING);
                             releaseService();
                             updateActionState(ActionState.State.ABORTED);
@@ -133,28 +142,29 @@ public class Action implements ActionService, Initializable<ActionConfig> {
                     } catch (Exception ex) {
                         throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Execution " + data.getActionState().getValue() + "!", ex), logger, LogLevel.WARN);
                     }
-
+                    
                     return null;
                 }
             });
             executionFuture = GlobalCachedExecutorService.submit(task);
         }
+        return executionFuture;
     }
-
+    
     private void acquireService() throws CouldNotPerformException {
         //TODO
-        logger.info("Acquire service for execution of " + this);
+        logger.debug("Acquire service for execution of " + this);
     }
-
+    
     private void releaseService() {
         try {
             // TODO
-            logger.info("Release acquired services of " + this);
+            logger.debug("Release acquired services of " + this);
         } catch (Exception ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("FatalExecutionError: Could not release service!", ex), logger);
         }
     }
-
+    
     public void waitForFinalization() throws CouldNotPerformException, InterruptedException {
         Future currentExecution;
         synchronized (executionSync) {
@@ -163,23 +173,23 @@ public class Action implements ActionService, Initializable<ActionConfig> {
             }
             currentExecution = executionFuture;
         }
-
+        
         try {
             currentExecution.get();
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException("Could not wait for execution!", ex);
         }
     }
-
+    
     public ActionConfig getConfig() {
         return config.build();
     }
-
+    
     private void updateActionState(ActionState.State state) {
         data.setActionState(ActionStateType.ActionState.newBuilder().setValue(state));
         logger.info("Stateupdate[" + state.name() + "] of " + this);
     }
-
+    
     @Override
     public String toString() {
         if (config == null) {

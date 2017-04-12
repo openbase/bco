@@ -24,6 +24,7 @@ package org.openbase.bco.dal.lib.layer.unit;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessage;
 import java.util.concurrent.Callable;
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -54,7 +55,8 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
 
     private final SyncObject enablingLock = new SyncObject(AbstractExecutableBaseUnitController.class);
     private Future<Void> executionFuture;
-    private boolean executing;
+    private SyncObject executionLock = new SyncObject("ExecutionLock");
+    private boolean enabled;
 
     public AbstractExecutableBaseUnitController(final Class unitClass, final DB builder) throws org.openbase.jul.exception.InstantiationException {
         super(unitClass, builder);
@@ -62,7 +64,6 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
 
     @Override
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
-        this.executing = false;
         super.init(config);
     }
 
@@ -71,65 +72,85 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
     }
 
     public Future<Void> setActivationState(final ActivationStateType.ActivationState activation) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.submit(new Callable<Void>() {
+        if (activation == null || activation.getValue().equals(ActivationStateType.ActivationState.State.UNKNOWN)) {
+            throw new InvalidStateException("Unknown is not a valid state!");
+        }
 
-            @Override
-            public Void call() throws Exception {
-                if (activation == null || activation.getValue().equals(ActivationStateType.ActivationState.State.UNKNOWN)) {
-                    throw new InvalidStateException("Unknown is not a valid state!");
-                }
+        Future<Void> result = null;
 
-                try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
-                    try {
-                        if (activation.getValue() == ActivationStateType.ActivationState.State.ACTIVE) {
-                            if (!executing) {
-                                executing = true;
-                                executionFuture = GlobalCachedExecutorService.submit(new Callable<Void>() {
+        try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
+            try {
+                synchronized (executionLock) {
+                    if (activation.getValue() == ActivationStateType.ActivationState.State.ACTIVE) {
 
-                                    @Override
-                                    public Void call() throws Exception {
-                                        execute();
-                                        return null;
-                                    }
-                                });
-                            }
-                        } else {
-                            if (executing) {
-                                if (executionFuture != null || !executionFuture.isDone()) {
-                                    executionFuture.cancel(true);
+                        // filter dublicated execution
+                        if (isExecuting()) {
+                            return executionFuture;
+                        }
+
+                        executionFuture = GlobalCachedExecutorService.submit(new Callable<Void>() {
+
+                            @Override
+                            public Void call() throws Exception {
+                                try {
+                                    execute();
+                                } catch (CouldNotPerformException ex) {
+                                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not execute [" + getLabel() + "]", ex), logger);
                                 }
-                                executing = false;
-                                executionFuture = null;
-                                stop();
+                                return null;
                             }
+                        });
+                        result = executionFuture;
+                    } else {
+                        if (isExecuting()) {
+                            cancelExecution();
+                            result = GlobalCachedExecutorService.submit(() -> {
+                                try {
+                                    stop();
+                                } catch (CouldNotPerformException ex) {
+                                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not stop [" + getLabel() + "]", ex), logger);
+                                }
+                                return null;
+                            });
                         }
-
-                        // save new activation state
-                        Descriptors.FieldDescriptor findFieldByName = dataBuilder.getInternalBuilder().getDescriptorForType().findFieldByName(FIELD_ACTIVATION_STATE);
-                        if (findFieldByName == null) {
-                            throw new NotAvailableException("Field[" + FIELD_ACTIVATION_STATE + "] does not exist for type " + dataBuilder.getClass().getName());
-                        }
-                        dataBuilder.getInternalBuilder().setField(findFieldByName, activation);
-
-                    } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update execution state!", ex), logger);
                     }
-                } catch (Exception ex) {
-                    throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToCamelCase(activation.getValue().name()) + " " + this, ex);
                 }
-                return null;
+
+                // save new activation state
+                Descriptors.FieldDescriptor findFieldByName = dataBuilder.getInternalBuilder().getDescriptorForType().findFieldByName(FIELD_ACTIVATION_STATE);
+                if (findFieldByName == null) {
+                    throw new NotAvailableException("Field[" + FIELD_ACTIVATION_STATE + "] does not exist for type " + dataBuilder.getClass().getName());
+                }
+                dataBuilder.getInternalBuilder().setField(findFieldByName, activation);
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update execution state!", ex), logger);
             }
-        });
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToCamelCase(activation.getValue().name()) + " " + this, ex);
+        }
+
+        if (result == null) {
+            return CompletableFuture.completedFuture(null);
+        }
+        return result;
     }
 
     public boolean isExecuting() {
-        return executing;
+        synchronized (executionLock) {
+            return executionFuture != null;
+        }
+    }
+
+    @Override
+    public boolean isEnabled() {
+        return enabled;
     }
 
     @Override
     public void enable() throws CouldNotPerformException, InterruptedException {
         try {
             synchronized (enablingLock) {
+                enabled = true;
                 activate();
                 if (detectAutostart()) {
                     setActivationState(ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.ACTIVE).build()).get();
@@ -138,7 +159,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
                 }
             }
         } catch (ExecutionException ex) {
-            throw new CouldNotPerformException("Could not diable " + this, ex);
+            throw new CouldNotPerformException("Could not enable " + this, ex);
         }
     }
 
@@ -146,12 +167,13 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
     public void disable() throws CouldNotPerformException, InterruptedException {
         try {
             synchronized (enablingLock) {
-                executing = false;
+                cancelExecution();
+                enabled = false;
                 setActivationState(ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.DEACTIVE).build()).get();
                 deactivate();
             }
         } catch (ExecutionException ex) {
-            throw new CouldNotPerformException("Could not diable " + this, ex);
+            throw new CouldNotPerformException("Could not disable " + this, ex);
         }
     }
 
@@ -161,6 +183,21 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new NotSupportedException("autostart", (AbstractExecutableBaseUnitController) this, (Throwable) ex), logger, LogLevel.WARN);
             return true;
+        }
+    }
+
+    @Override
+    public void deactivate() throws InterruptedException, CouldNotPerformException {
+        stop();
+        super.deactivate();
+    }
+
+    public void cancelExecution() {
+        synchronized (executionLock) {
+            if (isExecuting() && !executionFuture.isDone()) {
+                executionFuture.cancel(true);
+            }
+            executionFuture = null;
         }
     }
 

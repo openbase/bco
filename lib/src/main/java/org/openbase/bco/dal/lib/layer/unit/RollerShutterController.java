@@ -21,12 +21,17 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -63,9 +68,8 @@ public class RollerShutterController extends AbstractDALUnitController<RollerShu
 
     public void updateBlindStateProvider(final BlindState blindState) throws CouldNotPerformException {
         logger.debug("Apply blindState Update[" + blindState + "] for " + this + ".");
-
         try (ClosableDataBuilder<RollerShutterData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setBlindState(blindState);
+            dataBuilder.getInternalBuilder().mergeBlindState(blindState);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply blindState Update[" + blindState + "] for " + this + "!", ex);
         }
@@ -74,6 +78,20 @@ public class RollerShutterController extends AbstractDALUnitController<RollerShu
     @Override
     public Future<Void> setBlindState(final BlindState blindState) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to BlindState [" + blindState + "]");
+        // stop before moving in any direction.
+        switch (blindState.getMovementState()) {
+            case DOWN:
+            case UP:
+                try {
+                    blindStateService.setBlindState(blindState.toBuilder().setMovementState(BlindState.MovementState.STOP).build()).get(1000, TimeUnit.MILLISECONDS);
+                } catch (ExecutionException | TimeoutException | InterruptedException ex) {
+                    if (ex instanceof InterruptedException) {
+                        Thread.currentThread().interrupt();
+                    }
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not stop before blind movement.", ex), logger, LogLevel.WARN);
+                    // continue without stop
+                }
+        }
         return blindStateService.setBlindState(blindState);
     }
 

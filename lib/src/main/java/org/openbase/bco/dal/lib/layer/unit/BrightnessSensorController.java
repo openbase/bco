@@ -28,17 +28,21 @@ import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
+import rst.domotic.state.IlluminanceStateType.IlluminanceState;
 import rst.domotic.unit.dal.BrightnessSensorDataType.BrightnessSensorData;
 
 /**
+ * Is not supported anymore. Use LightSensorController instead.
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
+@Deprecated
 public class BrightnessSensorController extends AbstractDALUnitController<BrightnessSensorData, BrightnessSensorData.Builder> implements BrightnessSensor {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessSensorData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(IlluminanceState.getDefaultInstance()));
     }
 
     public BrightnessSensorController(final UnitHost unitHost, BrightnessSensorData.Builder builder) throws InstantiationException, CouldNotPerformException {
@@ -55,12 +59,32 @@ public class BrightnessSensorController extends AbstractDALUnitController<Bright
         }
     }
 
+    @Deprecated
     @Override
     public BrightnessState getBrightnessState() throws NotAvailableException {
         try {
             return getData().getBrightnessState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("brightnessState", ex);
+        }
+    }
+
+    public void updateIlluminanceStateProvider(final IlluminanceState illuminanceState) throws CouldNotPerformException {
+        logger.debug("Apply illuminanceState Update[" + illuminanceState + "] for " + this + ".");
+
+        try (ClosableDataBuilder<BrightnessSensorData.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().setIlluminanceState(illuminanceState);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply illuminanceState Update[" + illuminanceState + "] for " + this + "!", ex);
+        }
+    }
+
+    @Override
+    public IlluminanceState getIlluminanceState() throws NotAvailableException {
+        try {
+            return getData().getIlluminanceState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("illuminanceState", ex);
         }
     }
 }

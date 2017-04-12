@@ -23,10 +23,11 @@ package org.openbase.bco.dal.visual.util;
  */
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
-import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
+import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
@@ -45,7 +46,7 @@ public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends java
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private RS remoteService;
+    private RS unitRemote;
 
     /**
      * Creates new form RSBViewService
@@ -55,22 +56,20 @@ public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends java
     }
 
     private synchronized void setRemoteService(final RS remoteService) {
-
-        if (this.remoteService != null) {
-            this.remoteService.shutdown();
+        if (this.unitRemote != null) {
+            this.unitRemote.removeDataObserver(this);
         }
 
-        this.remoteService = remoteService;
+        this.unitRemote = remoteService;
         remoteService.addDataObserver(this);
     }
 
     @Override
     public synchronized void shutdown() {
-        if (remoteService == null) {
+        if (unitRemote == null) {
             return;
         }
-
-        remoteService.shutdown();
+        unitRemote.removeDataObserver(this);
     }
 
     @Override
@@ -83,17 +82,29 @@ public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends java
     }
 
     public RS getRemoteService() throws NotAvailableException {
-        if (remoteService == null) {
+        if (unitRemote == null) {
             throw new NotAvailableException("remoteService");
         }
-        return remoteService;
+        return unitRemote;
     }
 
+    /**
+     *
+     * @param unitType
+     * @param scope
+     * @throws CouldNotPerformException
+     * @throws InterruptedException
+     * @deprecated please use setUnitRemote(final Scope scope) because type is auto detected.
+     */
+    @Deprecated
     public void setUnitRemote(final UnitType unitType, final Scope scope) throws CouldNotPerformException, InterruptedException {
-        logger.info("Setup unit remote: " + unitType + ".");
+        setUnitRemote(scope);
+    }
+
+    public void setUnitRemote(final Scope scope) throws CouldNotPerformException, InterruptedException {
         try {
-            RS remote = (RS) UnitRemoteFactoryImpl.getInstance().newInitializedInstance(scope, unitType);
-            remote.activate();
+            logger.info("Setup unit remote: " + ScopeGenerator.generateStringRep(scope));
+            RS remote = (RS) Units.getUnitByScope(scope, false);
             setRemoteService(remote);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not setup unit remote config!", ex);
@@ -103,8 +114,7 @@ public abstract class UnitRemoteView<RS extends AbstractUnitRemote> extends java
     public RS setUnitRemote(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         logger.info("Setup unit remote: " + unitConfig.getId());
         try {
-            RS remote = (RS) UnitRemoteFactoryImpl.getInstance().newInitializedInstance(unitConfig);
-            remote.activate();
+            RS remote = (RS) Units.getUnit(unitConfig, false);
             setRemoteService((RS) remote);
             return remote;
         } catch (CouldNotPerformException ex) {

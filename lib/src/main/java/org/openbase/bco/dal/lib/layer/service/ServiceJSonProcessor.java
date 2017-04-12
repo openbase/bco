@@ -30,6 +30,7 @@ import java.lang.reflect.Constructor;
 import java.lang.reflect.InvocationTargetException;
 import java.nio.charset.Charset;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
 
@@ -40,6 +41,7 @@ import org.slf4j.LoggerFactory;
 public class ServiceJSonProcessor {
 
     private static final String UTF8 = "UTF8";
+    private static final String EMPTY_MESSAGE = "{}";
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ServiceJSonProcessor.class);
     private static final String javaPrimitvePrefix = "java.lang.";
     private final JsonFormat jsonFormat;
@@ -80,24 +82,26 @@ public class ServiceJSonProcessor {
      *
      * @param serviceAttribute
      * @return
-     * @throws CouldNotPerformException
+     * @throws org.openbase.jul.exception.InvalidStateException in case the given service argument does not contain any context to serialize.
+     * @throws CouldNotPerformException in case the serialization failed.
      */
-    public String serialize(final Object serviceAttribute) throws CouldNotPerformException {
+    public String serialize(final Object serviceAttribute) throws InvalidStateException, CouldNotPerformException {
+        String jsonStringRep;
         if (serviceAttribute instanceof Message) {
             try {
-                String jsonStringRep = jsonFormat.printToString((Message) serviceAttribute);
-
-                // formatting only adds empty lines
-                // format
-                //JsonElement el = parser.parse(jsonStringRep);
-                return jsonStringRep;
-
+                jsonStringRep = jsonFormat.printToString((Message) serviceAttribute);
             } catch (Exception ex) {
                 throw new CouldNotPerformException("Could not serialize service argument to string!", ex);
             }
         } else {
-            return serviceAttribute.toString();
+            jsonStringRep = serviceAttribute.toString();
         }
+        
+        if(jsonStringRep.isEmpty() || jsonStringRep.equals(EMPTY_MESSAGE)) {
+            throw new InvalidStateException("Service attribute does not contain any context!");
+        }
+
+        return jsonStringRep;
     }
 
     /**

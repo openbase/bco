@@ -23,12 +23,9 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.dal.lib.layer.service.Service;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.pattern.ConfigurableRemote;
-import org.slf4j.LoggerFactory;
 import rsb.Scope;
-import rst.domotic.state.EnablingStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.rsb.ScopeType;
 

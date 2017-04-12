@@ -6,7 +6,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.IntensityStateType.IntensityState;
+import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.dal.DimmerDataType.DimmerData;
 import org.openbase.bco.dal.lib.layer.unit.Dimmer;
@@ -42,7 +42,7 @@ public class DimmerRemote extends AbstractUnitRemote<DimmerData> implements Dimm
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DimmerData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(IntensityState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessState.getDefaultInstance()));
     }
 
     public DimmerRemote() {
@@ -64,16 +64,16 @@ public class DimmerRemote extends AbstractUnitRemote<DimmerData> implements Dimm
     }
 
     @Override
-    public Future<Void> setIntensityState(IntensityState intensityState) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(intensityState, this, Void.class);
+    public Future<Void> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(brightnessState, this, Void.class);
     }
 
     @Override
-    public IntensityState getIntensityState() throws NotAvailableException {
+    public BrightnessState getBrightnessState() throws NotAvailableException {
         try {
-            return getData().getIntensityState();
+            return getData().getBrightnessState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("IntensityState", ex);
+            throw new NotAvailableException("BrightnessState", ex);
         }
     }
 }

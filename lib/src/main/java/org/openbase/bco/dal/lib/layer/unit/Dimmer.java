@@ -1,6 +1,6 @@
 package org.openbase.bco.dal.lib.layer.unit;
 
-import org.openbase.bco.dal.lib.layer.service.operation.IntensityStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 
 /*
@@ -29,6 +29,6 @@ import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationServi
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface Dimmer extends PowerStateOperationService, IntensityStateOperationService {
+public interface Dimmer extends PowerStateOperationService, BrightnessStateOperationService {
     
 }

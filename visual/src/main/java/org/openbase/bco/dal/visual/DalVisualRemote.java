@@ -23,6 +23,7 @@ package org.openbase.bco.dal.visual;
  */
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.ImageIcon;
+import org.openbase.bco.registry.lib.BCO;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -143,6 +144,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
      * @throws java.lang.reflect.InvocationTargetException
      */
     public static void main(String args[]) throws InterruptedException, InvocationTargetException {
+        BCO.printLogo();
         /* Set the Nimbus look and feel */
         //<editor-fold defaultstate="collapsed" desc=" Look and feel setting code (optional) ">
         /* If Nimbus (introduced in Java SE 6) is not available, stay with the default look and feel.

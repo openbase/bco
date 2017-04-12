@@ -21,8 +21,8 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.state.PassageStateType.PassageState;
 
 /**
@@ -31,5 +31,6 @@ import rst.domotic.state.PassageStateType.PassageState;
  */
 public interface PassageStateProviderService extends ProviderService {
 
+    @RPCMethod
     public PassageState getPassageState() throws NotAvailableException;
 }

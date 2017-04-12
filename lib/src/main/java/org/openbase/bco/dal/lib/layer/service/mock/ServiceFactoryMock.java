@@ -33,7 +33,6 @@ import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.IntensityStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
@@ -50,7 +49,6 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType.ColorState;
-import rst.domotic.state.IntensityStateType;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.StandbyStateType;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
@@ -192,23 +190,6 @@ public class ServiceFactoryMock implements ServiceFactory {
             public Future<Void> setTargetTemperatureState(TemperatureState state) throws CouldNotPerformException {
                 return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
             }
-        };
-    }
-
-    @Override
-    public <UNIT extends IntensityStateOperationService & Unit> IntensityStateOperationService newIntensityStateService(UNIT unit) throws InstantiationException {
-        return new IntensityStateOperationService() {
-
-            @Override
-            public Future<Void> setIntensityState(IntensityStateType.IntensityState state) throws CouldNotPerformException {
-                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
-            }
-
-            @Override
-            public IntensityStateType.IntensityState getIntensityState() throws NotAvailableException {
-                return ((IntensityStateOperationService) unit).getIntensityState();
-            }
-
         };
     }
 

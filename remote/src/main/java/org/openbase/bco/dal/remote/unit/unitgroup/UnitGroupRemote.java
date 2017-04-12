@@ -22,41 +22,50 @@ package org.openbase.bco.dal.remote.unit.unitgroup;
  * #L%
  */
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.unitgroup.UnitGroup;
 import org.openbase.bco.dal.remote.service.AbstractServiceRemote;
-import org.openbase.bco.dal.remote.service.BlindStateServiceRemote;
-import org.openbase.bco.dal.remote.service.BrightnessStateServiceRemote;
-import org.openbase.bco.dal.remote.service.ColorStateServiceRemote;
-import org.openbase.bco.dal.remote.service.PowerStateServiceRemote;
-import org.openbase.bco.dal.remote.service.ServiceRemoteFactory;
-import org.openbase.bco.dal.remote.service.ServiceRemoteFactoryImpl;
-import org.openbase.bco.dal.remote.service.StandbyStateServiceRemote;
-import org.openbase.bco.dal.remote.service.TargetTemperatureStateServiceRemote;
+import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
-import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.processing.StringProcessor;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.BlindStateType.BlindState;
-import rst.domotic.state.BrightnessStateType.BrightnessState;
-import rst.domotic.state.ColorStateType.ColorState;
-import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.state.StandbyStateType.StandbyState;
-import rst.domotic.state.TemperatureStateType.TemperatureState;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.pattern.Observable;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.action.ActionConfigType;
+import rst.domotic.action.SnapshotType;
+import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.state.AlarmStateType;
+import rst.domotic.state.BlindStateType;
+import rst.domotic.state.BrightnessStateType;
+import rst.domotic.state.ColorStateType;
+import rst.domotic.state.MotionStateType;
+import rst.domotic.state.PowerConsumptionStateType;
+import rst.domotic.state.PowerStateType;
+import rst.domotic.state.PresenceStateType;
+import rst.domotic.state.SmokeStateType;
+import rst.domotic.state.StandbyStateType;
+import rst.domotic.state.TamperStateType;
+import rst.domotic.state.TemperatureStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType;
+import rst.domotic.unit.location.LocationDataType;
 import rst.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
+import rst.vision.ColorType;
+import rst.vision.HSBColorType;
+import rst.vision.RGBColorType;
 
 /**
  *
@@ -64,18 +73,49 @@ import rst.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
  */
 public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implements UnitGroup {
 
-    private final Map<ServiceTemplate, AbstractServiceRemote> serviceRemoteMap = new HashMap<>();
-    private final ServiceRemoteFactory serviceRemoteFactory;
+    static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationDataType.LocationData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HSBColorType.HSBColor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ColorStateType.ColorState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ColorType.Color.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RGBColorType.RGBColor.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerStateType.PowerState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AlarmStateType.AlarmState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionStateType.MotionState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionStateType.PowerConsumptionState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BlindStateType.BlindState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SmokeStateType.SmokeState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(StandbyStateType.StandbyState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperStateType.TamperState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessStateType.BrightnessState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureStateType.TemperatureState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PresenceStateType.PresenceState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionConfigType.ActionConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SnapshotType.Snapshot.getDefaultInstance()));
+    }
+    
+    private static final Logger LOGGER = LoggerFactory.getLogger(UnitGroupRemote.class);
+    private final ServiceRemoteManager serviceRemoteManager;
 
     public UnitGroupRemote() throws InstantiationException {
         super(UnitGroupData.class);
-        serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
+        this.serviceRemoteManager = new ServiceRemoteManager(this) {
+            @Override
+            protected Set<ServiceTemplateType.ServiceTemplate.ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
+                return getSupportedServiceTypes();
+            }
+
+            @Override
+            protected void notifyServiceUpdate(Observable source, Object data) throws NotAvailableException, InterruptedException {
+                updateUnitData();
+            }
+        };
     }
 
     @Override
     public void init(final UnitConfig unitGroupUnitConfig) throws InitializationException, InterruptedException {
         try {
-            CachedDeviceRegistryRemote.waitForData();
+            Registries.getUnitRegistry().waitForData();
 
             if (!unitGroupUnitConfig.hasUnitGroupConfig()) {
                 throw new VerificationFailedException("Given unit config does not contain a unit group config!");
@@ -87,54 +127,43 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
 
             List<UnitConfig> unitConfigs = new ArrayList<>();
             for (String unitConfigId : unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList()) {
-                unitConfigs.add(CachedDeviceRegistryRemote.getRegistry().getUnitConfigById(unitConfigId));
+                unitConfigs.add(Registries.getUnitRegistry().getUnitConfigById(unitConfigId));
             }
 
             if (unitConfigs.isEmpty()) {
                 throw new CouldNotPerformException("Could not resolve any unit members!");
             }
-
-            List<UnitConfig> unitConfigsByService = new ArrayList<>();
-            for (ServiceTemplate serviceTemplate : unitGroupUnitConfig.getUnitGroupConfig().getServiceTemplateList()) {
-                unitConfigs.stream().filter((unitConfig) -> (unitHasService(unitConfig, serviceTemplate))).forEach((unitConfig) -> {
-                    unitConfigsByService.add(unitConfig);
-                });
-                // create serviceRemoteByType and unitCOnfiglist
-                serviceRemoteMap.put(serviceTemplate, serviceRemoteFactory.newInitializedInstance(serviceTemplate.getType(), unitConfigsByService));
-                unitConfigsByService.clear();
-            }
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
+        super.init(unitGroupUnitConfig);
     }
+    
+    @Override
+    public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        UnitConfig unitConfig = super.applyConfigUpdate(config);
+        serviceRemoteManager.applyConfigUpdate(unitConfig.getUnitGroupConfig().getMemberIdList());
+        return unitConfig;
+    }
+    
 
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
-        try {
-            MultiException.ExceptionStack exceptionStack = null;
-            for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
-                try {
-                    remote.activate();
-                } catch (CouldNotPerformException ex) {
-                    exceptionStack = MultiException.push(remote, ex, exceptionStack);
-                }
-            }
-            MultiException.checkAndThrow("Could not activate all internal service remotes!", exceptionStack);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not activate unit group remote!", ex);
-        }
+        serviceRemoteManager.activate();
+        updateUnitData();
+        // super activation is disabled because unit remote is not a RSBRemoteService
+        // TODO: Refactor to support UnitRemotes which are not extended RSBRemoteService instances.
+        // super.activate();
     }
 
     @Override
     public boolean isActive() {
-        return serviceRemoteMap.values().stream().noneMatch((remote) -> (!remote.isActive()));
+        return serviceRemoteManager.isActive();
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
-            remote.deactivate();
-        }
+        serviceRemoteManager.deactivate();
     }
 
     @Override
@@ -142,9 +171,10 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
         //todo reimplement with respect to the given timeout.
         try {
             super.waitForData(timeout, timeUnit);
-            for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
+            for (AbstractServiceRemote remote : serviceRemoteManager.getServiceRemoteList()) {
                 remote.waitForData(timeout, timeUnit);
             }
+            updateUnitData();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("ServiceData", ex);
         }
@@ -152,107 +182,47 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
 
     @Override
     public void waitForData() throws CouldNotPerformException, InterruptedException {
-        // super.waitForData();
-        // disabled because this is not yet a real remote!
-        for (AbstractServiceRemote remote : serviceRemoteMap.values()) {
+        // super waitForData is disabled because unit remote is not a RSBRemoteService
+        // TODO: Refactor to support UnitRemotes which are not extended RSBRemoteService instances.
+        for (AbstractServiceRemote remote : serviceRemoteManager.getServiceRemoteList()) {
             remote.waitForData();
         }
+        updateUnitData();
     }
-
-    @Override
-    public Future<Void> setBrightnessState(BrightnessState brightness) throws CouldNotPerformException {
-        ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(ServiceType.BRIGHTNESS_STATE_SERVICE).setPattern(ServicePattern.OPERATION).build();
-        testServiceAvailability(serviceTemplate);
-        return ((BrightnessStateServiceRemote) serviceRemoteMap.get(serviceTemplate)).setBrightnessState(brightness);
-    }
-
-    @Override
-    public BrightnessState getBrightnessState() throws NotAvailableException {
-        ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(ServiceType.BRIGHTNESS_STATE_SERVICE).setPattern(ServicePattern.PROVIDER).build();
-        testServiceAvailability(serviceTemplate);
-        return ((BrightnessStateServiceRemote) serviceRemoteMap.get(serviceTemplate)).getBrightnessState();
-    }
-
-    @Override
-    public Future<Void> setColorState(ColorState color) throws CouldNotPerformException {
-        ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(ServiceType.COLOR_STATE_SERVICE).setPattern(ServicePattern.OPERATION).build();
-        testServiceAvailability(serviceTemplate);
-        return ((ColorStateServiceRemote) serviceRemoteMap.get(serviceTemplate)).setColorState(color);
-    }
-
-    @Override
-    public ColorState getColorState() throws NotAvailableException {
-        ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(ServiceType.COLOR_STATE_SERVICE).setPattern(ServicePattern.PROVIDER).build();
-        testServiceAvailability(serviceTemplate);
-        return ((ColorStateServiceRemote) serviceRemoteMap.get(serviceTemplate)).getColorState();
-    }
-
-    @Override
-    public Future<Void> setPowerState(PowerState state) throws CouldNotPerformException {
-        ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.OPERATION).build();
-        testServiceAvailability(serviceTemplate);
-        return ((PowerStateServiceRemote) serviceRemoteMap.get(serviceTemplate)).setPowerState(state);
-    }
-
-    @Override
-    public PowerState getPowerState() throws NotAvailableException {
-        ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.PROVIDER).build();
-        testServiceAvailability(serviceTemplate);
-        return ((PowerStateServiceRemote) serviceRemoteMap.get(serviceTemplate)).getPowerState();
-    }
-
-    @Override
-    public Future<Void> setBlindState(BlindState state) throws CouldNotPerformException {
-        ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(ServiceType.BLIND_STATE_SERVICE).setPattern(ServicePattern.OPERATION).build();
-        testServiceAvailability(serviceTemplate);
-        return ((BlindStateServiceRemote) serviceRemoteMap.get(serviceTemplate)).setBlindState(state);
-    }
-
-    @Override
-    public BlindState getBlindState() throws NotAvailableException {
-        ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(ServiceType.BLIND_STATE_SERVICE).setPattern(ServicePattern.PROVIDER).build();
-        testServiceAvailability(serviceTemplate);
-        return ((BlindStateServiceRemote) serviceRemoteMap.get(serviceTemplate)).getBlindState();
-    }
-
-    @Override
-    public Future<Void> setStandbyState(StandbyState state) throws CouldNotPerformException {
-        ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(ServiceType.STANDBY_STATE_SERVICE).setPattern(ServicePattern.OPERATION).build();
-        testServiceAvailability(serviceTemplate);
-        return ((StandbyStateServiceRemote) serviceRemoteMap.get(serviceTemplate)).setStandbyState(state);
-    }
-
-    @Override
-    public StandbyState getStandbyState() throws NotAvailableException {
-        ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(ServiceType.STANDBY_STATE_SERVICE).setPattern(ServicePattern.PROVIDER).build();
-        testServiceAvailability(serviceTemplate);
-        return ((StandbyStateServiceRemote) serviceRemoteMap.get(serviceTemplate)).getStandbyState();
-    }
-
-    @Override
-    public Future<Void> setTargetTemperatureState(TemperatureState value) throws CouldNotPerformException {
-        ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE).setPattern(ServicePattern.OPERATION).build();
-        testServiceAvailability(serviceTemplate);
-        return ((TargetTemperatureStateServiceRemote) serviceRemoteMap.get(serviceTemplate)).setTargetTemperatureState(value);
-    }
-
-    @Override
-    public TemperatureState getTargetTemperatureState() throws NotAvailableException {
-        ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE).setPattern(ServicePattern.PROVIDER).build();
-        testServiceAvailability(serviceTemplate);
-        return ((TargetTemperatureStateServiceRemote) serviceRemoteMap.get(serviceTemplate)).getTargetTemperatureState();
-    }
-
-    private void testServiceAvailability(ServiceTemplate serviceTemplate) throws NotAvailableException {
-        if (!serviceRemoteMap.containsKey(serviceTemplate)) {
-            throw new NotAvailableException("groupConfig." + StringProcessor.transformUpperCaseToCamelCase(serviceTemplate.toString()));
+    
+    private void updateUnitData() throws InterruptedException {
+        try {
+            UnitGroupData.Builder dataBuilder = UnitGroupData.newBuilder();
+            dataBuilder.setId(getConfig().getId());
+            dataBuilder.setLabel(getConfig().getLabel());
+            applyExternalDataUpdate(serviceRemoteManager.updateBuilderWithAvailableServiceStates(dataBuilder, getDataClass(), getSupportedServiceTypes()).build());
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), LOGGER, LogLevel.WARN);
         }
     }
+    
+    @Override
+    public Future<SnapshotType.Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
+        return serviceRemoteManager.recordSnapshot();
+    }
 
-    private boolean unitHasService(UnitConfig unitConfig, ServiceTemplate serviceTemplate) {
-        // todo: why does the bottom check not work anymore?
-        return unitConfig.getServiceConfigList().stream().anyMatch((serviceConfig) -> (serviceConfig.getServiceTemplate().getType().equals(serviceTemplate.getType())
-                && serviceConfig.getServiceTemplate().getPattern().equals(serviceTemplate.getPattern())));
-        //return unitConfig.getServiceConfigList().stream().anyMatch((serviceConfig) -> (serviceConfig.getServiceTemplate().equals(serviceTemplate)));
+    @Override
+    public Future<SnapshotType.Snapshot> recordSnapshot(final UnitTemplateType.UnitTemplate.UnitType unitType) throws CouldNotPerformException, InterruptedException {
+        return serviceRemoteManager.recordSnapshot(unitType);
+    }
+
+    @Override
+    public Future<Void> restoreSnapshot(final SnapshotType.Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
+        return serviceRemoteManager.restoreSnapshot(snapshot);
+    }
+
+    @Override
+    public Future<Void> applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+        return serviceRemoteManager.applyAction(actionConfig);
+    }
+    
+    @Override
+    public ServiceRemote getServiceRemote(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws NotAvailableException {
+        return serviceRemoteManager.getServiceRemote(serviceType);
     }
 }

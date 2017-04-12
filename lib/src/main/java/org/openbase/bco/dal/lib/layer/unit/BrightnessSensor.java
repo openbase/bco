@@ -21,13 +21,20 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.dal.lib.layer.service.provider.BrightnessStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.IlluminanceStateProviderService;
+import org.openbase.jul.exception.NotAvailableException;
+import rst.domotic.state.BrightnessStateType.BrightnessState;
 
 /**
+ * Is not supported anymore. Use LightSensor instead.
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface BrightnessSensor extends BrightnessStateProviderService {
-    
+@Deprecated
+public interface BrightnessSensor extends IlluminanceStateProviderService, BrightnessStateProviderService {
+
+    @Deprecated
+    @Override
+    public BrightnessState getBrightnessState() throws NotAvailableException;
 }

@@ -33,7 +33,6 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.timing.TimestampType.Timestamp;
 
 /**
  *
@@ -42,7 +41,7 @@ import rst.timing.TimestampType.Timestamp;
 public class TargetTemperatureStateServiceRemote extends AbstractServiceRemote<TargetTemperatureStateOperationService, TemperatureState> implements TargetTemperatureStateOperationServiceCollection {
 
     public TargetTemperatureStateServiceRemote() {
-        super(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
+        super(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, TemperatureState.class);
     }
 
     public Collection<TargetTemperatureStateOperationService> getTargetTemperatureStateOperationServices() {

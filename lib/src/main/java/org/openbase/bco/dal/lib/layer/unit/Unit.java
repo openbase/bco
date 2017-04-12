@@ -21,22 +21,21 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.io.NotActiveException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Identifiable;
@@ -109,6 +108,7 @@ public interface Unit<D> extends Service, LabelProvider, ScopeProvider, Identifi
         }
     }
 
+    @RPCMethod
     @Override
     public default Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
         MultiException.ExceptionStack exceptionStack = null;
@@ -124,13 +124,19 @@ public interface Unit<D> extends Service, LabelProvider, ScopeProvider, Identifi
 
                 // load operation service attribute by related provider service
                 Object serviceAttribute = Service.invokeServiceMethod(serviceTemplate.getType(), ServiceTemplate.ServicePattern.PROVIDER, this);
+                System.out.println("load[" + serviceAttribute + "] type: " + serviceAttribute.getClass().getSimpleName());
 
                 // verify operation service state (e.g. ignore UNKNOWN service states)
                 verifyOperationServiceState(serviceAttribute);
 
                 // fill action config
                 final ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();
-                actionConfig.setServiceAttribute(serviceJSonProcessor.serialize(serviceAttribute));
+                try {
+                    actionConfig.setServiceAttribute(serviceJSonProcessor.serialize(serviceAttribute));
+                } catch (InvalidStateException ex) {
+                    // skip if serviceAttribute is empty.
+                    continue;
+                }
                 actionConfig.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
                 actionConfig.setActionAuthority(ActionAuthorityType.ActionAuthority.newBuilder().setAuthority(ActionAuthorityType.ActionAuthority.Authority.USER)).setActionPriority(ActionPriorityType.ActionPriority.newBuilder().setPriority(ActionPriorityType.ActionPriority.Priority.NORMAL));
 
@@ -144,9 +150,9 @@ public interface Unit<D> extends Service, LabelProvider, ScopeProvider, Identifi
         return CompletableFuture.completedFuture(snapshotBuilder.build());
     }
 
+    @RPCMethod
     @Override
-    public default Future<Void> restoreSnapshot(Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
-        System.out.println("Restore snapshot on unit");
+    public default Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
         try {
             Collection<Future> futureCollection = new ArrayList<>();
             for (final ActionConfigType.ActionConfig actionConfig : snapshot.getActionConfigList()) {

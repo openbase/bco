@@ -21,7 +21,6 @@ package org.openbase.bco.dal.lib.transform;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.awt.Color;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.TypeNotSupportedException;
@@ -42,10 +41,10 @@ public class HSBColorToRGBColorTransformer {
             throw new CouldNotTransformException("Could not transform " + Color.class.getName() + " to " + HSBColor.class.getName() + "!", ex);
         }
     }
-    
+
     public static Color transform(HSBColor color) throws TypeNotSupportedException, CouldNotTransformException {
         try {
-            return Color.getHSBColor((((float)color.getHue()) / 360f), (((float)color.getSaturation()) / 100f), (((float)color.getBrightness()) / 100f));
+            return Color.getHSBColor((((float) color.getHue()) / 360f), (((float) color.getSaturation()) / 100f), (((float) color.getBrightness()) / 100f));
         } catch (Exception ex) {
             throw new CouldNotTransformException("Could not transform " + HSBColor.class.getName() + " to " + Color.class.getName() + "!", ex);
         }

@@ -21,17 +21,19 @@ package org.openbase.bco.dal.lib.layer.service.operation;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.provider.IntensityStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.state.IntensityStateType.IntensityState;
 
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
+@Deprecated
 public interface IntensityStateOperationService extends OperationService, IntensityStateProviderService {
 
+    @RPCMethod
     public Future<Void> setIntensityState(final IntensityState intensityState) throws CouldNotPerformException;
 }
