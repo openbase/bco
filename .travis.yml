@@ -42,5 +42,5 @@ after_deploy:
          curl -LO https://raw.github.com/mernst/plume-lib/master/bin/trigger-travis.sh
 
          # trigger upstream projects
-         sh trigger-travis.sh openbase bco.bcozy $TRAVIS_ACCESS_TOKEN
+         # sh trigger-travis.sh openbase bco.bcozy $TRAVIS_ACCESS_TOKEN
        fi
