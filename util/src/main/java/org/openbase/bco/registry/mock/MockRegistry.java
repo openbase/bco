@@ -129,7 +129,7 @@ public class MockRegistry {
     public static final String BATTERY_LABEL = "Battery_Unit_Test";
     public static final String BRIGHTNESS_SENSOR_LABEL = "Brightness_Sensor_Unit_Test";
     public static final String BUTTON_LABEL = "Button_Unit_Test";
-    public static final String DIMMABLE_LIGHT_LABEL = "Dimmer_Unit_Test";
+    public static final String DIMMABLE_LIGHT_LABEL = "DimmableLight_Unit_Test";
     public static final String HANDLE_LABEL = "Handle_Sensor_Unit_Test";
     public static final String LIGHT_LABEL = "Light_Unit_Test";
     public static final String MOTION_DETECTOR_LABEL = "Motion_Sensor_Unit_Test";
@@ -283,7 +283,7 @@ public class MockRegistry {
             UNIT_TYPE_LABEL_MAP.put(UnitType.MOTION_DETECTOR, MOTION_DETECTOR_LABEL);
             UNIT_TYPE_LABEL_MAP.put(UnitType.BRIGHTNESS_SENSOR, BRIGHTNESS_SENSOR_LABEL);
             UNIT_TYPE_LABEL_MAP.put(UnitType.BUTTON, BUTTON_LABEL);
-            UNIT_TYPE_LABEL_MAP.put(UnitType.DIMMER, DIMMABLE_LIGHT_LABEL);
+            UNIT_TYPE_LABEL_MAP.put(UnitType.DIMMABLE_LIGHT, DIMMABLE_LIGHT_LABEL);
             UNIT_TYPE_LABEL_MAP.put(UnitType.HANDLE, HANDLE_LABEL);
             UNIT_TYPE_LABEL_MAP.put(UnitType.POWER_CONSUMPTION_SENSOR, POWER_CONSUMPTION_LABEL);
             UNIT_TYPE_LABEL_MAP.put(UnitType.POWER_SWITCH, POWER_SWITCH_LABEL);
@@ -413,15 +413,15 @@ public class MockRegistry {
                     registerLocations();
                     logger.info("Wait until registry is ready...");
                     Registries.waitUntilReady();
-                    
+
                     logger.info("Register devices...");
                     registerDevices();
                     logger.info("Wait until registry is ready...");
                     Registries.waitUntilReady();
-                    
+
                     logger.info("Register connections...");
                     registerConnnections();
-                    
+
                     logger.info("Wait for final consistency...");
                     Registries.waitUntilReady();
 
@@ -569,10 +569,10 @@ public class MockRegistry {
             registerDeviceUnitConfig(getDeviceConfig("GI_429496730210000_Device", serialNumber, buttonClass));
 
             // dimmer
-            DeviceClass dimmerClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA663A", "TYA663A", "Hager", UnitType.DIMMER)).get();
-            waitForDeviceClass(dimmerClass);
+            DeviceClass dimmableLightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA663A", "TYA663A", "Hager", UnitType.DIMMABLE_LIGHT)).get();
+            waitForDeviceClass(dimmableLightClass);
 
-            registerDeviceUnitConfig(getDeviceConfig("HA_TYA663A_Device", serialNumber, dimmerClass));
+            registerDeviceUnitConfig(getDeviceConfig("HA_TYA663A_Device", serialNumber, dimmableLightClass));
 
             // handle
             DeviceClass handleClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_RotaryHandleSensor", "Sec_RHS", "Homematic", UnitType.HANDLE)).get();
