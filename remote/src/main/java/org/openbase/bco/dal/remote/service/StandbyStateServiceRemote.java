@@ -46,12 +46,12 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
 
     @Override
     public Future<Void> setStandbyState(final StandbyState state) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf((StandbyStateOperationService input) -> input.setStandbyState(state), super.getServices());
+        return GlobalCachedExecutorService.allOf(super.getServices(), (StandbyStateOperationService input) -> input.setStandbyState(state));
     }
 
     @Override
     public Future<Void> setStandbyState(final StandbyState state, final UnitType unitType) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf((StandbyStateOperationService input) -> input.setStandbyState(state), super.getServices(unitType));
+        return GlobalCachedExecutorService.allOf(super.getServices(unitType), (StandbyStateOperationService input) -> input.setStandbyState(state));
     }
 
     public Collection<StandbyStateOperationService> getStandbyStateOperationServices() {

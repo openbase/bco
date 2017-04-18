@@ -108,12 +108,12 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
 
     @Override
     public Future<Void> setPowerState(PowerState powerState) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf((PowerStateOperationService input) -> input.setPowerState(powerState), super.getServices());
+        return GlobalCachedExecutorService.allOf(super.getServices(), (PowerStateOperationService input) -> input.setPowerState(powerState));
     }
 
     @Override
     public Future<Void> setPowerState(final PowerState powerState, final UnitType unitType) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf((PowerStateOperationService input) -> input.setPowerState(powerState), super.getServices(unitType));
+        return GlobalCachedExecutorService.allOf(super.getServices(unitType), (PowerStateOperationService input) -> input.setPowerState(powerState));
     }
 
     /**

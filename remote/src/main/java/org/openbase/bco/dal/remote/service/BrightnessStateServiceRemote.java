@@ -51,12 +51,12 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
 
     @Override
     public Future<Void> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf((BrightnessStateOperationService input) -> input.setBrightnessState(brightnessState), getServices());
+        return GlobalCachedExecutorService.allOf(getServices(), (BrightnessStateOperationService input) -> input.setBrightnessState(brightnessState));
     }
 
     @Override
     public Future<Void> setBrightnessState(final BrightnessState brightnessState, final UnitType unitType) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf((BrightnessStateOperationService input) -> input.setBrightnessState(brightnessState), getServices(unitType));
+        return GlobalCachedExecutorService.allOf(getServices(unitType), (BrightnessStateOperationService input) -> input.setBrightnessState(brightnessState));
     }
 
     /**

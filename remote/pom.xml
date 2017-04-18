@@ -89,5 +89,11 @@
                 </exclusion>
             </exclusions>
         </dependency>
+        <dependency>
+            <groupId>org.openbase</groupId>
+            <artifactId>jul.extension.rct</artifactId>
+            <version>${dependency.jul.version}</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 </project>

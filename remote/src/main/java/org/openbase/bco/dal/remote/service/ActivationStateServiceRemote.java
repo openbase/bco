@@ -85,11 +85,11 @@ public class ActivationStateServiceRemote extends AbstractServiceRemote<Activati
 
     @Override
     public Future<Void> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf((ActivationStateOperationService input) -> input.setActivationState(activationState), super.getServices());
+        return GlobalCachedExecutorService.allOf(super.getServices(), (ActivationStateOperationService input) -> input.setActivationState(activationState));
     }
 
     @Override
     public Future<Void> setActivationState(final ActivationState activationState, final UnitType unitType) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf((ActivationStateOperationService input) -> input.setActivationState(activationState), super.getServices(unitType));
+        return GlobalCachedExecutorService.allOf(super.getServices(unitType), (ActivationStateOperationService input) -> input.setActivationState(activationState));
     }
 }

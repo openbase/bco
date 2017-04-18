@@ -29,7 +29,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
-import org.openbase.jul.processing.FutureProcessor;
+import org.openbase.jul.schedule.FutureProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.PowerStateType.PowerState;
