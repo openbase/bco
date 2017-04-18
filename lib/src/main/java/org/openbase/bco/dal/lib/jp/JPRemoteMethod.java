@@ -40,7 +40,7 @@ public class JPRemoteMethod extends AbstractJPMethod<RSBRemoteService> {
 
     @Override
     public String getDescription() {
-        return "Specifies the remote sevice methode to call.";
+        return "Specifies the remote sevice method to call.";
     }
     
     @Override
