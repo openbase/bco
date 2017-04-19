@@ -9,7 +9,9 @@ import org.openbase.bco.dal.lib.layer.unit.location.Location;
 import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.bco.dal.remote.unit.Units;
+import static org.openbase.bco.dal.remote.unit.Units.CONNECTION;
 import static org.openbase.bco.dal.remote.unit.Units.LOCATION;
+import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -34,6 +36,7 @@ import rst.domotic.state.TamperStateType;
 import rst.domotic.state.TemperatureStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
+import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
 import rst.domotic.unit.location.LocationDataType;
 import rst.domotic.unit.location.LocationDataType.LocationData;
 import rst.vision.ColorType;
@@ -175,5 +178,44 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
             throw new CouldNotPerformException("Could not get all neighbors!", ex);
         }
         return neighborList;
+    }
+    
+    public List<ConnectionRemote> getConnectionList(final boolean waitForData) throws CouldNotPerformException {
+        if (!getConfig().getLocationConfig().getType().equals(LocationType.TILE)) {
+            throw new CouldNotPerformException("Location is not a Tile!");
+        }
+        
+        List<ConnectionRemote> connectionList = new ArrayList<>();
+        try {
+            for (UnitConfig connectionUnitConfig : CachedLocationRegistryRemote.getRegistry().getConnectionConfigs()) {
+                ConnectionRemote connection = Units.getUnit(connectionUnitConfig, waitForData, CONNECTION);
+                if (connection.getConfig().getConnectionConfig().getTileIdList().contains(getId())) {
+                    connectionList.add(connection);
+                }
+            }
+        } catch (InterruptedException ex) {
+            throw new CouldNotPerformException("Could not get all connections!", ex);
+        } 
+        return connectionList;
+    }
+    
+    public List<ConnectionRemote> getRelatedConnectionRemoteList(final String locationID, final boolean waitForData) throws CouldNotPerformException {
+        if (!getConfig().getLocationConfig().getType().equals(LocationType.TILE)) {
+            throw new CouldNotPerformException("Location is not a Tile!");
+        }
+        
+        List<ConnectionRemote> connectionList = new ArrayList<>();
+        try {
+            for (UnitConfig connectionUnitConfig : CachedLocationRegistryRemote.getRegistry().getConnectionConfigs()) {
+                ConnectionRemote connection = Units.getUnit(connectionUnitConfig, waitForData, CONNECTION);
+                if (connection.getConfig().getConnectionConfig().getTileIdList().contains(getId()) &&
+                        connection.getConfig().getConnectionConfig().getTileIdList().contains(locationID)) {
+                    connectionList.add(connection);
+                }
+            }
+        } catch (InterruptedException ex) {
+            throw new CouldNotPerformException("Could not get all connections!", ex);
+        } 
+        return connectionList;
     }
 }
