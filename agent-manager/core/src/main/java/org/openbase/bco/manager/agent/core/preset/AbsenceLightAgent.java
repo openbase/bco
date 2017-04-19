@@ -34,13 +34,13 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.Observable;
 import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.unit.location.LocationDataType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import static rst.domotic.state.PresenceStateType.PresenceState.State.PRESENT;
 
 
 /**
@@ -66,12 +66,12 @@ public class AbsenceLightAgent extends AbstractAgentController {
 
         /** Add trigger here and replace dataObserver */
         locationRemote.addDataObserver((Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
-            if (data.getPresenceState().equals(PresenceState.State.PRESENT) && !present) {
+            if (data.getPresenceState().getValue() == PRESENT && !present) {
                 if (setPowerStateFuture != null) {
                     setPowerStateFuture.cancel(true);
                 }
                 present = true;
-            } else if (!data.getPresenceState().equals(PresenceState.State.PRESENT) && present) {
+            } else if (!(data.getPresenceState().getValue() == PRESENT) && present) {
                 present = false;
                 
                 switchlightsOff();
