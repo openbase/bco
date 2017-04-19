@@ -50,12 +50,12 @@ public class TargetTemperatureStateServiceRemote extends AbstractServiceRemote<T
 
     @Override
     public Future<Void> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf((TargetTemperatureStateOperationService input) -> input.setTargetTemperatureState(temperatureState), getServices());
+        return GlobalCachedExecutorService.allOf(getServices(), (TargetTemperatureStateOperationService input) -> input.setTargetTemperatureState(temperatureState));
     }
 
     @Override
     public Future<Void> setTargetTemperatureState(final TemperatureState temperatureState, final UnitType unitType) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf((TargetTemperatureStateOperationService input) -> input.setTargetTemperatureState(temperatureState), getServices(unitType));
+        return GlobalCachedExecutorService.allOf(getServices(unitType), (TargetTemperatureStateOperationService input) -> input.setTargetTemperatureState(temperatureState));
     }
 
     /**

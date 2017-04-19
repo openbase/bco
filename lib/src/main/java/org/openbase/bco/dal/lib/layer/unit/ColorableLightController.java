@@ -36,7 +36,7 @@ import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
-import org.openbase.jul.processing.FutureProcessor;
+import org.openbase.jul.schedule.FutureProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;

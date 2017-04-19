@@ -158,7 +158,7 @@ public interface Unit<D> extends Service, LabelProvider, ScopeProvider, Identifi
             for (final ActionConfigType.ActionConfig actionConfig : snapshot.getActionConfigList()) {
                 futureCollection.add(applyAction(actionConfig));
             }
-            return GlobalCachedExecutorService.allOf(futureCollection, null);
+            return GlobalCachedExecutorService.allOf(futureCollection);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not record snapshot!", ex);
         }

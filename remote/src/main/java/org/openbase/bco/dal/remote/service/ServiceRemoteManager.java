@@ -321,7 +321,7 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
             for (final ActionConfigType.ActionConfig actionConfig : snapshot.getActionConfigList()) {
                 futureCollection.add(unitRemoteMap.get(actionConfig.getUnitId()).applyAction(actionConfig));
             }
-            return GlobalCachedExecutorService.allOf(futureCollection, null);
+            return GlobalCachedExecutorService.allOf(futureCollection);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not record snapshot!", ex);
         }

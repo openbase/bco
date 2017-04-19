@@ -68,12 +68,12 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
 
     @Override
     public Future<Void> setColorState(ColorState colorState) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf((ColorStateOperationService input) -> input.setColorState(colorState), getServices());
+        return GlobalCachedExecutorService.allOf(getServices(), (ColorStateOperationService input) -> input.setColorState(colorState));
     }
 
     @Override
     public Future<Void> setColorState(final ColorState colorState, final UnitType unitType) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf((ColorStateOperationService input) -> input.setColorState(colorState), getServices(unitType));
+        return GlobalCachedExecutorService.allOf(getServices(unitType), (ColorStateOperationService input) -> input.setColorState(colorState));
     }
 
     @Override
