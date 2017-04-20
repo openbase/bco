@@ -157,7 +157,7 @@ public class BCOUnitQueryPrinter {
             // print by description
             unitConfigs.clear();
             for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs()) {
-                if (unitConfig.getDescription().contains(args[0].toLowerCase())) {
+                if (unitConfig.getDescription().toLowerCase().contains(args[0].toLowerCase())) {
                     unitConfigs.add(unitConfig);
                 }
             }
