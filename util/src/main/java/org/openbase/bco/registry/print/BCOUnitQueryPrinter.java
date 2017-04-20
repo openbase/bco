@@ -153,6 +153,22 @@ public class BCOUnitQueryPrinter {
                 printUnits(unitConfigs);
                 System.exit(0);
             }
+            
+            // print by description
+            unitConfigs.clear();
+            for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs()) {
+                if (unitConfig.getDescription().contains(args[0].toLowerCase())) {
+                    unitConfigs.add(unitConfig);
+                }
+            }
+            if (!unitConfigs.isEmpty()) {
+                resultsFound = true;
+                System.out.println("");
+                System.out.println("resolved by description:");
+                System.out.println("");
+                printUnits(unitConfigs);
+                System.exit(0);
+            }
         } catch (InterruptedException ex) {
             System.out.println("killed");
             System.exit(253);
