@@ -874,7 +874,8 @@ public class SelectorPanel extends javax.swing.JPanel {
             }
             return StringProcessor.transformUpperCaseToCamelCase(config.getType().name())
                     + " = " + config.getLabel() + ""
-                    + " @ " + locationUnitConfig.getLabel();
+                    + " @ " + locationUnitConfig.getLabel()
+                    + " (" + locationUnitConfig.getDescription()+ ")";
         }
 
         public boolean isNotSpecified() {
