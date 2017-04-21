@@ -23,6 +23,7 @@ package org.openbase.bco.dal.remote.service;
  */
 import java.util.Collection;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.collection.StandbyStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -91,6 +92,6 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
             timestamp = Math.max(timestamp, service.getStandbyState().getTimestamp().getTime());
         }
 
-        return TimestampProcessor.updateTimestamp(timestamp, StandbyState.newBuilder().setValue(standbyValue), logger).build();
+        return TimestampProcessor.updateTimestamp(timestamp, StandbyState.newBuilder().setValue(standbyValue), TimeUnit.MICROSECONDS, logger).build();
     }
 }

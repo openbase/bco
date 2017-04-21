@@ -22,6 +22,7 @@ package org.openbase.bco.dal.remote.service;
  * #L%
  */
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.collection.TamperStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.provider.TamperStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -87,6 +88,6 @@ public class TamperStateServiceRemote extends AbstractServiceRemote<TamperStateP
             timestamp = Math.max(timestamp, tamperState.getTimestamp().getTime());
         }
 
-        return TimestampProcessor.updateTimestamp(timestamp, TamperState.newBuilder().setValue(tamperValue).setLastDetection(Timestamp.newBuilder().setTime(lastDetection)), logger).build();
+        return TimestampProcessor.updateTimestamp(timestamp, TamperState.newBuilder().setValue(tamperValue).setLastDetection(Timestamp.newBuilder().setTime(lastDetection)), TimeUnit.MICROSECONDS, logger).build();
     }
 }

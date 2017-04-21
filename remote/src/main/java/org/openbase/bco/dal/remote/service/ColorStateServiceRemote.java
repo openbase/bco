@@ -24,6 +24,7 @@ package org.openbase.bco.dal.remote.service;
 import java.awt.Color;
 import java.util.Collection;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.collection.ColorStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -107,7 +108,7 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
             averageBlue = averageBlue / amount;
 
             HSBColor hsbColor = HSBColorToRGBColorTransformer.transform(new Color((int) averageRed, (int) averageGreen, (int) averageBlue));
-            return TimestampProcessor.updateTimestamp(timestamp, ColorState.newBuilder().setColor(ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(hsbColor)), logger).build();
+            return TimestampProcessor.updateTimestamp(timestamp, ColorState.newBuilder().setColor(ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(hsbColor)), TimeUnit.MICROSECONDS, logger).build();
         } catch (CouldNotTransformException | TypeNotSupportedException ex) {
             throw new NotAvailableException("Could not transform from HSB to RGB or vice-versa!", ex);
         }
