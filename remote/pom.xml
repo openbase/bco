@@ -87,10 +87,6 @@
                     <groupId>org.eclipse.jgit</groupId>
                     <artifactId>org.eclipse.jgit</artifactId>
                 </exclusion>
-                <exclusion>
-                    <groupId>de.citec.csra</groupId>
-                    <artifactId>arbitration-service</artifactId>
-                </exclusion>
             </exclusions>
         </dependency>
         <dependency>

@@ -22,7 +22,6 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
-import de.citec.csra.allocation.IntervalUtils;
 import de.citec.csra.allocation.cli.AllocatableResource;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -75,6 +74,7 @@ import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocatio
 import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.Policy.PRESERVE;
 import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.State.REQUESTED;
 import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.Priority.LOW;
+import rst.timing.IntervalType;
 
 /**
  *
@@ -396,7 +396,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 setPolicy(PRESERVE).
                 setPriority(LOW).
                 setInitiator(SYSTEM).
-                setSlot(IntervalUtils.buildRelativeRst(0, 2000)).
+                setSlot(IntervalType.Interval.newBuilder().build()).
                 addResourceIds(ScopeGenerator.generateStringRep(scope)).
                 build();
 
