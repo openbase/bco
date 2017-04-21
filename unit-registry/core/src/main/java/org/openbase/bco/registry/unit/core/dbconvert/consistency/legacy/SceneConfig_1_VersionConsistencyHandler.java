@@ -1,4 +1,4 @@
-package org.openbase.bco.registry.unit.core.dbconvert.consistency;
+package org.openbase.bco.registry.unit.core.dbconvert.consistency.legacy;
 
 /*
  * #%L
@@ -33,7 +33,6 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.storage.registry.AbstractVersionConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.version.DBVersionControl;
-import rst.domotic.action.ActionConfigType.ActionConfig;
 import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
@@ -79,15 +78,14 @@ public class SceneConfig_1_VersionConsistencyHandler extends AbstractVersionCons
 
         boolean modification = false;
 
-        sceneConfig.clearActionConfig();
-        for (ActionConfig.Builder actionConfig : entry.getMessage().toBuilder().getActionConfigBuilderList()) {
-            if (unitConfigIdMap.containsKey(actionConfig.getUnitId())) {
-                actionConfig.setUnitId(unitConfigIdMap.get(actionConfig.getUnitId()));
-                modification = true;
-            }
-            sceneConfig.addActionConfig(actionConfig);
-        }
-
+//        sceneConfig.clearActionConfig();
+//        for (ActionConfig.Builder actionConfig : entry.getMessage().toBuilder().getActionConfigBuilderList()) {
+//            if (unitConfigIdMap.containsKey(actionConfig.getUnitId())) {
+//                actionConfig.setUnitId(unitConfigIdMap.get(actionConfig.getUnitId()));
+//                modification = true;
+//            }
+//            sceneConfig.addActionConfig(actionConfig);
+//        }
         if (modification) {
             throw new EntryModification(entry.setMessage(sceneConfig), this);
         }
