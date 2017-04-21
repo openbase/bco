@@ -180,6 +180,18 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         return neighborList;
     }
     
+    public List<LocationRemote> getChildLocationList(final boolean waitForData) throws CouldNotPerformException {
+        List<LocationRemote> childList = new ArrayList<>();
+        for (String childId : getConfig().getLocationConfig().getChildIdList()) {
+            try {
+                childList.add(Units.getUnit(CachedLocationRegistryRemote.getRegistry().getLocationConfigById(childId), waitForData, LOCATION));
+            } catch (InterruptedException ex) {
+            throw new CouldNotPerformException("Could not get all child locations!", ex);
+            } 
+        }
+        return childList;
+    }
+    
     public List<ConnectionRemote> getConnectionList(final boolean waitForData) throws CouldNotPerformException {
         if (!getConfig().getLocationConfig().getType().equals(LocationType.TILE)) {
             throw new CouldNotPerformException("Location is not a Tile!");
