@@ -23,6 +23,7 @@ package org.openbase.bco.dal.remote.service;
  */
 import java.util.Collection;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.collection.BlindStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.remote.unit.UnitRemote;
@@ -102,7 +103,7 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
             mostOccurences = BlindState.MovementState.DOWN;
         }
 
-        return TimestampProcessor.updateTimestamp(timestamp, BlindState.newBuilder().setMovementState(mostOccurences).setOpeningRatio(openingRatioAverage), logger).build();
+        return TimestampProcessor.updateTimestamp(timestamp, BlindState.newBuilder().setMovementState(mostOccurences).setOpeningRatio(openingRatioAverage), TimeUnit.MICROSECONDS, logger).build();
     }
 
     @Override

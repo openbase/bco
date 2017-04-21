@@ -22,6 +22,7 @@ package org.openbase.bco.dal.remote.service;
  * #L%
  */
 import java.util.Collection;
+import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.collection.TemperatureStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.provider.TemperatureStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -80,6 +81,6 @@ public class TemperatureStateServiceRemote extends AbstractServiceRemote<Tempera
         }
         average /= amount;
 
-        return TimestampProcessor.updateTimestamp(timestamp, TemperatureState.newBuilder().setTemperature(average), logger).build();
+        return TimestampProcessor.updateTimestamp(timestamp, TemperatureState.newBuilder().setTemperature(average), TimeUnit.MICROSECONDS, logger).build();
     }
 }

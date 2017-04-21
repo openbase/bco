@@ -23,6 +23,7 @@ package org.openbase.bco.dal.remote.service;
  */
 import java.util.Collection;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.collection.BrightnessStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -91,6 +92,6 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
             timestamp = Math.max(timestamp, service.getBrightnessState().getTimestamp().getTime());
         }
         average /= serviceNumber;
-        return TimestampProcessor.updateTimestamp(timestamp, BrightnessState.newBuilder().setBrightness(average), logger).build();
+        return TimestampProcessor.updateTimestamp(timestamp, BrightnessState.newBuilder().setBrightness(average), TimeUnit.MICROSECONDS, logger).build();
     }
 }
