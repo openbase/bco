@@ -44,7 +44,7 @@ import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.pattern.Observable;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
-import rst.domotic.action.ActionConfigType;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.state.EnablingStateType;
@@ -357,14 +357,14 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     /**
      * {@inheritDoc}
      *
-     * @param actionConfig {@inheritDoc}
+     * @param actionDescription {@inheritDoc}
      * @return {@inheritDoc}
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
-    public Future<Void> applyAction(ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
-        return RPCHelper.callRemoteMethod(actionConfig, this, Void.class);
+    public Future<Void> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+        return RPCHelper.callRemoteMethod(actionDescription, this, Void.class);
     }
 
     /**

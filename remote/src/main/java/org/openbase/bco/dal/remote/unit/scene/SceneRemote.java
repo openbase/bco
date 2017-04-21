@@ -29,7 +29,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionConfigType;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.unit.scene.SceneDataType.SceneData;
 
@@ -42,7 +42,7 @@ public class SceneRemote extends AbstractUnitRemote<SceneData> implements Scene 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionConfigType.ActionConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
     }
 
     public SceneRemote() {

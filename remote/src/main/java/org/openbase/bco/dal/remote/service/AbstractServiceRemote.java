@@ -54,7 +54,7 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.ActionConfigType.ActionConfig;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -427,16 +427,16 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     }
 
     @Override
-    public Future<Void> applyAction(final ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+    public Future<Void> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         try {
-            if (!actionConfig.getServiceType().equals(getServiceType())) {
+            if (!actionDescription.getServiceStateDescription().getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
 
             List<Future> actionFutureList = new ArrayList<>();
 
             for (final UnitRemote remote : getInternalUnits()) {
-                actionFutureList.add(remote.applyAction(actionConfig));
+                actionFutureList.add(remote.applyAction(actionDescription));
             }
             return GlobalCachedExecutorService.allOf(actionFutureList, (Void) null);
         } catch (CouldNotPerformException ex) {

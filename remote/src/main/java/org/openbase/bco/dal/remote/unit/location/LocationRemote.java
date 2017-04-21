@@ -19,7 +19,7 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.pattern.Observable;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionConfigType;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.AlarmStateType;
@@ -87,7 +87,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessStateType.BrightnessState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureStateType.TemperatureState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PresenceStateType.PresenceState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionConfigType.ActionConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Snapshot.getDefaultInstance()));
     }
 
@@ -145,8 +145,8 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     }
 
     @Override
-    public Future<Void> applyAction(ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
-        return RPCHelper.callRemoteMethod(actionConfig, this, Void.class);
+    public Future<Void> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+        return RPCHelper.callRemoteMethod(actionDescription, this, Void.class);
     }
 
     @Override
@@ -179,24 +179,24 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         }
         return neighborList;
     }
-    
+
     public List<LocationRemote> getChildLocationList(final boolean waitForData) throws CouldNotPerformException {
         List<LocationRemote> childList = new ArrayList<>();
         for (String childId : getConfig().getLocationConfig().getChildIdList()) {
             try {
                 childList.add(Units.getUnit(CachedLocationRegistryRemote.getRegistry().getLocationConfigById(childId), waitForData, LOCATION));
             } catch (InterruptedException ex) {
-            throw new CouldNotPerformException("Could not get all child locations!", ex);
-            } 
+                throw new CouldNotPerformException("Could not get all child locations!", ex);
+            }
         }
         return childList;
     }
-    
+
     public List<ConnectionRemote> getConnectionList(final boolean waitForData) throws CouldNotPerformException {
         if (!getConfig().getLocationConfig().getType().equals(LocationType.TILE)) {
             throw new CouldNotPerformException("Location is not a Tile!");
         }
-        
+
         List<ConnectionRemote> connectionList = new ArrayList<>();
         try {
             for (UnitConfig connectionUnitConfig : CachedLocationRegistryRemote.getRegistry().getConnectionConfigs()) {
@@ -207,27 +207,27 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
             }
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Could not get all connections!", ex);
-        } 
+        }
         return connectionList;
     }
-    
+
     public List<ConnectionRemote> getRelatedConnectionRemoteList(final String locationID, final boolean waitForData) throws CouldNotPerformException {
         if (!getConfig().getLocationConfig().getType().equals(LocationType.TILE)) {
             throw new CouldNotPerformException("Location is not a Tile!");
         }
-        
+
         List<ConnectionRemote> connectionList = new ArrayList<>();
         try {
             for (UnitConfig connectionUnitConfig : CachedLocationRegistryRemote.getRegistry().getConnectionConfigs()) {
                 ConnectionRemote connection = Units.getUnit(connectionUnitConfig, waitForData, CONNECTION);
-                if (connection.getConfig().getConnectionConfig().getTileIdList().contains(getId()) &&
-                        connection.getConfig().getConnectionConfig().getTileIdList().contains(locationID)) {
+                if (connection.getConfig().getConnectionConfig().getTileIdList().contains(getId())
+                        && connection.getConfig().getConnectionConfig().getTileIdList().contains(locationID)) {
                     connectionList.add(connection);
                 }
             }
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Could not get all connections!", ex);
-        } 
+        }
         return connectionList;
     }
 }
