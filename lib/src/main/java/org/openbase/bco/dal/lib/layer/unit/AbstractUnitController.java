@@ -61,19 +61,18 @@ import rsb.RSBException;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.communicationpatterns.ResourceAllocationType.*;
-import rst.domotic.action.ActionConfigType.ActionConfig;
+import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
+import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM;
+import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.Policy.PRESERVE;
+import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.Priority.LOW;
+import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.State.REQUESTED;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.registry.UnitRegistryDataType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.state.EnablingStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
-
-import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM;
-import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.Policy.PRESERVE;
-import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.State.REQUESTED;
-import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.Priority.LOW;
 import rst.timing.IntervalType;
 
 /**
@@ -86,7 +85,7 @@ import rst.timing.IntervalType;
 public abstract class AbstractUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
     }
 
     public static long initTime = 0;
@@ -361,13 +360,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     @Override
-    public Future<Void> applyAction(final ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+    public Future<Void> applyAction(final ActionDescription actionConfig) throws CouldNotPerformException, InterruptedException {
         try {
             logger.debug("applyAction: " + actionConfig.getLabel());
-            final Object attribute = serviceJSonProcessor.deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType());
+            final Object attribute = serviceJSonProcessor.deserialize(actionConfig.getServiceStateDescription().getServiceAttribute(), actionConfig.getServiceStateDescription().getServiceAttributeType());
 
             // Since its an action it has to be an operation service pattern
-            final ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(actionConfig.getServiceType()).setPattern(ServiceTemplate.ServicePattern.OPERATION).build();
+            final ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(actionConfig.getServiceStateDescription().getServiceType()).setPattern(ServiceTemplate.ServicePattern.OPERATION).build();
 
             return GlobalCachedExecutorService.submit(() -> {
                 Service.invokeServiceMethod(serviceTemplate, AbstractUnitController.this, attribute);
@@ -377,7 +376,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             throw new CouldNotPerformException("Could not apply action!", ex);
         }
     }
-    
+
     private AllocatableResource allocate(ResourceAllocation allocation) throws CouldNotPerformException {
         final AllocatableResource allocatableResource = new AllocatableResource(allocation);
         try {

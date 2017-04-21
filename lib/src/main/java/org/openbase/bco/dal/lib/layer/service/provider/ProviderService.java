@@ -25,7 +25,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotSupportedException;
-import rst.domotic.action.ActionConfigType;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType;
 
 /**
@@ -52,7 +52,7 @@ public interface ProviderService extends Service {
     }
 
     @Override
-    public default Future<Void> applyAction(ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+    public default Future<Void> applyAction(ActionDescription actionConfig) throws CouldNotPerformException, InterruptedException {
         throw new NotSupportedException("actions", ProviderService.class);
     }
 }
