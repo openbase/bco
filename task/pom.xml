@@ -113,37 +113,11 @@
         </pluginRepository>
     </pluginRepositories>
     
-    <repositories>
-        <repository>
-            <id>citec-releases</id>
-            <name>CITEC Maven Repository Server</name>
-            <url>https://mvn.cit-ec.de/nexus/content/repositories/releases/</url>
-            <layout>default</layout>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-        <repository>
-            <id>citec-snapshots</id>
-            <name>CITEC Maven Repository Server</name>
-            <url>https://mvn.cit-ec.de/nexus/content/repositories/snapshots/</url>
-            <layout>default</layout>
-            <snapshots>
-                <enabled>true</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-    
     <dependencies>
         <dependency>
             <groupId>org.openbase.bco</groupId>
             <artifactId>dal.remote</artifactId>
             <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>de.citec.csra</groupId>
-            <artifactId>rta-lib</artifactId>
-            <version>${dependency.rta.lib.version}</version>
         </dependency>
     </dependencies>
 </project>
