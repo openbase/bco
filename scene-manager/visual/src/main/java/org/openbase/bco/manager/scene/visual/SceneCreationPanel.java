@@ -46,8 +46,8 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.ActionConfigType.ActionConfig;
 import rst.domotic.registry.SceneRegistryDataType.SceneRegistryData;
+import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.EnablingStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -58,7 +58,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
 
     protected static final org.slf4j.Logger logger = LoggerFactory.getLogger(SceneCreationPanel.class);
 
-    private final ObservableImpl<List<ActionConfig>> observable;
+    private final ObservableImpl<SceneConfig> observable;
     private SceneRegistryRemote sceneRegistryRemote;
     private UnitConfig lastSelected = null;
     private LocationUnitConfigHolder location = null;
@@ -116,16 +116,17 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         if (lastSelected == null) {
             sceneSelectionComboBox.setSelectedIndex(0);
             lastSelected = ((SceneUnitConfigHolder) sceneSelectionComboBox.getSelectedItem()).getConfig();
-            observable.notifyObservers(lastSelected.getSceneConfig().getActionConfigList());
+            observable.notifyObservers(lastSelected.getSceneConfig());
         } else {
             sceneSelectionComboBox.setSelectedItem(new SceneUnitConfigHolder(lastSelected));
         }
     }
 
-    public void updateSceneConfig(List<ActionConfig> actionConfigs) throws CouldNotPerformException {
+    public void updateSceneConfig(List<ServiceStateDescription> servicestateDescription) throws CouldNotPerformException {
         UnitConfig.Builder sceneUnitConfig = ((SceneUnitConfigHolder) sceneSelectionComboBox.getSelectedItem()).getConfig().toBuilder();
-        sceneUnitConfig.getSceneConfigBuilder().clearActionConfig();
-        sceneUnitConfig.getSceneConfigBuilder().addAllActionConfig(actionConfigs);
+        sceneUnitConfig.getSceneConfigBuilder().clearRequiredServiceStateDescription();
+        sceneUnitConfig.getSceneConfigBuilder().clearOptionalServiceStateDescription();
+        sceneUnitConfig.getSceneConfigBuilder().addAllRequiredServiceStateDescription(servicestateDescription);
         sceneUnitConfig.getPlacementConfigBuilder().setLocationId(location.getConfig().getId());
         logger.info("save location:" + location.getConfig().getLabel());
         try {
@@ -231,7 +232,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         lastSelected = ((SceneUnitConfigHolder) sceneSelectionComboBox.getSelectedItem()).getConfig();
         locationSelectorPanel.updateSelection(lastSelected.getPlacementConfig().getLocationId());
         try {
-            observable.notifyObservers(lastSelected.getSceneConfig().getActionConfigList());
+            observable.notifyObservers(lastSelected.getSceneConfig());
         } catch (MultiException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify observers!", ex), logger, LogLevel.WARN);
         }
@@ -256,7 +257,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
             unitConfig.setSceneConfig(SceneConfig.getDefaultInstance());
             lastSelected = sceneRegistryRemote.registerSceneConfig(unitConfig.build()).get();
             updateDynamicComponents();
-            observable.notifyObservers(lastSelected.getSceneConfig().getActionConfigList());
+            observable.notifyObservers(lastSelected.getSceneConfig());
         } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }
@@ -297,11 +298,11 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         }
     }//GEN-LAST:event_applyUpdateButtonActionPerformed
 
-    public void addObserver(Observer<List<ActionConfig>> observer) {
+    public void addObserver(Observer<SceneConfig> observer) {
         observable.addObserver(observer);
     }
 
-    public void removeObserver(Observer<List<ActionConfig>> observer) {
+    public void removeObserver(Observer<SceneConfig> observer) {
         observable.removeObserver(observer);
     }
 

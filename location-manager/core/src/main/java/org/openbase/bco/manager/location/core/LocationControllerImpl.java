@@ -43,8 +43,8 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionConfigType;
-import rst.domotic.action.ActionConfigType.ActionConfig;
+import rst.domotic.action.ActionDescriptionType;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.AlarmStateType;
@@ -91,7 +91,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessStateType.BrightnessState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureStateType.TemperatureState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PresenceStateType.PresenceState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionConfigType.ActionConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescriptionType.ActionDescription.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Snapshot.getDefaultInstance()));
     }
 
@@ -205,7 +205,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
     }
 
     @Override
-    public Future<Void> applyAction(final ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+    public Future<Void> applyAction(final ActionDescription actionConfig) throws CouldNotPerformException, InterruptedException {
         return serviceRemoteManager.applyAction(actionConfig);
     }
 

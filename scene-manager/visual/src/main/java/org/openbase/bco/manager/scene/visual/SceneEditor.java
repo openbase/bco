@@ -44,10 +44,9 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.ActionAuthorityType.ActionAuthority;
-import rst.domotic.action.ActionConfigType.ActionConfig;
-import rst.domotic.action.ActionPriorityType.ActionPriority;
+import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
 
 /**
  *
@@ -72,12 +71,12 @@ public class SceneEditor extends javax.swing.JFrame {
         sceneSelectorPanel.addObserver((final Observable<SceneSelectorPanel.UnitConfigServiceTypeHolder> source, SceneSelectorPanel.UnitConfigServiceTypeHolder data) -> {
             genericUnitCollectionPanel.add(data.getConfig(), data.getServiceType(), true);
         });
-        sceneCreationPanel.addObserver((final Observable<List<ActionConfig>> source, List<ActionConfig> data) -> {
+        sceneCreationPanel.addObserver((final Observable<SceneConfig> source, SceneConfig data) -> {
             genericUnitCollectionPanel.clearUnitPanel();
-            for (ActionConfig action : data) {
-                logger.info("Adding new unit panel for action [" + action.getServiceAttributeType() + "][" + action.getServiceAttribute() + "]");
-                Object value = serviceJSonProcessor.deserialize(action.getServiceAttribute(), action.getServiceAttributeType());
-                genericUnitCollectionPanel.add(action.getUnitId(), action.getServiceType(), value, true);
+            for (ServiceStateDescription serviceStateDescription : data.getRequiredServiceStateDescriptionList()) {
+                logger.info("Adding new unit panel for action [" + serviceStateDescription.getServiceAttributeType() + "][" + serviceStateDescription.getServiceAttribute() + "]");
+                Object value = serviceJSonProcessor.deserialize(serviceStateDescription.getServiceAttribute(), serviceStateDescription.getServiceAttributeType());
+                genericUnitCollectionPanel.add(serviceStateDescription.getUnitId(), serviceStateDescription.getServiceType(), value, true);
             }
         });
 
@@ -182,7 +181,7 @@ public class SceneEditor extends javax.swing.JFrame {
 
     private void saveButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_saveButtonActionPerformed
         Collection<GenericUnitPanel> unitPanelList = genericUnitCollectionPanel.getUnitPanelList();
-        List<ActionConfig> actionConfigs = new ArrayList<>();
+        List<ServiceStateDescription> actionConfigs = new ArrayList<>();
         // Generic unit panel means removable generic unit panel in this case
         for (GenericUnitPanel genericUnitPanel : unitPanelList) {
             GenericUnitPanel unitPanel = ((RemovableGenericUnitPanel) genericUnitPanel).getGenericUnitPanel();
@@ -199,11 +198,10 @@ public class SceneEditor extends javax.swing.JFrame {
                     continue;
                 }
                 try {
-                    ActionConfig.Builder actionConfig = ActionConfig.newBuilder().setServiceType(panel.getServiceType()).setUnitId(panel.getUnitId());
+                    ServiceStateDescription.Builder actionConfig = ServiceStateDescription.newBuilder().setServiceType(panel.getServiceType()).setUnitId(panel.getUnitId());
                     Object value = getServiceValue(panel.getOperationService(), panel.getServiceType());
                     actionConfig.setServiceAttribute(serviceJSonProcessor.serialize(value));
                     actionConfig.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(value));
-                    actionConfig.setActionAuthority(ActionAuthority.newBuilder().setAuthority(ActionAuthority.Authority.USER)).setActionPriority(ActionPriority.newBuilder().setPriority(ActionPriority.Priority.NORMAL));
                     actionConfigs.add(actionConfig.build());
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
