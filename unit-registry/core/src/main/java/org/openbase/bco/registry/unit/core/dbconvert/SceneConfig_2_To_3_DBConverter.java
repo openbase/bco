@@ -56,7 +56,13 @@ public class SceneConfig_2_To_3_DBConverter extends AbstractDBVersionConverter {
         JsonObject sceneConfig = sceneUnitConfig.getAsJsonObject(SCENE_CONFIG_FIELD);
 
         JsonArray serviceStateDescriptions = new JsonArray();
-        for (JsonElement actionConfigElem : sceneConfig.getAsJsonArray(ACTION_CONFIG_FIELD)) {
+        JsonArray actionConfigsJsonArray = sceneConfig.getAsJsonArray(ACTION_CONFIG_FIELD);
+        
+        if(actionConfigsJsonArray == null)  {
+            return sceneUnitConfig;
+        }
+        
+        for (JsonElement actionConfigElem : actionConfigsJsonArray) {
             JsonObject actionConfig = actionConfigElem.getAsJsonObject();
             JsonObject serviceStateDescription = new JsonObject();
 
