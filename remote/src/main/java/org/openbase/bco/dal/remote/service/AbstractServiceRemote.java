@@ -36,6 +36,7 @@ import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -434,11 +435,14 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             }
 
             List<Future> actionFutureList = new ArrayList<>();
-
-            for (final UnitRemote remote : getInternalUnits()) {
-                actionFutureList.add(remote.applyAction(actionDescription));
+            for (final UnitRemote unitRemote : getInternalUnits()) {
+                if (actionDescription.getServiceStateDescription().getUnitType() == UnitType.UNKNOWN
+                        || actionDescription.getServiceStateDescription().getUnitType() == unitRemote.getType()
+                        || UnitConfigProcessor.isBaseUnit(unitRemote.getType())) {
+                    actionFutureList.add(unitRemote.applyAction(actionDescription));
+                }
             }
-            return GlobalCachedExecutorService.allOf(actionFutureList, (Void) null);
+            return GlobalCachedExecutorService.allOf((Void) null, actionFutureList);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }

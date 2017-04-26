@@ -360,13 +360,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     @Override
-    public Future<Void> applyAction(final ActionDescription actionConfig) throws CouldNotPerformException, InterruptedException {
+    public Future<Void> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         try {
-            logger.debug("applyAction: " + actionConfig.getLabel());
-            final Object attribute = serviceJSonProcessor.deserialize(actionConfig.getServiceStateDescription().getServiceAttribute(), actionConfig.getServiceStateDescription().getServiceAttributeType());
+            logger.debug("applyAction: " + actionDescription.getLabel());
+            final Object attribute = serviceJSonProcessor.deserialize(actionDescription.getServiceStateDescription().getServiceAttribute(), actionDescription.getServiceStateDescription().getServiceAttributeType());
 
             // Since its an action it has to be an operation service pattern
-            final ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(actionConfig.getServiceStateDescription().getServiceType()).setPattern(ServiceTemplate.ServicePattern.OPERATION).build();
+            final ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(actionDescription.getServiceStateDescription().getServiceType()).setPattern(ServiceTemplate.ServicePattern.OPERATION).build();
 
             return GlobalCachedExecutorService.submit(() -> {
                 Service.invokeServiceMethod(serviceTemplate, AbstractUnitController.this, attribute);
