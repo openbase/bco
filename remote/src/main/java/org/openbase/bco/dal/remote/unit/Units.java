@@ -76,6 +76,7 @@ public class Units {
     public static final Class<? extends AgentRemote> BASE_UNIT_AGENT = AgentRemote.class;
     public static final Class<? extends AppRemote> BASE_UNIT_APP = AppRemote.class;
     public static final Class<? extends SceneRemote> BASE_UNIT_SCENE = SceneRemote.class;
+    public static final Class<? extends UnitGroupRemote> BASE_UNIT_UNITGROUP = UnitGroupRemote.class;
     public static final Class<? extends UserRemote> BASE_UNIT_USER = UserRemote.class;
     public static final Class<? extends DeviceRemote> BASE_UNIT_DEVICE = DeviceRemote.class;
     public static final Class<? extends LocationRemote> BASE_UNIT_LOCATION = LocationRemote.class;
@@ -88,6 +89,7 @@ public class Units {
     public static final Class<? extends AgentRemote> UNIT_BASE_AGENT = BASE_UNIT_AGENT;
     public static final Class<? extends AppRemote> UNIT_BASE_APP = BASE_UNIT_APP;
     public static final Class<? extends SceneRemote> UNIT_BASE_SCENE = BASE_UNIT_SCENE;
+    public static final Class<? extends UnitGroupRemote> UNIT_UNITGROUP = BASE_UNIT_UNITGROUP;
     public static final Class<? extends UserRemote> UNIT_BASE_USER = BASE_UNIT_USER;
     public static final Class<? extends DeviceRemote> UNIT_BASE_DEVICE = BASE_UNIT_DEVICE;
     public static final Class<? extends LocationRemote> UNIT_BASE_LOCATION = BASE_UNIT_LOCATION;
@@ -100,6 +102,7 @@ public class Units {
     public static final Class<? extends AgentRemote> AGENT = BASE_UNIT_AGENT;
     public static final Class<? extends AppRemote> APP = BASE_UNIT_APP;
     public static final Class<? extends SceneRemote> SCENE = BASE_UNIT_SCENE;
+    public static final Class<? extends UnitGroupRemote> UNITGROUP = BASE_UNIT_UNITGROUP;
     public static final Class<? extends UserRemote> USER = BASE_UNIT_USER;
     public static final Class<? extends DeviceRemote> DEVICE = BASE_UNIT_DEVICE;
     public static final Class<? extends LocationRemote> LOCATION = BASE_UNIT_LOCATION;
