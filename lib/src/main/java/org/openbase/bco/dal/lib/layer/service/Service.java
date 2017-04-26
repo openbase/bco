@@ -29,6 +29,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.iface.annotations.RPCMethod;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType;
@@ -49,6 +50,13 @@ public interface Service {
 
     @RPCMethod
     public Future<Void> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException;
+
+    default public void addServiceStateObserver(ServiceType serviceType, Observer observer) {
+    }
+
+    default public void removeServiceStateObserver(ServiceType serviceType, Observer observer) {
+
+    }
 
     /**
      * This method returns the service base name of the given service type.

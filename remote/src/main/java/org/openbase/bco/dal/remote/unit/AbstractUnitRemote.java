@@ -22,9 +22,12 @@ package org.openbase.bco.dal.remote.unit;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
@@ -35,6 +38,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.protobuf.processing.GenericMessageProcessor;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -42,14 +46,18 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
-import rst.domotic.state.EnablingStateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 
 /**
@@ -61,9 +69,12 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
     private UnitTemplate template;
     private UnitRegistry unitRegistry;
+    private final Map<ServiceType, MessageObservable> serviceStateObservableMap;
 
     public AbstractUnitRemote(final Class<M> dataClass) {
         super(dataClass, UnitConfig.class);
+
+        serviceStateObservableMap = new HashMap<>();
     }
 
     protected UnitRegistry getUnitRegistry() throws InterruptedException, CouldNotPerformException {
@@ -190,6 +201,42 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
                 ExceptionPrinter.printHistory("Could not update unit config of " + this, ex, logger);
             }
         });
+
+        // TODO: move to applyConfigUpdate
+        try {
+            for (ServiceTemplate serviceTemplate : getTemplate().getServiceTemplateList()) {
+                if (!serviceStateObservableMap.containsKey(serviceTemplate.getType())) {
+                    serviceStateObservableMap.put(serviceTemplate.getType(), new MessageObservable(this));
+                }
+            }
+        } catch (NotAvailableException ex) {
+
+        }
+        this.addDataObserver(new Observer<M>() {
+
+            @Override
+            public void update(Observable<M> source, M data) throws Exception {
+                for (ServiceTemplate serviceTemplate : getTemplate().getServiceTemplateList()) {
+                    try {
+                        Object serviceData = Service.invokeProviderServiceMethod(serviceTemplate.getType(), data);
+                        serviceStateObservableMap.get(serviceTemplate.getType()).notifyObservers(serviceData);
+                    } catch (CouldNotPerformException ex) {
+                        System.out.println("update error, no service getter for type [" + serviceTemplate.getType() + "]");
+                        logger.debug("Could not notify state update for service[" + serviceTemplate.getType() + "] because this service is not supported by this controller");
+                    }
+                }
+            }
+        });
+    }
+
+    @Override
+    public void addServiceStateObserver(ServiceType serviceType, Observer observer) {
+        serviceStateObservableMap.get(serviceType).addObserver(observer);
+    }
+
+    @Override
+    public void removeServiceStateObserver(ServiceType serviceType, Observer observer) {
+        serviceStateObservableMap.get(serviceType).removeObserver(observer);
     }
 
     /**
@@ -270,7 +317,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     public boolean isEnabled() {
         try {
             assert (getConfig() instanceof UnitConfig);
-            return getConfig().getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED);
+            return getConfig().getEnablingState().getValue().equals(EnablingState.State.ENABLED);
         } catch (CouldNotPerformException ex) {
             LoggerFactory.getLogger(org.openbase.bco.dal.lib.layer.unit.UnitRemote.class).warn("isEnabled() was called on non initialized unit!");
             assert false;
@@ -294,7 +341,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
      * @throws org.openbase.jul.exception.NotAvailableException
      */
     @Override
-    public UnitTemplate.UnitType getType() throws NotAvailableException {
+    public UnitType getType() throws NotAvailableException {
         try {
             return getConfig().getType();
         } catch (NullPointerException | NotAvailableException ex) {

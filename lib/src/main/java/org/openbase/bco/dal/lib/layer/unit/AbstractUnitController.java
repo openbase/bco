@@ -30,6 +30,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
 import java.util.UUID;
 import java.util.concurrent.Future;
@@ -48,6 +49,7 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
@@ -55,6 +57,7 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.RSBException;
@@ -67,9 +70,10 @@ import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocatio
 import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.Priority.LOW;
 import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.State.REQUESTED;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.registry.UnitRegistryDataType;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
-import rst.domotic.state.EnablingStateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
@@ -96,11 +100,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     private final List<Service> serviceList;
     private final ServiceJSonProcessor serviceJSonProcessor;
     private UnitTemplate template;
+    private final Map<ServiceType, MessageObservable> serviceStateObservableMap;
 
     public AbstractUnitController(final Class unitClass, final DB builder) throws InstantiationException {
         super(builder);
         this.serviceJSonProcessor = new ServiceJSonProcessor();
         this.serviceList = new ArrayList<>();
+        this.serviceStateObservableMap = new HashMap<>();
     }
 
     @Override
@@ -166,7 +172,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     protected void postInit() throws InitializationException, InterruptedException {
         try {
             super.postInit();
-            this.unitRegistry.addDataObserver((Observable<UnitRegistryDataType.UnitRegistryData> source, UnitRegistryDataType.UnitRegistryData data) -> {
+            this.unitRegistry.addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
                 try {
                     final UnitConfig newUnitConfig = CachedUnitRegistryRemote.getRegistry().getUnitConfigById(getId());
                     if (!newUnitConfig.equals(getConfig())) {
@@ -176,14 +182,49 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                     ExceptionPrinter.printHistory("Could not update unit config of " + this, ex, logger);
                 }
             });
+
+            // TODO: move to applyConfigUpdate
+            try {
+                for (ServiceTemplate serviceTemplate : getTemplate().getServiceTemplateList()) {
+                    if (!serviceStateObservableMap.containsKey(serviceTemplate.getType())) {
+                        serviceStateObservableMap.put(serviceTemplate.getType(), new MessageObservable(this));
+                    }
+                }
+            } catch (NotAvailableException ex) {
+
+            }
+            this.addDataObserver(new Observer<D>() {
+
+                @Override
+                public void update(Observable<D> source, D data) throws Exception {
+                    for (ServiceTemplate serviceTemplate : getTemplate().getServiceTemplateList()) {
+                        try {
+                            Object serviceData = Service.invokeProviderServiceMethod(serviceTemplate.getType(), data);
+                            serviceStateObservableMap.get(serviceTemplate.getType()).notifyObservers(serviceData);
+                        } catch (CouldNotPerformException ex) {
+                            logger.info("Could not notify state update for service[" + serviceTemplate.getType() + "]", ex);
+                        }
+                    }
+                }
+            });
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
+    @Override
+    public void addServiceStateObserver(ServiceType serviceType, Observer observer) {
+        serviceStateObservableMap.get(serviceType).addObserver(observer);
+    }
+
+    @Override
+    public void removeServiceStateObserver(ServiceType serviceType, Observer observer) {
+        serviceStateObservableMap.get(serviceType).removeObserver(observer);
+    }
+
     public boolean isEnabled() {
         try {
-            return getConfig().getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED);
+            return getConfig().getEnablingState().getValue().equals(EnablingState.State.ENABLED);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }
