@@ -22,7 +22,6 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.awt.Color;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -34,7 +33,6 @@ import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.transform.HSBColorToRGBColorTransformer;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
-import org.openbase.bco.dal.remote.unit.LightRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
@@ -45,6 +43,8 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
@@ -130,31 +130,30 @@ public class ColorableLightRemoteTest {
         assertEquals("Color has not been set in time!", HSBColorToRGBColorTransformer.transform(color), colorableLightRemote.getData().getColorState().getColor().getHsbColor());
     }
 
-    @Test(timeout = 10000)
-    public void testControllingColorableLightViaLightRemote() throws Exception {
-        System.out.println("testControllingColorableLightViaLightRemote");
-
-        try {
-            LightRemote lightRemote = new LightRemote();
-            lightRemote.initByLabel(label);
-            lightRemote.activate();
-            lightRemote.requestData().get();
-            lightRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
-
-            lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build()).get();
-            colorableLightRemote.requestData().get();
-
-            assertEquals(lightRemote.getPowerState().getValue(), colorableLightRemote.getPowerState().getValue());
-
-            lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build()).get();
-            colorableLightRemote.requestData().get();
-
-            assertEquals(lightRemote.getPowerState().getValue(), colorableLightRemote.getPowerState().getValue());
-        } catch (InterruptedException | CouldNotPerformException | ExecutionException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
-    }
-
+//    @Test//(timeout = 10000)
+//    public void testControllingColorableLightViaLightRemote() throws Exception {
+//        System.out.println("testControllingColorableLightViaLightRemote");
+//
+//        try {
+//            LightRemote lightRemote = new LightRemote();
+//            lightRemote.initByLabel(label);
+//            lightRemote.activate();
+//            lightRemote.requestData().get();
+//            lightRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+//
+//            lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build()).get();
+//            colorableLightRemote.requestData().get();
+//
+//            assertEquals(lightRemote.getPowerState().getValue(), colorableLightRemote.getPowerState().getValue());
+//            int i = 0;
+//            lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build()).get();
+//            colorableLightRemote.requestData().get();
+//
+//            assertEquals(lightRemote.getPowerState().getValue(), colorableLightRemote.getPowerState().getValue());
+//        } catch (InterruptedException | CouldNotPerformException | ExecutionException ex) {
+//            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+//        }
+//    }
     /**
      * Test of setColor method, of class AmbientLightRemote.
      *
@@ -262,5 +261,41 @@ public class ColorableLightRemoteTest {
         colorableLightRemote.setNeutralWhite().get();
         colorableLightRemote.requestData().get();
         assertEquals("Neutral white was not set to the default value!", ColorStateOperationService.DEFAULT_NEUTRAL_WHITE, colorableLightRemote.getColorState().getColor().getRgbColor());
+    }
+
+    private int powerStateObserverUpdateNumber = 0;
+
+    @Test(timeout = 10000)
+    public void testPowerStateObserver() throws Exception {
+        System.out.println("testPowerStateObserver");
+
+        // set initial state to on for this test
+        if (colorableLightRemote.getPowerState().getValue() == PowerState.State.OFF) {
+            colorableLightRemote.setPowerState(PowerState.State.ON).get();
+        }
+
+        colorableLightRemote.addPowerStateObserver(new Observer<PowerState>() {
+
+            int updateNumber = 0;
+
+            @Override
+            public void update(Observable<PowerState> source, PowerState data) throws Exception {
+                powerStateObserverUpdateNumber++;
+                if (powerStateObserverUpdateNumber == 1 || powerStateObserverUpdateNumber == 3) {
+                    assertEquals("Notified on unexpected PowerState in update[" + powerStateObserverUpdateNumber + "]!", PowerState.State.OFF, data.getValue());
+                } else if (powerStateObserverUpdateNumber == 2) {
+                    assertEquals("Notified on unexpected PowerState in update[" + powerStateObserverUpdateNumber + "]!", PowerState.State.ON, data.getValue());
+                }
+            }
+        });
+
+        colorableLightRemote.setPowerState(PowerState.State.OFF).get();
+        colorableLightRemote.setPowerState(PowerState.State.ON).get();
+        colorableLightRemote.setNeutralWhite().get();
+        colorableLightRemote.setBrightnessState(BrightnessState.newBuilder().setBrightness(14).build());
+        colorableLightRemote.setColor(Color.RED).get();
+        colorableLightRemote.setPowerState(PowerState.State.OFF).get();
+        colorableLightRemote.setPowerState(PowerState.State.OFF).get();
+        assertEquals("PowerStateObserver wasn't notified the correct amount of times!", 3, powerStateObserverUpdateNumber);
     }
 }
