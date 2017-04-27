@@ -21,13 +21,14 @@ package org.openbase.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.manager.agent.core.AbstractAgentController;
+import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.state.PresenceStateType.PresenceStateOrBuilder;
@@ -42,43 +43,32 @@ public class PersonLightProviderAgent extends AbstractAgentController {
 
     public static final double MINIMUM_LIGHT_THRESHOLD = 100;
     private LocationRemote locationRemote;
+    private final Observer<LocationDataType.LocationData> locationObserver;
 
     public PersonLightProviderAgent() throws InstantiationException, CouldNotPerformException, InterruptedException {
         super(PersonLightProviderAgent.class);
-    }
-
-    @Override
-    public void activate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activating [" + getConfig().getLabel() + "]");
-        locationRemote = new LocationRemote();
-        Registries.getLocationRegistry().waitForData();
-        locationRemote.init(Registries.getLocationRegistry().getLocationConfigById(getConfig().getId()));
-        locationRemote.activate();
-        locationRemote.addDataObserver((Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
+        
+        locationObserver = (final Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
             try {
                 notifyPresenceStateChanged(data.getPresenceState());
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify presence state change!", ex), logger);
             }
-        });
-        super.activate();
-    }
-
-    @Override
-    public void deactivate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getClass().getSimpleName() + "]");
-        locationRemote.deactivate();
-        super.deactivate();
+        };
     }
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
-        locationRemote.activate();
+        logger.info("Activating [" + getConfig().getLabel() + "]");
+        locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
+        locationRemote.addDataObserver(locationObserver);
+        locationRemote.waitForData();
     }
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
-        locationRemote.deactivate();
+        logger.info("Deactivating [" + getClass().getSimpleName() + "]");
+        locationRemote.removeDataObserver(locationObserver);
     }
 
     private void notifyPresenceStateChanged(final PresenceStateOrBuilder presenceState) throws CouldNotPerformException {

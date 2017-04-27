@@ -23,27 +23,27 @@ package org.openbase.bco.manager.agent.core.preset;
  */
 
 import java.util.List;
-import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.manager.agent.core.AbstractAgentController;
-import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InstantiationException;
-import rst.domotic.state.BrightnessStateType.BrightnessState;
-
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openbase.bco.dal.remote.unit.Units;
-import static org.openbase.bco.dal.remote.unit.Units.LOCATION;
 import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
+import org.openbase.bco.dal.remote.unit.location.LocationRemote;
+import org.openbase.bco.manager.agent.core.AbstractAgentController;
+import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
+import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.DoorStateType;
-import static rst.domotic.state.PresenceStateType.PresenceState.State.PRESENT;
+import rst.domotic.state.PresenceStateType;
 import rst.domotic.state.WindowStateType;
-import static rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType.PASSAGE;
-import static rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType.WINDOW;
-import static rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType.DOOR;
+import rst.domotic.unit.UnitConfigType;
+import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType;
 import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
+import rst.domotic.unit.location.LocationDataType;
 import rst.domotic.unit.location.LocationDataType.LocationData;
 
 
@@ -58,114 +58,116 @@ public class NearFieldLightAgent extends AbstractAgentController {
     private boolean isDimmed = false;
     private List<ConnectionRemote> connectionRemotes;
     private List<LocationRemote> neighborRemotes;
+    private final Observer<ConnectionData> connectionObserver;
+    private final Observer<LocationDataType.LocationData> neighborObserver;
+    private final Observer<LocationDataType.LocationData> passageNeighborObserver;
 
     public NearFieldLightAgent() throws InstantiationException {
         super(NearFieldLightAgent.class);
+        
+        connectionObserver = (final Observable<ConnectionData> source, ConnectionData data) -> {
+            if ((data.getDoorState().getValue() == DoorStateType.DoorState.State.OPEN || 
+                    data.getWindowState().getValue() == WindowStateType.WindowState.State.OPEN)) {
+                if (presenceInOpenLocation()) {
+                    dimmLights();
+                }
+            } else if (!presenceInOpenLocation() && setBrightnessStateFuture != null) {
+                setBrightnessStateFuture.cancel(true);
+                isDimmed = false;
+            }
+        };
+        
+        neighborObserver = (final Observable<LocationData> source, LocationData data) -> {
+            if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT)) {
+                if (presenceInOpenLocation()) {
+                    dimmLights();
+                }
+//                for (ConnectionRemote relatedConnection : locationRemote.getRelatedConnectionRemoteList(neigborRemote.getId(), true)) {
+//                    if (relatedConnection.getDoorState().getValue() == DoorStateType.DoorState.State.OPEN || 
+//                            relatedConnection.getWindowState().getValue() == WindowStateType.WindowState.State.OPEN) {
+//                        dimmLights();
+//                        return;
+//                    }
+//                }                                
+            } else if (!presenceInOpenLocation() && setBrightnessStateFuture != null) {
+                setBrightnessStateFuture.cancel(true);
+                isDimmed = false;
+            }
+        };
+        
+        passageNeighborObserver = (final Observable<LocationData> source, LocationData data) -> {
+            if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT)) {
+                dimmLights();                         
+            } else if (!presenceInOpenLocation() && setBrightnessStateFuture != null) {
+                setBrightnessStateFuture.cancel(true);
+                isDimmed = false;
+            }
+        };
     }
 
     @Override
-    public void activate() throws CouldNotPerformException, InterruptedException {
+    public void init(final UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
+        try {
+            super.init(config);
+            locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), true, Units.LOCATION);
+            connectionRemotes = locationRemote.getConnectionList(true);
+            neighborRemotes = locationRemote.getNeighborLocationList(true);
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        } 
+    }
+    
+    @Override
+    protected void execute() throws CouldNotPerformException, InterruptedException {
         logger.info("Activating [" + getConfig().getLabel() + "]");
-        locationRemote = new LocationRemote();
-        Registries.getLocationRegistry().waitForData();
-        locationRemote.init(Registries.getLocationRegistry().getLocationConfigById(getConfig().getId()));
-        connectionRemotes = locationRemote.getConnectionList(true);
-        neighborRemotes = locationRemote.getNeighborLocationList(true);
         
         for (ConnectionRemote connectionRemote : connectionRemotes) {                   
-            if (connectionRemote.getConfig().getConnectionConfig().getType().equals(WINDOW) || 
-                    connectionRemote.getConfig().getConnectionConfig().getType().equals(DOOR)) {
-                connectionRemote.addDataObserver((Observable<ConnectionData> source, ConnectionData data) -> {
-                        if ((data.getDoorState().getValue() == DoorStateType.DoorState.State.OPEN || 
-                                data.getWindowState().getValue() == WindowStateType.WindowState.State.OPEN) &&
-                                    presenceInLocations(connectionRemote.getConfig().getConnectionConfig().getTileIdList())) {
-                            dimmLights();
-                        } else if (!presenceInOpenLocation() && setBrightnessStateFuture != null) {
-                            setBrightnessStateFuture.cancel(true);
-                            isDimmed = false;
-                        }
-                    });
+            if (connectionRemote.getConfig().getConnectionConfig().getType().equals(ConnectionType.WINDOW) || 
+                    connectionRemote.getConfig().getConnectionConfig().getType().equals(ConnectionType.DOOR)) {
+                connectionRemote.addDataObserver(connectionObserver);
             }
         }
         
         for (LocationRemote neigborRemote : neighborRemotes) {
             boolean passage = false;
             for (ConnectionRemote relatedConnection : locationRemote.getRelatedConnectionRemoteList(neigborRemote.getId(), true)) {
-                if (relatedConnection.getConfig().getConnectionConfig().getType().equals(PASSAGE)) {
+                if (relatedConnection.getConfig().getConnectionConfig().getType().equals(ConnectionType.PASSAGE)) {
                     passage = true;
                 }
             } 
             
             if (passage) {
-                neigborRemote.addDataObserver((Observable<LocationData> source, LocationData data) -> {
-                    if (data.getPresenceState().getValue() == PRESENT) {
-                        dimmLights();                         
-                    } else if (!presenceInOpenLocation() && setBrightnessStateFuture != null) {
-                        setBrightnessStateFuture.cancel(true);
-                        isDimmed = false;
-                    }
-                });
+                neigborRemote.addDataObserver(passageNeighborObserver);
             } else {
-                neigborRemote.addDataObserver((Observable<LocationData> source, LocationData data) -> {
-                    if (data.getPresenceState().getValue() == PRESENT) {
-                        for (ConnectionRemote relatedConnection : locationRemote.getRelatedConnectionRemoteList(neigborRemote.getId(), true)) {
-                            if (relatedConnection.getDoorState().getValue() == DoorStateType.DoorState.State.OPEN || 
-                                    relatedConnection.getWindowState().getValue() == WindowStateType.WindowState.State.OPEN) {
-                                dimmLights();
-                                return;
-                            }
-                        }                                
-                    } else if (!presenceInOpenLocation() && setBrightnessStateFuture != null) {
-                        setBrightnessStateFuture.cancel(true);
-                        isDimmed = false;
-                    }
-                });
+                neigborRemote.addDataObserver(neighborObserver);
             }
-        }
-             
-        locationRemote.activate();
-        for (LocationRemote neigborRemote : neighborRemotes) { 
-            neigborRemote.activate();
-        }
-        for (ConnectionRemote connectionRemote : connectionRemotes) { 
-            connectionRemote.activate();
-        }
-        super.activate();
-    }
-
-    @Override
-    public void deactivate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getClass().getSimpleName() + "]");
-        // TODO: How to deactivate all the listeners?
-        locationRemote.deactivate();
-        for (LocationRemote neigborRemote : neighborRemotes) { 
-            neigborRemote.deactivate();
-        }
-        for (ConnectionRemote connectionRemote : connectionRemotes) { 
-            connectionRemote.deactivate();
-        }
-        super.deactivate();
-    }
-
-    @Override
-    protected void execute() throws CouldNotPerformException, InterruptedException {
-        locationRemote.activate();
-        for (LocationRemote neigborRemote : neighborRemotes) { 
-            neigborRemote.activate();
-        }
-        for (ConnectionRemote connectionRemote : connectionRemotes) { 
-            connectionRemote.activate();
         }
     }
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
-        locationRemote.deactivate();
-        for (LocationRemote neigborRemote : neighborRemotes) { 
-            neigborRemote.deactivate();
+        logger.info("Deactivating [" + getConfig().getLabel() + "]");
+        // TODO: How to deactivate all the listeners?
+        for (ConnectionRemote connectionRemote : connectionRemotes) {                   
+            if (connectionRemote.getConfig().getConnectionConfig().getType().equals(ConnectionType.WINDOW) || 
+                    connectionRemote.getConfig().getConnectionConfig().getType().equals(ConnectionType.DOOR)) {
+                connectionRemote.removeDataObserver(connectionObserver);
+            }
         }
-        for (ConnectionRemote connectionRemote : connectionRemotes) { 
-            connectionRemote.deactivate();
+        
+        for (LocationRemote neigborRemote : neighborRemotes) {
+            boolean passage = false;
+            for (ConnectionRemote relatedConnection : locationRemote.getRelatedConnectionRemoteList(neigborRemote.getId(), true)) {
+                if (relatedConnection.getConfig().getConnectionConfig().getType().equals(ConnectionType.PASSAGE)) {
+                    passage = true;
+                }
+            } 
+            
+            if (passage) {
+                neigborRemote.removeDataObserver(passageNeighborObserver);
+            } else {
+                neigborRemote.removeDataObserver(neighborObserver);
+            }
         }
     }
     
@@ -199,8 +201,8 @@ public class NearFieldLightAgent extends AbstractAgentController {
                 if (unitID.equals(Registries.getLocationRegistry().getLocationConfigById(getConfig().getId()).getId())) {
                     continue;
                 }
-                LocationRemote location = Units.getUnit(unitID, true, LOCATION);
-                if (location.getPresenceState().getValue() == PRESENT) {
+                LocationRemote location = Units.getUnit(unitID, true, Units.LOCATION);
+                if (location.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT)) {
                     return true;
                 }
             } catch (InterruptedException ex) {

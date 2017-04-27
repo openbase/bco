@@ -28,17 +28,17 @@ import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
-import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.unit.location.LocationDataType;
-
-import static rst.domotic.state.PresenceStateType.PresenceState.State.PRESENT;
+import rst.domotic.state.PresenceStateType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.location.LocationDataType;
 
 
 /**
@@ -50,54 +50,38 @@ public class RandomLightPatternAgent  extends AbstractAgentController {
     private LocationRemote locationRemote;
     private boolean present = false;
     private Thread thread;
+    private final Observer<LocationDataType.LocationData> locationObserver;
 
     public RandomLightPatternAgent() throws InstantiationException {
         super(RandomLightPatternAgent.class);
-    }
-
-    @Override
-    public void activate() throws CouldNotPerformException, InterruptedException {        
-        logger.info("Activating [" + getConfig().getLabel() + "]");
-        locationRemote = new LocationRemote();
-        Registries.getLocationRegistry().waitForData();
-        locationRemote.init(Registries.getLocationRegistry().getLocationConfigById(getConfig().getId()));
         
-        locationRemote.addDataObserver((Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
-            if (data.getPresenceState().getValue() == PRESENT && !present) {
+        locationObserver = (final Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
+            if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT) && !present) {
                 stopRandomLightPattern();
                 present = true;
-            } else if (data.getPresenceState().getValue() != PRESENT && present) {
+            } else if (!(data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT)) && present) {
                 present = false;
                 makeRandomLightPattern();
             }
-        });
-        
-        
-        locationRemote.activate();
-        super.activate();
+        };
     }
 
     @Override
-    public void deactivate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getClass().getSimpleName() + "]");
-        if (thread != null) {
-            thread.interrupt();
-        }
-        locationRemote.deactivate();
-        super.deactivate();
-    }
-
-    @Override
-    protected void execute() throws CouldNotPerformException, InterruptedException {
-        locationRemote.activate();
+    protected void execute() throws CouldNotPerformException, InterruptedException {        
+        logger.info("Activating [" + getConfig().getLabel() + "]");
+        locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
+        
+        locationRemote.addDataObserver(locationObserver);
+        locationRemote.waitForData();
     }
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
+        logger.info("Deactivating [" + getClass().getSimpleName() + "]");
         if (thread != null) {
             thread.interrupt();
-        } 
-        locationRemote.deactivate();
+        }
+        locationRemote.removeDataObserver(locationObserver);
     }
 
     private void makeRandomLightPattern() throws CouldNotPerformException {       

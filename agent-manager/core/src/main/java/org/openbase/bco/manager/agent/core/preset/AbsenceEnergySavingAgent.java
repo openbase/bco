@@ -27,23 +27,20 @@ package org.openbase.bco.manager.agent.core.preset;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
+import java.util.concurrent.Future;
+import org.openbase.bco.dal.remote.unit.UnitGroupRemote;
+import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
-import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.unit.location.LocationDataType;
+import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-
-import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
-import org.openbase.bco.dal.remote.unit.LightRemote;
-import org.openbase.bco.dal.remote.unit.Units;
-import static rst.domotic.state.PresenceStateType.PresenceState.State.PRESENT;
-
+import rst.domotic.unit.location.LocationDataType;
 
 /**
  *
@@ -55,21 +52,13 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
     private boolean present = true;
     private Future<Void> setLightPowerStateFuture;
     private Future<Void> setMultimediaPowerStateFuture;
+    private final Observer<LocationDataType.LocationData> locationObserver;
 
     public AbsenceEnergySavingAgent() throws InstantiationException {
         super(AbsenceEnergySavingAgent.class);
-    }
-
-    @Override
-    public void activate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activating [" + getConfig().getLabel() + "]");
-        locationRemote = new LocationRemote();
-        Registries.getLocationRegistry().waitForData();
-        locationRemote.init(Registries.getLocationRegistry().getLocationConfigById(getConfig().getId()));
-
-        /** Add trigger here and replace dataObserver */
-        locationRemote.addDataObserver((Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
-            if (data.getPresenceState().getValue() == PRESENT && !present) {
+        
+        locationObserver = (final Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
+            if (data.getPresenceState().getValue().equals(PresenceState.State.PRESENT) && !present) {
                 if (setLightPowerStateFuture != null && !setLightPowerStateFuture.isDone()) {
                     setLightPowerStateFuture.cancel(true);
                 }
@@ -77,31 +66,29 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
                     setMultimediaPowerStateFuture.cancel(true);
                 }
                 present = true;
-            } else if (!(data.getPresenceState().getValue() == PRESENT) && present) {
+            } else if (!(data.getPresenceState().getValue().equals(PresenceState.State.PRESENT)) && present) {
                 present = false;
                 
                 switchlightsOff();
+                switchMultimediaOff();
             }
-        });
-        locationRemote.activate();
-        super.activate();
-    }
-
-    @Override
-    public void deactivate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getClass().getSimpleName() + "]");
-        locationRemote.deactivate();
-        super.deactivate();
+        };
     }
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
-        locationRemote.activate();
+        logger.info("Activating [" + getConfig().getLabel() + "]");
+        locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
+
+        /** Add trigger here and replace dataObserver */
+        locationRemote.addDataObserver(locationObserver);
+        locationRemote.waitForData();
     }
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
-        locationRemote.deactivate();
+        logger.info("Deactivating [" + getConfig().getLabel() + "]");
+        locationRemote.removeDataObserver(locationObserver);
     }
 
     private void switchlightsOff() {                   
@@ -115,13 +102,17 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
     }
     
     private void switchMultimediaOff() {   
+        
+        UnitGroupRemote multimediaGroup;
         try {
-            UnitRemote<? extends GeneratedMessage> multimediaGroup = Units.getUnitByLabel(locationRemote.getLabel().concat("MultimediaGroup"), true);
-            setMultimediaPowerStateFuture = ((LightRemote) multimediaGroup).setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build());
-            // TODO: get correct Type of Remote for Group.
-        } catch (CouldNotPerformException | InterruptedException ex) {
+            multimediaGroup = Units.getUnitByLabel(locationRemote.getLabel().concat("MultimediaGroup"), true, Units.UNITGROUP);
+            setMultimediaPowerStateFuture = multimediaGroup.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build());
+        } catch (NotAvailableException ex) {
+            logger.info("MultimediaGroup not available.");
+        } catch (InterruptedException ex) {
+            logger.error("Could not get MultimediaGroup!");
+        } catch (CouldNotPerformException ex) {
             logger.error("Could not set Powerstate of MultimediaGroup.");
-            // TODO: Propper Ex handling
-        } 
+        }
     }
 }

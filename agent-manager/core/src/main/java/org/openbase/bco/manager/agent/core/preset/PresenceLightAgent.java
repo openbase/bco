@@ -22,20 +22,20 @@ package org.openbase.bco.manager.agent.core.preset;
  * #L%
  */
 
-import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.manager.agent.core.AbstractAgentController;
-import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.pattern.Observable;
-import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.unit.location.LocationDataType;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import static rst.domotic.state.PresenceStateType.PresenceState.State.PRESENT;
+import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.dal.remote.unit.location.LocationRemote;
+import org.openbase.bco.manager.agent.core.AbstractAgentController;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
+import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.state.PresenceStateType;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.location.LocationDataType;
 
 
 /**
@@ -43,53 +43,42 @@ import static rst.domotic.state.PresenceStateType.PresenceState.State.PRESENT;
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
 public class PresenceLightAgent extends AbstractAgentController {
-
+    
     private LocationRemote locationRemote;
     private boolean present = false;
     private Future<Void> setPowerStateFuture;
+    private final Observer<LocationDataType.LocationData> locationObserver;
 
     public PresenceLightAgent() throws InstantiationException {
         super(PresenceLightAgent.class);
-    }
-
-    @Override
-    public void activate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activating [" + getConfig().getLabel() + "]");
-        locationRemote = new LocationRemote();
-        Registries.getLocationRegistry().waitForData();
-        locationRemote.init(Registries.getLocationRegistry().getLocationConfigById(getConfig().getId()));
-
-        /** Add trigger here and replace dataObserver */
-        locationRemote.addDataObserver((Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
-            if (data.getPresenceState().getValue() == PRESENT && !present) {
+        
+        locationObserver = (final Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
+            if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT) && !present) {
                 present = true;
                 switchlightsOn();
-            } else if (!(data.getPresenceState().getValue() == PRESENT) && present) {
+            } else if (!(data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT)) && present) {
                 if (setPowerStateFuture != null) {
                     setPowerStateFuture.cancel(true);
                 }
                 present = false;
             }
-        });
-        locationRemote.activate();
-        super.activate();
-    }
-
-    @Override
-    public void deactivate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getClass().getSimpleName() + "]");
-        locationRemote.deactivate();
-        super.deactivate();
+        };
     }
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
-        locationRemote.activate();
+        logger.info("Activating [" + getConfig().getLabel() + "]");
+        locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
+
+        /** Add trigger here and replace dataObserver */
+        locationRemote.addDataObserver(locationObserver);
+        locationRemote.waitForData();
     }
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
-        locationRemote.deactivate();
+        logger.info("Deactivating [" + getConfig().getLabel() + "]");
+        locationRemote.removeDataObserver(locationObserver);
     }
 
     private void switchlightsOn() {                  

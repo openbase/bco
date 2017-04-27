@@ -28,24 +28,23 @@ package org.openbase.bco.manager.agent.core.preset;
  */
 
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import org.openbase.bco.dal.remote.unit.UnitGroupRemote;
+import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
-import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.pattern.Observable;
-import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.unit.location.LocationDataType;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-
-import java.util.concurrent.Future;
-import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
-import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
+import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
+import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.location.LocationDataType;
 
 
 /**
@@ -53,6 +52,7 @@ import rst.domotic.unit.UnitConfigType;
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
 public class BrightnessLightSavingAgent extends AbstractAgentController {
+    
     private static final int SLEEP_MILLI = 1000;
     public static final String MINIMUM_NEEDED_KEY = "MINIMUM_BRIGHTNESS";
     public static final String MAXIMUM_WANTED_KEY = "MAXIMUM_BRIGHTNESS";
@@ -62,9 +62,18 @@ public class BrightnessLightSavingAgent extends AbstractAgentController {
     private LocationRemote locationRemote;
     private Future<Void> setPowerStateFutureAmbient;
     private Future<Void> setPowerStateFuture;
+    private final Observer<LocationDataType.LocationData> locationObserver;
 
     public BrightnessLightSavingAgent() throws InstantiationException {
         super(BrightnessLightSavingAgent.class);
+        
+        locationObserver = (final Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
+            if (data.getBrightnessState().getBrightness() > MAXIMUM_WANTED_BRIGHTNESS) {
+                regulateLightIntensity();
+            } else if (data.getBrightnessState().getBrightness() < MINIMUM_NEEDED_BRIGHTNESS) {
+                deallocateResourceIteratively();
+            }
+        };
     }
 
     @Override
@@ -96,46 +105,26 @@ public class BrightnessLightSavingAgent extends AbstractAgentController {
             throw new InitializationException(this, ex);
         }
     }
-    
-    @Override
-    public void activate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activating [" + getConfig().getLabel() + "]");
-        locationRemote = new LocationRemote();
-        Registries.getLocationRegistry().waitForData();
-        locationRemote.init(Registries.getLocationRegistry().getLocationConfigById(getConfig().getId()));
-
-        /** Add trigger here and replace dataObserver */
-        locationRemote.addDataObserver((Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
-            if (data.getBrightnessState().getBrightness() > MAXIMUM_WANTED_BRIGHTNESS) {
-                regulateLightIntensity();
-            } else if (data.getBrightnessState().getBrightness() < MINIMUM_NEEDED_BRIGHTNESS) {
-                deallocateResourceIteratively();
-            }
-        });
-        locationRemote.activate();
-        super.activate();
-    }
-
-    @Override
-    public void deactivate() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getClass().getSimpleName() + "]");
-        locationRemote.deactivate();
-        super.deactivate();
-    }
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
-        locationRemote.activate();
+        logger.info("Activating [" + getConfig().getLabel() + "]");
+        locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
+
+        /** Add trigger here and replace dataObserver */
+        locationRemote.addDataObserver(locationObserver);
+        locationRemote.waitForData();
     }
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
-        locationRemote.deactivate();
+        logger.info("Deactivating [" + getConfig().getLabel() + "]");
+        locationRemote.removeDataObserver(locationObserver);
     }
 
     private void regulateLightIntensity() throws CouldNotPerformException {
         try {
-            ColorableLightRemote ambientLightGroup = Units.getUnitByLabel(locationRemote.getLabel().concat("AmbientLightGroup"), true, Units.COLORABLE_LIGHT);
+            UnitGroupRemote ambientLightGroup = Units.getUnitByLabel(locationRemote.getLabel().concat("AmbientLightGroup"), true, Units.UNITGROUP);
             setPowerStateFutureAmbient = ambientLightGroup.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build()); // Blocking and trying to realloc all lights
             Thread.sleep(SLEEP_MILLI);
         } catch (NotAvailableException | InterruptedException ex) {
