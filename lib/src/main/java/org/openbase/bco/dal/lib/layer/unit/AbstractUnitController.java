@@ -99,6 +99,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     protected UnitRegistryRemote unitRegistry;
 
+    private final UnitResourceAllocator<D, DB> resourceAllocator;
     private final List<Service> serviceList;
     private final ServiceJSonProcessor serviceJSonProcessor;
     private UnitTemplate template;
@@ -109,6 +110,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         this.serviceJSonProcessor = new ServiceJSonProcessor();
         this.serviceList = new ArrayList<>();
         this.serviceStateObservableMap = new HashMap<>();
+        this.resourceAllocator = new UnitResourceAllocator<>(this);
     }
 
     @Override
