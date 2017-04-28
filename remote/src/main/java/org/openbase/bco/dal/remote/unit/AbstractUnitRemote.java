@@ -23,8 +23,10 @@ package org.openbase.bco.dal.remote.unit;
  */
 import com.google.protobuf.GeneratedMessage;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.Service;
@@ -216,13 +218,17 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
             @Override
             public void update(Observable<M> source, M data) throws Exception {
+                Set<ServiceType> serviceTypeSet = new HashSet<>();
                 for (ServiceTemplate serviceTemplate : getTemplate().getServiceTemplateList()) {
-                    try {
-                        Object serviceData = Service.invokeProviderServiceMethod(serviceTemplate.getType(), data);
-                        serviceStateObservableMap.get(serviceTemplate.getType()).notifyObservers(serviceData);
-                    } catch (CouldNotPerformException ex) {
-                        System.out.println("update error, no service getter for type [" + serviceTemplate.getType() + "]");
-                        logger.debug("Could not notify state update for service[" + serviceTemplate.getType() + "] because this service is not supported by this controller");
+                    if (!serviceTypeSet.contains(serviceTemplate.getType())) {
+                        serviceTypeSet.add(serviceTemplate.getType());
+                        try {
+                            Object serviceData = Service.invokeProviderServiceMethod(serviceTemplate.getType(), data);
+                            serviceStateObservableMap.get(serviceTemplate.getType()).notifyObservers(serviceData);
+                        } catch (CouldNotPerformException ex) {
+//                            System.out.println("update error, no service getter for type [" + serviceTemplate.getType() + "]");
+                            logger.debug("Could not notify state update for service[" + serviceTemplate.getType() + "] because this service is not supported by this controller");
+                        }
                     }
                 }
             }

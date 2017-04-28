@@ -29,9 +29,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
@@ -197,12 +199,16 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
                 @Override
                 public void update(Observable<D> source, D data) throws Exception {
+                    final Set<ServiceType> serviceTypeMap = new HashSet<>();
                     for (ServiceTemplate serviceTemplate : getTemplate().getServiceTemplateList()) {
-                        try {
-                            Object serviceData = Service.invokeProviderServiceMethod(serviceTemplate.getType(), data);
-                            serviceStateObservableMap.get(serviceTemplate.getType()).notifyObservers(serviceData);
-                        } catch (CouldNotPerformException ex) {
-                            logger.info("Could not notify state update for service[" + serviceTemplate.getType() + "]", ex);
+                        if (!serviceTypeMap.contains(serviceTemplate.getType())) {
+                            serviceTypeMap.add(serviceTemplate.getType());
+                            try {
+                                Object serviceData = Service.invokeProviderServiceMethod(serviceTemplate.getType(), data);
+                                serviceStateObservableMap.get(serviceTemplate.getType()).notifyObservers(serviceData);
+                            } catch (CouldNotPerformException ex) {
+                                logger.info("Could not notify state update for service[" + serviceTemplate.getType() + "]", ex);
+                            }
                         }
                     }
                 }
