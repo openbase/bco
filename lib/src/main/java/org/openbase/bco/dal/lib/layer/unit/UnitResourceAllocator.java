@@ -35,6 +35,7 @@ import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocatio
 import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.Policy.PRESERVE;
 import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.Priority.LOW;
 import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.State.REQUESTED;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.timing.IntervalType;
 
 /**
@@ -52,7 +53,7 @@ public class UnitResourceAllocator<D extends GeneratedMessage, DB extends D.Buil
     }
     
     public AllocatableResource allocate(final ActionDescription actionDescription) throws CouldNotPerformException {
-        return allocate((actionDescription.);
+        return allocate(actionDescription.getResourceAllocation());
     }
     
     public AllocatableResource allocate(final ResourceAllocation allocation) throws CouldNotPerformException {
