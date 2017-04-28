@@ -146,6 +146,7 @@ public class MockRegistry {
     private final String serialNumber = "1234-5678-9100";
 
     public static final String POWER_STATE_SYNCHRONISER_AGENT_LABEL = "PowerStateSynchroniser";
+    public static final String PRESENCE_LIGHT_AGENT_LABEL = "PresenceLight";
 
     private static DeviceRegistryLauncher deviceRegistryLauncher;
     private static LocationRegistryLauncher locationRegistryLauncher;
@@ -535,6 +536,7 @@ public class MockRegistry {
     private void registerAgentClasses() throws CouldNotPerformException, InterruptedException {
         try {
             agentRegistry.registerAgentClass(AgentClass.newBuilder().setLabel(POWER_STATE_SYNCHRONISER_AGENT_LABEL).build()).get();
+            agentRegistry.registerAgentClass(AgentClass.newBuilder().setLabel(PRESENCE_LIGHT_AGENT_LABEL).build()).get();
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
         }
