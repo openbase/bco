@@ -134,22 +134,55 @@ public class ColorableLightRemoteTest {
 //    public void testControllingColorableLightViaLightRemote() throws Exception {
 //        System.out.println("testControllingColorableLightViaLightRemote");
 //
+//        colorableLightRemote.setPowerState(PowerState.State.OFF).get();
+//
 //        try {
 //            LightRemote lightRemote = new LightRemote();
 //            lightRemote.initByLabel(label);
 //            lightRemote.activate();
 //            lightRemote.requestData().get();
 //            lightRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+//            int j = 0;
 //
 //            lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build()).get();
 //            colorableLightRemote.requestData().get();
+//            assertEquals("ColorableLightRemote and LightRemote don't have the same powerState!", colorableLightRemote.getPowerState().getValue(), lightRemote.getPowerState().getValue());
+//            Thread.sleep(200);
 //
-//            assertEquals(lightRemote.getPowerState().getValue(), colorableLightRemote.getPowerState().getValue());
-//            int i = 0;
-//            lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build()).get();
-//            colorableLightRemote.requestData().get();
+//            lightRemote.addPowerStateObserver(new Observer<PowerState>() {
 //
-//            assertEquals(lightRemote.getPowerState().getValue(), colorableLightRemote.getPowerState().getValue());
+//                @Override
+//                public void update(Observable<PowerState> source, PowerState data) throws Exception {
+//                    System.out.println("Received power update in lightRemote [" + data.getValue() + "]");
+//                }
+//            });
+//            colorableLightRemote.addPowerStateObserver(new Observer<PowerState>() {
+//
+//                @Override
+//                public void update(Observable<PowerState> source, PowerState data) throws Exception {
+//                    System.out.println("Received power update in colorableLightRemote [" + data.getValue() + "]");
+//                }
+//            });
+//
+//            PowerState.State powerState;
+//            for (int a = 0; a <= 15; a++) {
+//                System.out.println("Iteration [" + a + "]");
+//                if ((a % 2) == 0) {
+//                    powerState = PowerState.State.OFF;
+//                } else {
+//                    powerState = PowerState.State.ON;
+//                }
+//
+//                lightRemote.setPowerState(powerState).get();
+//                colorableLightRemote.requestData().get();
+//                System.out.println("Before test!");
+//                assertEquals("ColorableLightRemote and LightRemote don't have the same powerState!", colorableLightRemote.getPowerState().getValue(), lightRemote.getPowerState().getValue());
+//            }
+////            int i = 0;
+////            lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build()).get();
+////            colorableLightRemote.requestData().get();
+////            System.out.println("Before test!");
+////            assertEquals("ColorableLightRemote and LightRemote don't have the same powerState!", colorableLightRemote.getPowerState().getValue(), lightRemote.getPowerState().getValue());
 //        } catch (InterruptedException | CouldNotPerformException | ExecutionException ex) {
 //            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
 //        }
