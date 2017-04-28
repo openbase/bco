@@ -126,9 +126,11 @@ bcomfy
 
 ## Commandline Setup
 
-checkout ...
+todo
 
 ## IDE Setup
+
+todo
 
 # Installation Guide
 
