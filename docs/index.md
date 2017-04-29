@@ -116,29 +116,86 @@ bcomfy
     * The data type library based on google protocol-buffers.
         * https://developers.google.com/protocol-buffers/
 
-# Developer Setup
+# Development Installation Guide - Ubuntu / Debian
 
 ## Reqirements
 
-* Java JDK 8
+* Java JDK 8 (Oracle JDK recommented)
+    * Debian: http://www.webupd8.org/2014/03/how-to-install-oracle-java-8-in-debian.html
+    * Ubuntu: https://wiki.ubuntuusers.de/Java/Installation/Oracle_Java/Java_8/
 * Maven
+    * ```sudo apt-get install maven```
 * Git
+    * ```sudo apt-get install git```
 
-## Commandline Setup
+##  Environment Setup
 
-todo
+Define where to install the bco distribution via the prefix variable.
+```
+echo 'export prefix="/usr/local/bco"' >> ~/.bashrc
+```
+Add the @bin@ folder the you global @$PATH@ variable to support direct binary execution.
+```
+echo 'export PATH="$PATH:$prefix/bin"' >> ~/.bashrc
+```
+Reload your bash configuration
+```
+. ~/.bashrc
+```
+Make sure the prefix folder exists.
+```
+mkdir -p $prefix
+```
+Create your working directory if not already exists and change into these directory.
+```
+mkdir -p ~/workspace/openbase/bco
+cd ~/workspace/openbase/bco
+```
+
+## Repository Download 
+
+Download the core repositories into you development workspace
+```
+git clone https://github.com/openbase/bco.registry.git registry
+git clone https://github.com/openbase/bco.dal.git dal
+git clone https://github.com/openbase/bco.manager.git manager
+```
+
+## Spread Installation
+
+TODO
+
+## BCO Installation
+
+Now, you should be able to start the installation. During this, all bco core components are installed to the previously defined prefix. To perform the installation (or update the components later on) execute the installation script in each downloaded repository.
+```
+./install.sh
+```
+
+## Setup Registry DB
+
+Download the example db into you development workspace
+```
+git clone https://github.com/csra/bco.registry.csra-db
+```
+and install the db into your bco distribution by executing:
+```
+./install.sh
+```
+
+## Initial start
+
+Now you should be able to start bco. 
+
+```
+bco
+```
 
 ## IDE Setup
 
-todo
+### Netbeans
 
-# Installation Guide
-
-# Contribution
-* Feel free to report [new Issues](https://github.com/openbase/bco.dal/issues/new)!
-* If you are developer and you want to contribute to BCO
-    * Fork the repositories, apply your features or fixes and create pull requests.
-    * For long term contribution just apply for an openbase membership via support@openbase.org
+TODO
 
 # Code Examples
 
@@ -184,3 +241,9 @@ Control the unit
     LOGGER.info("switch light color to blue");
     testLight.setColor(Color.BLUE);
 ```
+
+# Contribution
+* Feel free to report [new Issues](https://github.com/openbase/bco.dal/issues/new)!
+* If you are developer and you want to contribute to BCO
+    * Fork the repositories, apply your features or fixes and create pull requests.
+    * For long term contribution just apply for an openbase membership via support@openbase.org
