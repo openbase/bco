@@ -174,7 +174,7 @@ Control the unit
 Request the unit
 ```java
     LOGGER.info("request the light unit with the label \"TestUnit_0\"");
-    estLight = Units.getUnitByLabel("TestUnit_0", true, Units.LIGHT_COLORABLE);
+    testLight = Units.getUnitByLabel("TestUnit_0", true, Units.LIGHT_COLORABLE);
 ```
 Control the unit
 ```java
