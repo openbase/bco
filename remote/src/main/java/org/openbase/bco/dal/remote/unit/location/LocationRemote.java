@@ -1,10 +1,14 @@
 package org.openbase.bco.dal.remote.unit.location;
 
+import com.google.protobuf.GeneratedMessage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.layer.unit.location.Location;
 import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
@@ -34,6 +38,7 @@ import rst.domotic.state.TamperStateType;
 import rst.domotic.state.TemperatureStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationDataType;
 import rst.domotic.unit.location.LocationDataType.LocationData;
 import rst.vision.ColorType;
@@ -175,5 +180,30 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
             throw new CouldNotPerformException("Could not get all neighbors!", ex);
         }
         return neighborList;
+    }
+
+    /**
+     * Returns a Map of all units provided by this location sorted by their UnitType.
+     *
+     * @return the Map of provided units.
+     * @throws org.openbase.jul.exception.NotAvailableException is thrown if the map is not available.
+     * @throws java.lang.InterruptedException is thrown if the current thread was externally interrupted.
+     */
+    public Map<UnitType, List<UnitRemote>> getProvidedUnitMap() throws NotAvailableException, InterruptedException {
+        try {
+            final Map<UnitTemplateType.UnitTemplate.UnitType, List<UnitRemote>> unitRemoteMap = new TreeMap<>();
+
+            for (String unitId : getConfig().getLocationConfig().getUnitIdList()) {
+                UnitRemote<? extends GeneratedMessage> unitRemote = Units.getUnit(unitId, false);
+                if (!unitRemoteMap.containsKey(unitRemote.getType())) {
+                    unitRemoteMap.put(unitRemote.getType(), new ArrayList<>());
+                }
+                unitRemoteMap.get(unitRemote.getType()).add(unitRemote);
+            }
+            return unitRemoteMap;
+
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Unit map of " + this);
+        }
     }
 }
