@@ -895,7 +895,7 @@ public class Units {
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      */
     public Future<Transform> getUnitTransformation(final UnitConfig unitConfigA, final UnitConfig unitConfigB) throws NotAvailableException, InterruptedException {
-        try {
+        try {   
             Future<Transform> transformationFuture = GlobalTransformReceiver.getInstance().requestTransform(
                     unitConfigA.getPlacementConfig().getTransformationFrameId(),
                     unitConfigB.getPlacementConfig().getTransformationFrameId(),
