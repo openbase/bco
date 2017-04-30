@@ -3,7 +3,7 @@ layout: default
 title: {{ site.name }}
 ---
 
-# Sotware Architecture
+# Software Architecture
 
 ## Domotic Abstraction Layer (DAL)
 
@@ -34,7 +34,7 @@ title: {{ site.name }}
 [![Build Status](https://travis-ci.org/openbase/bco.dal.svg?branch=master)](https://travis-ci.org/openbase/bco.dal?branch=master)
 [![Build Status](https://travis-ci.org/openbase/bco.dal.svg?branch=latest-stable)](https://travis-ci.org/openbase/bco.dal?branch=latest-stable)
 
-### Maven Artifact
+#### Maven Artifact
 ```xml
 <dependency>
     <groupId>org.openbase.bco</groupId>
@@ -49,7 +49,7 @@ Repository: [https://github.com/openbase/bco.dal.git](https://github.com/openbas
 [![Build Status](https://travis-ci.org/openbase/bco.registry.svg?branch=master)](https://travis-ci.org/openbase/bco.registry?branch=master)
 [![Build Status](https://travis-ci.org/openbase/bco.registry.svg?branch=latest-stable)](https://travis-ci.org/openbase/bco.registry?branch=latest-stable)
 
-### Maven Artifact
+#### Maven Artifact
 ```xml
 <dependency>
     <groupId>org.openbase.bco</groupId>
@@ -64,7 +64,7 @@ Repository: [https://github.com/openbase/bco.registry.git](https://github.com/op
 [![Build Status](https://travis-ci.org/openbase/bco.manager.svg?branch=master)](https://travis-ci.org/openbase/bco.manager?branch=master)
 [![Build Status](https://travis-ci.org/openbase/bco.manager.svg?branch=latest-stable)](https://travis-ci.org/openbase/bco.manager?branch=latest-stable)
 
-### Maven Artifact
+#### Maven Artifact
 ```xml
 <dependency>
     <groupId>org.openbase.bco</groupId>
@@ -146,7 +146,7 @@ Make sure the prefix folder exists.
 ```
 mkdir -p $prefix
 ```
-Create your working directory if not already exists and change into these directory.
+Create your working directory if it not already exists and change into these directory.
 ```
 mkdir -p ~/workspace/openbase/bco
 cd ~/workspace/openbase/bco
@@ -164,6 +164,18 @@ git clone https://github.com/openbase/bco.manager.git manager
 ## Spread Installation
 
 TODO
+
+## RSB Configuration
+
+Create the configuration file ```touch ~/.config/rsb.conf``` and add the following lines to deactivate the socked and enable the spread transport protocol. 
+```
+[transport.socket]
+    enabled = 0
+    
+[transport.spread]
+    enabled = 1
+    host    = localhost
+``` 
 
 ## BCO Installation
 
@@ -183,9 +195,13 @@ and install the db into your bco distribution by executing:
 ./install.sh
 ```
 
-## Initial start
+## How to start BCO
 
-Now you should be able to start bco. 
+Starting the spread deamon to provide the communication between all distributed software components. 
+```
+spread
+```
+Now you should be able to start bco.
 
 ```
 bco
