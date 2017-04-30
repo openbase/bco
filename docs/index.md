@@ -76,7 +76,7 @@ Repository: [https://github.com/openbase/bco.registry.git](https://github.com/op
 Repository:[https://github.com/openbase/bco.manager.git](https://github.com/openbase/bco.manager.git)
 
 
-## Developer Interfaces
+## Developer Tools
 ```
 bco-registry-editor
 ```
