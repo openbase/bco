@@ -163,7 +163,12 @@ git clone https://github.com/openbase/bco.manager.git manager
 
 ## Spread Installation
 
-TODO
+```
+echo "deb http://packages.cor-lab.de/ubuntu/ precise main" >> /etc/apt/sources.list
+echo "deb http://packages.cor-lab.de/ubuntu/ precise testing" >> /etc/apt/sources.list
+sudo apt-get update
+sudo apt-get install spread rsb-tools-cl0.15
+```
 
 ## RSB Configuration
 
