@@ -134,7 +134,7 @@ Define where to install the bco distribution via the prefix variable.
 ```
 echo 'export prefix="/usr/local/bco"' >> ~/.bashrc
 ```
-Add the @bin@ folder the you global @$PATH@ variable to support direct binary execution.
+Add the ```bin``` folder to your global ```$PATH``` variable to support direct binary execution.
 ```
 echo 'export PATH="$PATH:$prefix/bin"' >> ~/.bashrc
 ```
