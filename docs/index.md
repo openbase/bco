@@ -163,9 +163,20 @@ git clone https://github.com/openbase/bco.manager.git manager
 
 ## Spread Installation
 
+Add the following repository to your local debian repo sources
+
+* follow these instructions:
+    * http://packages.cor-lab.de/
+    
+    * example for trusty
+        ```
+        echo 'deb http://packages.cor-lab.de/ubuntu/ precise main' | sudo tee -a /etc/apt/sources.list
+        echo 'deb http://packages.cor-lab.de/ubuntu/ precise testing' | sudo tee -a /etc/apt/sources.list
+        wget -q http://packages.cor-lab.de/keys/cor-lab.asc -O- | sudo apt-key add -
+        ```
+    
+afterwards install this packages:
 ```
-echo 'deb http://packages.cor-lab.de/ubuntu/ precise main' | sudo tee -a /etc/apt/sources.list
-echo 'deb http://packages.cor-lab.de/ubuntu/ precise testing' | sudo tee -a /etc/apt/sources.list
 sudo apt-get update
 sudo apt-get install spread rsb-tools-cl0.15
 ```
