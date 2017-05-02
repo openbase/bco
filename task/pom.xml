@@ -119,5 +119,24 @@
             <artifactId>dal.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>de.citec.csra</groupId>
+            <artifactId>rta-lib</artifactId>
+            <version>${dependency.rta.lib.version}</version>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.time4j</groupId>
+                    <artifactId>time4j-misc</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.time4j</groupId>
+                    <artifactId>time4j-range</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.time4j</groupId>
+                    <artifactId>time4j-core</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
 </project>
