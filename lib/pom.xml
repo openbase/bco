@@ -57,27 +57,6 @@
         <skipTests>false</skipTests>
     </properties>
     
-    <repositories>
-        <repository>
-            <id>citec-releases</id>
-            <name>CITEC Maven Repository Server</name>
-            <url>https://mvn.cit-ec.de/nexus/content/repositories/releases/</url>
-            <layout>default</layout>
-            <releases>
-                <enabled>true</enabled>
-            </releases>
-        </repository>
-        <repository>
-            <id>citec-snapshots</id>
-            <name>CITEC Maven Repository Server</name>
-            <url>https://mvn.cit-ec.de/nexus/content/repositories/snapshots/</url>
-            <layout>default</layout>
-            <snapshots>
-                <enabled>false</enabled>
-            </snapshots>
-        </repository>
-    </repositories>
-    
     <dependencies>
         <dependency>
             <groupId>org.openbase.bco</groupId>
@@ -123,6 +102,20 @@
             <artifactId>rta-lib</artifactId>
             <version>${dependency.rta.lib.version}</version>
             <type>jar</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.time4j</groupId>
+                    <artifactId>time4j-misc</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.time4j</groupId>
+                    <artifactId>time4j-range</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.time4j</groupId>
+                    <artifactId>time4j-core</artifactId>
+                </exclusion>
+            </exclusions>
         </dependency>
     </dependencies>
 </project>
