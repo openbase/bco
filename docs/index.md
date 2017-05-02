@@ -142,7 +142,7 @@ Reload your bash configuration
 ```
 . ~/.bashrc
 ```
-Make sure the prefix folder exists.
+Make sure the ```$prefix``` folder exists.
 ```
 mkdir -p $prefix
 ```
@@ -154,7 +154,7 @@ cd ~/workspace/openbase/bco
 
 ## Repository Download 
 
-Download the core repositories into you development workspace
+Download the core repositories into your development workspace
 ```
 git clone https://github.com/openbase/bco.registry.git registry
 git clone https://github.com/openbase/bco.dal.git dal
@@ -163,27 +163,27 @@ git clone https://github.com/openbase/bco.manager.git manager
 
 ## Spread Installation
 
-Add the following repository to your local debian repo sources
+Add the following repository to your local debian ```/etc/apt/sources.list```
 
 * follow these instructions:
     * http://packages.cor-lab.de/
     
-    * example for trusty
+    * example for ubuntu precise
         ```
         echo 'deb http://packages.cor-lab.de/ubuntu/ precise main' | sudo tee -a /etc/apt/sources.list
         echo 'deb http://packages.cor-lab.de/ubuntu/ precise testing' | sudo tee -a /etc/apt/sources.list
         wget -q http://packages.cor-lab.de/keys/cor-lab.asc -O- | sudo apt-key add -
+        sudo apt-get update
         ```
     
-afterwards install this packages:
+afterwards install these packages:
 ```
-sudo apt-get update
 sudo apt-get install spread rsb-tools-cl0.15
 ```
 
 ## RSB Configuration
 
-Create the configuration file ```touch ~/.config/rsb.conf``` and add the following lines to deactivate the socked and enable the spread transport protocol. 
+Create the configuration file ```touch ~/.config/rsb.conf``` and add the following lines to deactivate the socket and enable the spread transport protocol. 
 ```
 [transport.socket]
     enabled = 0
@@ -195,7 +195,7 @@ Create the configuration file ```touch ~/.config/rsb.conf``` and add the followi
 
 ## BCO Installation
 
-Now, you should be able to start the installation. During this, all bco core components are installed to the previously defined prefix. To perform the installation (or update the components later on) execute the installation script in each downloaded repository.
+Now, you should be able to start the installation. During this, all bco core components are installed to the previously defined ```$prefix```. To perform the installation (or update the components later on) execute the installation script in each downloaded repository.
 ```
 ./install.sh
 ```
@@ -206,14 +206,15 @@ Download the example db into you development workspace
 ```
 git clone https://github.com/csra/bco.registry.csra-db
 ```
-and install the db into your bco distribution by executing:
+and install the db into your local bco distribution by executing:
 ```
+cd bco.registry.csra-db
 ./install.sh
 ```
 
 ## How to start BCO
 
-Starting the spread deamon to provide the communication between all distributed software components. 
+Starting the spread deamon to provide the communication between all distributed software components by executing:
 ```
 spread
 ```
@@ -233,7 +234,7 @@ TODO
 
 ## Java
 
-For running any java examples you need to include the dal remote dependency in your maven or gradle project description:
+For running any java examples you only need to include the dal remote dependency in your maven or gradle project description:
 
 ```xml
 <dependency>
