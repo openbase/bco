@@ -171,7 +171,7 @@ git clone https://github.com/openbase/bco.manager.git manager
 Add the following repository to your local debian ```/etc/apt/sources.list```
 
 * follow these instructions:
-    * http://packages.cor-lab.de/
+    * [http://packages.cor-lab.de/](http://packages.cor-lab.de/)
     
     * example for ubuntu precise
         ```
