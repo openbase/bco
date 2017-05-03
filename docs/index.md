@@ -217,8 +217,8 @@ and install the db into your local bco distribution by executing:
 cd bco.registry.csra-db
 ./install.sh
 ```
-This installs the the database in a read only directory. If you
-want to make changes copy it to the var directory:
+This installs the database in a read only directory. If you
+want to make changes you have to copy it to the var directory:
 ```
 cp -R $prefix/share/bco $prefix/var/
 ```
