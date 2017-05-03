@@ -200,7 +200,7 @@ Create the configuration file ```touch ~/.config/rsb.conf``` and add the followi
 
 ## BCO Installation
 
-Before the installation you should checkout the latest-stable branch for the core components. Else you install a snapshot version and you need to configure your maven settings: https://github.com/openbase/bco.bcozy/wiki/IDE-Setup.
+Before the installation you should checkout the latest-stable branch for the core components. Else you install a snapshot version and you need to configure your maven settings: [https://github.com/openbase/bco.bcozy/wiki/IDE-Setup](https://github.com/openbase/bco.bcozy/wiki/IDE-Setup).
 Now, you should be able to start the installation. During this, all bco core components are installed to the previously defined ```$prefix```. To perform the installation (or update the components later on) execute the installation script in each downloaded repository.
 ```
 ./install.sh
