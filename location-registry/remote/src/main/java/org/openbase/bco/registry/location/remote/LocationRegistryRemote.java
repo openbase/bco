@@ -21,12 +21,16 @@ package org.openbase.bco.registry.location.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.awt.geom.Path2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
+import javax.media.j3d.Transform3D;
+import javax.vecmath.Point3d;
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
@@ -56,6 +60,7 @@ import rst.domotic.unit.UnitProbabilityCollectionType.UnitProbabilityCollection;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig;
+import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.tracking.PointingRay3DFloatCollectionType.PointingRay3DFloatCollection;
 import rst.tracking.PointingRay3DFloatType;
 
@@ -164,6 +169,46 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
         return locationUnitConfigRemoteRegistry.getMessages().stream()
                 .filter(m -> m.getLabel().equalsIgnoreCase(locationLabel))
                 .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public List<UnitConfig> getLocationConfigsByCoordinate(Vec3DDouble coordinate, LocationConfig.LocationType locationType) throws CouldNotPerformException, InterruptedException, ExecutionException {
+        validateData();
+        List<UnitConfig> result = new ArrayList<>();
+
+        for (UnitConfig unitConfig : locationUnitConfigRemoteRegistry.getMessages()) {
+            // Check if the unit meets the requirements of the filter
+            if (!locationType.equals(LocationConfig.LocationType.UNKNOWN) && !locationType.equals(unitConfig.getLocationConfig().getType())) {
+                continue;
+            }
+
+            // Get the shape of the floor
+            List<Vec3DDouble> floorList = unitConfig.getPlacementConfig().getShape().getFloorList();
+
+            // Convert the shape into a Path2D
+            Path2D locationShape = new Path2D.Double();
+            locationShape.moveTo(floorList.get(0).getX(), floorList.get(0).getY());
+            for (int i = 1; i < floorList.size(); i++) {
+                locationShape.lineTo(floorList.get(i).getX(), floorList.get(i).getY());
+            }
+            locationShape.closePath();
+
+            // Transform the given coordinate
+            Transform3D unitTransform = getUnitTransformation(unitConfig).get().getTransform();
+            Point3d transformedCoordinate = new Point3d(coordinate.getX(), coordinate.getY(), coordinate.getZ());
+            unitTransform.transform(transformedCoordinate);
+
+            if (locationShape.contains(transformedCoordinate.x, transformedCoordinate.y)) {
+                result.add(unitConfig);
+            }
+        }
+
+        return result;
     }
 
     /**

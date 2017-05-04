@@ -22,6 +22,7 @@ package org.openbase.bco.registry.location.lib;
  * #L%
  */
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -32,6 +33,8 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitProbabilityCollectionType.UnitProbabilityCollection;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
+import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.tracking.PointingRay3DFloatCollectionType.PointingRay3DFloatCollection;
 import rst.tracking.PointingRay3DFloatType.PointingRay3DFloat;
 
@@ -71,6 +74,28 @@ public interface LocationRegistry extends Shutdownable {
      * @throws CouldNotPerformException
      */
     public List<UnitConfig> getLocationConfigsByLabel(final String locationLabel) throws CouldNotPerformException;
+
+    /**
+     * Method returns all the locations which contain the given coordinate.
+     *
+     * @param coordinate
+     * @return
+     * @throws CouldNotPerformException
+     */
+    public default List<UnitConfig> getLocationConfigsByCoordinate(final Vec3DDouble coordinate) throws CouldNotPerformException, InterruptedException, ExecutionException {
+        return getLocationConfigsByCoordinate(coordinate, LocationType.UNKNOWN);
+    };
+
+    /**
+     * Method returns all the locations which contain the given coordinate and
+     * belong to the given location type.
+     *
+     * @param coordinate
+     * @param locationType
+     * @return
+     * @throws CouldNotPerformException
+     */
+    public List<UnitConfig> getLocationConfigsByCoordinate(final Vec3DDouble coordinate, LocationType locationType) throws CouldNotPerformException, InterruptedException, ExecutionException;
 
     /**
      * Method returns true if the location config with the given id is
