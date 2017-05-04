@@ -30,8 +30,8 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.openbase.bco.dal.lib.layer.unit.BrightnessSensorController;
-import org.openbase.bco.dal.remote.unit.BrightnessSensorRemote;
+import org.openbase.bco.dal.lib.layer.unit.LightSensorController;
+import org.openbase.bco.dal.remote.unit.LightSensorRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
@@ -39,22 +39,21 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
-import rst.domotic.state.BrightnessStateType.BrightnessState;
+import rst.domotic.state.IlluminanceStateType.IlluminanceState;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class BrightnessSensorRemoteTest {
+public class LightSensorRemoteTest {
 
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(BrightnessSensorRemoteTest.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(LightSensorRemoteTest.class);
 
-    private static BrightnessSensorRemote brightnessSensorRemote;
+    private static LightSensorRemote lightSensorRemote;
     private static DeviceManagerLauncher deviceManagerLauncher;
-    private static MockRegistry registry;
     private static String label;
 
-    public BrightnessSensorRemoteTest() {
+    public LightSensorRemoteTest() {
     }
 
     @BeforeClass
@@ -62,18 +61,18 @@ public class BrightnessSensorRemoteTest {
         try {
             JPService.setupJUnitTestMode();
             JPService.registerProperty(JPHardwareSimulationMode.class, true);
-            registry = MockRegistryHolder.newMockRegistry();
+            MockRegistryHolder.newMockRegistry();
 
             deviceManagerLauncher = new DeviceManagerLauncher();
             deviceManagerLauncher.launch();
             deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
 
-            label = MockRegistry.BRIGHTNESS_SENSOR_LABEL;
+            label = MockRegistry.LIGHT_SENSOR_LABEL;
 
-            brightnessSensorRemote = new BrightnessSensorRemote();
-            brightnessSensorRemote.initByLabel(label);
-            brightnessSensorRemote.activate();
-            brightnessSensorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+            lightSensorRemote = new LightSensorRemote();
+            lightSensorRemote.initByLabel(label);
+            lightSensorRemote.activate();
+            lightSensorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
         } catch (Throwable ex) {
             ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
@@ -85,8 +84,8 @@ public class BrightnessSensorRemoteTest {
             if (deviceManagerLauncher != null) {
                 deviceManagerLauncher.shutdown();
             }
-            if (brightnessSensorRemote != null) {
-                brightnessSensorRemote.shutdown();
+            if (lightSensorRemote != null) {
+                lightSensorRemote.shutdown();
             }
             MockRegistryHolder.shutdownMockRegistry();
         } catch (Throwable ex) {
@@ -103,24 +102,24 @@ public class BrightnessSensorRemoteTest {
     }
 
     /**
-     * Test of notifyUpdated method, of class BrightnessSensorRemote.
+     * Test of notifyUpdated method, of class LightSensorRemote.
      */
     @Ignore
     public void testNotifyUpdated() {
     }
 
     /**
-     * Test of getBrightness method, of class BrightnessSensorRemote.
+     * Test of getIlluminance method, of class LightSensorRemote.
      *
      * @throws java.lang.Exception
      */
     @Test(timeout = 10000)
-    public void testGetBrightness() throws Exception {
-        System.out.println("getBrightness");
-        double brightness = 0.5;
-        BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).build();
-        ((BrightnessSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(brightnessSensorRemote.getId())).updateBrightnessStateProvider(brightnessState);
-        brightnessSensorRemote.requestData().get();
-        assertEquals("The getter for the brightness returns the wrong value!", brightnessState, brightnessSensorRemote.getBrightnessState());
+    public void testGetIlluminance() throws Exception {
+        System.out.println("getIlluminance");
+        double illuminance = 0.5;
+        IlluminanceState illuminanceState = IlluminanceState.newBuilder().setIlluminance(illuminance).build();
+        ((LightSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightSensorRemote.getId())).updateIlluminanceStateProvider(illuminanceState);
+        lightSensorRemote.requestData().get();
+        assertEquals("The getter for the illuminance returns the wrong value!", illuminanceState, lightSensorRemote.getIlluminanceState());
     }
 }
