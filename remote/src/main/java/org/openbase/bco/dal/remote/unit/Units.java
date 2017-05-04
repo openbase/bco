@@ -876,7 +876,7 @@ public class Units {
      * @throws NotAvailableException is thrown if the transformation is not available for could not be computed.
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      */
-    public Future<Transform> getUnitTransformation(final UnitConfig unitConfig) throws NotAvailableException, InterruptedException {
+    public static Future<Transform> getUnitTransformation(final UnitConfig unitConfig) throws NotAvailableException, InterruptedException {
         try {
             Registries.getLocationRegistry().waitForData();
             return getUnitTransformation(Registries.getLocationRegistry().getRootLocationConfig(), unitConfig);
@@ -894,7 +894,7 @@ public class Units {
      * @throws NotAvailableException is thrown if the transformation is not available for could not be computed.
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      */
-    public Future<Transform> getUnitTransformation(final UnitConfig unitConfigA, final UnitConfig unitConfigB) throws NotAvailableException, InterruptedException {
+    public static Future<Transform> getUnitTransformation(final UnitConfig unitConfigA, final UnitConfig unitConfigB) throws NotAvailableException, InterruptedException {
         try {   
             Future<Transform> transformationFuture = GlobalTransformReceiver.getInstance().requestTransform(
                     unitConfigA.getPlacementConfig().getTransformationFrameId(),
