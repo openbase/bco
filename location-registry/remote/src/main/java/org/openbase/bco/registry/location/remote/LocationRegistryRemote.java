@@ -41,8 +41,11 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rct.GlobalTransformReceiver;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.RegistryRemote;
+import rct.Transform;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
@@ -676,6 +679,44 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
             return RPCHelper.callRemoteMethod(pointingRay3DFloatCollection, this, UnitProbabilityCollection.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not compute unit intersection!", ex);
+        }
+    }
+    
+    /**
+     * Method returns the transformation between the root location and the given unit.
+     *
+     * @param unitConfig the unit where the transformation leads to.
+     * @return a transformation future
+     * @throws NotAvailableException is thrown if the transformation is not available for could not be computed.
+     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     */
+    public Future<Transform> getUnitTransformation(final UnitConfig unitConfig) throws NotAvailableException, InterruptedException {
+        try {
+            validateData();
+            return getUnitTransformation(getRootLocationConfig(), unitConfig);
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("UnitTransformation", ex);
+        }
+    }
+
+    /**
+     * Method returns the transformation between the given unit A and the given unit B.
+     *
+     * @param unitConfigA the unit used as transformation base.
+     * @param unitConfigB the unit where the transformation leads to.
+     * @return a transformation future
+     * @throws NotAvailableException is thrown if the transformation is not available for could not be computed.
+     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     */
+    public Future<Transform> getUnitTransformation(final UnitConfig unitConfigA, final UnitConfig unitConfigB) throws NotAvailableException, InterruptedException {
+        try {   
+            Future<Transform> transformationFuture = GlobalTransformReceiver.getInstance().requestTransform(
+                    unitConfigA.getPlacementConfig().getTransformationFrameId(),
+                    unitConfigB.getPlacementConfig().getTransformationFrameId(),
+                    System.currentTimeMillis());
+            return GlobalCachedExecutorService.allOfInclusiveResultFuture(transformationFuture, getDataFuture());
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("UnitTransformation", ex);
         }
     }
 }
