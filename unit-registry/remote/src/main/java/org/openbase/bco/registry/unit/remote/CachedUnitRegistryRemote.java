@@ -103,7 +103,7 @@ public class CachedUnitRegistryRemote {
         }
         registryRemote.waitForData(timeout, timeUnit);
     }
-
+    
     public static void shutdown() {
         if (registryRemote != null) {
             registryRemote.shutdown();

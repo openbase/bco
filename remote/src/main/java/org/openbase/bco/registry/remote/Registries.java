@@ -154,6 +154,23 @@ public class Registries {
         CachedUserRegistryRemote.waitForData();
     }
 
+    public static boolean isDataAvailable() {
+        try {
+            return CachedUnitRegistryRemote.getRegistry().isDataAvailable()
+                    && CachedAgentRegistryRemote.getRegistry().isDataAvailable()
+                    && CachedAppRegistryRemote.getRegistry().isDataAvailable()
+                    && CachedDeviceRegistryRemote.getRegistry().isDataAvailable()
+                    && CachedLocationRegistryRemote.getRegistry().isDataAvailable()
+                    && CachedSceneRegistryRemote.getRegistry().isDataAvailable()
+                    && CachedUserRegistryRemote.getRegistry().isDataAvailable();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        } catch (NotAvailableException ex) {
+            // at least one remote is not available.
+        }
+        return false;
+    }
+
     /**
      * Method forces a resynchronization on all remote registries.
      *
