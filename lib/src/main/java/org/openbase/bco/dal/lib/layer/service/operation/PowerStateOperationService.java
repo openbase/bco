@@ -65,7 +65,7 @@ public interface PowerStateOperationService extends OperationService, PowerState
         resourceAllocation.setDescription(actionDescriptionBuilder.getDescription());
 
         serviceStateDescription.setServiceAttribute(jSonProcessor.serialize(powerState));
-        serviceStateDescription.setServiceAttributeType(jSonProcessor.getServiceAttributeType(ServiceType.PRESENCE_STATE_SERVICE));
+        serviceStateDescription.setServiceAttributeType(jSonProcessor.getServiceAttributeType(ServiceType.POWER_STATE_SERVICE));
         serviceStateDescription.setServiceType(ServiceType.POWER_STATE_SERVICE);
         serviceStateDescription.setUnitId("UNITID"); // id of the unit
 
@@ -87,6 +87,8 @@ public interface PowerStateOperationService extends OperationService, PowerState
         // required
         resourceAllocation.setInitiator(ResourceAllocation.Initiator.HUMAN); // no default value? like actionAuthority given once?
         actionDescriptionBuilder.setActionAuthority(ActionAuthority.getDefaultInstance()); // every time as a paramter
+
+//        applyAction(actionDescription);
         return null;
     }
 }
