@@ -70,12 +70,11 @@ public class PresenceLightAgentTest {
 
     public static final String PRESENCE_LIGHT_AGENT_LABEL = "Presence_Light_Agent_Unit_Test";
 
-    private static final PowerState ON = PowerState.newBuilder().setValue(PowerState.State.ON).build();
     private static final PowerState OFF = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
 
     private static final MotionStateType.MotionState MOTION = MotionStateType.MotionState.newBuilder().setValue(MotionStateType.MotionState.State.MOTION).build();
     private static final MotionStateType.MotionState NO_MOTION = MotionStateType.MotionState.newBuilder().setValue(MotionStateType.MotionState.State.NO_MOTION).build();
-    
+
     private static AgentRemote agent;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static AgentManagerLauncher agentManagerLauncher;
@@ -99,7 +98,7 @@ public class PresenceLightAgentTest {
 
             agentManagerLauncher = new AgentManagerLauncher();
             agentManagerLauncher.launch();
-            
+
             locationManagerLauncher = new LocationManagerLauncher();
             locationManagerLauncher.launch();
 
@@ -122,11 +121,8 @@ public class PresenceLightAgentTest {
             if (agentManagerLauncher != null) {
                 agentManagerLauncher.shutdown();
             }
-            if(locationManagerLauncher != null) {
+            if (locationManagerLauncher != null) {
                 locationManagerLauncher.shutdown();
-            }
-            if (agentRegistry != null) {
-                agentRegistry.shutdown();
             }
             MockRegistryHolder.shutdownMockRegistry();
         } catch (Throwable ex) {
@@ -143,20 +139,18 @@ public class PresenceLightAgentTest {
     }
 
     /**
-     * Test of activate method, of class PowerStateSynchroniserAgent.
+     * Test of activate method, of class PreseceLightAgent.
      */
     @Test(timeout = 30000)
     public void testPreseceLightAgent() throws Exception {
         System.out.println("testPreseceLightAgent");
 
         CachedAgentRegistryRemote.waitForData();
+
         UnitConfig config = registerAgent();
-        agent = new AgentRemote();
-        agent.init(config);
-        agent.activate();
-        agent.requestData().get();
+        agent = Units.getUnitByLabel(config.getLabel(), true, Units.AGENT);
         agent.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()).get();
-        
+
         // It can take some time until the execute() method of the agent has finished
         // TODO: enable to acces controller instances via remoteRegistry to check and wait for the execution of the agent
         Thread.sleep(500);
@@ -181,7 +175,7 @@ public class PresenceLightAgentTest {
         assertEquals("Initial MotionState of MotionDetector[" + motionDetectorRemote.getLabel() + "] is not NO_MOTION", MotionStateType.MotionState.State.NO_MOTION, motionDetectorRemote.getMotionState().getValue());
         assertEquals("Initial PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] is not OFF", PowerStateType.PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
         assertEquals("Initial PowerState of Location[" + locationRemote.getLabel() + "] is not OFF", PowerStateType.PowerState.State.OFF, locationRemote.getPowerState().getValue());
-        
+
         motionDetectorController.updateMotionStateProvider(MOTION);
         Thread.sleep(50);
         motionDetectorRemote.requestData().get();
@@ -191,7 +185,7 @@ public class PresenceLightAgentTest {
         assertEquals("PresenceState of Location[" + locationRemote.getLabel() + "] has not switched to PRESENT.", PresenceStateType.PresenceState.State.PRESENT, locationRemote.getPresenceState().getValue());
         assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched to ON", PowerStateType.PowerState.State.ON, colorableLightRemote.getPowerState().getValue());
         assertEquals("Initial PowerState of Location[" + locationRemote.getLabel() + "] has not switched to ON", PowerStateType.PowerState.State.ON, locationRemote.getPowerState().getValue());
-        
+
         motionDetectorController.updateMotionStateProvider(NO_MOTION);
         Thread.sleep(50);
         motionDetectorRemote.requestData().get();
@@ -201,15 +195,15 @@ public class PresenceLightAgentTest {
         assertEquals("PresenceState of Location[" + locationRemote.getLabel() + "] has not switched to ABSENT.", PresenceStateType.PresenceState.State.ABSENT, locationRemote.getPresenceState().getValue());
         assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has changes without intention", PowerStateType.PowerState.State.ON, colorableLightRemote.getPowerState().getValue());
         assertEquals("Initial PowerState of Location[" + locationRemote.getLabel() + "] has changes without intention", PowerStateType.PowerState.State.ON, locationRemote.getPowerState().getValue());
-              
-        agent.deactivate();
+
+        agent.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()).get();
     }
 
     private UnitConfig registerAgent() throws CouldNotPerformException, InterruptedException, ExecutionException {
         System.out.println("Register the PresenceLightAgent...");
 
         EnablingState enablingState = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
-        PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(locationRegistry.getLocationConfigsByLabel("Paradise").get(0).getId());
+        PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(locationRegistry.getRootLocationConfig().getId());
 
         String agentClassId = null;
         for (AgentClass agentClass : agentRegistry.getAgentClasses()) {

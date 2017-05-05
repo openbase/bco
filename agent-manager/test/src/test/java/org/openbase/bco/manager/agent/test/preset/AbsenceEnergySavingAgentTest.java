@@ -21,7 +21,6 @@ package org.openbase.bco.manager.agent.test.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
@@ -72,11 +71,10 @@ public class AbsenceEnergySavingAgentTest {
     public static final String ABSENCE_ENERGY_SAVING_AGENT_LABEL = "Absence_Energy_Saving_Agent_Unit_Test";
 
     private static final PowerState ON = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-    private static final PowerState OFF = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
 
     private static final MotionStateType.MotionState MOTION = MotionStateType.MotionState.newBuilder().setValue(MotionStateType.MotionState.State.MOTION).build();
     private static final MotionStateType.MotionState NO_MOTION = MotionStateType.MotionState.newBuilder().setValue(MotionStateType.MotionState.State.NO_MOTION).build();
-    
+
     private static AgentRemote agent;
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static AgentManagerLauncher agentManagerLauncher;
@@ -100,7 +98,7 @@ public class AbsenceEnergySavingAgentTest {
 
             agentManagerLauncher = new AgentManagerLauncher();
             agentManagerLauncher.launch();
-            
+
             locationManagerLauncher = new LocationManagerLauncher();
             locationManagerLauncher.launch();
 
@@ -123,11 +121,8 @@ public class AbsenceEnergySavingAgentTest {
             if (agentManagerLauncher != null) {
                 agentManagerLauncher.shutdown();
             }
-            if(locationManagerLauncher != null) {
+            if (locationManagerLauncher != null) {
                 locationManagerLauncher.shutdown();
-            }
-            if (agentRegistry != null) {
-                agentRegistry.shutdown();
             }
             MockRegistryHolder.shutdownMockRegistry();
         } catch (Throwable ex) {
@@ -151,13 +146,11 @@ public class AbsenceEnergySavingAgentTest {
         System.out.println("testAbsenceEnergySavingAgent");
 
         CachedAgentRegistryRemote.waitForData();
+
         UnitConfig config = registerAgent();
-        agent = new AgentRemote();
-        agent.init(config);
-        agent.activate();
-        agent.requestData().get();
+        agent = Units.getUnitByLabel(config.getLabel(), true, Units.AGENT);
         agent.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()).get();
-        
+
         // It can take some time until the execute() method of the agent has finished
         // TODO: enable to acces controller instances via remoteRegistry to check and wait for the execution of the agent
         Thread.sleep(500);
@@ -182,7 +175,7 @@ public class AbsenceEnergySavingAgentTest {
         assertEquals("Initial MotionState of MotionDetector[" + motionDetectorRemote.getLabel() + "] is not MOTION", MotionStateType.MotionState.State.MOTION, motionDetectorRemote.getMotionState().getValue());
         assertEquals("Initial PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] is not ON", PowerStateType.PowerState.State.ON, colorableLightRemote.getPowerState().getValue());
         assertEquals("Initial PowerState of Location[" + locationRemote.getLabel() + "] is not ON", PowerStateType.PowerState.State.ON, locationRemote.getPowerState().getValue());
-        
+
         motionDetectorController.updateMotionStateProvider(NO_MOTION);
         Thread.sleep(50);
         motionDetectorRemote.requestData().get();
@@ -192,7 +185,7 @@ public class AbsenceEnergySavingAgentTest {
         assertEquals("PresenceState of Location[" + locationRemote.getLabel() + "] has not switched to ABSENT.", PresenceStateType.PresenceState.State.ABSENT, locationRemote.getPresenceState().getValue());
         assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched to OFF", PowerStateType.PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
         //assertEquals("Initial PowerState of Location[" + locationRemote.getLabel() + "] has not switched to OFF", PowerStateType.PowerState.State.OFF, locationRemote.getPowerState().getValue());
-        
+
         motionDetectorController.updateMotionStateProvider(MOTION);
         Thread.sleep(50);
         motionDetectorRemote.requestData().get();
@@ -202,8 +195,8 @@ public class AbsenceEnergySavingAgentTest {
         assertEquals("PresenceState of Location[" + locationRemote.getLabel() + "] has not switched to PRESENT.", PresenceStateType.PresenceState.State.PRESENT, locationRemote.getPresenceState().getValue());
         assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has changes without intention", PowerStateType.PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
         //assertEquals("Initial PowerState of Location[" + locationRemote.getLabel() + "] has changes without intention", PowerStateType.PowerState.State.ON, locationRemote.getPowerState().getValue());
-              
-        agent.deactivate();
+
+        agent.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()).get();
     }
 
     private UnitConfig registerAgent() throws CouldNotPerformException, InterruptedException, ExecutionException {
@@ -228,4 +221,3 @@ public class AbsenceEnergySavingAgentTest {
         return agentRegistry.registerAgentConfig(agentUnitConfig.build()).get();
     }
 }
-

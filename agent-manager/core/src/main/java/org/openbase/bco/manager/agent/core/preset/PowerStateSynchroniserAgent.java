@@ -29,6 +29,7 @@ import java.util.List;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -96,15 +97,15 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
         super.init(config);
         try {
             logger.debug("Initializing PowerStateSynchroniserAgent[" + config.getLabel() + "]");
-            CachedUnitRegistryRemote.waitForData();
+            Registries.getUnitRegistry().waitForData();
 
             MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("PowerStateSynchroniserAgent", config.getMetaConfig());
 
-            UnitConfig sourceUnitConfig = CachedUnitRegistryRemote.getRegistry().getUnitConfigById(configVariableProvider.getValue(SOURCE_KEY));
+            UnitConfig sourceUnitConfig = Registries.getUnitRegistry().getUnitConfigById(configVariableProvider.getValue(SOURCE_KEY));
             if (sourceUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                 throw new NotAvailableException("Source[" + ScopeGenerator.generateStringRep(sourceUnitConfig.getScope()) + "] is not enabled");
             }
-            sourceRemote = Units.getUnit(configVariableProvider.getValue(SOURCE_KEY), false);
+            sourceRemote = Units.getUnit(sourceUnitConfig, false);
             int i = 1;
             String unitId;
             try {
