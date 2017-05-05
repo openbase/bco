@@ -130,7 +130,6 @@ public class MockRegistry {
 
     public static final String COLORABLE_LIGHT_LABEL = "Ambient_Light_Unit_Test";
     public static final String BATTERY_LABEL = "Battery_Unit_Test";
-    public static final String BRIGHTNESS_SENSOR_LABEL = "Brightness_Sensor_Unit_Test";
     public static final String BUTTON_LABEL = "Button_Unit_Test";
     public static final String DIMMABLE_LIGHT_LABEL = "DimmableLight_Unit_Test";
     public static final String DIMMER_LABEL = "Dimmer_Unit_Test";
@@ -226,7 +225,6 @@ public class MockRegistry {
         DIMMABLE_LIGHT(UnitType.DIMMABLE_LIGHT, POWER_SOS, POWER_SPS, BRIGHTNESS_SOS, BRIGHTNESS_SPS),
         LIGHT(UnitType.LIGHT, POWER_SOS, POWER_SPS),
         MOTION_DETECTOR(UnitType.MOTION_DETECTOR, MOTION_SPS),
-        BRIGHTNESS_SENSOR(UnitType.BRIGHTNESS_SENSOR, BRIGHTNESS_SPS),
         LIGHT_SENSOR(UnitType.LIGHT_SENSOR, ILLUMINANCE_SPS),
         BUTTON(UnitType.BUTTON, BUTTON_SPS),
         DIMMER(UnitType.DIMMER, BRIGHTNESS_SOS, BRIGHTNESS_SPS, POWER_SOS, POWER_SPS),
@@ -287,7 +285,6 @@ public class MockRegistry {
             UNIT_TYPE_LABEL_MAP.put(UnitType.COLORABLE_LIGHT, COLORABLE_LIGHT_LABEL);
             UNIT_TYPE_LABEL_MAP.put(UnitType.LIGHT, LIGHT_LABEL);
             UNIT_TYPE_LABEL_MAP.put(UnitType.MOTION_DETECTOR, MOTION_DETECTOR_LABEL);
-            UNIT_TYPE_LABEL_MAP.put(UnitType.BRIGHTNESS_SENSOR, BRIGHTNESS_SENSOR_LABEL);
             UNIT_TYPE_LABEL_MAP.put(UnitType.BUTTON, BUTTON_LABEL);
             UNIT_TYPE_LABEL_MAP.put(UnitType.DIMMABLE_LIGHT, DIMMABLE_LIGHT_LABEL);
             UNIT_TYPE_LABEL_MAP.put(UnitType.DIMMER, DIMMER_LABEL);
@@ -611,67 +608,83 @@ public class MockRegistry {
             registerDeviceUnitConfig(getDeviceConfig("PH_Hue_E27_Device_BORROWED", serialNumber, InventoryState.State.BORROWED, colorableLightClass));
 
             // battery, brightnessSensor, motionSensor, tamperSwitch, temperatureSensor
-            DeviceClass motionSensorClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_MotionSensor", "FGMS_001", "Fibaro", UnitType.MOTION_DETECTOR, UnitType.BATTERY, UnitType.BRIGHTNESS_SENSOR, UnitType.TEMPERATURE_SENSOR, UnitType.TAMPER_DETECTOR)).get();
+            DeviceClass motionSensorClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_MotionSensor", "FGMS_001", "Fibaro",
+                    UnitType.MOTION_DETECTOR,
+                    UnitType.BATTERY,
+                    UnitType.LIGHT_SENSOR,
+                    UnitType.TEMPERATURE_SENSOR,
+                    UnitType.TAMPER_DETECTOR)).get();
             waitForDeviceClass(motionSensorClass);
 
             registerDeviceUnitConfig(getDeviceConfig("F_MotionSensor_Device", serialNumber, motionSensorClass));
 
             // button
-            DeviceClass buttonClass = deviceRegistry.registerDeviceClass(getDeviceClass("Gira_429496730210000", "429496730210000", "Gira", UnitType.BUTTON)).get();
+            DeviceClass buttonClass = deviceRegistry.registerDeviceClass(getDeviceClass("Gira_429496730210000", "429496730210000", "Gira", 
+                    UnitType.BUTTON)).get();
             waitForDeviceClass(buttonClass);
 
             registerDeviceUnitConfig(getDeviceConfig("GI_429496730210000_Device", serialNumber, buttonClass));
 
             // dimmableLight
-            DeviceClass dimmableLightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_ABC", "ABC", "Hager", UnitType.DIMMABLE_LIGHT)).get();
+            DeviceClass dimmableLightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_ABC", "ABC", "Hager", 
+                    UnitType.DIMMABLE_LIGHT)).get();
             waitForDeviceClass(dimmableLightClass);
 
             registerDeviceUnitConfig(getDeviceConfig("HA_ABC_Device", serialNumber, dimmableLightClass));
 
             // dimmer
-            DeviceClass dimmerClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA663A", "TYA663A", "Hager", UnitType.DIMMER)).get();
+            DeviceClass dimmerClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA663A", "TYA663A", "Hager", 
+                    UnitType.DIMMER)).get();
             waitForDeviceClass(dimmerClass);
 
             registerDeviceUnitConfig(getDeviceConfig("HA_TYA663A_Device", serialNumber, dimmerClass));
 
             // handle
-            DeviceClass handleClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_RotaryHandleSensor", "Sec_RHS", "Homematic", UnitType.HANDLE)).get();
+            DeviceClass handleClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_RotaryHandleSensor", "Sec_RHS", "Homematic", 
+                    UnitType.HANDLE)).get();
             waitForDeviceClass(handleClass);
 
             registerDeviceUnitConfig(getDeviceConfig("HM_RotaryHandleSensor_Device", serialNumber, handleClass));
 
             // light
-            DeviceClass lightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_FGS_221", "FGS_221", "Fibaro", UnitType.LIGHT)).get();
+            DeviceClass lightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_FGS_221", "FGS_221", "Fibaro", 
+                    UnitType.LIGHT)).get();
             waitForDeviceClass(lightClass);
 
             registerDeviceUnitConfig(getDeviceConfig("F_FGS221_Device", serialNumber, lightClass));
 
             // powerConsumptionSensor, powerPlug
-            DeviceClass powerPlugClass = deviceRegistry.registerDeviceClass(getDeviceClass("Plugwise_PowerPlug", "070140", "Plugwise", UnitType.POWER_SWITCH, UnitType.POWER_CONSUMPTION_SENSOR)).get();
+            DeviceClass powerPlugClass = deviceRegistry.registerDeviceClass(getDeviceClass("Plugwise_PowerPlug", "070140", "Plugwise", 
+                    UnitType.POWER_SWITCH, 
+                    UnitType.POWER_CONSUMPTION_SENSOR)).get();
             waitForDeviceClass(powerPlugClass);
 
             registerDeviceUnitConfig(getDeviceConfig("PW_PowerPlug_Device", serialNumber, powerPlugClass));
 
             // reedSwitch
-            DeviceClass reedSwitchClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_ReedSwitch", "Sec_SC_2", "Homematic", UnitType.REED_CONTACT)).get();
+            DeviceClass reedSwitchClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_ReedSwitch", "Sec_SC_2", "Homematic", 
+                    UnitType.REED_CONTACT)).get();
             waitForDeviceClass(reedSwitchClass);
 
             registerDeviceUnitConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass));
 
             // rollershutter
-            DeviceClass rollershutterClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA628C", "TYA628C", "Hager", UnitType.ROLLER_SHUTTER)).get();
+            DeviceClass rollershutterClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA628C", "TYA628C", "Hager", 
+                    UnitType.ROLLER_SHUTTER)).get();
             waitForDeviceClass(rollershutterClass);
 
             registerDeviceUnitConfig(getDeviceConfig("HA_TYA628C_Device", serialNumber, rollershutterClass));
 
             // smoke detector
-            DeviceClass smokeDetector = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_FGSS_001", "FGSS_001", "Fibaro", UnitType.SMOKE_DETECTOR)).get();
+            DeviceClass smokeDetector = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_FGSS_001", "FGSS_001", "Fibaro", 
+                    UnitType.SMOKE_DETECTOR)).get();
             waitForDeviceClass(smokeDetector);
 
             registerDeviceUnitConfig(getDeviceConfig("Fibaro_SmokeDetector_Device", serialNumber, smokeDetector));
 
             // temperature controller
-            DeviceClass temperatureControllerClass = deviceRegistry.registerDeviceClass(getDeviceClass("Gira_429496730250000", "429496730250000", "Gira", UnitType.TEMPERATURE_CONTROLLER)).get();
+            DeviceClass temperatureControllerClass = deviceRegistry.registerDeviceClass(getDeviceClass("Gira_429496730250000", "429496730250000", "Gira", 
+                    UnitType.TEMPERATURE_CONTROLLER)).get();
             waitForDeviceClass(temperatureControllerClass);
 
             registerDeviceUnitConfig(getDeviceConfig("Gire_TemperatureController_Device", serialNumber, temperatureControllerClass));
