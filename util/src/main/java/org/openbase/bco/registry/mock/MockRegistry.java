@@ -144,6 +144,8 @@ public class MockRegistry {
     public static final String LIGHT_SENSOR_LABEL = "Light_Sensor_Test";
     private final String serialNumber = "1234-5678-9100";
 
+    public static final String ABSENCE_ENERGY_SAVING_AGENT_LABEL = "AbsenceEnergySaving";
+    public static final String BRIGHTNESS_LIGHT_SAVING_AGENT_LABEL = "BrightnessLightSaving";
     public static final String POWER_STATE_SYNCHRONISER_AGENT_LABEL = "PowerStateSynchroniser";
     public static final String PRESENCE_LIGHT_AGENT_LABEL = "PresenceLight";
 
@@ -532,6 +534,8 @@ public class MockRegistry {
 
     private void registerAgentClasses() throws CouldNotPerformException, InterruptedException {
         try {
+            agentRegistry.registerAgentClass(AgentClass.newBuilder().setLabel(ABSENCE_ENERGY_SAVING_AGENT_LABEL).build()).get();
+            agentRegistry.registerAgentClass(AgentClass.newBuilder().setLabel(BRIGHTNESS_LIGHT_SAVING_AGENT_LABEL).build()).get();
             agentRegistry.registerAgentClass(AgentClass.newBuilder().setLabel(POWER_STATE_SYNCHRONISER_AGENT_LABEL).build()).get();
             agentRegistry.registerAgentClass(AgentClass.newBuilder().setLabel(PRESENCE_LIGHT_AGENT_LABEL).build()).get();
         } catch (ExecutionException ex) {
