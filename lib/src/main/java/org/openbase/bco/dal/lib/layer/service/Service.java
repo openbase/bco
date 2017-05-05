@@ -28,10 +28,12 @@ import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
+import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
@@ -198,5 +200,34 @@ public interface Service {
             classes[i] = arguments[i].getClass();
         }
         return classes;
+    }
+
+    public static void upateActionDescription(final ActionDescription.Builder actionDescription, final Object serviceAttribue) throws CouldNotPerformException {
+        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
+        ServiceJSonProcessor jSonProcessor = new ServiceJSonProcessor();
+        ServiceType serviceType = getServiceType(serviceAttribue);
+
+        serviceStateDescription.setServiceAttribute(jSonProcessor.serialize(serviceAttribue));
+        serviceStateDescription.setServiceAttributeType(jSonProcessor.getServiceAttributeType(serviceAttribue));
+        serviceStateDescription.setServiceType(serviceType);
+
+        String description = actionDescription.getDescription();
+        description = description.replace(ActionDescriptionProcessor.SERVICE_TYPE_KEY, serviceType.name());
+
+        // TODO: also replace SERVICE_ATTRIBUTE_KEY in description with a nice serviceAttribute representation
+        String serviceAttributeRepresentation = serviceAttribue.toString();
+        description = description.replace(ActionDescriptionProcessor.SERVICE_ATTIBUTE_KEY, serviceAttributeRepresentation);
+        actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.SERVICE_ATTIBUTE_KEY, serviceAttributeRepresentation));
+
+        actionDescription.setDescription(description);
+    }
+
+    public static ServiceType getServiceType(final Object serviceAttribute) throws CouldNotPerformException {
+        String serviceTypeName = StringProcessor.transformToUpperCase(serviceAttribute.getClass().getSimpleName() + SERVICE_LABEL);
+        try {
+            return ServiceType.valueOf(serviceTypeName);
+        } catch (IllegalArgumentException ex) {
+            throw new CouldNotPerformException("Could not resolve ServiceType for [" + serviceAttribute.getClass().getSimpleName() + "]");
+        }
     }
 }

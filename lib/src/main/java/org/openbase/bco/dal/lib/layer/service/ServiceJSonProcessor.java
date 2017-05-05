@@ -47,7 +47,7 @@ public class ServiceJSonProcessor {
     private final JsonFormat jsonFormat;
 
     /**
-     * Enumeration that map from java primitives to proto field descriptor
+     * Enumeration that maps from java primitives to proto field descriptor
      * types.
      */
     public enum JavaTypeToProto {
@@ -96,8 +96,8 @@ public class ServiceJSonProcessor {
         } else {
             jsonStringRep = serviceAttribute.toString();
         }
-        
-        if(jsonStringRep.isEmpty() || jsonStringRep.equals(EMPTY_MESSAGE)) {
+
+        if (jsonStringRep.isEmpty() || jsonStringRep.equals(EMPTY_MESSAGE)) {
             throw new InvalidStateException("Service attribute does not contain any context!");
         }
 
@@ -138,7 +138,7 @@ public class ServiceJSonProcessor {
     }
 
     /**
-     * Deserialize a JSon string representation for an rst value given the class
+     * Deserialise a JSon string representation for an rst value given the class
      * name for the value or the type if its a primitive.
      *
      * @param jsonStringRep the string representation of the rst value

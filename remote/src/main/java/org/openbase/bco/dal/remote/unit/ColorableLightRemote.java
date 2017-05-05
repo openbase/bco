@@ -22,21 +22,19 @@ package org.openbase.bco.dal.remote.unit;
  * #L%
  */
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
+import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.ColorableLight;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
-import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType;
 import rst.domotic.state.ColorStateType.ColorState;
@@ -45,7 +43,6 @@ import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.dal.ColorableLightDataType;
 import rst.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
-import rst.timing.IntervalType.Interval;
 import rst.vision.ColorType;
 import rst.vision.HSBColorType.HSBColor;
 import rst.vision.RGBColorType.RGBColor;
@@ -81,34 +78,35 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
     public Future<Void> setColorState(final ColorState colorState) throws CouldNotPerformException {
         System.out.println("SetColorState for remote[" + this + "]");
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-        ResourceAllocation.Builder resourceAllocation = actionDescription.getResourceAllocationBuilder();
-        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
-        ServiceJSonProcessor jSonProcessor = new ServiceJSonProcessor();
+//        ResourceAllocation.Builder resourceAllocation = actionDescription.getResourceAllocationBuilder();
 
-        actionDescription.setLabel(getLabel() + "[" + colorState.getColor().getHsbColor() + "]");  // unit label
-        actionDescription.setDescription("Mr. Pink changed " + ServiceType.COLOR_STATE_SERVICE.name() + " of unit " + getLabel() + " to " + colorState.getColor().getHsbColor()); // value to be set
-        resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(getScope())); // scope
-        resourceAllocation.setDescription(actionDescription.getDescription());
+        updateActionDescription(actionDescription, colorState);
 
-        // values have to be set because they are required...
-        resourceAllocation.setId("bla");
-        Interval.Builder slotBuilder = resourceAllocation.getSlotBuilder();
-        slotBuilder.setBegin(TimestampProcessor.getCurrentTimestamp());
-        slotBuilder.setEnd(TimestampProcessor.getCurrentTimestamp());
-        resourceAllocation.setState(ResourceAllocation.State.ABORTED);
-
-        serviceStateDescription.setServiceAttribute(jSonProcessor.serialize(colorState));
-        serviceStateDescription.setServiceAttributeType(jSonProcessor.getServiceAttributeType(colorState));
-        serviceStateDescription.setServiceType(ServiceType.COLOR_STATE_SERVICE);
-        serviceStateDescription.setUnitId(getId()); // id of the unit
-
+//        resourceAllocation.setId("");
+//        Interval.Builder slotBuilder = resourceAllocation.getSlotBuilder();
+//        slotBuilder.setBegin(TimestampProcessor.getCurrentTimestamp());
+//        slotBuilder.setEnd(TimestampProcessor.getCurrentTimestamp());
+//        resourceAllocation.setState(ResourceAllocation.State.REQUESTED);
         System.out.println("ApplyAction " + actionDescription.build());
         try {
             return this.applyAction(actionDescription.build());
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException(ex);
         }
-//        return RPCHelper.callRemoteMethod(colorState, this, Void.class);
+    }
+
+    private void updateActionDescription(final ActionDescription.Builder actionDescription, final Object serviceAttribute) throws CouldNotPerformException {
+        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
+        ResourceAllocation.Builder resourceAllocation = actionDescription.getResourceAllocationBuilder();
+
+        serviceStateDescription.setUnitId(getId());
+        resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(getScope()));
+
+        actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
+        //TODO: update USER key with authentification
+        actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
+
+        Service.upateActionDescription(actionDescription, serviceAttribute);
     }
 
     @Override
