@@ -33,7 +33,6 @@ import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.unit.scene.SceneRemote;
 import org.openbase.bco.dal.remote.unit.user.UserRemote;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
-import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.InvalidStateException;
@@ -115,8 +114,10 @@ public class Units {
      * DAL Unit remote-class-constants which can be used to request unit remotes.
      */
     public static final Class<? extends LightRemote> DAL_UNIT_LIGHT = LightRemote.class;
+    public static final Class<? extends LightSensorRemote> DAL_UNIT_LIGHT_SENSOR = LightSensorRemote.class;
     public static final Class<? extends ColorableLightRemote> DAL_UNIT_COLORABLE_LIGHT = ColorableLightRemote.class;
     public static final Class<? extends DimmableLightRemote> DAL_UNIT_DIMMABLE_LIGHT = DimmableLightRemote.class;
+    public static final Class<? extends DimmerRemote> DAL_UNIT_DIMMER = DimmerRemote.class;
     public static final Class<? extends MotionDetectorRemote> DAL_UNIT_MOTION_DETECTOR = MotionDetectorRemote.class;
     public static final Class<? extends PowerSwitchRemote> DAL_UNIT_POWER_SWITCH = PowerSwitchRemote.class;
     public static final Class<? extends PowerConsumptionSensorRemote> DAL_UNIT_POWER_CONSUMPTION_SENSOR = PowerConsumptionSensorRemote.class;
@@ -133,8 +134,10 @@ public class Units {
 
     // comfort
     public static final Class<? extends LightRemote> UNIT_DAL_LIGHT = DAL_UNIT_LIGHT;
+    public static final Class<? extends LightSensorRemote> UNIT_DAL_LIGHT_SENSOR = DAL_UNIT_LIGHT_SENSOR;
     public static final Class<? extends ColorableLightRemote> UNIT_DAL_LIGHT_COLORABLE = DAL_UNIT_COLORABLE_LIGHT;
     public static final Class<? extends DimmableLightRemote> UNIT_DAL_LIGHT_DIMMABLE = DAL_UNIT_DIMMABLE_LIGHT;
+    public static final Class<? extends DimmerRemote> UNIT_DAL_DIMMER = DAL_UNIT_DIMMER;
     public static final Class<? extends MotionDetectorRemote> UNIT_DAL_MOTION_DETECTOR = DAL_UNIT_MOTION_DETECTOR;
     public static final Class<? extends PowerSwitchRemote> UNIT_DAL_POWER_SWITCH = DAL_UNIT_POWER_SWITCH;
     public static final Class<? extends PowerConsumptionSensorRemote> UNIT_DAL_POWER_CONSUMPTION_SENSOR = DAL_UNIT_POWER_CONSUMPTION_SENSOR;
@@ -151,10 +154,12 @@ public class Units {
 
     //simple
     public static final Class<? extends LightRemote> LIGHT = DAL_UNIT_LIGHT;
+    public static final Class<? extends LightSensorRemote> LIGHT_SENSOR = DAL_UNIT_LIGHT_SENSOR;
     public static final Class<? extends ColorableLightRemote> LIGHT_COLORABLE = DAL_UNIT_COLORABLE_LIGHT;
     public static final Class<? extends ColorableLightRemote> COLORABLE_LIGHT = DAL_UNIT_COLORABLE_LIGHT;
     public static final Class<? extends DimmableLightRemote> LIGHT_DIMMABLE = DAL_UNIT_DIMMABLE_LIGHT;
     public static final Class<? extends DimmableLightRemote> DIMMABLE_LIGHT = DAL_UNIT_DIMMABLE_LIGHT;
+    public static final Class<? extends DimmerRemote> DIMMER = DAL_UNIT_DIMMER;
     public static final Class<? extends MotionDetectorRemote> MOTION_DETECTOR = DAL_UNIT_MOTION_DETECTOR;
     public static final Class<? extends PowerSwitchRemote> POWER_SWITCH = DAL_UNIT_POWER_SWITCH;
     public static final Class<? extends PowerConsumptionSensorRemote> POWER_CONSUMPTION_SENSOR = DAL_UNIT_POWER_CONSUMPTION_SENSOR;
@@ -178,7 +183,6 @@ public class Units {
     private static final UnitRemoteFactory UNIT_REMOTE_FACTORY = UnitRemoteFactoryImpl.getInstance();
 
     private static RemoteControllerRegistry<String, org.openbase.bco.dal.lib.layer.unit.UnitRemote<? extends GeneratedMessage>> unitRemoteRegistry;
-    private static UnitRegistry unitRegistry;
 
     public static final SyncObject UNIT_POOL_LOCK = new SyncObject("UnitPoolLock");
 
@@ -225,11 +229,8 @@ public class Units {
      * @throws CouldNotPerformException Is thrown in case an error occurs during registry connection.
      */
     public synchronized static UnitRegistry getUnitRegistry() throws InterruptedException, CouldNotPerformException {
-        if (unitRegistry == null) {
-            unitRegistry = CachedUnitRegistryRemote.getRegistry();
-            CachedUnitRegistryRemote.waitForData();
-        }
-        return unitRegistry;
+        Registries.getUnitRegistry().waitForData();
+        return Registries.getUnitRegistry();
     }
 
     /**
