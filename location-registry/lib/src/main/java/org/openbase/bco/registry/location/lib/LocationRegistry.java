@@ -450,16 +450,16 @@ public interface LocationRegistry extends Shutdownable {
     public Future<UnitProbabilityCollection> computeUnitIntersection(final PointingRay3DFloatCollection pointingRay3DFloatCollection) throws CouldNotPerformException;
 
     /**
-     * Method returns the transformation between the root location and the given unit.
+     * Method returns the transformation from the root location to the given unit.
      *
-     * @param unitConfig the unit where the transformation leads to.
+     * @param unitConfigTarget the unit where the transformation leads to.
      * @return a transformation future
      * @throws NotAvailableException is thrown if the transformation is not available for could not be computed.
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      */
-    public default Future<Transform> getUnitTransformation(final UnitConfig unitConfig) throws NotAvailableException, InterruptedException {
+    public default Future<Transform> getUnitTransformation(final UnitConfig unitConfigTarget) throws NotAvailableException, InterruptedException {
         try {
-            return getUnitTransformation(getRootLocationConfig(), unitConfig);
+            return getUnitTransformation(getRootLocationConfig(), unitConfigTarget);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("UnitTransformation", ex);
         }
@@ -468,17 +468,18 @@ public interface LocationRegistry extends Shutdownable {
     /**
      * Method returns the transformation between the given unit A and the given unit B.
      *
-     * @param unitConfigA the unit used as transformation base.
-     * @param unitConfigB the unit where the transformation leads to.
+     * @param unitConfigSource the unit used as transformation base.
+     * @param unitConfigTarget the unit where the transformation leads to.
      * @return a transformation future
      * @throws NotAvailableException is thrown if the transformation is not available for could not be computed.
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      */
-    public default Future<Transform> getUnitTransformation(final UnitConfig unitConfigA, final UnitConfig unitConfigB) throws NotAvailableException, InterruptedException {
+    public default Future<Transform> getUnitTransformation(final UnitConfig unitConfigSource, final UnitConfig unitConfigTarget) throws NotAvailableException, InterruptedException {
         Future<Transform> transformationFuture = GlobalTransformReceiver.getInstance().requestTransform(
-                unitConfigA.getPlacementConfig().getTransformationFrameId(),
-                unitConfigB.getPlacementConfig().getTransformationFrameId(),
+                unitConfigTarget.getPlacementConfig().getTransformationFrameId(),
+                unitConfigSource.getPlacementConfig().getTransformationFrameId(),
                 System.currentTimeMillis());
-        return GlobalCachedExecutorService.allOfInclusiveResultFuture(transformationFuture);
+//        return GlobalCachedExecutorService.allOfInclusiveResultFuture(transformationFuture, );
+        return transformationFuture;
     }
 }
