@@ -21,6 +21,7 @@ package org.openbase.bco.dal.remote.detector;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.TimeUnit;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -195,6 +196,11 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
         return presenceStateObservable.getValue();
     }
 
+    @Override
+    public CompletableFuture<PresenceState> getDataFuture() {
+        return presenceStateObservable.getValueFuture();
+    }
+    
     @Override
     public void addDataObserver(final Observer<PresenceState> observer) {
         presenceStateObservable.addObserver(observer);
