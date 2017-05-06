@@ -189,8 +189,8 @@
         <maven.compiler.target>1.8</maven.compiler.target>
         <!--dependency.rta.lib.version>1.0.2</dependency.rta.lib.version-->
         <dependency.rta.lib.version>[1.0,1.1-SNAPSHOT)</dependency.rta.lib.version>
-        <dependency.jul.version>1.3-SNAPSHOT</dependency.jul.version>
-        <dependency.bco.registry.version>1.3-SNAPSHOT</dependency.bco.registry.version>
+        <dependency.jul.version>1.4-SNAPSHOT</dependency.jul.version>
+        <dependency.bco.registry.version>1.4-SNAPSHOT</dependency.bco.registry.version>
         <dependency.org.codehaus.mojo.license-maven-plugin.version>1.10</dependency.org.codehaus.mojo.license-maven-plugin.version>
     </properties>
 
