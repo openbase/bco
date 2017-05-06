@@ -13,7 +13,7 @@
     <parent>
         <groupId>org.openbase.bco</groupId>
         <artifactId>manager</artifactId>
-        <version>1.3-SNAPSHOT</version>
+        <version>1.4-SNAPSHOT</version>
     </parent>
 
     <licenses>
