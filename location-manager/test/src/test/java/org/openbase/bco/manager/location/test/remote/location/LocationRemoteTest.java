@@ -284,6 +284,7 @@ public class LocationRemoteTest {
         locationRemote.setColorState(newColorState).get();
         locationRemote.setPowerState(newPowerState).get();
         locationRemote.setTargetTemperatureState(newTemperatureState).get();
+        locationRemote.requestData().get();
 
         assertTrue("BlindState of location has not changed!", locationRemote.getBlindState(UnitType.UNKNOWN).getMovementState() != snapshotBlindState.getMovementState());
         assertTrue("ColorState of location has not changed!", !locationRemote.getColorState(UnitType.UNKNOWN).getColor().getHsbColor().equals(snapshotColorState.getColor().getHsbColor()));
@@ -291,6 +292,7 @@ public class LocationRemoteTest {
         assertTrue("TargetTemperatureState of location has not changed!", locationRemote.getTargetTemperatureState(UnitType.UNKNOWN).getTemperature() != snapshotTemperatureState.getTemperature());
 
         locationRemote.restoreSnapshot(snapshot).get();
+        locationRemote.requestData().get();
 
         assertTrue("BlindState of location has not been restored through snapshot!", locationRemote.getBlindState(UnitType.UNKNOWN).getMovementState() == snapshotBlindState.getMovementState());
         assertTrue("ColorState of location has not been restored through snapshot!", locationRemote.getColorState(UnitType.UNKNOWN).getColor().getHsbColor().equals(snapshotColorState.getColor().getHsbColor()));
