@@ -26,13 +26,15 @@ import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.annotations.RPCMethod;
+import org.openbase.jul.pattern.provider.DataProvider;
+import rst.domotic.registry.SceneRegistryDataType.SceneRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface SceneRegistry extends Shutdownable {
+public interface SceneRegistry extends DataProvider<SceneRegistryData>, Shutdownable {
 
     @RPCMethod
     public Future<UnitConfig> registerSceneConfig(UnitConfig sceneUnitConfig) throws CouldNotPerformException;

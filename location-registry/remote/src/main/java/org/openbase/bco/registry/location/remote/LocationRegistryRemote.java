@@ -681,7 +681,7 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
             throw new CouldNotPerformException("Could not compute unit intersection!", ex);
         }
     }
-    
+
     /**
      * Method returns the transformation between the root location and the given unit.
      *
@@ -705,18 +705,13 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
      * @param unitConfigA the unit used as transformation base.
      * @param unitConfigB the unit where the transformation leads to.
      * @return a transformation future
-     * @throws NotAvailableException is thrown if the transformation is not available for could not be computed.
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      */
-    public Future<Transform> getUnitTransformation(final UnitConfig unitConfigA, final UnitConfig unitConfigB) throws NotAvailableException, InterruptedException {
-        try {   
-            Future<Transform> transformationFuture = GlobalTransformReceiver.getInstance().requestTransform(
-                    unitConfigA.getPlacementConfig().getTransformationFrameId(),
-                    unitConfigB.getPlacementConfig().getTransformationFrameId(),
-                    System.currentTimeMillis());
-            return GlobalCachedExecutorService.allOfInclusiveResultFuture(transformationFuture, getDataFuture());
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("UnitTransformation", ex);
-        }
+    public Future<Transform> getUnitTransformation(final UnitConfig unitConfigA, final UnitConfig unitConfigB) throws InterruptedException {
+        Future<Transform> transformationFuture = GlobalTransformReceiver.getInstance().requestTransform(
+                unitConfigA.getPlacementConfig().getTransformationFrameId(),
+                unitConfigB.getPlacementConfig().getTransformationFrameId(),
+                System.currentTimeMillis());
+        return GlobalCachedExecutorService.allOfInclusiveResultFuture(transformationFuture, getDataFuture());
     }
 }
