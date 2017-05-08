@@ -33,6 +33,8 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.annotations.RPCMethod;
+import org.openbase.jul.pattern.provider.DataProvider;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -41,7 +43,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType.Scope;
 
-public interface UnitRegistry extends Shutdownable {
+public interface UnitRegistry extends DataProvider<UnitRegistryData>, Shutdownable {
 
     @RPCMethod
     public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;

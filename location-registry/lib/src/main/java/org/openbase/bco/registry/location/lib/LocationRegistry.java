@@ -31,6 +31,8 @@ import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rct.Transform;
+import org.openbase.jul.pattern.provider.DataProvider;
+import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -45,7 +47,7 @@ import rst.tracking.PointingRay3DFloatType.PointingRay3DFloat;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface LocationRegistry extends Shutdownable {
+public interface LocationRegistry extends DataProvider<LocationRegistryData>, Shutdownable {
 
     /**
      * This method registers the given location config in the registry.
@@ -479,7 +481,6 @@ public interface LocationRegistry extends Shutdownable {
                 unitConfigTarget.getPlacementConfig().getTransformationFrameId(),
                 unitConfigSource.getPlacementConfig().getTransformationFrameId(),
                 System.currentTimeMillis());
-//        return GlobalCachedExecutorService.allOfInclusiveResultFuture(transformationFuture, );
-        return transformationFuture;
+        return GlobalCachedExecutorService.allOfInclusiveResultFuture(transformationFuture, getDataFuture());
     }
 }
