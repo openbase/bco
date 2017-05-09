@@ -24,6 +24,8 @@ package org.openbase.bco.dal.lib.layer.service;
 import com.google.protobuf.GeneratedMessage;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collection;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -116,19 +118,69 @@ public interface Service {
     }
 
     /**
-     * Method detects and returns the service data class.
+     * Method returns a collection of service state values.
+     *
+     * @param serviceType the service type to identify the service state class.
+     * @return a collection of enum values of the service state.
+     * @throws NotAvailableException is thrown in case the referred service state does not contain any state values.
+     */
+    public static Collection<? extends Enum> getServiceStateValues(final ServiceType serviceType) throws NotAvailableException {
+        final String serviceBaseName = getServiceBaseName(serviceType);
+        final String serviceEnumName = SERVICE_STATE_PACKAGE.getName() + "." + serviceBaseName + "Type$" + serviceBaseName + "$State";
+        try {
+            return Arrays.asList((Enum[]) (Class.forName(serviceEnumName).getMethod("values").invoke(null)));
+        } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException ex) {
+            throw new NotAvailableException("ServiceStateValues", serviceEnumName, ex);
+        }
+    }
+
+    /**
+     * Method builds a new service state related to the given service type and initializes this instance with the given state value.
+     *
+     * @param <SC> the service class of the service state.
+     * @param <SV> the state enum of the service.
+     * @param serviceType the service type of the service state.
+     * @param stateValue a compatible state value related to the given service state.
+     * @return a new service state initialized with the state value.
+     * @throws CouldNotPerformException is thrown in case the given arguments are not compatible with each other or something else went wrong during the build.
+     */
+    public static <SC extends GeneratedMessage, SV extends Enum> SC buildServiceState(final ServiceType serviceType, SV stateValue) throws CouldNotPerformException {
+        try {
+            // create new service state builder
+            Object serviceStateBuilder = Service.getServiceStateClass(serviceType).getMethod("newBuilder").invoke(null);
+
+            // set service state value
+            serviceStateBuilder.getClass().getMethod("setValue", stateValue.getClass()).invoke(serviceStateBuilder, stateValue);
+
+            // build service state and return
+            return (SC) serviceStateBuilder.getClass().getMethod("build").invoke(serviceStateBuilder);
+        } catch (final IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException | NotAvailableException | ClassCastException ex) {
+            throw new CouldNotPerformException("Could not build service state!", ex);
+        }
+    }
+
+    /**
+     * @deprecated please use {@code detectServiceStateClass(final ServiceType serviceType)} instead.
+     */
+    @Deprecated
+    public static Class<? extends GeneratedMessage> detectServiceDataClass(final ServiceType serviceType) throws NotAvailableException {
+        return getServiceStateClass(serviceType);
+    }
+
+    /**
+     * Method detects and returns the service state class.
      *
      * @param serviceType the given service type to resolve the class.
-     * @return the service data class.
+     * @return the service state class.
      * @throws NotAvailableException is thrown in case the class could not be detected.
      */
-    public static Class<? extends GeneratedMessage> detectServiceDataClass(final ServiceType serviceType) throws NotAvailableException {
+    public static Class<? extends GeneratedMessage> getServiceStateClass(final ServiceType serviceType) throws NotAvailableException {
         final String serviceBaseName = getServiceBaseName(serviceType);
         final String serviceClassName = SERVICE_STATE_PACKAGE.getName() + "." + serviceBaseName + "Type$" + serviceBaseName;
         try {
             return (Class<? extends GeneratedMessage>) Class.forName(serviceClassName);
         } catch (NullPointerException | ClassNotFoundException | ClassCastException ex) {
-            throw new NotAvailableException("ServiceDataClass", serviceClassName, new CouldNotPerformException("Could not detect class!", ex));
+            throw new NotAvailableException("ServiceStateClass", serviceClassName, new CouldNotPerformException("Could not detect class!", ex));
         }
     }
 
@@ -183,7 +235,7 @@ public interface Service {
     public static Object invokeOperationServiceMethod(final ServiceType serviceType, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
         return invokeServiceMethod(serviceType, ServicePattern.OPERATION, instance, arguments);
     }
-
+    
     public static Class[] getArgumentClasses(final Object[] arguments) {
         Class[] classes = new Class[arguments.length];
         for (int i = 0; i < classes.length; i++) {

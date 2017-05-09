@@ -22,13 +22,8 @@ package org.openbase.bco.dal.lib.layer.service.mock;
  * #L%
  */
 import java.lang.reflect.InvocationTargetException;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
@@ -38,14 +33,10 @@ import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationSer
 import org.openbase.bco.dal.lib.layer.service.operation.TargetTemperatureStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.slf4j.LoggerFactory;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType.ColorState;
@@ -85,32 +76,6 @@ public class ServiceFactoryMock implements ServiceFactory {
 
     @Override
     public <UNIT extends ColorStateOperationService & Unit> ColorStateOperationService newColorService(final UNIT unit) throws org.openbase.jul.exception.InstantiationException {
-//        ServiceSimulator serviceSimulator = new ServiceSimulator(ServiceType.COLOR_STATE_SERVICE, unit, 500);
-//        serviceSimulator.addState(ColorState.newBuilder().setColor(Color.newBuilder().setHsbColor(HSBColorType.HSBColor.newBuilder()
-//                .setBrightness(100)
-//                .setSaturation(100)
-//                .setHue(100).build()).build()).build());
-//        serviceSimulator.addState(ColorState.newBuilder().setColor(Color.newBuilder().setHsbColor(HSBColorType.HSBColor.newBuilder()
-//                .setBrightness(100)
-//                .setSaturation(100)
-//                .setHue(200).build()).build()).build());
-//        serviceSimulator.addState(ColorState.newBuilder().setColor(Color.newBuilder().setHsbColor(HSBColorType.HSBColor.newBuilder()
-//                .setBrightness(100)
-//                .setSaturation(100)
-//                .setHue(300).build()).build()).build());
-//        serviceSimulator.addState(ColorState.newBuilder().setColor(Color.newBuilder().setHsbColor(HSBColorType.HSBColor.newBuilder()
-//                .setBrightness(100)
-//                .setSaturation(100)
-//                .setHue(0).build()).build()).build());
-//        serviceSimulator.addState(ColorState.newBuilder().setColor(Color.newBuilder().setHsbColor(HSBColorType.HSBColor.newBuilder()
-//                .setBrightness(0)
-//                .setSaturation(100)
-//                .setHue(0).build()).build()).build());
-//        serviceSimulator.addState(ColorState.newBuilder().setColor(Color.newBuilder().setHsbColor(HSBColorType.HSBColor.newBuilder()
-//                .setBrightness(100)
-//                .setSaturation(0)
-//                .setHue(0).build()).build()).build());
-
         return new ColorStateOperationService() {
 
             @Override
@@ -127,10 +92,6 @@ public class ServiceFactoryMock implements ServiceFactory {
 
     @Override
     public <UNIT extends PowerStateOperationService & Unit> PowerStateOperationService newPowerService(final UNIT unit) throws org.openbase.jul.exception.InstantiationException {
-
-//        ServiceSimulator serviceSimulator = new ServiceSimulator(ServiceType.POWER_STATE_SERVICE, unit, 500);
-//        serviceSimulator.addState(PowerState.newBuilder().setValue(PowerState.State.OFF).build());
-//        serviceSimulator.addState(PowerState.newBuilder().setValue(PowerState.State.ON).build());
         return new PowerStateOperationService() {
 
             @Override
@@ -211,42 +172,6 @@ public class ServiceFactoryMock implements ServiceFactory {
             return CompletableFuture.completedFuture(null);
         } catch (CouldNotPerformException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             throw new CouldNotPerformException("Could not call remote Message[]", ex);
-        }
-    }
-
-    private static class ServiceSimulator<SERVICE_STATE> {
-
-        private List<SERVICE_STATE> stateList;
-        private Runnable modificationCommand;
-        private static Random random = new Random();
-
-        public ServiceSimulator(final ServiceType serviceType, final Unit unit, final long changeRate) throws InstantiationException {
-            try {
-                this.stateList = new ArrayList<>();
-                this.modificationCommand = new Runnable() {
-                    @Override
-                    public void run() {
-                        // skip if no values are defined.
-                        if (stateList.isEmpty()) {
-                            return;
-                        }
-
-                        // apply random service manipulation
-                        try {
-                            Service.invokeOperationServiceMethod(serviceType, unit, stateList.get(random.nextInt(stateList.size())));
-                        } catch (CouldNotPerformException ex) {
-                            ExceptionPrinter.printHistory("Could not apply service modification!", ex, logger);
-                        }
-                    }
-                };
-                GlobalScheduledExecutorService.scheduleAtFixedRate(modificationCommand, random.nextInt(30000) + 30000, changeRate, TimeUnit.MILLISECONDS);
-            } catch (CouldNotPerformException ex) {
-                throw new InstantiationException(this, ex);
-            }
-        }
-
-        public void addState(final SERVICE_STATE state) {
-            stateList.add(state);
         }
     }
 }
