@@ -174,7 +174,7 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override
-    public List<UnitConfig> getLocationConfigsByCoordinate(Vec3DDouble coordinate, LocationConfig.LocationType locationType) throws CouldNotPerformException, InterruptedException, ExecutionException {
+    public List<UnitConfig> getLocationConfigsByCoordinate(final Vec3DDouble coordinate, final LocationConfig.LocationType locationType) throws CouldNotPerformException, InterruptedException, ExecutionException {
         validateData();
         List<UnitConfig> result = new ArrayList<>();
 
