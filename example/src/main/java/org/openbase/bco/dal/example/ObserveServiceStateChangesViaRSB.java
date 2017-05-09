@@ -22,7 +22,6 @@ package org.openbase.bco.dal.example;
  * #L%
  */
 import java.util.ArrayList;
-import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeoutException;
 import org.openbase.jps.core.JPService;
@@ -39,10 +38,7 @@ import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rsb.patterns.RemoteServer;
-import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
-import rst.domotic.registry.DeviceRegistryDataType.DeviceRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
-import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -50,64 +46,83 @@ import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 
 /**
  *
+ * This howto shows how to observe service state changes of any units providing the given service.
+ *
+ * Note: This howto requires a running bco platform provided by your network.
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class ObserveServiceStateChangesViaRSB {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter(DeviceConfig.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter(DeviceRegistryData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter(UnitConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter(UnitRegistryData.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter(ColorableLightData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter(ColorableLightData.getDefaultInstance()));
     }
 
-    public static final String APP_NAME = "CollectionServiceDataViaRemoteLib";
+    private static final Logger LOGGER = LoggerFactory.getLogger(ObserveServiceStateChangesViaRSB.class);
 
-    private static final Logger logger = LoggerFactory.getLogger(ObserveServiceStateChangesViaRSB.class);
+    public static void howto() throws InterruptedException {
 
-    /**
-     * @param args the command line arguments
-     * @throws java.lang.InterruptedException
-     */
-    public static void main(String[] args) throws InterruptedException {
-        logger.info("Start " + APP_NAME + "...");
-
-        /* Setup JPService */
-        JPService.setApplicationName(APP_NAME);
-        JPService.parseAndExitOnError(args);
-
-        ServiceType serviceType = ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE;
-        List<UnitConfig> unitConfigList = new ArrayList<>();
+        final ArrayList<Listener> listenerList = new ArrayList<>();
 
         try {
+            // choose your service type to listen
+            ServiceType serviceType = ServiceType.COLOR_STATE_SERVICE;
+
+            LOGGER.info("create and activate registry remote server...");
             final RemoteServer unitRegistryRemoteServer = Factory.getInstance().createRemoteServer("/registry/unit/ctrl");
             unitRegistryRemoteServer.activate();
+
+            LOGGER.info("request unit confis...");
             final UnitRegistryData unitRegistryData = (UnitRegistryData) unitRegistryRemoteServer.call("requestStatus").getData();
 
-            // request all units of the given service type
-            for (UnitConfig unitConfig : unitRegistryData.getDalUnitConfigList()) {
-                for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+            // request and iterate over all unit configs
+            for (final UnitConfig unitConfig : unitRegistryData.getDalUnitConfigList()) {
+                // iterate over provided services
+                for (final ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+
+                    // check if service type match
                     if (serviceConfig.getServiceTemplate().getType().equals(serviceType)) {
-                        unitConfigList.add(unitConfig);
+                        final Scope scope = ScopeTransformer.transform(unitConfig.getScope()).concat(new Scope("/status"));
+                        LOGGER.info("Register listener on Scope[" + scope + "]");
+                        final Listener listener = Factory.getInstance().createListener(scope);
+                        listenerList.add(listener);
+                        listener.addHandler((Event event) -> {
+                            LOGGER.info("Got Event[" + event.getData() + "]");
+                        }, true);
+                        listener.activate();
                     }
                 }
             }
 
-            Listener listener;
-            Scope scope;
-
-            for (UnitConfig unitConfig : unitConfigList) {
-                scope = ScopeTransformer.transform(unitConfig.getScope()).concat(new Scope("/status"));
-                logger.info("Register listener on Scope[" + scope + "]");
-                listener = Factory.getInstance().createListener(scope);
-                listener.addHandler((Event event) -> {
-                    logger.info("Got Event[" + event.getData() + "]");
-                }, true);
-                listener.activate();
-            }
-
+            LOGGER.info("Receiving " + serviceType.name() + " events for one minute...");
+            Thread.sleep(60000);
         } catch (RSBException | CouldNotPerformException | ExecutionException | TimeoutException ex) {
-            ExceptionPrinter.printHistory(ex, logger);
+            ExceptionPrinter.printHistory(ex, LOGGER);
+        } finally {
+            LOGGER.info("shutdown listeners");
+            for (Listener listener : listenerList) {
+                try {
+                    listener.deactivate();
+                } catch (RSBException ex) {
+                    LOGGER.error("Could not shutdown listener!", ex);
+                }
+            }
         }
-        logger.info("Waiting for " + serviceType.name() + " events...");
+    }
+
+    public static void main(String[] args) throws InterruptedException {
+
+        // Setup CLParser
+        JPService.setApplicationName("howto");
+        JPService.parseAndExitOnError(args);
+
+        // Start HowTo
+        LOGGER.info("start " + JPService.getApplicationName());
+        howto();
+        LOGGER.info("finish " + JPService.getApplicationName());
+        System.exit(0);
     }
 }

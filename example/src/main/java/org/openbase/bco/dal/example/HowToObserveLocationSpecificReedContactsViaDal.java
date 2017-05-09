@@ -1,6 +1,6 @@
 package org.openbase.bco.dal.example;
 
-/*
+/*-
  * #%L
  * BCO DAL Example
  * %%
@@ -21,45 +21,48 @@ package org.openbase.bco.dal.example;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.awt.Color;
-import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
- * This howto shows how to control a colorable light via the bco-dal-remote api.
+ * This howto shows how to observe reed contact units at one specific location.
  *
  * Note: This howto requires a running bco platform provided by your network.
- * Note: If your setup does not provide a light unit called \"TestUnit_0"\ you
- * can use the command-line tool \"bco-query ColorableLight\" to get a list of available colorable lights
- * in your setup.
+ * Note: Please avoid hardcoding location \"scopes\" and \"labels\" because those can be dynamically changed by the end user even during runtime.
+ * Note: The command-line tool \"bco-query Location\" will help you to get a list of available locations and there ids in your setup.
+ *
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class HowToControlAColorableLightUnit {
+public class HowToObserveLocationSpecificReedContactsViaDal {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HowToControlAColorableLightUnit.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HowToObserveLocationSpecificReedContactsViaDal.class);
 
     public static void howto() throws InterruptedException {
 
-        final ColorableLightRemote testLight;
         try {
+            LOGGER.info("wait for registry connection...");
+            Registries.waitForData();
 
-            LOGGER.info("request the light unit with the label \"TestUnit_0\"");
-            testLight = Units.getUnitByLabel("TestUnit_0", true, Units.LIGHT_COLORABLE);
+            // choose your location where the reed contacts are placed in.
+            final String locationId = Registries.getLocationRegistry().getRootLocationConfig().getId();
 
-            LOGGER.info("switch the light on");
-            testLight.setPowerState(PowerState.State.ON);
-
-            LOGGER.info("switch light color to blue");
-            testLight.setColor(Color.BLUE);
-
+            LOGGER.info("register observer on all reed contacts...");
+            for (UnitConfig reedContactUnitConfig : Registries.getLocationRegistry().getUnitConfigsByLocation(UnitType.REED_CONTACT, locationId)) {
+                Units.getUnit(reedContactUnitConfig, false, Units.REED_CONTACT).addDataObserver((source, data) -> {
+                    LOGGER.info(source + " changed to " + data.getContactState().getValue().name());
+                });
+            }
+            LOGGER.info("receiving state changes for one minute...");
+            Thread.sleep(60000);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER);
         }
