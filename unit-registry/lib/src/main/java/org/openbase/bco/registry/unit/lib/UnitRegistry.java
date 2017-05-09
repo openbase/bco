@@ -24,6 +24,7 @@ package org.openbase.bco.registry.unit.lib;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
@@ -35,6 +36,7 @@ import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.pattern.provider.DataProvider;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.service.ServiceConfigType;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -64,6 +66,31 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, Shutdownab
     public UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException;
 
     public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException;
+
+    public default List<UnitConfig> getUnitConfigsByServices(final ServiceType... serviceTypes) throws CouldNotPerformException {
+        return getUnitConfigsByService(Arrays.asList(serviceTypes));
+    }
+
+    public default List<UnitConfig> getUnitConfigsByService(final List<ServiceType> serviceTypes) throws CouldNotPerformException {
+        validateData();
+        final List<UnitConfig> unitConfigs = getUnitConfigs();
+        boolean foundServiceType;
+
+        for (final UnitConfig unitConfig : new ArrayList<>(unitConfigs)) {
+            foundServiceType = false;
+            for (final ServiceType serviceType : serviceTypes) {
+                for (ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                    if (serviceConfig.getServiceTemplate().getType() == serviceType) {
+                        foundServiceType = true;
+                    }
+                }
+                if (!foundServiceType) {
+                    unitConfigs.remove(unitConfig);
+                }
+            }
+        }
+        return unitConfigs;
+    }
 
     @RPCMethod
     public Boolean isUnitConfigRegistryReadOnly() throws CouldNotPerformException;
