@@ -108,11 +108,14 @@ import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig;
+import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 import rst.geometry.PoseType.Pose;
 import rst.geometry.RotationType.Rotation;
 import rst.geometry.TranslationType.Translation;
+import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.spatial.PlacementConfigType.PlacementConfig;
+import rst.spatial.ShapeType.Shape;
 
 /**
  *
@@ -165,6 +168,8 @@ public class MockRegistry {
     private final DeviceRegistryRemote deviceRegistryRemote;
 
     private static UnitConfig paradiseLocation;
+    private static UnitConfig hellLocation;
+    private static UnitConfig heavenLocation;
 
     public static final Map<UnitType, String> UNIT_TYPE_LABEL_MAP = new HashMap<>();
 
@@ -419,7 +424,7 @@ public class MockRegistry {
                     Registries.waitUntilReady();
 
                     logger.info("Register connections...");
-                    registerConnnections();
+                    registerConnections();
 
                     logger.info("Wait for final consistency...");
                     Registries.waitUntilReady();
@@ -484,19 +489,66 @@ public class MockRegistry {
 
     private void registerLocations() throws CouldNotPerformException, InterruptedException {
         try {
+            // Create paradise
             LocationConfig zoneLocationConfig = LocationConfig.newBuilder().setType(LocationConfig.LocationType.ZONE).build();
-            paradiseLocation = locationRegistry.registerLocationConfig(UnitConfig.newBuilder().setType(UnitType.LOCATION).setLabel("Paradise").setLocationConfig(zoneLocationConfig).build()).get();
+            List<Vec3DDouble> paradiseVertices = new ArrayList<>();
+            paradiseVertices.add(Vec3DDouble.newBuilder().setX(0).setY(0).setZ(0).build());
+            paradiseVertices.add(Vec3DDouble.newBuilder().setX(0).setY(6).setZ(0).build());
+            paradiseVertices.add(Vec3DDouble.newBuilder().setX(6).setY(6).setZ(0).build());
+            paradiseVertices.add(Vec3DDouble.newBuilder().setX(6).setY(0).setZ(0).build());
+            Shape paradiseShape = Shape.newBuilder().addAllFloor(paradiseVertices).build();
+            PlacementConfig paradisePlacement = PlacementConfig.newBuilder().setShape(paradiseShape).build();
+            paradiseLocation = locationRegistry.registerLocationConfig(UnitConfig.newBuilder().setType(UnitType.LOCATION)
+                    .setLabel("Paradise").setLocationConfig(zoneLocationConfig).setPlacementConfig(paradisePlacement).build()).get();
 
-            LocationConfig tileLocationConfig = LocationConfig.newBuilder().setType(LocationConfig.LocationType.TILE).build();
-            PlacementConfig placementConfig = PlacementConfig.newBuilder().setLocationId(paradiseLocation.getId()).build();
-            locationRegistry.registerLocationConfig(UnitConfig.newBuilder().setType(UnitType.LOCATION).setLabel("Heaven").setLocationConfig(tileLocationConfig).setPlacementConfig(placementConfig).build()).get();
-            locationRegistry.registerLocationConfig(UnitConfig.newBuilder().setType(UnitType.LOCATION).setLabel("Hell").setLocationConfig(tileLocationConfig).setPlacementConfig(placementConfig).build()).get();
+            LocationConfig tileLocationConfig = LocationConfig.newBuilder().setType(LocationType.TILE).build();
+            LocationConfig regionLocationConfig = LocationConfig.newBuilder().setType(LocationType.REGION).build();
+
+            // Create hell
+            List<Vec3DDouble> hellVertices = new ArrayList<>();
+            hellVertices.add(Vec3DDouble.newBuilder().setX(0).setY(0).setZ(0).build());
+            hellVertices.add(Vec3DDouble.newBuilder().setX(0).setY(4).setZ(0).build());
+            hellVertices.add(Vec3DDouble.newBuilder().setX(2).setY(4).setZ(0).build());
+            hellVertices.add(Vec3DDouble.newBuilder().setX(2).setY(0).setZ(0).build());
+            Shape hellShape = Shape.newBuilder().addAllFloor(hellVertices).build();
+            Pose hellPosition = Pose.newBuilder().setTranslation(Translation.newBuilder().setX(3).setY(1).setZ(0).build())
+                    .setRotation(Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build()).build();
+            PlacementConfig hellPlacement = PlacementConfig.newBuilder().setPosition(hellPosition).setShape(hellShape).setLocationId(paradiseLocation.getId()).build();
+            hellLocation = locationRegistry.registerLocationConfig(UnitConfig.newBuilder().setType(UnitType.LOCATION)
+                    .setLabel("Hell").setLocationConfig(tileLocationConfig).setPlacementConfig(hellPlacement).build()).get();
+
+            // Create heaven
+            List<Vec3DDouble> heavenVertices = new ArrayList<>();
+            heavenVertices.add(Vec3DDouble.newBuilder().setX(0).setY(0).setZ(0).build());
+            heavenVertices.add(Vec3DDouble.newBuilder().setX(0).setY(4).setZ(0).build());
+            heavenVertices.add(Vec3DDouble.newBuilder().setX(2).setY(4).setZ(0).build());
+            heavenVertices.add(Vec3DDouble.newBuilder().setX(2).setY(0).setZ(0).build());
+            Shape heavenShape = Shape.newBuilder().addAllFloor(heavenVertices).build();
+            Pose heavenPosition = Pose.newBuilder().setTranslation(Translation.newBuilder().setX(1).setY(1).setZ(0).build())
+                    .setRotation(Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build()).build();
+            PlacementConfig heavenPlacement = PlacementConfig.newBuilder().setPosition(heavenPosition).setShape(heavenShape).setLocationId(paradiseLocation.getId()).build();
+            heavenLocation = locationRegistry.registerLocationConfig(UnitConfig.newBuilder().setType(UnitType.LOCATION)
+                    .setLabel("Heaven").setLocationConfig(tileLocationConfig).setPlacementConfig(heavenPlacement).build()).get();
+
+            // Create Garden of Eden
+            List<Vec3DDouble> edenVertices = new ArrayList<>();
+            edenVertices.add(Vec3DDouble.newBuilder().setX(0).setY(0).setZ(0).build());
+            edenVertices.add(Vec3DDouble.newBuilder().setX(0).setY(2).setZ(0).build());
+            edenVertices.add(Vec3DDouble.newBuilder().setX(1).setY(2).setZ(0).build());
+            edenVertices.add(Vec3DDouble.newBuilder().setX(1).setY(0).setZ(0).build());
+            Shape edenShape = Shape.newBuilder().addAllFloor(edenVertices).build();
+            Pose edenPosition = Pose.newBuilder().setTranslation(Translation.newBuilder().setX(0).setY(2).setZ(0).build())
+                    .setRotation(Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build()).build();
+            PlacementConfig edenPlacement = PlacementConfig.newBuilder().setPosition(edenPosition).setShape(edenShape).setLocationId(heavenLocation.getId()).build();
+            locationRegistry.registerLocationConfig(UnitConfig.newBuilder().setType(UnitType.LOCATION)
+                    .setLabel("Garden of Eden").setLocationConfig(regionLocationConfig).setPlacementConfig(edenPlacement).build()).get();
+
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
         }
     }
 
-    private void registerConnnections() throws CouldNotPerformException, InterruptedException {
+    private void registerConnections() throws CouldNotPerformException, InterruptedException {
         try {
             List<String> tileIds = new ArrayList<>();
             for (UnitConfig unitConfig : locationRegistry.getLocationConfigs()) {

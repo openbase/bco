@@ -21,12 +21,16 @@ package org.openbase.bco.registry.location.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.awt.geom.Path2D;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
+import javax.media.j3d.Transform3D;
+import javax.vecmath.Point3d;
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
@@ -41,11 +45,8 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rct.GlobalTransformReceiver;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.RegistryRemote;
-import rct.Transform;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
@@ -56,6 +57,7 @@ import rst.domotic.unit.UnitProbabilityCollectionType.UnitProbabilityCollection;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig;
+import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.tracking.PointingRay3DFloatCollectionType.PointingRay3DFloatCollection;
 import rst.tracking.PointingRay3DFloatType;
 
@@ -164,6 +166,46 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
         return locationUnitConfigRemoteRegistry.getMessages().stream()
                 .filter(m -> m.getLabel().equalsIgnoreCase(locationLabel))
                 .collect(Collectors.toCollection(ArrayList::new));
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public List<UnitConfig> getLocationConfigsByCoordinate(final Vec3DDouble coordinate, final LocationConfig.LocationType locationType) throws CouldNotPerformException, InterruptedException, ExecutionException {
+        validateData();
+        List<UnitConfig> result = new ArrayList<>();
+
+        for (UnitConfig unitConfig : locationUnitConfigRemoteRegistry.getMessages()) {
+            // Check if the unit meets the requirements of the filter
+            if (!locationType.equals(LocationConfig.LocationType.UNKNOWN) && !locationType.equals(unitConfig.getLocationConfig().getType())) {
+                continue;
+            }
+
+            // Get the shape of the floor
+            List<Vec3DDouble> floorList = unitConfig.getPlacementConfig().getShape().getFloorList();
+
+            // Convert the shape into a Path2D
+            Path2D locationShape = new Path2D.Double();
+            locationShape.moveTo(floorList.get(0).getX(), floorList.get(0).getY());
+            for (int i = 1; i < floorList.size(); i++) {
+                locationShape.lineTo(floorList.get(i).getX(), floorList.get(i).getY());
+            }
+            locationShape.closePath();
+
+            // Transform the given coordinate
+            Transform3D unitTransform = getUnitTransformation(unitConfig).get().getTransform();
+            Point3d transformedCoordinate = new Point3d(coordinate.getX(), coordinate.getY(), coordinate.getZ());
+            unitTransform.transform(transformedCoordinate);
+
+            if (locationShape.contains(transformedCoordinate.x, transformedCoordinate.y)) {
+                result.add(unitConfig);
+            }
+        }
+
+        return result;
     }
 
     /**
@@ -680,38 +722,5 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not compute unit intersection!", ex);
         }
-    }
-
-    /**
-     * Method returns the transformation between the root location and the given unit.
-     *
-     * @param unitConfig the unit where the transformation leads to.
-     * @return a transformation future
-     * @throws NotAvailableException is thrown if the transformation is not available for could not be computed.
-     * @throws InterruptedException is thrown if the thread was externally interrupted.
-     */
-    public Future<Transform> getUnitTransformation(final UnitConfig unitConfig) throws NotAvailableException, InterruptedException {
-        try {
-            validateData();
-            return getUnitTransformation(getRootLocationConfig(), unitConfig);
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("UnitTransformation", ex);
-        }
-    }
-
-    /**
-     * Method returns the transformation between the given unit A and the given unit B.
-     *
-     * @param unitConfigA the unit used as transformation base.
-     * @param unitConfigB the unit where the transformation leads to.
-     * @return a transformation future
-     * @throws InterruptedException is thrown if the thread was externally interrupted.
-     */
-    public Future<Transform> getUnitTransformation(final UnitConfig unitConfigA, final UnitConfig unitConfigB) throws InterruptedException {
-        Future<Transform> transformationFuture = GlobalTransformReceiver.getInstance().requestTransform(
-                unitConfigA.getPlacementConfig().getTransformationFrameId(),
-                unitConfigB.getPlacementConfig().getTransformationFrameId(),
-                System.currentTimeMillis());
-        return GlobalCachedExecutorService.allOfInclusiveResultFuture(transformationFuture, getDataFuture());
     }
 }

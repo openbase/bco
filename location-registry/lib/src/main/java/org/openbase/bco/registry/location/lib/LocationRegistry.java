@@ -22,11 +22,15 @@ package org.openbase.bco.registry.location.lib;
  * #L%
  */
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rct.GlobalTransformReceiver;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.annotations.RPCMethod;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import rct.Transform;
 import org.openbase.jul.pattern.provider.DataProvider;
 import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
@@ -34,6 +38,8 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitProbabilityCollectionType.UnitProbabilityCollection;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
+import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.tracking.PointingRay3DFloatCollectionType.PointingRay3DFloatCollection;
 import rst.tracking.PointingRay3DFloatType.PointingRay3DFloat;
 
@@ -73,6 +79,28 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * @throws CouldNotPerformException
      */
     public List<UnitConfig> getLocationConfigsByLabel(final String locationLabel) throws CouldNotPerformException;
+
+    /**
+     * Method returns all the locations which contain the given coordinate.
+     *
+     * @param coordinate
+     * @return
+     * @throws CouldNotPerformException
+     */
+    public default List<UnitConfig> getLocationConfigsByCoordinate(final Vec3DDouble coordinate) throws CouldNotPerformException, InterruptedException, ExecutionException {
+        return getLocationConfigsByCoordinate(coordinate, LocationType.UNKNOWN);
+    };
+
+    /**
+     * Method returns all the locations which contain the given coordinate and
+     * belong to the given location type.
+     *
+     * @param coordinate
+     * @param locationType
+     * @return
+     * @throws CouldNotPerformException
+     */
+    public List<UnitConfig> getLocationConfigsByCoordinate(final Vec3DDouble coordinate, LocationType locationType) throws CouldNotPerformException, InterruptedException, ExecutionException;
 
     /**
      * Method returns true if the location config with the given id is
@@ -422,4 +450,37 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      */
     @RPCMethod
     public Future<UnitProbabilityCollection> computeUnitIntersection(final PointingRay3DFloatCollection pointingRay3DFloatCollection) throws CouldNotPerformException;
+
+    /**
+     * Method returns the transformation from the root location to the given unit.
+     *
+     * @param unitConfigTarget the unit where the transformation leads to.
+     * @return a transformation future
+     * @throws NotAvailableException is thrown if the transformation is not available for could not be computed.
+     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     */
+    public default Future<Transform> getUnitTransformation(final UnitConfig unitConfigTarget) throws NotAvailableException, InterruptedException {
+        try {
+            return getUnitTransformation(getRootLocationConfig(), unitConfigTarget);
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("UnitTransformation", ex);
+        }
+    }
+
+    /**
+     * Method returns the transformation between the given unit A and the given unit B.
+     *
+     * @param unitConfigSource the unit used as transformation base.
+     * @param unitConfigTarget the unit where the transformation leads to.
+     * @return a transformation future
+     * @throws NotAvailableException is thrown if the transformation is not available for could not be computed.
+     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     */
+    public default Future<Transform> getUnitTransformation(final UnitConfig unitConfigSource, final UnitConfig unitConfigTarget) throws NotAvailableException, InterruptedException {
+        Future<Transform> transformationFuture = GlobalTransformReceiver.getInstance().requestTransform(
+                unitConfigTarget.getPlacementConfig().getTransformationFrameId(),
+                unitConfigSource.getPlacementConfig().getTransformationFrameId(),
+                System.currentTimeMillis());
+        return GlobalCachedExecutorService.allOfInclusiveResultFuture(transformationFuture, getDataFuture());
+    }
 }

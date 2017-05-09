@@ -90,5 +90,10 @@
             <artifactId>registry.unit.core</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>registry.util</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>
