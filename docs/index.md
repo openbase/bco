@@ -92,6 +92,13 @@ bco-scene-editor
 bco-visual-remote
 ```
 
+## Simulation Mode
+
+You can test and prove new component in an simulated environment.
+```
+bco --simulate
+```
+
 ## User Interfaces
 
 ### Desktop (JavaFX)
