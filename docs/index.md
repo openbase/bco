@@ -252,7 +252,7 @@ TODO
 
 # Code Examples
 
-## Java
+## Java DAL Remote
 
 For running any java examples you only need to include the dal remote dependency in your maven or gradle project description:
 
@@ -265,7 +265,7 @@ For running any java examples you only need to include the dal remote dependency
 ```
 
 ### How to activate a scene
-* [Complete Code Example](https://github.com/openbase/bco.dal/blob/master/example/src/main/java/org/openbase/bco/dal/example/HowToActivateAScene.java)
+* [Complete Code Example](https://github.com/openbase/bco.dal/blob/master/example/src/main/java/org/openbase/bco/dal/example/HowToActivateASceneViaDAL.java)
 
 Request the unit
 ```java
@@ -279,7 +279,7 @@ Control the unit
 ```
 
 ### How to control a colorable light 
-* [Complete Code Example](https://github.com/openbase/bco.dal/blob/master/example/src/main/java/org/openbase/bco/dal/example/HowToControlAColorableLightUnit.java)
+* [Complete Code Example](https://github.com/openbase/bco.dal/blob/master/example/src/main/java/org/openbase/bco/dal/example/HowToControlAColorableLightUnitViaDAL.java)
 
 Request the unit
 ```java
@@ -294,6 +294,17 @@ Control the unit
     LOGGER.info("switch light color to blue");
     testLight.setColor(Color.BLUE);
 ```
+
+### How to observe a location specific reed contact 
+* [Complete Code Example](https://github.com/openbase/bco.dal/blob/master/example/src/main/java/org/openbase/bco/dal/example/HowToObserveLocationSpecificReedContactsViaDAL.java)
+
+### How to observe service state changes 
+* [Complete Code Example](https://github.com/openbase/bco.dal/blob/master/example/src/main/java/org/openbase/bco/dal/example/HowToObserveServiceStateChangesViaDAL.java)
+
+## Java RSB
+
+### How to observe service state changes 
+* [Complete Code Example](https://github.com/openbase/bco.dal/blob/master/example/src/main/java/org/openbase/bco/dal/example/HowToObserveServiceStateChangesViaRSB.java)
 
 # Contribution
 * Feel free to report [new Issues](https://github.com/openbase/bco.dal/issues/new)!
