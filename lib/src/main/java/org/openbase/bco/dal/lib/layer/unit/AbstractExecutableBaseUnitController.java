@@ -55,7 +55,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
 
     private final SyncObject enablingLock = new SyncObject(AbstractExecutableBaseUnitController.class);
     private Future<Void> executionFuture;
-    private SyncObject executionLock = new SyncObject("ExecutionLock");
+    private final SyncObject executionLock = new SyncObject("ExecutionLock");
     private boolean enabled;
 
     public AbstractExecutableBaseUnitController(final Class unitClass, final DB builder) throws org.openbase.jul.exception.InstantiationException {
