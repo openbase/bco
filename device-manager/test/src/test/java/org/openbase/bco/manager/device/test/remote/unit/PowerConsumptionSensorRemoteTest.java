@@ -21,7 +21,6 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -29,7 +28,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.lib.layer.unit.PowerConsumptionSensorController;
 import org.openbase.bco.dal.remote.unit.PowerConsumptionSensorRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
@@ -61,7 +59,6 @@ public class PowerConsumptionSensorRemoteTest {
     public static void setUpClass() throws Throwable {
         try {
             JPService.setupJUnitTestMode();
-            JPService.registerProperty(JPHardwareSimulationMode.class, true);
             registry = MockRegistryHolder.newMockRegistry();
 
             deviceManagerLauncher = new DeviceManagerLauncher();

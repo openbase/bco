@@ -21,12 +21,8 @@ package org.openbase.bco.manager.device.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactoryProvider;
-import org.openbase.bco.registry.device.lib.provider.DeviceRegistryProvider;
-import org.openbase.bco.registry.location.lib.provider.LocationRegistryProvider;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.storage.registry.RegistryImpl;
@@ -43,6 +39,4 @@ public interface DeviceManager extends ServiceFactoryProvider, DeviceFactoryProv
     public UnitControllerRegistry getUnitControllerRegistry() throws NotAvailableException;
 
     public boolean isSupported(final UnitConfig config) throws CouldNotPerformException;
-
-    public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException;
 }

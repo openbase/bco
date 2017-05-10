@@ -22,7 +22,6 @@ package org.openbase.bco.manager.user.test.remote.user;
  * #L%
  */
 import org.openbase.jps.core.JPService;
-import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
@@ -63,7 +62,6 @@ public class UserRemoteTest {
     public static void setUpClass() throws Throwable {
         try {
             JPService.setupJUnitTestMode();
-            JPService.registerProperty(JPHardwareSimulationMode.class, true);
             registry = MockRegistryHolder.newMockRegistry();
 
             userManagerLauncher = new UserManagerLauncher();

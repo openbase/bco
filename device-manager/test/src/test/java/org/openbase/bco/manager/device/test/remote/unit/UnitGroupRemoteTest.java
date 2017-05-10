@@ -33,12 +33,12 @@ import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.remote.unit.unitgroup.UnitGroupRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -68,18 +68,17 @@ public class UnitGroupRemoteTest {
 
     private static DeviceManagerLauncher deviceManagerLauncher;
     private static UnitGroupRemote unitGroupRemote;
-    private static final List<Unit> unitList = new ArrayList<>();
+    private static final List<Unit> UNIT_LIST = new ArrayList<>();
 
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
         try {
             JPService.setupJUnitTestMode();
-            JPService.registerProperty(JPHardwareSimulationMode.class, true);
             MockRegistryHolder.newMockRegistry();
 
             deviceManagerLauncher = new DeviceManagerLauncher();
             deviceManagerLauncher.launch();
-            deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+            Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
 
             unitGroupRemote = new UnitGroupRemote();
             ServiceTemplate powerStateOperationService = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.OPERATION).build();
@@ -88,7 +87,7 @@ public class UnitGroupRemoteTest {
             assert !deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().isEmpty();
             for (Unit<?> unit : deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().getEntries()) {
                 if (allServiceTemplatesImplementedByUnit(unitGroupConfig, unit)) {
-                    unitList.add(unit);
+                    UNIT_LIST.add(unit);
                     unitGroupConfig.addMemberId(unit.getConfig().getId());
                 }
             }
@@ -167,13 +166,13 @@ public class UnitGroupRemoteTest {
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
         unitGroupRemote.setPowerState(state).get();
 
-        for (final Unit<?> unit : unitList) {
+        for (final Unit<?> unit : UNIT_LIST) {
             assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state.getValue(), ((PowerStateOperationService) unit).getPowerState().getValue());
         }
 
         state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
         unitGroupRemote.setPowerState(state).get();
-        for (final Unit<?> unit : unitList) {
+        for (final Unit<?> unit : UNIT_LIST) {
             assertEquals("Power state of unit [" + unit.getConfig().getId() + "] has not been set on!", state.getValue(), ((PowerStateOperationService) unit).getPowerState().getValue());
         }
     }

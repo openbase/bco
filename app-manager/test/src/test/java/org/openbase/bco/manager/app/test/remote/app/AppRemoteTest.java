@@ -33,7 +33,6 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Test;
 import org.slf4j.LoggerFactory;
 import rsb.Factory;
 import rsb.Informer;
@@ -58,7 +57,6 @@ public class AppRemoteTest {
 
     @BeforeClass
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
-//        JPService.registerProperty(JPHardwareSimulationMode.class, true);
 //        registry = MockRegistryHolder.newMockRegistry();
 //
 //        appManagerLauncher = new UserManagerLauncher();

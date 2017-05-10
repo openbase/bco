@@ -28,12 +28,12 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.lib.layer.unit.LightController;
 import org.openbase.bco.dal.remote.unit.LightRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Remote;
@@ -60,22 +60,18 @@ public class LightRemoteTest {
     public static void setUpClass() throws Throwable {
         try {
             JPService.setupJUnitTestMode();
-            JPService.registerProperty(JPHardwareSimulationMode.class, true);
-//            System.out.println("setUpClass thread: " + Thread.currentThread().getName());
             registry = MockRegistryHolder.newMockRegistry();
 
             deviceManagerLauncher = new DeviceManagerLauncher();
             deviceManagerLauncher.launch();
-            deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+            Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
 
             label = MockRegistry.LIGHT_LABEL;
 
             lightRemote = new LightRemote();
             lightRemote.initByLabel(label);
             lightRemote.activate();
-//            System.out.println("#### wait for light remote...");
             lightRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED, 30000);
-//            System.out.println("#### successfull started!");
         } catch (Throwable ex) {
             ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
@@ -84,7 +80,6 @@ public class LightRemoteTest {
     @AfterClass
     public static void tearDownClass() throws Throwable {
         try {
-            System.out.println("#### tearDownClass");
             if (deviceManagerLauncher != null) {
                 deviceManagerLauncher.shutdown();
             }
