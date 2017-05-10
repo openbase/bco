@@ -94,7 +94,7 @@ bco-visual-remote
 
 ## Simulation Mode
 
-You can test and prove new component in an simulated environment.
+You can test and prove new component in a simulated environment.
 ```
 bco --simulate
 ```
