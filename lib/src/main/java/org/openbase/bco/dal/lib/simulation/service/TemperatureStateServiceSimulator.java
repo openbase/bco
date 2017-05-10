@@ -21,7 +21,6 @@ package org.openbase.bco.dal.lib.simulation.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -41,11 +40,22 @@ public class TemperatureStateServiceSimulator extends AbstractScheduledServiceSi
 
     /**
      * Creates a new custom unit simulator.
+     *
+     * @param unitController the unit to simulate.
+     * @param serviceType the serviceType of the simulator, either TEMPERATURE_STATE_SERVICE or TARGET_TEMPERATURE_STATE_SERVICE
+     */
+    public TemperatureStateServiceSimulator(final UnitController unitController, final ServiceType serviceType) {
+        super(unitController, serviceType);
+        this.simulatedTemperature = RANDOM.nextInt((int) MAX_TEMPERATURE);
+    }
+
+    /**
+     * Creates a new custom unit simulator.
+     *
      * @param unitController the unit to simulate.
      */
     public TemperatureStateServiceSimulator(final UnitController unitController) {
-        super(unitController, ServiceType.TEMPERATURE_STATE_SERVICE);
-        this.simulatedTemperature = RANDOM.nextInt((int) MAX_TEMPERATURE);
+        this(unitController, ServiceType.TEMPERATURE_STATE_SERVICE);
     }
 
     private double getSimulatedTemperature() {
