@@ -22,47 +22,50 @@ package org.openbase.bco.dal.example;
  * #L%
  */
 import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.dal.remote.unit.scene.SceneRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
- * This howto shows how to observe reed contact units at one specific location.
+ * This howto shows how to list all available scenes and how to activate a scene via the bco-dal-remote api.
  *
  * Note: This howto requires a running bco platform provided by your network.
- * Note: Please avoid hardcoding location \"scopes\" and \"labels\" because those can be dynamically changed by the end user even during runtime.
- * Note: The command-line tool \"bco-query Location\" will help you to get a list of available locations and there ids in your setup.
- *
+ * Note: If your setup does not provide a scene unit called \"WatchingTV"\ you
+ * can use the command-line tool \"bco-query Scene\" to get a list of available scenes in your setup.
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class HowToObserveLocationSpecificReedContactsViaDal {
+public class HowToActivateASceneViaDAL {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HowToObserveLocationSpecificReedContactsViaDal.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HowToActivateASceneViaDAL.class);
 
     public static void howto() throws InterruptedException {
 
+        final SceneRemote testScene;
         try {
+
             LOGGER.info("wait for registry connection...");
             Registries.waitForData();
-
-            // choose your location where the reed contacts are placed in.
-            final String locationId = Registries.getLocationRegistry().getRootLocationConfig().getId();
-
-            LOGGER.info("register observer on all reed contacts...");
-            for (UnitConfig reedContactUnitConfig : Registries.getLocationRegistry().getUnitConfigsByLocation(UnitType.REED_CONTACT, locationId)) {
-                Units.getUnit(reedContactUnitConfig, false, Units.REED_CONTACT).addDataObserver((source, data) -> {
-                    LOGGER.info(source + " changed to " + data.getContactState().getValue().name());
-                });
+            
+            LOGGER.info("print all scenes");
+            for (UnitConfig sceneUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.SCENE)) {
+                LOGGER.info("found scene: " + sceneUnitConfig.getLabel());
             }
-            LOGGER.info("receiving state changes for one minute...");
-            Thread.sleep(60000);
+
+            LOGGER.info("request the scene with the label \"WatchingTV\"");
+            testScene = Units.getUnitByLabel("WatchingTV", true, Units.SCENE);
+
+            LOGGER.info("activate the scene");
+            testScene.setActivationState(ActivationState.State.ACTIVE);
+
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER);
         }

@@ -52,7 +52,7 @@ import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class ObserveServiceStateChangesViaRSB {
+public class HowToObserveServiceStateChangesViaRSB {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter(UnitConfig.getDefaultInstance()));
@@ -61,7 +61,7 @@ public class ObserveServiceStateChangesViaRSB {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter(ColorableLightData.getDefaultInstance()));
     }
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ObserveServiceStateChangesViaRSB.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HowToObserveServiceStateChangesViaRSB.class);
 
     public static void howto() throws InterruptedException {
 

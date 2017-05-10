@@ -21,49 +21,46 @@ package org.openbase.bco.dal.example;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.awt.Color;
-import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.Units;
-import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.bco.registry.remote.Registries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.unit.UnitConfigType;
 
 /**
  *
- * This howto shows how to control a colorable light via the bco-dal-remote api.
+ * This howto shows how to observe service state changes of any units providing the given service.
  *
  * Note: This howto requires a running bco platform provided by your network.
- * Note: If your setup does not provide a light unit called \"TestUnit_0"\ you
- * can use the command-line tool \"bco-query ColorableLight\" to get a list of available colorable lights
- * in your setup.
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class HowToControlAColorableLightUnitViaDal {
+public class HowToObserveServiceStateChangesViaDAL {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HowToControlAColorableLightUnitViaDal.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HowToObserveServiceStateChangesViaDAL.class);
 
     public static void howto() throws InterruptedException {
 
-        final ColorableLightRemote testLight;
         try {
-            
+            // choose your service type to listen
+            final ServiceType serviceType = ServiceType.COLOR_STATE_SERVICE;
+
             LOGGER.info("wait for registry connection...");
             Registries.waitForData();
 
-            LOGGER.info("request the light unit with the label \"TestUnit_0\"");
-            testLight = Units.getUnitByLabel("TestUnit_0", true, Units.LIGHT_COLORABLE);
+            LOGGER.info("register observer on all Service[" + serviceType.name() + "] compatible units...");
+            for (UnitConfigType.UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByServices(serviceType)) {
+                Units.getUnit(unitConfig, false).addDataObserver((source, data) -> {
+                    LOGGER.info("Got Event[" + data + "] of " + source);
+                });
+            }
 
-            LOGGER.info("switch the light on");
-            testLight.setPowerState(PowerState.State.ON);
-
-            LOGGER.info("switch light color to blue");
-            testLight.setColor(Color.BLUE);
-
+            LOGGER.info("receiving state changes for one minute...");
+            Thread.sleep(60000);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER);
         }

@@ -1,6 +1,6 @@
 package org.openbase.bco.dal.example;
 
-/*
+/*-
  * #%L
  * BCO DAL Example
  * %%
@@ -22,43 +22,45 @@ package org.openbase.bco.dal.example;
  * #L%
  */
 import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.bco.registry.remote.Registries;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.UnitConfigType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
- * This howto shows how to observe service state changes of any units providing the given service.
+ * This howto shows how to observe reed contact units at one specific location.
  *
  * Note: This howto requires a running bco platform provided by your network.
+ * Note: Please avoid hardcoding location \"scopes\" and \"labels\" because those can be dynamically changed by the end user even during runtime.
+ * Note: The command-line tool \"bco-query Location\" will help you to get a list of available locations and there ids in your setup.
+ *
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class ObserveServiceStateChangesViaDal {
+public class HowToObserveLocationSpecificReedContactsViaDAL {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ObserveServiceStateChangesViaDal.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HowToObserveLocationSpecificReedContactsViaDAL.class);
 
     public static void howto() throws InterruptedException {
 
         try {
-            // choose your service type to listen
-            final ServiceType serviceType = ServiceType.COLOR_STATE_SERVICE;
-
             LOGGER.info("wait for registry connection...");
             Registries.waitForData();
 
-            LOGGER.info("register observer on all Service[" + serviceType.name() + "] compatible units...");
-            for (UnitConfigType.UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByServices(serviceType)) {
-                Units.getUnit(unitConfig, false).addDataObserver((source, data) -> {
-                    LOGGER.info("Got Event[" + data + "] of " + source);
+            // choose your location where the reed contacts are placed in.
+            final String locationId = Registries.getLocationRegistry().getRootLocationConfig().getId();
+
+            LOGGER.info("register observer on all reed contacts...");
+            for (UnitConfig reedContactUnitConfig : Registries.getLocationRegistry().getUnitConfigsByLocation(UnitType.REED_CONTACT, locationId)) {
+                Units.getUnit(reedContactUnitConfig, false, Units.REED_CONTACT).addDataObserver((source, data) -> {
+                    LOGGER.info(source + " changed to " + data.getContactState().getValue().name());
                 });
             }
-
             LOGGER.info("receiving state changes for one minute...");
             Thread.sleep(60000);
         } catch (CouldNotPerformException ex) {
