@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.openbase.bco</groupId>
         <artifactId>registry.location</artifactId>
-        <version>1.3-SNAPSHOT</version>
+        <version>1.4-SNAPSHOT</version>
     </parent>
     
     <url>https://github.com/openbase/bco.registry/wiki</url>
@@ -114,6 +114,11 @@
             <artifactId>registry.unit.remote</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>java3d</groupId>
+            <artifactId>j3d-core</artifactId>
+            <version>${dependency.j3d.version}</version>
         </dependency>
     </dependencies>
 </project>

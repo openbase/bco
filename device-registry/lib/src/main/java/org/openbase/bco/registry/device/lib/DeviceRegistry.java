@@ -26,6 +26,8 @@ import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.annotations.RPCMethod;
+import org.openbase.jul.pattern.provider.DataProvider;
+import rst.domotic.registry.DeviceRegistryDataType.DeviceRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -40,7 +42,7 @@ import rst.rsb.ScopeType.Scope;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 // TODO mpohling: write java doc
-public interface DeviceRegistry extends Shutdownable {
+public interface DeviceRegistry extends DataProvider<DeviceRegistryData>, Shutdownable {
 
     @RPCMethod
     public Future<UnitConfig> registerDeviceConfig(final UnitConfig deviceConfig) throws CouldNotPerformException;

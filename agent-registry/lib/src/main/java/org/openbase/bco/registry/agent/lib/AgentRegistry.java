@@ -26,6 +26,8 @@ import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.annotations.RPCMethod;
+import org.openbase.jul.pattern.provider.DataProvider;
+import rst.domotic.registry.AgentRegistryDataType.AgentRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.agent.AgentClassType.AgentClass;
 
@@ -33,7 +35,7 @@ import rst.domotic.unit.agent.AgentClassType.AgentClass;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface AgentRegistry extends Shutdownable {
+public interface AgentRegistry extends DataProvider<AgentRegistryData>, Shutdownable {
 
     @RPCMethod
     public Future<UnitConfig> registerAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException;
