@@ -21,6 +21,7 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -33,6 +34,7 @@ import org.openbase.bco.dal.remote.unit.PowerConsumptionSensorRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Remote;
@@ -63,7 +65,7 @@ public class PowerConsumptionSensorRemoteTest {
 
             deviceManagerLauncher = new DeviceManagerLauncher();
             deviceManagerLauncher.launch();
-            deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+            Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
 
             label = MockRegistry.POWER_CONSUMPTION_LABEL;
 
