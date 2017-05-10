@@ -35,7 +35,7 @@ import org.openbase.jps.preset.JPTestMode;
  */
 public class JPHardwareSimulationMode extends AbstractJPBoolean {
 
-    public final static String[] COMMAND_IDENTIFIERS = {"--simulate-hardware", "-s"};
+    public final static String[] COMMAND_IDENTIFIERS = {"--simulate", "--simulate-hardware", "-s"};
 
     public JPHardwareSimulationMode() {
         super(COMMAND_IDENTIFIERS);
