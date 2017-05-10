@@ -58,6 +58,7 @@ import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
+import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
@@ -417,7 +418,14 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             // Since its an action it has to be an operation service pattern
             final ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(actionDescription.getServiceStateDescription().getServiceType()).setPattern(ServiceTemplate.ServicePattern.OPERATION).build();
 
+            // Set resource allocation interval if not defined yet
+            ActionDescription.Builder actionDescriptionBuilder = actionDescription.toBuilder();
+            if (!actionDescription.getResourceAllocation().getSlot().hasBegin()) {
+                ActionDescriptionProcessor.updateResourceAllocationSlot(actionDescriptionBuilder);
+            }
+
             return GlobalCachedExecutorService.submit(() -> {
+                //TODO: allocate and if executionTimePeriod = 0 free resource
                 Service.invokeServiceMethod(serviceTemplate, AbstractUnitController.this, attribute);
                 return null;
             });

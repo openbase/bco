@@ -24,13 +24,16 @@ package org.openbase.bco.dal.remote.unit;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.unit.dal.MonitorDataType.MonitorData;
 import org.openbase.bco.dal.lib.layer.unit.Monitor;
+import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
+import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
+import rst.domotic.action.ActionAuthorityType.ActionAuthority;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 
 /**
  *
@@ -62,8 +65,13 @@ public class MonitorRemote extends AbstractUnitRemote<MonitorData> implements Mo
     }
 
     @Override
-    public Future<Void> setPowerState(PowerState state) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(state, this, Void.class);
+    public Future<Void> setPowerState(PowerState powerState) throws CouldNotPerformException {
+        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+        try {
+            return this.applyAction(updateActionDescription(actionDescription, powerState).build());
+        } catch (InterruptedException ex) {
+            throw new CouldNotPerformException("Interrupted while setting powerState.", ex);
+        }
     }
 
     @Override
@@ -76,7 +84,12 @@ public class MonitorRemote extends AbstractUnitRemote<MonitorData> implements Mo
     }
 
     @Override
-    public Future<Void> setStandbyState(StandbyState value) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(value, this, Void.class);
+    public Future<Void> setStandbyState(StandbyState standbyState) throws CouldNotPerformException {
+        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+        try {
+            return this.applyAction(updateActionDescription(actionDescription, standbyState).build());
+        } catch (InterruptedException ex) {
+            throw new CouldNotPerformException("Interrupted while setting powerState.", ex);
+        }
     }
 }

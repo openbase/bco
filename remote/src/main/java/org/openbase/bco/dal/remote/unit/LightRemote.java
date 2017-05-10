@@ -25,9 +25,12 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.unit.Light;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
+import rst.domotic.action.ActionAuthorityType.ActionAuthority;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.dal.LightDataType.LightData;
 
@@ -47,16 +50,17 @@ public class LightRemote extends AbstractUnitRemote<LightData> implements Light 
     }
 
     @Override
-    public void notifyDataUpdate(LightData data) {
-    }
-
-    public Future<Void> setPowerState(final PowerState.State value) throws CouldNotPerformException {
-        return setPowerState(PowerState.newBuilder().setValue(value).build());
+    protected void notifyDataUpdate(LightData data) throws CouldNotPerformException {
     }
 
     @Override
-    public Future<Void> setPowerState(PowerState value) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(value, this, Void.class);
+    public Future<Void> setPowerState(PowerState powerState) throws CouldNotPerformException {
+        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+        try {
+            return this.applyAction(updateActionDescription(actionDescription, powerState).build());
+        } catch (InterruptedException ex) {
+            throw new CouldNotPerformException("Interrupted while setting powerState.", ex);
+        }
     }
 
     @Override

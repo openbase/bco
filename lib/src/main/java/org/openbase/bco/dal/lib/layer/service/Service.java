@@ -245,7 +245,7 @@ public interface Service {
     public static Object invokeOperationServiceMethod(final ServiceType serviceType, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
         return invokeServiceMethod(serviceType, ServicePattern.OPERATION, instance, arguments);
     }
-    
+
     public static Class[] getArgumentClasses(final Object[] arguments) {
         Class[] classes = new Class[arguments.length];
         for (int i = 0; i < classes.length; i++) {
@@ -254,10 +254,9 @@ public interface Service {
         return classes;
     }
 
-    public static void upateActionDescription(final ActionDescription.Builder actionDescription, final Object serviceAttribue) throws CouldNotPerformException {
+    public static ActionDescription.Builder upateActionDescription(final ActionDescription.Builder actionDescription, final Object serviceAttribue, final ServiceType serviceType) throws CouldNotPerformException {
         ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
         ServiceJSonProcessor jSonProcessor = new ServiceJSonProcessor();
-        ServiceType serviceType = getServiceType(serviceAttribue);
 
         serviceStateDescription.setServiceAttribute(jSonProcessor.serialize(serviceAttribue));
         serviceStateDescription.setServiceAttributeType(jSonProcessor.getServiceAttributeType(serviceAttribue));
@@ -271,10 +270,16 @@ public interface Service {
         description = description.replace(ActionDescriptionProcessor.SERVICE_ATTIBUTE_KEY, serviceAttributeRepresentation);
         actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.SERVICE_ATTIBUTE_KEY, serviceAttributeRepresentation));
 
-        actionDescription.setDescription(description);
+        return actionDescription.setDescription(description);
+    }
+
+    public static ActionDescription.Builder upateActionDescription(final ActionDescription.Builder actionDescription, final Object serviceAttribue) throws CouldNotPerformException {
+        return upateActionDescription(actionDescription, serviceAttribue, getServiceType(serviceAttribue));
     }
 
     public static ServiceType getServiceType(final Object serviceAttribute) throws CouldNotPerformException {
+        //TODO: this does not work for serviceTypes like smokeAlarmStateService since the serviceAttribute is an AlarmState
+
         String serviceTypeName = StringProcessor.transformToUpperCase(serviceAttribute.getClass().getSimpleName() + SERVICE_LABEL);
         try {
             return ServiceType.valueOf(serviceTypeName);

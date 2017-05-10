@@ -47,13 +47,18 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
+import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
+import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.EnablingStateType.EnablingState;
@@ -68,6 +73,10 @@ import rst.rsb.ScopeType;
  * @param <M>
  */
 public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends AbstractConfigurableRemote<M, UnitConfig> implements UnitRemote<M> {
+
+    static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
+    }
 
     private UnitTemplate template;
     private UnitRegistry unitRegistry;
@@ -430,5 +439,50 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     @Override
     public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
         return RPCHelper.callRemoteMethod(this, Snapshot.class);
+    }
+
+    /**
+     * Use if serviceType cannot be resolved from serviceAttribute. E.g. AlarmState.
+     *
+     * @param actionDescription
+     * @param serviceAttribute
+     * @param serviceType
+     * @return
+     * @throws CouldNotPerformException
+     */
+    protected ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Object serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
+        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
+        ResourceAllocation.Builder resourceAllocation = actionDescription.getResourceAllocationBuilder();
+
+        serviceStateDescription.setUnitId(getId());
+        resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(getScope()));
+
+        actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
+        //TODO: update USER key with authentification
+        actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
+
+        return Service.upateActionDescription(actionDescription, serviceAttribute, serviceType);
+    }
+
+    /**
+     * Default version.
+     *
+     * @param actionDescription
+     * @param serviceAttribute
+     * @return
+     * @throws CouldNotPerformException
+     */
+    protected ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Object serviceAttribute) throws CouldNotPerformException {
+        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
+        ResourceAllocation.Builder resourceAllocation = actionDescription.getResourceAllocationBuilder();
+
+        serviceStateDescription.setUnitId(getId());
+        resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(getScope()));
+
+        actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
+        //TODO: update USER key with authentification
+        actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
+
+        return Service.upateActionDescription(actionDescription, serviceAttribute);
     }
 }

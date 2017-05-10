@@ -22,14 +22,17 @@ package org.openbase.bco.dal.remote.unit;
  * #L%
  */
 import java.util.concurrent.Future;
+import org.openbase.bco.dal.lib.layer.unit.RollerShutter;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
+import rst.domotic.action.ActionAuthorityType.ActionAuthority;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.unit.dal.RollerShutterDataType.RollerShutterData;
-import org.openbase.bco.dal.lib.layer.unit.RollerShutter;
 
 /**
  *
@@ -55,8 +58,13 @@ public class RollerShutterRemote extends AbstractUnitRemote<RollerShutterData> i
     }
 
     @Override
-    public Future<Void> setBlindState(BlindState value) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(value, this, Void.class);
+    public Future<Void> setBlindState(BlindState blindState) throws CouldNotPerformException {
+        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+        try {
+            return this.applyAction(updateActionDescription(actionDescription, blindState).build());
+        } catch (InterruptedException ex) {
+            throw new CouldNotPerformException("Interrupted while setting powerState.", ex);
+        }
     }
 
     @Override

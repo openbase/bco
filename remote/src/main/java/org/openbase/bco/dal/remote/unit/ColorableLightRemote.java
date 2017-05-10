@@ -22,25 +22,21 @@ package org.openbase.bco.dal.remote.unit;
  * #L%
  */
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.ColorableLight;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.PowerStateType;
 import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.dal.ColorableLightDataType;
 import rst.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
 import rst.vision.ColorType;
@@ -61,7 +57,6 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HSBColor.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(RGBColor.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
     }
 
     public ColorableLightRemote() {
@@ -69,44 +64,17 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
     }
 
     @Override
-    public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        UnitConfig unitConfig = super.applyConfigUpdate(config);
-        return unitConfig;
+    protected void notifyDataUpdate(ColorableLightData data) throws CouldNotPerformException {
     }
 
     @Override
     public Future<Void> setColorState(final ColorState colorState) throws CouldNotPerformException {
-        System.out.println("SetColorState for remote[" + this + "]");
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-//        ResourceAllocation.Builder resourceAllocation = actionDescription.getResourceAllocationBuilder();
-
-        updateActionDescription(actionDescription, colorState);
-
-//        resourceAllocation.setId("");
-//        Interval.Builder slotBuilder = resourceAllocation.getSlotBuilder();
-//        slotBuilder.setBegin(TimestampProcessor.getCurrentTimestamp());
-//        slotBuilder.setEnd(TimestampProcessor.getCurrentTimestamp());
-//        resourceAllocation.setState(ResourceAllocation.State.REQUESTED);
-        System.out.println("ApplyAction " + actionDescription.build());
         try {
-            return this.applyAction(actionDescription.build());
+            return this.applyAction(updateActionDescription(actionDescription, colorState).build());
         } catch (InterruptedException ex) {
-            throw new CouldNotPerformException(ex);
+            throw new CouldNotPerformException("Interrupted while setting colorState.", ex);
         }
-    }
-
-    private void updateActionDescription(final ActionDescription.Builder actionDescription, final Object serviceAttribute) throws CouldNotPerformException {
-        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
-        ResourceAllocation.Builder resourceAllocation = actionDescription.getResourceAllocationBuilder();
-
-        serviceStateDescription.setUnitId(getId());
-        resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(getScope()));
-
-        actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
-        //TODO: update USER key with authentification
-        actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
-
-        Service.upateActionDescription(actionDescription, serviceAttribute);
     }
 
     @Override
@@ -115,8 +83,13 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
     }
 
     @Override
-    public Future<Void> setBrightnessState(BrightnessState value) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(value, this, Void.class);
+    public Future<Void> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
+        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+        try {
+            return this.applyAction(updateActionDescription(actionDescription, brightnessState).build());
+        } catch (InterruptedException ex) {
+            throw new CouldNotPerformException("Interrupted while setting brightnessState.", ex);
+        }
     }
 
     @Override
@@ -130,11 +103,12 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
 
     @Override
     public Future<Void> setPowerState(PowerState powerState) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(powerState, this, Void.class);
-    }
-
-    public Future<Void> setPowerState(PowerState.State powerState) throws CouldNotPerformException {
-        return setPowerState(PowerState.newBuilder().setValue(powerState).build());
+        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+        try {
+            return this.applyAction(updateActionDescription(actionDescription, powerState).build());
+        } catch (InterruptedException ex) {
+            throw new CouldNotPerformException("Interrupted while setting powerState.", ex);
+        }
     }
 
     @Override
