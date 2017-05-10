@@ -21,16 +21,22 @@ package org.openbase.bco.dal.lib.simulation.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
+ * Custom service simulator.
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class TargetTemperatureStateServiceSimulator extends TemperatureStateServiceSimulator {
 
+    /**
+     * Creates a new custom unit simulator.
+     *
+     * @param unitController the unit to simulate.
+     */
     public TargetTemperatureStateServiceSimulator(UnitController unitController) {
-        super(unitController);
+        super(unitController, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
     }
 }
