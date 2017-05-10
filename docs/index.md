@@ -194,7 +194,6 @@ git clone https://github.com/openbase/jps.git jul
 git clone https://github.com/openbase/jul.git jul
 ```
 
-Depending libs
 ## Spread Installation
 
 Add the following repository to your local debian ```/etc/apt/sources.list```
