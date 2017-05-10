@@ -105,11 +105,11 @@ bco --simulate
 ```
 bcozy
 ```
-[https://github.com/openbase/bco.bcozy/wiki](url)
+* [https://github.com/openbase/bco.bcozy/wiki](url)
 
 ### Android
 bcomfy
-[https://github.com/openbase/bco.bcomfy/wiki](url)
+* [https://github.com/openbase/bco.bcomfy/wiki](url)
 
 # Used Libaries
 
