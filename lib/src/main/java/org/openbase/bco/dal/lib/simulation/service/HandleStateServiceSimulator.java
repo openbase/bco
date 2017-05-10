@@ -25,49 +25,34 @@ package org.openbase.bco.dal.lib.simulation.service;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.AlarmStateType.AlarmState;
+import rst.domotic.state.HandleStateType.HandleState;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class SmokeAlarmStateServiceSimulator extends AbstractScheduledServiceSimulator<AlarmState> {
+public class HandleStateServiceSimulator extends AbstractScheduledServiceSimulator<HandleState> {
 
-    public static final int NO_ALARM_ITERATIONS = 5;
+    public static final int MIN_HANDLE_POSITION = 0;
+    public static final int MAX_HANDLE_POSITION = 360;
+    public static final int HANDLE_POSITION_STEP = 30;
 
-    private final AlarmState.Builder simulatedAlarmState;
-    private int counter;
+    private final HandleState.Builder simulatedHandleState;
 
     /**
      * Creates a new custom unit simulator.
      *
      * @param unitController the unit to simulate.
      */
-    public SmokeAlarmStateServiceSimulator(UnitController unitController) {
-        super(unitController, ServiceType.SMOKE_ALARM_STATE_SERVICE);
-        this.simulatedAlarmState = AlarmState.newBuilder();
-        this.simulatedAlarmState.setValue(AlarmState.State.NO_ALARM);
-        this.counter = 0;
+    public HandleStateServiceSimulator(UnitController unitController) {
+        super(unitController, ServiceType.HANDLE_STATE_SERVICE);
+        this.simulatedHandleState = HandleState.newBuilder();
+        this.simulatedHandleState.setPosition(MIN_HANDLE_POSITION);
     }
 
-    private AlarmState getSimulatedAlarmState() {
-        switch (simulatedAlarmState.getValue()) {
-            case ALARM:
-                simulatedAlarmState.setValue(AlarmState.State.NO_ALARM);
-                break;
-            case NO_ALARM:
-                if (counter < NO_ALARM_ITERATIONS) {
-                    counter++;
-                } else {
-                    counter = 0;
-                    simulatedAlarmState.setValue(AlarmState.State.ALARM);
-                }
-                break;
-            default:
-                simulatedAlarmState.setValue(AlarmState.State.NO_ALARM);
-                break;
-        }
-        return simulatedAlarmState.build();
+    private HandleState getSimulatedHandleState() {
+        simulatedHandleState.setPosition((simulatedHandleState.getPosition() + HANDLE_POSITION_STEP) % MAX_HANDLE_POSITION);
+        return simulatedHandleState.build();
     }
 
     /**
@@ -77,7 +62,7 @@ public class SmokeAlarmStateServiceSimulator extends AbstractScheduledServiceSim
      * @throws NotAvailableException {@inheritDoc }
      */
     @Override
-    protected AlarmState getNextServiceState() throws NotAvailableException {
-        return getSimulatedAlarmState();
+    protected HandleState getNextServiceState() throws NotAvailableException {
+        return getSimulatedHandleState();
     }
 }
