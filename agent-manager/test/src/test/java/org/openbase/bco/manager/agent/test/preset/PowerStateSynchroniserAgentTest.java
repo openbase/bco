@@ -204,8 +204,6 @@ public class PowerStateSynchroniserAgentTest {
         assertEquals("AmbientLight[Target] has not been turned on", PowerState.State.ON, colorableLightRemote.getPowerState().getValue());
         assertEquals("PowerPlug[Target] should still be off", PowerState.State.OFF, powerSwitchRemote.getPowerState().getValue());
         assertEquals("Dimmer[Source] has not been turned on as a reaction", PowerState.State.ON, dimmerRemote.getPowerState().getValue());
-
-        agent.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()).get();
     }
 
     private UnitConfig registerAgent() throws CouldNotPerformException, InterruptedException, ExecutionException {
