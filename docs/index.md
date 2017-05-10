@@ -166,18 +166,35 @@ chmod -R 750 $prefix
 Create your working directory if it not already exists and change into these directory.
 ```
 mkdir -p ~/workspace/openbase/bco
-cd ~/workspace/openbase/bco
 ```
 
 ## Repository Download 
 
-Download the core repositories into your development workspace
+Download the core repositories into your development workspace:
 ```
+cd ~/workspace/openbase/bco
 git clone https://github.com/openbase/bco.registry.git registry
 git clone https://github.com/openbase/bco.dal.git dal
 git clone https://github.com/openbase/bco.manager.git manager
 ```
+If needed you can downlownload the following bco repos as well:
+```
+cd ~/workspace/openbase/bco
+git clone https://github.com/openbase/bco.registry.editor.git registry-editor
+git clone https://github.com/openbase/bco.bcozy.git bcozy
+git clone https://github.com/openbase/bco.bcomfy.git bcomfy
+git clone https://github.com/openbase/bco.ontology.git ontology
+git clone https://github.com/openbase/bco.ontology.lib.git ontology-lib
+git clone https://github.com/openbase/openhab-binding-rsb.git openhab-binding-rsb
+```
+Further openbase projects bco directly depends on (only needed if you plan to extend those libs):
+```
+cd ~/workspace/openbase
+git clone https://github.com/openbase/jps.git jul
+git clone https://github.com/openbase/jul.git jul
+```
 
+Depending libs
 ## Spread Installation
 
 Add the following repository to your local debian ```/etc/apt/sources.list```
