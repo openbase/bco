@@ -164,7 +164,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
         //</editor-fold>
 
         //</editor-fold>
-        JPService.setApplicationName("dal-visual-remote");
+        JPService.setApplicationName(DalVisualRemote.class);
         JPService.parseAndExitOnError(args);
 
 
