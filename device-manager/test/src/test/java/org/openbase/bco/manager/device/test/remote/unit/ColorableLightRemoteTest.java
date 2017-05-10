@@ -29,13 +29,13 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.transform.HSBColorToRGBColorTransformer;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -72,13 +72,11 @@ public class ColorableLightRemoteTest {
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
         try {
             JPService.setupJUnitTestMode();
-            JPService.registerProperty(JPHardwareSimulationMode.class, true);
-//            JPService.registerProperty(JPRSBTransport.class, JPRSBTransport.TransportType.SPREAD);
             registry = MockRegistryHolder.newMockRegistry();
 
             deviceManagerLauncher = new DeviceManagerLauncher();
             deviceManagerLauncher.launch();
-            deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+            Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
 
             label = MockRegistry.COLORABLE_LIGHT_LABEL;
 

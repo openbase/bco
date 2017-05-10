@@ -29,12 +29,12 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
-import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.lib.layer.unit.PowerConsumptionSensorController;
 import org.openbase.bco.dal.remote.unit.PowerConsumptionSensorRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Remote;
@@ -61,12 +61,11 @@ public class PowerConsumptionSensorRemoteTest {
     public static void setUpClass() throws Throwable {
         try {
             JPService.setupJUnitTestMode();
-            JPService.registerProperty(JPHardwareSimulationMode.class, true);
             registry = MockRegistryHolder.newMockRegistry();
 
             deviceManagerLauncher = new DeviceManagerLauncher();
             deviceManagerLauncher.launch();
-            deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+            Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
 
             label = MockRegistry.POWER_CONSUMPTION_LABEL;
 

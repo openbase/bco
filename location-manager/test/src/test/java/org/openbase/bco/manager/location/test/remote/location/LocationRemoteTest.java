@@ -32,7 +32,6 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.MotionDetectorController;
 import org.openbase.bco.dal.lib.layer.unit.PowerConsumptionSensorController;
@@ -47,6 +46,7 @@ import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jps.core.JPService;
@@ -100,12 +100,11 @@ public class LocationRemoteTest {
     public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
         try {
             JPService.setupJUnitTestMode();
-            JPService.registerProperty(JPHardwareSimulationMode.class, true);
             registry = MockRegistryHolder.newMockRegistry();
 
             deviceManagerLauncher = new DeviceManagerLauncher();
             deviceManagerLauncher.launch();
-            deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+            Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
 
             locationManagerLauncher = new LocationManagerLauncher();
             locationManagerLauncher.launch();
@@ -284,6 +283,7 @@ public class LocationRemoteTest {
         locationRemote.setColorState(newColorState).get();
         locationRemote.setPowerState(newPowerState).get();
         locationRemote.setTargetTemperatureState(newTemperatureState).get();
+        locationRemote.requestData().get();
 
         assertTrue("BlindState of location has not changed!", locationRemote.getBlindState(UnitType.UNKNOWN).getMovementState() != snapshotBlindState.getMovementState());
         assertTrue("ColorState of location has not changed!", !locationRemote.getColorState(UnitType.UNKNOWN).getColor().getHsbColor().equals(snapshotColorState.getColor().getHsbColor()));
@@ -291,6 +291,7 @@ public class LocationRemoteTest {
         assertTrue("TargetTemperatureState of location has not changed!", locationRemote.getTargetTemperatureState(UnitType.UNKNOWN).getTemperature() != snapshotTemperatureState.getTemperature());
 
         locationRemote.restoreSnapshot(snapshot).get();
+        locationRemote.requestData().get();
 
         assertTrue("BlindState of location has not been restored through snapshot!", locationRemote.getBlindState(UnitType.UNKNOWN).getMovementState() == snapshotBlindState.getMovementState());
         assertTrue("ColorState of location has not been restored through snapshot!", locationRemote.getColorState(UnitType.UNKNOWN).getColor().getHsbColor().equals(snapshotColorState.getColor().getHsbColor()));

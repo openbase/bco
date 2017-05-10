@@ -29,7 +29,6 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.DimmerRemote;
 import org.openbase.bco.dal.remote.unit.PowerSwitchRemote;
@@ -44,9 +43,9 @@ import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
@@ -86,8 +85,6 @@ public class PowerStateSynchroniserAgentTest {
     @BeforeClass
     public static void setUpClass() throws Throwable {
         try {
-            JPService.registerProperty(JPHardwareSimulationMode.class, true);
-
             MockRegistryHolder.newMockRegistry();
 
             deviceManagerLauncher = new DeviceManagerLauncher();
@@ -100,7 +97,7 @@ public class PowerStateSynchroniserAgentTest {
             unitRegistry = CachedUnitRegistryRemote.getRegistry();
             locationRegistry = CachedLocationRegistryRemote.getRegistry();
 
-            deviceManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
+            Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
             agentManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);

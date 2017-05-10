@@ -21,11 +21,11 @@ package org.openbase.bco.manager.device.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.mock.ServiceFactoryMock;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistryImpl;
+import org.openbase.bco.dal.lib.simulation.UnitSimulationManager;
 import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.bco.manager.device.lib.DeviceFactory;
 import org.openbase.bco.manager.device.lib.DeviceManager;
@@ -57,23 +57,25 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
 
     private final DeviceFactory deviceFactory;
     private final ServiceFactory serviceFactory;
+    private final UnitSimulationManager unitSimulationManager;
 
     private final ControllerRegistryImpl<String, DeviceController> deviceControllerRegistry;
     private final UnitControllerRegistryImpl unitControllerRegistry;
 
     private final ActivatableEntryRegistrySynchronizer<String, DeviceController, UnitConfig, UnitConfig.Builder> deviceRegistrySynchronizer;
-    
+
     private boolean active = false;
 
     /**
      * This construction is using a service factory mock and is only suitable for the testing purpose.
+     *
      * @throws org.openbase.jul.exception.InstantiationException
-     * @throws InterruptedException 
+     * @throws InterruptedException
      */
     public DeviceManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         this(new ServiceFactoryMock());
     }
-    
+
     public DeviceManagerController(final ServiceFactory serviceFactory) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         this(serviceFactory, new DeviceFactoryImpl(serviceFactory));
     }
@@ -87,9 +89,9 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
 
             this.unitControllerRegistry = new UnitControllerRegistryImpl();
             this.deviceControllerRegistry = new ControllerRegistryImpl<>();
-            
+
             Registries.getUnitRegistry().waitForData();
-            
+
             this.deviceRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, DeviceController, UnitConfig, UnitConfig.Builder>(deviceControllerRegistry, Registries.getUnitRegistry().getDeviceUnitConfigRemoteRegistry(), deviceFactory) {
 
                 @Override
@@ -117,6 +119,9 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
                     }
                 }
             };
+
+            // handle simulation mode
+            this.unitSimulationManager = new UnitSimulationManager();
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
@@ -131,7 +136,8 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
 
     @Override
     public void init() throws InitializationException, InterruptedException {
-        // is overwrite is needed to overwrite the default implementation!
+        // this overwrite is needed to overwrite the default implementation!
+        unitSimulationManager.init(unitControllerRegistry);
     }
 
     @Override
@@ -140,6 +146,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
         // TODO: pleminoq: let us analyse why this wait For data is needed. Without the sychnchronizer sync task is interrupted. And why is this never happening in the unit tests???
         Registries.getUnitRegistry().waitForData();
         deviceRegistrySynchronizer.activate();
+        unitSimulationManager.activate();
     }
 
     @Override
@@ -150,6 +157,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         active = false;
+        unitSimulationManager.deactivate();
         deviceRegistrySynchronizer.deactivate();
         deviceControllerRegistry.clear();
         unitControllerRegistry.clear();
@@ -160,12 +168,8 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
         deviceControllerRegistry.shutdown();
         unitControllerRegistry.shutdown();
         deviceRegistrySynchronizer.shutdown();
+        unitSimulationManager.shutdown();
         instance = null;
-    }
-
-    @Override
-    public void waitForInit(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
-        Registries.getUnitRegistry().waitForData(timeout, timeUnit);
     }
 
     @Override
@@ -174,7 +178,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
     }
 
     @Override
-    public UnitControllerRegistry<?,?> getUnitControllerRegistry() {
+    public UnitControllerRegistry<?, ?> getUnitControllerRegistry() {
         return unitControllerRegistry;
     }
 

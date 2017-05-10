@@ -29,6 +29,7 @@ import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.openbase.jps.core.JPService;
 import static org.openbase.bco.registry.lib.launch.AbstractLauncher.main;
+import org.openbase.jps.preset.JPPrefix;
 
 /**
  *
@@ -42,6 +43,7 @@ public class DeviceManagerLauncher extends AbstractLauncher<DeviceManagerControl
 
     @Override
     public void loadProperties() {
+        JPService.registerProperty(JPPrefix.class);
         JPService.registerProperty(JPHardwareSimulationMode.class);
         JPService.registerProperty(JPLocationRegistryScope.class);
         JPService.registerProperty(JPDeviceRegistryScope.class);
