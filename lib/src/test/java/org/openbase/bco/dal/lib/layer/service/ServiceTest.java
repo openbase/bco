@@ -21,8 +21,10 @@ package org.openbase.bco.dal.lib.layer.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.Collection;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -32,6 +34,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BatteryStateType;
 import rst.domotic.state.ColorStateType;
 import rst.domotic.state.MotionStateType;
+import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.SmokeStateType;
 
 /**
@@ -60,18 +63,35 @@ public class ServiceTest {
     }
 
     /**
-     * Test of detectServiceDataClass method, of class Service.
+     * Test of getServiceStateClass method, of class Service.
      */
     @Test
     public void testDetectServiceDataClass() throws Exception {
         System.out.println("detectServiceDataClass");
         try {
-            assertEquals("wrong service class detected!", Service.detectServiceDataClass(ServiceType.BATTERY_STATE_SERVICE), BatteryStateType.BatteryState.class);
-            assertEquals("wrong service class detected!", Service.detectServiceDataClass(ServiceType.COLOR_STATE_SERVICE), ColorStateType.ColorState.class);
-            assertEquals("wrong service class detected!", Service.detectServiceDataClass(ServiceType.SMOKE_STATE_SERVICE), SmokeStateType.SmokeState.class);
-            assertEquals("wrong service class detected!", Service.detectServiceDataClass(ServiceType.MOTION_STATE_SERVICE), MotionStateType.MotionState.class);
+            assertEquals("wrong service class detected!", Service.getServiceStateClass(ServiceType.BATTERY_STATE_SERVICE), BatteryStateType.BatteryState.class);
+            assertEquals("wrong service class detected!", Service.getServiceStateClass(ServiceType.COLOR_STATE_SERVICE), ColorStateType.ColorState.class);
+            assertEquals("wrong service class detected!", Service.getServiceStateClass(ServiceType.SMOKE_STATE_SERVICE), SmokeStateType.SmokeState.class);
+            assertEquals("wrong service class detected!", Service.getServiceStateClass(ServiceType.MOTION_STATE_SERVICE), MotionStateType.MotionState.class);
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, System.out);
         }
     }
+
+    /**
+     * Test of getServiceStateValues method, of class Service.
+     */
+    @Test
+    public void testGetServiceStateValues() throws Exception {
+        System.out.println("getServiceStateValues");
+        try {
+        Collection<? extends Enum> values = Service.getServiceStateValues(ServiceType.POWER_STATE_SERVICE);
+        for (PowerState.State state : PowerState.State.values()) {
+            Assert.assertTrue("Detected values does not contain " + state.name(), values.contains(state));
+        }
+        } catch(Exception ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, System.err);
+        }
+    }
+
 }

@@ -1,6 +1,6 @@
 package org.openbase.bco.dal.example;
 
-/*
+/*-
  * #%L
  * BCO DAL Example
  * %%
@@ -21,44 +21,50 @@ package org.openbase.bco.dal.example;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.awt.Color;
-import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.dal.remote.unit.scene.SceneRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
- * This howto shows how to control a colorable light via the bco-dal-remote api.
+ * This howto shows how to list all available scenes and how to activate a scene via the bco-dal-remote api.
  *
  * Note: This howto requires a running bco platform provided by your network.
- * Note: If your setup does not provide a light unit called \"TestUnit_0"\ you
- * can use the command-line tool \"bco-query ColorableLight\" to get a list of available colorable lights
- * in your setup.
+ * Note: If your setup does not provide a scene unit called \"WatchingTV"\ you
+ * can use the command-line tool \"bco-query Scene\" to get a list of available scenes in your setup.
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class HowToControlAColorableLightUnit {
+public class HowToActivateASceneViaDAL {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(HowToControlAColorableLightUnit.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(HowToActivateASceneViaDAL.class);
 
     public static void howto() throws InterruptedException {
 
-        final ColorableLightRemote testLight;
+        final SceneRemote testScene;
         try {
 
-            LOGGER.info("request the light unit with the label \"TestUnit_0\"");
-            testLight = Units.getUnitByLabel("TestUnit_0", true, Units.LIGHT_COLORABLE);
+            LOGGER.info("wait for registry connection...");
+            Registries.waitForData();
+            
+            LOGGER.info("print all scenes");
+            for (UnitConfig sceneUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.SCENE)) {
+                LOGGER.info("found scene: " + sceneUnitConfig.getLabel());
+            }
 
-            LOGGER.info("switch the light on");
-            testLight.setPowerState(PowerState.State.ON);
+            LOGGER.info("request the scene with the label \"WatchingTV\"");
+            testScene = Units.getUnitByLabel("WatchingTV", true, Units.SCENE);
 
-            LOGGER.info("switch light color to blue");
-            testLight.setColor(Color.BLUE);
+            LOGGER.info("activate the scene");
+            testScene.setActivationState(ActivationState.State.ACTIVE);
 
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER);

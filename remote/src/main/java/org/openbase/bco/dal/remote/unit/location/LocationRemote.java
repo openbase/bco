@@ -2,6 +2,7 @@ package org.openbase.bco.dal.remote.unit.location;
 
 import com.google.protobuf.GeneratedMessage;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -17,6 +18,7 @@ import static org.openbase.bco.dal.remote.unit.Units.CONNECTION;
 import static org.openbase.bco.dal.remote.unit.Units.LOCATION;
 import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -173,6 +175,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         return neighborIdList;
     }
 
+    // TODO: move into interface as default implementation
     public List<LocationRemote> getNeighborLocationList(final boolean waitForData) throws CouldNotPerformException {
         List<LocationRemote> neighborList = new ArrayList<>();
         try {
@@ -243,9 +246,10 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
      * @throws org.openbase.jul.exception.NotAvailableException is thrown if the map is not available.
      * @throws java.lang.InterruptedException is thrown if the current thread was externally interrupted.
      */
+    // TODO: move into interface as default implementation
     public Map<UnitType, List<UnitRemote>> getProvidedUnitMap() throws NotAvailableException, InterruptedException {
         try {
-            final Map<UnitTemplateType.UnitTemplate.UnitType, List<UnitRemote>> unitRemoteMap = new TreeMap<>();
+            final Map<UnitType, List<UnitRemote>> unitRemoteMap = new TreeMap<>();
 
             for (String unitId : getConfig().getLocationConfig().getUnitIdList()) {
                 UnitRemote<? extends GeneratedMessage> unitRemote = Units.getUnit(unitId, false);
@@ -259,5 +263,27 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Unit map of " + this);
         }
+    }
+
+    /**
+     *
+     * Method returns a map of all units filtered by the given unit type which are part of this location.
+     *
+     * @param <UR> the unit remote class type.
+     * @param unitType the unit type.
+     * @param waitForData if this flag is set to true the current thread will block until all unit remotes are fully synchronized with the unit controllers.
+     * @param unitRemoteClass the unit remote class.
+     * @return a map of instance of the given remote class.
+     * @throws CouldNotPerformException is thrown in case something went wrong.
+     * @throws InterruptedException is thrown if the current thread was externally interrupted.
+     */
+    // TODO: move into interface as default implementation
+    public <UR extends UnitRemote<?>> Collection<UR> getUnit(final UnitType unitType, final boolean waitForData, final Class<UR> unitRemoteClass) throws CouldNotPerformException, InterruptedException {
+        final List<UR> unitRemote = new ArrayList<>();
+        Registries.waitForData();
+        for (final UnitConfig unitConfig : Registries.getLocationRegistry().getUnitConfigsByLocation(unitType, getId())) {
+            unitRemote.add(Units.getUnit(unitConfig, waitForData, unitRemoteClass));
+        }
+        return unitRemote;
     }
 }

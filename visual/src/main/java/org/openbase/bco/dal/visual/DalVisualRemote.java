@@ -137,7 +137,6 @@ public class DalVisualRemote extends javax.swing.JFrame {
     }// </editor-fold>//GEN-END:initComponents
 
     /**
-     * l
      *
      * @param args the command line arguments
      * @throws java.lang.InterruptedException
@@ -164,7 +163,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
         //</editor-fold>
 
         //</editor-fold>
-        JPService.setApplicationName("dal-visual-remote");
+        JPService.setApplicationName(DalVisualRemote.class);
         JPService.parseAndExitOnError(args);
 
 

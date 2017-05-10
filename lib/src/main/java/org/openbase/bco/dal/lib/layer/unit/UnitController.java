@@ -26,7 +26,7 @@ import java.lang.reflect.Method;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.MessageController;
-import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
@@ -49,12 +49,12 @@ public interface UnitController<D extends GeneratedMessage, DB extends D.Builder
     /**
      * Returns the service state update method for the given service type.
      *
-     * @param serviceType
-     * @param serviceArgumentClass
-     * @return
-     * @throws CouldNotPerformException
+     * @param serviceType the type of service to update
+     * @param serviceArgumentClass the class of the service state.
+     * @return the update method.
+     * @throws CouldNotPerformException is thrown in case the update method could not be detected.
      */
-    public Method getUpdateMethod(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Class serviceArgumentClass) throws CouldNotPerformException;
+    public Method getUpdateMethod(final ServiceType serviceType, final Class serviceArgumentClass) throws CouldNotPerformException;
 
     /**
      * Applies the given service state update for this unit.
@@ -63,5 +63,5 @@ public interface UnitController<D extends GeneratedMessage, DB extends D.Builder
      * @param serviceArgument
      * @throws CouldNotPerformException
      */
-    public void applyDataUpdate(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Object serviceArgument) throws CouldNotPerformException;
+    public void applyDataUpdate(final ServiceType serviceType, final Object serviceArgument) throws CouldNotPerformException;
 }
