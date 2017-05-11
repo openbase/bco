@@ -33,12 +33,14 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.bco.dal.lib.layer.unit.LightSensorController;
 import org.openbase.bco.dal.lib.layer.unit.MotionDetectorController;
 import org.openbase.bco.dal.lib.layer.unit.PowerConsumptionSensorController;
 import org.openbase.bco.dal.lib.layer.unit.TemperatureControllerController;
 import org.openbase.bco.dal.lib.layer.unit.TemperatureSensorController;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
+import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.manager.location.core.LocationManagerLauncher;
@@ -57,7 +59,6 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -66,6 +67,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.EnablingStateType.EnablingState;
+import rst.domotic.state.IlluminanceStateType.IlluminanceState;
 import rst.domotic.state.MotionStateType.MotionState;
 import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
 import rst.domotic.state.PowerStateType.PowerState;
@@ -112,10 +114,7 @@ public class LocationRemoteTest {
             locationRegistry = CachedLocationRegistryRemote.getRegistry();
             unitRegistry = CachedUnitRegistryRemote.getRegistry();
 
-            locationRemote = new LocationRemote();
-            locationRemote.init(locationRegistry.getRootLocationConfig());
-            locationRemote.activate();
-            locationRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
+            locationRemote = Units.getUnit(Registries.getLocationRegistry().getRootLocationConfig(), false, Units.LOCATION);
         } catch (Throwable ex) {
             ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
@@ -126,9 +125,6 @@ public class LocationRemoteTest {
         try {
             if (deviceManagerLauncher != null) {
                 deviceManagerLauncher.shutdown();
-            }
-            if (locationRemote != null) {
-                locationRemote.shutdown();
             }
             MockRegistryHolder.shutdownMockRegistry();
         } catch (Throwable ex) {
@@ -396,6 +392,49 @@ public class LocationRemoteTest {
                 Thread.sleep(10);
             }
             Assert.assertEquals("PresenceState of location has not been updated!", PresenceState.State.ABSENT, locationRemote.getPresenceState().getValue());
+        } catch (CouldNotPerformException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+        }
+    }
+
+    @Test(timeout = 5000)
+    public void testIlluminanceState() throws Exception {
+        System.out.println("testIlluminanceState");
+
+        try {
+            List<LightSensorController> lightSensorControllerList = new ArrayList<>();
+            for (UnitConfig dalUnitConfig : unitRegistry.getDalUnitConfigs()) {
+                if (dalUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
+                    continue;
+                }
+
+                UnitController unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dalUnitConfig.getId());
+                if (unitController instanceof LightSensorController) {
+                    lightSensorControllerList.add((LightSensorController) unitController);
+                }
+            }
+
+            if (lightSensorControllerList.size() == 0) {
+                Assert.fail("Mock registry does not contain a lightSensor!");
+                return;
+            }
+
+            //Registries.waitForData();
+            for (LightSensorController lightSensorController : lightSensorControllerList) {
+                lightSensorController.updateIlluminanceStateProvider(IlluminanceState.newBuilder().setIlluminance(50000.0).build());
+            }
+
+            locationRemote.requestData().get();
+
+            Assert.assertEquals("IlluminationState of location has not been updated!", 50000.0, locationRemote.getIlluminanceState().getIlluminance(), 1.0);
+
+            for (LightSensorController lightSensorController : lightSensorControllerList) {
+                lightSensorController.updateIlluminanceStateProvider(IlluminanceState.newBuilder().setIlluminance(10000.0).build());
+            }
+
+            locationRemote.requestData().get();
+            Assert.assertEquals("IlluminationState of location has not been updated!", 10000.0, locationRemote.getIlluminanceState().getIlluminance(), 1.0);
+
         } catch (CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
