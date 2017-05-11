@@ -114,7 +114,7 @@ public class LocationRemoteTest {
             locationRegistry = CachedLocationRegistryRemote.getRegistry();
             unitRegistry = CachedUnitRegistryRemote.getRegistry();
 
-            locationRemote = Units.getUnit(Registries.getLocationRegistry().getRootLocationConfig(), false, Units.LOCATION);
+            locationRemote = Units.getUnit(Registries.getLocationRegistry().getRootLocationConfig(), true, Units.LOCATION);
         } catch (Throwable ex) {
             ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
