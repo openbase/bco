@@ -81,7 +81,8 @@ public class IlluminanceStateServiceRemote extends AbstractServiceRemote<Illumin
                 continue;
             }
 
-            averageIlluminance += Math.max(timestamp, service.getIlluminanceState().getTimestamp().getTime());
+            averageIlluminance += service.getIlluminanceState().getIlluminance();
+            timestamp = Math.max(timestamp, service.getIlluminanceState().getTimestamp().getTime());
         }
         averageIlluminance = averageIlluminance / amount;
 
