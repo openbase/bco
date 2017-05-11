@@ -116,9 +116,9 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>java3d</groupId>
-            <artifactId>j3d-core</artifactId>
-            <version>${dependency.j3d.version}</version>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>${dependency.apache-math.version}</version>
         </dependency>
     </dependencies>
 </project>
