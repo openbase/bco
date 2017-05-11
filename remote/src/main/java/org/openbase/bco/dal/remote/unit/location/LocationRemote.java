@@ -158,6 +158,12 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         return serviceRemoteManager.getServiceRemote(serviceType);
     }
 
+    /**
+     *
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated please use Registries.getLocationRegistry().getNeighborLocations(String locationId) instead.
+     */
     @Override
     @Deprecated
     public List<String> getNeighborLocationIds() throws CouldNotPerformException {
@@ -186,6 +192,18 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     }
 
     /**
+     *
+     * @return
+     * @throws NotAvailableException
+     * @throws InterruptedException
+     * @deprecated please use getUnitMap() instead.
+     */
+    @Deprecated
+    public Map<UnitType, List<UnitRemote>> getProvidedUnitMap() throws NotAvailableException, InterruptedException {
+        return getUnitMap();
+    }
+
+    /**
      * Returns a Map of all units provided by this location sorted by their UnitType.
      *
      * @return the Map of provided units.
@@ -193,7 +211,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
      * @throws java.lang.InterruptedException is thrown if the current thread was externally interrupted.
      */
     // TODO: move into interface as default implementation
-    public Map<UnitType, List<UnitRemote>> getProvidedUnitMap() throws NotAvailableException, InterruptedException {
+    public Map<UnitType, List<UnitRemote>> getUnitMap() throws NotAvailableException, InterruptedException {
         try {
             final Map<UnitType, List<UnitRemote>> unitRemoteMap = new TreeMap<>();
 
@@ -213,7 +231,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
 
     /**
      *
-     * Method returns a map of all units filtered by the given unit type which are part of this location.
+     * Method returns a list of all units filtered by the given unit type which are directly or recursively provided by this location.
      *
      * @param <UR> the unit remote class type.
      * @param unitType the unit type.
@@ -224,11 +242,32 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
      * @throws InterruptedException is thrown if the current thread was externally interrupted.
      */
     // TODO: move into interface as default implementation
-    public <UR extends UnitRemote<?>> Collection<UR> getUnit(final UnitType unitType, final boolean waitForData, final Class<UR> unitRemoteClass) throws CouldNotPerformException, InterruptedException {
+    public <UR extends UnitRemote<?>> Collection<UR> getUnits(final UnitType unitType, final boolean waitForData, final Class<UR> unitRemoteClass) throws CouldNotPerformException, InterruptedException {
+        return getUnits(unitType, waitForData, unitRemoteClass, true);
+    }
+
+    /**
+     *
+     * Method returns a list of all units filtered by the given unit type which are directly provided by this location.
+     * In case the {@code recursive} flag is set to true than recursive related units are included as well.
+     *
+     * @param <UR> the unit remote class type.
+     * @param unitType the unit type.
+     * @param waitForData if this flag is set to true the current thread will block until all unit remotes are fully synchronized with the unit controllers.
+     * @param unitRemoteClass the unit remote class.
+     * @param recursive defines if recursive related unit should be included as well.
+     * @return a map of instance of the given remote class.
+     * @throws CouldNotPerformException is thrown in case something went wrong.
+     * @throws InterruptedException is thrown if the current thread was externally interrupted.
+     */
+    // TODO: move into interface as default implementation
+    public <UR extends UnitRemote<?>> Collection<UR> getUnits(final UnitType unitType, final boolean waitForData, final Class<UR> unitRemoteClass, final boolean recursive) throws CouldNotPerformException, InterruptedException {
         final List<UR> unitRemote = new ArrayList<>();
         Registries.waitForData();
         for (final UnitConfig unitConfig : Registries.getLocationRegistry().getUnitConfigsByLocation(unitType, getId())) {
-            unitRemote.add(Units.getUnit(unitConfig, waitForData, unitRemoteClass));
+            if (recursive || unitConfig.getPlacementConfig().getLocationId().equals(getId())) {
+                unitRemote.add(Units.getUnit(unitConfig, waitForData, unitRemoteClass));
+            }
         }
         return unitRemote;
     }
