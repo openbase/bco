@@ -21,6 +21,7 @@ package org.openbase.bco.registry.location.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -64,8 +65,8 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * location id.
      *
      * @param locationId
-     * @return
-     * @throws CouldNotPerformException
+     * @return the requested unit config.
+     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
     public UnitConfig getLocationConfigById(final String locationId) throws CouldNotPerformException;
@@ -75,8 +76,8 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * label. Label resolving is done case insensitive!
      *
      * @param locationLabel
-     * @return
-     * @throws CouldNotPerformException
+     * @return a list of the requested unit configs.
+     * @throws CouldNotPerformException is thrown if the request fails.
      */
     public List<UnitConfig> getLocationConfigsByLabel(final String locationLabel) throws CouldNotPerformException;
 
@@ -84,12 +85,14 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * Method returns all the locations which contain the given coordinate.
      *
      * @param coordinate
-     * @return
-     * @throws CouldNotPerformException
+     * @return a list of the requested unit configs.
+     * @throws CouldNotPerformException is thrown if the request fails.
+     * @throws java.lang.InterruptedException
+     * @throws java.util.concurrent.ExecutionException
      */
     public default List<UnitConfig> getLocationConfigsByCoordinate(final Vec3DDouble coordinate) throws CouldNotPerformException, InterruptedException, ExecutionException {
         return getLocationConfigsByCoordinate(coordinate, LocationType.UNKNOWN);
-    };
+    }
 
     /**
      * Method returns all the locations which contain the given coordinate and
@@ -97,8 +100,10 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      *
      * @param coordinate
      * @param locationType
-     * @return
-     * @throws CouldNotPerformException
+     * @return a list of the requested unit configs.
+     * @throws CouldNotPerformException is thrown if the request fails.
+     * @throws java.lang.InterruptedException
+     * @throws java.util.concurrent.ExecutionException
      */
     public List<UnitConfig> getLocationConfigsByCoordinate(final Vec3DDouble coordinate, LocationType locationType) throws CouldNotPerformException, InterruptedException, ExecutionException;
 
@@ -109,7 +114,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      *
      * @param locationConfig
      * @return
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
     public Boolean containsLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException;
@@ -120,7 +125,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      *
      * @param locationId
      * @return
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
     public Boolean containsLocationConfigById(final String locationId) throws CouldNotPerformException;
@@ -128,9 +133,9 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
     /**
      * Method updates the given location config.
      *
-     * @param locationConfig
+     * @param locationConfig the updated location config.
      * @return the updated location config.
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
     public Future<UnitConfig> updateLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException;
@@ -138,9 +143,9 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
     /**
      * Method removes the given location config out of the global registry.
      *
-     * @param locationConfig
+     * @param locationConfig the location unit config to remove
      * @return The removed location config.
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException is thrown if the removal fails.
      */
     @RPCMethod
     public Future<UnitConfig> removeLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException;
@@ -149,21 +154,30 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * Method returns all registered location configs.
      *
      * @return the location configs stored in this registry.
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException
      */
     public List<UnitConfig> getLocationConfigs() throws CouldNotPerformException;
 
     /**
-     * Method returns all unit configurations which are direct or recursive
-     * related to the given location id.
+     * Method returns all unit configurations which are direct or recursive related to the given location id.
      *
-     * @param locationId
+     * @param locationId the id of the location which provides the units.
      * @return A collection of unit configs.
-     * @throws CouldNotPerformException
-     * @throws NotAvailableException
+     * @throws CouldNotPerformException is thrown if the request fails.
      */
     public List<UnitConfig> getUnitConfigsByLocation(final String locationId) throws CouldNotPerformException;
+
+    /**
+     * Method returns all unit configurations which are direct related to the given location id.
+     * In case the {@code recursive} flag is set to true than recursive related units are included as well.
+     *
+     * @param locationId the id of the location which provides the units.
+     * @param recursive defines if recursive related unit should be included as well.
+     * @return A collection of unit configs.
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    public List<UnitConfig> getUnitConfigsByLocation(final String locationId, final boolean recursive) throws CouldNotPerformException;
 
     /**
      * Method returns all unit configurations which are direct or recursive
@@ -172,7 +186,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      *
      * @param locationLabel
      * @return A collection of unit configs.
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException
      */
     public List<UnitConfig> getUnitConfigsByLocationLabel(final String locationLabel) throws CouldNotPerformException;
@@ -185,7 +199,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * @param unitType
      * @param locationLabel
      * @return A collection of unit configs.
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException
      */
     public List<UnitConfig> getUnitConfigsByLocationLabel(final UnitType unitType, final String locationLabel) throws CouldNotPerformException;
@@ -198,7 +212,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * @param unitLabel
      * @param locationId
      * @return
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException is thrown if the request fails.
      */
     public List<UnitConfig> getUnitConfigsByLabelAndLocation(final String unitLabel, final String locationId) throws CouldNotPerformException;
 
@@ -210,7 +224,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * @param type
      * @param locationConfigId
      * @return A collection of unit configs.
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException
      */
     public List<UnitConfig> getUnitConfigsByLocation(final UnitType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException;
@@ -222,7 +236,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * @param type service type filter.
      * @param locationConfigId related location.
      * @return A collection of unit configs.
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException
      */
     public List<UnitConfig> getUnitConfigsByLocation(final ServiceType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException;
@@ -233,7 +247,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      *
      * @param locationId
      * @return the list of service configurations.
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException is thrown if the given location config id
      * is unknown.
      */
@@ -245,7 +259,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * if the underling database is loaded out of a version tag.
      *
      * @return
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException is thrown if the check fails.
      */
     public Boolean isLocationConfigRegistryReadOnly() throws CouldNotPerformException;
 
@@ -254,8 +268,8 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * tree.
      *
      * @return the root location
-     * @throws CouldNotPerformException
-     * @throws NotAvailableException
+     * @throws CouldNotPerformException is thrown if the request fails.
+     * @throws NotAvailableException is thrown if no rood connection exists.
      */
     public UnitConfig getRootLocationConfig() throws CouldNotPerformException, NotAvailableException;
 
@@ -264,8 +278,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      *
      * @param connectionConfig
      * @return
-     * @throws CouldNotPerformException is thrown in case if the registered
-     * entry already exists or is inconsistent.
+     * @throws CouldNotPerformException is thrown in case if the registered entry already exists or is inconsistent.
      */
     @RPCMethod
     public Future<UnitConfig> registerConnectionConfig(final UnitConfig connectionConfig) throws CouldNotPerformException;
@@ -276,7 +289,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      *
      * @param connectionId
      * @return
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException is thrown if the request fails.
      */
     @RPCMethod
     public UnitConfig getConnectionConfigById(final String connectionId) throws CouldNotPerformException;
@@ -286,8 +299,8 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * label.
      *
      * @param connectionLabel
-     * @return
-     * @throws CouldNotPerformException
+     * @return a collection of unit configurations.
+     * @throws CouldNotPerformException is thrown if the request fails.
      */
     public List<UnitConfig> getConnectionConfigsByLabel(final String connectionLabel) throws CouldNotPerformException;
 
@@ -297,8 +310,8 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * the comparison.
      *
      * @param connectionConfig
-     * @return
-     * @throws CouldNotPerformException
+     * @return a collection of unit configurations.
+     * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
     public Boolean containsConnectionConfig(final UnitConfig connectionConfig) throws CouldNotPerformException;
@@ -307,9 +320,9 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * Method returns true if the connection config with the given id is
      * registered, otherwise false.
      *
-     * @param connectionId
-     * @return
-     * @throws CouldNotPerformException
+     * @param connectionId the connection id to check.
+     * @return a collection of unit configurations.
+     * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
     public Boolean containsConnectionConfigById(final String connectionId) throws CouldNotPerformException;
@@ -317,9 +330,9 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
     /**
      * Method updates the given connection config.
      *
-     * @param connectionConfig
+     * @param connectionConfig the connection config to update.
      * @return the updated connection config.
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException is thrown if the update fails.
      */
     @RPCMethod
     public Future<UnitConfig> updateConnectionConfig(final UnitConfig connectionConfig) throws CouldNotPerformException;
@@ -327,9 +340,9 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
     /**
      * Method removes the given connection config out of the global registry.
      *
-     * @param connectionConfig
+     * @param connectionConfig the connection config to remote.
      * @return The removed connection config.
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException is thrown if the removal fails.
      */
     @RPCMethod
     public Future<UnitConfig> removeConnectionConfig(final UnitConfig connectionConfig) throws CouldNotPerformException;
@@ -338,8 +351,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * Method returns all registered connection configs.
      *
      * @return the connection configs stored in this registry.
-     * @throws CouldNotPerformException
-     * @throws NotAvailableException
+     * @throws CouldNotPerformException is thrown if the request fails.
      */
     public List<UnitConfig> getConnectionConfigs() throws CouldNotPerformException;
 
@@ -349,8 +361,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      *
      * @param connectionConfigId
      * @return A collection of unit configs.
-     * @throws CouldNotPerformException
-     * @throws NotAvailableException
+     * @throws CouldNotPerformException is thrown if the request fails.
      */
     public List<UnitConfig> getUnitConfigsByConnection(final String connectionConfigId) throws CouldNotPerformException;
 
@@ -361,7 +372,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * @param type
      * @param connectionConfigId
      * @return A collection of unit configs.
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException
      */
     public List<UnitConfig> getUnitConfigsByConnection(final UnitType type, final String connectionConfigId) throws CouldNotPerformException, NotAvailableException;
@@ -373,7 +384,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * @param type service type filter.
      * @param connectionConfigId related connection.
      * @return A collection of unit configs.
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException
      */
     public List<UnitConfig> getUnitConfigsByConnection(final ServiceType type, final String connectionConfigId) throws CouldNotPerformException, NotAvailableException;
@@ -384,7 +395,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      *
      * @param connectionConfigId
      * @return the list of service configurations.
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException is thrown if the given connection config id
      * is unknown.
      */
@@ -395,8 +406,8 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * registry is marked as read only in case of inconsistently data entries or
      * if the underling database is loaded out of a version tag.
      *
-     * @return
-     * @throws CouldNotPerformException
+     * @return true if the registry is read only.
+     * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
     public Boolean isConnectionConfigRegistryReadOnly() throws CouldNotPerformException;
@@ -407,7 +418,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      *
      * @param locationId the id of the location which neighbors you want to get
      * @return all neighbor tiles
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException is thrown if the request fails.
      */
     public List<UnitConfig> getNeighborLocations(String locationId) throws CouldNotPerformException;
 
@@ -415,7 +426,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * Method returns true if the underling registry is marked as consistent.
      *
      * @return if the location config registry is consistent
-     * @throws CouldNotPerformException if the check fails
+     * @throws CouldNotPerformException is thrown if the check fails
      */
     @RPCMethod
     public Boolean isLocationConfigRegistryConsistent() throws CouldNotPerformException;
@@ -424,7 +435,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * Method returns true if the underling registry is marked as consistent.
      *
      * @return if the connection config registry is consistent
-     * @throws CouldNotPerformException if the check fails
+     * @throws CouldNotPerformException is thrown if the check fails
      */
     @RPCMethod
     public Boolean isConnectionConfigRegistryConsistent() throws CouldNotPerformException;

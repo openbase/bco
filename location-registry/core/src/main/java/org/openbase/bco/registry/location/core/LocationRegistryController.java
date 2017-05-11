@@ -282,9 +282,22 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      */
     @Override
     public List<UnitConfig> getUnitConfigsByLocation(final String locationId) throws CouldNotPerformException {
-        List<UnitConfig> unitConfigList = new ArrayList<>();
+        return getUnitConfigsByLocation(locationId, true);
+    }
+    
+    /**
+     * {@inheritDoc}
+     *
+     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public List<UnitConfig> getUnitConfigsByLocation(final String locationId, final boolean recursive) throws CouldNotPerformException {
+        final List<UnitConfig> unitConfigList = new ArrayList<>();
         for (String unitConfigId : getLocationConfigById(locationId).getLocationConfig().getUnitIdList()) {
-            unitConfigList.add(unitRegistryRemote.getUnitConfigById(unitConfigId));
+            final UnitConfig unitConfig = unitRegistryRemote.getUnitConfigById(unitConfigId);
+            if (recursive || unitConfig.getPlacementConfig().getLocationId().equals(locationId)) {
+                unitConfigList.add(unitConfig);
+            }
         }
         return unitConfigList;
     }
