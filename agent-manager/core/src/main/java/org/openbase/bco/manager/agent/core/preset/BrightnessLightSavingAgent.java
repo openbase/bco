@@ -26,7 +26,6 @@ package org.openbase.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.remote.unit.UnitGroupRemote;
@@ -46,19 +45,18 @@ import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationDataType;
 
-
 /**
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
 public class BrightnessLightSavingAgent extends AbstractAgentController {
-    
+
     private static final int SLEEP_MILLI = 1000;
     public static final String MINIMUM_NEEDED_KEY = "MINIMUM_BRIGHTNESS";
     public static final String MAXIMUM_WANTED_KEY = "MAXIMUM_BRIGHTNESS";
     private static double MINIMUM_NEEDED_BRIGHTNESS = 2000;
-    private static double MAXIMUM_WANTED_BRIGHTNESS = 4000;    
-    
+    private static double MAXIMUM_WANTED_BRIGHTNESS = 4000;
+
     private LocationRemote locationRemote;
     private Future<Void> setPowerStateFutureAmbient;
     private Future<Void> setPowerStateFuture;
@@ -66,11 +64,11 @@ public class BrightnessLightSavingAgent extends AbstractAgentController {
 
     public BrightnessLightSavingAgent() throws InstantiationException {
         super(BrightnessLightSavingAgent.class);
-        
+
         locationObserver = (final Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
-            if (data.getBrightnessState().getBrightness() > MAXIMUM_WANTED_BRIGHTNESS) {
+            if (data.getIlluminanceState().getIlluminance() > MAXIMUM_WANTED_BRIGHTNESS) {
                 regulateLightIntensity();
-            } else if (data.getBrightnessState().getBrightness() < MINIMUM_NEEDED_BRIGHTNESS) {
+            } else if (data.getIlluminanceState().getIlluminance() < MINIMUM_NEEDED_BRIGHTNESS) {
                 deallocateResourceIteratively();
             }
         };
@@ -100,7 +98,7 @@ public class BrightnessLightSavingAgent extends AbstractAgentController {
             }
             if (maximumWantedMeta != -1) {
                 MAXIMUM_WANTED_BRIGHTNESS = maximumWantedMeta;
-            }            
+            }
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -129,8 +127,8 @@ public class BrightnessLightSavingAgent extends AbstractAgentController {
             Thread.sleep(SLEEP_MILLI);
         } catch (NotAvailableException | InterruptedException ex) {
         }
-        
-        if (locationRemote.getBrightnessState().getBrightness() > MAXIMUM_WANTED_BRIGHTNESS) {
+
+        if (locationRemote.getIlluminanceState().getIlluminance() > MAXIMUM_WANTED_BRIGHTNESS) {
             setPowerStateFuture = locationRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build(), UnitType.LIGHT);
         }
     }
@@ -144,7 +142,8 @@ public class BrightnessLightSavingAgent extends AbstractAgentController {
             } catch (InterruptedException | ExecutionException ex) {
             }
         }
-        if (locationRemote.getBrightnessState().getBrightness() < MINIMUM_NEEDED_BRIGHTNESS) {
+
+        if (locationRemote.getIlluminanceState().getIlluminance() < MINIMUM_NEEDED_BRIGHTNESS) {
             if (setPowerStateFutureAmbient != null && !setPowerStateFutureAmbient.isDone()) {
                 setPowerStateFutureAmbient.cancel(true);
             }
