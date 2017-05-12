@@ -282,8 +282,17 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
     @Override
     public List<UnitConfig> getLocationConfigs() throws CouldNotPerformException, NotAvailableException {
         validateData();
-        List<UnitConfig> messages = locationUnitConfigRemoteRegistry.getMessages();
-        return messages;
+        return locationUnitConfigRemoteRegistry.getMessages();
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public List<UnitConfig> getUnitConfigsByLocation(final String locationId) throws CouldNotPerformException {
+        return getUnitConfigsByLocation(locationId, true);
     }
 
     /**
@@ -292,10 +301,13 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
      * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
-    public List<UnitConfig> getUnitConfigsByLocation(final String locationId) throws CouldNotPerformException, NotAvailableException {
-        List<UnitConfig> unitConfigList = new ArrayList<>();
+    public List<UnitConfig> getUnitConfigsByLocation(final String locationId, final boolean recursive) throws CouldNotPerformException {
+        final List<UnitConfig> unitConfigList = new ArrayList<>();
         for (String unitConfigId : getLocationConfigById(locationId).getLocationConfig().getUnitIdList()) {
-            unitConfigList.add(unitRegistry.getUnitConfigById(unitConfigId));
+            final UnitConfig unitConfig = unitRegistry.getUnitConfigById(unitConfigId);
+            if (recursive || unitConfig.getPlacementConfig().getLocationId().equals(locationId)) {
+                unitConfigList.add(unitConfig);
+            }
         }
         return unitConfigList;
     }
@@ -307,7 +319,7 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
      */
     @Override
     public List<UnitConfig> getUnitConfigsByLocationLabel(final String locationLabel) throws CouldNotPerformException {
-        HashMap<String, UnitConfig> unitConfigMap = new HashMap<>();
+        final HashMap<String, UnitConfig> unitConfigMap = new HashMap<>();
         for (UnitConfig location : getLocationConfigsByLabel(locationLabel)) {
             for (UnitConfig unitConfig : getUnitConfigsByLocation(location.getId())) {
                 unitConfigMap.put(unitConfig.getId(), unitConfig);
