@@ -41,7 +41,6 @@ import rst.domotic.state.StandbyStateType;
 import rst.domotic.state.TamperStateType;
 import rst.domotic.state.TemperatureStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
 import rst.domotic.unit.location.LocationDataType;
@@ -94,8 +93,6 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessStateType.BrightnessState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureStateType.TemperatureState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PresenceStateType.PresenceState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Snapshot.getDefaultInstance()));
     }
 
     private final ServiceRemoteManager serviceRemoteManager;
@@ -137,12 +134,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     }
 
     @Override
-    public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
-        return RPCHelper.callRemoteMethod(this, Snapshot.class);
-    }
-
-    @Override
-    public Future<Snapshot> recordSnapshot(UnitTemplateType.UnitTemplate.UnitType unitType) throws CouldNotPerformException, InterruptedException {
+    public Future<Snapshot> recordSnapshot(UnitType unitType) throws CouldNotPerformException, InterruptedException {
         return RPCHelper.callRemoteMethod(unitType, this, Snapshot.class);
     }
 
@@ -238,7 +230,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         }
         return connectionList;
     }
-    
+
     /**
      * Returns a Map of all units provided by this location sorted by their UnitType.
      *

@@ -27,6 +27,7 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.provider.PresenceStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
+import org.openbase.bco.dal.lib.layer.unit.MultiUnitServiceFusion;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Snapshotable;
@@ -34,11 +35,10 @@ import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
-import rst.domotic.state.PresenceStateType.PresenceState;
-import rst.domotic.unit.location.LocationDataType.LocationData;
-import org.openbase.bco.dal.lib.layer.unit.MultiUnitServiceFusion;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.location.LocationDataType.LocationData;
 
 /**
  *
@@ -80,5 +80,6 @@ public interface Location extends BaseUnit<LocationData>, PresenceStateProviderS
     }
 
     @RPCMethod
+    @Override
     public Future<Snapshot> recordSnapshot(final UnitType unitType) throws CouldNotPerformException, InterruptedException;
 }

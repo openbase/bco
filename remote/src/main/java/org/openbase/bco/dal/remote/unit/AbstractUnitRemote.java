@@ -30,6 +30,7 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
@@ -76,6 +77,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Snapshot.getDefaultInstance()));
     }
 
     private UnitTemplate template;

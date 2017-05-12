@@ -425,6 +425,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             }
 
             return GlobalCachedExecutorService.submit(() -> {
+                UnitResourceAllocator allocator;
                 //TODO: allocate and if executionTimePeriod = 0 free resource
                 Service.invokeServiceMethod(serviceTemplate, AbstractUnitController.this, attribute);
                 return null;
