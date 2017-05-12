@@ -21,7 +21,6 @@ package org.openbase.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -48,7 +47,7 @@ import rst.domotic.unit.connection.ConnectionDataType;
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
 public class HeaterEnergySavingAgent extends AbstractAgentController {
-    
+
     private LocationRemote locationRemote;
     private Future<Void> setTemperatureFuture;
     private final Observer<ConnectionDataType.ConnectionData> connectionObserver;
@@ -56,11 +55,13 @@ public class HeaterEnergySavingAgent extends AbstractAgentController {
     private Map<UnitConfigType.UnitConfig, TemperatureStateType.TemperatureState> previousTemperatureState;
 
     public HeaterEnergySavingAgent() throws InstantiationException {
-        super(HeaterEnergySavingAgent.class);      
-        
+        super(HeaterEnergySavingAgent.class);
+
         connectionObserver = (final Observable<ConnectionDataType.ConnectionData> source, ConnectionDataType.ConnectionData data) -> {
-            if (data.getWindowState().getValue() == WindowStateType.WindowState.State.OPEN && !regulated) {
-                regulateHeater();
+            if (data.getWindowState().getValue() == WindowStateType.WindowState.State.OPEN) {
+                if (!regulated) {
+                    regulateHeater();
+                }
             } else if (setTemperatureFuture != null && regulated) {
                 setTemperatureFuture.cancel(true);
                 setTemperatureFuture.get();
@@ -73,10 +74,10 @@ public class HeaterEnergySavingAgent extends AbstractAgentController {
     protected void execute() throws CouldNotPerformException, InterruptedException {
         logger.info("Activating [" + getConfig().getLabel() + "]");
         previousTemperatureState = new HashMap<>();
-        locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
+        locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), true, Units.LOCATION);
 
         /** Add trigger here and replace dataObserver */
-        for (ConnectionRemote connectionRemote : locationRemote.getConnectionList(true)) {                   
+        for (ConnectionRemote connectionRemote : locationRemote.getConnectionList(true)) {
             if (connectionRemote.getConfig().getConnectionConfig().getType().equals(ConnectionConfigType.ConnectionConfig.ConnectionType.WINDOW)) {
                 connectionRemote.addDataObserver(connectionObserver);
             }
@@ -87,7 +88,7 @@ public class HeaterEnergySavingAgent extends AbstractAgentController {
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
         logger.info("Deactivating [" + getConfig().getLabel() + "]");
-        for (ConnectionRemote connectionRemote : locationRemote.getConnectionList(true)) {                   
+        for (ConnectionRemote connectionRemote : locationRemote.getConnectionList(true)) {
             if (connectionRemote.getConfig().getConnectionConfig().getType().equals(ConnectionConfigType.ConnectionConfig.ConnectionType.WINDOW)) {
                 connectionRemote.removeDataObserver(connectionObserver);
             }
@@ -101,14 +102,13 @@ public class HeaterEnergySavingAgent extends AbstractAgentController {
                 try {
                     previousTemperatureState.put(temperatureControllerConfig, Units.getUnit(temperatureControllerConfig, true, Units.TEMPERATURE_CONTROLLER).getTargetTemperatureState());
                 } catch (NotAvailableException | InterruptedException ex) {
-                    logger.error("Could not set targetTemperatureState of [ " + temperatureControllerConfig.getId() + "]"); 
+                    logger.error("Could not set targetTemperatureState of [ " + temperatureControllerConfig.getId() + "]");
                 }
             }
         } catch (CouldNotPerformException | InterruptedException ex) {
-                logger.error("Could not get TemperatureControllerConfigs.");
-        } 
-        
-        
+            logger.error("Could not get TemperatureControllerConfigs.");
+        }
+
         try {
             locationRemote.setTargetTemperatureState(TemperatureState.newBuilder().setTemperature(13.0).build());
             regulated = true;
@@ -116,7 +116,7 @@ public class HeaterEnergySavingAgent extends AbstractAgentController {
             logger.error("Could not set targetTemperatureState.");
         }
     }
-    
+
     private void restoreTemperatureState() {
         if (!previousTemperatureState.isEmpty()) {
             for (Map.Entry<UnitConfigType.UnitConfig, TemperatureStateType.TemperatureState> entry : previousTemperatureState.entrySet()) {
@@ -124,10 +124,10 @@ public class HeaterEnergySavingAgent extends AbstractAgentController {
                     Units.getUnit(entry.getKey(), true, Units.TEMPERATURE_CONTROLLER).setTargetTemperatureState(entry.getValue());
                 } catch (InterruptedException | CouldNotPerformException ex) {
                     logger.error("Could not set targetTemperatureState of [ " + entry.getKey().getId() + "]");
-                } 
+                }
             }
         }
-        
+
         regulated = false;
     }
 }

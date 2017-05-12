@@ -26,7 +26,6 @@ package org.openbase.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.remote.unit.UnitGroupRemote;
 import org.openbase.bco.dal.remote.unit.Units;
@@ -61,15 +60,20 @@ public class BrightnessLightSavingAgent extends AbstractAgentController {
     private Future<Void> setPowerStateFutureAmbient;
     private Future<Void> setPowerStateFuture;
     private final Observer<LocationDataType.LocationData> locationObserver;
+    private boolean regulated = false;
 
     public BrightnessLightSavingAgent() throws InstantiationException {
         super(BrightnessLightSavingAgent.class);
 
         locationObserver = (final Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
             if (data.getIlluminanceState().getIlluminance() > MAXIMUM_WANTED_BRIGHTNESS) {
-                regulateLightIntensity();
+                if (!regulated) {
+                    regulateLightIntensity();
+                }
             } else if (data.getIlluminanceState().getIlluminance() < MINIMUM_NEEDED_BRIGHTNESS) {
-                deallocateResourceIteratively();
+                if (regulated) {
+                    deallocateResourceIteratively();
+                }
             }
         };
     }
@@ -107,7 +111,7 @@ public class BrightnessLightSavingAgent extends AbstractAgentController {
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
         logger.info("Activating [" + getConfig().getLabel() + "]");
-        locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
+        locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), true, Units.LOCATION);
 
         /** Add trigger here and replace dataObserver */
         locationRemote.addDataObserver(locationObserver);
@@ -131,16 +135,17 @@ public class BrightnessLightSavingAgent extends AbstractAgentController {
         if (locationRemote.getIlluminanceState().getIlluminance() > MAXIMUM_WANTED_BRIGHTNESS) {
             setPowerStateFuture = locationRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build(), UnitType.LIGHT);
         }
+        regulated = true;
     }
 
     private void deallocateResourceIteratively() throws CouldNotPerformException {
         if (setPowerStateFuture != null && !setPowerStateFuture.isDone()) {
             setPowerStateFuture.cancel(true);
-            try {
-                setPowerStateFuture.get();
-                Thread.sleep(SLEEP_MILLI);
-            } catch (InterruptedException | ExecutionException ex) {
-            }
+        }
+
+        try {
+            Thread.sleep(SLEEP_MILLI);
+        } catch (InterruptedException ex) {
         }
 
         if (locationRemote.getIlluminanceState().getIlluminance() < MINIMUM_NEEDED_BRIGHTNESS) {
@@ -148,5 +153,6 @@ public class BrightnessLightSavingAgent extends AbstractAgentController {
                 setPowerStateFutureAmbient.cancel(true);
             }
         }
+        regulated = false;
     }
 }

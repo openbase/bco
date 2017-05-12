@@ -21,7 +21,6 @@ package org.openbase.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.concurrent.Future;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -37,13 +36,12 @@ import rst.domotic.state.PresenceStateType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationDataType;
 
-
 /**
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
 public class PresenceLightAgent extends AbstractAgentController {
-    
+
     private LocationRemote locationRemote;
     private boolean present = false;
     private Future<Void> setPowerStateFuture;
@@ -51,7 +49,7 @@ public class PresenceLightAgent extends AbstractAgentController {
 
     public PresenceLightAgent() throws InstantiationException {
         super(PresenceLightAgent.class);
-        
+
         locationObserver = (final Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
             if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT) && !present) {
                 present = true;
@@ -68,7 +66,7 @@ public class PresenceLightAgent extends AbstractAgentController {
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
         logger.info("Activating [" + getConfig().getLabel() + "]");
-        locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
+        locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), true, Units.LOCATION);
 
         /** Add trigger here and replace dataObserver */
         locationRemote.addDataObserver(locationObserver);
@@ -81,8 +79,8 @@ public class PresenceLightAgent extends AbstractAgentController {
         locationRemote.removeDataObserver(locationObserver);
     }
 
-    private void switchlightsOn() {                  
-        try { 
+    private void switchlightsOn() {
+        try {
             setPowerStateFuture = locationRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build(), UnitType.LIGHT);
             // TODO: Blocking setPowerState function that is trying to realloc all lights as long as jobs not cancelled. 
             // TODO: Maybe also set Color and Brightness?

@@ -46,6 +46,7 @@ import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
@@ -85,6 +86,8 @@ public class PowerStateSynchroniserAgentTest {
     @BeforeClass
     public static void setUpClass() throws Throwable {
         try {
+            JPService.setupJUnitTestMode();
+
             MockRegistryHolder.newMockRegistry();
 
             deviceManagerLauncher = new DeviceManagerLauncher();
@@ -146,7 +149,8 @@ public class PowerStateSynchroniserAgentTest {
 
         // It can take some time until the execute() method of the agent has finished
         // TODO: enable to acces controller instances via remoteRegistry to check and wait for the execution of the agent
-        Thread.sleep(500);
+        //Thread.sleep(500);
+        Registries.waitForData();
 
         DimmerRemote dimmerRemote = Units.getUnit(sourceId, true, Units.DIMMER);
         ColorableLightRemote colorableLightRemote = Units.getUnit(targetId1, true, Units.COLORABLE_LIGHT);
@@ -157,7 +161,7 @@ public class PowerStateSynchroniserAgentTest {
         LOGGER.info("Power plug id [" + powerSwitchRemote.getId() + "]");
 
         dimmerRemote.setPowerState(OFF).get();
-        Thread.sleep(50);
+        Thread.sleep(100);
         dimmerRemote.requestData().get();
         LOGGER.info("Dimmer state [" + dimmerRemote.getPowerState().getValue() + "]");
         colorableLightRemote.requestData().get();
@@ -168,7 +172,7 @@ public class PowerStateSynchroniserAgentTest {
 
         dimmerRemote.setPowerState(ON).get();
         dimmerRemote.requestData().get();
-        Thread.sleep(50);
+        Thread.sleep(100);
         colorableLightRemote.requestData().get();
         powerSwitchRemote.requestData().get();
         assertEquals("Dimmer[Source] has not been turned on", PowerState.State.ON, dimmerRemote.getPowerState().getValue());
@@ -177,7 +181,7 @@ public class PowerStateSynchroniserAgentTest {
 
         colorableLightRemote.setPowerState(OFF).get();
         colorableLightRemote.requestData().get();
-        Thread.sleep(50);
+        Thread.sleep(100);
         dimmerRemote.requestData().get();
         powerSwitchRemote.requestData().get();
         assertEquals("AmbientLight[Target] has not been turned off", PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
@@ -186,7 +190,7 @@ public class PowerStateSynchroniserAgentTest {
 
         powerSwitchRemote.setPowerState(OFF).get();
         powerSwitchRemote.requestData().get();
-        Thread.sleep(50);
+        Thread.sleep(100);
         colorableLightRemote.requestData().get();
         dimmerRemote.requestData().get();
         assertEquals("PowerPlug[Target] has not been turned off", PowerState.State.OFF, powerSwitchRemote.getPowerState().getValue());
@@ -195,7 +199,7 @@ public class PowerStateSynchroniserAgentTest {
 
         colorableLightRemote.setPowerState(ON).get();
         colorableLightRemote.requestData().get();
-        Thread.sleep(50);
+        Thread.sleep(100);
         dimmerRemote.requestData().get();
         powerSwitchRemote.requestData().get();
         assertEquals("AmbientLight[Target] has not been turned on", PowerState.State.ON, colorableLightRemote.getPowerState().getValue());

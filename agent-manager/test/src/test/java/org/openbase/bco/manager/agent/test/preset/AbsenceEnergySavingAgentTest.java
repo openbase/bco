@@ -29,7 +29,6 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.lib.layer.unit.MotionDetectorController;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.MotionDetectorRemote;
@@ -91,7 +90,7 @@ public class AbsenceEnergySavingAgentTest {
     @BeforeClass
     public static void setUpClass() throws Throwable {
         try {
-            JPService.registerProperty(JPHardwareSimulationMode.class, true);
+            JPService.setupJUnitTestMode();
 
             MockRegistryHolder.newMockRegistry();
 
@@ -155,7 +154,8 @@ public class AbsenceEnergySavingAgentTest {
 
         // It can take some time until the execute() method of the agent has finished
         // TODO: enable to acces controller instances via remoteRegistry to check and wait for the execution of the agent
-        Thread.sleep(500);
+        //Thread.sleep(500);
+        Registries.waitForData();
 
         LocationRemote locationRemote = Units.getUnitByLabel("Paradise", true, Units.LOCATION);
         ColorableLightRemote colorableLightRemote = Units.getUnit(locationRegistry.getUnitConfigsByLocationLabel(UnitType.COLORABLE_LIGHT, "Paradise").get(0), true, Units.COLORABLE_LIGHT);
@@ -169,7 +169,7 @@ public class AbsenceEnergySavingAgentTest {
         LOGGER.info("Ambient light id [" + colorableLightRemote.getId() + "]");
 
         motionDetectorController.updateMotionStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(MOTION));
-        Thread.sleep(50);
+        Thread.sleep(100);
         locationRemote.setPowerState(ON).get();
         motionDetectorRemote.requestData().get();
         locationRemote.requestData().get();
@@ -179,7 +179,7 @@ public class AbsenceEnergySavingAgentTest {
         assertEquals("Initial PowerState of Location[" + locationRemote.getLabel() + "] is not ON", PowerStateType.PowerState.State.ON, locationRemote.getPowerState().getValue());
 
         motionDetectorController.updateMotionStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(NO_MOTION));
-        Thread.sleep(50);
+        Thread.sleep(100);
         motionDetectorRemote.requestData().get();
         locationRemote.requestData().get();
         colorableLightRemote.requestData().get();
@@ -189,7 +189,7 @@ public class AbsenceEnergySavingAgentTest {
         //assertEquals("Initial PowerState of Location[" + locationRemote.getLabel() + "] has not switched to OFF", PowerStateType.PowerState.State.OFF, locationRemote.getPowerState().getValue());
 
         motionDetectorController.updateMotionStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(MOTION));
-        Thread.sleep(50);
+        Thread.sleep(100);
         motionDetectorRemote.requestData().get();
         locationRemote.requestData().get();
         colorableLightRemote.requestData().get();

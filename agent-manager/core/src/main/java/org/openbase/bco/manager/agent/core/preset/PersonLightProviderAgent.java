@@ -38,7 +38,10 @@ import rst.domotic.unit.location.LocationDataType;
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * 
+ * @deprecated replaced by AbsenceEnergySavingAgent and PresenceLightAgent
  */
+@Deprecated 
 public class PersonLightProviderAgent extends AbstractAgentController {
 
     public static final double MINIMUM_LIGHT_THRESHOLD = 100;

@@ -21,7 +21,6 @@ package org.openbase.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -40,12 +39,11 @@ import rst.domotic.state.PresenceStateType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationDataType;
 
-
 /**
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class RandomLightPatternAgent  extends AbstractAgentController {
+public class RandomLightPatternAgent extends AbstractAgentController {
 
     private LocationRemote locationRemote;
     private boolean present = false;
@@ -54,7 +52,7 @@ public class RandomLightPatternAgent  extends AbstractAgentController {
 
     public RandomLightPatternAgent() throws InstantiationException {
         super(RandomLightPatternAgent.class);
-        
+
         locationObserver = (final Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
             if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT) && !present) {
                 stopRandomLightPattern();
@@ -67,10 +65,10 @@ public class RandomLightPatternAgent  extends AbstractAgentController {
     }
 
     @Override
-    protected void execute() throws CouldNotPerformException, InterruptedException {        
+    protected void execute() throws CouldNotPerformException, InterruptedException {
         logger.info("Activating [" + getConfig().getLabel() + "]");
-        locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
-        
+        locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), true, Units.LOCATION);
+
         locationRemote.addDataObserver(locationObserver);
         locationRemote.waitForData();
     }
@@ -84,7 +82,7 @@ public class RandomLightPatternAgent  extends AbstractAgentController {
         locationRemote.removeDataObserver(locationObserver);
     }
 
-    private void makeRandomLightPattern() throws CouldNotPerformException {       
+    private void makeRandomLightPattern() throws CouldNotPerformException {
         thread = new PersonSimulator();
         thread.start();
     }
@@ -92,24 +90,25 @@ public class RandomLightPatternAgent  extends AbstractAgentController {
     private void stopRandomLightPattern() throws CouldNotPerformException {
         thread.interrupt();
     }
-    
+
     private class PersonSimulator extends Thread {
+
         private Future<Void> setPowerStateOn;
         private Future<Void> setPowerStateOff;
-        
-        @Override 
+
+        @Override
         public void run() {
             try {
                 List<LocationRemote> childLocationList = locationRemote.getChildLocationList(true);
                 LocationRemote currentLocation = childLocationList.get(ThreadLocalRandom.current().nextInt(childLocationList.size()));
-                
+
                 while (true) {
                     setPowerStateOn = currentLocation.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build(), UnitType.LIGHT);
                     setPowerStateOn.get();
                     // Todo: Assign time interval how long lights should be switched on.
                     setPowerStateOff = currentLocation.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build(), UnitType.LIGHT);
                     setPowerStateOff.get();
-                    
+
                     List<LocationRemote> neighborLocationList = currentLocation.getNeighborLocationList(true);
                     currentLocation = neighborLocationList.get(ThreadLocalRandom.current().nextInt(neighborLocationList.size()));
                 }
@@ -118,12 +117,12 @@ public class RandomLightPatternAgent  extends AbstractAgentController {
                 interrupt();
             }
         }
-        
-        @Override 
+
+        @Override
         public void interrupt() {
-            setPowerStateOn.cancel(true); 
+            setPowerStateOn.cancel(true);
             setPowerStateOff.cancel(true);
-            
+
             super.interrupt();
         }
     }
