@@ -128,7 +128,7 @@ public class MockRegistry {
     public static final String USER_NAME = "uSeRnAmE";
     public static UnitConfig testUser;
 
-    public static final String COLORABLE_LIGHT_LABEL = "Ambient_Light_Unit_Test";
+    public static final String COLORABLE_LIGHT_LABEL = "Colorable_Light_Unit_Test";
     public static final String BATTERY_LABEL = "Battery_Unit_Test";
     public static final String BUTTON_LABEL = "Button_Unit_Test";
     public static final String DIMMABLE_LIGHT_LABEL = "DimmableLight_Unit_Test";
@@ -238,7 +238,7 @@ public class MockRegistry {
         SMOKE_DETECTOR_CONTROLLER(UnitType.SMOKE_DETECTOR, SMOKE_SPS, SMOKE_ALARM_SPS),
         TEMPERATURE_SENSOR(UnitType.TEMPERATURE_SENSOR, TEMPERATURE_SPS),
         BATTERY(UnitType.BATTERY, BATTERY_SPS),
-        LOCATION(UnitType.LOCATION, COLOR_SPS, COLOR_SOS, ILLUMINANCE_SPS, MOTION_SPS, POWER_CONSUMPTION_SPS, POWER_SPS, POWER_SOS, BLIND_SPS, BLIND_SOS, 
+        LOCATION(UnitType.LOCATION, COLOR_SPS, COLOR_SOS, ILLUMINANCE_SPS, MOTION_SPS, POWER_CONSUMPTION_SPS, POWER_SPS, POWER_SOS, BLIND_SPS, BLIND_SOS,
                 SMOKE_ALARM_SPS, SMOKE_SPS, STANDBY_SPS, STANDBY_SOS, TAMPER_SPS, TARGET_TEMPERATURE_SPS, TARGET_TEMPERATURE_SOS, TEMPERATURE_SPS),
         CONNECTION(UnitType.CONNECTION),
         SCENE(UnitType.SCENE, ACTIVATION_SPS, ACTIVATION_SOS),
@@ -619,71 +619,71 @@ public class MockRegistry {
             registerDeviceUnitConfig(getDeviceConfig("F_MotionSensor_Device", serialNumber, motionSensorClass));
 
             // button
-            DeviceClass buttonClass = deviceRegistry.registerDeviceClass(getDeviceClass("Gira_429496730210000", "429496730210000", "Gira", 
+            DeviceClass buttonClass = deviceRegistry.registerDeviceClass(getDeviceClass("Gira_429496730210000", "429496730210000", "Gira",
                     UnitType.BUTTON)).get();
             waitForDeviceClass(buttonClass);
 
             registerDeviceUnitConfig(getDeviceConfig("GI_429496730210000_Device", serialNumber, buttonClass));
 
             // dimmableLight
-            DeviceClass dimmableLightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_ABC", "ABC", "Hager", 
+            DeviceClass dimmableLightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_ABC", "ABC", "Hager",
                     UnitType.DIMMABLE_LIGHT)).get();
             waitForDeviceClass(dimmableLightClass);
 
             registerDeviceUnitConfig(getDeviceConfig("HA_ABC_Device", serialNumber, dimmableLightClass));
 
             // dimmer
-            DeviceClass dimmerClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA663A", "TYA663A", "Hager", 
+            DeviceClass dimmerClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA663A", "TYA663A", "Hager",
                     UnitType.DIMMER)).get();
             waitForDeviceClass(dimmerClass);
 
             registerDeviceUnitConfig(getDeviceConfig("HA_TYA663A_Device", serialNumber, dimmerClass));
 
             // handle
-            DeviceClass handleClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_RotaryHandleSensor", "Sec_RHS", "Homematic", 
+            DeviceClass handleClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_RotaryHandleSensor", "Sec_RHS", "Homematic",
                     UnitType.HANDLE)).get();
             waitForDeviceClass(handleClass);
 
             registerDeviceUnitConfig(getDeviceConfig("HM_RotaryHandleSensor_Device", serialNumber, handleClass));
 
             // light
-            DeviceClass lightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_FGS_221", "FGS_221", "Fibaro", 
+            DeviceClass lightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_FGS_221", "FGS_221", "Fibaro",
                     UnitType.LIGHT)).get();
             waitForDeviceClass(lightClass);
 
             registerDeviceUnitConfig(getDeviceConfig("F_FGS221_Device", serialNumber, lightClass));
 
             // powerConsumptionSensor, powerPlug
-            DeviceClass powerPlugClass = deviceRegistry.registerDeviceClass(getDeviceClass("Plugwise_PowerPlug", "070140", "Plugwise", 
-                    UnitType.POWER_SWITCH, 
+            DeviceClass powerPlugClass = deviceRegistry.registerDeviceClass(getDeviceClass("Plugwise_PowerPlug", "070140", "Plugwise",
+                    UnitType.POWER_SWITCH,
                     UnitType.POWER_CONSUMPTION_SENSOR)).get();
             waitForDeviceClass(powerPlugClass);
 
             registerDeviceUnitConfig(getDeviceConfig("PW_PowerPlug_Device", serialNumber, powerPlugClass));
 
             // reedSwitch
-            DeviceClass reedSwitchClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_ReedSwitch", "Sec_SC_2", "Homematic", 
+            DeviceClass reedSwitchClass = deviceRegistry.registerDeviceClass(getDeviceClass("Homematic_ReedSwitch", "Sec_SC_2", "Homematic",
                     UnitType.REED_CONTACT)).get();
             waitForDeviceClass(reedSwitchClass);
 
             registerDeviceUnitConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass));
 
             // rollershutter
-            DeviceClass rollershutterClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA628C", "TYA628C", "Hager", 
+            DeviceClass rollershutterClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA628C", "TYA628C", "Hager",
                     UnitType.ROLLER_SHUTTER)).get();
             waitForDeviceClass(rollershutterClass);
 
             registerDeviceUnitConfig(getDeviceConfig("HA_TYA628C_Device", serialNumber, rollershutterClass));
 
             // smoke detector
-            DeviceClass smokeDetector = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_FGSS_001", "FGSS_001", "Fibaro", 
+            DeviceClass smokeDetector = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_FGSS_001", "FGSS_001", "Fibaro",
                     UnitType.SMOKE_DETECTOR)).get();
             waitForDeviceClass(smokeDetector);
 
             registerDeviceUnitConfig(getDeviceConfig("Fibaro_SmokeDetector_Device", serialNumber, smokeDetector));
 
             // temperature controller
-            DeviceClass temperatureControllerClass = deviceRegistry.registerDeviceClass(getDeviceClass("Gira_429496730250000", "429496730250000", "Gira", 
+            DeviceClass temperatureControllerClass = deviceRegistry.registerDeviceClass(getDeviceClass("Gira_429496730250000", "429496730250000", "Gira",
                     UnitType.TEMPERATURE_CONTROLLER)).get();
             waitForDeviceClass(temperatureControllerClass);
 
@@ -728,16 +728,24 @@ public class MockRegistry {
         }
     }
 
+    /**
+     * Registers the given device and updates the label to standard unit type label.
+     *
+     * @param deviceUnitConfig
+     * @throws CouldNotPerformException
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
     private static void registerDeviceUnitConfig(final UnitConfig deviceUnitConfig) throws CouldNotPerformException, InterruptedException, ExecutionException {
         UnitConfig tmp = deviceRegistry.registerDeviceConfig(deviceUnitConfig).get();
         updateUnitLabel(tmp.getDeviceConfig().getUnitIdList());
     }
 
-    public static PlacementConfig getDefaultPlacement() {
+    public static PlacementConfig getDefaultPlacement(UnitConfig location) {
         Rotation rotation = Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build();
         Translation translation = Translation.newBuilder().setX(0).setY(0).setZ(0).build();
         Pose pose = Pose.newBuilder().setRotation(rotation).setTranslation(translation).build();
-        return PlacementConfig.newBuilder().setPosition(pose).setLocationId(getLocation().getId()).build();
+        return PlacementConfig.newBuilder().setPosition(pose).setLocationId(location.getId()).build();
     }
 
     public static Iterable<ServiceConfigType.ServiceConfig> getServiceConfig(final UnitTemplate template) {
@@ -750,17 +758,25 @@ public class MockRegistry {
     }
 
     public static UnitConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz) {
-        return getDeviceConfig(label, serialNumber, InventoryState.State.INSTALLED, clazz);
+        return getDeviceConfig(label, serialNumber, InventoryState.State.INSTALLED, clazz, paradiseLocation);
+    }
+
+    public static UnitConfig getDeviceConfig(String label, String serialNumber, DeviceClass clazz, UnitConfig location) {
+        return getDeviceConfig(label, serialNumber, InventoryState.State.INSTALLED, clazz, location);
     }
 
     public static UnitConfig getDeviceConfig(String label, String serialNumber, InventoryState.State inventoryState, DeviceClass clazz) {
+        return getDeviceConfig(label, serialNumber, inventoryState, clazz, paradiseLocation);
+    }
+
+    public static UnitConfig getDeviceConfig(String label, String serialNumber, InventoryState.State inventoryState, DeviceClass clazz, UnitConfig location) {
         DeviceConfig tmp = DeviceConfig.newBuilder()
                 .setSerialNumber(serialNumber)
                 .setDeviceClassId(clazz.getId())
                 .setInventoryState(InventoryStateType.InventoryState.newBuilder().setValue(inventoryState))
                 .build();
         return UnitConfig.newBuilder()
-                .setPlacementConfig(getDefaultPlacement())
+                .setPlacementConfig(getDefaultPlacement(location))
                 .setLabel(label)
                 .setDeviceConfig(tmp)
                 .setType(UnitType.DEVICE)
@@ -791,10 +807,6 @@ public class MockRegistry {
         BindingConfig.Builder bindingConfigBuilder = BindingConfig.newBuilder();
         bindingConfigBuilder.setBindingId("OPENHAB");
         return bindingConfigBuilder.build();
-    }
-
-    public static UnitConfig getLocation() {
-        return paradiseLocation;
     }
 
     public static DeviceRegistry getDeviceRegistry() {
