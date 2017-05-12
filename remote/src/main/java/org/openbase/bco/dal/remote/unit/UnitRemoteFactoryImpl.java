@@ -22,6 +22,7 @@ package org.openbase.bco.dal.remote.unit;
  * #L%
  */
 import java.util.concurrent.TimeUnit;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
