@@ -59,6 +59,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -376,7 +377,7 @@ public class LocationRemoteTest {
                 return;
             }
 
-            motionDetectorController.updateMotionStateProvider(MotionState.newBuilder().setValue(MotionState.State.MOTION).build());
+            motionDetectorController.updateMotionStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(MotionState.newBuilder().setValue(MotionState.State.MOTION).build()));
 
             while (locationRemote.getPresenceState().getValue() != PresenceState.State.PRESENT) {
                 System.out.println("Waiting for locationRemote presenceState update!");
@@ -384,7 +385,7 @@ public class LocationRemoteTest {
             }
             Assert.assertEquals("PresenceState of location has not been updated!", PresenceState.State.PRESENT, locationRemote.getPresenceState().getValue());
 
-            motionDetectorController.updateMotionStateProvider(MotionState.newBuilder().setValue(MotionState.State.NO_MOTION).build());
+            motionDetectorController.updateMotionStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(MotionState.newBuilder().setValue(MotionState.State.NO_MOTION).build()));
 
             Thread.sleep(PresenceDetector.PRESENCE_TIMEOUT);
             while (locationRemote.getPresenceState().getValue() != PresenceState.State.ABSENT) {
@@ -414,26 +415,32 @@ public class LocationRemoteTest {
                 }
             }
 
-            if (lightSensorControllerList.size() == 0) {
+            if (lightSensorControllerList.isEmpty()) {
                 Assert.fail("Mock registry does not contain a lightSensor!");
                 return;
             }
 
-            //Registries.waitForData();
+            double illuminance = 50000.0;
             for (LightSensorController lightSensorController : lightSensorControllerList) {
-                lightSensorController.updateIlluminanceStateProvider(IlluminanceState.newBuilder().setIlluminance(50000.0).build());
+                lightSensorController.updateIlluminanceStateProvider(IlluminanceState.newBuilder().setIlluminance(illuminance).build());
             }
 
-            locationRemote.requestData().get();
+            while (locationRemote.getIlluminanceState().getIlluminance() != illuminance) {
+                System.out.println("Waiting for locationRemote illuminance update!");
+                Thread.sleep(10);
+            }
+            Assert.assertEquals("IlluminationState of location has not been updated!", illuminance, locationRemote.getIlluminanceState().getIlluminance(), 1.0);
 
-            Assert.assertEquals("IlluminationState of location has not been updated!", 50000.0, locationRemote.getIlluminanceState().getIlluminance(), 1.0);
-
+            illuminance = 10000.0;
             for (LightSensorController lightSensorController : lightSensorControllerList) {
-                lightSensorController.updateIlluminanceStateProvider(IlluminanceState.newBuilder().setIlluminance(10000.0).build());
+                lightSensorController.updateIlluminanceStateProvider(IlluminanceState.newBuilder().setIlluminance(illuminance).build());
             }
 
-            locationRemote.requestData().get();
-            Assert.assertEquals("IlluminationState of location has not been updated!", 10000.0, locationRemote.getIlluminanceState().getIlluminance(), 1.0);
+            while (locationRemote.getIlluminanceState().getIlluminance() != illuminance) {
+                System.out.println("Waiting for locationRemote illuminance update!");
+                Thread.sleep(10);
+            }
+            Assert.assertEquals("IlluminationState of location has not been updated!", illuminance, locationRemote.getIlluminanceState().getIlluminance(), 1.0);
 
         } catch (CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);

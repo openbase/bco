@@ -49,6 +49,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.EnablingStateType.EnablingState;
@@ -167,7 +168,7 @@ public class AbsenceEnergySavingAgentTest {
 
         LOGGER.info("Ambient light id [" + colorableLightRemote.getId() + "]");
 
-        motionDetectorController.updateMotionStateProvider(MOTION);
+        motionDetectorController.updateMotionStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(MOTION));
         Thread.sleep(50);
         locationRemote.setPowerState(ON).get();
         motionDetectorRemote.requestData().get();
@@ -177,7 +178,7 @@ public class AbsenceEnergySavingAgentTest {
         assertEquals("Initial PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] is not ON", PowerStateType.PowerState.State.ON, colorableLightRemote.getPowerState().getValue());
         assertEquals("Initial PowerState of Location[" + locationRemote.getLabel() + "] is not ON", PowerStateType.PowerState.State.ON, locationRemote.getPowerState().getValue());
 
-        motionDetectorController.updateMotionStateProvider(NO_MOTION);
+        motionDetectorController.updateMotionStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(NO_MOTION));
         Thread.sleep(50);
         motionDetectorRemote.requestData().get();
         locationRemote.requestData().get();
@@ -187,7 +188,7 @@ public class AbsenceEnergySavingAgentTest {
         assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched to OFF", PowerStateType.PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
         //assertEquals("Initial PowerState of Location[" + locationRemote.getLabel() + "] has not switched to OFF", PowerStateType.PowerState.State.OFF, locationRemote.getPowerState().getValue());
 
-        motionDetectorController.updateMotionStateProvider(MOTION);
+        motionDetectorController.updateMotionStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(MOTION));
         Thread.sleep(50);
         motionDetectorRemote.requestData().get();
         locationRemote.requestData().get();
