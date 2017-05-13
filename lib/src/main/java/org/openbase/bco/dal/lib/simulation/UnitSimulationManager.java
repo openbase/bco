@@ -27,6 +27,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import org.openbase.bco.dal.lib.jp.JPBenchmarkMode;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
@@ -67,7 +68,7 @@ public class UnitSimulationManager implements Manageable<UnitControllerRegistry<
         Shutdownable.registerShutdownHook(this);
 
         try {
-            enabled = JPService.getProperty(JPHardwareSimulationMode.class).getValue();
+            enabled = JPService.getProperty(JPHardwareSimulationMode.class).getValue() || JPService.getProperty(JPBenchmarkMode.class).getValue();
         } catch (JPNotAvailableException ex) {
             ExceptionPrinter.printHistory("Could not detect hardware simulation mode!", ex, LOGGER);
         }

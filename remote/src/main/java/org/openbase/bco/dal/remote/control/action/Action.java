@@ -187,7 +187,7 @@ public class Action implements ActionService, Initializable<ActionConfig> {
     
     private void updateActionState(ActionState.State state) {
         data.setActionState(ActionStateType.ActionState.newBuilder().setValue(state));
-        logger.info("Stateupdate[" + state.name() + "] of " + this);
+        logger.debug("Stateupdate[" + state.name() + "] of " + this);
     }
     
     @Override
