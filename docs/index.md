@@ -325,6 +325,11 @@ Control the unit
 ### How to observe service state changes 
 * [Complete Code Example](https://github.com/openbase/bco.dal/blob/master/example/src/main/java/org/openbase/bco/dal/example/HowToObserveServiceStateChangesViaRSB.java)
 
+## Python RSB
+
+### How to request, control and observe units
+* [Complete Code Example (Not tested yet!)](https://github.com/openbase/bco.dal/blob/master/example/src/main/python/org/openbase/bco/dal/example/HowToRequestControllAndObserveUnitsViaRSB.py)
+
 # Contribution
 * Feel free to report [new Issues](https://github.com/openbase/bco.dal/issues/new)!
 * If you are developer and you want to contribute to BCO
