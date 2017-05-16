@@ -36,7 +36,7 @@ import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.agent.core.AgentManagerLauncher;
-import org.openbase.bco.manager.agent.core.preset.BrightnessLightSavingAgent;
+import org.openbase.bco.manager.agent.core.preset.IlluminationLightSavingAgent;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.manager.location.core.LocationManagerLauncher;
 import org.openbase.bco.registry.agent.lib.AgentRegistry;
@@ -66,11 +66,11 @@ import rst.spatial.PlacementConfigType;
  *
  * * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class BrightnessLightSavingAgentTest {
+public class IlluminationLightSavingAgentTest {
 
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(BrightnessLightSavingAgentTest.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(IlluminationLightSavingAgentTest.class);
 
-    public static final String BRIGHTNESS_LIGHT_SAVING_AGENT_LABEL = "Brightness_Light_Saving_Agent_Unit_Test";
+    public static final String ILLUMINATION_LIGHT_SAVING_AGENT_LABEL = "Illumination_Light_Saving_Agent_Unit_Test";
 
     private static final PowerState ON = PowerState.newBuilder().setValue(PowerState.State.ON).build();
     private static final PowerState OFF = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
@@ -83,7 +83,7 @@ public class BrightnessLightSavingAgentTest {
     private static AgentRegistry agentRegistry;
     private static LocationRegistry locationRegistry;
 
-    public BrightnessLightSavingAgentTest() {
+    public IlluminationLightSavingAgentTest() {
     }
 
     @BeforeClass
@@ -142,8 +142,8 @@ public class BrightnessLightSavingAgentTest {
      * Test of activate method, of class PowerStateSynchroniserAgent.
      */
     @Test(timeout = 30000)
-    public void testBrightnessLightSavingAgent() throws Exception {
-        System.out.println("testBrightnessLightSavingAgent");
+    public void testIlluminationLightSavingAgent() throws Exception {
+        System.out.println("testIlluminationLightSavingAgent");
 
         CachedAgentRegistryRemote.waitForData();
 
@@ -197,31 +197,31 @@ public class BrightnessLightSavingAgentTest {
     }
 
     private UnitConfig registerAgent() throws CouldNotPerformException, InterruptedException, ExecutionException {
-        System.out.println("Register the BrightnessLightSavingAgent...");
+        System.out.println("Register the IlluminationLightSavingAgent...");
 
         EnablingState enablingState = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
         PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(locationRegistry.getRootLocationConfig().getId());
 
         String agentClassId = null;
         for (AgentClass agentClass : agentRegistry.getAgentClasses()) {
-            if (MockRegistry.BRIGHTNESS_LIGHT_SAVING_AGENT_LABEL.equals(agentClass.getLabel())) {
+            if (MockRegistry.ILLUMINATION_LIGHT_SAVING_AGENT_LABEL.equals(agentClass.getLabel())) {
                 agentClassId = agentClass.getId();
             }
         }
         if (agentClassId == null) {
-            throw new CouldNotPerformException("Could not find id for AgentClass with label [" + MockRegistry.BRIGHTNESS_LIGHT_SAVING_AGENT_LABEL + "]");
+            throw new CouldNotPerformException("Could not find id for AgentClass with label [" + MockRegistry.ILLUMINATION_LIGHT_SAVING_AGENT_LABEL + "]");
         }
         System.out.println("Foung agentClassId: [" + agentClassId + "]");
 
-        EntryType.Entry.Builder minimumNeeded = EntryType.Entry.newBuilder().setKey(BrightnessLightSavingAgent.MINIMUM_NEEDED_KEY).setValue("3000");
-        EntryType.Entry.Builder maximumWanted = EntryType.Entry.newBuilder().setKey(BrightnessLightSavingAgent.MAXIMUM_WANTED_KEY).setValue("6000");
+        EntryType.Entry.Builder minimumNeeded = EntryType.Entry.newBuilder().setKey(IlluminationLightSavingAgent.MINIMUM_NEEDED_KEY).setValue("3000");
+        EntryType.Entry.Builder maximumWanted = EntryType.Entry.newBuilder().setKey(IlluminationLightSavingAgent.MAXIMUM_WANTED_KEY).setValue("6000");
 
         MetaConfigType.MetaConfig metaConfig = MetaConfigType.MetaConfig.newBuilder()
                 .addEntry(minimumNeeded)
                 .addEntry(maximumWanted)
                 .build();
 
-        UnitConfig.Builder agentUnitConfig = UnitConfig.newBuilder().setLabel(BRIGHTNESS_LIGHT_SAVING_AGENT_LABEL).setType(UnitType.AGENT).setPlacementConfig(placementConfig).setMetaConfig(metaConfig).setEnablingState(enablingState);
+        UnitConfig.Builder agentUnitConfig = UnitConfig.newBuilder().setLabel(ILLUMINATION_LIGHT_SAVING_AGENT_LABEL).setType(UnitType.AGENT).setPlacementConfig(placementConfig).setMetaConfig(metaConfig).setEnablingState(enablingState);
         agentUnitConfig.getAgentConfigBuilder().setAgentClassId(agentClassId);
         return agentRegistry.registerAgentConfig(agentUnitConfig.build()).get();
     }
