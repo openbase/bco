@@ -23,6 +23,8 @@ title: {{ site.name }}
 
 ![LocationGraphStructure](images/LocationArchitecture_GraphStructure.png)
 
+[More Details]({{ site.baseurl }}{_pages/location-architecture.md})
+
 # Software Components
 
 ![GUI Overview](images/BCO_Architecture_Paramite.png)
