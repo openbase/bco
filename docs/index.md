@@ -17,13 +17,13 @@ title: {{ site.name }}
 
 ## Location Architecture
 
-![LocationClassStructure](images/LocationArchitecture_ClassStructure.png)
+![LocationClassStructure]({{ site.url }}/images/LocationArchitecture_ClassStructure.png)
 
-![LocationHierarchicalStructure](images/LocationArchitecture_HierarchicalStructure.png)
+![LocationHierarchicalStructure]({{ site.url }}/images/LocationArchitecture_HierarchicalStructure.png)
 
-![LocationGraphStructure](images/LocationArchitecture_GraphStructure.png)
+![LocationGraphStructure]({{ site.url }}/images/LocationArchitecture_GraphStructure.png)
 
-[More Details]({{ site.baseurl }}{_pages/location-architecture.md})
+[More Details]({{ site.baseurl }}/location-architecture)
 
 # Software Components
 
