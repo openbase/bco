@@ -21,73 +21,132 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-import com.google.protobuf.GeneratedMessage;
-import de.citec.csra.allocation.cli.AllocatableResource;
-import java.util.UUID;
+import de.citec.csra.allocation.cli.ExecutableResource;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import rsb.RSBException;
-import rsb.Scope;
-import rst.communicationpatterns.ResourceAllocationType;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
-import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM;
-import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.Policy.PRESERVE;
-import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.Priority.LOW;
-import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.State.REQUESTED;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.timing.IntervalType;
 
 /**
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
- * @param <D>
- * @param <DB>
  */
-public class UnitResourceAllocator<D extends GeneratedMessage, DB extends D.Builder<DB>> {
-    
-    private UnitController<D, DB> unitController;
+public abstract class UnitResourceAllocator<T> {
 
-    public UnitResourceAllocator(UnitController<D, DB> unitController) {
-        this.unitController = unitController;
-    }
-    
-    public AllocatableResource allocate(final ActionDescription actionDescription) throws CouldNotPerformException {
-        return allocate(actionDescription.getResourceAllocation());
-    }
-    
-    public AllocatableResource allocate(final ResourceAllocation allocation) throws CouldNotPerformException {
-        final AllocatableResource allocatableResource = new AllocatableResource(allocation);
-        try {
-            allocatableResource.startup();
-        } catch (RSBException ex) {
-            throw new CouldNotPerformException("Could not start Allocation!", ex);
+    private final ResourceAllocation resourceAllocation;
+    protected final ExecutableResource.Completion completionType;
+
+    private ExecutableResource<T> executableResource;
+
+    /**
+     * Create a UnitResourceAllocator according to the given actionDescription.
+     * The resourceAllocation and the executionTimePeriod inside the actionDescription
+     * have to be initialized. The resourceAllocation is used for the allocation
+     * and the executionTimePeriod is used for the completionType of the ExecutableResource.
+     * Zero results in the completionType EXPIRE which will free the resource directly
+     * after onAllocation finished. Everything else will result in RETAIN which will
+     * block the resource until the slot defined in the ResourceAllocation expires.
+     *
+     * @param actionDescription
+     */
+    public UnitResourceAllocator(final ActionDescription actionDescription) {
+        this.resourceAllocation = actionDescription.getResourceAllocation();
+        if (actionDescription.getExecutionTimePeriod() == 0) {
+            this.completionType = ExecutableResource.Completion.EXPIRE;
+        } else {
+            this.completionType = ExecutableResource.Completion.RETAIN;
         }
-        return allocatableResource;
     }
-    
+
+    /**
+     * Method is called when the resource is allocated.
+     *
+     * @return
+     * @throws ExecutionException
+     * @throws InterruptedException
+     */
+    public abstract T onAllocation() throws ExecutionException, InterruptedException;
+
+    /**
+     * Creates and starts an executableResource which will call onAllocation when the resource
+     * is allocated.
+     *
+     * @throws CouldNotPerformException if starting the executableResource fails
+     */
+    public void allocate() throws CouldNotPerformException {
+        executableResource = new ExecutableResource<T>(resourceAllocation, completionType) {
+
+            @Override
+            public T execute() throws ExecutionException, InterruptedException {
+                return UnitResourceAllocator.this.onAllocation();
+            }
+        };
+        try {
+            executableResource.startup();
+        } catch (RSBException ex) {
+            throw new CouldNotPerformException("Could not allocate resource", ex);
+        }
+    }
+
+    /**
+     * Free the resource by calling shutdown on the executableResource and setting it to null.
+     * If allocate has not been called then the executableResource is null and deallocation
+     * will do nothing.
+     *
+     * @throws CouldNotPerformException if the shutdown of the executableResource fails
+     */
     public void deallocate() throws CouldNotPerformException {
-        
+        try {
+            if (executableResource != null) {
+                executableResource.shutdown();
+            }
+            executableResource = null;
+        } catch (RSBException ex) {
+            throw new CouldNotPerformException("Could not deallocate resource", ex);
+        }
     }
 
-    private AllocatableResource allocateResource(Scope scope) throws CouldNotPerformException {
-        final String id = UUID.randomUUID().toString();
-        ResourceAllocationType.ResourceAllocation allocation = ResourceAllocationType.ResourceAllocation.newBuilder().
-                setId(id).setState(REQUESTED).
-                setDescription("Generated Allocation").
-                setPolicy(PRESERVE).
-                setPriority(LOW).
-                setInitiator(SYSTEM).
-                setSlot(IntervalType.Interval.newBuilder().build()).
-                addResourceIds(ScopeGenerator.generateStringRep(scope)).
-                build();
-
-        final AllocatableResource allocatableResource = new AllocatableResource(allocation);
+    /**
+     *
+     * @param timeout
+     * @param timeUnit
+     * @return
+     * @throws InterruptedException
+     * @throws ExecutionException
+     * @throws TimeoutException
+     * @throws CouldNotPerformException
+     */
+    public ResourceAllocation.State waitForExecution(final long timeout, final TimeUnit timeUnit) throws InterruptedException, ExecutionException, TimeoutException, CouldNotPerformException {
         try {
-            allocatableResource.startup();
-        } catch (RSBException ex) {
-            throw new CouldNotPerformException("Could not start Allocation!", ex);
+            if (executableResource != null) {
+                executableResource.getFuture().get(timeout, timeUnit);
+                return executableResource.getRemote().getCurrentState();
+            }
+        } catch (CancellationException ex) {
+            return executableResource.getRemote().getCurrentState();
         }
-        return allocatableResource;
+
+        throw new CouldNotPerformException("Execution has not been allocated");
+    }
+
+    public ResourceAllocation.State waitForExecution() throws InterruptedException, ExecutionException, CouldNotPerformException {
+        try {
+            if (executableResource != null) {
+                executableResource.getFuture().get();
+                return executableResource.getRemote().getCurrentState();
+            }
+        } catch (CancellationException ex) {
+            return executableResource.getRemote().getCurrentState();
+        }
+
+        throw new CouldNotPerformException("Execution has not been allocated");
+    }
+
+    public ResourceAllocation.State getState() {
+        return executableResource.getRemote().getCurrentState();
     }
 }

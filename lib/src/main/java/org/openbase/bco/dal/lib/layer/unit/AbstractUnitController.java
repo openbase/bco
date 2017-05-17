@@ -22,7 +22,6 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
-import de.citec.csra.allocation.cli.AllocatableResource;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -34,7 +33,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.UUID;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
@@ -63,15 +61,9 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import rsb.RSBException;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
-import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM;
-import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.Policy.PRESERVE;
-import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.Priority.LOW;
-import static rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.State.REQUESTED;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -80,7 +72,6 @@ import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
-import rst.timing.IntervalType;
 
 /**
  *
@@ -100,7 +91,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     protected UnitRegistryRemote unitRegistry;
 
-    private final UnitResourceAllocator<D, DB> resourceAllocator;
+//    private final UnitResourceAllocator<D, DB> resourceAllocator;
     private final List<Service> serviceList;
     private final ServiceJSonProcessor serviceJSonProcessor;
     private UnitTemplate template;
@@ -111,7 +102,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         this.serviceJSonProcessor = new ServiceJSonProcessor();
         this.serviceList = new ArrayList<>();
         this.serviceStateObservableMap = new HashMap<>();
-        this.resourceAllocator = new UnitResourceAllocator<>(this);
+//        this.resourceAllocator = new UnitResourceAllocator<>(this);
     }
 
     @Override
@@ -425,45 +416,30 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             }
 
             return GlobalCachedExecutorService.submit(() -> {
-                UnitResourceAllocator allocator;
+//                UnitResourceAllocator unitResourceAllocator = new UnitResourceAllocator(actionDescription) {
+//
+//                    @Override
+//                    public Object onAllocation() throws ExecutionException, InterruptedException {
+//                        try {
+//                            return Service.invokeServiceMethod(serviceTemplate, AbstractUnitController.this, attribute);
+//                        } catch (CouldNotPerformException ex) {
+//                            throw new ExecutionException(ex);
+//                        }
+//                    }
+//                };
+
+//                unitResourceAllocator.allocate();
+//                unitResourceAllocator.waitForExecution();
+                // should only be done if completionType is EXPIRE
+//                unitResourceAllocator.deallocate();
                 //TODO: allocate and if executionTimePeriod = 0 free resource
                 Service.invokeServiceMethod(serviceTemplate, AbstractUnitController.this, attribute);
+//                unitResourceAllocator.w
                 return null;
             });
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }
-    }
-
-    private AllocatableResource allocate(ResourceAllocation allocation) throws CouldNotPerformException {
-        final AllocatableResource allocatableResource = new AllocatableResource(allocation);
-        try {
-            allocatableResource.startup();
-        } catch (RSBException ex) {
-            throw new CouldNotPerformException("Could not start Allocation!", ex);
-        }
-        return allocatableResource;
-    }
-
-    private AllocatableResource allocateResource(Scope scope) throws CouldNotPerformException {
-        final String id = UUID.randomUUID().toString();
-        ResourceAllocation allocation = ResourceAllocation.newBuilder().
-                setId(id).setState(REQUESTED).
-                setDescription("Generated Allocation").
-                setPolicy(PRESERVE).
-                setPriority(LOW).
-                setInitiator(SYSTEM).
-                setSlot(IntervalType.Interval.newBuilder().build()).
-                addResourceIds(ScopeGenerator.generateStringRep(scope)).
-                build();
-
-        final AllocatableResource allocatableResource = new AllocatableResource(allocation);
-        try {
-            allocatableResource.startup();
-        } catch (RSBException ex) {
-            throw new CouldNotPerformException("Could not start Allocation!", ex);
-        }
-        return allocatableResource;
     }
 
     @Override
