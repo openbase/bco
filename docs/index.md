@@ -17,11 +17,11 @@ title: {{ site.name }}
 
 ## Location Architecture
 
-![LocationClassStructure]({{ site.url }}/images/LocationArchitecture_ClassStructure.png)
+![LocationClassStructure]({{ site.baseurl }}/images/LocationArchitecture_ClassStructure.png)
 
-![LocationHierarchicalStructure]({{ site.url }}/images/LocationArchitecture_HierarchicalStructure.png)
+![LocationHierarchicalStructure]({{ site.baseurl }}/images/LocationArchitecture_HierarchicalStructure.png)
 
-![LocationGraphStructure]({{ site.url }}/images/LocationArchitecture_GraphStructure.png)
+![LocationGraphStructure]({{ site.baseurl }}/images/LocationArchitecture_GraphStructure.png)
 
 [More Details]({{ site.baseurl }}/location-architecture)
 
