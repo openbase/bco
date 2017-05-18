@@ -1,8 +1,9 @@
 ---
-layout: default
 title: BCO - Location Architecture
-permalink: /location-architecture/
+permalink: "/location-architecture/"
+layout: default
 ---
+
 # Location Architecture
 
 ![LocationClassStructure]({{ site.baseurl }}/images/LocationArchitecture_ClassStructure.png)
