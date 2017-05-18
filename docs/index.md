@@ -129,6 +129,13 @@ bcomfy
 * RST http://docs.cor-lab.de//rst-manual/0.15/html/data-types.html
     * The data type library based on google protocol-buffers.
         * https://developers.google.com/protocol-buffers/
+    * Repositories
+        * Stable & Sandbox
+            * https://code.cor-lab.de/git/rst.git.proto
+        * Experimental (Only reachable from the university of bielefeld network)
+            * http://projects.cit-ec.uni-bielefeld.de/git/rst-experimental.proto.git 
+                * BCO Types are placed in ```proto/experimental/rst/domotic```
+         
 
 # Development Installation Guide - Ubuntu / Debian
 
