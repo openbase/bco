@@ -1,5 +1,5 @@
 ---
-title: {{ site.name }}
+title: "{}"
 layout: default
 ---
 
