@@ -11,10 +11,6 @@ from rst.vision.HSBColor_pb2 import HSBColor
 from rst.domotic.state.PowerState_pb2 import PowerState
 from rsb.converter import ProtocolBufferConverter, registerGlobalConverter
 import time
-import traceback
-import subprocess as sp
-import os
-
 
 class PowerConsumptionColorFeedback(object):
     def __init__(self):
@@ -28,32 +24,29 @@ class PowerConsumptionColorFeedback(object):
         self.hue1 = 240
         self.hue2 = 0
 
+        self.lasthue = None
+        
         self.location_id = "f0a71f71-1463-41e3-9c9a-25a02a536001"
         self.location_scope = "/home/kitchen/status"
         self.light_id = "8d310f30-d60a-4627-8884-373c5e2dcbdd"
         self.light_scope = "/home/kitchen/colorablelight/ceilinglamp_1/ctrl"
-        self.power_threshold = 1000
 
     def run(self):
         def power_update(event):
             print("Received event: %s" % event)
             try:
                 consumption = event.getData()
-                if not consumption:
+                if consumption == None:
                     print 'Null data received. Indicates remote controller shutdown.'
                     return
                 consumption = consumption.power_consumption_state.consumption
-                print 'new consumption is', consumption, 'W (at time', str(time.time()) + ')'
-                if consumption > self.power_threshold:
-                    self.update_light_color(consumption)
+                print 'consumption is', consumption, 'W (at time', str(time.time()) + ')'
+                self.update_light_color(consumption)
 
             except Exception as e:
                 print 'received illegal event (' + str(e) + ')'
                 traceback.print_exc()
 
-        # with rsb.createListener("/home/control/powerconsumptionsensor/") as listener:
-        # print("consumptionscope:", self.consumptionscope, "; plug:", self.plug)
-        # print("combined string:", self.consumptionscope % self.plug)
         with rsb.createListener(self.location_scope) as listener:
             listener.addHandler(power_update)
             while True:
@@ -61,8 +54,6 @@ class PowerConsumptionColorFeedback(object):
 
     def update_light_color(self, current_consumption=0):
         with rsb.createRemoteServer(self.light_scope) as server:
-            print 'update light color related to power consumption.'
-
             # compute color value
             consumption_color = HSBColor()
             consumption_color.saturation = 100
@@ -76,9 +67,10 @@ class PowerConsumptionColorFeedback(object):
 
             consumption_color.hue = self._linmap(current_consumption, [0, 1000], [lowerhue, higherhue], crop=True) % 360
 
-            print 'computed hue related to power consumption:', consumption_color.hue
-            print 'setting light color'
-            server.setColor.async(consumption_color)
+            if consumption_color.hue != self.lasthue:
+                print 'setting hue %i for power consumption %f W' % (consumption_color.hue, current_consumption)
+                server.setColor.async(consumption_color)
+                self.lasthue = consumption_color.hue
 
     def _linmap(self, inputvalue, inputrange, outputrange, crop=False):
         """
