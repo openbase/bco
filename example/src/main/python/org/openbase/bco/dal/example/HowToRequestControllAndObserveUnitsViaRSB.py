@@ -31,11 +31,23 @@ class PowerConsumptionColorFeedback(object):
         self.hue1 = 240
         self.hue2 = 0
 
+        self.unit_registry_scope = "/registry/unit"
         self.location_id = "f0a71f71-1463-41e3-9c9a-25a02a536001"
         self.location_scope = "/home/kitchen/status"
         self.light_id = "8d310f30-d60a-4627-8884-373c5e2dcbdd"
         self.light_scope = "/home/kitchen/colorablelight/ceilinglamp_1/ctrl"
         self.power_threshold = 1000
+
+        with rsb.createRemoteServer(self.unit_registry_scope) as unit_registry:
+            self.location_scope = self.transform_scope(unit_registry.getUnitConfigById(self.location_id).scope)
+            self.light_scope = self.transform_scope(unit_registry.getUnitConfigById(self.light_id).scope)
+
+    @classmethod
+    def transform_scope(scope):
+        """
+        build rsb scope out of rst scope
+        """
+        return "/" + "/".join(scope.component)
 
     def run(self):
         def power_update(event):
