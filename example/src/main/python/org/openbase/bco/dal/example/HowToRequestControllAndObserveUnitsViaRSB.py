@@ -38,7 +38,11 @@ class PowerConsumptionColorFeedback(object):
         def power_update(event):
             print("Received event: %s" % event)
             try:
-                consumption = event.getData().power_consumption_state.consumption
+                consumption = event.getData()
+                if not consumption:
+                    print 'Null data received. Indicates remote controller shutdown.'
+                    return
+                consumption = consumption.power_consumption_state.consumption
                 print 'new consumption is', consumption, 'W (at time', str(time.time()) + ')'
                 if consumption > self.power_threshold:
                     self.update_light_color(consumption)
