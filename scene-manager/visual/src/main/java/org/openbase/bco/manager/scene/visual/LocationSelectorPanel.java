@@ -28,7 +28,6 @@ import org.openbase.bco.dal.visual.util.StatusPanel;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
@@ -195,7 +194,7 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
             selectedLocationConfigHolder = (LocationUnitConfigHolder) locationComboBox.getSelectedItem();
 //            logger.info("Notify observer with new location");
             locationConfigHolderObservable.notifyObservers(selectedLocationConfigHolder);
-        } catch (MultiException | NullPointerException ex) {
+        } catch (CouldNotPerformException | NullPointerException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify observers about location config change!", ex), logger, LogLevel.WARN);
         }
     }//GEN-LAST:event_locationComboBoxActionPerformed
