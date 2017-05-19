@@ -23,7 +23,6 @@ package org.openbase.bco.manager.scene.visual;
  */
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.logging.Level;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.SwingUtilities;
 import org.openbase.bco.dal.visual.util.StatusPanel;
@@ -32,7 +31,6 @@ import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -44,14 +42,14 @@ import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.registry.DeviceRegistryDataType.DeviceRegistryData;
+import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType.Scope;
-import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
-import rst.domotic.state.EnablingStateType.EnablingState;
 
 /**
  *
@@ -679,7 +677,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
         final ServiceType serviceType = serviceTypeHolder.getType();
         try {
             unitConfigServiceTypeObservable.notifyObservers(new UnitConfigServiceTypeHolder(selectedUnitConfig, serviceType));
-        } catch (MultiException ex) {
+        } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }
     }//GEN-LAST:event_addButtonActionPerformed
