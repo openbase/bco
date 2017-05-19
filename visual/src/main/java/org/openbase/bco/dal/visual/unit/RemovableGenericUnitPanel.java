@@ -23,7 +23,6 @@ package org.openbase.bco.dal.visual.unit;
  */
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.ObservableImpl;
@@ -97,7 +96,7 @@ public class RemovableGenericUnitPanel extends GenericUnitPanel<AbstractUnitRemo
     private void removeButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_removeButtonActionPerformed
         try {
             removedObservable.notifyObservers(mapId);
-        } catch (MultiException ex) {
+        } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
         }
     }//GEN-LAST:event_removeButtonActionPerformed
