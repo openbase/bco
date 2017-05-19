@@ -37,7 +37,6 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -232,7 +231,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         locationSelectorPanel.updateSelection(lastSelected.getPlacementConfig().getLocationId());
         try {
             observable.notifyObservers(lastSelected.getSceneConfig().getActionConfigList());
-        } catch (MultiException ex) {
+        } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify observers!", ex), logger, LogLevel.WARN);
         }
     }//GEN-LAST:event_sceneSelectionComboBoxActionPerformed
