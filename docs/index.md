@@ -337,7 +337,7 @@ Control the unit
 ## Python RSB
 
 ### How to request, control and observe units
-* [Complete Code Example (Not tested yet!)](https://github.com/openbase/bco.dal/blob/master/example/src/main/python/org/openbase/bco/dal/example/HowToRequestControllAndObserveUnitsViaRSB.py)
+* [Complete Code Example](https://github.com/openbase/bco.dal/blob/master/example/src/main/python/org/openbase/bco/dal/example/HowToGivePowerConsumptionColorFeedbackViaRSB.py)
 
 # Contribution
 * Feel free to report [new Issues](https://github.com/openbase/bco.dal/issues/new)!
