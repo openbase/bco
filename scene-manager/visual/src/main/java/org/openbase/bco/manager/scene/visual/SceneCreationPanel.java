@@ -231,7 +231,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         lastSelected = ((SceneUnitConfigHolder) sceneSelectionComboBox.getSelectedItem()).getConfig();
         locationSelectorPanel.updateSelection(lastSelected.getPlacementConfig().getLocationId());
         try {
-            observable.notifyObservers(lastSelected.getSceneConfig().getActionConfigList());
+            observable.notifyObservers(lastSelected.getSceneConfig());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify observers!", ex), logger, LogLevel.WARN);
         }

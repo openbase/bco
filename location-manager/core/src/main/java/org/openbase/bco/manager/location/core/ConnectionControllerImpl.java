@@ -314,13 +314,13 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
                     continue;
                 }
                 ContactState contactState = ((ContactStateProviderService) contactStateProvider).getContactState();
-                WindowState.State correspondingDoorState = contactWindowPositionMap.get((String) contactStateProvider.getId()).getCorrespondingWindowState();
+                WindowState.State correspondingWindowState = contactWindowPositionMap.get((String) contactStateProvider.getId()).getCorrespondingWindowState();
                 switch (contactState.getValue()) {
                     case CLOSED:
                         if (windowState == null) {
-                            windowState = correspondingDoorState;
+                            windowState = correspondingWindowState;
                             timestamp = Math.max(timestamp, contactState.getTimestamp().getTime());
-                        } else if (windowState != correspondingDoorState) {
+                        } else if (windowState != correspondingWindowState) {
                             throw new CouldNotPerformException("Contradicting contact values for the window state!");
                         }
                         break;
