@@ -22,7 +22,7 @@ package org.openbase.bco.dal.visual.util;
  * #L%
  */
 import java.awt.Color;
-import org.openbase.jul.exception.MultiException;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
@@ -153,7 +153,7 @@ public class RSBScopePanel extends javax.swing.JPanel {
             observable.notifyObservers(new Scope(scopeTextField.getText()));
             scopeTextField.setForeground(Color.GREEN.darker().darker().darker());
             scopeTextField.setEnabled(true);
-        } catch (MultiException ex) {
+        } catch (CouldNotPerformException ex) {
             scopeTextField.setForeground(Color.RED);
             scopeTextField.setEnabled(true);
             ExceptionPrinter.printHistory(ex, logger);

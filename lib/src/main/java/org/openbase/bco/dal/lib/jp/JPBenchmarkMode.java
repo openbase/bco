@@ -21,7 +21,6 @@ package org.openbase.bco.dal.lib.jp;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.jps.core.AbstractJavaProperty;
 import org.openbase.jps.exception.JPValidationException;
 import org.openbase.jps.preset.AbstractJPBoolean;
@@ -30,11 +29,11 @@ import org.openbase.jps.preset.AbstractJPBoolean;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class JPHardwareSimulationMode extends AbstractJPBoolean {
+public class JPBenchmarkMode extends AbstractJPBoolean {
 
-    public final static String[] COMMAND_IDENTIFIERS = {"--simulate", "--simulate-hardware", "-s"};
+    public final static String[] COMMAND_IDENTIFIERS = {"--benchmark"};
 
-    public JPHardwareSimulationMode() {
+    public JPBenchmarkMode() {
         super(COMMAND_IDENTIFIERS);
     }
 
@@ -42,12 +41,17 @@ public class JPHardwareSimulationMode extends AbstractJPBoolean {
     public void validate() throws JPValidationException {
         super.validate();
         if (!getValueType().equals((AbstractJavaProperty.ValueType.PropertyDefault))) {
-            logger.warn("Started in hardware simulation mode!!");
+            logger.warn("Started in benchmark mode!! Make sure no hardware is connected to avoid hardware damage.");
+            String userConfirmation = System.console().readLine("Please confirm the benchmark by pressing 'Y'").toLowerCase();
+            if (!userConfirmation.contains("y") && !userConfirmation.contains("j") && !userConfirmation.contains("z")) {
+                logger.warn("Banchmark canceled by user...");
+                System.exit(22);
+            }
         }
     }
 
     @Override
     public String getDescription() {
-        return "Simulates the hardware components.";
+        return "Starts a benchmark test where high frequently changing unit states are genrated to test the global system performance.";
     }
 }

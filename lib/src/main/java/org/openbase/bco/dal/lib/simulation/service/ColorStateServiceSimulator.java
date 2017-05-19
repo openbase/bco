@@ -41,7 +41,7 @@ public class ColorStateServiceSimulator extends AbstractScheduledServiceSimulato
      * @param unitController the unit to simulate.
      */
     public ColorStateServiceSimulator(UnitController unitController) {
-        super(unitController, ServiceType.COLOR_STATE_SERVICE, 5000);
+        super(unitController, ServiceType.COLOR_STATE_SERVICE, 120000);
     }
 
     /**

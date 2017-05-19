@@ -44,7 +44,7 @@ public class BatteryStateServiceSimulator extends AbstractScheduledServiceSimula
      *
      * @param unitController the unit to simulate.
      */
-    public BatteryStateServiceSimulator(UnitController unitController) {
+    public BatteryStateServiceSimulator(final UnitController unitController) {
         super(unitController, ServiceType.BATTERY_STATE_SERVICE);
         this.simulatedBatteryState = BatteryState.newBuilder();
         this.simulatedBatteryState.setLevel(RANDOM.nextInt(MAX_BATTERY_LEVEL));

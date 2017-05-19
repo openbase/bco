@@ -29,7 +29,10 @@ import java.util.Random;
 import java.util.concurrent.Future;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.TimeUnit;
+import org.openbase.bco.dal.lib.jp.JPBenchmarkMode;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -45,7 +48,8 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 public abstract class AbstractScheduledServiceSimulator<SERVICE_STATE extends GeneratedMessage> extends AbstractServiceSimulator {
 
     private final static long DEFAULT_STARTUP_DELAY = 0;
-    public static final long DEFAULT_CHANGE_RATE = 30000;
+    public static final long DEFAULT_CHANGE_RATE = 100000;
+    public static final long BENCHMARK_CHANGE_RATE = 1000;
 
     protected final static Random RANDOM = new Random(System.currentTimeMillis());
 
@@ -61,7 +65,7 @@ public abstract class AbstractScheduledServiceSimulator<SERVICE_STATE extends Ge
      * @param serviceType the service type to simulate.
      */
     public AbstractScheduledServiceSimulator(final UnitController unitController, final ServiceType serviceType) {
-        this(unitController, serviceType, DEFAULT_CHANGE_RATE);
+        this(unitController, serviceType, (isBenchmarkDetected() ? BENCHMARK_CHANGE_RATE : DEFAULT_CHANGE_RATE));
     }
 
     /**
@@ -72,7 +76,7 @@ public abstract class AbstractScheduledServiceSimulator<SERVICE_STATE extends Ge
      * @param changeRate the simulation update speed in milliseconds.
      */
     public AbstractScheduledServiceSimulator(final UnitController unitController, final ServiceType serviceType, final long changeRate) {
-        this.changeRate = changeRate;
+        this.changeRate = (isBenchmarkDetected() ? BENCHMARK_CHANGE_RATE : changeRate);
         this.unitController = unitController;
         this.simulationTask = () -> {
 
@@ -112,6 +116,14 @@ public abstract class AbstractScheduledServiceSimulator<SERVICE_STATE extends Ge
             ExceptionPrinter.printHistory("Coult not execute random service simulation of " + unitController + "!", ex, LOGGER);
         }
         return futureList;
+    }
+
+    private static boolean isBenchmarkDetected() {
+        try {
+            return JPService.getProperty(JPBenchmarkMode.class).getValue();
+        } catch (JPNotAvailableException ex) {
+            return false;
+        }
     }
 
     /**
