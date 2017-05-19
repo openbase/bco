@@ -33,7 +33,7 @@ import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.binding.BindingConfigType.BindingConfig;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -61,15 +61,15 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
 
         boolean modification = false;
         UnitTemplate unitTemplate = getUnitTemplateByType(unitConfig.getType());
-        for (ServiceTemplate serviceTemplate : unitTemplate.getServiceTemplateList()) {
-            if (!unitConfigContainsServiceType(unitConfig, serviceTemplate)) {
-                unitConfig.addServiceConfig(ServiceConfig.newBuilder().setServiceTemplate(serviceTemplate).setBindingConfig(BindingConfig.getDefaultInstance()));
+        for (ServiceDescription serviceDescription : unitTemplate.getServiceDescriptionList()) {
+            if (!unitConfigContainsServiceDescription(unitConfig, serviceDescription)) {
+                unitConfig.addServiceConfig(ServiceConfig.newBuilder().setServiceDescription(serviceDescription).setBindingConfig(BindingConfig.getDefaultInstance()));
                 modification = true;
             }
         }
 
         for (int i = 0; i < unitConfig.getServiceConfigCount(); i++) {
-            if (!serviceTemplateListContainsTemplate(unitTemplate.getServiceTemplateList(), unitConfig.getServiceConfig(i).getServiceTemplate())) {
+            if (!serviceDescriptionListContainsDescription(unitTemplate.getServiceDescriptionList(), unitConfig.getServiceConfig(i).getServiceDescription())) {
                 unitConfig.removeServiceConfig(i);
                 i--;
                 modification = true;
@@ -81,12 +81,12 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
         }
     }
 
-    private boolean serviceTemplateListContainsTemplate(List<ServiceTemplate> serviceTemplateList, ServiceTemplate serviceTemplate) {
-        return serviceTemplateList.stream().anyMatch((template) -> (template.getType() == serviceTemplate.getType() && template.getPattern() == serviceTemplate.getPattern()));
+    private boolean serviceDescriptionListContainsDescription(List<ServiceDescription> serviceDescriptionList, ServiceDescription serviceDescription) {
+        return serviceDescriptionList.stream().anyMatch((template) -> (template.getType() == serviceDescription.getType() && template.getPattern() == serviceDescription.getPattern()));
     }
 
-    private boolean unitConfigContainsServiceType(UnitConfig.Builder unitConfig, ServiceTemplate serviceTemplate) {
-        return unitConfig.getServiceConfigList().stream().map((serviceConfig) -> serviceConfig.getServiceTemplate()).anyMatch((template) -> (template.getType() == serviceTemplate.getType() && template.getPattern() == serviceTemplate.getPattern()));
+    private boolean unitConfigContainsServiceDescription(UnitConfig.Builder unitConfig, ServiceDescription serviceDescription) {
+        return unitConfig.getServiceConfigList().stream().map((serviceConfig) -> serviceConfig.getServiceDescription()).anyMatch((template) -> (template.getType() == serviceDescription.getType() && template.getPattern() == serviceDescription.getPattern()));
     }
 
     private UnitTemplate getUnitTemplateByType(UnitType type) throws CouldNotPerformException {

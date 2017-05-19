@@ -726,7 +726,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         List<ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfig unitConfig : getUnitConfigs()) {
             for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                if (serviceConfig.getServiceTemplate().getType() == serviceType) {
+                if (serviceConfig.getServiceDescription().getType() == serviceType) {
                     serviceConfigs.add(serviceConfig);
                 }
             }
@@ -915,7 +915,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             foundServiceType = false;
             for (ServiceType serviceType : serviceTypes) {
                 for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                    if (serviceConfig.getServiceTemplate().getType() == serviceType) {
+                    if (serviceConfig.getServiceDescription().getType() == serviceType) {
                         foundServiceType = true;
                     }
                 }

@@ -141,6 +141,6 @@ public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoB
                 + ITEM_SEGMENT_DELIMITER
                 + StringProcessor.transformToIdString(unit.getLabel())
                 + ITEM_SEGMENT_DELIMITER
-                + StringProcessor.transformUpperCaseToCamelCase(service.getServiceTemplate().getType().toString());
+                + StringProcessor.transformUpperCaseToCamelCase(service.getServiceDescription().getType().toString());
     }
 }

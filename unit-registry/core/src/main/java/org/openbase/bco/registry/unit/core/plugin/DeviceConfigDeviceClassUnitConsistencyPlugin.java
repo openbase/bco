@@ -35,8 +35,8 @@ import org.slf4j.LoggerFactory;
 import rst.domotic.binding.BindingConfigType;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateConfigType;
-import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateConfigType;
 import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
@@ -115,7 +115,7 @@ public class DeviceConfigDeviceClassUnitConsistencyPlugin extends FileRegistryPl
                 List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
                 for (ServiceTemplateConfigType.ServiceTemplateConfig serviceTemplateConfig : unitTemplateConfig.getServiceTemplateConfigList()) {
                     ServiceConfigType.ServiceConfig.Builder serviceConfig = ServiceConfigType.ServiceConfig.newBuilder().setBindingConfig(BindingConfigType.BindingConfig.newBuilder().setBindingId(deviceClass.getBindingConfig().getBindingId()));
-                    serviceConfig.setServiceTemplate(ServiceTemplateType.ServiceTemplate.newBuilder().setType(serviceTemplateConfig.getServiceType()));
+                    serviceConfig.setServiceDescription(ServiceDescription.newBuilder().setType(serviceTemplateConfig.getServiceType()));
                     serviceConfigs.add(serviceConfig.build());
                 }
 
