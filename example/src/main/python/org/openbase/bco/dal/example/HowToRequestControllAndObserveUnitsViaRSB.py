@@ -6,6 +6,7 @@ import rst
 import rstsandbox
 import rstexperimental
 from rst.domotic.unit.dal.PowerConsumptionSensorData_pb2 import PowerConsumptionSensorData
+from rst.domotic.unit.location.LocationData_pb2 import LocationData
 from rst.vision.HSBColor_pb2 import HSBColor
 from rst.domotic.state.PowerState_pb2 import PowerState
 from rsb.converter import ProtocolBufferConverter, registerGlobalConverter
@@ -17,15 +18,11 @@ import os
 
 class PowerConsumptionColorFeedback(object):
     def __init__(self):
-        """
-        plug is the power plug code (e.g. "A3C3")
-        threshold is the consumer power consumption threshold in Watts
-        minimumDuration is the minimum duration in seconds the consumption has to be upheld to trigger the alarm
-        """
         logging.basicConfig()
         registerGlobalConverter(ProtocolBufferConverter(messageClass=PowerConsumptionSensorData))
         registerGlobalConverter(ProtocolBufferConverter(messageClass=HSBColor))
         registerGlobalConverter(ProtocolBufferConverter(messageClass=PowerState))
+        registerGlobalConverter(ProtocolBufferConverter(messageClass=LocationData))
         rsb.__defaultParticipantConfig = rsb.ParticipantConfig.fromDefaultSources()
 
         self.hue1 = 240
@@ -81,7 +78,7 @@ class PowerConsumptionColorFeedback(object):
 
     def _linmap(self, inputvalue, inputrange, outputrange, crop=False):
         """
-        Map inputvalue from the inputrange to the outputrange. Convert type (usually int or float) and round if appropriate.
+        Linearly map inputvalue from the inputrange to the outputrange. Convert type (usually int or float) and round if appropriate.
         :param inputvalue: A value within inputrange.
         :param inputrange: A 2-tuple that specifies the input range.
         :param outputrange: A 2-tuple that specifies the output range.
