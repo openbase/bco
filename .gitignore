@@ -1,0 +1,5 @@
+*~
+*.swp
+**/*/target
+/target
+**/*/nbactions.xml
