@@ -7,14 +7,16 @@ import rstsandbox
 import rstexperimental
 from rst.domotic.unit.dal.PowerConsumptionSensorData_pb2 import PowerConsumptionSensorData
 from rst.domotic.unit.location.LocationData_pb2 import LocationData
+from rst.domotic.unit.UnitConfig_pb2 import UnitConfig
 from rst.vision.HSBColor_pb2 import HSBColor
 from rst.domotic.state.PowerState_pb2 import PowerState
 from rsb.converter import ProtocolBufferConverter, registerGlobalConverter
 import time
 
-class PowerConsumptionColorFeedback(object):
+class HowToGivePowerConsumptionColorFeedbackViaRSB(object):
     def __init__(self):
         logging.basicConfig()
+        registerGlobalConverter(ProtocolBufferConverter(messageClass=UnitConfig))
         registerGlobalConverter(ProtocolBufferConverter(messageClass=PowerConsumptionSensorData))
         registerGlobalConverter(ProtocolBufferConverter(messageClass=HSBColor))
         registerGlobalConverter(ProtocolBufferConverter(messageClass=PowerState))
@@ -23,17 +25,30 @@ class PowerConsumptionColorFeedback(object):
 
         self.hue1 = 240
         self.hue2 = 0
-
         self.lasthue = None
-        
+
+        self.unit_registry_scope = "/registry/unit/ctrl"
+
         self.location_id = "f0a71f71-1463-41e3-9c9a-25a02a536001"
-        self.location_scope = "/home/kitchen/status"
         self.light_id = "8d310f30-d60a-4627-8884-373c5e2dcbdd"
-        self.light_scope = "/home/kitchen/colorablelight/ceilinglamp_1/ctrl"
+
+        print("Waiting for unit registry...")
+        with rsb.createRemoteServer(self.unit_registry_scope) as unit_registry:
+            self.location_scope = self.transform_scope(unit_registry.getUnitConfigById(self.location_id).scope)
+            self.light_scope = self.transform_scope(unit_registry.getUnitConfigById(self.light_id).scope)
+
+    @classmethod
+    def transform_scope(self, scope):
+        """
+        build rsb scope out of the given rst scope.
+        """
+        return "/" + "/".join(scope.component) + "/ctrl"
+
 
     def run(self):
+        print("Listening for power consumption events...")
         def power_update(event):
-            print("Received event: %s" % event)
+            #print("Received event: %s" % event)
             try:
                 consumption = event.getData()
                 if consumption == None:
@@ -44,16 +59,18 @@ class PowerConsumptionColorFeedback(object):
                 self.update_light_color(consumption)
 
             except Exception as e:
+                +3
+
                 print 'received illegal event (' + str(e) + ')'
                 traceback.print_exc()
 
-        with rsb.createListener(self.location_scope) as listener:
+        with rsb.createListener(self.location_scope + "/status") as listener:
             listener.addHandler(power_update)
             while True:
                 time.sleep(1)
 
     def update_light_color(self, current_consumption=0):
-        with rsb.createRemoteServer(self.light_scope) as server:
+        with rsb.createRemoteServer(self.light_scope + "/ctrl") as server:
             # compute color value
             consumption_color = HSBColor()
             consumption_color.saturation = 100
