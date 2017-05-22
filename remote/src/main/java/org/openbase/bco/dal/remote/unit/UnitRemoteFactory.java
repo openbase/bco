@@ -31,10 +31,11 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 import rst.rsb.ScopeType.Scope;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- * 
+ *
  * The unit remote factory interface.
  */
 public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
@@ -83,6 +84,7 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
 
     /**
      * Creates an unit remote out of the given unit class.
+     *
      * @param <R> the unit remote class type.
      * @param unitRemoteClass the unit class which defines the remote type.
      * @return the new created unit remote.
@@ -94,7 +96,7 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      * Creates an unit remote out of the given unit id.
      *
      * @param unitId the unit id which defines the remote type.
-     * @param timeout the timeout for the unit registry lookup. 
+     * @param timeout the timeout for the unit registry lookup.
      * @param timeUnit the time unit of the timeout.
      * @return the new created unit remote.
      * @throws InstantiationException is thrown if the unit could not be instantiated with the given information.
@@ -106,7 +108,7 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      * Creates an unit remote out of the given unit scope.
      *
      * @param scope the unit scope which defines the remote type..
-     * @param timeout the timeout for the unit registry lookup. 
+     * @param timeout the timeout for the unit registry lookup.
      * @param timeUnit the time unit of the timeout.
      * @return the new created unit remote.
      * @throws InstantiationException is thrown if the unit could not be instantiated with the given information.
@@ -145,7 +147,7 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      * Creates and initializes an unit remote out of the given unit scope.
      *
      * @param scope the unit scope which is used for the remote initialization.
-      * @param timeout the timeout for the unit registry lookup. 
+     * @param timeout the timeout for the unit registry lookup.
      * @param timeUnit the time unit of the timeout.
      * @return the new created and initialized unit remote.
      * @throws InitializationException is thrown if the unit could not be initialized with the given information.
@@ -159,7 +161,7 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      * Creates and initializes an unit remote out of the given unit id.
      *
      * @param unitId the unit id which is used for the remote initialization.
-     * @param timeout the timeout for the unit registry lookup. 
+     * @param timeout the timeout for the unit registry lookup.
      * @param timeUnit the time unit of the timeout.
      * @return the new created and initialized unit remote.
      * @throws InitializationException is thrown if the unit could not be initialized with the given information.

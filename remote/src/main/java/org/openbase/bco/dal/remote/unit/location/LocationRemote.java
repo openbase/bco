@@ -18,7 +18,10 @@ import static org.openbase.bco.dal.remote.unit.Units.LOCATION;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.pattern.Observable;
 import rsb.converter.DefaultConverterRepository;
@@ -214,18 +217,28 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     public Map<UnitType, List<UnitRemote>> getUnitMap() throws NotAvailableException, InterruptedException {
         try {
             final Map<UnitType, List<UnitRemote>> unitRemoteMap = new TreeMap<>();
+            MultiException.ExceptionStack exceptionStack = null;
 
-            for (String unitId : getConfig().getLocationConfig().getUnitIdList()) {
-                UnitRemote<? extends GeneratedMessage> unitRemote = Units.getUnit(unitId, false);
-                if (!unitRemoteMap.containsKey(unitRemote.getType())) {
-                    unitRemoteMap.put(unitRemote.getType(), new ArrayList<>());
+            for (final String unitId : getConfig().getLocationConfig().getUnitIdList()) {
+                try {
+                    UnitRemote<? extends GeneratedMessage> unitRemote = Units.getUnit(unitId, false);
+                    if (!unitRemoteMap.containsKey(unitRemote.getType())) {
+                        unitRemoteMap.put(unitRemote.getType(), new ArrayList<>());
+                    }
+                    unitRemoteMap.get(unitRemote.getType()).add(unitRemote);
+                } catch (CouldNotPerformException ex) {
+                    exceptionStack = MultiException.push(this, ex, exceptionStack);
                 }
-                unitRemoteMap.get(unitRemote.getType()).add(unitRemote);
+            }
+            try {
+                MultiException.checkAndThrow("Could not collect all unit remotes of " + this, exceptionStack);
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
             }
             return unitRemoteMap;
 
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Unit map of " + this);
+            throw new NotAvailableException("Unit map of " + this, ex);
         }
     }
 
@@ -263,11 +276,21 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     // TODO: move into interface as default implementation
     public <UR extends UnitRemote<?>> Collection<UR> getUnits(final UnitType unitType, final boolean waitForData, final Class<UR> unitRemoteClass, final boolean recursive) throws CouldNotPerformException, InterruptedException {
         final List<UR> unitRemote = new ArrayList<>();
+        MultiException.ExceptionStack exceptionStack = null;
         Registries.waitForData();
         for (final UnitConfig unitConfig : Registries.getLocationRegistry().getUnitConfigsByLocation(unitType, getId())) {
-            if (recursive || unitConfig.getPlacementConfig().getLocationId().equals(getId())) {
-                unitRemote.add(Units.getUnit(unitConfig, waitForData, unitRemoteClass));
+            try {
+                if (recursive || unitConfig.getPlacementConfig().getLocationId().equals(getId())) {
+                    unitRemote.add(Units.getUnit(unitConfig, waitForData, unitRemoteClass));
+                }
+            } catch (CouldNotPerformException ex) {
+                exceptionStack = MultiException.push(this, ex, exceptionStack);
             }
+        }
+        try {
+            MultiException.checkAndThrow("Could not collect all unit remotes of " + this, exceptionStack);
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
         }
         return unitRemote;
     }

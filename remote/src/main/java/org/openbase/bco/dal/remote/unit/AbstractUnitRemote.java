@@ -25,9 +25,9 @@ import com.google.protobuf.GeneratedMessage;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
-import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
@@ -60,18 +60,14 @@ import rst.rsb.ScopeType;
 public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends AbstractConfigurableRemote<M, UnitConfig> implements UnitRemote<M> {
 
     private UnitTemplate template;
-    private UnitRegistry unitRegistry;
 
     public AbstractUnitRemote(final Class<M> dataClass) {
         super(dataClass, UnitConfig.class);
     }
 
     protected UnitRegistry getUnitRegistry() throws InterruptedException, CouldNotPerformException {
-        if (unitRegistry == null) {
-            unitRegistry = Registries.getUnitRegistry();
-            Registries.getUnitRegistry().waitForData();
-        }
-        return unitRegistry;
+        Registries.getUnitRegistry().waitForData();
+        return Registries.getUnitRegistry();
     }
 
     /**
@@ -179,17 +175,21 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     @Override
     protected void postInit() throws InitializationException, InterruptedException {
         super.postInit();
-        this.setMessageProcessor(new GenericMessageProcessor<>(getDataClass()));
-        ((UnitRegistryRemote) unitRegistry).addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
-            try {
-                final UnitConfig newUnitConfig = unitRegistry.getUnitConfigById(getId());
-                if (!newUnitConfig.equals(getConfig())) {
-                    applyConfigUpdate(newUnitConfig);
+        try {
+            this.setMessageProcessor(new GenericMessageProcessor<>(getDataClass()));
+            getUnitRegistry().addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
+                try {
+                    final UnitConfig newUnitConfig = getUnitRegistry().getUnitConfigById(getId());
+                    if (!newUnitConfig.equals(getConfig())) {
+                        applyConfigUpdate(newUnitConfig);
+                    }
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not update unit config of " + this, ex, logger);
                 }
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory("Could not update unit config of " + this, ex, logger);
-            }
-        });
+            });
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     /**
@@ -345,12 +345,50 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         }
     }
 
-    public UnitConfig getLocationConfig() throws NotAvailableException {
+    /**
+     * Method returns the parent location config of this unit.
+     *
+     * @return a unit config of the parent location.
+     * @throws NotAvailableException is thrown if the location config is currently not available.
+     */
+    public UnitConfig getParentLocationConfig() throws NotAvailableException, InterruptedException {
         try {
             // TODO implement get unit config by type and id;
-            return unitRegistry.getUnitConfigById(getConfig().getPlacementConfig().getLocationId());
+            return getUnitRegistry().getUnitConfigById(getConfig().getPlacementConfig().getLocationId());
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("LocationConfig", ex);
+        }
+    }
+
+    /**
+     *
+     * @return
+     * @throws NotAvailableException
+     * @deprecated please use getParentLocationConfig() instead.
+     */
+    @Deprecated
+    public UnitConfig getLocationConfig() throws NotAvailableException {
+        try {
+            return getParentLocationConfig();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new NotAvailableException(ex);
+        }
+    }
+    
+    /**
+     * Method returns the parent location remote of this unit.
+     *
+     * @param waitForData flag defines if the method should block until the remote is fully synchronized.
+     * @return a location remote instance. 
+     * @throws NotAvailableException is thrown if the location remote is currently not available.
+     * @throws java.lang.InterruptedException is thrown if the current was externally interrupted.
+     */
+    public LocationRemote getParentLocationRemote(final boolean waitForData) throws NotAvailableException, InterruptedException {
+        try {
+            return Units.getUnit(getConfig().getPlacementConfig().getLocationId(), waitForData, Units.LOCATION);
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("LocationRemote", ex);
         }
     }
 
