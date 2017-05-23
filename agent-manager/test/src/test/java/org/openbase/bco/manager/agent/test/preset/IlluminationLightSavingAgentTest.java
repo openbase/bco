@@ -74,6 +74,7 @@ public class IlluminationLightSavingAgentTest {
 
     private static final PowerState ON = PowerState.newBuilder().setValue(PowerState.State.ON).build();
     private static final PowerState OFF = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
+    private static final String LOCATION_LABEL = "Stairway to Heaven";
 
     private static AgentRemote agent;
     private static DeviceManagerLauncher deviceManagerLauncher;
@@ -156,9 +157,9 @@ public class IlluminationLightSavingAgentTest {
         //Thread.sleep(500);
         Registries.waitForData();
 
-        LocationRemote locationRemote = Units.getUnitByLabel("Paradise", true, Units.LOCATION);
-        ColorableLightRemote colorableLightRemote = Units.getUnit(locationRegistry.getUnitConfigsByLocationLabel(UnitType.COLORABLE_LIGHT, "Paradise").get(0), true, Units.COLORABLE_LIGHT);
-        LightSensorRemote lightSensorRemote = Units.getUnit(locationRegistry.getUnitConfigsByLocationLabel(UnitType.LIGHT_SENSOR, "Paradise").get(0), true, LightSensorRemote.class);
+        LocationRemote locationRemote = Units.getUnitByLabel(LOCATION_LABEL, true, Units.LOCATION);
+        ColorableLightRemote colorableLightRemote = Units.getUnit(locationRegistry.getUnitConfigsByLocationLabel(UnitType.COLORABLE_LIGHT, LOCATION_LABEL).get(0), true, Units.COLORABLE_LIGHT);
+        LightSensorRemote lightSensorRemote = Units.getUnit(locationRegistry.getUnitConfigsByLocationLabel(UnitType.LIGHT_SENSOR, LOCATION_LABEL).get(0), true, LightSensorRemote.class);
         LightSensorController lightSensorController = (LightSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightSensorRemote.getId());
 
         colorableLightRemote.waitForData();
@@ -166,11 +167,9 @@ public class IlluminationLightSavingAgentTest {
         lightSensorRemote.waitForData();
         lightSensorController.waitForData();
 
-        LOGGER.info("Ambient light id [" + colorableLightRemote.getId() + "]");
-
         lightSensorController.updateIlluminanceStateProvider(IlluminanceStateType.IlluminanceState.newBuilder().setIlluminance(5000.0).build());
-        Thread.sleep(100);
         locationRemote.setPowerState(ON, UnitType.LIGHT).get();
+        Thread.sleep(100);
         locationRemote.requestData().get();
         colorableLightRemote.requestData().get();
         assertEquals("Initial Illuminance of LightSensor[" + lightSensorRemote.getLabel() + "] is not 5000", 5000.0, lightSensorRemote.getIlluminanceState().getIlluminance(), 1);
@@ -200,7 +199,7 @@ public class IlluminationLightSavingAgentTest {
         System.out.println("Register the IlluminationLightSavingAgent...");
 
         EnablingState enablingState = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
-        PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(locationRegistry.getRootLocationConfig().getId());
+        PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(locationRegistry.getLocationConfigsByLabel(LOCATION_LABEL).get(0).getId());
 
         String agentClassId = null;
         for (AgentClass agentClass : agentRegistry.getAgentClasses()) {

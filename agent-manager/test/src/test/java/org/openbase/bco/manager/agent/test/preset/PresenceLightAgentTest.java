@@ -75,6 +75,7 @@ public class PresenceLightAgentTest {
 
     private static final MotionStateType.MotionState MOTION = MotionStateType.MotionState.newBuilder().setValue(MotionStateType.MotionState.State.MOTION).build();
     private static final MotionStateType.MotionState NO_MOTION = MotionStateType.MotionState.newBuilder().setValue(MotionStateType.MotionState.State.NO_MOTION).build();
+    private static final String LOCATION_LABEL = "Stairway to Heaven";
 
     private static AgentRemote agent;
     private static DeviceManagerLauncher deviceManagerLauncher;
@@ -157,20 +158,18 @@ public class PresenceLightAgentTest {
         //Thread.sleep(500);
         Registries.waitForData();
 
-        LocationRemote locationRemote = Units.getUnitByLabel("Paradise", true, Units.LOCATION);
-        ColorableLightRemote colorableLightRemote = Units.getUnit(locationRegistry.getUnitConfigsByLocationLabel(UnitType.COLORABLE_LIGHT, "Paradise").get(0), true, Units.COLORABLE_LIGHT);
-        MotionDetectorRemote motionDetectorRemote = Units.getUnit(locationRegistry.getUnitConfigsByLocationLabel(UnitType.MOTION_DETECTOR, "Paradise").get(0), true, Units.MOTION_DETECTOR);
+        LocationRemote locationRemote = Units.getUnitByLabel(LOCATION_LABEL, true, Units.LOCATION);
+        ColorableLightRemote colorableLightRemote = Units.getUnit(locationRegistry.getUnitConfigsByLocationLabel(UnitType.COLORABLE_LIGHT, LOCATION_LABEL).get(0), true, Units.COLORABLE_LIGHT);
+        MotionDetectorRemote motionDetectorRemote = Units.getUnit(locationRegistry.getUnitConfigsByLocationLabel(UnitType.MOTION_DETECTOR, LOCATION_LABEL).get(0), true, Units.MOTION_DETECTOR);
         MotionDetectorController motionDetectorController = (MotionDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(motionDetectorRemote.getId());
 
         colorableLightRemote.waitForData();
         locationRemote.waitForData();
         motionDetectorRemote.waitForData();
 
-        LOGGER.info("Ambient light id [" + colorableLightRemote.getId() + "]");
-
         motionDetectorController.updateMotionStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(NO_MOTION));
-        Thread.sleep(100);
         locationRemote.setPowerState(OFF).get();
+        Thread.sleep(100);
         motionDetectorRemote.requestData().get();
         locationRemote.requestData().get();
         colorableLightRemote.requestData().get();
@@ -203,7 +202,7 @@ public class PresenceLightAgentTest {
         System.out.println("Register the PresenceLightAgent...");
 
         EnablingState enablingState = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
-        PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(locationRegistry.getRootLocationConfig().getId());
+        PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(locationRegistry.getLocationConfigsByLabel(LOCATION_LABEL).get(0).getId());
 
         String agentClassId = null;
         for (AgentClass agentClass : agentRegistry.getAgentClasses()) {
