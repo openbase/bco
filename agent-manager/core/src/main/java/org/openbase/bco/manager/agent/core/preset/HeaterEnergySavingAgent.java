@@ -53,9 +53,11 @@ public class HeaterEnergySavingAgent extends AbstractAgentController {
     private final Observer<ConnectionDataType.ConnectionData> connectionObserver;
     private boolean regulated = false;
     private Map<UnitConfigType.UnitConfig, TemperatureStateType.TemperatureState> previousTemperatureState;
+    private final Map<String, ConnectionRemote> connectionRemoteMap;
 
     public HeaterEnergySavingAgent() throws InstantiationException {
         super(HeaterEnergySavingAgent.class);
+        this.connectionRemoteMap = new HashMap<>();
 
         connectionObserver = (final Observable<ConnectionDataType.ConnectionData> source, ConnectionDataType.ConnectionData data) -> {
             if (data.getWindowState().getValue() == WindowStateType.WindowState.State.OPEN) {
@@ -80,6 +82,7 @@ public class HeaterEnergySavingAgent extends AbstractAgentController {
         for (ConnectionRemote connectionRemote : locationRemote.getConnectionList(true)) {
             if (connectionRemote.getConfig().getConnectionConfig().getType().equals(ConnectionConfigType.ConnectionConfig.ConnectionType.WINDOW)) {
                 connectionRemote.addDataObserver(connectionObserver);
+                connectionRemoteMap.put(connectionRemote.getId(), connectionRemote);
             }
         }
         locationRemote.waitForData();
@@ -88,11 +91,10 @@ public class HeaterEnergySavingAgent extends AbstractAgentController {
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
         logger.info("Deactivating [" + getConfig().getLabel() + "]");
-        for (ConnectionRemote connectionRemote : locationRemote.getConnectionList(true)) {
-            if (connectionRemote.getConfig().getConnectionConfig().getType().equals(ConnectionConfigType.ConnectionConfig.ConnectionType.WINDOW)) {
-                connectionRemote.removeDataObserver(connectionObserver);
-            }
+        for (ConnectionRemote connectionRemote : connectionRemoteMap.values()) {
+            connectionRemote.removeDataObserver(connectionObserver);
         }
+        connectionRemoteMap.clear();
     }
 
     private void regulateHeater() {
@@ -110,7 +112,7 @@ public class HeaterEnergySavingAgent extends AbstractAgentController {
         }
 
         try {
-            locationRemote.setTargetTemperatureState(TemperatureState.newBuilder().setTemperature(13.0).build());
+            setTemperatureFuture = locationRemote.setTargetTemperatureState(TemperatureState.newBuilder().setTemperature(13.0).build());
             regulated = true;
         } catch (CouldNotPerformException ex) {
             logger.error("Could not set targetTemperatureState.");
