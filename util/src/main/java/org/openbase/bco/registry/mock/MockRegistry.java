@@ -174,6 +174,7 @@ public class MockRegistry {
     private static UnitConfig paradiseLocation;
     private static UnitConfig hellLocation;
     private static UnitConfig heavenLocation;
+    private static UnitConfig stairwayLocation;
 
     public static final Map<UnitType, String> UNIT_TYPE_LABEL_MAP = new HashMap<>();
 
@@ -521,6 +522,19 @@ public class MockRegistry {
             hellLocation = locationRegistry.registerLocationConfig(UnitConfig.newBuilder().setType(UnitType.LOCATION)
                     .setLabel("Hell").setLocationConfig(tileLocationConfig).setPlacementConfig(hellPlacement).build()).get();
 
+            // Create stairway to heaven
+            List<Vec3DDouble> stairwayVertices = new ArrayList<>();
+            stairwayVertices.add(Vec3DDouble.newBuilder().setX(0).setY(0).setZ(0).build());
+            stairwayVertices.add(Vec3DDouble.newBuilder().setX(0).setY(1).setZ(0).build());
+            stairwayVertices.add(Vec3DDouble.newBuilder().setX(4).setY(1).setZ(0).build());
+            stairwayVertices.add(Vec3DDouble.newBuilder().setX(4).setY(0).setZ(0).build());
+            Shape stairwayShape = Shape.newBuilder().addAllFloor(stairwayVertices).build();
+            Pose stairwayPosition = Pose.newBuilder().setTranslation(Translation.newBuilder().setX(1).setY(0).setZ(0).build())
+                    .setRotation(Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build()).build();
+            PlacementConfig stairwayPlacement = PlacementConfig.newBuilder().setPosition(stairwayPosition).setShape(stairwayShape).setLocationId(paradiseLocation.getId()).build();
+            stairwayLocation = locationRegistry.registerLocationConfig(UnitConfig.newBuilder().setType(UnitType.LOCATION)
+                    .setLabel("Stairway to Heaven").setLocationConfig(tileLocationConfig).setPlacementConfig(stairwayPlacement).build()).get();
+
             // Create heaven
             List<Vec3DDouble> heavenVertices = new ArrayList<>();
             heavenVertices.add(Vec3DDouble.newBuilder().setX(0).setY(0).setZ(0).build());
@@ -555,21 +569,33 @@ public class MockRegistry {
     private void registerConnections() throws CouldNotPerformException, InterruptedException {
         try {
             List<String> tileIds = new ArrayList<>();
-            for (UnitConfig unitConfig : locationRegistry.getLocationConfigs()) {
-                if (unitConfig.getLocationConfig().getType() == LocationConfig.LocationType.TILE) {
-                    tileIds.add(unitConfig.getId());
-                }
-            }
-
-            String reedContactId = "";
-            for (UnitConfig unitConfig : unitRegistry.getDalUnitConfigs()) {
-                if (unitConfig.getType() == UnitType.REED_CONTACT) {
-                    reedContactId = unitConfig.getId();
-                }
-            }
-
+            tileIds.add(heavenLocation.getId());
+            tileIds.add(hellLocation.getId());
+            String reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabel(REED_CONTACT_LABEL).get(0).getId();
             ConnectionConfig connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
             locationRegistry.registerConnectionConfig(UnitConfig.newBuilder().setType(UnitType.CONNECTION).setLabel("Gate").setConnectionConfig(connectionConfig).build()).get();
+
+            tileIds.clear();
+            tileIds.add(heavenLocation.getId());
+            tileIds.add(stairwayLocation.getId());
+            reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Heaven_Stairs", UnitType.REED_CONTACT).get(0).getId();
+            connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
+            locationRegistry.registerConnectionConfig(UnitConfig.newBuilder().setType(UnitType.CONNECTION).setLabel("Stairs_Heaven_Gate").setConnectionConfig(connectionConfig).build()).get();
+
+            tileIds.clear();
+            tileIds.add(hellLocation.getId());
+            tileIds.add(stairwayLocation.getId());
+            reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Hell_Stairs", UnitType.REED_CONTACT).get(0).getId();
+            connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
+            locationRegistry.registerConnectionConfig(UnitConfig.newBuilder().setType(UnitType.CONNECTION).setLabel("Stairs_Hell_Gate").setConnectionConfig(connectionConfig).build()).get();
+
+            tileIds.clear();
+            tileIds.add(hellLocation.getId());
+            tileIds.add(stairwayLocation.getId());
+            reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Stairway_Window", UnitType.REED_CONTACT).get(0).getId();
+            connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.WINDOW).addAllTileId(tileIds).addUnitId(reedContactId).build();
+            locationRegistry.registerConnectionConfig(UnitConfig.newBuilder().setType(UnitType.CONNECTION).setLabel("Stairs_Hell_Lookout").setConnectionConfig(connectionConfig).build()).get();
+
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
         }
@@ -614,6 +640,9 @@ public class MockRegistry {
             registerDeviceUnitConfig(getDeviceConfig("PH_Hue_E27_Device", serialNumber, colorableLightClass));
 
             registerDeviceUnitConfig(getDeviceConfig("PH_Hue_E27_Device_BORROWED", serialNumber, InventoryState.State.BORROWED, colorableLightClass));
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("PH_Hue_E27_Device_Stairway", serialNumber, colorableLightClass, stairwayLocation)).get();
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("PH_Hue_E27_Device_Heaven", serialNumber, colorableLightClass, stairwayLocation)).get();
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("PH_Hue_E27_Device_Hell", serialNumber, colorableLightClass, stairwayLocation)).get();
 
             // battery, brightnessSensor, motionSensor, tamperSwitch, temperatureSensor
             DeviceClass motionSensorClass = deviceRegistry.registerDeviceClass(getDeviceClass("Fibaro_MotionSensor", "FGMS_001", "Fibaro",
@@ -625,6 +654,9 @@ public class MockRegistry {
             waitForDeviceClass(motionSensorClass);
 
             registerDeviceUnitConfig(getDeviceConfig("F_MotionSensor_Device", serialNumber, motionSensorClass));
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("F_MotionSensor_Device_Stairway", serialNumber, motionSensorClass, stairwayLocation)).get();
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("F_MotionSensor_Device_Heaven", serialNumber, motionSensorClass, heavenLocation)).get();
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("F_MotionSensor_Device_Hell", serialNumber, motionSensorClass, hellLocation)).get();
 
             // button
             DeviceClass buttonClass = deviceRegistry.registerDeviceClass(getDeviceClass("Gira_429496730210000", "429496730210000", "Gira",
@@ -675,6 +707,9 @@ public class MockRegistry {
             waitForDeviceClass(reedSwitchClass);
 
             registerDeviceUnitConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass));
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("Reed_Heaven_Stairs", serialNumber, reedSwitchClass, stairwayLocation)).get();
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("Reed_Hell_Stairs", serialNumber, reedSwitchClass, stairwayLocation)).get();
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("Reed_Stairway_Window", serialNumber, reedSwitchClass, stairwayLocation)).get();
 
             // rollershutter
             DeviceClass rollershutterClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA628C", "TYA628C", "Hager",
@@ -696,6 +731,7 @@ public class MockRegistry {
             waitForDeviceClass(temperatureControllerClass);
 
             registerDeviceUnitConfig(getDeviceConfig("Gire_TemperatureController_Device", serialNumber, temperatureControllerClass));
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("Gire_TemperatureController_Device_Stairway", serialNumber, temperatureControllerClass, stairwayLocation)).get();
 
             deviceRegistryRemote.removeDataObserver(notifyChangeObserver);
         } catch (ExecutionException ex) {
