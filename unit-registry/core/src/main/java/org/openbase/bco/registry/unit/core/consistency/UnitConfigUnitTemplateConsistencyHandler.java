@@ -46,7 +46,6 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
 
     private final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> unitTemplateRegistry;
 
-//    List<String> idList = new ArrayList();
     public UnitConfigUnitTemplateConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> unitTemplateRegistry) {
         this.unitTemplateRegistry = unitTemplateRegistry;
     }
@@ -82,11 +81,11 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
     }
 
     private boolean serviceDescriptionListContainsDescription(List<ServiceDescription> serviceDescriptionList, ServiceDescription serviceDescription) {
-        return serviceDescriptionList.stream().anyMatch((template) -> (template.getType() == serviceDescription.getType() && template.getPattern() == serviceDescription.getPattern()));
+        return serviceDescriptionList.stream().anyMatch((description) -> (description.getServiceTemplateId().equals(serviceDescription.getServiceTemplateId()) && description.getType() == serviceDescription.getType() && description.getPattern() == serviceDescription.getPattern()));
     }
 
     private boolean unitConfigContainsServiceDescription(UnitConfig.Builder unitConfig, ServiceDescription serviceDescription) {
-        return unitConfig.getServiceConfigList().stream().map((serviceConfig) -> serviceConfig.getServiceDescription()).anyMatch((template) -> (template.getType() == serviceDescription.getType() && template.getPattern() == serviceDescription.getPattern()));
+        return unitConfig.getServiceConfigList().stream().map((serviceConfig) -> serviceConfig.getServiceDescription()).anyMatch((description) -> (description.getServiceTemplateId().equals(serviceDescription.getServiceTemplateId()) && description.getType() == serviceDescription.getType() && description.getPattern() == serviceDescription.getPattern()));
     }
 
     private UnitTemplate getUnitTemplateByType(UnitType type) throws CouldNotPerformException {

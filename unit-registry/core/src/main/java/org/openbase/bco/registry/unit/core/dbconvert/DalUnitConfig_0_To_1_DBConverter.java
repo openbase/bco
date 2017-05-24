@@ -53,13 +53,10 @@ public class DalUnitConfig_0_To_1_DBConverter extends AbstractGlobalDBVersionCon
     private static final String PROVIDER_PATTERN = "PROVIDER";
 
     private static final String TYPE_FIELD = "type";
-    private static final String ID_FIELD = "id";
-    private static final String PATTERN_FIELD = "pattern";
     private static final String SERVICE_TEMPLATE_FIELD = "service_template";
     private static final String SERVICE_CONFIG_FIELD = "service_config";
     private static final String UNIT_TEMPLATE_CONFIG_ID_FIELD = "unit_template_config_id";
 
-    private boolean init;
     private int deviceClassDBVersion = 0;
     private int unitTemplateClassDBVersion = 0;
     private static final int LEAST_DEVICE_CLASS_VERSION = 2;
@@ -67,7 +64,6 @@ public class DalUnitConfig_0_To_1_DBConverter extends AbstractGlobalDBVersionCon
 
     public DalUnitConfig_0_To_1_DBConverter(DBVersionControl versionControl) {
         super(versionControl);
-        init = false;
     }
 
     @Override
@@ -108,7 +104,6 @@ public class DalUnitConfig_0_To_1_DBConverter extends AbstractGlobalDBVersionCon
             JsonObject serviceTemplate2 = serviceConfig.getAsJsonObject(SERVICE_TEMPLATE_FIELD);
             serviceTemplate2.remove(TYPE_FIELD);
             serviceTemplate2.addProperty(TYPE_FIELD, ILLUMINANCE_STATE_TYPE);
-            outdatedDBEntry = outdatedDBEntry;
         }
 
         // Replace INTENSITY_STATE_SERVICE by BRIGHTNESS_STATE_SERVICE for all DIMMER

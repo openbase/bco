@@ -86,6 +86,7 @@ import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.UnitGroup
 import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.UnitGroupMemberListTypesConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.UnitGroupScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.UnitGroupUnitTypeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.unittemplate.UniteTemplateServiceTemplateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigUserNameConsistencyHandler;
@@ -116,7 +117,6 @@ import org.openbase.bco.registry.unit.lib.jp.JPUserConfigDatabaseDirectory;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -195,8 +195,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         try {
             this.unitConfigRegistryList = new ArrayList();
             this.baseUnitConfigRegistryList = new ArrayList();
-            this.unitTemplateRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitTemplate.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.UNIT_TEMPLATE_FIELD_NUMBER), new UnitTemplateIdGenerator(), JPService.getProperty(JPUnitTemplateDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.serviceTemplateRegistry = new ProtoBufFileSynchronizedRegistry<>(ServiceTemplate.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.SERVICE_TEMPLATE_FIELD_NUMBER), new ServiceTemplateIdGenerator(), JPService.getProperty(JPServiceTemplateDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
+            this.unitTemplateRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitTemplate.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.UNIT_TEMPLATE_FIELD_NUMBER), new UnitTemplateIdGenerator(), JPService.getProperty(JPUnitTemplateDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.dalUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPDalUnitConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.userUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPUserConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.authorizationGroupUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPAuthorizationGroupConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
@@ -253,8 +253,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      */
     @Override
     protected void registerRegistries() throws CouldNotPerformException {
-        registerRegistry(unitTemplateRegistry);
         registerRegistry(serviceTemplateRegistry);
+        registerRegistry(unitTemplateRegistry);
         unitConfigRegistryList.stream().forEach((registry) -> {
             registerRegistry(registry);
         });
@@ -267,6 +267,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      */
     @Override
     protected void registerConsistencyHandler() throws CouldNotPerformException {
+        unitTemplateRegistry.registerConsistencyHandler(new UniteTemplateServiceTemplateConsistencyHandler(serviceTemplateRegistry));
+        
         //TODO: should be activated but fails in the current db version since agentClasses have just been introduced
         //agentUnitConfigRegistry.registerConsistencyHandler(new AgentConfigAgentClassIdConsistencyHandler(agentClassRegistry));
         agentUnitConfigRegistry.registerConsistencyHandler(new AgentLabelConsistencyHandler());
@@ -358,8 +360,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         dalUnitConfigRegistry.registerPlugin(new PublishDalUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
         deviceUnitConfigRegistry.registerPlugin(new PublishDeviceTransformationRegistryPlugin(locationUnitConfigRegistry));
         deviceUnitConfigRegistry.registerPlugin(new DeviceConfigDeviceClassUnitConsistencyPlugin(deviceRegistryRemote.getDeviceClassRemoteRegistry(), dalUnitConfigRegistry, deviceUnitConfigRegistry));
-        unitTemplateRegistry.registerPlugin(new UnitTemplateCreatorRegistryPlugin(unitTemplateRegistry));
         serviceTemplateRegistry.registerPlugin(new ServiceTemplateCreatorRegistryPlugin(serviceTemplateRegistry));
+        unitTemplateRegistry.registerPlugin(new UnitTemplateCreatorRegistryPlugin(unitTemplateRegistry));
         locationUnitConfigRegistry.registerPlugin(new PublishLocationTransformationRegistryPlugin());
     }
 
@@ -370,6 +372,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      */
     @Override
     protected void registerDependencies() throws CouldNotPerformException {
+        unitTemplateRegistry.registerDependency(serviceTemplateRegistry);
+        
         registerDependency(unitTemplateRegistry, UnitConfig.class);
 
         dalUnitConfigRegistry.registerDependency(deviceUnitConfigRegistry);
@@ -1180,11 +1184,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         if (!isDataAvailable()) {
             throw new InvalidStateException(this + " not synchronized yet!", new NotAvailableException("data"));
         }
-    }
-
-    @Override
-    public void init() throws InitializationException, InterruptedException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 
     @Override
