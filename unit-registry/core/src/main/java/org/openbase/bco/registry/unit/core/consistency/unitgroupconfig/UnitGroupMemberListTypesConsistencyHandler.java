@@ -31,12 +31,12 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
 
 /**
  *
@@ -95,7 +95,7 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
                 UnitConfig unitConfig = getUnitConfigById(memberId);
                 boolean skip = false;
                 for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                    if (!unitGroup.getServiceTemplateList().contains(serviceConfig.getServiceTemplate())) {
+                    if (!unitGroup.getServiceDescriptionList().contains(serviceConfig.getServiceDescription())) {
                         skip = true;
                     }
                 }

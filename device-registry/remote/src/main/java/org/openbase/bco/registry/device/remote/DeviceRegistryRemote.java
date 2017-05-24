@@ -408,7 +408,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
         List<ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfig unitConfig : getUnitConfigs()) {
             for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                if (serviceConfig.getServiceTemplate().getType() == serviceType) {
+                if (serviceConfig.getServiceDescription().getType() == serviceType) {
                     serviceConfigs.add(serviceConfig);
                 }
             }

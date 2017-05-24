@@ -31,7 +31,7 @@ import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -55,23 +55,23 @@ public class UnitGroupUnitTypeConsistencyHandler extends AbstractProtoBufRegistr
         UnitGroupConfig.Builder unitGroup = unitGroupUnitConfig.getUnitGroupConfigBuilder();
 
         if (unitGroup.hasUnitType() && !(unitGroup.getUnitType() == UnitType.UNKNOWN)) {
-            if (unitGroup.getServiceTemplateList().isEmpty()) {
-                unitGroup.addAllServiceTemplate(getUnitTemplateByType(unitGroup.getUnitType()).getServiceTemplateList());
+            if (unitGroup.getServiceDescriptionList().isEmpty()) {
+                unitGroup.addAllServiceDescription(getUnitTemplateByType(unitGroup.getUnitType()).getServiceDescriptionList());
                 throw new EntryModification(entry.setMessage(unitGroupUnitConfig), this);
             }
-            if (!unitTemplateHasSameServices(unitGroup.getUnitType(), unitGroup.getServiceTemplateList())) {
+            if (!unitTemplateHasSameServices(unitGroup.getUnitType(), unitGroup.getServiceDescriptionList())) {
                 unitGroup.setUnitType(UnitType.UNKNOWN);
                 throw new EntryModification(entry.setMessage(unitGroupUnitConfig), this);
             }
         }
     }
 
-    private boolean unitTemplateHasSameServices(UnitType unitType, List<ServiceTemplate> serviceTemplates) throws CouldNotPerformException {
+    private boolean unitTemplateHasSameServices(UnitType unitType, List<ServiceDescription> serviceDescription) throws CouldNotPerformException {
         UnitTemplate unitTemplate = getUnitTemplateByType(unitType);
-        if (!serviceTemplates.stream().noneMatch((serviceTemplate) -> (!unitTemplate.getServiceTemplateList().contains(serviceTemplate)))) {
+        if (!serviceDescription.stream().noneMatch((serviceTemplate) -> (!unitTemplate.getServiceDescriptionList().contains(serviceTemplate)))) {
             return false;
         }
-        return unitTemplate.getServiceTemplateList().stream().noneMatch((serviceType) -> (!serviceTemplates.contains(serviceType)));
+        return unitTemplate.getServiceDescriptionList().stream().noneMatch((serviceType) -> (!serviceDescription.contains(serviceType)));
     }
 
     private UnitTemplate getUnitTemplateByType(UnitType unitType) throws CouldNotPerformException {

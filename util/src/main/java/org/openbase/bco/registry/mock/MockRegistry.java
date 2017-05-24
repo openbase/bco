@@ -43,31 +43,31 @@ import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.location.core.LocationRegistryLauncher;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.ACTIVATION_SOS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.ACTIVATION_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.BATTERY_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.BLIND_SOS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.BLIND_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.BRIGHTNESS_SOS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.BRIGHTNESS_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.BUTTON_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.COLOR_SOS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.COLOR_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.CONTACT_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.HANDLE_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.ILLUMINANCE_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.MOTION_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.POWER_CONSUMPTION_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.POWER_SOS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.POWER_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.SMOKE_ALARM_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.SMOKE_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.STANDBY_SOS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.STANDBY_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.TAMPER_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.TARGET_TEMPERATURE_SOS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.TARGET_TEMPERATURE_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceTemplate.TEMPERATURE_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.ACTIVATION_SOS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.ACTIVATION_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.BATTERY_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.BLIND_SOS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.BLIND_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.BRIGHTNESS_SOS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.BRIGHTNESS_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.BUTTON_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.COLOR_SOS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.COLOR_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.CONTACT_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.HANDLE_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.ILLUMINANCE_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.MOTION_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.POWER_CONSUMPTION_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.POWER_SOS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.POWER_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.SMOKE_ALARM_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.SMOKE_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.STANDBY_SOS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.STANDBY_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.TAMPER_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.TARGET_TEMPERATURE_SOS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.TARGET_TEMPERATURE_SPS;
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.TEMPERATURE_SPS;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.scene.core.SceneRegistryLauncher;
 import org.openbase.bco.registry.scene.lib.SceneRegistry;
@@ -92,8 +92,8 @@ import org.slf4j.LoggerFactory;
 import rst.domotic.binding.BindingConfigType.BindingConfig;
 import rst.domotic.service.ServiceConfigType;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.EnablingStateType.EnablingState;
@@ -173,7 +173,7 @@ public class MockRegistry {
 
     public static final Map<UnitType, String> UNIT_TYPE_LABEL_MAP = new HashMap<>();
 
-    public enum MockServiceTemplate {
+    public enum MockServiceDescription {
 
         // endings:
         // SOS = STATE_OPERATION_SERVICE
@@ -205,17 +205,17 @@ public class MockRegistry {
         TARGET_TEMPERATURE_SPS(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, ServicePattern.PROVIDER),
         TEMPERATURE_SPS(ServiceType.TEMPERATURE_STATE_SERVICE, ServicePattern.PROVIDER);
 
-        private final ServiceTemplate template;
+        private final ServiceDescription description;
 
-        MockServiceTemplate(ServiceType type, ServicePattern servicePattern) {
-            ServiceTemplate.Builder templateBuilder = ServiceTemplate.newBuilder();
-            templateBuilder.setType(type);
-            templateBuilder.setPattern(servicePattern);
-            this.template = templateBuilder.build();
+        MockServiceDescription(ServiceType type, ServicePattern servicePattern) {
+            ServiceDescription.Builder descriptionBuilder = ServiceDescription.newBuilder();
+            descriptionBuilder.setType(type);
+            descriptionBuilder.setPattern(servicePattern);
+            this.description = descriptionBuilder.build();
         }
 
-        public ServiceTemplate getTemplate() {
-            return template;
+        public ServiceDescription getDescription() {
+            return description;
         }
     }
 
@@ -247,11 +247,11 @@ public class MockRegistry {
 
         private final UnitTemplate template;
 
-        MockUnitTemplate(UnitType type, MockServiceTemplate... serviceTemplates) {
+        MockUnitTemplate(UnitType type, MockServiceDescription... serviceTemplates) {
             UnitTemplate.Builder templateBuilder = UnitTemplate.newBuilder();
             templateBuilder.setType(type);
-            for (MockServiceTemplate serviceTemplate : serviceTemplates) {
-                templateBuilder.addServiceTemplate(serviceTemplate.getTemplate());
+            for (MockServiceDescription serviceTemplate : serviceTemplates) {
+                templateBuilder.addServiceDescription(serviceTemplate.getDescription());
             }
 
             switch (type) {
@@ -750,9 +750,9 @@ public class MockRegistry {
 
     public static Iterable<ServiceConfigType.ServiceConfig> getServiceConfig(final UnitTemplate template) {
         List<ServiceConfigType.ServiceConfig> serviceConfigList = new ArrayList<>();
-        template.getServiceTemplateList().stream().forEach((serviceTemplate) -> {
+        template.getServiceDescriptionList().stream().forEach((serviceDescription) -> {
             BindingConfig bindingServiceConfig = BindingConfig.newBuilder().setBindingId("OPENHAB").build();
-            serviceConfigList.add(ServiceConfig.newBuilder().setServiceTemplate(serviceTemplate).setBindingConfig(bindingServiceConfig).build());
+            serviceConfigList.add(ServiceConfig.newBuilder().setServiceDescription(serviceDescription).setBindingConfig(bindingServiceConfig).build());
         });
         return serviceConfigList;
     }
@@ -787,8 +787,8 @@ public class MockRegistry {
         List<UnitTemplateConfig> unitTemplateConfigs = new ArrayList<>();
         for (UnitTemplate.UnitType type : unitTypes) {
             Set<ServiceTemplateConfig> serviceTemplateConfigs = new HashSet<>();
-            for (ServiceTemplate serviceTemplate : MockUnitTemplate.getTemplate(type).getServiceTemplateList()) {
-                serviceTemplateConfigs.add(ServiceTemplateConfig.newBuilder().setServiceType(serviceTemplate.getType()).build());
+            for (ServiceDescription serviceDescription : MockUnitTemplate.getTemplate(type).getServiceDescriptionList()) {
+                serviceTemplateConfigs.add(ServiceTemplateConfig.newBuilder().setServiceType(serviceDescription.getType()).build());
             }
             UnitTemplateConfig config = UnitTemplateConfig.newBuilder().setType(type).addAllServiceTemplateConfig(serviceTemplateConfigs).build();
             unitTemplateConfigs.add(config);

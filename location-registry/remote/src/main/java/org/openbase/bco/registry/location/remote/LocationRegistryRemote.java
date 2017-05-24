@@ -384,7 +384,7 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
             try {
                 unitConfig = unitRegistry.getUnitConfigById(unitConfigId);
                 for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                    if (serviceConfig.getServiceTemplate().getType().equals(type)) {
+                    if (serviceConfig.getServiceDescription().getType().equals(type)) {
                         unitConfigList.add(unitConfig);
                     }
                 }
@@ -600,7 +600,7 @@ public class LocationRegistryRemote extends AbstractRegistryRemote<LocationRegis
             try {
                 unitConfig = unitRegistry.getUnitConfigById(unitConfigId);
                 for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                    if (serviceConfig.getServiceTemplate().getType().equals(type)) {
+                    if (serviceConfig.getServiceDescription().getType().equals(type)) {
                         unitConfigList.add(unitConfig);
                     }
                 }

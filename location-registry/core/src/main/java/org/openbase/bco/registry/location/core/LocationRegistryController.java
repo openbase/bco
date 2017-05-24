@@ -388,7 +388,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
             try {
                 unitConfig = unitRegistryRemote.getUnitConfigById(unitConfigId);
                 for (ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                    if (serviceConfig.getServiceTemplate().getType().equals(type)) {
+                    if (serviceConfig.getServiceDescription().getType().equals(type)) {
                         unitConfigList.add(unitConfig);
                     }
                 }
@@ -569,7 +569,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
             try {
                 unitConfig = unitRegistryRemote.getUnitConfigById(unitConfigId);
                 for (ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                    if (serviceConfig.getServiceTemplate().getType().equals(type)) {
+                    if (serviceConfig.getServiceDescription().getType().equals(type)) {
                         unitConfigList.add(unitConfig);
                     }
                 }

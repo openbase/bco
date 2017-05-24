@@ -126,7 +126,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
@@ -868,8 +868,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         List<UnitConfig> unitGroups = new ArrayList<>();
         for (UnitConfig unitGroupUnitConfig : unitGroupUnitConfigRegistry.getMessages()) {
             boolean skipGroup = false;
-            for (ServiceTemplate serviceTemplate : unitGroupUnitConfig.getUnitGroupConfig().getServiceTemplateList()) {
-                if (!serviceTypes.contains(serviceTemplate.getType())) {
+            for (ServiceDescription serviceDescription : unitGroupUnitConfig.getUnitGroupConfig().getServiceDescriptionList()) {
+                if (!serviceTypes.contains(serviceDescription.getType())) {
                     skipGroup = true;
                 }
             }

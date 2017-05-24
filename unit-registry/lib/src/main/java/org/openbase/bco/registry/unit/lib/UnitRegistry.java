@@ -80,7 +80,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, Shutdownab
             foundServiceType = false;
             for (final ServiceType serviceType : serviceTypes) {
                 for (ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                    if (serviceConfig.getServiceTemplate().getType() == serviceType) {
+                    if (serviceConfig.getServiceDescription().getType() == serviceType) {
                         foundServiceType = true;
                     }
                 }

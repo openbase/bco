@@ -44,6 +44,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -464,7 +465,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfig unitConfig : getUnitConfigs()) {
             for (ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                if (serviceConfig.getServiceTemplate().getType() == serviceType) {
+                if (serviceConfig.getServiceDescription().getType() == serviceType) {
                     serviceConfigs.add(serviceConfig);
                 }
             }
@@ -538,8 +539,8 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         List<UnitConfig> unitGroups = new ArrayList<>();
         for (UnitConfig unitGroupUnitConfig : unitGroupUnitConfigRemoteRegistry.getMessages()) {
             boolean skipGroup = false;
-            for (ServiceTemplateType.ServiceTemplate serviceTemplate : unitGroupUnitConfig.getUnitGroupConfig().getServiceTemplateList()) {
-                if (!serviceTypes.contains(serviceTemplate.getType())) {
+            for (ServiceDescription serviceDescription : unitGroupUnitConfig.getUnitGroupConfig().getServiceDescriptionList()) {
+                if (!serviceTypes.contains(serviceDescription.getType())) {
                     skipGroup = true;
                 }
             }
@@ -572,7 +573,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
             foundServiceType = false;
             for (ServiceTemplateType.ServiceTemplate.ServiceType serviceType : serviceTypes) {
                 for (ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                    if (serviceConfig.getServiceTemplate().getType() == serviceType) {
+                    if (serviceConfig.getServiceDescription().getType() == serviceType) {
                         foundServiceType = true;
                     }
                 }
