@@ -147,7 +147,7 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
     public String getServiceName() {
         for (ServiceConfig serviceConfig : serviceConfigs) {
             if (serviceConfig != null) {
-                return serviceConfig.getServiceTemplate().getType().name();
+                return serviceConfig.getServiceDescription().getType().name();
             }
         }
         return "---";
@@ -267,14 +267,14 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
             setServiceConfig(serviceConfig);
 //            updateDynamicComponents();
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not bind ServiceConfig[" + serviceConfig.getServiceTemplate().getType() + "] on UnitRemote[" + unitRemote.getScope() + "]!", ex);
+            throw new CouldNotPerformException("Could not bind ServiceConfig[" + serviceConfig.getServiceDescription().getType() + "] on UnitRemote[" + unitRemote.getScope() + "]!", ex);
         }
     }
 
     private void setServiceConfig(final ServiceConfig serviceConfig) throws CouldNotPerformException {
         try {
             try {
-                switch (serviceConfig.getServiceTemplate().getPattern()) {
+                switch (serviceConfig.getServiceDescription().getPattern()) {
                     case OPERATION:
                         if (operationServiceConfig != null) {
                             throw new InvalidStateException("OperationServiceConfig already bind!");
@@ -297,7 +297,7 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
                         setConsumerServiceConfig(serviceConfig);
                         break;
                     default:
-                        throw new EnumNotSupportedException(serviceConfig.getServiceTemplate().getPattern(), this);
+                        throw new EnumNotSupportedException(serviceConfig.getServiceDescription().getPattern(), this);
                 }
             } catch (ClassCastException ex) {
                 throw new InvalidStateException("Given service is not compatible with registered unit!", ex);

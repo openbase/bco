@@ -33,6 +33,7 @@ import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.action.ActionConfigType;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
@@ -192,15 +193,15 @@ public interface Service {
         }
     }
 
-    public static Method detectServiceMethod(final ServiceTemplate template, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
-        return detectServiceMethod(template.getType(), template.getPattern(), instanceClass, argumentClasses);
+    public static Method detectServiceMethod(final ServiceDescription description, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
+        return detectServiceMethod(description.getType(), description.getPattern(), instanceClass, argumentClasses);
     }
 
-    public static Object invokeServiceMethod(final ServiceTemplate template, final Service instance, final Object... arguments) throws CouldNotPerformException {
+    public static Object invokeServiceMethod(final ServiceDescription description, final Service instance, final Object... arguments) throws CouldNotPerformException {
         try {
-            return detectServiceMethod(template, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
+            return detectServiceMethod(description, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
         } catch (IllegalAccessException | ExceptionInInitializerError ex) {
-            throw new NotSupportedException("ServiceType[" + template.getType().name() + "] with Pattern[" + template.getPattern() + "]", instance, ex);
+            throw new NotSupportedException("ServiceType[" + description.getType().name() + "] with Pattern[" + description.getPattern() + "]", instance, ex);
         } catch (NullPointerException ex) {
             throw new CouldNotPerformException("Invocation failed because given instance is not available!", ex);
         } catch (InvocationTargetException ex) {

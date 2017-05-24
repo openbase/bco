@@ -36,6 +36,7 @@ import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.unit.UnitConfigType;
 
@@ -104,17 +105,17 @@ public abstract class AbstractDALUnitController<M extends GeneratedMessage, MB e
             }
 
             // === Verify if all update methods are registered. ===
-            for (ServiceTemplateType.ServiceTemplate serviceTemplate : getTemplate().getServiceTemplateList()) {
+            for (ServiceDescription serviceDescription : getTemplate().getServiceDescriptionList()) {
 
                 // filter other services than provider
-                if (serviceTemplate.getPattern() != ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER) {
+                if (serviceDescription.getPattern() != ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER) {
                     continue;
                 }
 
                 // verify
-                updateMethod = ProviderService.getUpdateMethodName(serviceTemplate.getType());
+                updateMethod = ProviderService.getUpdateMethodName(serviceDescription.getType());
                 if (!unitMethods.contains(updateMethod)) {
-                    exceptionStack = MultiException.push(serviceTemplate, new NotAvailableException("Method", updateMethod), exceptionStack);
+                    exceptionStack = MultiException.push(serviceDescription, new NotAvailableException("Method", updateMethod), exceptionStack);
                 }
             }
 

@@ -33,7 +33,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -64,9 +64,9 @@ public class GenericUnitSimulator extends AbstractUnitSimulator {
     private void initServiceSimulators(final UnitController unitController) throws InitializationException, InterruptedException {
         try {
             final MultiException.ExceptionStack exceptionStack = new MultiException.ExceptionStack();
-            for (final ServiceTemplate serviceTemplate : unitController.getTemplate().getServiceTemplateList()) {
+            for (final ServiceDescription serviceDescription : unitController.getTemplate().getServiceDescriptionList()) {
                 try {
-                    serviceSimulatorList.add(serviceSimulatorFactory.newInstance(unitController, serviceTemplate.getType()));
+                    serviceSimulatorList.add(serviceSimulatorFactory.newInstance(unitController, serviceDescription.getType()));
                 } catch (final CouldNotPerformException ex) {
                     MultiException.push(this, ex, exceptionStack);
                 }

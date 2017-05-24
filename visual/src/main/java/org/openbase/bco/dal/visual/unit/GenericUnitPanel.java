@@ -210,50 +210,50 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
                 try {
                     // filter by service type
                     // in case the service type is unknown, all services are loaded, in case the service type is defined only this type will be loaded and all other types are filtered.
-                    if (serviceType != ServiceType.UNKNOWN && serviceConfig.getServiceTemplate().getType() != serviceType) {
+                    if (serviceType != ServiceType.UNKNOWN && serviceConfig.getServiceDescription().getType() != serviceType) {
                         continue;
                     }
 
                     // skip consumer
-                    if (serviceConfig.getServiceTemplate().getPattern().equals(ServicePattern.CONSUMER)) {
+                    if (serviceConfig.getServiceDescription().getPattern().equals(ServicePattern.CONSUMER)) {
                         continue;
                     }
 
                     // check if service type is already selected.
-                    if (!servicePanelMap.containsKey(serviceConfig.getServiceTemplate().getType())) {
+                    if (!servicePanelMap.containsKey(serviceConfig.getServiceDescription().getType())) {
                         try {
                             servicePanel = new JPanel();
-                            servicePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getServiceTemplate().getType().name()) + " " + ScopeGenerator.generateStringRep(unitConfig.getScope())));
-                            AbstractServicePanel abstractServicePanel = instantiatServicePanel(serviceConfig, loadServicePanelClass(serviceConfig.getServiceTemplate().getType()), getRemoteService());
+                            servicePanel.setBorder(javax.swing.BorderFactory.createTitledBorder(StringProcessor.transformUpperCaseToCamelCase(serviceConfig.getServiceDescription().getType().name()) + " " + ScopeGenerator.generateStringRep(unitConfig.getScope())));
+                            AbstractServicePanel abstractServicePanel = instantiatServicePanel(serviceConfig, loadServicePanelClass(serviceConfig.getServiceDescription().getType()), getRemoteService());
                             abstractServicePanel.setUnitId(unitConfig.getId());
-                            abstractServicePanel.setServiceType(serviceConfig.getServiceTemplate().getType());
+                            abstractServicePanel.setServiceType(serviceConfig.getServiceDescription().getType());
                             servicePanel.add(abstractServicePanel);
-                            servicePanelMap.put(serviceConfig.getServiceTemplate().getType(), abstractServicePanel);
+                            servicePanelMap.put(serviceConfig.getServiceDescription().getType(), abstractServicePanel);
                             componentList.add(servicePanel);
                         } catch (CouldNotPerformException ex) {
-                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service panel for ServiceType[" + serviceConfig.getServiceTemplate().getType().name() + "]", ex), logger, LogLevel.ERROR);
+                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service panel for ServiceType[" + serviceConfig.getServiceDescription().getType().name() + "]", ex), logger, LogLevel.ERROR);
                         }
                     }
 
                     // bind service
-                    if (!servicePanelMap.containsKey(serviceConfig.getServiceTemplate().getType())) {
-                        logger.error("Skip Service[" + serviceConfig.getServiceTemplate().getType() + "] binding because no related service panel registered!");
+                    if (!servicePanelMap.containsKey(serviceConfig.getServiceDescription().getType())) {
+                        logger.error("Skip Service[" + serviceConfig.getServiceDescription().getType() + "] binding because no related service panel registered!");
                         continue;
                     }
-                    servicePanelMap.get(serviceConfig.getServiceTemplate().getType()).bindServiceConfig(serviceConfig);
+                    servicePanelMap.get(serviceConfig.getServiceDescription().getType()).bindServiceConfig(serviceConfig);
                 } catch (CouldNotPerformException | NullPointerException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not configure service panel for ServiceType[" + serviceConfig.getServiceTemplate().getType().name() + "]", ex), logger, LogLevel.ERROR);
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not configure service panel for ServiceType[" + serviceConfig.getServiceDescription().getType().name() + "]", ex), logger, LogLevel.ERROR);
                 }
             }
             Set<ServiceType> serviceTypeSet = new HashSet<>();
             for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                if (!serviceTypeSet.contains(serviceConfig.getServiceTemplate().getType())) {
-                    serviceTypeSet.add(serviceConfig.getServiceTemplate().getType());
-                    if (!servicePanelMap.containsKey(serviceConfig.getServiceTemplate().getType())) {
-                        logger.error("Skip Service[" + serviceConfig.getServiceTemplate().getType() + "] activation because no related service panel registered!");
+                if (!serviceTypeSet.contains(serviceConfig.getServiceDescription().getType())) {
+                    serviceTypeSet.add(serviceConfig.getServiceDescription().getType());
+                    if (!servicePanelMap.containsKey(serviceConfig.getServiceDescription().getType())) {
+                        logger.error("Skip Service[" + serviceConfig.getServiceDescription().getType() + "] activation because no related service panel registered!");
                         continue;
                     }
-                    servicePanelMap.get(serviceConfig.getServiceTemplate().getType()).initObserver();
+                    servicePanelMap.get(serviceConfig.getServiceDescription().getType()).initObserver();
                 }
             }
 

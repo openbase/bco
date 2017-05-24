@@ -38,11 +38,11 @@ import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rsb.patterns.RemoteServer;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
 
 /**
  *
@@ -84,7 +84,7 @@ public class HowToObserveServiceStateChangesViaRSB {
                 for (final ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
 
                     // check if service type match
-                    if (serviceConfig.getServiceTemplate().getType().equals(serviceType)) {
+                    if (serviceConfig.getServiceDescription().getType().equals(serviceType)) {
                         final Scope scope = ScopeTransformer.transform(unitConfig.getScope()).concat(new Scope("/status"));
                         LOGGER.info("Register listener on Scope[" + scope + "]");
                         final Listener listener = Factory.getInstance().createListener(scope);

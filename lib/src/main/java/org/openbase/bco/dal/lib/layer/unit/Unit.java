@@ -35,11 +35,11 @@ import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Identifiable;
 import org.openbase.jul.iface.Snapshotable;
+import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.iface.provider.LabelProvider;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -48,6 +48,7 @@ import rst.domotic.action.ActionAuthorityType;
 import rst.domotic.action.ActionConfigType;
 import rst.domotic.action.ActionPriorityType;
 import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
@@ -113,17 +114,17 @@ public interface Unit<D> extends Service, LabelProvider, ScopeProvider, Identifi
     public default Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
         MultiException.ExceptionStack exceptionStack = null;
         Snapshot.Builder snapshotBuilder = Snapshot.newBuilder();
-        for (ServiceTemplate serviceTemplate : getTemplate().getServiceTemplateList()) {
+        for (ServiceDescription serviceDescription : getTemplate().getServiceDescriptionList()) {
             try {
-                ActionConfigType.ActionConfig.Builder actionConfig = ActionConfigType.ActionConfig.newBuilder().setServiceType(serviceTemplate.getType()).setUnitId(getId());
+                ActionConfigType.ActionConfig.Builder actionConfig = ActionConfigType.ActionConfig.newBuilder().setServiceType(serviceDescription.getType()).setUnitId(getId());
 
                 // skip non operation services.
-                if (serviceTemplate.getPattern() != ServiceTemplate.ServicePattern.OPERATION) {
+                if (serviceDescription.getPattern() != ServiceTemplate.ServicePattern.OPERATION) {
                     continue;
                 }
 
                 // load operation service attribute by related provider service
-                Object serviceAttribute = Service.invokeServiceMethod(serviceTemplate.getType(), ServiceTemplate.ServicePattern.PROVIDER, this);
+                Object serviceAttribute = Service.invokeServiceMethod(serviceDescription.getType(), ServiceTemplate.ServicePattern.PROVIDER, this);
                 System.out.println("load[" + serviceAttribute + "] type: " + serviceAttribute.getClass().getSimpleName());
 
                 // verify operation service state (e.g. ignore UNKNOWN service states)

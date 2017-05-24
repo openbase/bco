@@ -60,7 +60,11 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionConfigType.ActionConfig;
 import rst.domotic.registry.UnitRegistryDataType;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.CONSUMER;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER;
 import rst.domotic.state.EnablingStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
@@ -255,15 +259,15 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         RPCHelper.registerInterface(Unit.class, this, server);
 
         // collect and register service interface methods via unit templates
-        HashMap<String, ServiceTemplate> serviceInterfaceMap = new HashMap<>();
-        for (ServiceTemplate serviceTemplate : getTemplate().getServiceTemplateList()) {
-            serviceInterfaceMap.put(StringProcessor.transformUpperCaseToCamelCase(serviceTemplate.getType().name())
-                    + StringProcessor.transformUpperCaseToCamelCase(serviceTemplate.getPattern().name()), serviceTemplate);
+        HashMap<String, ServiceDescription> serviceInterfaceMap = new HashMap<>();
+        for (ServiceDescription serviceDescription : getTemplate().getServiceDescriptionList()) {
+            serviceInterfaceMap.put(StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getType().name())
+                    + StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getPattern().name()), serviceDescription);
         }
 
         Class<? extends Service> serviceInterfaceClass = null;
         Package servicePackage = null;
-        for (Entry<String, ServiceTemplate> serviceInterfaceMapEntry : serviceInterfaceMap.entrySet()) {
+        for (Entry<String, ServiceDescription> serviceInterfaceMapEntry : serviceInterfaceMap.entrySet()) {
             try {
                 if (null != serviceInterfaceMapEntry.getValue().getPattern()) // Identify package
                 {
@@ -357,7 +361,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             final Object attribute = serviceJSonProcessor.deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType());
 
             // Since its an action it has to be an operation service pattern
-            final ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(actionConfig.getServiceType()).setPattern(ServiceTemplate.ServicePattern.OPERATION).build();
+            final ServiceDescription serviceTemplate = ServiceDescription.newBuilder().setType(actionConfig.getServiceType()).setPattern(ServiceTemplate.ServicePattern.OPERATION).build();
 
             return GlobalCachedExecutorService.submit(() -> {
                 Service.invokeServiceMethod(serviceTemplate, AbstractUnitController.this, attribute);

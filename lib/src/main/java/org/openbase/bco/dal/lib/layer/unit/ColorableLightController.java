@@ -107,7 +107,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
             // add meta config of service config with type ColorStateService
             ServiceConfig colorStateServiceConfig = null;
             for (ServiceConfig serviceConfig : config.getServiceConfigList()) {
-                if (serviceConfig.getServiceTemplate().getType() == ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE) {
+                if (serviceConfig.getServiceDescription().getType() == ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE) {
                     colorStateServiceConfig = serviceConfig;
                 }
             }

@@ -124,7 +124,7 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
                 // sort dal unit by service type
                 unitConfig.getServiceConfigList().stream().forEach((serviceConfig) -> {
                     // register unit for service type. UnitConfigs are may added twice because of dublicated type of different service pattern but are filtered by the set. 
-                    serviceMap.get(serviceConfig.getServiceTemplate().getType()).add(unitConfig);
+                    serviceMap.get(serviceConfig.getServiceDescription().getType()).add(unitConfig);
                 });
             }
 
@@ -257,7 +257,7 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
                 // every abstractServiceRemotes internal units if the serviceType is implemented by the unitType
                 ServiceType serviceType;
                 try {
-                    serviceType = Registries.getUnitRegistry().getUnitTemplateByType(unitType).getServiceTemplateList().get(0).getType();
+                    serviceType = Registries.getUnitRegistry().getUnitTemplateByType(unitType).getServiceDescriptionList().get(0).getType();
                 } catch (IndexOutOfBoundsException ex) {
                     // if there is not at least one serviceType for the unitType then the snapshot is empty
                     return CompletableFuture.completedFuture(snapshotBuilder.build());
