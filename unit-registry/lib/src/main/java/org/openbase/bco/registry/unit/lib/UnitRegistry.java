@@ -318,4 +318,27 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, Shutdownab
     public Boolean isSceneUnitRegistryConsistent() throws CouldNotPerformException;
 
     public void validateData() throws InvalidStateException;
+    
+    @RPCMethod
+    public Future<ServiceTemplate> updateServiceTemplate(final ServiceTemplate serviceTemplate) throws CouldNotPerformException;
+
+    @RPCMethod
+    public Boolean containsServiceTemplate(final ServiceTemplate serviceTemplate) throws CouldNotPerformException;
+
+    @RPCMethod
+    public Boolean containsServiceTemplateById(final String serviceTemplateId) throws CouldNotPerformException;
+
+    @RPCMethod
+    public ServiceTemplate getServiceTemplateById(final String serviceTemplateId) throws CouldNotPerformException;
+
+    public List<ServiceTemplate> getServiceTemplates() throws CouldNotPerformException;
+
+    @RPCMethod
+    public ServiceTemplate getServiceTemplateByType(final ServiceType type) throws CouldNotPerformException;
+
+    @RPCMethod
+    public Boolean isServiceTemplateRegistryReadOnly() throws CouldNotPerformException;
+
+    @RPCMethod
+    public Boolean isServiceTemplateRegistryConsistent() throws CouldNotPerformException;
 }

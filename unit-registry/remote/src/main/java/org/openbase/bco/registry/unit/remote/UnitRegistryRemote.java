@@ -46,6 +46,7 @@ import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
@@ -62,9 +63,11 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitTemplate.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ServiceTemplate.getDefaultInstance()));
     }
 
     private final SynchronizedRemoteRegistry<String, UnitTemplate, UnitTemplate.Builder> unitTemplateRemoteRegistry;
+    private final SynchronizedRemoteRegistry<String, ServiceTemplate, ServiceTemplate.Builder> serviceTemplateRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> dalUnitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> userUnitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> authorizationGroupUnitConfigRemoteRegistry;
@@ -84,6 +87,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         super(JPUnitRegistryScope.class, UnitRegistryData.class);
         try {
             this.unitTemplateRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.UNIT_TEMPLATE_FIELD_NUMBER);
+            this.serviceTemplateRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.SERVICE_TEMPLATE_FIELD_NUMBER);
             this.dalUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry(this, UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER);
             this.userUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
             this.authorizationGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
@@ -130,6 +134,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     @Override
     protected void registerRemoteRegistries() throws CouldNotPerformException {
         registerRemoteRegistry(unitTemplateRemoteRegistry);
+        registerRemoteRegistry(serviceTemplateRemoteRegistry);
         registerRemoteRegistry(dalUnitConfigRemoteRegistry);
         registerRemoteRegistry(userUnitConfigRemoteRegistry);
         registerRemoteRegistry(authorizationGroupUnitConfigRemoteRegistry);
@@ -152,6 +157,10 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     // todo: sync unitConfigRemoteRegistry
     public SynchronizedRemoteRegistry<String, UnitTemplate, UnitTemplate.Builder> getUnitTemplateRemoteRegistry() {
         return unitTemplateRemoteRegistry;
+    }
+
+    public SynchronizedRemoteRegistry<String, ServiceTemplate, ServiceTemplate.Builder> getServiceTemplateRemoteRegistry() {
+        return serviceTemplateRemoteRegistry;
     }
 
     public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getDalUnitConfigRemoteRegistry() {
@@ -865,4 +874,72 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         }
         return unitTypes;
     }
-}    
+
+    @Override
+    public Future<ServiceTemplate> updateServiceTemplate(ServiceTemplate serviceTemplate) throws CouldNotPerformException {
+        try {
+            return RPCHelper.callRemoteMethod(serviceTemplate, this, ServiceTemplate.class);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not update service template!", ex);
+        }
+    }
+
+    @Override
+    public Boolean containsServiceTemplate(ServiceTemplate serviceTemplate) throws CouldNotPerformException {
+        validateData();
+        return serviceTemplateRemoteRegistry.contains(serviceTemplate);
+    }
+
+    @Override
+    public Boolean containsServiceTemplateById(String serviceTemplateId) throws CouldNotPerformException {
+        validateData();
+        return serviceTemplateRemoteRegistry.contains(serviceTemplateId);
+    }
+
+    @Override
+    public ServiceTemplate getServiceTemplateById(String serviceTemplateId) throws CouldNotPerformException {
+        validateData();
+        return serviceTemplateRemoteRegistry.getMessage(serviceTemplateId);
+    }
+
+    @Override
+    public List<ServiceTemplate> getServiceTemplates() throws CouldNotPerformException {
+        validateData();
+        return serviceTemplateRemoteRegistry.getMessages();
+    }
+
+    @Override
+    public ServiceTemplate getServiceTemplateByType(ServiceType type) throws CouldNotPerformException {
+        validateData();
+        for (final ServiceTemplate serviceTemplates : serviceTemplateRemoteRegistry.getMessages()) {
+            if (serviceTemplates.getType() == type) {
+                return serviceTemplates;
+            }
+        }
+        throw new NotAvailableException("ServiceTemplate", type.name(), "No ServiceTemplate with given Type[" + type + "] registered!");
+    }
+
+    @Override
+    public Boolean isServiceTemplateRegistryReadOnly() throws CouldNotPerformException {
+        validateData();
+        try {
+            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
+                return true;
+            }
+        } catch (JPServiceException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
+        }
+
+        return getData().getServiceTemplateRegistryReadOnly();
+    }
+
+    @Override
+    public Boolean isServiceTemplateRegistryConsistent() throws CouldNotPerformException {
+        try {
+            validateData();
+            return getData().getServiceTemplateRegistryConsistent();
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not check consistency!", ex);
+        }
+    }
+}
