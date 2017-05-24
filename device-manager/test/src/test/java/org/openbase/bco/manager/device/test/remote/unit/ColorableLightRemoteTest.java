@@ -141,12 +141,13 @@ public class ColorableLightRemoteTest {
 
             lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build()).get();
             colorableLightRemote.requestData().get();
+            lightRemote.requestData().get();
 
             assertEquals(lightRemote.getPowerState().getValue(), colorableLightRemote.getPowerState().getValue());
 
             lightRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build()).get();
             colorableLightRemote.requestData().get();
-
+            lightRemote.requestData().get();
             assertEquals(lightRemote.getPowerState().getValue(), colorableLightRemote.getPowerState().getValue());
         } catch (InterruptedException | CouldNotPerformException | ExecutionException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
