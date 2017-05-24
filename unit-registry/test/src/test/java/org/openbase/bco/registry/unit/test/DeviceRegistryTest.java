@@ -223,8 +223,8 @@ public class DeviceRegistryTest {
         unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.COLORABLE_LIGHT);
         unitTemplate = unitTemplate.toBuilder().addServiceDescription(batteryTemplate).addServiceDescription(colorTemplate).build();
         unitTemplate = unitRegistry.updateUnitTemplate(unitTemplate).get();
-        assertTrue(unitTemplate.getServiceDescriptionList().contains(batteryTemplate));
-        assertTrue(unitTemplate.getServiceDescriptionList().contains(colorTemplate));
+        assertTrue(unitTemplate.getServiceDescriptionList().get(0).getType() == ServiceType.BATTERY_STATE_SERVICE);
+        assertTrue(unitTemplate.getServiceDescriptionList().get(1).getType() == ServiceType.COLOR_STATE_SERVICE);
         assertTrue(unitTemplate.getType() == UnitType.COLORABLE_LIGHT);
 
         UnitTemplateConfig unitTemplateConfig = UnitTemplateConfig.newBuilder().setType(unitTemplate.getType()).build();
