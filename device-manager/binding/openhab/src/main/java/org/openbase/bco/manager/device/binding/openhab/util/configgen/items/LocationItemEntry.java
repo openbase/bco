@@ -25,7 +25,7 @@ import org.openbase.bco.manager.device.binding.openhab.util.configgen.GroupEntry
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -38,13 +38,13 @@ public class LocationItemEntry extends AbstractItemEntry {
     public static String LOCATION_GROUP_LABEL = "Locations";
     public static String LOCATION_RSB_BINDING_CONFIG = "bco.manager.location";
 
-    public LocationItemEntry(final UnitConfig locationUnitConfig, final ServiceTemplate serviceTemplate) throws org.openbase.jul.exception.InstantiationException {
+    public LocationItemEntry(final UnitConfig locationUnitConfig, final ServiceDescription serviceDescription) throws org.openbase.jul.exception.InstantiationException {
         super(locationUnitConfig, null);
         try {
-            this.itemId = generateItemId(locationUnitConfig, serviceTemplate.getType());
+            this.itemId = generateItemId(locationUnitConfig, serviceDescription.getType());
             this.icon = "";
-            this.commandType = getDefaultCommand(serviceTemplate);
-            this.label = locationUnitConfig.getLabel() + "_" + StringProcessor.transformUpperCaseToCamelCase(serviceTemplate.getType().name());
+            this.commandType = getDefaultCommand(serviceDescription.getType());
+            this.label = locationUnitConfig.getLabel() + "_" + StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getType().name());
             if ("Number".equals(commandType)) {
                 label += " [%.0f]";
             }

@@ -32,15 +32,14 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ProtobufVariableProvider;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
-import org.openbase.jul.processing.StringProcessor;
 import rst.configuration.MetaConfigType.MetaConfig;
-import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 
 /**
  *
@@ -79,7 +78,7 @@ public class ServiceItemEntry extends AbstractItemEntry {
             try {
                 configPool.register(new MetaConfigVariableProvider("ServiceTemplateMetaConfig", lookupServiceTemplate(deviceClass, unitConfig, serviceConfig).getMetaConfig()));
             } catch (final NotAvailableException ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service template meta config for Service[" + serviceConfig.getServiceTemplate().getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex), logger, LogLevel.ERROR);
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service template meta config for Service[" + serviceConfig.getServiceDescription().getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex), logger, LogLevel.ERROR);
             }
 
             try {
@@ -97,7 +96,7 @@ public class ServiceItemEntry extends AbstractItemEntry {
             try {
                 this.commandType = configPool.getValue(SERVICE_TEMPLATE_BINDING_COMMAND);
             } catch (NotAvailableException ex) {
-                this.commandType = getDefaultCommand(serviceConfig.getServiceTemplate());
+                this.commandType = getDefaultCommand(serviceConfig.getServiceDescription().getType());
             }
 
             try {
@@ -107,7 +106,7 @@ public class ServiceItemEntry extends AbstractItemEntry {
             }
 
             this.groups.add("bco_"+unitConfig.getType().name().toLowerCase());
-            this.groups.add("bco_"+serviceConfig.getServiceTemplate().getType().name().toLowerCase());
+            this.groups.add("bco_"+serviceConfig.getServiceDescription().getType().name().toLowerCase());
 
             try {
                 // just add location group if unit is visible.
@@ -134,7 +133,7 @@ public class ServiceItemEntry extends AbstractItemEntry {
 
     private boolean checkAlreadyAvailableThrougOtherComponents(final UnitConfig unitConfig, final ServiceConfig serviceConfig) {
         // skip if function is already available through other components
-        if (unitConfig.getType() == UnitType.COLORABLE_LIGHT && serviceConfig.getServiceTemplate().getType() == ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE) {
+        if (unitConfig.getType() == UnitType.COLORABLE_LIGHT && serviceConfig.getServiceDescription().getType() == ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE) {
             return true;
         }
         return false;
@@ -169,13 +168,13 @@ public class ServiceItemEntry extends AbstractItemEntry {
             if (unitTemplateConfig.getId().equals(unitConfig.getUnitTemplateConfigId())) {
                 List<ServiceTemplateConfig> serviceTemplateList = unitTemplateConfig.getServiceTemplateConfigList();
                 for (ServiceTemplateConfig serviceTemplate : serviceTemplateList) {
-                    if (serviceTemplate.getServiceType().equals(serviceConfig.getServiceTemplate().getType())) {
+                    if (serviceTemplate.getServiceType().equals(serviceConfig.getServiceDescription().getType())) {
                         return serviceTemplate;
                     }
                 }
             }
         }
-        throw new NotAvailableException("service template for ServiceType[" + serviceConfig.getServiceTemplate().getType().name() + "]");
+        throw new NotAvailableException("service template for ServiceType[" + serviceConfig.getServiceDescription().getType().name() + "]");
     }
 
     private UnitTemplateConfig lookupUnitTemplateConfig(final DeviceClass deviceClass, final UnitConfig unitConfig) throws NotAvailableException {

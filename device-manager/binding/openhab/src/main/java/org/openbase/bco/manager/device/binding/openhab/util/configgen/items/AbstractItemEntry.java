@@ -30,7 +30,25 @@ import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
-import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BATTERY_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BLIND_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BUTTON_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.CONTACT_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.HANDLE_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.ILLUMINANCE_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.INTENSITY_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.MOTION_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_CONSUMPTION_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.SMOKE_ALARM_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.SMOKE_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.TAMPER_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.TARGET_TEMPERATURE_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.TEMPERATURE_ALARM_STATE_SERVICE;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.TEMPERATURE_STATE_SERVICE;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -193,8 +211,8 @@ public abstract class AbstractItemEntry implements ItemEntry, Comparable<Abstrac
         return "{ " + itemHardwareConfig + " }";
     }
 
-    protected String getDefaultCommand(ServiceTemplateType.ServiceTemplate serviceTemplate) {
-        switch (serviceTemplate.getType()) {
+    protected String getDefaultCommand(ServiceTemplate.ServiceType serviceType) {
+        switch (serviceType) {
             case COLOR_STATE_SERVICE:
                 return "Color";
             case POWER_CONSUMPTION_STATE_SERVICE:
@@ -222,7 +240,7 @@ public abstract class AbstractItemEntry implements ItemEntry, Comparable<Abstrac
             case BRIGHTNESS_STATE_SERVICE:
                 return "Dimmer";
             default:
-                logger.warn("Unkown Service Type: " + serviceTemplate);
+                logger.warn("Unkown Service Type: " + serviceType);
                 return "";
         }
     }

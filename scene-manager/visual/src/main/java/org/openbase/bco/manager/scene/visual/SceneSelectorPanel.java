@@ -43,6 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.registry.DeviceRegistryDataType.DeviceRegistryData;
 import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.EnablingStateType.EnablingState;
@@ -273,12 +274,12 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
             ArrayList<ServiceTypeHolder> serviceTypeHolderList = new ArrayList<>();
             UnitType selectedUnitType = ((UnitTypeHolder) unitTypeComboBox.getSelectedItem()).getType();
             serviceTypeHolderList.add(ALL_Service);
-            for (ServiceTemplate serviceTemplate : deviceRegistryRemote.getUnitTemplateByType(selectedUnitType).getServiceTemplateList()) {
-                if (serviceTemplate.getPattern() != ServiceTemplate.ServicePattern.OPERATION) {
+            for (ServiceDescription serviceDescription : deviceRegistryRemote.getUnitTemplateByType(selectedUnitType).getServiceDescriptionList()) {
+                if (serviceDescription.getPattern() != ServiceTemplate.ServicePattern.OPERATION) {
                     continue;
                 }
 
-                serviceTypeHolderList.add(new ServiceTypeHolder(serviceTemplate.getType()));
+                serviceTypeHolderList.add(new ServiceTypeHolder(serviceDescription.getType()));
             }
             Collections.sort(serviceTypeHolderList);
             selectedServiceTypeComboBox.setModel(new DefaultComboBoxModel(serviceTypeHolderList.toArray()));

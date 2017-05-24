@@ -58,6 +58,7 @@ import org.openbase.jul.schedule.SyncObject;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionConfigType.ActionConfig;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.ButtonStateType.ButtonState;
@@ -271,8 +272,8 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
                     logger.info("applyAction: " + actionConfig.getLabel());
                     final Object attribute = new ServiceJSonProcessor().deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType());
                     // Since its an action it has to be an operation service pattern
-                    final ServiceTemplate serviceTemplate = ServiceTemplate.newBuilder().setType(actionConfig.getServiceType()).setPattern(ServiceTemplate.ServicePattern.OPERATION).build();
-                    Service.invokeServiceMethod(serviceTemplate, SceneControllerImpl.this, attribute);
+                    final ServiceDescription serviceDescription = ServiceDescription.newBuilder().setType(actionConfig.getServiceType()).setPattern(ServiceTemplate.ServicePattern.OPERATION).build();
+                    Service.invokeServiceMethod(serviceDescription, SceneControllerImpl.this, attribute);
                     return null;
                 } catch (CouldNotPerformException ex) {
                     throw new CouldNotPerformException("Could not apply action!", ex);

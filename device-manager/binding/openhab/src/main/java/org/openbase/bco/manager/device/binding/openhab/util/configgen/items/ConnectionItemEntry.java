@@ -28,7 +28,7 @@ import static org.openbase.bco.manager.device.binding.openhab.util.configgen.ite
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -40,12 +40,12 @@ public class ConnectionItemEntry extends AbstractItemEntry {
 
     public static String CONNECTION_GROUP_LABEL = "Connections";
 
-    public ConnectionItemEntry(final UnitConfig connectionUnitConfig, final ServiceTemplate serviceTemplate) throws org.openbase.jul.exception.InstantiationException {
+    public ConnectionItemEntry(final UnitConfig connectionUnitConfig, final ServiceDescription serviceDescription) throws org.openbase.jul.exception.InstantiationException {
         super(connectionUnitConfig, null);
         try {
-            this.itemId = generateItemId(connectionUnitConfig, serviceTemplate.getType());
+            this.itemId = generateItemId(connectionUnitConfig, serviceDescription.getType());
             this.icon = "";
-            this.commandType = getDefaultCommand(serviceTemplate);
+            this.commandType = getDefaultCommand(serviceDescription.getType());
             this.label = connectionUnitConfig.getLabel();
             this.itemHardwareConfig = "rsb=\"" + LOCATION_RSB_BINDING_CONFIG + ":" + connectionUnitConfig.getId() + "\"";
             groups.add(CONNECTION_GROUP_LABEL);

@@ -54,9 +54,9 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -166,26 +166,26 @@ public class OpenHABItemConfigGenerator {
         try {
             
             for (UnitConfig locationUnitConfig : locationRegistryRemote.getLocationConfigs()) {
-                Map<ServiceType, ServiceTemplate> serviceTemplatesOnLocation = new HashMap<>();
+                Map<ServiceType, ServiceDescription> serviceDescriptionsOnLocation = new HashMap<>();
                 for (UnitConfig unitConfig : unitRegistry.getUnitConfigs()) {
                     if (locationUnitConfig.getLocationConfig().getUnitIdList().contains(unitConfig.getId())) {
-                        for (ServiceTemplate serviceTemplate : unitRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTemplateList()) {
-                            if (!serviceTemplatesOnLocation.containsKey(serviceTemplate.getType())) {
-                                serviceTemplatesOnLocation.put(serviceTemplate.getType(), serviceTemplate);
+                        for (ServiceDescription serviceDescription : unitRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceDescriptionList()) {
+                            if (!serviceDescriptionsOnLocation.containsKey(serviceDescription.getType())) {
+                                serviceDescriptionsOnLocation.put(serviceDescription.getType(), serviceDescription);
                             } else {
-                                if (serviceTemplatesOnLocation.get(serviceTemplate.getType()).getPattern() == ServiceTemplate.ServicePattern.PROVIDER
-                                        && serviceTemplate.getPattern() == ServiceTemplate.ServicePattern.OPERATION) {
-                                    serviceTemplatesOnLocation.put(serviceTemplate.getType(), serviceTemplate);
+                                if (serviceDescriptionsOnLocation.get(serviceDescription.getType()).getPattern() == ServiceTemplate.ServicePattern.PROVIDER
+                                        && serviceDescription.getPattern() == ServiceTemplate.ServicePattern.OPERATION) {
+                                    serviceDescriptionsOnLocation.put(serviceDescription.getType(), serviceDescription);
                                 }
                             }
                         }
                     }
                 }
-                for (ServiceTemplate serviceTemplate : serviceTemplatesOnLocation.values()) {
-                    if (serviceTemplate.getType() == ServiceType.COLOR_STATE_SERVICE
-                            || serviceTemplate.getType() == ServiceType.POWER_STATE_SERVICE
-                            || serviceTemplate.getType() == ServiceType.POWER_CONSUMPTION_STATE_SERVICE) {
-                        LocationItemEntry entry = new LocationItemEntry(locationUnitConfig, serviceTemplate);
+                for (ServiceDescription serviceDescription : serviceDescriptionsOnLocation.values()) {
+                    if (serviceDescription.getType() == ServiceType.COLOR_STATE_SERVICE
+                            || serviceDescription.getType() == ServiceType.POWER_STATE_SERVICE
+                            || serviceDescription.getType() == ServiceType.POWER_CONSUMPTION_STATE_SERVICE) {
+                        LocationItemEntry entry = new LocationItemEntry(locationUnitConfig, serviceDescription);
                         itemEntryList.add(entry);
                         logger.debug("Added location entry [" + entry.buildStringRep() + "]");
                     }
@@ -232,25 +232,25 @@ public class OpenHABItemConfigGenerator {
 
                     Set<ServiceType> serviceTypeSet = new HashSet<>();
                     for (final ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                        if (serviceConfig.getServiceTemplate().getPattern() == ServicePattern.CONSUMER) {
+                        if (serviceConfig.getServiceDescription().getPattern() == ServicePattern.CONSUMER) {
                             continue;
                         }
 
-                        if (serviceTypeSet.contains(serviceConfig.getServiceTemplate().getType())) {
+                        if (serviceTypeSet.contains(serviceConfig.getServiceDescription().getType())) {
                             continue;
                         }
 
-                        if (serviceConfig.getServiceTemplate().getPattern() == ServicePattern.PROVIDER) {
-                            if (unitHasServiceAsOperationService(unitConfig, serviceConfig.getServiceTemplate().getType())) {
+                        if (serviceConfig.getServiceDescription().getPattern() == ServicePattern.PROVIDER) {
+                            if (unitHasServiceAsOperationService(unitConfig, serviceConfig.getServiceDescription().getType())) {
                                 continue;
                             }
                         }
 
-                        serviceTypeSet.add(serviceConfig.getServiceTemplate().getType());
+                        serviceTypeSet.add(serviceConfig.getServiceDescription().getType());
                         try {
                             itemEntryList.add(new ServiceItemEntry(deviceClass, deviceUnitConfig.getMetaConfig(), unitConfig, serviceConfig, locationRegistryRemote));
                         } catch (Exception ex) {
-                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not generate item for Service[" + serviceConfig.getServiceTemplate().getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex), logger, LogLevel.ERROR);
+                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not generate item for Service[" + serviceConfig.getServiceDescription().getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex), logger, LogLevel.ERROR);
                         }
                     }
                 }
@@ -316,7 +316,7 @@ public class OpenHABItemConfigGenerator {
     }
 
     private boolean unitHasServiceAsOperationService(UnitConfig unitConfig, ServiceType serviceType) {
-        return unitConfig.getServiceConfigList().stream().anyMatch((tmpServiceConfig) -> (tmpServiceConfig.getServiceTemplate().getType() == serviceType
-                && tmpServiceConfig.getServiceTemplate().getPattern() == ServiceTemplate.ServicePattern.OPERATION));
+        return unitConfig.getServiceConfigList().stream().anyMatch((tmpServiceConfig) -> (tmpServiceConfig.getServiceDescription().getType() == serviceType
+                && tmpServiceConfig.getServiceDescription().getPattern() == ServiceTemplate.ServicePattern.OPERATION));
     }
 }
