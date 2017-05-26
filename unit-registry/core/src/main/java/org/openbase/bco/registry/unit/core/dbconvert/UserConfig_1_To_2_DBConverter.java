@@ -1,7 +1,5 @@
 package org.openbase.bco.registry.unit.core.dbconvert;
 
-import org.openbase.jul.storage.registry.version.DBVersionControl;
-
 /*-
  * #%L
  * BCO Registry Unit Core
@@ -24,13 +22,16 @@ import org.openbase.jul.storage.registry.version.DBVersionControl;
  * #L%
  */
 
+import org.openbase.jul.storage.registry.version.DBVersionControl;
+
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class DalUnitConfig_1_To_2_DBConverter extends ServiceTemplateToServiceDescriptionDbConverter {
+public class UserConfig_1_To_2_DBConverter extends ServiceTemplateToServiceDescriptionDbConverter {
 
-    public DalUnitConfig_1_To_2_DBConverter(DBVersionControl versionControl) {
+    public UserConfig_1_To_2_DBConverter(DBVersionControl versionControl) {
         super(versionControl);
     }
+    
 }

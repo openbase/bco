@@ -22,12 +22,11 @@ package org.openbase.bco.registry.unit.core.dbconvert;
  * #L%
  */
 
-import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import java.io.File;
 import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.storage.registry.version.AbstractGlobalDBVersionConverter;
 import org.openbase.jul.storage.registry.version.DBVersionControl;
 import org.openbase.jul.storage.registry.version.DatabaseEntryDescriptor;
 
@@ -35,23 +34,26 @@ import org.openbase.jul.storage.registry.version.DatabaseEntryDescriptor;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class UnitTemplate_3_To_4_DBConverter extends AbstractGlobalDBVersionConverter {
+public class UnitGroupConfig_2_To_3_DBConverter extends ServiceTemplateToServiceDescriptionDbConverter {
 
-    private static final String SERVICE_TEMPLATE_FIELD = "service_template";
-    private static final String SERVICE_DESCRIPTION_FIELD = "service_description";
-
-    public UnitTemplate_3_To_4_DBConverter(DBVersionControl versionControl) {
+    private static final String UNIT_GROUP_CONFIG_FIELD = "unit_group_config";
+    
+    public UnitGroupConfig_2_To_3_DBConverter(DBVersionControl versionControl) {
         super(versionControl);
     }
-
+    
     @Override
     public JsonObject upgrade(JsonObject outdatedDBEntry, Map<File, JsonObject> dbSnapshot, Map<String, Map<File, DatabaseEntryDescriptor>> globalDbSnapshots) throws CouldNotPerformException {
-        if(outdatedDBEntry.has(SERVICE_TEMPLATE_FIELD)) {
-            JsonArray serviceTemplate = outdatedDBEntry.getAsJsonArray(SERVICE_TEMPLATE_FIELD);
-            outdatedDBEntry.remove(SERVICE_TEMPLATE_FIELD);
-            outdatedDBEntry.add(SERVICE_DESCRIPTION_FIELD, serviceTemplate);
+        if(outdatedDBEntry.has(UNIT_GROUP_CONFIG_FIELD)) {
+            JsonObject unitGroupConfig = outdatedDBEntry.getAsJsonObject(UNIT_GROUP_CONFIG_FIELD);
+            if(unitGroupConfig.has(SERVICE_TEMPLATE_FIELD)) {
+                JsonElement serviceTemplate = unitGroupConfig.get(SERVICE_TEMPLATE_FIELD);
+                unitGroupConfig.remove(SERVICE_TEMPLATE_FIELD);
+                unitGroupConfig.add(SERVICE_DESCRIPTION_FIELD, serviceTemplate);
+            }
         }
         
-        return outdatedDBEntry;
+        return super.upgrade(outdatedDBEntry, dbSnapshot, globalDbSnapshots);
     }
+    
 }

@@ -22,22 +22,22 @@ package org.openbase.bco.registry.unit.lib.jp;
  * #L%
  */
 
+import java.io.File;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.storage.registry.jp.AbstractJPDatabaseDirectory;
 import org.openbase.jul.storage.registry.jp.JPDatabaseDirectory;
 import org.openbase.jul.storage.registry.jp.JPInitializeDB;
-import java.io.File;
 
 /**
  *
  @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class JPUnitGroupDatabaseDirectory extends AbstractJPDatabaseDirectory {
+public class JPUnitGroupConfigDatabaseDirectory extends AbstractJPDatabaseDirectory {
 
-    public final static String[] COMMAND_IDENTIFIERS = {"--unit-group-db"};
+    public final static String[] COMMAND_IDENTIFIERS = {"--unit-group-config-db"};
 
-    public JPUnitGroupDatabaseDirectory() {
+    public JPUnitGroupConfigDatabaseDirectory() {
         super(COMMAND_IDENTIFIERS);
     }
 
@@ -48,11 +48,11 @@ public class JPUnitGroupDatabaseDirectory extends AbstractJPDatabaseDirectory {
 
     @Override
     protected File getPropertyDefaultValue() {
-        return new File("unit-group-db");
+        return new File("unit-group-config-db");
     }
 
     @Override
     public String getDescription() {
-        return "Specifies the unit group database directory. Use  " + JPInitializeDB.COMMAND_IDENTIFIERS[0] + " to auto create database directories.";
+        return "Specifies the unit group config database directory. Use  " + JPInitializeDB.COMMAND_IDENTIFIERS[0] + " to auto create database directories.";
     }
 }
