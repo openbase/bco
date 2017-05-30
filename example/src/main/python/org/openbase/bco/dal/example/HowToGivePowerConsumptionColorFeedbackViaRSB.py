@@ -50,7 +50,7 @@ class HowToGivePowerConsumptionColorFeedbackViaRSB(object):
     def run(self):
         print("Listening for power consumption events...")
         def power_update(event):
-            print("Received event: %s" % event)
+            #print("Received event: %s" % event)
             try:
                 consumption = event.getData()
                 if consumption == None:
