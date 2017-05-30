@@ -35,20 +35,22 @@ class HowToGivePowerConsumptionColorFeedbackViaRSB(object):
         print("Waiting for unit registry...")
         with rsb.createRemoteServer(self.unit_registry_scope) as unit_registry:
             self.location_scope = self.transform_scope(unit_registry.getUnitConfigById(self.location_id).scope)
+            print("Found kitchen scope: " + str(self.location_scope))
             self.light_scope = self.transform_scope(unit_registry.getUnitConfigById(self.light_id).scope)
+            print("Found light scope: " + str(self.light_scope))
 
     @classmethod
     def transform_scope(self, scope):
         """
         build rsb scope out of the given rst scope.
         """
-        return "/" + "/".join(scope.component) + "/ctrl"
+        return "/" + "/".join(scope.component)
 
 
     def run(self):
         print("Listening for power consumption events...")
         def power_update(event):
-            #print("Received event: %s" % event)
+            print("Received event: %s" % event)
             try:
                 consumption = event.getData()
                 if consumption == None:
@@ -118,5 +120,5 @@ class HowToGivePowerConsumptionColorFeedbackViaRSB(object):
 
 
 if __name__ == '__main__':
-    watcher = PowerConsumptionColorFeedback()
+    watcher = HowToGivePowerConsumptionColorFeedbackViaRSB()
     watcher.run()
