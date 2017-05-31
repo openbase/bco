@@ -84,6 +84,13 @@
                                 <platform>unix</platform>
                             </platforms>
                         </program>
+                        <program>
+                            <mainClass>org.openbase.bco.manager.util.launch.RSBInterfacePrinter</mainClass>
+                            <id>bco-printer-interface-rsb</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
                     </programs>
                 </configuration>
             </plugin>
