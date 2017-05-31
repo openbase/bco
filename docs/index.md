@@ -223,6 +223,11 @@ afterwards install these packages:
 sudo apt-get install spread rsb-tools-cl0.15
 ```
 
+## RSB Libs and Tools
+```
+sudo apt-get librsc0.15 librsb0.15  rsb0.15 rst0.15
+```
+
 ## RSB Configuration
 
 Create the configuration file ```touch ~/.config/rsb.conf``` and add the following lines to deactivate the socket and enable the spread transport protocol. 
