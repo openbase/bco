@@ -220,7 +220,7 @@ Add the following repository to your local debian ```/etc/apt/sources.list```
     
 afterwards install these packages:
 ```
-sudo apt-get install spread rsb-tools-cl0.15
+sudo apt-get install install spread rsb-tools-cl0.15
 ```
 
 ## RSB Libs and Tools
