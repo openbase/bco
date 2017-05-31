@@ -203,29 +203,33 @@ git clone https://github.com/openbase/jps.git jul
 git clone https://github.com/openbase/jul.git jul
 ```
 
-## Spread Installation
+## Setup Cor-Lab Debian Repository
 
-Add the following repository to your local debian ```/etc/apt/sources.list```
-
-* follow these instructions:
+This repository provides a collection of precompiled libs and tools for rsb. This includes transport layers like spread as well as dev-libs for using rsb in python or c++. To register the repository to your local debian package manager follow these instructions:
     * [http://packages.cor-lab.de/](http://packages.cor-lab.de/)
     
-    * example for ubuntu precise
-        ```
-        echo 'deb http://packages.cor-lab.de/ubuntu/ precise main' | sudo tee -a /etc/apt/sources.list
-        echo 'deb http://packages.cor-lab.de/ubuntu/ precise testing' | sudo tee -a /etc/apt/sources.list
-        wget -q http://packages.cor-lab.de/keys/cor-lab.asc -O- | sudo apt-key add -
-        sudo apt-get update
-        ```
-    
-afterwards install these packages:
-```
-sudo apt-get install install spread rsb-tools-cl0.15
-```
+        * example for ubuntu xenial
+            ```
+            echo 'deb http://packages.cor-lab.de/ubuntu/ xenial main' | sudo tee -a /etc/apt/sources.list
+            echo 'deb http://packages.cor-lab.de/ubuntu/ xenial testing' | sudo tee -a /etc/apt/sources.list
+            wget -q http://packages.cor-lab.de/keys/cor-lab.asc -O- | sudo apt-key add -
+            sudo apt-get update
+            ```
 
-## RSB Libs and Tools
+## Spread Installation
+
+[Spread](http://www.spread.org/download.html) is the recommended and most stable transport protocol for bco.
+
+* Installation via Cor-Lab Debian Repository
+    * ```sudo apt-get install install spread librsbspread0.15```
+* Official Installation Guide
+    * [http://www.spread.org/download.html]
+    
+## RSB Libs and Tools (Optional)
+
+The rsb python and c++ libs can be installed via the cor-lab debian repository as well as the rsb developer tools:
 ```
-sudo apt-get librsc0.15 librsb0.15  rsb0.15 rst0.15
+sudo apt-get librsc0.15 librsb0.15 rsb0.15 rst0.15 cl-rsb rsb-tools-cpp0.15 rsb-tools-cl0.15
 ```
 
 ## RSB Configuration
@@ -233,12 +237,17 @@ sudo apt-get librsc0.15 librsb0.15  rsb0.15 rst0.15
 Create the configuration file ```touch ~/.config/rsb.conf``` and add the following lines to deactivate the socket and enable the spread transport protocol. 
 ```
 [transport.socket]
-    enabled = 0
+enabled = 0
     
 [transport.spread]
-    enabled = 1
-    host    = localhost
+enabled = 1
+host    = localhost
 ``` 
+If your bco runtime is hosted on another maschine than your local one and there is already a spread deamon running, just refere to this host instead linking to your local host.
+```
+#host    = localhost
+host    = 192.168.x.x
+```
 
 ## BCO Installation
 
@@ -267,11 +276,21 @@ cp -R $prefix/share/bco $prefix/var/
 
 ## How to start BCO
 
-Starting the spread deamon to provide the communication between all distributed software components by executing:
-```
-spread
-```
-Now you should be able to start bco.
+### Provide a Spread Deamon
+
+First of all we need at least one running spread deamon in your network to provide the communication between all distributed bco components. You can choose to start your own spread or to connecting to an already running instance.
+
+* Start a new spread deamon on your localhost maschine
+    * Make sure your local machine is properly defined as spread host in the rsb configuration 
+        * ```~/.config/rsb.conf``` should contain ```host    = localhost```
+    * just start spread ```spread```
+* Connect to an already running instance
+    * Make sure the external spread host is properly defined in the rsb configuration. E.g. there is a spread instance running on host ```spider``` your config file should provide the following entry.
+        * ```~/.config/rsb.conf``` should contain ```host    = spider```
+
+### Start BCO
+
+You can start the bco runtime with the following command:
 
 ```
 bco
@@ -284,6 +303,10 @@ bco
 TODO
 
 # Code Examples
+
+This examples can be used as kick-off before juming into the bco development. They pick up the basic functions like how to query, control and access any units.
+
+Note: Please make sure spread and bco are started within your network before executing the howtos.
 
 ## Java DAL Remote
 
