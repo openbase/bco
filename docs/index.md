@@ -1,6 +1,6 @@
 ---
+title: "{}"
 layout: default
-title: {{ site.name }}
 ---
 
 # Software Architecture
@@ -17,11 +17,11 @@ title: {{ site.name }}
 
 ## Location Architecture
 
-![LocationClassStructure]({{ site.url }}/images/LocationArchitecture_ClassStructure.png)
+![LocationClassStructure]({{ site.baseurl }}/images/LocationArchitecture_ClassStructure.png)
 
-![LocationHierarchicalStructure]({{ site.url }}/images/LocationArchitecture_HierarchicalStructure.png)
+![LocationHierarchicalStructure]({{ site.baseurl }}/images/LocationArchitecture_HierarchicalStructure.png)
 
-![LocationGraphStructure]({{ site.url }}/images/LocationArchitecture_GraphStructure.png)
+![LocationGraphStructure]({{ site.baseurl }}/images/LocationArchitecture_GraphStructure.png)
 
 [More Details]({{ site.baseurl }}/location-architecture)
 
@@ -129,6 +129,13 @@ bcomfy
 * RST http://docs.cor-lab.de//rst-manual/0.15/html/data-types.html
     * The data type library based on google protocol-buffers.
         * https://developers.google.com/protocol-buffers/
+    * Repositories
+        * Stable & Sandbox
+            * https://code.cor-lab.de/git/rst.git.proto
+        * Experimental (Only reachable from the university of bielefeld network)
+            * http://projects.cit-ec.uni-bielefeld.de/git/rst-experimental.proto.git 
+                * BCO Types are placed in ```proto/experimental/rst/domotic```
+         
 
 # Development Installation Guide - Ubuntu / Debian
 
@@ -330,7 +337,7 @@ Control the unit
 ## Python RSB
 
 ### How to request, control and observe units
-* [Complete Code Example (Not tested yet!)](https://github.com/openbase/bco.dal/blob/master/example/src/main/python/org/openbase/bco/dal/example/HowToRequestControllAndObserveUnitsViaRSB.py)
+* [Complete Code Example](https://github.com/openbase/bco.dal/blob/master/example/src/main/python/org/openbase/bco/dal/example/HowToGivePowerConsumptionColorFeedbackViaRSB.py)
 
 # Contribution
 * Feel free to report [new Issues](https://github.com/openbase/bco.dal/issues/new)!
