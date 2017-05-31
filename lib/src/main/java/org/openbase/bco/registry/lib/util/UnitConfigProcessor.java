@@ -21,10 +21,12 @@ package org.openbase.bco.registry.lib.util;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.GeneratedMessage;
 import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.List;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -36,6 +38,8 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UnitConfigProcessor {
+
+    public static final Package UNIT_PACKAGE = UnitConfig.class.getPackage();
 
     public static boolean isHostUnit(final UnitConfig unitConfig) throws CouldNotPerformException {
         verifyUnitConfig(unitConfig, unitConfig.getType());
@@ -127,5 +131,42 @@ public class UnitConfigProcessor {
             }
         }
         return dalUnitTypeList;
+    }
+
+    /**
+     * This method returns the unit class name resolved by the given unit type.
+     *
+     * @param unitType the unit type to extract the class name.
+     * @return the unit data class name.
+     */
+    public static String getUnitDataClassName(final UnitType unitType) {
+        return StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Data";
+    }
+
+    /**
+     * This method returns the unit class resolved by the given unit type.
+     *
+     * @param unitType the unit type used to extract the unit class.
+     * @return the unit data class.
+     */
+    public static Class<? extends GeneratedMessage> getUnitDataClass(final UnitType unitType) throws NotAvailableException {
+        final String unitDataClassSimpleName = getUnitDataClassName(unitType);
+        final String unitDataClassName = UNIT_PACKAGE.getName() + "." + ((isBaseUnit(unitType)) ? unitType.name().toLowerCase().replaceAll("_", "") : "dal") + "." + unitDataClassSimpleName + "Type$" + unitDataClassSimpleName;
+     
+        try {
+            return (Class<? extends GeneratedMessage>) Class.forName(unitDataClassName);
+        } catch (NullPointerException | ClassNotFoundException | ClassCastException ex) {
+            throw new NotAvailableException("UnitDataClass", unitDataClassName, new CouldNotPerformException("Could not detect class!", ex));
+        }
+    }
+
+    /**
+     * This method returns the unit class resolved by the given unit config.
+     *
+     * @param unitConfig the unit config used to extract the unit class.
+     * @return the unit data class.
+     */
+    public static Class<? extends GeneratedMessage> getUnitDataClass(final UnitConfig unitConfig) throws NotAvailableException {
+        return UnitConfigProcessor.getUnitDataClass(unitConfig.getType());
     }
 }
