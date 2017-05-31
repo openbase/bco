@@ -40,6 +40,8 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 public class UnitConfigProcessor {
 
     public static final Package UNIT_PACKAGE = UnitConfig.class.getPackage();
+    
+    private static final List<UnitType> DAL_UNIT_TYPE_LIST = new ArrayList<>();
 
     public static boolean isHostUnit(final UnitConfig unitConfig) throws CouldNotPerformException {
         verifyUnitConfig(unitConfig, unitConfig.getType());
@@ -120,17 +122,16 @@ public class UnitConfigProcessor {
         verifyUnitType(unitConfig, unitConfig.getType());
     }
 
-    private static final List<UnitType> dalUnitTypeList = new ArrayList<>();
 
     public synchronized static List<UnitType> getDalUnitTypes() {
-        if (dalUnitTypeList.isEmpty()) {
+        if (DAL_UNIT_TYPE_LIST.isEmpty()) {
             for (final UnitType unitType : UnitType.values()) {
                 if (isDalUnit(unitType)) {
-                    dalUnitTypeList.add(unitType);
+                    DAL_UNIT_TYPE_LIST.add(unitType);
                 }
             }
         }
-        return dalUnitTypeList;
+        return DAL_UNIT_TYPE_LIST;
     }
 
     /**
@@ -148,6 +149,7 @@ public class UnitConfigProcessor {
      *
      * @param unitType the unit type used to extract the unit class.
      * @return the unit data class.
+     * @throws org.openbase.jul.exception.NotAvailableException is thrown if the data class name could not be detected.
      */
     public static Class<? extends GeneratedMessage> getUnitDataClass(final UnitType unitType) throws NotAvailableException {
         final String unitDataClassSimpleName = getUnitDataClassName(unitType);
@@ -165,6 +167,7 @@ public class UnitConfigProcessor {
      *
      * @param unitConfig the unit config used to extract the unit class.
      * @return the unit data class.
+     * @throws org.openbase.jul.exception.NotAvailableException is thrown if the data class could not be detected.
      */
     public static Class<? extends GeneratedMessage> getUnitDataClass(final UnitConfig unitConfig) throws NotAvailableException {
         return UnitConfigProcessor.getUnitDataClass(unitConfig.getType());
