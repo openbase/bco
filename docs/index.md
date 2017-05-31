@@ -278,15 +278,16 @@ cp -R $prefix/share/bco $prefix/var/
 
 ### Provide a Spread Deamon
 
-First of all we need at least one running spread deamon in your network to provide the communication between all distributed bco components. You can choose to start your own spread or to connecting to an already running instance.
+First of all we need at least one running spread deamon in your network to provide the communication between all distributed bco components. You can choose to start your own spread deamon or to connect to an already running instance.
 
 * Start a new spread deamon on your localhost maschine
     * Make sure your local machine is properly defined as spread host in the rsb configuration 
         * ```~/.config/rsb.conf``` should contain ```host    = localhost```
-    * just start spread ```spread```
+    * just start ```spread```
 * Connect to an already running instance
-    * Make sure the external spread host is properly defined in the rsb configuration. E.g. there is a spread instance running on host ```spider``` your config file should provide the following entry.
-        * ```~/.config/rsb.conf``` should contain ```host    = spider```
+    * Make sure the external spread host is properly defined in the rsb configuration. 
+        * Example: If there is a spread instance running on host ```spider``` your config file should provide the following entry.
+            * ```~/.config/rsb.conf``` should contain ```host    = spider```
 
 ### Start BCO
 
@@ -304,7 +305,7 @@ TODO
 
 # Code Examples
 
-This examples can be used as kick-off before juming into the bco development. They pick up the basic functions like how to query, control and access any units.
+This examples can be used as kick-off before jumping into the bco development. They pick up the basic functions like how to query, control and access any units.
 
 Note: Please make sure spread and bco are started within your network before executing the howtos.
 
