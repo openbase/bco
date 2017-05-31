@@ -31,6 +31,7 @@ import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
 import org.openbase.bco.registry.unit.core.consistency.DeviceInventoryStateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.ExecutableUnitAutostartConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.ServiceConfigServiceTemplateIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.ServiceConfigUnitIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitConfigUnitTemplateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitEnablingStateConsistencyHandler;
@@ -345,6 +346,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         registerConsistencyHandler(new ServiceConfigUnitIdConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new UnitConfigUnitTemplateConsistencyHandler(unitTemplateRegistry), UnitConfig.class);
         registerConsistencyHandler(new UnitEnablingStateConsistencyHandler(), UnitConfig.class);
+        registerConsistencyHandler(new ServiceConfigServiceTemplateIdConsistencyHandler(serviceTemplateRegistry), UnitConfig.class);
     }
 
     /**

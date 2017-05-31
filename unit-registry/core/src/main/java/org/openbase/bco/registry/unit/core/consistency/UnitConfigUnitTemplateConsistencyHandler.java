@@ -81,11 +81,11 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
     }
 
     private boolean serviceDescriptionListContainsDescription(List<ServiceDescription> serviceDescriptionList, ServiceDescription serviceDescription) {
-        return serviceDescriptionList.stream().anyMatch((description) -> (description.getServiceTemplateId().equals(serviceDescription.getServiceTemplateId()) && description.getType() == serviceDescription.getType() && description.getPattern() == serviceDescription.getPattern()));
+        return serviceDescriptionList.stream().anyMatch((description) -> (description.getType() == serviceDescription.getType() && description.getPattern() == serviceDescription.getPattern()));
     }
 
     private boolean unitConfigContainsServiceDescription(UnitConfig.Builder unitConfig, ServiceDescription serviceDescription) {
-        return unitConfig.getServiceConfigList().stream().map((serviceConfig) -> serviceConfig.getServiceDescription()).anyMatch((description) -> (description.getServiceTemplateId().equals(serviceDescription.getServiceTemplateId()) && description.getType() == serviceDescription.getType() && description.getPattern() == serviceDescription.getPattern()));
+        return unitConfig.getServiceConfigList().stream().map((serviceConfig) -> serviceConfig.getServiceDescription()).anyMatch((description) -> (description.getType() == serviceDescription.getType() && description.getPattern() == serviceDescription.getPattern()));
     }
 
     private UnitTemplate getUnitTemplateByType(UnitType type) throws CouldNotPerformException {
