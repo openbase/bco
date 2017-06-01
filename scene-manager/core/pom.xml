@@ -51,7 +51,7 @@
                     <programs>
                         <program>
                             <mainClass>org.openbase.bco.manager.scene.core.SceneManagerLauncher</mainClass>
-                            <id>scene-manager</id>
+                            <id>bco-manager-scene</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
