@@ -50,7 +50,7 @@
                     <programs>
                         <program>
                             <mainClass>org.openbase.bco.registry.user.core.UserRegistryLauncher</mainClass>
-                            <id>user-registry</id>
+                            <id>bco-registry-user</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>

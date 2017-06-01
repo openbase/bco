@@ -50,7 +50,7 @@
                     <programs>
                         <program>
                             <mainClass>org.openbase.bco.registry.app.core.AppRegistryLauncher</mainClass>
-                            <id>app-registry</id>
+                            <id>bco-registry-app</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>

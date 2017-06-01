@@ -50,7 +50,7 @@
                     <programs>
                         <program>
                             <mainClass>org.openbase.bco.registry.agent.core.AgentRegistryLauncher</mainClass>
-                            <id>agent-registry</id>
+                            <id>bco-registry-agent</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
