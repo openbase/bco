@@ -63,7 +63,7 @@
                     <programs>
                         <program>
                             <mainClass>org.openbase.bco.manager.scene.binding.openhab.SceneBindingOpenHABLauncher</mainClass>
-                            <id>binding-openhab-scene-manager</id>
+                            <id>bco-manager-scene-binding-openhab</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
