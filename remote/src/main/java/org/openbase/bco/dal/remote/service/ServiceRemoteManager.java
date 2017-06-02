@@ -53,10 +53,10 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.ActionConfigType;
-import rst.domotic.action.ActionConfigType.ActionConfig;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -296,7 +296,7 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
             // build snapshot
             for (final Map.Entry<UnitRemote, Future<SnapshotType.Snapshot>> snapshotFutureEntry : snapshotFutureMap.entrySet()) {
                 try {
-                    snapshotBuilder.addAllActionConfig(snapshotFutureEntry.getValue().get(5, TimeUnit.SECONDS).getActionConfigList());
+                    snapshotBuilder.addAllServiceStateDescription(snapshotFutureEntry.getValue().get(5, TimeUnit.SECONDS).getServiceStateDescriptionList());
                 } catch (ExecutionException | TimeoutException ex) {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Could not record snapshot of " + snapshotFutureEntry.getKey().getLabel(), ex), LOGGER);
                 }
@@ -318,8 +318,10 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
             }
 
             Collection<Future> futureCollection = new ArrayList<>();
-            for (final ActionConfigType.ActionConfig actionConfig : snapshot.getActionConfigList()) {
-                futureCollection.add(unitRemoteMap.get(actionConfig.getUnitId()).applyAction(actionConfig));
+            for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
+                ActionDescription actionDescription = ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build();
+
+                futureCollection.add(unitRemoteMap.get(serviceStateDescription.getUnitId()).applyAction(actionDescription));
             }
             return GlobalCachedExecutorService.allOf(futureCollection);
         } catch (CouldNotPerformException ex) {
@@ -327,8 +329,8 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
         }
     }
 
-    public Future<Void> applyAction(final ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
-        return getServiceRemote(actionConfig.getServiceType()).applyAction(actionConfig);
+    public Future<Void> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+        return getServiceRemote(actionDescription.getServiceStateDescription().getServiceType()).applyAction(actionDescription);
     }
 
     protected abstract Set<ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException;

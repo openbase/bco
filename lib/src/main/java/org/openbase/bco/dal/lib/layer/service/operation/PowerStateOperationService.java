@@ -36,4 +36,7 @@ public interface PowerStateOperationService extends OperationService, PowerState
     @RPCMethod
     public Future<Void> setPowerState(final PowerState powerState) throws CouldNotPerformException;
 
+    public default Future<Void> setPowerState(final PowerState.State powerState) throws CouldNotPerformException {
+        return setPowerState(PowerState.newBuilder().setValue(powerState).build());
+    }
 }

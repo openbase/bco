@@ -26,10 +26,12 @@ import org.openbase.bco.dal.lib.layer.unit.scene.Scene;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionConfigType;
+import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
+import rst.domotic.action.ActionAuthorityType.ActionAuthority;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.unit.scene.SceneDataType.SceneData;
 
@@ -42,20 +44,21 @@ public class SceneRemote extends AbstractUnitRemote<SceneData> implements Scene 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionConfigType.ActionConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
     }
 
     public SceneRemote() {
         super(SceneData.class);
     }
 
-    public Future<Void> setActivationState(ActivationState.State activationState) throws CouldNotPerformException {
-        return setActivationState(ActivationState.newBuilder().setValue(activationState).build());
-    }
-
     @Override
-    public Future<Void> setActivationState(ActivationState activation) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(activation, this, Void.class);
+    public Future<Void> setActivationState(ActivationState activationState) throws CouldNotPerformException {
+        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+        try {
+            return this.applyAction(updateActionDescription(actionDescription, activationState).build());
+        } catch (InterruptedException ex) {
+            throw new CouldNotPerformException("Interrupted while setting activationState.", ex);
+        }
     }
 
     @Override

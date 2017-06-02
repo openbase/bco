@@ -80,5 +80,6 @@ public interface Location extends BaseUnit<LocationData>, PresenceStateProviderS
     }
 
     @RPCMethod
+    @Override
     public Future<Snapshot> recordSnapshot(final UnitType unitType) throws CouldNotPerformException, InterruptedException;
 }

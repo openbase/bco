@@ -193,6 +193,27 @@
         <dependency.bco.registry.version>1.4-SNAPSHOT</dependency.bco.registry.version>
         <dependency.org.codehaus.mojo.license-maven-plugin.version>1.10</dependency.org.codehaus.mojo.license-maven-plugin.version>
     </properties>
+    
+    <repositories>
+        <repository>
+            <id>citec-releases</id>
+            <name>CITEC Maven Repository Server</name>
+            <url>https://mvn.cit-ec.de/nexus/content/repositories/releases/</url>
+            <layout>default</layout>
+            <releases>
+                <enabled>true</enabled>
+            </releases>
+        </repository>
+        <repository>
+            <id>citec-snapshots</id>
+            <name>CITEC Maven Repository Server</name>
+            <url>https://mvn.cit-ec.de/nexus/content/repositories/snapshots/</url>
+            <layout>default</layout>
+            <snapshots>
+                <enabled>false</enabled>
+            </snapshots>
+        </repository>
+    </repositories>
 
     <dependencies>
         <dependency>

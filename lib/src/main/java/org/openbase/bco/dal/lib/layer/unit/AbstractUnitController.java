@@ -28,8 +28,11 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
@@ -46,26 +49,30 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
+import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionConfigType.ActionConfig;
-import rst.domotic.registry.UnitRegistryDataType;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.CONSUMER;
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER;
-import rst.domotic.state.EnablingStateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
@@ -80,7 +87,7 @@ import rst.rsb.ScopeType;
 public abstract class AbstractUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
 
     static {
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
     }
 
     public static long initTime = 0;
@@ -88,14 +95,18 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     protected UnitRegistryRemote unitRegistry;
 
+//    private final UnitResourceAllocator<D, DB> resourceAllocator;
     private final List<Service> serviceList;
     private final ServiceJSonProcessor serviceJSonProcessor;
     private UnitTemplate template;
+    private final Map<ServiceType, MessageObservable> serviceStateObservableMap;
 
     public AbstractUnitController(final Class unitClass, final DB builder) throws InstantiationException {
         super(builder);
         this.serviceJSonProcessor = new ServiceJSonProcessor();
         this.serviceList = new ArrayList<>();
+        this.serviceStateObservableMap = new HashMap<>();
+//        this.resourceAllocator = new UnitResourceAllocator<>(this);
     }
 
     @Override
@@ -161,7 +172,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     protected void postInit() throws InitializationException, InterruptedException {
         try {
             super.postInit();
-            this.unitRegistry.addDataObserver((Observable<UnitRegistryDataType.UnitRegistryData> source, UnitRegistryDataType.UnitRegistryData data) -> {
+            this.unitRegistry.addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
                 try {
                     final UnitConfig newUnitConfig = CachedUnitRegistryRemote.getRegistry().getUnitConfigById(getId());
                     if (!newUnitConfig.equals(getConfig())) {
@@ -171,14 +182,53 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                     ExceptionPrinter.printHistory("Could not update unit config of " + this, ex, logger);
                 }
             });
+
+            // TODO: move to applyConfigUpdate
+            try {
+                for (ServiceDescription serviceDescription : getTemplate().getServiceDescriptionList()) {
+                    if (!serviceStateObservableMap.containsKey(serviceDescription.getType())) {
+                        serviceStateObservableMap.put(serviceDescription.getType(), new MessageObservable(this));
+                    }
+                }
+            } catch (NotAvailableException ex) {
+
+            }
+            this.addDataObserver(new Observer<D>() {
+
+                @Override
+                public void update(Observable<D> source, D data) throws Exception {
+                    final Set<ServiceType> serviceTypeMap = new HashSet<>();
+                    for (ServiceDescription serviceDescription : getTemplate().getServiceDescriptionList()) {
+                        if (!serviceTypeMap.contains(serviceDescription.getType())) {
+                            serviceTypeMap.add(serviceDescription.getType());
+                            try {
+                                Object serviceData = Service.invokeProviderServiceMethod(serviceDescription.getType(), data);
+                                serviceStateObservableMap.get(serviceDescription.getType()).notifyObservers(serviceData);
+                            } catch (CouldNotPerformException ex) {
+                                logger.info("Could not notify state update for service[" + serviceDescription.getType() + "]", ex);
+                            }
+                        }
+                    }
+                }
+            });
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
+    @Override
+    public void addServiceStateObserver(ServiceType serviceType, Observer observer) {
+        serviceStateObservableMap.get(serviceType).addObserver(observer);
+    }
+
+    @Override
+    public void removeServiceStateObserver(ServiceType serviceType, Observer observer) {
+        serviceStateObservableMap.get(serviceType).removeObserver(observer);
+    }
+
     public boolean isEnabled() {
         try {
-            return getConfig().getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED);
+            return getConfig().getEnablingState().getValue().equals(EnablingState.State.ENABLED);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }
@@ -355,16 +405,40 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     @Override
-    public Future<Void> applyAction(final ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+    public Future<Void> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         try {
-            logger.debug("applyAction: " + actionConfig.getLabel());
-            final Object attribute = serviceJSonProcessor.deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType());
+            logger.debug("applyAction: " + actionDescription.getLabel());
+            final Object attribute = serviceJSonProcessor.deserialize(actionDescription.getServiceStateDescription().getServiceAttribute(), actionDescription.getServiceStateDescription().getServiceAttributeType());
 
             // Since its an action it has to be an operation service pattern
-            final ServiceDescription serviceTemplate = ServiceDescription.newBuilder().setType(actionConfig.getServiceType()).setPattern(ServiceTemplate.ServicePattern.OPERATION).build();
+            final ServiceDescription serviceDescription = ServiceDescription.newBuilder().setType(actionDescription.getServiceStateDescription().getServiceType()).setPattern(ServiceTemplate.ServicePattern.OPERATION).build();
+
+            // Set resource allocation interval if not defined yet
+            ActionDescription.Builder actionDescriptionBuilder = actionDescription.toBuilder();
+            if (!actionDescription.getResourceAllocation().getSlot().hasBegin()) {
+                ActionDescriptionProcessor.updateResourceAllocationSlot(actionDescriptionBuilder);
+            }
 
             return GlobalCachedExecutorService.submit(() -> {
-                Service.invokeServiceMethod(serviceTemplate, AbstractUnitController.this, attribute);
+//                UnitResourceAllocator unitResourceAllocator = new UnitResourceAllocator(actionDescription) {
+//
+//                    @Override
+//                    public Object onAllocation() throws ExecutionException, InterruptedException {
+//                        try {
+//                            return Service.invokeServiceMethod(serviceTemplate, AbstractUnitController.this, attribute);
+//                        } catch (CouldNotPerformException ex) {
+//                            throw new ExecutionException(ex);
+//                        }
+//                    }
+//                };
+
+//                unitResourceAllocator.allocate();
+//                unitResourceAllocator.waitForExecution();
+                // should only be done if completionType is EXPIRE
+//                unitResourceAllocator.deallocate();
+                //TODO: allocate and if executionTimePeriod = 0 free resource
+                Service.invokeServiceMethod(serviceDescription, AbstractUnitController.this, attribute);
+//                unitResourceAllocator.w
                 return null;
             });
         } catch (CouldNotPerformException ex) {

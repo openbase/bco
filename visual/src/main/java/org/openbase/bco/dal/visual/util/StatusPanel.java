@@ -21,7 +21,6 @@ package org.openbase.bco.dal.visual.util;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.awt.Color;
 import java.awt.event.ActionEvent;
 import java.util.concurrent.CancellationException;
@@ -29,6 +28,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import javax.swing.Timer;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -132,7 +132,8 @@ public class StatusPanel extends javax.swing.JPanel {
                 setError("Shutdown detected...");
                 Thread.currentThread().interrupt();
             } catch (ExecutionException ex) {
-                setError("Connection to main controller lost!");
+                setError("Could not execute task!");
+                ExceptionPrinter.printHistory(ex, logger);
             }
             cancelButton.setEnabled(false);
         });
@@ -209,7 +210,6 @@ public class StatusPanel extends javax.swing.JPanel {
         cancelButton.setEnabled(false);
         setStatus("Canceled", StatusType.WARN, 3);
     }//GEN-LAST:event_cancelButtonActionPerformed
-
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JButton cancelButton;

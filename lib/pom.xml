@@ -97,5 +97,37 @@
             <version>${dependency.jul.version}</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>de.citec.csra</groupId>
+            <artifactId>rta-lib</artifactId>
+            <version>${dependency.rta.lib.version}</version>
+            <type>jar</type>
+            <exclusions>
+                <exclusion>
+                    <groupId>net.time4j</groupId>
+                    <artifactId>time4j-misc</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.time4j</groupId>
+                    <artifactId>time4j-range</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>net.time4j</groupId>
+                    <artifactId>time4j-core</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>rsb</groupId>
+                    <artifactId>rsb</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>rsb</groupId>
+                    <artifactId>rst</artifactId>
+                </exclusion>
+                <exclusion>
+                    <groupId>rsb</groupId>
+                    <artifactId>rst-sandbox</artifactId>
+                </exclusion>
+            </exclusions>
+        </dependency>
     </dependencies>
 </project>

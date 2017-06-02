@@ -1,15 +1,18 @@
 package org.openbase.bco.dal.remote.unit;
 
 import java.util.concurrent.Future;
+import org.openbase.bco.dal.lib.layer.unit.Dimmer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
+import rst.domotic.action.ActionAuthorityType.ActionAuthority;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.dal.DimmerDataType.DimmerData;
-import org.openbase.bco.dal.lib.layer.unit.Dimmer;
 
 /*
  * #%L
@@ -32,7 +35,6 @@ import org.openbase.bco.dal.lib.layer.unit.Dimmer;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -50,8 +52,17 @@ public class DimmerRemote extends AbstractUnitRemote<DimmerData> implements Dimm
     }
 
     @Override
+    protected void notifyDataUpdate(DimmerData data) throws CouldNotPerformException {
+    }
+
+    @Override
     public Future<Void> setPowerState(PowerState powerState) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(powerState, this, Void.class);
+        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+        try {
+            return this.applyAction(updateActionDescription(actionDescription, powerState).build());
+        } catch (InterruptedException ex) {
+            throw new CouldNotPerformException("Interrupted while setting powerState.", ex);
+        }
     }
 
     @Override
@@ -65,7 +76,12 @@ public class DimmerRemote extends AbstractUnitRemote<DimmerData> implements Dimm
 
     @Override
     public Future<Void> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(brightnessState, this, Void.class);
+        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+        try {
+            return this.applyAction(updateActionDescription(actionDescription, brightnessState).build());
+        } catch (InterruptedException ex) {
+            throw new CouldNotPerformException("Interrupted while setting brightnessState.", ex);
+        }
     }
 
     @Override

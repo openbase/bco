@@ -44,11 +44,10 @@ import org.openbase.jul.iface.provider.LabelProvider;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.ActionAuthorityType;
-import rst.domotic.action.ActionConfigType;
-import rst.domotic.action.ActionPriorityType;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
+import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
@@ -116,7 +115,7 @@ public interface Unit<D> extends Service, LabelProvider, ScopeProvider, Identifi
         Snapshot.Builder snapshotBuilder = Snapshot.newBuilder();
         for (ServiceDescription serviceDescription : getTemplate().getServiceDescriptionList()) {
             try {
-                ActionConfigType.ActionConfig.Builder actionConfig = ActionConfigType.ActionConfig.newBuilder().setServiceType(serviceDescription.getType()).setUnitId(getId());
+                ServiceStateDescription.Builder serviceStateDescription = ServiceStateDescription.newBuilder().setServiceType(serviceDescription.getType()).setUnitId(getId());
 
                 // skip non operation services.
                 if (serviceDescription.getPattern() != ServiceTemplate.ServicePattern.OPERATION) {
@@ -133,16 +132,15 @@ public interface Unit<D> extends Service, LabelProvider, ScopeProvider, Identifi
                 // fill action config
                 final ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();
                 try {
-                    actionConfig.setServiceAttribute(serviceJSonProcessor.serialize(serviceAttribute));
+                    serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(serviceAttribute));
                 } catch (InvalidStateException ex) {
                     // skip if serviceAttribute is empty.
                     continue;
                 }
-                actionConfig.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
-                actionConfig.setActionAuthority(ActionAuthorityType.ActionAuthority.newBuilder().setAuthority(ActionAuthorityType.ActionAuthority.Authority.USER)).setActionPriority(ActionPriorityType.ActionPriority.newBuilder().setPriority(ActionPriorityType.ActionPriority.Priority.NORMAL));
+                serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
 
                 // add action config
-                snapshotBuilder.addActionConfig(actionConfig.build());
+                snapshotBuilder.addServiceStateDescription(serviceStateDescription.build());
             } catch (CouldNotPerformException ex) {
                 exceptionStack = MultiException.push(this, ex, exceptionStack);
             }
@@ -156,8 +154,9 @@ public interface Unit<D> extends Service, LabelProvider, ScopeProvider, Identifi
     public default Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
         try {
             Collection<Future> futureCollection = new ArrayList<>();
-            for (final ActionConfigType.ActionConfig actionConfig : snapshot.getActionConfigList()) {
-                futureCollection.add(applyAction(actionConfig));
+            for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
+                ActionDescription actionDescription = ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build();
+                futureCollection.add(applyAction(actionDescription));
             }
             return GlobalCachedExecutorService.allOf(futureCollection);
         } catch (CouldNotPerformException ex) {

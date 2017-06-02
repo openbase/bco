@@ -42,9 +42,7 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.ActionConfigType;
-import rst.domotic.action.ActionConfigType.ActionConfig;
-import rst.domotic.action.ActionDataType.ActionData;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.state.ActionStateType;
 import rst.domotic.state.ActionStateType.ActionState;
 import rst.domotic.state.EnablingStateType;
@@ -54,37 +52,37 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  * * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
  */
-public class Action implements ActionService, Initializable<ActionConfig> {
-    
+public class Action implements ActionService, Initializable<ActionDescription> {
+
     private static final Logger logger = LoggerFactory.getLogger(Action.class);
-    
-    private ActionConfig.Builder config;
+
+    private ActionDescription.Builder config;
     private UnitConfig unitConfig;
-    private final ActionData.Builder data;
+    private final ActionDescription.Builder data;
     private ServiceRemoteFactory serviceRemoteFactory;
     private AbstractServiceRemote serviceRemote;
     private Future executionFuture;
     private final SyncObject executionSync = new SyncObject(Action.class);
-    
+
     public Action() {
-        data = ActionData.newBuilder();
+        data = ActionDescription.newBuilder();
     }
-    
+
     @Override
-    public void init(final ActionConfigType.ActionConfig config) throws InitializationException, InterruptedException {
+    public void init(final ActionDescription config) throws InitializationException, InterruptedException {
         try {
-            
-            if (config.getUnitId().isEmpty()) {
+
+            if (config.getServiceStateDescription().getUnitId().isEmpty()) {
                 throw new InvalidStateException(config.getLabel() + " has not valid unit id!");
             }
-            
+
             this.config = config.toBuilder();
             this.data.setLabel(config.getLabel());
             this.serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
             Registries.getUnitRegistry().waitForData();
-            this.unitConfig = Registries.getUnitRegistry().getUnitConfigById(config.getUnitId());
+            this.unitConfig = Registries.getUnitRegistry().getUnitConfigById(config.getServiceStateDescription().getUnitId());
             this.verifyUnitConfig(unitConfig);
-            this.serviceRemote = serviceRemoteFactory.newInstance(config.getServiceType());
+            this.serviceRemote = serviceRemoteFactory.newInstance(config.getServiceStateDescription().getServiceType());
             this.serviceRemote.setInfrastructureFilter(false);
             this.serviceRemote.init(unitConfig);
             serviceRemote.activate();
@@ -92,7 +90,7 @@ public class Action implements ActionService, Initializable<ActionConfig> {
             throw new InitializationException(this, ex);
         }
     }
-    
+
     private void verifyUnitConfig(final UnitConfig unitConfig) throws VerificationFailedException {
         if (!unitConfig.getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED)) {
             try {
@@ -103,12 +101,12 @@ public class Action implements ActionService, Initializable<ActionConfig> {
             }
         }
     }
-    
+
     @Override
     public Future<Void> execute() throws CouldNotPerformException {
         synchronized (executionSync) {
             FutureTask task = new FutureTask(new Callable<Void>() {
-                
+
                 @Override
                 public Void call() throws Exception {
                     try {
@@ -142,7 +140,7 @@ public class Action implements ActionService, Initializable<ActionConfig> {
                     } catch (Exception ex) {
                         throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Execution " + data.getActionState().getValue() + "!", ex), logger, LogLevel.WARN);
                     }
-                    
+
                     return null;
                 }
             });
@@ -150,12 +148,12 @@ public class Action implements ActionService, Initializable<ActionConfig> {
         }
         return executionFuture;
     }
-    
+
     private void acquireService() throws CouldNotPerformException {
         //TODO
         logger.debug("Acquire service for execution of " + this);
     }
-    
+
     private void releaseService() {
         try {
             // TODO
@@ -164,7 +162,7 @@ public class Action implements ActionService, Initializable<ActionConfig> {
             ExceptionPrinter.printHistory(new CouldNotPerformException("FatalExecutionError: Could not release service!", ex), logger);
         }
     }
-    
+
     public void waitForFinalization() throws CouldNotPerformException, InterruptedException {
         Future currentExecution;
         synchronized (executionSync) {
@@ -173,28 +171,28 @@ public class Action implements ActionService, Initializable<ActionConfig> {
             }
             currentExecution = executionFuture;
         }
-        
+
         try {
             currentExecution.get();
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException("Could not wait for execution!", ex);
         }
     }
-    
-    public ActionConfig getConfig() {
+
+    public ActionDescription getConfig() {
         return config.build();
     }
-    
+
     private void updateActionState(ActionState.State state) {
         data.setActionState(ActionStateType.ActionState.newBuilder().setValue(state));
         logger.debug("Stateupdate[" + state.name() + "] of " + this);
     }
-    
+
     @Override
     public String toString() {
         if (config == null) {
             return getClass().getSimpleName() + "[?]";
         }
-        return getClass().getSimpleName() + "[" + config.getOriginId() + "|" + config.getUnitId() + "|" + config.getServiceType() + "|" + config.getServiceAttribute() + "|" + config.getUnitId() + "]";
+        return getClass().getSimpleName() + "[" + config.getServiceStateDescription().getUnitId() + "|" + config.getServiceStateDescription().getServiceType() + "|" + config.getServiceStateDescription().getServiceAttribute() + "|" + config.getServiceStateDescription().getUnitId() + "]";
     }
 }

@@ -36,6 +36,7 @@ import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -54,7 +55,7 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.ActionConfigType.ActionConfig;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -427,18 +428,21 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     }
 
     @Override
-    public Future<Void> applyAction(final ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
+    public Future<Void> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         try {
-            if (!actionConfig.getServiceType().equals(getServiceType())) {
+            if (!actionDescription.getServiceStateDescription().getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
 
             List<Future> actionFutureList = new ArrayList<>();
-
-            for (final UnitRemote remote : getInternalUnits()) {
-                actionFutureList.add(remote.applyAction(actionConfig));
+            for (final UnitRemote unitRemote : getInternalUnits()) {
+                if (actionDescription.getServiceStateDescription().getUnitType() == UnitType.UNKNOWN
+                        || actionDescription.getServiceStateDescription().getUnitType() == unitRemote.getType()
+                        || UnitConfigProcessor.isBaseUnit(unitRemote.getType())) {
+                    actionFutureList.add(unitRemote.applyAction(actionDescription));
+                }
             }
-            return GlobalCachedExecutorService.allOf(actionFutureList, (Void) null);
+            return GlobalCachedExecutorService.allOf((Void) null, actionFutureList);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }

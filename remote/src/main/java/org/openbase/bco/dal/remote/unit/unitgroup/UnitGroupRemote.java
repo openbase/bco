@@ -44,7 +44,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionConfigType;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.AlarmStateType;
@@ -90,10 +90,10 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessStateType.BrightnessState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureStateType.TemperatureState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PresenceStateType.PresenceState.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionConfigType.ActionConfig.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SnapshotType.Snapshot.getDefaultInstance()));
     }
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(UnitGroupRemote.class);
     private final ServiceRemoteManager serviceRemoteManager;
 
@@ -138,14 +138,13 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
         }
         super.init(unitGroupUnitConfig);
     }
-    
+
     @Override
     public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
         UnitConfig unitConfig = super.applyConfigUpdate(config);
         serviceRemoteManager.applyConfigUpdate(unitConfig.getUnitGroupConfig().getMemberIdList());
         return unitConfig;
     }
-    
 
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
@@ -189,7 +188,7 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
         }
         updateUnitData();
     }
-    
+
     private void updateUnitData() throws InterruptedException {
         try {
             UnitGroupData.Builder dataBuilder = UnitGroupData.newBuilder();
@@ -200,7 +199,7 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), LOGGER, LogLevel.WARN);
         }
     }
-    
+
     @Override
     public Future<SnapshotType.Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
         return serviceRemoteManager.recordSnapshot();
@@ -217,10 +216,10 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
     }
 
     @Override
-    public Future<Void> applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
-        return serviceRemoteManager.applyAction(actionConfig);
+    public Future<Void> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+        return serviceRemoteManager.applyAction(actionDescription);
     }
-    
+
     @Override
     public ServiceRemote getServiceRemote(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws NotAvailableException {
         return serviceRemoteManager.getServiceRemote(serviceType);

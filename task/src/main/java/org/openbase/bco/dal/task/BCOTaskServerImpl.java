@@ -21,7 +21,6 @@ package org.openbase.bco.dal.task;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import de.citec.csra.task.TaskProxy;
 import de.citec.csra.task.srv.LocalTask;
 import de.citec.csra.task.srv.LocalTaskFactory;
@@ -42,7 +41,7 @@ import rsb.Event;
 import rsb.Informer;
 import rsb.RSBException;
 import rst.communicationpatterns.TaskStateType.TaskState;
-import rst.domotic.action.ActionConfigType.ActionConfig;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -144,15 +143,15 @@ public class BCOTaskServerImpl implements BCOTaskServer {
         public LocalTask newLocalTask(Object taskDescription) throws IllegalArgumentException {
 
             // read action config
-            if (!(taskDescription instanceof ActionConfig)) {
+            if (!(taskDescription instanceof ActionDescription)) {
                 throw new IllegalArgumentException("Unknown DataType[" + taskDescription.getClass() + "]!");
             }
 
-            final ActionConfig actionConfig = (ActionConfig) taskDescription;
+            final ActionDescription actionDescription = (ActionDescription) taskDescription;
 
             return () -> {
                 try {
-                    Units.getUnit(actionConfig.getUnitId(), true).applyAction(actionConfig);
+                    Units.getUnit(actionDescription.getServiceStateDescription().getUnitId(), true).applyAction(actionDescription);
                 } catch (CouldNotPerformException ex) {
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not execute task!", ex), LOGGER);
                 }

@@ -26,13 +26,17 @@ import org.openbase.bco.dal.lib.layer.unit.authorizationgroup.AuthorizationGroup
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.unit.user.UserConfigType.UserConfig;
-import rst.domotic.state.UserPresenceStateType.UserPresenceState;
+import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
+import rst.domotic.action.ActionAuthorityType.ActionAuthority;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.state.UserPresenceStateType.UserPresenceState;
 import rst.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData;
+import rst.domotic.unit.user.UserConfigType.UserConfig;
 
 /**
  *
@@ -61,6 +65,11 @@ public class AuthorizationGroupRemote extends AbstractUnitRemote<AuthorizationGr
 
     @Override
     public Future<Void> setUserPresenceState(UserPresenceState userPresenceState) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(userPresenceState, this, Void.class);
+        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+        try {
+            return this.applyAction(updateActionDescription(actionDescription, userPresenceState, ServiceType.PRESENCE_STATE_SERVICE).build());
+        } catch (InterruptedException ex) {
+            throw new CouldNotPerformException("Interrupted while setting activationState.", ex);
+        }
     }
 }

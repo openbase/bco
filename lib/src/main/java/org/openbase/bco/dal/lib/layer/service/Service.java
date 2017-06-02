@@ -30,10 +30,13 @@ import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
+import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.iface.annotations.RPCMethod;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
-import rst.domotic.action.ActionConfigType;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
+import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
@@ -51,7 +54,13 @@ public interface Service {
     public static final String SERVICE_LABEL = Service.class.getSimpleName();
 
     @RPCMethod
-    public Future<Void> applyAction(final ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException;
+    public Future<Void> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException;
+
+    default public void addServiceStateObserver(ServiceType serviceType, Observer observer) {
+    }
+
+    default public void removeServiceStateObserver(ServiceType serviceType, Observer observer) {
+    }
 
     /**
      * This method returns the service base name of the given service type.
@@ -236,12 +245,46 @@ public interface Service {
     public static Object invokeOperationServiceMethod(final ServiceType serviceType, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
         return invokeServiceMethod(serviceType, ServicePattern.OPERATION, instance, arguments);
     }
-    
+
     public static Class[] getArgumentClasses(final Object[] arguments) {
         Class[] classes = new Class[arguments.length];
         for (int i = 0; i < classes.length; i++) {
             classes[i] = arguments[i].getClass();
         }
         return classes;
+    }
+
+    public static ActionDescription.Builder upateActionDescription(final ActionDescription.Builder actionDescription, final Object serviceAttribue, final ServiceType serviceType) throws CouldNotPerformException {
+        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
+        ServiceJSonProcessor jSonProcessor = new ServiceJSonProcessor();
+
+        serviceStateDescription.setServiceAttribute(jSonProcessor.serialize(serviceAttribue));
+        serviceStateDescription.setServiceAttributeType(jSonProcessor.getServiceAttributeType(serviceAttribue));
+        serviceStateDescription.setServiceType(serviceType);
+
+        String description = actionDescription.getDescription();
+        description = description.replace(ActionDescriptionProcessor.SERVICE_TYPE_KEY, serviceType.name());
+
+        // TODO: also replace SERVICE_ATTRIBUTE_KEY in description with a nice serviceAttribute representation
+        String serviceAttributeRepresentation = serviceAttribue.toString();
+        description = description.replace(ActionDescriptionProcessor.SERVICE_ATTIBUTE_KEY, serviceAttributeRepresentation);
+        actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.SERVICE_ATTIBUTE_KEY, serviceAttributeRepresentation));
+
+        return actionDescription.setDescription(description);
+    }
+
+    public static ActionDescription.Builder upateActionDescription(final ActionDescription.Builder actionDescription, final Object serviceAttribue) throws CouldNotPerformException {
+        return upateActionDescription(actionDescription, serviceAttribue, getServiceType(serviceAttribue));
+    }
+
+    public static ServiceType getServiceType(final Object serviceAttribute) throws CouldNotPerformException {
+        //TODO: this does not work for serviceTypes like smokeAlarmStateService since the serviceAttribute is an AlarmState
+
+        String serviceTypeName = StringProcessor.transformToUpperCase(serviceAttribute.getClass().getSimpleName() + SERVICE_LABEL);
+        try {
+            return ServiceType.valueOf(serviceTypeName);
+        } catch (IllegalArgumentException ex) {
+            throw new CouldNotPerformException("Could not resolve ServiceType for [" + serviceAttribute.getClass().getSimpleName() + "]");
+        }
     }
 }

@@ -22,9 +22,15 @@ package org.openbase.bco.dal.remote.unit;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
@@ -35,21 +41,31 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.protobuf.processing.GenericMessageProcessor;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
+import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
-import rst.domotic.action.ActionConfigType;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
+import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
-import rst.domotic.state.EnablingStateType;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
+import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 
 /**
@@ -59,10 +75,19 @@ import rst.rsb.ScopeType;
  */
 public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends AbstractConfigurableRemote<M, UnitConfig> implements UnitRemote<M> {
 
+    static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Snapshot.getDefaultInstance()));
+    }
+
     private UnitTemplate template;
+    private UnitRegistry unitRegistry;
+    private final Map<ServiceType, MessageObservable> serviceStateObservableMap;
 
     public AbstractUnitRemote(final Class<M> dataClass) {
         super(dataClass, UnitConfig.class);
+
+        serviceStateObservableMap = new HashMap<>();
     }
 
     protected UnitRegistry getUnitRegistry() throws InterruptedException, CouldNotPerformException {
@@ -187,9 +212,49 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
                     ExceptionPrinter.printHistory("Could not update unit config of " + this, ex, logger);
                 }
             });
+
+            // TODO: move to applyConfigUpdate
+            try {
+                for (ServiceDescription serviceDescription : getTemplate().getServiceDescriptionList()) {
+                    if (!serviceStateObservableMap.containsKey(serviceDescription.getType())) {
+                        serviceStateObservableMap.put(serviceDescription.getType(), new MessageObservable(this));
+                    }
+                }
+            } catch (NotAvailableException ex) {
+
+            }
+            this.addDataObserver(new Observer<M>() {
+
+                @Override
+                public void update(Observable<M> source, M data) throws Exception {
+                    Set<ServiceType> serviceTypeSet = new HashSet<>();
+                    for (ServiceDescription serviceDescription : getTemplate().getServiceDescriptionList()) {
+                        if (!serviceTypeSet.contains(serviceDescription.getType())) {
+                            serviceTypeSet.add(serviceDescription.getType());
+                            try {
+                                Object serviceData = Service.invokeProviderServiceMethod(serviceDescription.getType(), data);
+                                serviceStateObservableMap.get(serviceDescription.getType()).notifyObservers(serviceData);
+                            } catch (CouldNotPerformException ex) {
+//                            System.out.println("update error, no service getter for type [" + serviceTemplate.getType() + "]");
+                                logger.debug("Could not notify state update for service[" + serviceDescription.getType() + "] because this service is not supported by this controller");
+                            }
+                        }
+                    }
+                }
+            });
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
+    }
+
+    @Override
+    public void addServiceStateObserver(ServiceType serviceType, Observer observer) {
+        serviceStateObservableMap.get(serviceType).addObserver(observer);
+    }
+
+    @Override
+    public void removeServiceStateObserver(ServiceType serviceType, Observer observer) {
+        serviceStateObservableMap.get(serviceType).removeObserver(observer);
     }
 
     /**
@@ -270,7 +335,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     public boolean isEnabled() {
         try {
             assert (getConfig() instanceof UnitConfig);
-            return getConfig().getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED);
+            return getConfig().getEnablingState().getValue().equals(EnablingState.State.ENABLED);
         } catch (CouldNotPerformException ex) {
             LoggerFactory.getLogger(org.openbase.bco.dal.lib.layer.unit.UnitRemote.class).warn("isEnabled() was called on non initialized unit!");
             assert false;
@@ -294,7 +359,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
      * @throws org.openbase.jul.exception.NotAvailableException
      */
     @Override
-    public UnitTemplate.UnitType getType() throws NotAvailableException {
+    public UnitType getType() throws NotAvailableException {
         try {
             return getConfig().getType();
         } catch (NullPointerException | NotAvailableException ex) {
@@ -375,12 +440,12 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
             throw new NotAvailableException(ex);
         }
     }
-    
+
     /**
      * Method returns the parent location remote of this unit.
      *
      * @param waitForData flag defines if the method should block until the remote is fully synchronized.
-     * @return a location remote instance. 
+     * @return a location remote instance.
      * @throws NotAvailableException is thrown if the location remote is currently not available.
      * @throws java.lang.InterruptedException is thrown if the current was externally interrupted.
      */
@@ -395,14 +460,14 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     /**
      * {@inheritDoc}
      *
-     * @param actionConfig {@inheritDoc}
+     * @param actionDescription {@inheritDoc}
      * @return {@inheritDoc}
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
-    public Future<Void> applyAction(ActionConfigType.ActionConfig actionConfig) throws CouldNotPerformException, InterruptedException {
-        return RPCHelper.callRemoteMethod(actionConfig, this, Void.class);
+    public Future<Void> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+        return RPCHelper.callRemoteMethod(actionDescription, this, Void.class);
     }
 
     /**
@@ -415,5 +480,50 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     @Override
     public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
         return RPCHelper.callRemoteMethod(this, Snapshot.class);
+    }
+
+    /**
+     * Use if serviceType cannot be resolved from serviceAttribute. E.g. AlarmState.
+     *
+     * @param actionDescription
+     * @param serviceAttribute
+     * @param serviceType
+     * @return
+     * @throws CouldNotPerformException
+     */
+    protected ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Object serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
+        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
+        ResourceAllocation.Builder resourceAllocation = actionDescription.getResourceAllocationBuilder();
+
+        serviceStateDescription.setUnitId(getId());
+        resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(getScope()));
+
+        actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
+        //TODO: update USER key with authentification
+        actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
+
+        return Service.upateActionDescription(actionDescription, serviceAttribute, serviceType);
+    }
+
+    /**
+     * Default version.
+     *
+     * @param actionDescription
+     * @param serviceAttribute
+     * @return
+     * @throws CouldNotPerformException
+     */
+    protected ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Object serviceAttribute) throws CouldNotPerformException {
+        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
+        ResourceAllocation.Builder resourceAllocation = actionDescription.getResourceAllocationBuilder();
+
+        serviceStateDescription.setUnitId(getId());
+        resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(getScope()));
+
+        actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
+        //TODO: update USER key with authentification
+        actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
+
+        return Service.upateActionDescription(actionDescription, serviceAttribute);
     }
 }
