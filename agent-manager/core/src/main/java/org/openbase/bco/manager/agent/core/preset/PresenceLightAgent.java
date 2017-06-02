@@ -21,41 +21,44 @@ package org.openbase.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.Future;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.state.PresenceStateType.PresenceState;
-import rst.domotic.state.PresenceStateType.PresenceStateOrBuilder;
+import rst.domotic.state.PresenceStateType;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationDataType;
 
 /**
  *
- * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- * 
- * @deprecated replaced by AbsenceEnergySavingAgent and PresenceLightAgent
+ * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-@Deprecated 
-public class PersonLightProviderAgent extends AbstractAgentController {
+public class PresenceLightAgent extends AbstractAgentController {
 
-    public static final double MINIMUM_LIGHT_THRESHOLD = 100;
     private LocationRemote locationRemote;
+    private boolean present = false;
+    private Future<Void> setPowerStateFuture;
     private final Observer<LocationDataType.LocationData> locationObserver;
 
-    public PersonLightProviderAgent() throws InstantiationException, CouldNotPerformException, InterruptedException {
-        super(PersonLightProviderAgent.class);
-        
+    public PresenceLightAgent() throws InstantiationException {
+        super(PresenceLightAgent.class);
+
         locationObserver = (final Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
-            try {
-                notifyPresenceStateChanged(data.getPresenceState());
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify presence state change!", ex), logger);
+            if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT) && !present) {
+                present = true;
+                switchlightsOn();
+            } else if (!(data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT)) && present) {
+                if (setPowerStateFuture != null) {
+                    setPowerStateFuture.cancel(true);
+                }
+                present = false;
             }
         };
     }
@@ -63,23 +66,26 @@ public class PersonLightProviderAgent extends AbstractAgentController {
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
         logger.info("Activating [" + getConfig().getLabel() + "]");
-        locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
+        locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), true, Units.LOCATION);
+
+        /** Add trigger here and replace dataObserver */
         locationRemote.addDataObserver(locationObserver);
         locationRemote.waitForData();
     }
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getClass().getSimpleName() + "]");
+        logger.info("Deactivating [" + getConfig().getLabel() + "]");
         locationRemote.removeDataObserver(locationObserver);
     }
 
-    private void notifyPresenceStateChanged(final PresenceStateOrBuilder presenceState) throws CouldNotPerformException {
-        if (presenceState.getValue() == PresenceState.State.PRESENT) {
-            locationRemote.setPowerState(PowerState.State.ON);
-        } else {
-            locationRemote.setPowerState(PowerState.State.OFF);
+    private void switchlightsOn() {
+        try {
+            setPowerStateFuture = locationRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build(), UnitType.LIGHT);
+            // TODO: Blocking setPowerState function that is trying to realloc all lights as long as jobs not cancelled. 
+            // TODO: Maybe also set Color and Brightness?
+        } catch (CouldNotPerformException ex) {
+            Logger.getLogger(PresenceLightAgent.class.getName()).log(Level.SEVERE, null, ex);
         }
-        logger.info("detect: " + presenceState.getValue());
     }
 }

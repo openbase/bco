@@ -36,9 +36,8 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
-import rst.domotic.action.ActionConfigType;
-import rst.domotic.action.ActionConfigType.ActionConfig;
 import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.state.PowerStateType;
 import rst.domotic.state.PresenceStateType;
 import rst.domotic.unit.location.LocationDataType;
@@ -135,21 +134,21 @@ public class StandbyAgent extends AbstractAgentController {
                     snapshot = locationRemote.recordSnapshot().get(60, TimeUnit.SECONDS);
 
                     // filter OFF values
-                    List<ActionConfigType.ActionConfig> actionConfigList = new ArrayList<>();
-                    for (ActionConfig actionConfig : snapshot.getActionConfigList()) {
+                    List<ServiceStateDescription> serviceStateDescriptionList = new ArrayList<>();
+                    for (ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
                         // filter devices which are switched OFF
-                        if (actionConfig.getServiceAttribute().toLowerCase().contains("off")) {
-                            logger.debug("ignore " + actionConfig.getUnitId() + " because unit is off.");
+                        if (serviceStateDescription.getServiceAttribute().toLowerCase().contains("off")) {
+                            logger.debug("ignore " + serviceStateDescription.getUnitId() + " because unit is off.");
                             continue;
                         }
-                        if (actionConfig.getServiceAttribute().toLowerCase().contains("brightness: 0.0")) {
-                            logger.debug("ignore " + actionConfig.getUnitId() + " because brightness is 0.");
+                        if (serviceStateDescription.getServiceAttribute().toLowerCase().contains("brightness: 0.0")) {
+                            logger.debug("ignore " + serviceStateDescription.getUnitId() + " because brightness is 0.");
                             continue;
                         }
 
-                        actionConfigList.add(actionConfig);
+                        serviceStateDescriptionList.add(serviceStateDescription);
                     }
-                    snapshot = snapshot.toBuilder().clearActionConfig().addAllActionConfig(actionConfigList).build();
+                    snapshot = snapshot.toBuilder().clearServiceStateDescription().addAllServiceStateDescription(serviceStateDescriptionList).build();
                 } catch (ExecutionException | CouldNotPerformException | TimeoutException ex) {
                     ExceptionPrinter.printHistory("Could not create snapshot!", ex, logger);
                 }

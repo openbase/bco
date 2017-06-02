@@ -25,8 +25,6 @@ import org.openbase.bco.dal.lib.layer.unit.AbstractExecutableBaseUnitController;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.ActivationStateType.ActivationState;
@@ -46,11 +44,6 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
 
     public AbstractAgentController(final Class unitClass) throws InstantiationException {
         super(unitClass, AgentDataType.AgentData.newBuilder());
-    }
-
-    @Override
-    public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
-        RPCHelper.registerInterface(org.openbase.bco.dal.lib.layer.unit.agent.Agent.class, this, server);
     }
 
     @Override
