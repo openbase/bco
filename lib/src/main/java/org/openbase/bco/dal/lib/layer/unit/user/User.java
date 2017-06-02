@@ -25,6 +25,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.state.UserActivityStateType.UserActivityState;
 import rst.domotic.state.UserPresenceStateType.UserPresenceState;
 import rst.domotic.unit.user.UserDataType.UserData;
@@ -39,11 +40,16 @@ public interface User extends BaseUnit<UserData> {
 
     public String getUserName() throws NotAvailableException;
 
+    //TODO: services for Users have to registered, see dal issue 44
+    @RPCMethod
     public UserActivityState getUserActivityState() throws NotAvailableException;
 
+    @RPCMethod
     public Future<Void> setUserActivityState(UserActivityState UserActivityState) throws CouldNotPerformException;
 
+    @RPCMethod
     public UserPresenceState getUserPresenceState() throws NotAvailableException;
 
+    @RPCMethod
     public Future<Void> setUserPresenceState(UserPresenceState userPresenceState) throws CouldNotPerformException;
 }

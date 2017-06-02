@@ -51,7 +51,7 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
     public UserRemote() {
         super(UserData.class);
     }
-
+    
     @Override
     public String getUserName() throws NotAvailableException {
         try {
@@ -81,7 +81,7 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
 
     @Override
     public Future<Void> setUserActivityState(UserActivityState userActivityState) throws CouldNotPerformException {
-        //TODO: this method has not according serviceType...
+        //TODO: services for Users have to registered, see dal issue 44
 //        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
 //        try {
 //            return this.applyAction(updateActionDescription(actionDescription, UserActivityState, ServiceType).build());
@@ -93,7 +93,7 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
 
     @Override
     public Future<Void> setUserPresenceState(UserPresenceState userPresenceState) throws CouldNotPerformException {
-        //TODO: this method has not according serviceType...
+        //TODO: services for Users have to registered, see dal issue 44
 //        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
 //        try {
 //            return this.applyAction(updateActionDescription(actionDescription, userPresenceState, ServiceType.PRESENCE_STATE_SERVICE).build());
