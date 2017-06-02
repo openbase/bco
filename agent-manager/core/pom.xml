@@ -51,7 +51,7 @@
                     <programs>
                         <program>
                             <mainClass>org.openbase.bco.manager.agent.core.AgentManagerLauncher</mainClass>
-                            <id>agent-manager</id>
+                            <id>bco-manager-agent</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>

@@ -50,7 +50,7 @@
                     <programs>
                         <program>
                             <mainClass>org.openbase.bco.manager.device.core.DeviceManagerLauncher</mainClass>
-                            <id>device-manager</id>
+                            <id>bco-manager-device</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
