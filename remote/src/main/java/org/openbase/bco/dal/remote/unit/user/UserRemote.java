@@ -28,13 +28,8 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
-import rst.domotic.action.ActionAuthorityType.ActionAuthority;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.UserActivityStateType.UserActivityState;
 import rst.domotic.state.UserPresenceStateType.UserPresenceState;
@@ -85,7 +80,7 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
     }
 
     @Override
-    public Future<Void> setUserActivityState(UserActivityState UserActivityState) throws CouldNotPerformException {
+    public Future<Void> setUserActivityState(UserActivityState userActivityState) throws CouldNotPerformException {
         //TODO: this method has not according serviceType...
 //        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
 //        try {
@@ -93,17 +88,19 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
 //        } catch (InterruptedException ex) {
 //            throw new CouldNotPerformException("Interrupted while setting activationState.", ex);
 //        }
-        return RPCHelper.callRemoteMethod(UserActivityState, this, Void.class);
+        return RPCHelper.callRemoteMethod(userActivityState, this, Void.class);
     }
 
     @Override
     public Future<Void> setUserPresenceState(UserPresenceState userPresenceState) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-        try {
-            return this.applyAction(updateActionDescription(actionDescription, userPresenceState, ServiceType.PRESENCE_STATE_SERVICE).build());
-        } catch (InterruptedException ex) {
-            throw new CouldNotPerformException("Interrupted while setting activationState.", ex);
-        }
+        //TODO: this method has not according serviceType...
+//        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+//        try {
+//            return this.applyAction(updateActionDescription(actionDescription, userPresenceState, ServiceType.PRESENCE_STATE_SERVICE).build());
+//        } catch (InterruptedException ex) {
+//            throw new CouldNotPerformException("Interrupted while setting activationState.", ex);
+//        }
+        return RPCHelper.callRemoteMethod(userPresenceState, this, Void.class);
     }
 
     //TODO move into user unit interface
