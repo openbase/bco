@@ -31,6 +31,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import rst.rsb.ScopeType;
 import rst.rsb.ScopeType.Scope;
 
@@ -117,7 +118,7 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
             String remoteClassName = null;
             // check unit type and load related class.
             if (UnitConfigProcessor.isBaseUnit(unitType)) {
-                remoteClassName = "org.openbase.bco.dal.remote.unit." + unitType.name().toLowerCase().replaceAll("_", "") + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
+                remoteClassName = AbstractUnitRemote.class.getPackage().getName() + "." + unitType.name().toLowerCase().replaceAll("_", "") + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
             } else if (UnitConfigProcessor.isDalUnit(unitType)) {
                 remoteClassName = AbstractUnitRemote.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + "Remote";
             } else {
