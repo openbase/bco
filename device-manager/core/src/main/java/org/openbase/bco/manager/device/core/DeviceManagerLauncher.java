@@ -21,6 +21,7 @@ package org.openbase.bco.manager.device.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.jp.JPBenchmarkMode;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.manager.device.lib.DeviceManager;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
@@ -45,6 +46,7 @@ public class DeviceManagerLauncher extends AbstractLauncher<DeviceManagerControl
     public void loadProperties() {
         JPService.registerProperty(JPPrefix.class);
         JPService.registerProperty(JPHardwareSimulationMode.class);
+        JPService.registerProperty(JPBenchmarkMode.class);
         JPService.registerProperty(JPLocationRegistryScope.class);
         JPService.registerProperty(JPDeviceRegistryScope.class);
     }

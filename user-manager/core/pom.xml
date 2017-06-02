@@ -51,7 +51,7 @@
                     <programs>
                         <program>
                             <mainClass>org.openbase.bco.manager.user.core.UserManagerLauncher</mainClass>
-                            <id>user-manager</id>
+                            <id>bco-manager-user</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>

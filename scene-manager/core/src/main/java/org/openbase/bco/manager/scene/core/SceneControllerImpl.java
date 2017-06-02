@@ -197,7 +197,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activate Scene[" + getConfig().getLabel() + "]");
+        logger.debug("Activate Scene[" + getConfig().getLabel() + "]");
 
         executing = true;
 
@@ -227,7 +227,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
                 if (futureActionEntry.getKey().isDone()) {
                     continue;
                 }
-                logger.info("Waiting for action [" + futureActionEntry.getValue().getConfig().getServiceAttributeType() + "]");
+                logger.debug("Waiting for action [" + futureActionEntry.getValue().getConfig().getServiceAttributeType() + "]");
                 try {
                     timeout = checkStart - System.currentTimeMillis();
                     if (timeout <= 0) {
@@ -239,7 +239,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
                 }
             }
             MultiException.checkAndThrow("Could not execute all actions!", exceptionStack);
-            logger.info("Deactivate Scene[" + getConfig().getLabel() + "] because all actions are sucessfully executed.");
+            logger.debug("Deactivate Scene[" + getConfig().getLabel() + "] because all actions are sucessfully executed.");
         } catch (CouldNotPerformException | CancellationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Scene[" + getConfig().getLabel() + "] execution failed!"), logger);
         } finally {
@@ -269,7 +269,6 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
             @Override
             public Void call() throws Exception {
                 try {
-                    logger.info("applyAction: " + actionConfig.getLabel());
                     final Object attribute = new ServiceJSonProcessor().deserialize(actionConfig.getServiceAttribute(), actionConfig.getServiceAttributeType());
                     // Since its an action it has to be an operation service pattern
                     final ServiceDescription serviceDescription = ServiceDescription.newBuilder().setType(actionConfig.getServiceType()).setPattern(ServiceTemplate.ServicePattern.OPERATION).build();

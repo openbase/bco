@@ -26,6 +26,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
+import org.openbase.bco.dal.lib.jp.JPBenchmarkMode;
 import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -34,6 +35,8 @@ import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
 import static org.openbase.bco.manager.location.core.LocationManagerController.LOGGER;
 import org.openbase.bco.manager.location.lib.ConnectionController;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -253,7 +256,13 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
                     break;
             }
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), logger, LogLevel.WARN);
+            try {
+                if (!JPService.getProperty(JPBenchmarkMode.class).getValue()) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), logger, LogLevel.WARN);
+                }
+            } catch (JPNotAvailableException exx) {
+                // ignore
+            }
         }
     }
 
@@ -274,7 +283,13 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
                             doorState = correspondingDoorState;
                             timestamp = Math.max(timestamp, contactState.getTimestamp().getTime());
                         } else if (doorState != correspondingDoorState) {
-                            throw new CouldNotPerformException("Contradicting contact values for the door state!");
+                            try {
+                                if (!JPService.getProperty(JPBenchmarkMode.class).getValue()) {
+                                    throw new CouldNotPerformException("Contradicting contact values for the door state!");
+                                }
+                            } catch (JPNotAvailableException ex) {
+                                // only throw this exception when not in benchmark mode
+                            }
                         }
                         break;
                     case OPEN:
@@ -321,7 +336,13 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
                             windowState = correspondingDoorState;
                             timestamp = Math.max(timestamp, contactState.getTimestamp().getTime());
                         } else if (windowState != correspondingDoorState) {
-                            throw new CouldNotPerformException("Contradicting contact values for the window state!");
+                            try {
+                                if (!JPService.getProperty(JPBenchmarkMode.class).getValue()) {
+                                    throw new CouldNotPerformException("Contradicting contact values for the window state!");
+                                }
+                            } catch (JPNotAvailableException ex) {
+                                // only throw this exception when not in benchmark mode
+                            }
                         }
                         break;
                     case OPEN:
@@ -345,7 +366,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
         }
 
         try (ClosableDataBuilder<ConnectionData.Builder> dataBuilder = getDataBuilder(this)) {
-             dataBuilder.getInternalBuilder().setWindowState(TimestampProcessor.updateTimestamp(timestamp, dataBuilder.getInternalBuilder().getWindowStateBuilder().setValue(windowState), logger).build());
+            dataBuilder.getInternalBuilder().setWindowState(TimestampProcessor.updateTimestamp(timestamp, dataBuilder.getInternalBuilder().getWindowStateBuilder().setValue(windowState), logger).build());
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply brightness data change!", ex);
         }

@@ -63,21 +63,21 @@
                     <programs>
                         <program>
                             <mainClass>org.openbase.bco.manager.device.binding.openhab.util.configgen.OpenHABConfigGeneratorLauncher</mainClass>
-                            <id>binding-openhab-config-generator</id>
+                            <id>bco-binding-openhab-config-generator</id>
                             <platforms>
                                 <platform>unix</platform>
-                            </platforms>
+                            </platforms>-device-manager
                         </program>
                         <program>
                             <mainClass>org.openbase.bco.manager.device.binding.openhab.util.configgen.OpenHABminConfigGenerator</mainClass>
-                            <id>binding-openhab-habmin-zwave-config-updater</id>
+                            <id>bco-binding-openhab-habmin-zwave-config-updater</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
                         </program>
                         <program>
                             <mainClass>org.openbase.bco.manager.device.binding.openhab.DeviceBindingOpenHABLauncher</mainClass>
-                            <id>binding-openhab-device-manager</id>
+                            <id>bco-manager-device-binding-openhab</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>

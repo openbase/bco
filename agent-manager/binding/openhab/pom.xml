@@ -63,7 +63,7 @@
                     <programs>
                         <program>
                             <mainClass>org.openbase.bco.manager.agent.binding.openhab.AgentBindingOpenHABLauncher</mainClass>
-                            <id>binding-openhab-agent-manager</id>
+                            <id>bco-manager-agend-binding-openhab</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>

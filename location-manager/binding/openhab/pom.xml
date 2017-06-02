@@ -63,7 +63,7 @@
                     <programs>
                         <program>
                             <mainClass>org.openbase.bco.manager.location.binding.openhab.LocationBindingOpenHABLauncher</mainClass>
-                            <id>binding-openhab-location-manager</id>
+                            <id>bco-manager-location-binding-openhab</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
