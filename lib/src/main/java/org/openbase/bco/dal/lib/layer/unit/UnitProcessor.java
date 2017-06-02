@@ -21,6 +21,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -31,7 +32,7 @@ import org.openbase.jul.exception.VerificationFailedException;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UnitProcessor {
-
+    
     public static boolean isHostUnit(final Unit<?> unit) throws CouldNotPerformException {
         return UnitConfigProcessor.isHostUnit(unit.getConfig());
     }
@@ -63,5 +64,16 @@ public class UnitProcessor {
     public static void verifyUnit(final Unit<?> unit) throws VerificationFailedException {
         verifyUnitConfig(unit);
         verifyUnitType(unit);
+    }
+    
+    /**
+     * This method returns the unit class resolved by the given unit.
+     *
+     * @param unit the unit to extract the unit class.
+     * @return the unit data class.
+     * @throws org.openbase.jul.exception.NotAvailableException is thrown if the data class could not be detected.
+     */
+    public static Class<? extends GeneratedMessage> getUnitDataClass(final Unit<?> unit) throws NotAvailableException {
+        return UnitConfigProcessor.getUnitDataClass(unit.getType());
     }
 }
