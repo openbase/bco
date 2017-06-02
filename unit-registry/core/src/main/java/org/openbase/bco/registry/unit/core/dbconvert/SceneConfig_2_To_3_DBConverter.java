@@ -21,7 +21,6 @@ package org.openbase.bco.registry.unit.core.dbconvert;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.jul.storage.registry.version.DBVersionControl;
 
 /**
@@ -33,5 +32,4 @@ public class SceneConfig_2_To_3_DBConverter extends ServiceTemplateToServiceDesc
     public SceneConfig_2_To_3_DBConverter(DBVersionControl versionControl) {
         super(versionControl);
     }
-    
 }
