@@ -210,7 +210,7 @@
             <url>https://mvn.cit-ec.de/nexus/content/repositories/snapshots/</url>
             <layout>default</layout>
             <snapshots>
-                <enabled>false</enabled>
+                <enabled>true</enabled>
             </snapshots>
         </repository>
     </repositories>
