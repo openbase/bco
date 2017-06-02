@@ -50,7 +50,7 @@
                     <programs>
                         <program>
                             <mainClass>org.openbase.bco.registry.location.core.LocationRegistryLauncher</mainClass>
-                            <id>location-registry</id>
+                            <id>bco-registry-location</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>

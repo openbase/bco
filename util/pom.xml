@@ -93,7 +93,7 @@
                         </program>
                         <program>
                             <mainClass>org.openbase.bco.registry.print.BCORegistryPrinter</mainClass>
-                            <id>bco-registry-printer</id>
+                            <id>bco-print-registry</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>

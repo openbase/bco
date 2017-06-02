@@ -31,6 +31,7 @@ import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.jp.JPAgentConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPAppConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPAuthorizationGroupConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPClearUnitPosition;
 import org.openbase.bco.registry.unit.lib.jp.JPConnectionConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPDalUnitConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPDeviceConfigDatabaseDirectory;
@@ -79,6 +80,7 @@ public class UnitRegistryLauncher extends AbstractRegistryLauncher<UnitRegistryC
         JPService.registerProperty(JPServiceTemplateDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
+        JPService.registerProperty(JPClearUnitPosition.class);
 
         JPService.registerProperty(JPRSBHost.class);
         JPService.registerProperty(JPRSBPort.class);

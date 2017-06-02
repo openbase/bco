@@ -35,6 +35,7 @@ import org.openbase.bco.registry.unit.core.consistency.ServiceConfigServiceTempl
 import org.openbase.bco.registry.unit.core.consistency.ServiceConfigUnitIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitConfigUnitTemplateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitEnablingStateConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.UnitPositionCleanerConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.agentconfig.AgentLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.agentconfig.AgentLocationConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.agentconfig.AgentScopeConsistencyHandler;
@@ -105,6 +106,7 @@ import org.openbase.bco.registry.unit.lib.generator.UnitTemplateIdGenerator;
 import org.openbase.bco.registry.unit.lib.jp.JPAgentConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPAppConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPAuthorizationGroupConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPClearUnitPosition;
 import org.openbase.bco.registry.unit.lib.jp.JPConnectionConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPDalUnitConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPDeviceConfigDatabaseDirectory;
@@ -116,6 +118,7 @@ import org.openbase.bco.registry.unit.lib.jp.JPUnitRegistryScope;
 import org.openbase.bco.registry.unit.lib.jp.JPUnitTemplateDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPUserConfigDatabaseDirectory;
 import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -347,6 +350,13 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         registerConsistencyHandler(new UnitConfigUnitTemplateConsistencyHandler(unitTemplateRegistry), UnitConfig.class);
         registerConsistencyHandler(new UnitEnablingStateConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new ServiceConfigServiceTemplateIdConsistencyHandler(serviceTemplateRegistry), UnitConfig.class);
+        try {
+            if (JPService.getProperty(JPClearUnitPosition.class).getValue()) {
+                registerConsistencyHandler(new UnitPositionCleanerConsistencyHandler(), UnitConfig.class);
+            }
+        } catch (JPNotAvailableException ex) {
+            // do nothing if not available.
+        }
     }
 
     /**

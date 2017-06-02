@@ -50,7 +50,7 @@
                     <programs>
                         <program>
                             <mainClass>org.openbase.bco.registry.unit.core.UnitRegistryLauncher</mainClass>
-                            <id>unit-registry</id>
+                            <id>bco-registry-unit</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
