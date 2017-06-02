@@ -2,7 +2,7 @@ package org.openbase.bco.registry.unit.lib.jp;
 
 /*
  * #%L
- * BCO Registry Location Library
+ * BCO Registry Unit Library
  * %%
  * Copyright (C) 2014 - 2017 openbase.org
  * %%
