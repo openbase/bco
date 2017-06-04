@@ -26,17 +26,17 @@ package org.openbase.bco.authentification.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.authenticator.lib.Authenticator;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
+import org.openbase.bco.authenticator.lib.iface.AuthenticatorInterface;
 
 /**
  *
  * @author Tamino Huxohl <thuxohl@techfak.uni-bielefel.de>
  */
-public class AuthenticatorController implements Authenticator, Launchable<Void>, VoidInitializable {
+public class AuthenticatorController implements AuthenticatorInterface, Launchable<Void>, VoidInitializable {
 
     public AuthenticatorController() {
     }

@@ -5,11 +5,11 @@
  */
 package org.openbase.bco.authentification.core;
 
-import org.openbase.bco.authenticator.lib.Authenticator;
 import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.bco.authenticator.lib.iface.AuthenticatorInterface;
 
 /*-
  * #%L
@@ -40,7 +40,7 @@ import org.openbase.jul.exception.InstantiationException;
 public class AuthenticatorLauncher extends AbstractLauncher<AuthenticatorController> {
 
     public AuthenticatorLauncher() throws InstantiationException {
-        super(Authenticator.class, AuthenticatorController.class);
+        super(AuthenticatorInterface.class, AuthenticatorController.class);
     }
 
     @Override
@@ -55,6 +55,6 @@ public class AuthenticatorLauncher extends AbstractLauncher<AuthenticatorControl
      */
     public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
         BCO.printLogo();
-        AbstractLauncher.main(args, Authenticator.class, AuthenticatorLauncher.class);
+        AbstractLauncher.main(args, AuthenticatorInterface.class, AuthenticatorLauncher.class);
     }
 }

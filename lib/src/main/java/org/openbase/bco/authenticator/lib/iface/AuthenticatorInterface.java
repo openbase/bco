@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openbase.bco.authenticator.lib;
+package org.openbase.bco.authenticator.lib.iface;
 
 /*-
  * #%L
@@ -31,6 +31,6 @@ package org.openbase.bco.authenticator.lib;
  *
  * @author Tamino Huxohl <thuxohl@techfak.uni-bielefel.de>
  */
-public interface Authenticator {
+public interface AuthenticatorInterface {
     
 }
