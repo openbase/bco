@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openbase.bco.authentification.core;
 
 /*-
@@ -26,11 +21,22 @@ package org.openbase.bco.authentification.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.HashMap;
+import java.util.Map;
+import org.openbase.bco.authenticator.lib.classes.SessionKey;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.bco.authenticator.lib.iface.AuthenticatorInterface;
+import org.openbase.bco.authenticator.lib.jp.JPAuthentificationScope;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
+import org.openbase.jul.extension.rsb.com.NotInitializedRSBLocalServer;
+import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
+import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
+import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
+import org.openbase.jul.schedule.WatchDog;
 
 /**
  *
@@ -38,28 +44,56 @@ import org.openbase.bco.authenticator.lib.iface.AuthenticatorInterface;
  */
 public class AuthenticatorController implements AuthenticatorInterface, Launchable<Void>, VoidInitializable {
 
+    private RSBLocalServer server;
+    private WatchDog serverWatchDog;
+    
+    private final byte[] TGSSessionKey;
+    
+    // only for testing purposes
+    private final Map<String, String> clientPasswordMap;
+    
     public AuthenticatorController() {
-    }
-
-    @Override
-    public void activate() throws CouldNotPerformException, InterruptedException {
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public void deactivate() throws CouldNotPerformException, InterruptedException {
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-    }
-
-    @Override
-    public boolean isActive() {
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
-        return true;
+        this.server = new NotInitializedRSBLocalServer();
+    
+        this.TGSSessionKey = SessionKey.generateKey();
+        
+        clientPasswordMap = new HashMap<>();
+        clientPasswordMap.put("testuser", "12345678");
+        
+        
     }
 
     @Override
     public void init() throws InitializationException, InterruptedException {
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        try {
+            server = RSBFactoryImpl.getInstance().createSynchronizedLocalServer(JPService.getProperty(JPAuthentificationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
+
+            // register rpc methods.
+//            RPCHelper.registerInterface(Pingable.class, this, server);
+            serverWatchDog = new WatchDog(server, "AuthenticatorWatchDog");
+        } catch (JPNotAvailableException | org.openbase.jul.exception.InstantiationException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
+    @Override
+    public void activate() throws CouldNotPerformException, InterruptedException {
+        serverWatchDog.activate();
+    }
+
+    @Override
+    public void deactivate() throws CouldNotPerformException, InterruptedException {
+        if (serverWatchDog != null) {
+            serverWatchDog.deactivate();
+        }
+    }
+
+    @Override
+    public boolean isActive() {
+        if (serverWatchDog != null) {
+            return serverWatchDog.isActive();
+        } else {
+            return false;
+        }
+    }
 }

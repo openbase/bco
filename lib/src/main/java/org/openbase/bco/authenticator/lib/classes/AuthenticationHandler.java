@@ -29,27 +29,28 @@ package org.openbase.bco.authenticator.lib.classes;
 import com.google.protobuf.ByteString;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.security.InvalidKeyException;
+import java.io.UnsupportedEncodingException;
+import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SealedObject;
 import javax.crypto.spec.SecretKeySpec;
 import org.openbase.bco.authenticator.lib.iface.AuthenticationHandlerInterface;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
+import org.slf4j.LoggerFactory;
 import rst.timing.IntervalType.Interval;
 import rst.timing.TimestampType.Timestamp;
 import rst.domotic.authentification.AuthenticatorTicketType.AuthenticatorTicket;
@@ -65,34 +66,38 @@ public class AuthenticationHandler implements AuthenticationHandlerInterface {
 
     private static final String transformation = "AES";
 
+    private final org.slf4j.Logger logger = LoggerFactory.getLogger(AuthenticationHandler.class);
+
     public AuthenticationHandler() {
 
     }
 
+    @Override
     public ByteString encryptObject(Serializable obj, byte[] key) throws RejectedException {
         try {
             // specify key
             SecretKeySpec sks = new SecretKeySpec(key, transformation);
-            
+
             // create cipher
             Cipher cipher = Cipher.getInstance(transformation);
             cipher.init(Cipher.ENCRYPT_MODE, sks);
             SealedObject sealedObject = new SealedObject(obj, cipher);
-            
+
             // cipher
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             CipherOutputStream cos = new CipherOutputStream(baos, cipher);
             ObjectOutputStream outputStream = new ObjectOutputStream(cos);
             outputStream.writeObject(sealedObject);
             outputStream.close();
-            
+
             return ByteString.copyFrom(baos.toByteArray());
         } catch (Exception ex) {
             Logger.getLogger(AuthenticationHandler.class.getName()).log(Level.SEVERE, null, ex);
-            throw new RejectedException("Encryption did not work. TODO: Proper exception description & handling");
+            throw new RejectedException("Encryption did not work. TODO: Proper exception description & handling", ex);
         }
     }
 
+    @Override
     public Object decryptObject(ByteString bstr, byte[] key) throws RejectedException {
         try {
             // specify key
@@ -111,19 +116,27 @@ public class AuthenticationHandler implements AuthenticationHandlerInterface {
             return sealedObject.getObject(cipher);
         } catch (Exception ex) {
             Logger.getLogger(AuthenticationHandler.class.getName()).log(Level.SEVERE, null, ex);
-            throw new RejectedException("Decryption did not work. TODO: Proper exception description & handling");
+            throw new RejectedException("Decryption did not work. TODO: Proper exception description & handling", ex);
         }
     }
 
     @Override
     public byte[] initKDCRequest(String clientPassword) {
+        try {
+            byte[] key = clientPassword.getBytes("UTF-8");
+            MessageDigest sha = MessageDigest.getInstance("SHA-256");
+            key = sha.digest(key);
+            return Arrays.copyOf(key, 16);
+        } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
+            ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
+        }
         return clientPassword.getBytes();
     }
 
     @Override
     public LoginResponse handleKDCRequest(String clientID, String clientNetworkAddress, byte[] TGSSessionKey, byte[] TGSPrivateKey) throws NotAvailableException, RejectedException {
         // find client's password in database
-        String clientPassword = "123";
+        String clientPassword = "password";
 
         // hash password
         byte[] clientPasswordHash = this.initKDCRequest(clientPassword);
@@ -172,7 +185,7 @@ public class AuthenticationHandler implements AuthenticationHandlerInterface {
         atb.setTicket(wrapper.getTicket());
 
         // create wrapper list
-        List<Object> list = new ArrayList<Object>();
+        List<Object> list = new ArrayList<>();
         list.add(atb.build());
         list.add(TGSSessionKey);
 
@@ -310,7 +323,7 @@ public class AuthenticationHandler implements AuthenticationHandlerInterface {
     }
 
     private void validateTimestamp(Timestamp now, Timestamp then) throws RejectedException {
-        if (now != then) {
+        if (now.getTime() != then.getTime()) {
             throw new RejectedException("Timestamps do not match");
         }
     }

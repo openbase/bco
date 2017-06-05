@@ -28,15 +28,8 @@ package org.openbase.bco.authenticator.lib.iface;
  */
 
 import com.google.protobuf.ByteString;
-import java.io.IOException;
 import java.io.Serializable;
-import java.security.InvalidKeyException;
-import java.security.NoSuchAlgorithmException;
 import java.util.List;
-import javax.crypto.BadPaddingException;
-import javax.crypto.IllegalBlockSizeException;
-import javax.crypto.NoSuchPaddingException;
-import org.openbase.bco.authenticator.lib.classes.SessionKey;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
 import rst.domotic.authentification.AuthenticatorTicketType.AuthenticatorTicket;
@@ -70,7 +63,7 @@ public interface AuthenticationHandlerInterface {
     
     /**
      * Hashes client's password symmetrically to server's approach to hash client's password
-     * @param password Client's password
+     * @param clientPassword Client's password
      * @return Returns a byte[] representing the hashed password
      * @TODO: Exception description
      */

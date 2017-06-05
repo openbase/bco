@@ -26,13 +26,13 @@ package org.openbase.bco.authenticator.lib.classes;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import com.google.protobuf.ByteString;
 import java.util.List;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -48,13 +48,13 @@ import rst.domotic.authentification.LoginResponseType.LoginResponse;
  * @author sebastian
  */
 public class AuthenticationHandlerTest {
-    
+
     private String client_id;
     private String client_password;
     private byte[] client_passwordHash;
     private byte[] client_TGSSessionKey;
     private byte[] client_SSSessionKey;
-    
+
     private String server_clientId;
     private String server_clientPassword;
     private byte[] server_clientPasswordHash;
@@ -63,19 +63,19 @@ public class AuthenticationHandlerTest {
     private byte[] server_TGSPrivateKey;
     private byte[] server_SSSessionKey;
     private byte[] server_SSPrivateKey;
-    
+
     public AuthenticationHandlerTest() {
-        
+
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
     public void setUp() {
         client_id = "maxmustermann";
@@ -86,120 +86,79 @@ public class AuthenticationHandlerTest {
         server_SSSessionKey = SessionKey.generateKey();
         server_SSPrivateKey = SessionKey.generateKey();
     }
-    
+
     @After
     public void tearDown() {
     }
 
     /**
-     * Test of encryptObject and decryptObject method, of class AuthenticationHandler.
+     * Test of encryptObject and decryptObject method, of class
+     * AuthenticationHandler.
      */
     @Test
     public void testEncryptDecryptObject() {
         try {
             System.out.println("encrypt and decrypt object");
-            
+
             Authenticator.Builder ab = Authenticator.newBuilder();
             ab.setClientId(client_id);
             Authenticator authenticator = ab.build();
-            
+
             AuthenticationHandler instance = new AuthenticationHandler();
-            
+
             byte[] key = SessionKey.generateKey();
-            
+
             ByteString encrypted = instance.encryptObject(authenticator, key);
             Authenticator decrypted = (Authenticator) instance.decryptObject(encrypted, key);
-            
+
             assertEquals(authenticator.getClientId(), decrypted.getClientId());
         } catch (Exception ex) {
             Logger.getLogger(AuthenticationHandlerTest.class.getName()).log(Level.SEVERE, null, ex);
             fail("Exception thrown");
         }
     }
-    
+
     /**
      * Test a full authentification cycle
+     *
+     * @throws Exception
      */
-    public void testAuthentification() {
+    @Test
+    public void testAuthentification() throws Exception {
+        System.out.println("TestAuthentification");
         AuthenticationHandler instance = new AuthenticationHandler();
-        
+
         // init KDC request on client side
         client_passwordHash = instance.initKDCRequest(client_password);
-        
+
         // handle KDC request on server side
         server_clientId = client_id;
-        LoginResponse slr = null;
-        try {
-            slr = instance.handleKDCRequest(server_clientId, server_clientNetworkAddress, server_TGSSessionKey, server_TGSPrivateKey);
-        } catch (NotAvailableException ex) {
-            Logger.getLogger(AuthenticationHandlerTest.class.getName()).log(Level.SEVERE, null, ex);
-            fail("clientId not found");
-        } catch (RejectedException ex) {
-            Logger.getLogger(AuthenticationHandlerTest.class.getName()).log(Level.SEVERE, null, ex);
-            fail("TODO: this shouldn't bother us, because these errors are only thrown, if encryption failed");
-        }
-        
+        LoginResponse slr = instance.handleKDCRequest(server_clientId, server_clientNetworkAddress, server_TGSSessionKey, server_TGSPrivateKey);
+
         // handle KDC response on client side
-        List<Object> list = null;
-        try {
-            list = instance.handleKDCResponse(client_id, client_passwordHash, slr);
-        } catch (RejectedException ex) {
-            Logger.getLogger(AuthenticationHandlerTest.class.getName()).log(Level.SEVERE, null, ex);
-            fail("encryption or more likely decryption failed. probabbly wrong password hash");
-        }
+        List<Object> list = instance.handleKDCResponse(client_id, client_passwordHash, slr);
         AuthenticatorTicket client_at = (AuthenticatorTicket) list.get(0); // save at somewhere temporarily
         client_TGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
-        
-        assertEquals(server_TGSSessionKey, client_TGSSessionKey);
-        
+
+        Assert.assertArrayEquals(server_TGSSessionKey, client_TGSSessionKey);
+
         // handle TGS request on server side
-        slr = null;
-        try {
-            slr = instance.handleTGSRequest(server_TGSSessionKey, server_TGSPrivateKey, server_SSSessionKey, server_SSPrivateKey, client_at);
-        } catch (RejectedException ex) {
-            Logger.getLogger(AuthenticationHandlerTest.class.getName()).log(Level.SEVERE, null, ex);
-            fail("decryption didnt work, client ids do not match or timestamp does not fit into period");
-        }
-        
+        slr = instance.handleTGSRequest(server_TGSSessionKey, server_TGSPrivateKey, server_SSSessionKey, server_SSPrivateKey, client_at);
+
         // handle TGS response on client side
-        list = null;
-        try {
-            list = instance.handleTGSResponse(client_id, client_TGSSessionKey, slr);
-        } catch (RejectedException ex) {
-            Logger.getLogger(AuthenticationHandlerTest.class.getName()).log(Level.SEVERE, null, ex);
-            fail("decryption didnt work");
-        }
+        list = instance.handleTGSResponse(client_id, client_TGSSessionKey, slr);
         client_at = (AuthenticatorTicket) list.get(0); // save at somewhere temporarily
         client_SSSessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
-        
-        assertEquals(server_SSSessionKey, client_SSSessionKey);
-        
+
+        Assert.assertArrayEquals(server_SSSessionKey, client_SSSessionKey);
+
         // init SS request on client side
-        try {
-            client_at = instance.initSSRequest(client_SSSessionKey, client_at);
-        } catch (RejectedException ex) {
-            Logger.getLogger(AuthenticationHandlerTest.class.getName()).log(Level.SEVERE, null, ex);
-            fail("decryption didnt worK");
-        }
-        
+        client_at = instance.initSSRequest(client_SSSessionKey, client_at);
+
         // handle SS request on server side
-        AuthenticatorTicket server_at = null;
-        try {
-            server_at = instance.handleSSRequest(server_SSSessionKey, server_SSPrivateKey, client_at);
-        } catch (RejectedException ex) {
-            Logger.getLogger(AuthenticationHandlerTest.class.getName()).log(Level.SEVERE, null, ex);
-            fail("decryption didnt work or client IDs didnt match or timestamp doesnt fit into period");
-        }
-        
-        try {
-            // handle SS response on client side
-            client_at = instance.handleSSResponse(client_SSSessionKey, client_at, server_at);
-        } catch (RejectedException ex) {
-            Logger.getLogger(AuthenticationHandlerTest.class.getName()).log(Level.SEVERE, null, ex);
-            fail("timestamps of both authenticators do not equal");
-        }
-        
-        
+        AuthenticatorTicket server_at = instance.handleSSRequest(server_SSSessionKey, server_SSPrivateKey, client_at);
+
+        // handle SS response on client side
+        client_at = instance.handleSSResponse(client_SSSessionKey, client_at, server_at);
     }
-    
 }

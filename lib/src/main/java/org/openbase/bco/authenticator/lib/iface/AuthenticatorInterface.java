@@ -5,6 +5,12 @@
  */
 package org.openbase.bco.authenticator.lib.iface;
 
+import com.google.protobuf.ByteString;
+import rst.domotic.authentification.AuthenticatorTicketType.AuthenticatorTicket;
+import rst.domotic.authentification.AuthenticatorType.Authenticator;
+import rst.domotic.authentification.LoginResponseType.LoginResponse;
+import rst.domotic.authentification.TicketType.Ticket;
+
 /*-
  * #%L
  * BCO Authentification Library
@@ -32,5 +38,24 @@ package org.openbase.bco.authenticator.lib.iface;
  * @author Tamino Huxohl <thuxohl@techfak.uni-bielefel.de>
  */
 public interface AuthenticatorInterface {
+ 
+    public default void test() {
+        AuthenticatorTicket.Builder authenticatorTicket = AuthenticatorTicket.newBuilder();
+        // encrypted as bytestring authenticatorTicket.setAuthenticator("");
+        // encrypted as bytestring authenticatorTicket.setTicket("");
     
+        Authenticator.Builder authenticator = Authenticator.newBuilder();
+        authenticator.setClientId("");
+        //authenticator.setTimestamp(null);
+        
+        LoginResponse.Builder loginResponse = LoginResponse.newBuilder();
+        loginResponse.setSessionKey(ByteString.EMPTY);
+        loginResponse.setTicket(ByteString.EMPTY);
+        
+        Ticket.Builder ticket = Ticket.newBuilder();
+        ticket.setClientId("");
+        ticket.setClientIp("");
+        ticket.setSessionKey("");
+        // ticket.setValidityPeriod(value);
+    }
 }

@@ -1,8 +1,3 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openbase.bco.authentification.core;
 
 import org.openbase.bco.registry.lib.BCO;
@@ -10,6 +5,8 @@ import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.bco.authenticator.lib.iface.AuthenticatorInterface;
+import org.openbase.bco.authenticator.lib.jp.JPAuthentificationScope;
+import org.openbase.jps.core.JPService;
 
 /*-
  * #%L
@@ -32,7 +29,6 @@ import org.openbase.bco.authenticator.lib.iface.AuthenticatorInterface;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 /**
  *
  * @author Tamino Huxohl <thuxohl@techfak.uni-bielefel.de>
@@ -45,9 +41,9 @@ public class AuthenticatorLauncher extends AbstractLauncher<AuthenticatorControl
 
     @Override
     protected void loadProperties() {
-//        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        JPService.registerProperty(JPAuthentificationScope.class);
     }
-    
+
     /**
      * @param args the command line arguments
      * @throws java.lang.InterruptedException
