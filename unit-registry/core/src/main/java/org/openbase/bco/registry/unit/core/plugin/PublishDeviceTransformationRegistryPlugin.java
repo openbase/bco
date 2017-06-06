@@ -101,7 +101,7 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
             Transform transformation;
 
             // publish device transformation
-            if (isTransformationPresent(deviceConfig.getPlacementConfig().getPosition())) {
+            if (deviceConfig.getPlacementConfig().hasPosition()) {
                 logger.info("Publish " + locationRegistry.getMessage(deviceConfig.getPlacementConfig().getLocationId()).getPlacementConfig().getTransformationFrameId() + " to " + deviceConfig.getPlacementConfig().getTransformationFrameId());
                 transformation = PoseTransformer.transform(deviceConfig.getPlacementConfig().getPosition(), locationRegistry.getMessage(deviceConfig.getPlacementConfig().getLocationId()).getPlacementConfig().getTransformationFrameId(), deviceConfig.getPlacementConfig().getTransformationFrameId());
 
@@ -113,26 +113,6 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
         } catch (CouldNotPerformException | TransformerException | ConcurrentModificationException | NullPointerException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.WARN);
         }
-    }
-
-    /**
-     * Check if given pose is neutral.
-     *
-     * @param position
-     * @return
-     */
-    private boolean isTransformationPresent(final PoseType.Pose position) {
-        if (!position.hasRotation() && !position.hasTranslation()) {
-            return false;
-        }
-
-        return !(position.getTranslation().getX() == 0.0
-                && position.getTranslation().getY() == 0.0
-                && position.getTranslation().getZ() == 0.0
-                && position.getRotation().getQw() == 1.0
-                && position.getRotation().getQx() == 0.0
-                && position.getRotation().getQy() == 0.0
-                && position.getRotation().getQx() == 0.0);
     }
 
     @Override

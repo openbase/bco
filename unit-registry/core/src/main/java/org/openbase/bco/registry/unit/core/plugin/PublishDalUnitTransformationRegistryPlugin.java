@@ -98,7 +98,7 @@ public class PublishDalUnitTransformationRegistryPlugin extends FileRegistryPlug
                 throw new NotAvailableException("unitconfig.placementconfig.locationid");
             }
 
-            if (isTransformationPresent(unitConfig.getPlacementConfig().getPosition())) {
+            if (unitConfig.getPlacementConfig().hasPosition()) {
                 logger.info("Publish " + locationRegistry.get(unitConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId() + " to " + unitConfig.getPlacementConfig().getTransformationFrameId());
                 Transform transformation = PoseTransformer.transform(unitConfig.getPlacementConfig().getPosition(), locationRegistry.getMessage(unitConfig.getPlacementConfig().getLocationId()).getPlacementConfig().getTransformationFrameId(), unitConfig.getPlacementConfig().getTransformationFrameId());
                 transformation.setAuthority(getRegistry().getName());
@@ -109,26 +109,6 @@ public class PublishDalUnitTransformationRegistryPlugin extends FileRegistryPlug
         } catch (CouldNotPerformException | TransformerException | ConcurrentModificationException | NullPointerException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.WARN);
         }
-    }
-
-    /**
-     * Check if given pose is neutral.
-     *
-     * @param position
-     * @return
-     */
-    private boolean isTransformationPresent(final PoseType.Pose position) {
-        if (!position.hasRotation() && !position.hasTranslation()) {
-            return false;
-        }
-
-        return !(position.getTranslation().getX() == 0.0
-                && position.getTranslation().getY() == 0.0
-                && position.getTranslation().getZ() == 0.0
-                && position.getRotation().getQw() == 1.0
-                && position.getRotation().getQx() == 0.0
-                && position.getRotation().getQy() == 0.0
-                && position.getRotation().getQx() == 0.0);
     }
 
     @Override

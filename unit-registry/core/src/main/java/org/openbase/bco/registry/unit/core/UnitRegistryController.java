@@ -367,7 +367,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      */
     @Override
     protected void registerPlugins() throws CouldNotPerformException, InterruptedException {
-        // TODO: write unit config generic transfromation plugin and share instance. Publish transformations of unitGroupUnitConfigs as well.
+        // TODO: write unit config generic transformation plugin and share instance. Publish transformations of unitGroupUnitConfigs as well.
         connectionUnitConfigRegistry.registerPlugin(new PublishConnectionTransformationRegistryPlugin(locationUnitConfigRegistry));
         dalUnitConfigRegistry.registerPlugin(new PublishDalUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
         deviceUnitConfigRegistry.registerPlugin(new PublishDeviceTransformationRegistryPlugin(locationUnitConfigRegistry));

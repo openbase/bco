@@ -1,5 +1,6 @@
 *~
 *.swp
+*.iml
 **/*/target
 /target
 **/*/nbactions.xml
