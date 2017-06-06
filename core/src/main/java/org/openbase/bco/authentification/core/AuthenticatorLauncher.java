@@ -10,7 +10,7 @@ import org.openbase.bco.authenticator.lib.AuthenticationService;
 
 /*-
  * #%L
- * BCO Authentification Core
+ * BCO Authentication Core
  * %%
  * Copyright (C) 2017 openbase.org
  * %%

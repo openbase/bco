@@ -13,7 +13,7 @@ import rst.domotic.authentification.LoginResponseType.LoginResponse;
 
 /*-
  * #%L
- * BCO Authentification Library
+ * BCO Authentication Library
  * %%
  * Copyright (C) 2017 openbase.org
  * %%

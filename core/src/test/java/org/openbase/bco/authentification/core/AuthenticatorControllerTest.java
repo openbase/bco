@@ -2,7 +2,7 @@ package org.openbase.bco.authentification.core;
 
 /*-
  * #%L
- * BCO Authentification Core
+ * BCO Authentication Core
  * %%
  * Copyright (C) 2017 openbase.org
  * %%
