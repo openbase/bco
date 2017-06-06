@@ -21,9 +21,6 @@ package org.openbase.bco.authentification.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.sun.xml.internal.ws.util.CompletedFuture;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import org.openbase.bco.authenticator.lib.classes.AuthenticationHandler;
