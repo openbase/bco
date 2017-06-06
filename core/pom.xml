@@ -49,7 +49,7 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.openbase.bco.authentification.core.AuthenticatorLauncher</mainClass>
+                            <mainClass>org.openbase.bco.authentication.core.AuthenticatorLauncher</mainClass>
                             <id>bco-authenticator</id>
                             <platforms>
                                 <platform>unix</platform>
