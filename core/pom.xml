@@ -2,18 +2,18 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.openbase.bco</groupId>
-    <artifactId>authentification.core</artifactId>
+    <artifactId>authentication.core</artifactId>
     <packaging>jar</packaging>
 
-    <name>BCO Authentification Core</name>
+    <name>BCO Authentication Core</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>
-        <artifactId>authentification</artifactId>
+        <artifactId>authentication</artifactId>
         <version>1.4-SNAPSHOT</version>
     </parent>    
     
-    <url>https://github.com/openbase/bco.authentification/wiki</url>
+    <url>https://github.com/openbase/bco.authentication/wiki</url>
     
     <licenses>
         <license>
@@ -86,7 +86,7 @@
     <dependencies>
         <dependency>
             <groupId>org.openbase.bco</groupId>
-            <artifactId>authentification.lib</artifactId>
+            <artifactId>authentication.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

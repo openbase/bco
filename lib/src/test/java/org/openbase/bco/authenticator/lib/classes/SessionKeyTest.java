@@ -7,7 +7,7 @@ package org.openbase.bco.authenticator.lib.classes;
 
 /*-
  * #%L
- * BCO Authentification Library
+ * BCO Authentication Library
  * %%
  * Copyright (C) 2017 openbase.org
  * %%

@@ -3,14 +3,14 @@
     <modelVersion>4.0.0</modelVersion>
     
     <groupId>org.openbase.bco</groupId>
-    <artifactId>authentification</artifactId>
+    <artifactId>authentication</artifactId>
     <version>1.4-SNAPSHOT</version>
 
-    <name>BCO Authentification</name>
+    <name>BCO Authentication</name>
     <inceptionYear>2017</inceptionYear>
-    <description>BCO Authentification</description>
+    <description>BCO Authentication</description>
 
-    <url>https://github.com/openbase/bco.authentificaton/wiki</url>
+    <url>https://github.com/openbase/bco.authenticaton/wiki</url>
     
     <organization>
         <name>openbase.org</name>
@@ -60,9 +60,9 @@
     <packaging>pom</packaging>
 
     <scm>
-        <connection>scm:git:https://github.com/openbase/bco.authentification.git</connection>
-        <developerConnection>scm:git:https://github.com/openbase/bco.authentification.git</developerConnection>
-        <url>https://github.com/openbase/bco.authentification.git</url>
+        <connection>scm:git:https://github.com/openbase/bco.authentication.git</connection>
+        <developerConnection>scm:git:https://github.com/openbase/bco.authentication.git</developerConnection>
+        <url>https://github.com/openbase/bco.authentication.git</url>
     </scm>
     
     <build>

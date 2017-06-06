@@ -10,7 +10,7 @@ import org.slf4j.LoggerFactory;
 
 /*-
  * #%L
- * BCO Authentification Library
+ * BCO Authentication Library
  * %%
  * Copyright (C) 2017 openbase.org
  * %%
