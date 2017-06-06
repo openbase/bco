@@ -1,9 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package org.openbase.bco.authenticator.lib.classes;
+package org.openbase.bco.authentication.lib.classes;
 
 /*-
  * #%L
@@ -56,7 +51,7 @@ import rst.domotic.authentification.AuthenticatorTicketType.AuthenticatorTicket;
 import rst.domotic.authentification.AuthenticatorType.Authenticator;
 import rst.domotic.authentification.LoginResponseType.LoginResponse;
 import rst.domotic.authentification.TicketType.Ticket;
-import org.openbase.bco.authenticator.lib.iface.AuthenticationHandler;
+import org.openbase.bco.authentication.lib.iface.AuthenticationHandler;
 
 /**
  *

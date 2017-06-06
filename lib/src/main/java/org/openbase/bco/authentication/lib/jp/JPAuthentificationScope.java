@@ -1,4 +1,4 @@
-package org.openbase.bco.authenticator.lib.jp;
+package org.openbase.bco.authentication.lib.jp;
 
 /*-
  * #%L
@@ -27,7 +27,7 @@ import rsb.Scope;
 
 /**
  *
- * @author Tamino Huxohl <thuxohl@techfak.uni-bielefel.de>
+ * @author Tamino Huxohl <thuxohl@techfak.uni-bielefeld.de>
  */
 public class JPAuthentificationScope extends JPScope {
 

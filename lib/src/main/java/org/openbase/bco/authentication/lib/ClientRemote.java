@@ -1,4 +1,4 @@
-package org.openbase.bco.authenticator.lib;
+package org.openbase.bco.authentication.lib;
 
 /*-
  * #%L
@@ -23,7 +23,7 @@ package org.openbase.bco.authenticator.lib;
  */
 
 import java.util.concurrent.Future;
-import org.openbase.bco.authenticator.lib.jp.JPAuthentificationScope;
+import org.openbase.bco.authentication.lib.jp.JPAuthentificationScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;

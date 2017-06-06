@@ -1,9 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package org.openbase.bco.authenticator.lib.classes;
+package org.openbase.bco.authentication.lib.classes;
 
 /*-
  * #%L
@@ -27,10 +22,7 @@ package org.openbase.bco.authenticator.lib.classes;
  * #L%
  */
 
-import org.openbase.bco.authenticator.lib.EncryptionHelper;
-import java.security.NoSuchAlgorithmException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

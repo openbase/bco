@@ -1,9 +1,4 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package org.openbase.bco.authenticator.lib.classes;
+package org.openbase.bco.authentication.lib.classes;
 
 /*-
  * #%L
@@ -26,13 +21,8 @@ package org.openbase.bco.authenticator.lib.classes;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.authenticator.lib.AuthenticationServerHandlerImpl;
-import org.openbase.bco.authenticator.lib.AuthenticationClientHandlerImpl;
-import org.openbase.bco.authenticator.lib.EncryptionHelper;
 import com.google.protobuf.ByteString;
 import java.util.List;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
@@ -40,8 +30,9 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.RejectedException;
+import org.openbase.bco.authentication.lib.AuthenticationClientHandlerImpl;
+import org.openbase.bco.authentication.lib.AuthenticationServerHandlerImpl;
+import org.openbase.bco.authentication.lib.EncryptionHelper;
 import rst.domotic.authentification.AuthenticatorTicketType.AuthenticatorTicket;
 import rst.domotic.authentification.AuthenticatorType.Authenticator;
 import rst.domotic.authentification.LoginResponseType.LoginResponse;

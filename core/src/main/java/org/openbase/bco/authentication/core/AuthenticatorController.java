@@ -23,14 +23,13 @@ package org.openbase.bco.authentication.core;
  */
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import org.openbase.bco.authenticator.lib.AuthenticationServerHandlerImpl;
-import org.openbase.bco.authenticator.lib.AuthenticationClientHandlerImpl;
-import org.openbase.bco.authenticator.lib.EncryptionHelper;
+import org.openbase.bco.authentication.lib.AuthenticationServerHandlerImpl;
+import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
-import org.openbase.bco.authenticator.lib.jp.JPAuthentificationScope;
+import org.openbase.bco.authentication.lib.jp.JPAuthentificationScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.extension.rsb.com.NotInitializedRSBLocalServer;
@@ -42,7 +41,7 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.WatchDog;
 import rst.domotic.authentification.AuthenticatorTicketType.AuthenticatorTicket;
 import rst.domotic.authentification.LoginResponseType.LoginResponse;
-import org.openbase.bco.authenticator.lib.AuthenticationService;
+import org.openbase.bco.authentication.lib.AuthenticationService;
 
 /**
  *

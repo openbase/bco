@@ -1,4 +1,4 @@
-package org.openbase.bco.authenticator.lib.classes;
+package org.openbase.bco.authentication.lib.classes;
 
 import java.security.NoSuchAlgorithmException;
 import javax.crypto.KeyGenerator;

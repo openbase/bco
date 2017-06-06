@@ -4,9 +4,9 @@ import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.bco.authenticator.lib.jp.JPAuthentificationScope;
+import org.openbase.bco.authentication.lib.jp.JPAuthentificationScope;
 import org.openbase.jps.core.JPService;
-import org.openbase.bco.authenticator.lib.AuthenticationService;
+import org.openbase.bco.authentication.lib.AuthenticationService;
 
 /*-
  * #%L
