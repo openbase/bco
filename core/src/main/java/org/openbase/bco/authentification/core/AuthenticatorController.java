@@ -21,8 +21,12 @@ package org.openbase.bco.authentification.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.sun.xml.internal.ws.util.CompletedFuture;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
+import org.openbase.bco.authenticator.lib.classes.AuthenticationHandler;
 import org.openbase.bco.authenticator.lib.classes.SessionKey;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -33,10 +37,14 @@ import org.openbase.bco.authenticator.lib.jp.JPAuthentificationScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.extension.rsb.com.NotInitializedRSBLocalServer;
+import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
 import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.WatchDog;
+import rst.domotic.authentification.AuthenticatorTicketType.AuthenticatorTicket;
+import rst.domotic.authentification.LoginResponseType.LoginResponse;
 
 /**
  *
@@ -46,21 +54,22 @@ public class AuthenticatorController implements AuthenticatorInterface, Launchab
 
     private RSBLocalServer server;
     private WatchDog serverWatchDog;
-    
+
     private final byte[] TGSSessionKey;
-    
-    // only for testing purposes
-    private final Map<String, String> clientPasswordMap;
-    
+    private final byte[] TGSPrivateKey;
+    private final byte[] SSSessionKey;
+    private final byte[] SSPrivateKey;
+
+    private final AuthenticationHandler authenticationHandler;
+
     public AuthenticatorController() {
         this.server = new NotInitializedRSBLocalServer();
-    
+
+        this.authenticationHandler = new AuthenticationHandler();
         this.TGSSessionKey = SessionKey.generateKey();
-        
-        clientPasswordMap = new HashMap<>();
-        clientPasswordMap.put("testuser", "12345678");
-        
-        
+        this.TGSPrivateKey = SessionKey.generateKey();
+        this.SSSessionKey = SessionKey.generateKey();
+        this.SSPrivateKey = SessionKey.generateKey();
     }
 
     @Override
@@ -69,9 +78,10 @@ public class AuthenticatorController implements AuthenticatorInterface, Launchab
             server = RSBFactoryImpl.getInstance().createSynchronizedLocalServer(JPService.getProperty(JPAuthentificationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
 
             // register rpc methods.
-//            RPCHelper.registerInterface(Pingable.class, this, server);
+            RPCHelper.registerInterface(AuthenticatorInterface.class, this, server);
+            
             serverWatchDog = new WatchDog(server, "AuthenticatorWatchDog");
-        } catch (JPNotAvailableException | org.openbase.jul.exception.InstantiationException ex) {
+        } catch (JPNotAvailableException | CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
@@ -95,5 +105,35 @@ public class AuthenticatorController implements AuthenticatorInterface, Launchab
         } else {
             return false;
         }
+    }
+
+    @Override
+    public Future<LoginResponse> requestTGT(String clientId) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(new Callable<LoginResponse>() {
+            @Override
+            public LoginResponse call() throws Exception {
+                return authenticationHandler.handleKDCRequest(clientId, "", TGSSessionKey, TGSPrivateKey);
+            }
+        });
+    }
+
+    @Override
+    public Future<LoginResponse> requestCST(AuthenticatorTicket authenticatorTicket) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(new Callable<LoginResponse>() {
+            @Override
+            public LoginResponse call() throws Exception {
+                return authenticationHandler.handleTGSRequest(TGSSessionKey, TGSPrivateKey, SSSessionKey, SSPrivateKey, authenticatorTicket);
+            }
+        });
+    }
+
+    @Override
+    public Future<AuthenticatorTicket> validateCST(AuthenticatorTicket authenticatorTicket) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(new Callable<AuthenticatorTicket>() {
+            @Override
+            public AuthenticatorTicket call() throws Exception {
+                return authenticationHandler.handleSSRequest(SSSessionKey, SSPrivateKey, authenticatorTicket);
+            }
+        });
     }
 }

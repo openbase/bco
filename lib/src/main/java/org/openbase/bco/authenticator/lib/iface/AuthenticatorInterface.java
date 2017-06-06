@@ -5,11 +5,11 @@
  */
 package org.openbase.bco.authenticator.lib.iface;
 
-import com.google.protobuf.ByteString;
+import java.util.concurrent.Future;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.authentification.AuthenticatorTicketType.AuthenticatorTicket;
-import rst.domotic.authentification.AuthenticatorType.Authenticator;
 import rst.domotic.authentification.LoginResponseType.LoginResponse;
-import rst.domotic.authentification.TicketType.Ticket;
 
 /*-
  * #%L
@@ -39,23 +39,12 @@ import rst.domotic.authentification.TicketType.Ticket;
  */
 public interface AuthenticatorInterface {
  
-    public default void test() {
-        AuthenticatorTicket.Builder authenticatorTicket = AuthenticatorTicket.newBuilder();
-        // encrypted as bytestring authenticatorTicket.setAuthenticator("");
-        // encrypted as bytestring authenticatorTicket.setTicket("");
+    @RPCMethod
+    public Future<LoginResponse> requestTGT(String clientId) throws CouldNotPerformException;
     
-        Authenticator.Builder authenticator = Authenticator.newBuilder();
-        authenticator.setClientId("");
-        //authenticator.setTimestamp(null);
-        
-        LoginResponse.Builder loginResponse = LoginResponse.newBuilder();
-        loginResponse.setSessionKey(ByteString.EMPTY);
-        loginResponse.setTicket(ByteString.EMPTY);
-        
-        Ticket.Builder ticket = Ticket.newBuilder();
-        ticket.setClientId("");
-        ticket.setClientIp("");
-        ticket.setSessionKey("");
-        // ticket.setValidityPeriod(value);
-    }
+    @RPCMethod
+    public Future<LoginResponse> requestCST(AuthenticatorTicket authenticatorTicket) throws CouldNotPerformException;
+    
+    @RPCMethod
+    public Future<AuthenticatorTicket> validateCST(AuthenticatorTicket authenticatorTicket) throws CouldNotPerformException;
 }

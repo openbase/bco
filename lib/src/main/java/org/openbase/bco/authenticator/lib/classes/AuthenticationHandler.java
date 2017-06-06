@@ -302,6 +302,7 @@ public class AuthenticationHandler implements AuthenticationHandlerInterface {
         Authenticator currentAuthenticator = (Authenticator) this.decryptObject(currentWrapper.getAuthenticator(), SSSessionKey);
 
         // compare both timestamps
+        
         this.validateTimestamp(lastAuthenticator.getTimestamp(), currentAuthenticator.getTimestamp());
 
         return currentWrapper;
