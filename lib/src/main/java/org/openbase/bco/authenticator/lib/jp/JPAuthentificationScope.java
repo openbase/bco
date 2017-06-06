@@ -31,7 +31,7 @@ import rsb.Scope;
  */
 public class JPAuthentificationScope extends JPScope {
 
-    public final static String[] COMMAND_IDENTIFIERS = {"--authentification-scope"};
+    public final static String[] COMMAND_IDENTIFIERS = {"--authentication-scope"};
 
     public JPAuthentificationScope() {
         super(COMMAND_IDENTIFIERS);
@@ -39,11 +39,11 @@ public class JPAuthentificationScope extends JPScope {
 
     @Override
     protected Scope getPropertyDefaultValue() {
-        return super.getPropertyDefaultValue().concat(new Scope("/bco/authentification"));
+        return super.getPropertyDefaultValue().concat(new Scope("/bco/authentication"));
     }
 
     @Override
     public String getDescription() {
-        return "Setup the authentification scope which is used for the rsb communication.";
+        return "Setup the authentication scope which is used for the rsb communication.";
     }
 }

@@ -1,4 +1,4 @@
-package org.openbase.bco.authentification.core;
+package org.openbase.bco.authentication.core;
 
 /*-
  * #%L

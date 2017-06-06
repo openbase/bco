@@ -1,4 +1,4 @@
-package org.openbase.bco.authentification.core;
+package org.openbase.bco.authentication.core;
 
 import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
@@ -31,7 +31,7 @@ import org.openbase.bco.authenticator.lib.AuthenticationService;
  */
 /**
  *
- * @author Tamino Huxohl <thuxohl@techfak.uni-bielefel.de>
+ * @author Tamino Huxohl <thuxohl@techfak.uni-bielefeld.de>
  */
 public class AuthenticatorLauncher extends AbstractLauncher<AuthenticatorController> {
 
