@@ -39,7 +39,7 @@ import rst.domotic.authentification.LoginResponseType.LoginResponse;
  *
  * @author sebastian
  */
-public interface AuthenticationHandlerInterface {
+public interface AuthenticationHandler {
     
     /**
      * Encrypts any Object into a ByteString

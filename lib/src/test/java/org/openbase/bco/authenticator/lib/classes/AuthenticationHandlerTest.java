@@ -81,10 +81,10 @@ public class AuthenticationHandlerTest {
         client_id = "maxmustermann";
         client_password = "password";
         server_clientNetworkAddress = "123.123.123.123";
-        server_TGSSessionKey = SessionKey.generateKey();
-        server_TGSPrivateKey = SessionKey.generateKey();
-        server_SSSessionKey = SessionKey.generateKey();
-        server_SSPrivateKey = SessionKey.generateKey();
+        server_TGSSessionKey = EncryptionKeyGenerator.generateKey();
+        server_TGSPrivateKey = EncryptionKeyGenerator.generateKey();
+        server_SSSessionKey = EncryptionKeyGenerator.generateKey();
+        server_SSPrivateKey = EncryptionKeyGenerator.generateKey();
     }
 
     @After
@@ -104,9 +104,9 @@ public class AuthenticationHandlerTest {
             ab.setClientId(client_id);
             Authenticator authenticator = ab.build();
 
-            AuthenticationHandler instance = new AuthenticationHandler();
+            AuthenticationHandlerImpl instance = new AuthenticationHandlerImpl();
 
-            byte[] key = SessionKey.generateKey();
+            byte[] key = EncryptionKeyGenerator.generateKey();
 
             ByteString encrypted = instance.encryptObject(authenticator, key);
             Authenticator decrypted = (Authenticator) instance.decryptObject(encrypted, key);
@@ -126,7 +126,7 @@ public class AuthenticationHandlerTest {
     @Test
     public void testAuthentification() throws Exception {
         System.out.println("TestAuthentification");
-        AuthenticationHandler instance = new AuthenticationHandler();
+        AuthenticationHandlerImpl instance = new AuthenticationHandlerImpl();
 
         // init KDC request on client side
         client_passwordHash = instance.initKDCRequest(client_password);

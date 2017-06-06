@@ -1,13 +1,12 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
 package org.openbase.bco.authenticator.lib.classes;
 
 import java.security.NoSuchAlgorithmException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.SecretKey;
+import org.openbase.jul.exception.FatalImplementationErrorException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
+import org.slf4j.LoggerFactory;
 
 /*-
  * #%L
@@ -32,26 +31,21 @@ import javax.crypto.SecretKey;
  */
 
 /**
- * A key that is used to encrypt and decrypt tickets during Kerberos authentification
+ * A key that is used to encrypt and decrypt tickets during Kerberos authentication
  * @author sebastian
  */
-public class SessionKey {
+public class EncryptionKeyGenerator {
             
-    private static final String transformation = "AES";
+    private static final String TRANSFORMATION = "AES";
     
-    /**
-     * Generate session key of length 32
-     */
-    public SessionKey() {
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(KeyGenerator.class);
         
-    }
-    
     public static byte[] generateKey()  {
         KeyGenerator keyGen = null;
         try {
-            keyGen = KeyGenerator.getInstance(transformation);
+            keyGen = KeyGenerator.getInstance(TRANSFORMATION);
         } catch (NoSuchAlgorithmException ex) {
-            ex.printStackTrace();
+            ExceptionPrinter.printHistory(new FatalImplementationErrorException("Key transformation non existent", keyGen, ex), LOGGER, LogLevel.ERROR);
         }
         keyGen.init(128);
         SecretKey secKey = keyGen.generateKey();

@@ -45,7 +45,6 @@ import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
 import javax.crypto.SealedObject;
 import javax.crypto.spec.SecretKeySpec;
-import org.openbase.bco.authenticator.lib.iface.AuthenticationHandlerInterface;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -57,18 +56,19 @@ import rst.domotic.authentification.AuthenticatorTicketType.AuthenticatorTicket;
 import rst.domotic.authentification.AuthenticatorType.Authenticator;
 import rst.domotic.authentification.LoginResponseType.LoginResponse;
 import rst.domotic.authentification.TicketType.Ticket;
+import org.openbase.bco.authenticator.lib.iface.AuthenticationHandler;
 
 /**
  *
  * @author sebastian
  */
-public class AuthenticationHandler implements AuthenticationHandlerInterface {
+public class AuthenticationHandlerImpl implements AuthenticationHandler {
 
     private static final String transformation = "AES";
 
-    private final org.slf4j.Logger logger = LoggerFactory.getLogger(AuthenticationHandler.class);
+    private final org.slf4j.Logger logger = LoggerFactory.getLogger(AuthenticationHandlerImpl.class);
 
-    public AuthenticationHandler() {
+    public AuthenticationHandlerImpl() {
 
     }
 
@@ -92,7 +92,7 @@ public class AuthenticationHandler implements AuthenticationHandlerInterface {
 
             return ByteString.copyFrom(baos.toByteArray());
         } catch (Exception ex) {
-            Logger.getLogger(AuthenticationHandler.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AuthenticationHandlerImpl.class.getName()).log(Level.SEVERE, null, ex);
             throw new RejectedException("Encryption did not work. TODO: Proper exception description & handling", ex);
         }
     }
@@ -115,7 +115,7 @@ public class AuthenticationHandler implements AuthenticationHandlerInterface {
 
             return sealedObject.getObject(cipher);
         } catch (Exception ex) {
-            Logger.getLogger(AuthenticationHandler.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(AuthenticationHandlerImpl.class.getName()).log(Level.SEVERE, null, ex);
             throw new RejectedException("Decryption did not work. TODO: Proper exception description & handling", ex);
         }
     }

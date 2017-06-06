@@ -23,13 +23,12 @@ package org.openbase.bco.authentification.core;
  */
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import org.openbase.bco.authenticator.lib.classes.AuthenticationHandler;
-import org.openbase.bco.authenticator.lib.classes.SessionKey;
+import org.openbase.bco.authenticator.lib.classes.AuthenticationHandlerImpl;
+import org.openbase.bco.authenticator.lib.classes.EncryptionKeyGenerator;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
-import org.openbase.bco.authenticator.lib.iface.AuthenticatorInterface;
 import org.openbase.bco.authenticator.lib.jp.JPAuthentificationScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -42,12 +41,13 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.WatchDog;
 import rst.domotic.authentification.AuthenticatorTicketType.AuthenticatorTicket;
 import rst.domotic.authentification.LoginResponseType.LoginResponse;
+import org.openbase.bco.authenticator.lib.iface.Authenticator;
 
 /**
  *
  * @author Tamino Huxohl <thuxohl@techfak.uni-bielefel.de>
  */
-public class AuthenticatorController implements AuthenticatorInterface, Launchable<Void>, VoidInitializable {
+public class AuthenticatorController implements Authenticator, Launchable<Void>, VoidInitializable {
 
     private RSBLocalServer server;
     private WatchDog serverWatchDog;
@@ -57,16 +57,16 @@ public class AuthenticatorController implements AuthenticatorInterface, Launchab
     private final byte[] SSSessionKey;
     private final byte[] SSPrivateKey;
 
-    private final AuthenticationHandler authenticationHandler;
+    private final AuthenticationHandlerImpl authenticationHandler;
 
     public AuthenticatorController() {
         this.server = new NotInitializedRSBLocalServer();
 
-        this.authenticationHandler = new AuthenticationHandler();
-        this.TGSSessionKey = SessionKey.generateKey();
-        this.TGSPrivateKey = SessionKey.generateKey();
-        this.SSSessionKey = SessionKey.generateKey();
-        this.SSPrivateKey = SessionKey.generateKey();
+        this.authenticationHandler = new AuthenticationHandlerImpl();
+        this.TGSSessionKey = EncryptionKeyGenerator.generateKey();
+        this.TGSPrivateKey = EncryptionKeyGenerator.generateKey();
+        this.SSSessionKey = EncryptionKeyGenerator.generateKey();
+        this.SSPrivateKey = EncryptionKeyGenerator.generateKey();
     }
 
     @Override
@@ -75,7 +75,7 @@ public class AuthenticatorController implements AuthenticatorInterface, Launchab
             server = RSBFactoryImpl.getInstance().createSynchronizedLocalServer(JPService.getProperty(JPAuthentificationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
 
             // register rpc methods.
-            RPCHelper.registerInterface(AuthenticatorInterface.class, this, server);
+            RPCHelper.registerInterface(Authenticator.class, this, server);
             
             serverWatchDog = new WatchDog(server, "AuthenticatorWatchDog");
         } catch (JPNotAvailableException | CouldNotPerformException ex) {

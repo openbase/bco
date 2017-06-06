@@ -69,7 +69,7 @@ public class SessionKeyTest {
     public void testGenerateKey() {
         System.out.println("generateKey");
         int expLen = 16;
-        int len = SessionKey.generateKey().length;
+        int len = EncryptionKeyGenerator.generateKey().length;
         assertEquals(expLen, len);
     }
     

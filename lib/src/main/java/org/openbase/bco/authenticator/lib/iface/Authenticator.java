@@ -37,7 +37,7 @@ import rst.domotic.authentification.LoginResponseType.LoginResponse;
  *
  * @author Tamino Huxohl <thuxohl@techfak.uni-bielefel.de>
  */
-public interface AuthenticatorInterface {
+public interface Authenticator {
  
     @RPCMethod
     public Future<LoginResponse> requestTGT(String clientId) throws CouldNotPerformException;

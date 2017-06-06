@@ -30,7 +30,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.authenticator.lib.ClientRemote;
-import org.openbase.bco.authenticator.lib.classes.AuthenticationHandler;
+import org.openbase.bco.authenticator.lib.classes.AuthenticationHandlerImpl;
 import org.openbase.bco.authenticator.lib.jp.JPAuthentificationScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
@@ -99,7 +99,7 @@ public class AuthenticatorControllerTest {
         }, true);
         listener.activate();
         
-        AuthenticationHandler instance = new AuthenticationHandler();
+        AuthenticationHandlerImpl instance = new AuthenticationHandlerImpl();
 
         ClientRemote clientRemote = new ClientRemote();
         clientRemote.init();

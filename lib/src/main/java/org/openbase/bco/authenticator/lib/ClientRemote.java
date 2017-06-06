@@ -23,7 +23,6 @@ package org.openbase.bco.authenticator.lib;
  */
 
 import java.util.concurrent.Future;
-import org.openbase.bco.authenticator.lib.iface.AuthenticatorInterface;
 import org.openbase.bco.authenticator.lib.jp.JPAuthentificationScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -38,12 +37,13 @@ import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.schedule.WatchDog;
 import rst.domotic.authentification.AuthenticatorTicketType.AuthenticatorTicket;
 import rst.domotic.authentification.LoginResponseType.LoginResponse;
+import org.openbase.bco.authenticator.lib.iface.Authenticator;
 
 /**
  *
  * @author Tamino Huxohl <thuxohl@techfak.uni-bielefel.de>
  */
-public class ClientRemote implements AuthenticatorInterface, Manageable<Void>, VoidInitializable {
+public class ClientRemote implements Authenticator, Manageable<Void>, VoidInitializable {
 
     private RSBRemoteServer remoteServer;
     private WatchDog serverWatchDog;
