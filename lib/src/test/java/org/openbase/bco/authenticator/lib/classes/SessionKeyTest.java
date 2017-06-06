@@ -27,6 +27,7 @@ package org.openbase.bco.authenticator.lib.classes;
  * #L%
  */
 
+import org.openbase.bco.authenticator.lib.EncryptionHelper;
 import java.security.NoSuchAlgorithmException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
@@ -69,7 +70,7 @@ public class SessionKeyTest {
     public void testGenerateKey() {
         System.out.println("generateKey");
         int expLen = 16;
-        int len = EncryptionKeyGenerator.generateKey().length;
+        int len = EncryptionHelper.generateKey().length;
         assertEquals(expLen, len);
     }
     

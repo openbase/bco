@@ -37,13 +37,12 @@ import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.schedule.WatchDog;
 import rst.domotic.authentification.AuthenticatorTicketType.AuthenticatorTicket;
 import rst.domotic.authentification.LoginResponseType.LoginResponse;
-import org.openbase.bco.authenticator.lib.iface.Authenticator;
 
 /**
  *
  * @author Tamino Huxohl <thuxohl@techfak.uni-bielefel.de>
  */
-public class ClientRemote implements Authenticator, Manageable<Void>, VoidInitializable {
+public class ClientRemote implements AuthenticationService, Manageable<Void>, VoidInitializable {
 
     private RSBRemoteServer remoteServer;
     private WatchDog serverWatchDog;

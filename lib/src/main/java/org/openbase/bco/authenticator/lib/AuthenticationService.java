@@ -3,7 +3,7 @@
  * To change this template file, choose Tools | Templates
  * and open the template in the editor.
  */
-package org.openbase.bco.authenticator.lib.iface;
+package org.openbase.bco.authenticator.lib;
 
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -37,7 +37,7 @@ import rst.domotic.authentification.LoginResponseType.LoginResponse;
  *
  * @author Tamino Huxohl <thuxohl@techfak.uni-bielefel.de>
  */
-public interface Authenticator {
+public interface AuthenticationService {
  
     @RPCMethod
     public Future<LoginResponse> requestTGT(String clientId) throws CouldNotPerformException;

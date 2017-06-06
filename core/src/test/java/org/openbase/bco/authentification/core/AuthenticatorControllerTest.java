@@ -29,8 +29,9 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.bco.authenticator.lib.AuthenticationClientHandlerImpl;
 import org.openbase.bco.authenticator.lib.ClientRemote;
-import org.openbase.bco.authenticator.lib.classes.AuthenticationHandlerImpl;
+import org.openbase.bco.authenticator.lib.EncryptionHelper;
 import org.openbase.bco.authenticator.lib.jp.JPAuthentificationScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
@@ -99,7 +100,7 @@ public class AuthenticatorControllerTest {
         }, true);
         listener.activate();
         
-        AuthenticationHandlerImpl instance = new AuthenticationHandlerImpl();
+        AuthenticationClientHandlerImpl clientHandler = new AuthenticationClientHandlerImpl();
 
         ClientRemote clientRemote = new ClientRemote();
         clientRemote.init();
@@ -107,13 +108,13 @@ public class AuthenticatorControllerTest {
 
         Thread.sleep(500);
 
-        byte[] client_passwordHash = instance.initKDCRequest(client_password);
+        byte[] client_passwordHash = EncryptionHelper.hash(client_password);
 
         // handle KDC request on server side
         LoginResponse slr = clientRemote.requestTGT(client_id).get();
 
         // handle KDC response on client side
-        List<Object> list = instance.handleKDCResponse(client_id, client_passwordHash, slr);
+        List<Object> list = clientHandler.handleKDCResponse(client_id, client_passwordHash, slr);
         AuthenticatorTicket client_at = (AuthenticatorTicket) list.get(0); // save at somewhere temporarily
         byte[] client_TGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
 
@@ -122,18 +123,18 @@ public class AuthenticatorControllerTest {
         slr = clientRemote.requestCST(client_at).get();
 
         // handle TGS response on client side
-        list = instance.handleTGSResponse(client_id, client_TGSSessionKey, slr);
+        list = clientHandler.handleTGSResponse(client_id, client_TGSSessionKey, slr);
         client_at = (AuthenticatorTicket) list.get(0); // save at somewhere temporarily
         byte[] client_SSSessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
 
         // init SS request on client side
-        client_at = instance.initSSRequest(client_SSSessionKey, client_at);
+        client_at = clientHandler.initSSRequest(client_SSSessionKey, client_at);
 
         // handle SS request on server side
         AuthenticatorTicket server_at = clientRemote.validateCST(client_at).get();
 
         // handle SS response on client side
-        client_at = instance.handleSSResponse(client_SSSessionKey, client_at, server_at);
+        client_at = clientHandler.handleSSResponse(client_SSSessionKey, client_at, server_at);
 
         clientRemote.shutdown();
     }

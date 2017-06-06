@@ -26,6 +26,9 @@ package org.openbase.bco.authenticator.lib.classes;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.authenticator.lib.AuthenticationServerHandlerImpl;
+import org.openbase.bco.authenticator.lib.AuthenticationClientHandlerImpl;
+import org.openbase.bco.authenticator.lib.EncryptionHelper;
 import com.google.protobuf.ByteString;
 import java.util.List;
 import java.util.logging.Level;
@@ -81,10 +84,10 @@ public class AuthenticationHandlerTest {
         client_id = "maxmustermann";
         client_password = "password";
         server_clientNetworkAddress = "123.123.123.123";
-        server_TGSSessionKey = EncryptionKeyGenerator.generateKey();
-        server_TGSPrivateKey = EncryptionKeyGenerator.generateKey();
-        server_SSSessionKey = EncryptionKeyGenerator.generateKey();
-        server_SSPrivateKey = EncryptionKeyGenerator.generateKey();
+        server_TGSSessionKey = EncryptionHelper.generateKey();
+        server_TGSPrivateKey = EncryptionHelper.generateKey();
+        server_SSSessionKey = EncryptionHelper.generateKey();
+        server_SSPrivateKey = EncryptionHelper.generateKey();
     }
 
     @After
@@ -96,26 +99,19 @@ public class AuthenticationHandlerTest {
      * AuthenticationHandler.
      */
     @Test
-    public void testEncryptDecryptObject() {
-        try {
-            System.out.println("encrypt and decrypt object");
+    public void testEncryptDecryptObject() throws Exception {
+        System.out.println("encrypt and decrypt object");
 
-            Authenticator.Builder ab = Authenticator.newBuilder();
-            ab.setClientId(client_id);
-            Authenticator authenticator = ab.build();
+        Authenticator.Builder ab = Authenticator.newBuilder();
+        ab.setClientId(client_id);
+        Authenticator authenticator = ab.build();
 
-            AuthenticationHandlerImpl instance = new AuthenticationHandlerImpl();
+        byte[] key = EncryptionHelper.generateKey();
 
-            byte[] key = EncryptionKeyGenerator.generateKey();
+        ByteString encrypted = EncryptionHelper.encrypt(authenticator, key);
+        Authenticator decrypted = (Authenticator) EncryptionHelper.decrypt(encrypted, key);
 
-            ByteString encrypted = instance.encryptObject(authenticator, key);
-            Authenticator decrypted = (Authenticator) instance.decryptObject(encrypted, key);
-
-            assertEquals(authenticator.getClientId(), decrypted.getClientId());
-        } catch (Exception ex) {
-            Logger.getLogger(AuthenticationHandlerTest.class.getName()).log(Level.SEVERE, null, ex);
-            fail("Exception thrown");
-        }
+        assertEquals(authenticator.getClientId(), decrypted.getClientId());
     }
 
     /**
@@ -126,39 +122,40 @@ public class AuthenticationHandlerTest {
     @Test
     public void testAuthentification() throws Exception {
         System.out.println("TestAuthentification");
-        AuthenticationHandlerImpl instance = new AuthenticationHandlerImpl();
+        AuthenticationServerHandlerImpl serverHandler = new AuthenticationServerHandlerImpl();
+        AuthenticationClientHandlerImpl clientHandler = new AuthenticationClientHandlerImpl();
 
         // init KDC request on client side
-        client_passwordHash = instance.initKDCRequest(client_password);
+        client_passwordHash = EncryptionHelper.hash(client_password);
 
         // handle KDC request on server side
         server_clientId = client_id;
-        LoginResponse slr = instance.handleKDCRequest(server_clientId, server_clientNetworkAddress, server_TGSSessionKey, server_TGSPrivateKey);
+        LoginResponse slr = serverHandler.handleKDCRequest(server_clientId, server_clientNetworkAddress, server_TGSSessionKey, server_TGSPrivateKey);
 
         // handle KDC response on client side
-        List<Object> list = instance.handleKDCResponse(client_id, client_passwordHash, slr);
+        List<Object> list = clientHandler.handleKDCResponse(client_id, client_passwordHash, slr);
         AuthenticatorTicket client_at = (AuthenticatorTicket) list.get(0); // save at somewhere temporarily
         client_TGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
 
         Assert.assertArrayEquals(server_TGSSessionKey, client_TGSSessionKey);
 
         // handle TGS request on server side
-        slr = instance.handleTGSRequest(server_TGSSessionKey, server_TGSPrivateKey, server_SSSessionKey, server_SSPrivateKey, client_at);
+        slr = serverHandler.handleTGSRequest(server_TGSSessionKey, server_TGSPrivateKey, server_SSSessionKey, server_SSPrivateKey, client_at);
 
         // handle TGS response on client side
-        list = instance.handleTGSResponse(client_id, client_TGSSessionKey, slr);
+        list = clientHandler.handleTGSResponse(client_id, client_TGSSessionKey, slr);
         client_at = (AuthenticatorTicket) list.get(0); // save at somewhere temporarily
         client_SSSessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
 
         Assert.assertArrayEquals(server_SSSessionKey, client_SSSessionKey);
 
         // init SS request on client side
-        client_at = instance.initSSRequest(client_SSSessionKey, client_at);
+        client_at = clientHandler.initSSRequest(client_SSSessionKey, client_at);
 
         // handle SS request on server side
-        AuthenticatorTicket server_at = instance.handleSSRequest(server_SSSessionKey, server_SSPrivateKey, client_at);
+        AuthenticatorTicket server_at = serverHandler.handleSSRequest(server_SSSessionKey, server_SSPrivateKey, client_at);
 
         // handle SS response on client side
-        client_at = instance.handleSSResponse(client_SSSessionKey, client_at, server_at);
+        client_at = clientHandler.handleSSResponse(client_SSSessionKey, client_at, server_at);
     }
 }
