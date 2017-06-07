@@ -21,7 +21,6 @@ package org.openbase.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.remote.unit.UnitGroupRemote;
 import org.openbase.bco.dal.remote.unit.Units;
@@ -39,7 +38,8 @@ import rst.domotic.unit.location.LocationDataType;
 
 /**
  *
- * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
+ * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo
+ * Michalski</a>
  */
 public class AbsenceEnergySavingAgent extends AbstractAgentController {
 
@@ -51,8 +51,13 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
 
     public AbsenceEnergySavingAgent() throws InstantiationException {
         super(AbsenceEnergySavingAgent.class);
-        
+
         locationObserver = (final Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
+            // Do nothing if the presence stats is unknown
+            if(data.getPresenceState().getValue() == PresenceState.State.UNKNOWN) {
+                return;
+            }
+            
             if (data.getPresenceState().getValue().equals(PresenceState.State.PRESENT) && !present) {
                 if (setLightPowerStateFuture != null && !setLightPowerStateFuture.isDone()) {
                     setLightPowerStateFuture.cancel(true);
@@ -63,7 +68,7 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
                 present = true;
             } else if (!(data.getPresenceState().getValue().equals(PresenceState.State.PRESENT)) && present) {
                 present = false;
-                
+
                 switchlightsOff();
                 switchMultimediaOff();
             }
@@ -75,7 +80,9 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
         logger.info("Activating [" + getConfig().getLabel() + "]");
         locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), true, Units.LOCATION);
 
-        /** Add trigger here and replace dataObserver */
+        /**
+         * Add trigger here and replace dataObserver
+         */
         locationRemote.addDataObserver(locationObserver);
         locationRemote.waitForData();
     }
@@ -86,18 +93,18 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
         locationRemote.removeDataObserver(locationObserver);
     }
 
-    private void switchlightsOff() {                   
-        try { 
-            setLightPowerStateFuture = locationRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build(), UnitType.LIGHT); 
+    private void switchlightsOff() {
+        try {
+            setLightPowerStateFuture = locationRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build(), UnitType.LIGHT);
             // TODO: Blocking setPowerState function that is trying to realloc all lights as long as jobs not cancelled. 
         } catch (CouldNotPerformException ex) {
             logger.error("Could not set Powerstate of Lights.");
             // TODO: Propper Ex handling
         }
     }
-    
-    private void switchMultimediaOff() {   
-        
+
+    private void switchMultimediaOff() {
+
         UnitGroupRemote multimediaGroup;
         try {
             multimediaGroup = Units.getUnitByLabel(locationRemote.getLabel().concat("MultimediaGroup"), true, Units.UNITGROUP);
