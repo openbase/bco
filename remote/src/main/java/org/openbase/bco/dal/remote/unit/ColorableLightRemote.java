@@ -103,8 +103,13 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
 
     @Override
     public Future<Void> setPowerState(PowerState powerState) throws CouldNotPerformException {
+//        System.out.println("Call to setPowerState[" + powerState.getValue() + "] in colorableLightRemote[" + this.getLabel() + "]!");
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
+//            Future<Void> test = this.applyAction(updateActionDescription(actionDescription, powerState).build());
+//            Future<Void> test = this.applyAction(updateActionDescription(actionDescription, powerState).build());
+//            System.out.println("[" + this.getLabel() + "]Apply action is called...");
+//            return test;
             return this.applyAction(updateActionDescription(actionDescription, powerState).build());
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting powerState.", ex);

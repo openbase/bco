@@ -21,6 +21,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
@@ -37,8 +38,10 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.schedule.FutureProcessor;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.action.ActionDescriptionType;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
 import rst.domotic.service.ServiceTemplateType;
@@ -264,4 +267,21 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
             throw new NotAvailableException("brightnessState", ex);
         }
     }
+
+//    @Override
+//    public Future<Void> applyAction(ActionDescriptionType.ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+//        System.out.println("ApplyAction[" + actionDescription.getServiceStateDescription().getServiceAttribute() + "] in colorableLightRemote[" + getLabel() + "] received");
+//        Future<Void> test = super.applyAction(actionDescription); //To change body of generated methods, choose Tools | Templates.
+//        GlobalCachedExecutorService.submit(new Callable<Void>() {
+//
+//            @Override
+//            public Void call() throws Exception {
+//                test.get();
+//                System.out.println("[" + getLabel() + "] action applied![" + getPowerState().getValue() + "]");
+//                return null;
+//            }
+//        });
+//        return test;
+//    }
+
 }
