@@ -70,7 +70,7 @@ public class MockRegistryTest {
         List<Long> times = new ArrayList<>();
         System.out.println("testMockRegistryCreation");
         try {
-            for (int i = 0; i < 10; ++i) {
+            for (int i = 0; i < 5; ++i) {
                 System.out.println("start mock registry");
                 stopwatch.restart();
                 MockRegistryHolder.newMockRegistry();
