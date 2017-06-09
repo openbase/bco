@@ -31,7 +31,7 @@ import org.openbase.jul.schedule.SyncObject;
 
 /**
  *
- * @author Tamino Huxohl <pLeminoq@openbase.org>
+ * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  * @param <D>
  * @param <UR>
  */
