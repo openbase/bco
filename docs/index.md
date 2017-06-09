@@ -101,6 +101,16 @@ You can test and prove new component in a simulated environment.
 bco --simulate
 ```
 
+## Benchmark Mode
+
+You can test new component via the benchmark mode to prove how your componentens act during massive bco system load. 
+During the benchmark, bco will bestarted in simulation mode and high frequenly unit state changes are generated.
+
+Note: Please never start the benchmark mode if you are connected to any bco devices to avoid hardware damage.
+```
+bco --benchmark
+```
+
 ## User Interfaces
 
 ### Desktop (JavaFX)
