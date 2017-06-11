@@ -25,9 +25,9 @@ package org.openbase.bco.authentication.lib;
 import java.util.ArrayList;
 import java.util.List;
 import org.openbase.jul.exception.RejectedException;
-import rst.domotic.authentification.AuthenticatorTicketType;
-import rst.domotic.authentification.AuthenticatorType;
-import rst.domotic.authentification.LoginResponseType;
+import rst.domotic.authentication.TicketAuthenticatorWrapperType;
+import rst.domotic.authentication.AuthenticatorType;
+import rst.domotic.authentication.TicketSessionKeyWrapperType;
 import rst.timing.TimestampType;
 
 /**
@@ -37,7 +37,7 @@ import rst.timing.TimestampType;
 public class AuthenticationClientHandlerImpl implements AuthenticationClientHandler {
     
     @Override
-    public List<Object> handleKDCResponse(String clientID, byte[] hashedClientPassword, LoginResponseType.LoginResponse wrapper) throws RejectedException {
+    public List<Object> handleKDCResponse(String clientID, byte[] hashedClientPassword, TicketSessionKeyWrapperType.TicketSessionKeyWrapper wrapper) throws RejectedException {
         // decrypt TGS session key
         byte[] TGSSessionKey = (byte[]) EncryptionHelper.decrypt(wrapper.getSessionKey(), hashedClientPassword);
 
@@ -50,7 +50,7 @@ public class AuthenticationClientHandlerImpl implements AuthenticationClientHand
         ab.setTimestamp(tb.build());
 
         // create TicketAuthenticatorWrapper
-        AuthenticatorTicketType.AuthenticatorTicket.Builder atb = AuthenticatorTicketType.AuthenticatorTicket.newBuilder();
+        TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper.Builder atb = TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper.newBuilder();
         atb.setAuthenticator(EncryptionHelper.encrypt(ab.build(), TGSSessionKey));
         atb.setTicket(wrapper.getTicket());
 
@@ -63,7 +63,7 @@ public class AuthenticationClientHandlerImpl implements AuthenticationClientHand
     }
 
     @Override
-    public List<Object> handleTGSResponse(String clientID, byte[] TGSSessionKey, LoginResponseType.LoginResponse wrapper) throws RejectedException {
+    public List<Object> handleTGSResponse(String clientID, byte[] TGSSessionKey, TicketSessionKeyWrapperType.TicketSessionKeyWrapper wrapper) throws RejectedException {
         // decrypt SS session key
         byte[] SSSessionKey = (byte[]) EncryptionHelper.decrypt(wrapper.getSessionKey(), TGSSessionKey);
 
@@ -73,7 +73,7 @@ public class AuthenticationClientHandlerImpl implements AuthenticationClientHand
         ab.setClientId(clientID);
 
         // create TicketAuthenticatorWrapper
-        AuthenticatorTicketType.AuthenticatorTicket.Builder atb = AuthenticatorTicketType.AuthenticatorTicket.newBuilder();
+        TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper.Builder atb = TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper.newBuilder();
         atb.setAuthenticator(EncryptionHelper.encrypt(ab.build(), SSSessionKey));
         atb.setTicket(wrapper.getTicket());
 
@@ -86,7 +86,7 @@ public class AuthenticationClientHandlerImpl implements AuthenticationClientHand
     }
 
     @Override
-    public AuthenticatorTicketType.AuthenticatorTicket initSSRequest(byte[] SSSessionKey, AuthenticatorTicketType.AuthenticatorTicket wrapper) throws RejectedException {
+    public TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper initSSRequest(byte[] SSSessionKey, TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper wrapper) throws RejectedException {
         // decrypt authenticator
         AuthenticatorType.Authenticator authenticator = (AuthenticatorType.Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), SSSessionKey);
 
@@ -97,14 +97,14 @@ public class AuthenticationClientHandlerImpl implements AuthenticationClientHand
         ab.setTimestamp(tb.build());
 
         // create TicketAuthenticatorWrapper
-        AuthenticatorTicketType.AuthenticatorTicket.Builder atb = wrapper.toBuilder();
+        TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper.Builder atb = wrapper.toBuilder();
         atb.setAuthenticator(EncryptionHelper.encrypt(ab.build(), SSSessionKey));
 
         return atb.build();
     }
 
     @Override
-    public AuthenticatorTicketType.AuthenticatorTicket handleSSResponse(byte[] SSSessionKey, AuthenticatorTicketType.AuthenticatorTicket lastWrapper, AuthenticatorTicketType.AuthenticatorTicket currentWrapper) throws RejectedException {
+    public TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper handleSSResponse(byte[] SSSessionKey, TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper lastWrapper, TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper currentWrapper) throws RejectedException {
         // decrypt authenticators
         AuthenticatorType.Authenticator lastAuthenticator = (AuthenticatorType.Authenticator) EncryptionHelper.decrypt(lastWrapper.getAuthenticator(), SSSessionKey);
         AuthenticatorType.Authenticator currentAuthenticator = (AuthenticatorType.Authenticator) EncryptionHelper.decrypt(currentWrapper.getAuthenticator(), SSSessionKey);

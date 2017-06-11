@@ -39,8 +39,8 @@ import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.WatchDog;
-import rst.domotic.authentification.AuthenticatorTicketType.AuthenticatorTicket;
-import rst.domotic.authentification.LoginResponseType.LoginResponse;
+import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 import org.openbase.bco.authentication.lib.AuthenticationService;
 
 /**
@@ -105,31 +105,31 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     }
 
     @Override
-    public Future<LoginResponse> requestTGT(String clientId) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.submit(new Callable<LoginResponse>() {
+    public Future<TicketSessionKeyWrapper> requestTGT(String clientId) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(new Callable<TicketSessionKeyWrapper>() {
             @Override
-            public LoginResponse call() throws Exception {
+            public TicketSessionKeyWrapper call() throws Exception {
                 return authenticationHandler.handleKDCRequest(clientId, "", TGSSessionKey, TGSPrivateKey);
             }
         });
     }
 
     @Override
-    public Future<LoginResponse> requestCST(AuthenticatorTicket authenticatorTicket) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.submit(new Callable<LoginResponse>() {
+    public Future<TicketSessionKeyWrapper> requestCST(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(new Callable<TicketSessionKeyWrapper>() {
             @Override
-            public LoginResponse call() throws Exception {
-                return authenticationHandler.handleTGSRequest(TGSSessionKey, TGSPrivateKey, SSSessionKey, SSPrivateKey, authenticatorTicket);
+            public TicketSessionKeyWrapper call() throws Exception {
+                return authenticationHandler.handleTGSRequest(TGSSessionKey, TGSPrivateKey, SSSessionKey, SSPrivateKey, ticketAuthenticatorWrapper);
             }
         });
     }
 
     @Override
-    public Future<AuthenticatorTicket> validateCST(AuthenticatorTicket authenticatorTicket) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.submit(new Callable<AuthenticatorTicket>() {
+    public Future<TicketAuthenticatorWrapper> validateCST(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(new Callable<TicketAuthenticatorWrapper>() {
             @Override
-            public AuthenticatorTicket call() throws Exception {
-                return authenticationHandler.handleSSRequest(SSSessionKey, SSPrivateKey, authenticatorTicket);
+            public TicketAuthenticatorWrapper call() throws Exception {
+                return authenticationHandler.handleSSRequest(SSSessionKey, SSPrivateKey, ticketAuthenticatorWrapper);
             }
         });
     }

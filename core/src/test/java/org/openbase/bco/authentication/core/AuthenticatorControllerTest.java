@@ -40,8 +40,8 @@ import org.openbase.jul.extension.rsb.iface.RSBListener;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.Event;
 import rsb.Handler;
-import rst.domotic.authentification.AuthenticatorTicketType.AuthenticatorTicket;
-import rst.domotic.authentification.LoginResponseType.LoginResponse;
+import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 
 /**
  *
@@ -111,11 +111,11 @@ public class AuthenticatorControllerTest {
         byte[] client_passwordHash = EncryptionHelper.hash(client_password);
 
         // handle KDC request on server side
-        LoginResponse slr = clientRemote.requestTGT(client_id).get();
+        TicketSessionKeyWrapper slr = clientRemote.requestTGT(client_id).get();
 
         // handle KDC response on client side
         List<Object> list = clientHandler.handleKDCResponse(client_id, client_passwordHash, slr);
-        AuthenticatorTicket client_at = (AuthenticatorTicket) list.get(0); // save at somewhere temporarily
+        TicketAuthenticatorWrapper client_at = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
         byte[] client_TGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
 
 
@@ -124,14 +124,14 @@ public class AuthenticatorControllerTest {
 
         // handle TGS response on client side
         list = clientHandler.handleTGSResponse(client_id, client_TGSSessionKey, slr);
-        client_at = (AuthenticatorTicket) list.get(0); // save at somewhere temporarily
+        client_at = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
         byte[] client_SSSessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
 
         // init SS request on client side
         client_at = clientHandler.initSSRequest(client_SSSessionKey, client_at);
 
         // handle SS request on server side
-        AuthenticatorTicket server_at = clientRemote.validateCST(client_at).get();
+        TicketAuthenticatorWrapper server_at = clientRemote.validateCST(client_at).get();
 
         // handle SS response on client side
         client_at = clientHandler.handleSSResponse(client_SSSessionKey, client_at, server_at);

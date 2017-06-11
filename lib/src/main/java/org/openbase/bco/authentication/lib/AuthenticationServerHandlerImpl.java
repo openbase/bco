@@ -24,10 +24,10 @@ package org.openbase.bco.authentication.lib;
 
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
-import rst.domotic.authentification.AuthenticatorTicketType;
-import rst.domotic.authentification.AuthenticatorType;
-import rst.domotic.authentification.LoginResponseType;
-import rst.domotic.authentification.TicketType;
+import rst.domotic.authentication.TicketAuthenticatorWrapperType;
+import rst.domotic.authentication.AuthenticatorType;
+import rst.domotic.authentication.TicketSessionKeyWrapperType;
+import rst.domotic.authentication.TicketType;
 import rst.timing.IntervalType;
 import rst.timing.TimestampType;
 
@@ -38,7 +38,7 @@ import rst.timing.TimestampType;
 public class AuthenticationServerHandlerImpl implements AuthenticationServerHandler {
     
     @Override
-    public LoginResponseType.LoginResponse handleKDCRequest(String clientID, String clientNetworkAddress, byte[] TGSSessionKey, byte[] TGSPrivateKey) throws NotAvailableException, RejectedException {
+    public TicketSessionKeyWrapperType.TicketSessionKeyWrapper handleKDCRequest(String clientID, String clientNetworkAddress, byte[] TGSSessionKey, byte[] TGSPrivateKey) throws NotAvailableException, RejectedException {
         // find client's password in database
         String clientPassword = "password";
 
@@ -63,7 +63,7 @@ public class AuthenticationServerHandlerImpl implements AuthenticationServerHand
         tgtb.setSessionKey(TGSSessionKey.toString());
 
         // create TicketSessionKeyWrapper
-        LoginResponseType.LoginResponse.Builder wb = LoginResponseType.LoginResponse.newBuilder();
+        TicketSessionKeyWrapperType.TicketSessionKeyWrapper.Builder wb = TicketSessionKeyWrapperType.TicketSessionKeyWrapper.newBuilder();
         wb.setTicket(EncryptionHelper.encrypt(tgtb.build(), TGSPrivateKey));
         wb.setSessionKey(EncryptionHelper.encrypt(TGSSessionKey, clientPasswordHash));
 
@@ -71,7 +71,7 @@ public class AuthenticationServerHandlerImpl implements AuthenticationServerHand
     }
 
     @Override
-    public LoginResponseType.LoginResponse handleTGSRequest(byte[] TGSSessionKey, byte[] TGSPrivateKey, byte[] SSSessionKey, byte[] SSPrivateKey, AuthenticatorTicketType.AuthenticatorTicket wrapper) throws RejectedException {
+    public TicketSessionKeyWrapperType.TicketSessionKeyWrapper handleTGSRequest(byte[] TGSSessionKey, byte[] TGSPrivateKey, byte[] SSSessionKey, byte[] SSPrivateKey, TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper wrapper) throws RejectedException {
         // decrypt ticket and authenticator
         TicketType.Ticket CST = (TicketType.Ticket) EncryptionHelper.decrypt(wrapper.getTicket(), TGSPrivateKey);
         AuthenticatorType.Authenticator authenticator = (AuthenticatorType.Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), TGSSessionKey);
@@ -95,7 +95,7 @@ public class AuthenticationServerHandlerImpl implements AuthenticationServerHand
         cstb.setSessionKey(SSSessionKey.toString());
 
         // create TicketSessionKeyWrapper
-        LoginResponseType.LoginResponse.Builder wb = LoginResponseType.LoginResponse.newBuilder();
+        TicketSessionKeyWrapperType.TicketSessionKeyWrapper.Builder wb = TicketSessionKeyWrapperType.TicketSessionKeyWrapper.newBuilder();
         wb.setTicket(EncryptionHelper.encrypt(cstb.build(), SSPrivateKey));
         wb.setSessionKey(EncryptionHelper.encrypt(SSSessionKey, TGSSessionKey));
 
@@ -103,7 +103,7 @@ public class AuthenticationServerHandlerImpl implements AuthenticationServerHand
     }
 
     @Override
-    public AuthenticatorTicketType.AuthenticatorTicket handleSSRequest(byte[] SSSessionKey, byte[] SSPrivateKey, AuthenticatorTicketType.AuthenticatorTicket wrapper) throws RejectedException {
+    public TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper handleSSRequest(byte[] SSSessionKey, byte[] SSPrivateKey, TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper wrapper) throws RejectedException {
         // decrypt ticket and authenticator
         TicketType.Ticket CST = (TicketType.Ticket) EncryptionHelper.decrypt(wrapper.getTicket(), SSPrivateKey);
         AuthenticatorType.Authenticator authenticator = (AuthenticatorType.Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), SSSessionKey);
@@ -126,7 +126,7 @@ public class AuthenticationServerHandlerImpl implements AuthenticationServerHand
         cstb.setValidityPeriod(ib.build());
 
         // update TicketAuthenticatorWrapper
-        AuthenticatorTicketType.AuthenticatorTicket.Builder atb = wrapper.toBuilder();
+        TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper.Builder atb = wrapper.toBuilder();
         atb.setTicket(EncryptionHelper.encrypt(CST, SSPrivateKey));
 
         return atb.build();

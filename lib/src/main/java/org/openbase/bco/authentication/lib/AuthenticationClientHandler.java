@@ -24,8 +24,8 @@ package org.openbase.bco.authentication.lib;
 
 import java.util.List;
 import org.openbase.jul.exception.RejectedException;
-import rst.domotic.authentification.AuthenticatorTicketType.AuthenticatorTicket;
-import rst.domotic.authentification.LoginResponseType.LoginResponse;
+import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 
 /**
  *
@@ -41,11 +41,11 @@ public interface AuthenticationClientHandler {
      * @param hashedClientPassword Client's hashed password
      * @param wrapper TicketSessionKeyWrapper containing the TGT and TGS session key
      * @return Returns a list of objects containing: 
-     *         1. An AuthenticatorTicketWrapper containing both the TGT and Authenticator
+     *         1. An TicketAuthenticatorWrapperWrapper containing both the TGT and Authenticator
      *         2. A SessionKey representing the TGS session key
      * @TODO: Exception description
      */
-    public List<Object> handleKDCResponse(String clientID, byte[] hashedClientPassword, LoginResponse wrapper) throws RejectedException; 
+    public List<Object> handleKDCResponse(String clientID, byte[] hashedClientPassword, TicketSessionKeyWrapper wrapper) throws RejectedException; 
 
     /**
      * Handles a TGS response
@@ -55,21 +55,21 @@ public interface AuthenticationClientHandler {
      * @param TGSSessionKey TGS session key provided by handleKDCResponse()
      * @param wrapper TicketSessionKeyWrapper containing the CST and SS session key
      * @return Returns a list of objects containing: 
-     *         1. An AuthenticatorTicketWrapper containing both the CST and Authenticator
+     *         1. An TicketAuthenticatorWrapperWrapper containing both the CST and Authenticator
      *         2. A SessionKey representing the SS session key
      * @TODO: Exception description
      */
-    public List<Object> handleTGSResponse(String clientID, byte[] TGSSessionKey, LoginResponse wrapper) throws RejectedException;
+    public List<Object> handleTGSResponse(String clientID, byte[] TGSSessionKey, TicketSessionKeyWrapper wrapper) throws RejectedException;
     
     /**
      * Initializes a SS request
      * Sets current timestamp in Authenticator
      * @param SSSessionKey SS session key provided by handleTGSResponse()
-     * @param wrapper AuthenticatorTicket wrapper that contains both encrypted Authenticator and CST
+     * @param wrapper TicketAuthenticatorWrapper wrapper that contains both encrypted Authenticator and CST
      * @return Returns a wrapper class containing both the CST and modified Authenticator
      * @TODO: Exception description
      */
-    public AuthenticatorTicket initSSRequest(byte[] SSSessionKey, AuthenticatorTicket wrapper) throws RejectedException;
+    public TicketAuthenticatorWrapper initSSRequest(byte[] SSSessionKey, TicketAuthenticatorWrapper wrapper) throws RejectedException;
     
     /**
      * Handles a SS response
@@ -78,9 +78,9 @@ public interface AuthenticationClientHandler {
      * @param SSSessionKey SS session key provided by handleTGSResponse()
      * @param lastWrapper Last TicketAuthenticatorWrapper provided by either handleTGSResponse() or handleSSResponse()
      * @param currentWrapper Current TicketAuthenticatorWrapper provided by (Remote?)
-     * @return Returns an AuthenticatorTicketWrapper containing both the CST and Authenticator
+     * @return Returns an TicketAuthenticatorWrapperWrapper containing both the CST and Authenticator
      * @throws RejectedException Throws, if timestamps do not match
      * @TODO: Exception description
      */
-    public AuthenticatorTicket handleSSResponse(byte[] SSSessionKey, AuthenticatorTicket lastWrapper, AuthenticatorTicket currentWrapper) throws RejectedException;
+    public TicketAuthenticatorWrapper handleSSResponse(byte[] SSSessionKey, TicketAuthenticatorWrapper lastWrapper, TicketAuthenticatorWrapper currentWrapper) throws RejectedException;
 }

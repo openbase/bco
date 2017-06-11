@@ -35,8 +35,8 @@ import org.openbase.jul.extension.rsb.iface.RSBRemoteServer;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.schedule.WatchDog;
-import rst.domotic.authentification.AuthenticatorTicketType.AuthenticatorTicket;
-import rst.domotic.authentification.LoginResponseType.LoginResponse;
+import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 
 /**
  *
@@ -78,18 +78,18 @@ public class ClientRemote implements AuthenticationService, Manageable<Void>, Vo
     }
 
     @Override
-    public Future<LoginResponse> requestTGT(String clientId) throws CouldNotPerformException {
+    public Future<TicketSessionKeyWrapper> requestTGT(String clientId) throws CouldNotPerformException {
         return remoteServer.callAsync("requestTGT", clientId);
     }
 
     @Override
-    public Future<LoginResponse> requestCST(AuthenticatorTicket authenticatorTicket) throws CouldNotPerformException {
-        return remoteServer.callAsync("requestCST", authenticatorTicket);
+    public Future<TicketSessionKeyWrapper> requestCST(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
+        return remoteServer.callAsync("requestCST", ticketAuthenticatorWrapper);
     }
 
     @Override
-    public Future<AuthenticatorTicket> validateCST(AuthenticatorTicket authenticatorTicket) throws CouldNotPerformException {
-        return remoteServer.callAsync("validateCST", authenticatorTicket);
+    public Future<TicketAuthenticatorWrapper> validateCST(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
+        return remoteServer.callAsync("validateCST", ticketAuthenticatorWrapper);
     }
 
 }

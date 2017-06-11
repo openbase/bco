@@ -3,8 +3,8 @@ package org.openbase.bco.authentication.lib;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.annotations.RPCMethod;
-import rst.domotic.authentification.AuthenticatorTicketType.AuthenticatorTicket;
-import rst.domotic.authentification.LoginResponseType.LoginResponse;
+import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 
 /*-
  * #%L
@@ -35,11 +35,11 @@ import rst.domotic.authentification.LoginResponseType.LoginResponse;
 public interface AuthenticationService {
  
     @RPCMethod
-    public Future<LoginResponse> requestTGT(String clientId) throws CouldNotPerformException;
+    public Future<TicketSessionKeyWrapper> requestTGT(String clientId) throws CouldNotPerformException;
     
     @RPCMethod
-    public Future<LoginResponse> requestCST(AuthenticatorTicket authenticatorTicket) throws CouldNotPerformException;
+    public Future<TicketSessionKeyWrapper> requestCST(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException;
     
     @RPCMethod
-    public Future<AuthenticatorTicket> validateCST(AuthenticatorTicket authenticatorTicket) throws CouldNotPerformException;
+    public Future<TicketAuthenticatorWrapper> validateCST(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException;
 }
