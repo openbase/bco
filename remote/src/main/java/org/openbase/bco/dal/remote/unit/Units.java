@@ -22,6 +22,7 @@ package org.openbase.bco.dal.remote.unit;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
@@ -53,6 +54,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rct.Transform;
 import rst.domotic.registry.LocationRegistryDataType;
@@ -429,6 +431,38 @@ public class Units {
     }
 
     /**
+     * Method establishes a connection to the units referred by the given unit label.
+     * The returned unit remote objects are fully synchronized with the unit controller and all states locally cached.
+     * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
+     * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
+     * To force a resynchronization call {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the remote instance.
+     * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
+     *
+     * @param label the label to identify the unit.
+     * @param unitType the type of the unit.
+     * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
+     * @return a list of new or cached unit remotes which can be used to control the units or request all current unit states.
+     * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
+     * @throws InterruptedException is thrown in case the thread is externally interrupted.
+     */
+    public static List<UnitRemote<?>> getUnitsByLabelAndType(final String label, final UnitType unitType, boolean waitForData) throws NotAvailableException, InterruptedException {
+        try {
+            if (label == null) {
+                assert false;
+                throw new NotAvailableException("UnitName");
+            }
+
+            final ArrayList<UnitRemote<?>> unitRemoteList = new ArrayList<>();
+            for (UnitConfig unitConfig : getUnitRegistry().getUnitConfigsByLabelAndUnitType(label, unitType)) {
+                unitRemoteList.add(getUnit(unitConfig, waitForData));
+            }
+            return unitRemoteList;
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Unit[" + label + "]", ex);
+        }
+    }
+
+    /**
      * Method establishes a connection to the unit referred by the given unit label.
      * The returned unit remote object is fully synchronized with the unit controller and all states locally cached.
      * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
@@ -442,7 +476,9 @@ public class Units {
      * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
      * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
      * @throws InterruptedException is thrown in case the thread is externally interrupted.
+     * @deprecated please use getUnitsByLabelAndType(...) instead.
      */
+    @Deprecated
     public static UnitRemote<?> getUnitByLabelAndType(final String label, final UnitType unitType, boolean waitForData) throws NotAvailableException, InterruptedException {
         try {
             if (label == null) {
@@ -464,6 +500,37 @@ public class Units {
     }
 
     /**
+     * Method establishes a connection to the units referred by the given unit label.
+     * The returned unit remote objects are fully synchronized with the unit controller and all states locally cached.
+     * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
+     * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
+     * To force a resynchronization call {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the remote instance.
+     * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
+     *
+     * @param label the label to identify the unit.
+     * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
+     * @return a list of new or cached unit remotes which can be used to control the units or request all current unit states.
+     * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
+     * @throws InterruptedException is thrown in case the thread is externally interrupted.
+     */
+    public static List<UnitRemote<?>> getUnitsByLabel(final String label, boolean waitForData) throws NotAvailableException, InterruptedException {
+        try {
+            if (label == null) {
+                assert false;
+                throw new NotAvailableException("UnitName");
+            }
+
+            final ArrayList<UnitRemote<?>> unitRemoteList = new ArrayList<>();
+            for (UnitConfig unitConfig : getUnitRegistry().getUnitConfigsByLabel(label)) {
+                unitRemoteList.add(getUnit(unitConfig, waitForData));
+            }
+            return unitRemoteList;
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Unit[" + label + "]", ex);
+        }
+    }
+
+    /**
      * Method establishes a connection to the unit referred by the given unit label.
      * The returned unit remote object is fully synchronized with the unit controller and all states locally cached.
      * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
@@ -476,7 +543,9 @@ public class Units {
      * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
      * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
      * @throws InterruptedException is thrown in case the thread is externally interrupted.
+     * @deprecated please use getUnitsByLabel(..) instead.
      */
+    @Deprecated
     public static UnitRemote<?> getUnitByLabel(final String label, boolean waitForData) throws NotAvailableException, InterruptedException {
         try {
             if (label == null) {
@@ -499,7 +568,33 @@ public class Units {
 
     /**
      *
-     * This method is a wrapper for {@link #getUnit(java.lang.String, boolean) getUnit(String, boolean)} and casts the result to the given {@code unitRemoteClass}.
+     * This method is a wrapper for {@link #getUnit(java.lang.String, boolean) getUnitsByLabel(String, boolean)} and casts the result to the given {@code unitRemoteClass} list.
+     *
+     * @param <UR> the unit remote class type.
+     * @param label Checkout wrapped method doc {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
+     * @param waitForData Checkout wrapped method doc {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
+     * @param unitRemoteClass the unit remote class.
+     * @return a list of instances of the given remote class.
+     * @throws NotAvailableException Is thrown if the remote instance is not compatible with the given class. See {@link #getUnit(java.lang.String, boolean) getUnit(String, boolean)} for further cases.
+     * @throws InterruptedException Checkout wrapped method doc {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
+     *
+     * @see #getUnitsByLabel(java.lang.String, boolean)
+     */
+    public static <UR extends UnitRemote<?>> List<UR> getUnitsByLabel(final String label, boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
+        try {
+            try {
+                return (List<UR>) getUnitsByLabelAndType(label, Units.getUnitTypeByRemoteClass(unitRemoteClass), waitForData);
+            } catch (ClassCastException ex) {
+                throw new InvalidStateException("Requested Unit[" + label + "] is not compatible with defined UnitRemoteClass[" + unitRemoteClass + "]!", ex);
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Unit[" + label + "]", ex);
+        }
+    }
+
+    /**
+     *
+     * This method is a wrapper for {@link #getUnit(java.lang.String, boolean) getUnitsByLabel(String, boolean)} and casts the result to the given {@code unitRemoteClass} list.
      *
      * @param <UR> the unit remote class type.
      * @param label Checkout wrapped method doc {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
@@ -510,11 +605,13 @@ public class Units {
      * @throws InterruptedException Checkout wrapped method doc {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
      *
      * @see #getUnitByLabel(java.lang.String, boolean)
+     * @deprecated please use getUnitsByLabel(...) instead.
      */
+    @Deprecated
     public static <UR extends UnitRemote<?>> UR getUnitByLabel(final String label, boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
         try {
             try {
-                return (UR) getUnitByLabelAndType(label, Units.getUnitTypeByRemoteClass(unitRemoteClass), waitForData);
+                return (UR) getUnitsByLabelAndType(label, Units.getUnitTypeByRemoteClass(unitRemoteClass), waitForData).get(0);
             } catch (ClassCastException ex) {
                 throw new InvalidStateException("Requested Unit[" + label + "] is not compatible with defined UnitRemoteClass[" + unitRemoteClass + "]!", ex);
             }
@@ -716,6 +813,61 @@ public class Units {
     }
 
     /**
+     * Method establishes connections to the units referred by the given unit label.
+     * The returned unit remote objects are fully synchronized with the unit controllers and all states locally cached.
+     * Use the {@code waitForData} flag to block the current thread until the unit remotes are fully synchronized with the unit controller during the startup phase.
+     * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
+     * To force a resynchronization call {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the remote instance.
+     * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
+     *
+     * @param label the label to identify the unit.
+     * @param unitType the type of the unit.
+     * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
+     * @return a list of new or cached unit remotes which can be used to control the units or request all current unit states.
+     * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
+     * @throws InterruptedException is thrown in case the thread is externally interrupted.
+     */
+    public static Future<List<UnitRemote<?>>> getFutureUnitsByLabelAndType(final String label, final UnitType unitType, boolean waitForData) throws NotAvailableException, InterruptedException {
+        return GlobalCachedExecutorService.submit(() -> getUnitsByLabelAndType(label, unitType, waitForData));
+    }
+
+    /**
+     * Method establishes connections to the units referred by the given unit label.
+     * The returned unit remote objects are fully synchronized with the unit controllers and all states locally cached.
+     * Use the {@code waitForData} flag to block the current thread until the unit remotes are fully synchronized with the unit controller during the startup phase.
+     * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
+     * To force a resynchronization call {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the remote instance.
+     * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
+     *
+     * @param label the label to identify the unit.
+     * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
+     * @return a list of new or cached unit remotes which can be used to control the units or request all current unit states.
+     * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
+     * @throws InterruptedException is thrown in case the thread is externally interrupted.
+     */
+    public static Future<List<UnitRemote<?>>> getFutureUnitsByLabel(final String label, boolean waitForData) throws NotAvailableException, InterruptedException {
+        return GlobalCachedExecutorService.submit(() -> getUnitsByLabel(label, waitForData));
+    }
+
+    /**
+     *
+     * This method is a wrapper for {@link #getUgetUnitsByLabelnit(java.lang.String, boolean)} and casts the result to the given {@code unitRemoteClass} list.
+     *
+     * @param <UR> the unit remote class type.
+     * @param label Checkout wrapped method doc {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
+     * @param waitForData Checkout wrapped method doc {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
+     * @param unitRemoteClass the unit remote class.
+     * @return a list of instances of the given remote class.
+     * @throws NotAvailableException Is thrown if the remote instance is not compatible with the given class. See {@link #getUnit(java.lang.String, boolean) getUnit(String, boolean)} for further cases.
+     * @throws InterruptedException Checkout wrapped method doc {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
+     *
+     * @see #getUnitsByLabel(java.lang.String, boolean)
+     */
+    public static <UR extends UnitRemote<?>> Future<List<UR>> getFutureUnitsByLabel(final String label, boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
+        return GlobalCachedExecutorService.submit(() -> getUnitsByLabel(label, waitForData, unitRemoteClass));
+    }
+    
+    /**
      * Method establishes a connection to the unit referred by the given unit label.
      * The returned unit remote object is fully synchronized with the unit controller and all states locally cached.
      * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
@@ -730,6 +882,7 @@ public class Units {
      * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
      * @throws InterruptedException is thrown in case the thread is externally interrupted.
      */
+    @Deprecated
     public static Future<UnitRemote> getFutureUnitByLabelAndType(final String label, final UnitType unitType, boolean waitForData) throws NotAvailableException, InterruptedException {
         return GlobalCachedExecutorService.submit(() -> getUnitByLabelAndType(label, unitType, waitForData));
     }
@@ -748,6 +901,7 @@ public class Units {
      * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
      * @throws InterruptedException is thrown in case the thread is externally interrupted.
      */
+    @Deprecated
     public static Future<UnitRemote> getFutureUnitByLabel(final String label, boolean waitForData) throws NotAvailableException, InterruptedException {
         return GlobalCachedExecutorService.submit(() -> getUnitByLabel(label, waitForData));
     }
@@ -766,6 +920,7 @@ public class Units {
      *
      * @see #getUnitByLabel(java.lang.String, boolean)
      */
+    @Deprecated
     public static <UR extends UnitRemote<?>> Future<UR> getFutureUnitByLabel(final String label, boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
         return GlobalCachedExecutorService.submit(() -> getUnitByLabel(label, waitForData, unitRemoteClass));
     }
@@ -874,17 +1029,16 @@ public class Units {
      *
      * @param unitConfig the unit where the transformation leads to.
      * @return a transformation future
-     * @throws NotAvailableException is thrown if the transformation is not available for could not be computed.
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      */
-    public static Future<Transform> getUnitTransformation(final UnitConfig unitConfig) throws NotAvailableException, InterruptedException {
+    public static Future<Transform> getUnitTransformation(final UnitConfig unitConfig) throws InterruptedException {
         final Future<LocationRegistryDataType.LocationRegistryData> dataFuture;
         try {
             dataFuture = Registries.getLocationRegistry().getDataFuture();
+            return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getLocationRegistry().getUnitTransformation(unitConfig), dataFuture);
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("UnitTransformation", ex);
+            return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
         }
-        return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getLocationRegistry().getUnitTransformation(unitConfig), dataFuture);
     }
 
     /**
@@ -896,13 +1050,13 @@ public class Units {
      * @throws NotAvailableException is thrown if the transformation is not available for could not be computed.
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      */
-    public static Future<Transform> getUnitTransformation(final UnitConfig unitConfigA, final UnitConfig unitConfigB) throws NotAvailableException, InterruptedException {
+    public static Future<Transform> getUnitTransformation(final UnitConfig unitConfigA, final UnitConfig unitConfigB) throws InterruptedException {
         final Future<LocationRegistryDataType.LocationRegistryData> dataFuture;
         try {
             dataFuture = Registries.getLocationRegistry().getDataFuture();
+            return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getLocationRegistry().getUnitTransformation(unitConfigA, unitConfigB), dataFuture);
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("UnitTransformation", ex);
+            return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
         }
-        return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getLocationRegistry().getUnitTransformation(unitConfigA, unitConfigB), dataFuture);
     }
 }
