@@ -21,36 +21,39 @@ package org.openbase.bco.authentication.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import java.io.IOException;
+import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.List;
 import org.openbase.jul.exception.RejectedException;
-import rst.domotic.authentication.TicketAuthenticatorWrapperType;
-import rst.domotic.authentication.AuthenticatorType;
-import rst.domotic.authentication.TicketSessionKeyWrapperType;
-import rst.timing.TimestampType;
+import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import rst.domotic.authentication.AuthenticatorType.Authenticator;
+import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
+import rst.timing.TimestampType.Timestamp;
 
 /**
  *
  * @author Sebastian Fast <sfast@techfak.uni-bielefeld.de>
  */
 public class AuthenticationClientHandlerImpl implements AuthenticationClientHandler {
-    
+
     @Override
-    public List<Object> handleKDCResponse(String clientID, byte[] hashedClientPassword, TicketSessionKeyWrapperType.TicketSessionKeyWrapper wrapper) throws RejectedException {
+    public List<Object> handleKDCResponse(String clientID, byte[] hashedClientPassword, TicketSessionKeyWrapper wrapper) throws StreamCorruptedException, IOException {
         // decrypt TGS session key
-        byte[] TGSSessionKey = (byte[]) EncryptionHelper.decrypt(wrapper.getSessionKey(), hashedClientPassword);
+        byte[] TGSSessionKey;
+
+        TGSSessionKey = (byte[]) EncryptionHelper.decrypt(wrapper.getSessionKey(), hashedClientPassword);
 
         // create Authenticator with empty timestamp
         // set timestamp in initTGSRequest()
-        TimestampType.Timestamp.Builder tb = TimestampType.Timestamp.newBuilder();
+        Timestamp.Builder tb = Timestamp.newBuilder();
         tb.setTime(System.currentTimeMillis());
-        AuthenticatorType.Authenticator.Builder ab = AuthenticatorType.Authenticator.newBuilder();
+        Authenticator.Builder ab = Authenticator.newBuilder();
         ab.setClientId(clientID);
         ab.setTimestamp(tb.build());
 
         // create TicketAuthenticatorWrapper
-        TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper.Builder atb = TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper.newBuilder();
+        TicketAuthenticatorWrapper.Builder atb = TicketAuthenticatorWrapper.newBuilder();
         atb.setAuthenticator(EncryptionHelper.encrypt(ab.build(), TGSSessionKey));
         atb.setTicket(wrapper.getTicket());
 
@@ -63,22 +66,23 @@ public class AuthenticationClientHandlerImpl implements AuthenticationClientHand
     }
 
     @Override
-    public List<Object> handleTGSResponse(String clientID, byte[] TGSSessionKey, TicketSessionKeyWrapperType.TicketSessionKeyWrapper wrapper) throws RejectedException {
+    public List<Object> handleTGSResponse(String clientID, byte[] TGSSessionKey, TicketSessionKeyWrapper wrapper) throws StreamCorruptedException, IOException {
         // decrypt SS session key
-        byte[] SSSessionKey = (byte[]) EncryptionHelper.decrypt(wrapper.getSessionKey(), TGSSessionKey);
+        byte[] SSSessionKey;
+        SSSessionKey = (byte[]) EncryptionHelper.decrypt(wrapper.getSessionKey(), TGSSessionKey);
 
         // create Authenticator with empty timestamp
         // set timestamp in initSSRequest()
-        AuthenticatorType.Authenticator.Builder ab = AuthenticatorType.Authenticator.newBuilder();
+        Authenticator.Builder ab = Authenticator.newBuilder();
         ab.setClientId(clientID);
 
         // create TicketAuthenticatorWrapper
-        TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper.Builder atb = TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper.newBuilder();
+        TicketAuthenticatorWrapper.Builder atb = TicketAuthenticatorWrapper.newBuilder();
         atb.setAuthenticator(EncryptionHelper.encrypt(ab.build(), SSSessionKey));
         atb.setTicket(wrapper.getTicket());
 
         // create wrapper list
-        List<Object> list = new ArrayList<Object>();
+        List<Object> list = new ArrayList<>();
         list.add(atb.build());
         list.add(SSSessionKey);
 
@@ -86,37 +90,36 @@ public class AuthenticationClientHandlerImpl implements AuthenticationClientHand
     }
 
     @Override
-    public TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper initSSRequest(byte[] SSSessionKey, TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper wrapper) throws RejectedException {
+    public TicketAuthenticatorWrapper initSSRequest(byte[] SSSessionKey, TicketAuthenticatorWrapper wrapper) throws StreamCorruptedException, IOException {
         // decrypt authenticator
-        AuthenticatorType.Authenticator authenticator = (AuthenticatorType.Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), SSSessionKey);
+        Authenticator authenticator = (Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), SSSessionKey);
 
         // create Authenticator
-        TimestampType.Timestamp.Builder tb = TimestampType.Timestamp.newBuilder();
+        Timestamp.Builder tb = Timestamp.newBuilder();
         tb.setTime(System.currentTimeMillis());
-        AuthenticatorType.Authenticator.Builder ab = authenticator.toBuilder();
+        Authenticator.Builder ab = authenticator.toBuilder();
         ab.setTimestamp(tb.build());
 
         // create TicketAuthenticatorWrapper
-        TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper.Builder atb = wrapper.toBuilder();
+        TicketAuthenticatorWrapper.Builder atb = wrapper.toBuilder();
         atb.setAuthenticator(EncryptionHelper.encrypt(ab.build(), SSSessionKey));
 
         return atb.build();
     }
 
     @Override
-    public TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper handleSSResponse(byte[] SSSessionKey, TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper lastWrapper, TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper currentWrapper) throws RejectedException {
+    public TicketAuthenticatorWrapper handleSSResponse(byte[] SSSessionKey, TicketAuthenticatorWrapper lastWrapper, TicketAuthenticatorWrapper currentWrapper) throws RejectedException, IOException {
         // decrypt authenticators
-        AuthenticatorType.Authenticator lastAuthenticator = (AuthenticatorType.Authenticator) EncryptionHelper.decrypt(lastWrapper.getAuthenticator(), SSSessionKey);
-        AuthenticatorType.Authenticator currentAuthenticator = (AuthenticatorType.Authenticator) EncryptionHelper.decrypt(currentWrapper.getAuthenticator(), SSSessionKey);
+        Authenticator lastAuthenticator = (Authenticator) EncryptionHelper.decrypt(lastWrapper.getAuthenticator(), SSSessionKey);
+        Authenticator currentAuthenticator = (Authenticator) EncryptionHelper.decrypt(currentWrapper.getAuthenticator(), SSSessionKey);
 
         // compare both timestamps
-        
         this.validateTimestamp(lastAuthenticator.getTimestamp(), currentAuthenticator.getTimestamp());
 
         return currentWrapper;
     }
 
-    private void validateTimestamp(TimestampType.Timestamp now, TimestampType.Timestamp then) throws RejectedException {
+    private void validateTimestamp(Timestamp now, Timestamp then) throws RejectedException {
         if (now.getTime() != then.getTime()) {
             throw new RejectedException("Timestamps do not match");
         }

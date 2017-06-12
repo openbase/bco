@@ -82,6 +82,11 @@
             <scope>test</scope>
             <version>4.11</version>
         </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>registry.remote</artifactId>
+            <version>${dependency.bco.registry.version}</version>
+        </dependency>
     </dependencies>
     <properties>
         <skipTests>false</skipTests>

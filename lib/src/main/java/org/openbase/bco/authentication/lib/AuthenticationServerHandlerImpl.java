@@ -21,81 +21,87 @@ package org.openbase.bco.authentication.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import java.io.IOException;
+import java.io.StreamCorruptedException;
+import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.user.remote.UserRegistryRemote;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
-import rst.domotic.authentication.TicketAuthenticatorWrapperType;
-import rst.domotic.authentication.AuthenticatorType;
-import rst.domotic.authentication.TicketSessionKeyWrapperType;
-import rst.domotic.authentication.TicketType;
-import rst.timing.IntervalType;
-import rst.timing.TimestampType;
+import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import rst.domotic.authentication.AuthenticatorType.Authenticator;
+import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
+import rst.domotic.authentication.TicketType.Ticket;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.timing.IntervalType.Interval;
+import rst.timing.TimestampType.Timestamp;
 
 /**
  *
  * @author Sebastian Fast <sfast@techfak.uni-bielefeld.de>
  */
 public class AuthenticationServerHandlerImpl implements AuthenticationServerHandler {
-    
-    @Override
-    public TicketSessionKeyWrapperType.TicketSessionKeyWrapper handleKDCRequest(String clientID, String clientNetworkAddress, byte[] TGSSessionKey, byte[] TGSPrivateKey) throws NotAvailableException, RejectedException {
-        // find client's password in database
-        String clientPassword = "password";
 
-        // hash password
-        byte[] clientPasswordHash = EncryptionHelper.hash(clientPassword);
+    @Override
+    public TicketSessionKeyWrapper handleKDCRequest(String clientID, String clientNetworkAddress, byte[] TGSSessionKey, byte[] TGSPrivateKey) throws NotAvailableException, InterruptedException, CouldNotPerformException, IOException {
+        String[] split = clientID.split("@", 2);
+        String userName = split[0];
+        final UserRegistryRemote userRegistry = Registries.getUserRegistry();
+
+        userRegistry.waitForData();
+        UnitConfig userConfig = userRegistry.getUserConfigByUserName(userName);
 
         // set period
         long start = System.currentTimeMillis();
         long end = start + (5 * 60 * 1000);
-        IntervalType.Interval.Builder ib = IntervalType.Interval.newBuilder();
-        TimestampType.Timestamp.Builder tb = TimestampType.Timestamp.newBuilder();
+        Interval.Builder ib = Interval.newBuilder();
+        Timestamp.Builder tb = Timestamp.newBuilder();
         tb.setTime(start);
         ib.setBegin(tb.build());
         tb.setTime(end);
         ib.setEnd(tb.build());
 
         // create tgt
-        TicketType.Ticket.Builder tgtb = TicketType.Ticket.newBuilder();
+        Ticket.Builder tgtb = Ticket.newBuilder();
         tgtb.setClientId(clientID);
         tgtb.setClientIp(clientNetworkAddress);
         tgtb.setValidityPeriod(ib.build());
         tgtb.setSessionKey(TGSSessionKey.toString());
 
         // create TicketSessionKeyWrapper
-        TicketSessionKeyWrapperType.TicketSessionKeyWrapper.Builder wb = TicketSessionKeyWrapperType.TicketSessionKeyWrapper.newBuilder();
+        TicketSessionKeyWrapper.Builder wb = TicketSessionKeyWrapper.newBuilder();
         wb.setTicket(EncryptionHelper.encrypt(tgtb.build(), TGSPrivateKey));
-        wb.setSessionKey(EncryptionHelper.encrypt(TGSSessionKey, clientPasswordHash));
+        // TODO: wb.setSessionKey(EncryptionHelper.encrypt(TGSSessionKey, userConfig.getUserConfig().getPassword()));
 
         return wb.build();
     }
 
     @Override
-    public TicketSessionKeyWrapperType.TicketSessionKeyWrapper handleTGSRequest(byte[] TGSSessionKey, byte[] TGSPrivateKey, byte[] SSSessionKey, byte[] SSPrivateKey, TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper wrapper) throws RejectedException {
+    public TicketSessionKeyWrapper handleTGSRequest(byte[] TGSSessionKey, byte[] TGSPrivateKey, byte[] SSSessionKey, byte[] SSPrivateKey, TicketAuthenticatorWrapper wrapper) throws RejectedException, StreamCorruptedException, IOException {
         // decrypt ticket and authenticator
-        TicketType.Ticket CST = (TicketType.Ticket) EncryptionHelper.decrypt(wrapper.getTicket(), TGSPrivateKey);
-        AuthenticatorType.Authenticator authenticator = (AuthenticatorType.Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), TGSSessionKey);
+        Ticket TGT = (Ticket) EncryptionHelper.decrypt(wrapper.getTicket(), TGSPrivateKey);
+        Authenticator authenticator = (Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), TGSSessionKey);
 
         // compare clientIDs and timestamp to period
-        this.validateTicket(CST, authenticator);
+        this.validateTicket(TGT, authenticator);
 
         // set period
         long start = System.currentTimeMillis();
         long end = start + (5 * 60 * 1000);
-        IntervalType.Interval.Builder ib = IntervalType.Interval.newBuilder();
-        TimestampType.Timestamp.Builder tb = TimestampType.Timestamp.newBuilder();
+        Interval.Builder ib = Interval.newBuilder();
+        Timestamp.Builder tb = Timestamp.newBuilder();
         tb.setTime(start);
         ib.setBegin(tb.build());
         tb.setTime(end);
         ib.setEnd(tb.build());
 
         // update period and session key
-        TicketType.Ticket.Builder cstb = CST.toBuilder();
+        Ticket.Builder cstb = TGT.toBuilder();
         cstb.setValidityPeriod(ib.build());
         cstb.setSessionKey(SSSessionKey.toString());
 
         // create TicketSessionKeyWrapper
-        TicketSessionKeyWrapperType.TicketSessionKeyWrapper.Builder wb = TicketSessionKeyWrapperType.TicketSessionKeyWrapper.newBuilder();
+        TicketSessionKeyWrapper.Builder wb = TicketSessionKeyWrapper.newBuilder();
         wb.setTicket(EncryptionHelper.encrypt(cstb.build(), SSPrivateKey));
         wb.setSessionKey(EncryptionHelper.encrypt(SSSessionKey, TGSSessionKey));
 
@@ -103,10 +109,10 @@ public class AuthenticationServerHandlerImpl implements AuthenticationServerHand
     }
 
     @Override
-    public TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper handleSSRequest(byte[] SSSessionKey, byte[] SSPrivateKey, TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper wrapper) throws RejectedException {
+    public TicketAuthenticatorWrapper handleSSRequest(byte[] SSSessionKey, byte[] SSPrivateKey, TicketAuthenticatorWrapper wrapper) throws RejectedException, StreamCorruptedException, IOException {
         // decrypt ticket and authenticator
-        TicketType.Ticket CST = (TicketType.Ticket) EncryptionHelper.decrypt(wrapper.getTicket(), SSPrivateKey);
-        AuthenticatorType.Authenticator authenticator = (AuthenticatorType.Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), SSSessionKey);
+        Ticket CST = (Ticket) EncryptionHelper.decrypt(wrapper.getTicket(), SSPrivateKey);
+        Authenticator authenticator = (Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), SSSessionKey);
 
         // compare clientIDs and timestamp to period
         this.validateTicket(CST, authenticator);
@@ -114,25 +120,25 @@ public class AuthenticationServerHandlerImpl implements AuthenticationServerHand
         // set period
         long start = System.currentTimeMillis();
         long end = start + (5 * 60 * 1000);
-        IntervalType.Interval.Builder ib = IntervalType.Interval.newBuilder();
-        TimestampType.Timestamp.Builder tb = TimestampType.Timestamp.newBuilder();
+        Interval.Builder ib = Interval.newBuilder();
+        Timestamp.Builder tb = Timestamp.newBuilder();
         tb.setTime(start);
         ib.setBegin(tb.build());
         tb.setTime(end);
         ib.setEnd(tb.build());
 
         // update period and session key
-        TicketType.Ticket.Builder cstb = CST.toBuilder();
+        Ticket.Builder cstb = CST.toBuilder();
         cstb.setValidityPeriod(ib.build());
 
         // update TicketAuthenticatorWrapper
-        TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper.Builder atb = wrapper.toBuilder();
+        TicketAuthenticatorWrapper.Builder atb = wrapper.toBuilder();
         atb.setTicket(EncryptionHelper.encrypt(CST, SSPrivateKey));
 
         return atb.build();
     }
 
-    private void validateTicket(TicketType.Ticket ticket, AuthenticatorType.Authenticator authenticator) throws RejectedException {
+    private void validateTicket(Ticket ticket, Authenticator authenticator) throws RejectedException {
         if (ticket.getClientId() == null) {
             throw new RejectedException("ClientId null in ticket");
         }
@@ -146,8 +152,8 @@ public class AuthenticationServerHandlerImpl implements AuthenticationServerHand
             throw new RejectedException("Session expired");
         }
     }
-    
-    private boolean isTimestampInInterval(TimestampType.Timestamp timestamp, IntervalType.Interval interval) {
+
+    private boolean isTimestampInInterval(Timestamp timestamp, Interval interval) {
         return true;
     }
 }
