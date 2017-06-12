@@ -43,45 +43,43 @@ import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWr
  * @author sebastian
  */
 public class AuthenticationHandlerTest {
-    
-    private String client_id;
-    private String client_password;
-    private byte[] client_passwordHash;
-    private byte[] client_TGSSessionKey;
-    private byte[] client_SSSessionKey;
-    
-    private String server_clientId;
-    private String server_clientPassword;
-    private byte[] server_clientPasswordHash;
-    private String server_clientNetworkAddress;
-    private byte[] server_TGSSessionKey;
-    private byte[] server_TGSPrivateKey;
-    private byte[] server_SSSessionKey;
-    private byte[] server_SSPrivateKey;
-    
+
+    private String clientId;
+    private String clientPassword;
+    private byte[] clientPasswordHash;
+    private byte[] clientTGSSessionKey;
+    private byte[] clientSSSessionKey;
+
+    private String serverClientId;
+    private String serverClientNetworkAddress;
+    private byte[] serverTGSSessionKey;
+    private byte[] serverTGSPrivateKey;
+    private byte[] serverSSSessionKey;
+    private byte[] serverSSPrivateKey;
+
     public AuthenticationHandlerTest() {
-        
+
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
     public void setUp() {
-        client_id = "maxmustermann";
-        client_password = "password";
-        server_clientNetworkAddress = "123.123.123.123";
-        server_TGSSessionKey = EncryptionHelper.generateKey();
-        server_TGSPrivateKey = EncryptionHelper.generateKey();
-        server_SSSessionKey = EncryptionHelper.generateKey();
-        server_SSPrivateKey = EncryptionHelper.generateKey();
+        clientId = "maxmustermann";
+        clientPassword = "password";
+        serverClientNetworkAddress = "123.123.123.123";
+        serverTGSSessionKey = EncryptionHelper.generateKey();
+        serverTGSPrivateKey = EncryptionHelper.generateKey();
+        serverSSSessionKey = EncryptionHelper.generateKey();
+        serverSSPrivateKey = EncryptionHelper.generateKey();
     }
-    
+
     @After
     public void tearDown() {
     }
@@ -89,101 +87,102 @@ public class AuthenticationHandlerTest {
     /**
      * Test of encryptObject and decryptObject method, of class
      * AuthenticationHandler.
+     *
+     * @throws java.lang.Exception
      */
     @Test
     public void testEncryptDecryptObject() throws Exception {
-        System.out.println("encrypt and decrypt object");
-        
-        Authenticator.Builder ab = Authenticator.newBuilder();
-        ab.setClientId(client_id);
-        Authenticator authenticator = ab.build();
-        
+        System.out.println("testEncryptDecryptObject");
+
+        Authenticator.Builder authenticatorBuilder = Authenticator.newBuilder();
+        authenticatorBuilder.setClientId(clientId);
+        Authenticator authenticator = authenticatorBuilder.build();
+
         byte[] key = EncryptionHelper.generateKey();
-        
+
         ByteString encrypted = EncryptionHelper.encrypt(authenticator, key);
         Authenticator decrypted = (Authenticator) EncryptionHelper.decrypt(encrypted, key);
-        
+
         assertEquals(authenticator.getClientId(), decrypted.getClientId());
     }
 
     /**
-     * Test a full authentification cycle
+     * Test a full authentication cycle
      *
      * @throws Exception
      */
     @Test
-    public void testAuthentification() throws Exception {
-        System.out.println("TestAuthentification");
+    public void testAuthentication() throws Exception {
+        System.out.println("TestAuthentication");
         AuthenticationServerHandlerImpl serverHandler = new AuthenticationServerHandlerImpl();
         AuthenticationClientHandlerImpl clientHandler = new AuthenticationClientHandlerImpl();
 
         // init KDC request on client side
-        client_passwordHash = EncryptionHelper.hash(client_password);
+        clientPasswordHash = EncryptionHelper.hash(clientPassword);
 
         // handle KDC request on server side
-        server_clientId = client_id;
-        TicketSessionKeyWrapper slr = serverHandler.handleKDCRequest(server_clientId, server_clientNetworkAddress, server_TGSSessionKey, server_TGSPrivateKey);
+        serverClientId = clientId;
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = serverHandler.handleKDCRequest(serverClientId, serverClientNetworkAddress, serverTGSSessionKey, serverTGSPrivateKey);
 
         // handle KDC response on client side
-        List<Object> list = clientHandler.handleKDCResponse(client_id, client_passwordHash, slr);
-        TicketAuthenticatorWrapper client_at = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
-        client_TGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
+        List<Object> list = clientHandler.handleKDCResponse(clientId, clientPasswordHash, ticketSessionKeyWrapper);
+        TicketAuthenticatorWrapper clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
+        clientTGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
 
-        Assert.assertArrayEquals(server_TGSSessionKey, client_TGSSessionKey);
+        Assert.assertArrayEquals(serverTGSSessionKey, clientTGSSessionKey);
 
         // handle TGS request on server side
-        slr = serverHandler.handleTGSRequest(server_TGSSessionKey, server_TGSPrivateKey, server_SSSessionKey, server_SSPrivateKey, client_at);
+        ticketSessionKeyWrapper = serverHandler.handleTGSRequest(serverTGSSessionKey, serverTGSPrivateKey, serverSSSessionKey, serverSSPrivateKey, clientTicketAuthenticatorWrapper);
 
         // handle TGS response on client side
-        list = clientHandler.handleTGSResponse(client_id, client_TGSSessionKey, slr);
-        client_at = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
-        client_SSSessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
+        list = clientHandler.handleTGSResponse(clientId, clientTGSSessionKey, ticketSessionKeyWrapper);
+        clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
+        clientSSSessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
 
-        Assert.assertArrayEquals(server_SSSessionKey, client_SSSessionKey);
+        Assert.assertArrayEquals(serverSSSessionKey, clientSSSessionKey);
 
         // init SS request on client side
-        client_at = clientHandler.initSSRequest(client_SSSessionKey, client_at);
+        clientTicketAuthenticatorWrapper = clientHandler.initSSRequest(clientSSSessionKey, clientTicketAuthenticatorWrapper);
 
         // handle SS request on server side
-        TicketAuthenticatorWrapper server_at = serverHandler.handleSSRequest(server_SSSessionKey, server_SSPrivateKey, client_at);
+        TicketAuthenticatorWrapper serverTicketAuthenticatorWrapper = serverHandler.handleSSRequest(serverSSSessionKey, serverSSPrivateKey, clientTicketAuthenticatorWrapper);
 
         // handle SS response on client side
-        client_at = clientHandler.handleSSResponse(client_SSSessionKey, client_at, server_at);
+        clientHandler.handleSSResponse(clientSSSessionKey, clientTicketAuthenticatorWrapper, serverTicketAuthenticatorWrapper);
     }
-    
+
     // TODO: activate when working
     //@Test
     public void testAuthenticationWithNonExistentUser() throws Exception {
         System.out.println("testAuthenticationWithNonExistentUser");
-        
-        String clientId = "NonExistentClientId";
-        
+
+        String nonExistentClientId = "NonExistentClientId";
         AuthenticationServerHandlerImpl serverHandler = new AuthenticationServerHandlerImpl();
 
         try {
-            serverHandler.handleKDCRequest(clientId, server_clientNetworkAddress, server_TGSSessionKey, server_TGSPrivateKey);
+            serverHandler.handleKDCRequest(nonExistentClientId, serverClientNetworkAddress, serverTGSSessionKey, serverTGSPrivateKey);
         } catch (NotAvailableException ex) {
             return;
         }
-        fail("NotAvailableException has not been thrown even though there should be no user[" + clientId + "] in the database!");
+        fail("NotAvailableException has not been thrown even though there should be no user[" + nonExistentClientId + "] in the database!");
     }
-    
+
     // TODO: activate when working
     //@Test
     public void testAuthenticationWithIncorrectPassword() throws Exception {
         System.out.println("testAuthenticationWithIncorrectPassword");
-        
+
         System.out.println("testAuthenticationWithNonExistentUser");
-        
+
         String clientId = "NonExistentClientId";
-        
+
         AuthenticationServerHandlerImpl serverHandler = new AuthenticationServerHandlerImpl();
         AuthenticationClientHandlerImpl clientHandler = new AuthenticationClientHandlerImpl();
-        
-        TicketSessionKeyWrapper ticketSessionKeyWrapper = serverHandler.handleKDCRequest(clientId, server_clientNetworkAddress, server_TGSSessionKey, server_TGSPrivateKey);
+
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = serverHandler.handleKDCRequest(clientId, serverClientNetworkAddress, serverTGSSessionKey, serverTGSPrivateKey);
         // TODO: handle exception when thrown
 //        try {
-            List<Object> list = clientHandler.handleKDCResponse(client_id, client_passwordHash, ticketSessionKeyWrapper);
+        List<Object> list = clientHandler.handleKDCResponse(clientId, clientPasswordHash, ticketSessionKeyWrapper);
 //        } catch (NotAvailableException ex) {
 //            return;
 //        }
