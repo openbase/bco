@@ -149,4 +149,14 @@ public class AuthenticationHandlerTest {
         // handle SS response on client side
         client_at = clientHandler.handleSSResponse(client_SSSessionKey, client_at, server_at);
     }
+    
+    @Test
+    public void testAuthenticationWithNonExistentUser() throws Exception {
+        System.out.println("testAuthenticationWithNonExistentUser");
+    }
+    
+    @Test
+    public void testAuthenticationWithIncorrectPassword() throws Exception {
+        System.out.println("testAuthenticationWithIncorrectPassword");
+    }
 }
