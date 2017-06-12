@@ -851,7 +851,7 @@ public class Units {
 
     /**
      *
-     * This method is a wrapper for {@link #getUgetUnitsByLabelnit(java.lang.String, boolean)} and casts the result to the given {@code unitRemoteClass} list.
+     * This method is a wrapper for {@link #getUnitsByLabel(java.lang.String, boolean)} and casts the result to the given {@code unitRemoteClass} list.
      *
      * @param <UR> the unit remote class type.
      * @param label Checkout wrapped method doc {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
@@ -1047,7 +1047,6 @@ public class Units {
      * @param unitConfigA the unit used as transformation base.
      * @param unitConfigB the unit where the transformation leads to.
      * @return a transformation future
-     * @throws NotAvailableException is thrown if the transformation is not available for could not be computed.
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      */
     public static Future<Transform> getUnitTransformation(final UnitConfig unitConfigA, final UnitConfig unitConfigB) throws InterruptedException {
