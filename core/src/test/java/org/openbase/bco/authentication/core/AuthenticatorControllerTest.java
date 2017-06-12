@@ -21,7 +21,6 @@ package org.openbase.bco.authentication.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.List;
 import java.util.concurrent.Callable;
 import org.junit.After;
@@ -32,14 +31,13 @@ import org.junit.Test;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandlerImpl;
 import org.openbase.bco.authentication.lib.ClientRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
-import org.openbase.bco.authentication.lib.jp.JPAuthentificationScope;
+import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
 import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
 import org.openbase.jul.extension.rsb.iface.RSBListener;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.Event;
-import rsb.Handler;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 
@@ -58,13 +56,10 @@ public class AuthenticatorControllerTest {
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
 
-        GlobalCachedExecutorService.submit(new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                authenticatorLauncher = new AuthenticatorLauncher();
-                authenticatorLauncher.launch();
-                return null;
-            }
+        GlobalCachedExecutorService.submit(() -> {
+            authenticatorLauncher = new AuthenticatorLauncher();
+            authenticatorLauncher.launch();
+            return null;
         });
     }
 
@@ -85,21 +80,20 @@ public class AuthenticatorControllerTest {
 
     /**
      * Test of init method, of class AuthenticatorController.
+     *
+     * @throws java.lang.Exception
      */
     @Test(timeout = 5000)
     public void testCommunication() throws Exception {
-        String client_password = "password";
-        String client_id = "maxmustermann";
-        
-        RSBListener listener = RSBFactoryImpl.getInstance().createSynchronizedListener(JPService.getProperty(JPAuthentificationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
-        listener.addHandler(new Handler() {
-            @Override
-            public void internalNotify(Event event) {
-                System.out.println(event.getData());
-            }
+        String clientPassword = "password";
+        String clientID = "maxmustermann";
+
+        RSBListener listener = RSBFactoryImpl.getInstance().createSynchronizedListener(JPService.getProperty(JPAuthenticationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
+        listener.addHandler((Event event) -> {
+            System.out.println(event.getData());
         }, true);
         listener.activate();
-        
+
         AuthenticationClientHandlerImpl clientHandler = new AuthenticationClientHandlerImpl();
 
         ClientRemote clientRemote = new ClientRemote();
@@ -108,33 +102,32 @@ public class AuthenticatorControllerTest {
 
         Thread.sleep(500);
 
-        byte[] client_passwordHash = EncryptionHelper.hash(client_password);
+        byte[] clientPasswordHash = EncryptionHelper.hash(clientPassword);
 
         // handle KDC request on server side
-        TicketSessionKeyWrapper slr = clientRemote.requestTGT(client_id).get();
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = clientRemote.requestTGT(clientID).get();
 
         // handle KDC response on client side
-        List<Object> list = clientHandler.handleKDCResponse(client_id, client_passwordHash, slr);
-        TicketAuthenticatorWrapper client_at = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
+        List<Object> list = clientHandler.handleKDCResponse(clientID, clientPasswordHash, ticketSessionKeyWrapper);
+        TicketAuthenticatorWrapper clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
         byte[] client_TGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
 
-
         // handle TGS request on server side
-        slr = clientRemote.requestCST(client_at).get();
+        ticketSessionKeyWrapper = clientRemote.requestCST(clientTicketAuthenticatorWrapper).get();
 
         // handle TGS response on client side
-        list = clientHandler.handleTGSResponse(client_id, client_TGSSessionKey, slr);
-        client_at = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
-        byte[] client_SSSessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
+        list = clientHandler.handleTGSResponse(clientID, client_TGSSessionKey, ticketSessionKeyWrapper);
+        clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
+        byte[] clientSSSessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
 
         // init SS request on client side
-        client_at = clientHandler.initSSRequest(client_SSSessionKey, client_at);
+        clientTicketAuthenticatorWrapper = clientHandler.initSSRequest(clientSSSessionKey, clientTicketAuthenticatorWrapper);
 
         // handle SS request on server side
-        TicketAuthenticatorWrapper server_at = clientRemote.validateCST(client_at).get();
+        TicketAuthenticatorWrapper serverTicketAuthenticatorWrapper = clientRemote.validateCST(clientTicketAuthenticatorWrapper).get();
 
         // handle SS response on client side
-        client_at = clientHandler.handleSSResponse(client_SSSessionKey, client_at, server_at);
+        clientHandler.handleSSResponse(clientSSSessionKey, clientTicketAuthenticatorWrapper, serverTicketAuthenticatorWrapper);
 
         clientRemote.shutdown();
     }

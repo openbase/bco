@@ -23,7 +23,7 @@ package org.openbase.bco.authentication.lib;
  */
 
 import java.util.concurrent.Future;
-import org.openbase.bco.authentication.lib.jp.JPAuthentificationScope;
+import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -54,7 +54,7 @@ public class ClientRemote implements AuthenticationService, Manageable<Void>, Vo
     @Override
     public void init() throws InitializationException, InterruptedException {
         try {
-            remoteServer = RSBFactoryImpl.getInstance().createSynchronizedRemoteServer(JPService.getProperty(JPAuthentificationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
+            remoteServer = RSBFactoryImpl.getInstance().createSynchronizedRemoteServer(JPService.getProperty(JPAuthenticationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
 
             serverWatchDog = new WatchDog(remoteServer, "AuthenticatorWatchDog");
         } catch (JPNotAvailableException | CouldNotPerformException ex) {

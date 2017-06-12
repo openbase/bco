@@ -29,11 +29,11 @@ import rsb.Scope;
  *
  * @author Tamino Huxohl <thuxohl@techfak.uni-bielefeld.de>
  */
-public class JPAuthentificationScope extends JPScope {
+public class JPAuthenticationScope extends JPScope {
 
     public final static String[] COMMAND_IDENTIFIERS = {"--authentication-scope"};
 
-    public JPAuthentificationScope() {
+    public JPAuthenticationScope() {
         super(COMMAND_IDENTIFIERS);
     }
 
