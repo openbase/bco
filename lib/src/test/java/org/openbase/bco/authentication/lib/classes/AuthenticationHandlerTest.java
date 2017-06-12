@@ -33,6 +33,7 @@ import static org.junit.Assert.*;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandlerImpl;
 import org.openbase.bco.authentication.lib.AuthenticationServerHandlerImpl;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
+import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.AuthenticatorType.Authenticator;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
@@ -42,13 +43,13 @@ import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWr
  * @author sebastian
  */
 public class AuthenticationHandlerTest {
-
+    
     private String client_id;
     private String client_password;
     private byte[] client_passwordHash;
     private byte[] client_TGSSessionKey;
     private byte[] client_SSSessionKey;
-
+    
     private String server_clientId;
     private String server_clientPassword;
     private byte[] server_clientPasswordHash;
@@ -57,19 +58,19 @@ public class AuthenticationHandlerTest {
     private byte[] server_TGSPrivateKey;
     private byte[] server_SSSessionKey;
     private byte[] server_SSPrivateKey;
-
+    
     public AuthenticationHandlerTest() {
-
+        
     }
-
+    
     @BeforeClass
     public static void setUpClass() {
     }
-
+    
     @AfterClass
     public static void tearDownClass() {
     }
-
+    
     @Before
     public void setUp() {
         client_id = "maxmustermann";
@@ -80,7 +81,7 @@ public class AuthenticationHandlerTest {
         server_SSSessionKey = EncryptionHelper.generateKey();
         server_SSPrivateKey = EncryptionHelper.generateKey();
     }
-
+    
     @After
     public void tearDown() {
     }
@@ -92,16 +93,16 @@ public class AuthenticationHandlerTest {
     @Test
     public void testEncryptDecryptObject() throws Exception {
         System.out.println("encrypt and decrypt object");
-
+        
         Authenticator.Builder ab = Authenticator.newBuilder();
         ab.setClientId(client_id);
         Authenticator authenticator = ab.build();
-
+        
         byte[] key = EncryptionHelper.generateKey();
-
+        
         ByteString encrypted = EncryptionHelper.encrypt(authenticator, key);
         Authenticator decrypted = (Authenticator) EncryptionHelper.decrypt(encrypted, key);
-
+        
         assertEquals(authenticator.getClientId(), decrypted.getClientId());
     }
 
@@ -150,13 +151,42 @@ public class AuthenticationHandlerTest {
         client_at = clientHandler.handleSSResponse(client_SSSessionKey, client_at, server_at);
     }
     
-    @Test
+    // TODO: activate when working
+    //@Test
     public void testAuthenticationWithNonExistentUser() throws Exception {
         System.out.println("testAuthenticationWithNonExistentUser");
+        
+        String clientId = "NonExistentClientId";
+        
+        AuthenticationServerHandlerImpl serverHandler = new AuthenticationServerHandlerImpl();
+
+        try {
+            serverHandler.handleKDCRequest(clientId, server_clientNetworkAddress, server_TGSSessionKey, server_TGSPrivateKey);
+        } catch (NotAvailableException ex) {
+            return;
+        }
+        fail("NotAvailableException has not been thrown even though there should be no user[" + clientId + "] in the database!");
     }
     
-    @Test
+    // TODO: activate when working
+    //@Test
     public void testAuthenticationWithIncorrectPassword() throws Exception {
         System.out.println("testAuthenticationWithIncorrectPassword");
+        
+        System.out.println("testAuthenticationWithNonExistentUser");
+        
+        String clientId = "NonExistentClientId";
+        
+        AuthenticationServerHandlerImpl serverHandler = new AuthenticationServerHandlerImpl();
+        AuthenticationClientHandlerImpl clientHandler = new AuthenticationClientHandlerImpl();
+        
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = serverHandler.handleKDCRequest(clientId, server_clientNetworkAddress, server_TGSSessionKey, server_TGSPrivateKey);
+        // TODO: handle exception when thrown
+//        try {
+            List<Object> list = clientHandler.handleKDCResponse(client_id, client_passwordHash, ticketSessionKeyWrapper);
+//        } catch (NotAvailableException ex) {
+//            return;
+//        }
+        fail("NotAvailableException has not been thrown even though there should be no user[" + clientId + "] in the database!");
     }
 }
