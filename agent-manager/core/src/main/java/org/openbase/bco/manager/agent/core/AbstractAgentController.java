@@ -22,6 +22,7 @@ package org.openbase.bco.manager.agent.core;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.unit.AbstractExecutableBaseUnitController;
+import org.openbase.bco.manager.agent.core.TriggerDAL.AgentTriggerPool;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -37,6 +38,8 @@ import rst.domotic.unit.agent.AgentDataType.AgentData;
  */
 public abstract class AbstractAgentController extends AbstractExecutableBaseUnitController<AgentData, AgentData.Builder> implements AgentController {
 
+    protected AgentTriggerPool agentTriggerHolder;
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
@@ -44,6 +47,7 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
 
     public AbstractAgentController(final Class unitClass) throws InstantiationException {
         super(unitClass, AgentDataType.AgentData.newBuilder());
+        agentTriggerHolder = new AgentTriggerPool();
     }
 
     @Override
