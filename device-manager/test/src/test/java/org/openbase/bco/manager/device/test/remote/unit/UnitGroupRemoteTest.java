@@ -49,7 +49,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
@@ -81,9 +81,9 @@ public class UnitGroupRemoteTest {
             Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
 
             unitGroupRemote = new UnitGroupRemote();
-            ServiceTemplate powerStateOperationService = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.OPERATION).build();
-            ServiceTemplate powerStateProviderService = ServiceTemplate.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.PROVIDER).build();
-            UnitGroupConfig.Builder unitGroupConfig = UnitGroupConfig.newBuilder().addServiceTemplate(powerStateOperationService).addServiceTemplate(powerStateProviderService);
+            ServiceDescription powerStateOperationService = ServiceDescription.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.OPERATION).build();
+            ServiceDescription powerStateProviderService = ServiceDescription.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.PROVIDER).build();
+            UnitGroupConfig.Builder unitGroupConfig = UnitGroupConfig.newBuilder().addServiceDescription(powerStateOperationService).addServiceDescription(powerStateProviderService);
             assert !deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().isEmpty();
             for (Unit<?> unit : deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().getEntries()) {
                 if (allServiceTemplatesImplementedByUnit(unitGroupConfig, unit)) {
@@ -121,18 +121,18 @@ public class UnitGroupRemoteTest {
         List<ServiceConfig> unitServiceConfigList = unit.getConfig().getServiceConfigList();
         Set<ServiceType> unitServiceTypeList = new HashSet<>();
         unitServiceConfigList.stream().forEach((serviceConfig) -> {
-            unitServiceTypeList.add(serviceConfig.getServiceTemplate().getType());
+            unitServiceTypeList.add(serviceConfig.getServiceDescription().getType());
         });
 
         boolean servicePatternValid;
-        for (ServiceTemplate serviceTemplate : unitGroup.getServiceTemplateList()) {
-            if (!unitServiceTypeList.contains(serviceTemplate.getType())) {
+        for (ServiceDescription serviceDescription : unitGroup.getServiceDescriptionList()) {
+            if (!unitServiceTypeList.contains(serviceDescription.getType())) {
                 return false;
             }
 
             servicePatternValid = false;
             for (ServiceConfig serviceConfig : unit.getConfig().getServiceConfigList()) {
-                if (serviceConfig.getServiceTemplate().getPattern().equals(serviceTemplate.getPattern())) {
+                if (serviceConfig.getServiceDescription().getPattern().equals(serviceDescription.getPattern())) {
                     servicePatternValid = true;
                 }
             }

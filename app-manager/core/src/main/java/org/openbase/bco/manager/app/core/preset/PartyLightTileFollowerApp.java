@@ -151,12 +151,12 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
                 if (!Registries.getLocationRegistry().getUnitConfigsByLocation(UnitTemplateType.UnitTemplate.UnitType.COLORABLE_LIGHT, locationRemote.getId()).isEmpty()) {
                     try {
                         if (locationRemote.isConnected() && locationRemote.isDataAvailable()) {
-                            locationRemote.setColor(color).get(1, TimeUnit.SECONDS);
+                            locationRemote.setColor(color).get(5, TimeUnit.SECONDS);
                         }
                     } catch (TimeoutException ex) {
                         ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set color!", ex), logger);
                     }
-                    Thread.sleep(500);
+                    Thread.sleep(2000);
                 }
 
                 // mark as prcessed        

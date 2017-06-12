@@ -62,7 +62,7 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.SnapshotType.Snapshot;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
@@ -182,8 +182,8 @@ public class LocationRemoteTest {
     }
 
     private boolean unitHasService(UnitConfig unitConfig, ServiceType serviceType, ServicePattern servicePattern) throws CouldNotPerformException {
-        for (ServiceTemplate serviceTemplate : unitRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceTemplateList()) {
-            if (serviceTemplate.getType() == serviceType && serviceTemplate.getPattern() == servicePattern) {
+        for (ServiceDescription serviceDescription : unitRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceDescriptionList()) {
+            if (serviceDescription.getType() == serviceType && serviceDescription.getPattern() == servicePattern) {
                 return true;
             }
         }

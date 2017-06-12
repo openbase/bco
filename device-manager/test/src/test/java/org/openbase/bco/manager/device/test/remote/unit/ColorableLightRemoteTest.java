@@ -185,6 +185,7 @@ public class ColorableLightRemoteTest {
 //            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
 //        }
 //    }
+    
     /**
      * Test of setColor method, of class AmbientLightRemote.
      *

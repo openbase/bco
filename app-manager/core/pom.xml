@@ -50,7 +50,7 @@
                     <programs>
                         <program>
                             <mainClass>org.openbase.bco.manager.app.core.AppManagerLauncher</mainClass>
-                            <id>app-manager</id>
+                            <id>bco-manager-app</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>

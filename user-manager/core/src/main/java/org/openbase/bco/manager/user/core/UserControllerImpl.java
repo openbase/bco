@@ -37,11 +37,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import rsb.converter.DefaultConverterRepository;
-import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.state.UserActivityStateType.UserActivityState;
-import rst.domotic.unit.user.UserDataType.UserData;
-import rst.domotic.state.UserPresenceStateType.UserPresenceState;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.iface.Manageable;
@@ -50,7 +45,12 @@ import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.LoggerFactory;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.state.UserActivityStateType.UserActivityState;
+import rst.domotic.state.UserPresenceStateType.UserPresenceState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.user.UserDataType.UserData;
 
 /**
  *
@@ -77,6 +77,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     
     @Override
     public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
+        //TODO: services for Users have to registered, see dal issue 44
         RPCHelper.registerInterface(User.class, this, server);
         super.registerMethods(server);
     }

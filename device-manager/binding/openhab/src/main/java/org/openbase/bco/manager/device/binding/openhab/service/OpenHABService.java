@@ -21,15 +21,15 @@ package org.openbase.bco.manager.device.binding.openhab.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
+import org.openbase.bco.manager.device.binding.openhab.DeviceBindingOpenHABImpl;
+import org.openbase.bco.manager.device.binding.openhab.transform.ItemNameLoader;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
-import java.util.concurrent.Future;
-import org.openbase.bco.manager.device.binding.openhab.DeviceBindingOpenHABImpl;
-import org.openbase.bco.manager.device.binding.openhab.transform.ItemNameLoader;
 import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
@@ -68,7 +68,7 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
 
     private ServiceConfig loadServiceConfig() throws CouldNotPerformException {
         for (final ServiceConfig serviceConfig : ((Unit<?>) unit).getConfig().getServiceConfigList()) {
-            if (serviceConfig.getServiceTemplate().getType().equals(serviceType)) {
+            if (serviceConfig.getServiceDescription().getType().equals(serviceType)) {
                 return serviceConfig;
             }
         }
