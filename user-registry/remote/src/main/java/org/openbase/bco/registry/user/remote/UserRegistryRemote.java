@@ -101,6 +101,20 @@ public class UserRegistryRemote extends AbstractRegistryRemote<UserRegistryData>
     }
 
     @Override
+    public UnitConfig getUserConfigByUserName(final String userName) throws CouldNotPerformException, NotAvailableException {
+        validateData();
+        List<UnitConfig> messages = userConfigRemoteRegistry.getMessages();
+
+        for (UnitConfig message : messages) {
+            if (message.getUserConfig().getUserName().equals(userName)) {
+                return message;
+            }
+        }
+
+        throw new NotAvailableException(userName);
+    }
+
+    @Override
     public Boolean containsUserConfig(final UnitConfig userConfig) throws CouldNotPerformException {
         validateData();
         return userConfigRemoteRegistry.contains(userConfig);
