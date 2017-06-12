@@ -55,8 +55,14 @@ public class HowToControlAColorableLightUnitViaDAL {
             LOGGER.info("wait for registry connection...");
             Registries.waitForData();
 
-            LOGGER.info("request the light unit with the label \"TestUnit_0\"");
-            testLight = Units.getUnitByLabel("TestUnit_0", true, Units.LIGHT_COLORABLE);
+            LOGGER.info("request the first light unit with the label \"TestUnit_0\"");
+            
+            if (Units.getUnitsByLabel("TestUnit_0", false).isEmpty()) {
+                LOGGER.info("light not found in your setup!");
+                return;
+            }
+            
+            testLight = Units.getUnitsByLabel("TestUnit_0", true, Units.LIGHT_COLORABLE).get(0);
 
             LOGGER.info("switch the light on");
             testLight.setPowerState(PowerState.State.ON);
