@@ -21,6 +21,7 @@ package org.openbase.bco.registry.mock;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.ByteString;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -602,7 +603,8 @@ public class MockRegistry {
     }
 
     private void registerUser() throws CouldNotPerformException, InterruptedException {
-        UserConfig.Builder config = UserConfig.newBuilder().setFirstName("Max").setLastName("Mustermann").setUserName(USER_NAME);
+        byte[] password = Arrays.copyOf("12345678Password1234".getBytes(), 16);
+        UserConfig.Builder config = UserConfig.newBuilder().setFirstName("Max").setLastName("Mustermann").setUserName(USER_NAME).setPassword(ByteString.copyFrom(password));
         UnitConfig userUnitConfig = UnitConfig.newBuilder().setType(UnitType.USER).setUserConfig(config).setEnablingState(EnablingState.newBuilder().setValue(EnablingState.State.ENABLED)).build();
         try {
             testUser = userRegisty.registerUserConfig(userUnitConfig).get();
