@@ -8,7 +8,7 @@ layout: default
 
 <table style="width: 110%; border: 0px; margin: 0px auto;">
     <tr>
-        <th>Project</th>    
+        <th></th>    
 	    <th>Source</th>
         <th>Version</th>
         <th>Master Build</th>
