@@ -28,7 +28,7 @@ layout: default
             </td>
             <td align="center" valign="middle">
                 <a href="https://maven-badges.herokuapp.com/maven-central/{{ project.group }}/{{ project.artifact }}">
-                    <img style="width:90px;height:20px;" alt="Maven Central" src="http://img.shields.io/maven-central/v/{{ project.group }}/{{ project.artifact }}.svg?style=flat"/>
+                    <img style="width:134px;height:20px;" alt="Maven Central" src="http://img.shields.io/maven-central/v/{{ project.group }}/{{ project.artifact }}.svg?style=flat"/>
                 </a>
             </td>
             <td align="center" valign="middle">
@@ -43,7 +43,7 @@ layout: default
             </td>
             <td>
                 <a href="https://www.codefactor.io/repository/github/openbase/{{ project.id }}/overview/master">
-                    <img style="width:134px;height:20px;" src="https://www.codefactor.io/repository/github/openbase/{{ project.id }}/badge/master" alt="Codefactor"/>
+                    <img style="width:90px;height:20px;" src="https://www.codefactor.io/repository/github/openbase/{{ project.id }}/badge/master" alt="Codefactor"/>
                 </a>
             </td>
             <td align="center" valign="middle">
