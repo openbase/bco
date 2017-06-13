@@ -24,6 +24,7 @@ package org.openbase.bco.registry.user.lib;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.pattern.provider.DataProvider;
@@ -103,4 +104,16 @@ public interface UserRegistry extends DataProvider<UserRegistryData>, Shutdownab
      */
     @RPCMethod
     public Boolean isAuthorizationGroupConfigRegistryConsistent() throws CouldNotPerformException;
+
+    /**
+     * Retrieves a user config according to a given user name.
+     * If multiple users happen to have the same user name, the first one is returned.
+     *
+     * @param userName
+     * @return
+     * @throws CouldNotPerformException
+     * @throws NotAvailableException If no user with the given user name could be found.
+     */
+    @RPCMethod
+    public UnitConfig getUserConfigByUserName(final String userName) throws CouldNotPerformException, NotAvailableException;
 }

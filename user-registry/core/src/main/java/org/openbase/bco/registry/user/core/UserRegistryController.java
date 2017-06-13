@@ -32,6 +32,7 @@ import org.openbase.bco.registry.user.lib.UserRegistry;
 import org.openbase.bco.registry.user.lib.jp.JPUserRegistryScope;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
@@ -153,6 +154,19 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
     public UnitConfig getUserConfigById(String userConfigId) throws CouldNotPerformException {
         unitRegistryRemote.validateData();
         return userUnitConfigRemoteRegistry.getMessage(userConfigId);
+    }
+
+    @Override
+    public UnitConfig getUserConfigByUserName(final String userName) throws CouldNotPerformException, NotAvailableException {
+        List<UnitConfig> messages = userUnitConfigRemoteRegistry.getMessages();
+
+        for (UnitConfig message : messages) {
+            if (message.getUserConfig().getUserName().equals(userName)) {
+                return message;
+            }
+        }
+
+        throw new NotAvailableException(userName);
     }
 
     @Override
