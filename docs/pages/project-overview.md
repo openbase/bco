@@ -28,22 +28,22 @@ layout: default
             </td>
             <td align="center" valign="middle">
                 <a href="https://maven-badges.herokuapp.com/maven-central/{{ project.group }}/{{ project.artifact }}">
-                    <img style="width:70px" alt="Maven Central" src="http://img.shields.io/maven-central/v/{{ project.group }}/{{ project.artifact }}.svg?style=flat"/>
+                    <img style="width:90px;height:20px;" alt="Maven Central" src="http://img.shields.io/maven-central/v/{{ project.group }}/{{ project.artifact }}.svg?style=flat"/>
                 </a>
             </td>
             <td align="center" valign="middle">
                 <a href="https://travis-ci.org/openbase/{{ project.id }}">
-                    <img style="width:70px" src="https://travis-ci.org/openbase/{{ project.id }}.svg?branch=master" alt="Master"/>
+                    <img style="width:90px;height:20px;" src="https://travis-ci.org/openbase/{{ project.id }}.svg?branch=master" alt="Master"/>
                 </a>
             </td>
             <td align="center" valign="middle">
                 <a href="https://travis-ci.org/openbase/{{ project.id }}">
-                    <img style="width:70px" src="https://travis-ci.org/openbase/{{ project.id }}.svg?branch=latest-stable" alt="LatestStable"/>
+                    <img style="width:90px;height:20px;" src="https://travis-ci.org/openbase/{{ project.id }}.svg?branch=latest-stable" alt="LatestStable"/>
                 </a>
             </td>
             <td>
                 <a href="https://www.codefactor.io/repository/github/openbase/{{ project.id }}/overview/master">
-                    <img style="width:70px" src="https://www.codefactor.io/repository/github/openbase/{{ project.id }}/badge/master" alt="Codefactor"/>
+                    <img style="width:90px;height:20px;" src="https://www.codefactor.io/repository/github/openbase/{{ project.id }}/badge/master" alt="Codefactor"/>
                 </a>
             </td>
             <td align="center" valign="middle">
