@@ -23,7 +23,6 @@ package org.openbase.bco.authentication.core;
  */
 import java.io.IOException;
 import java.io.StreamCorruptedException;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import org.openbase.bco.authentication.lib.AuthenticationServerHandlerImpl;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
@@ -44,11 +43,14 @@ import org.openbase.jul.schedule.WatchDog;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 import org.openbase.bco.authentication.lib.AuthenticationService;
+import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.user.remote.UserRegistryRemote;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.slf4j.LoggerFactory;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -114,60 +116,56 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     }
 
     @Override
-    public Future<TicketSessionKeyWrapper> requestTGT(String clientId) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.submit(new Callable<TicketSessionKeyWrapper>() {
-            @Override
-            public TicketSessionKeyWrapper call() throws NotAvailableException, CouldNotPerformException {
-                try {
-                    return authenticationHandler.handleKDCRequest(clientId, "", TGSSessionKey, TGSPrivateKey);
-                } catch (NotAvailableException ex) {
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
-                } catch (InterruptedException | CouldNotPerformException | IOException ex) {
-                    ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
-                    throw new CouldNotPerformException("Internal server error. Please try again.");
-                }
+    public Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(String clientId) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(() -> {
+            try {
+//                String[] split = clientId.split("@", 2);
+//                String userName = split[0];
+                Registries.getUserRegistry().waitForData();
+                UnitConfig userUnitConfig = Registries.getUserRegistry().getUserConfigById(clientId);
+                System.out.println("Encryption with [" + userUnitConfig.getUserConfig().getPassword() + "]");
+                return authenticationHandler.handleKDCRequest(clientId, userUnitConfig.getUserConfig().getPassword().toByteArray(), "", TGSSessionKey, TGSPrivateKey);
+            } catch (NotAvailableException ex) {
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
+            } catch (InterruptedException | CouldNotPerformException | IOException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+                throw new CouldNotPerformException("Internal server error. Please try again.");
             }
         });
     }
 
     @Override
-    public Future<TicketSessionKeyWrapper> requestCST(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.submit(new Callable<TicketSessionKeyWrapper>() {
-            @Override
-            public TicketSessionKeyWrapper call() throws RejectedException, StreamCorruptedException, CouldNotPerformException {
-                try {
-                    return authenticationHandler.handleTGSRequest(TGSSessionKey, TGSPrivateKey, SSSessionKey, SSPrivateKey, ticketAuthenticatorWrapper);
-                } catch (RejectedException ex) {
-                    ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
-                    throw new RejectedException(ex.getMessage());
-                } catch (StreamCorruptedException ex) {
-                    ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
-                    throw new StreamCorruptedException(ex.getMessage());
-                } catch (IOException ex) {
-                    ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
-                    throw new CouldNotPerformException("Internal server error. Please try again.");
-                }
+    public Future<TicketSessionKeyWrapper> requestClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(() -> {
+            try {
+                return authenticationHandler.handleTGSRequest(TGSSessionKey, TGSPrivateKey, SSSessionKey, SSPrivateKey, ticketAuthenticatorWrapper);
+            } catch (RejectedException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
+                throw new RejectedException(ex.getMessage());
+            } catch (StreamCorruptedException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
+                throw new StreamCorruptedException(ex.getMessage());
+            } catch (IOException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+                throw new CouldNotPerformException("Internal server error. Please try again.");
             }
         });
     }
 
     @Override
-    public Future<TicketAuthenticatorWrapper> validateCST(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.submit(new Callable<TicketAuthenticatorWrapper>() {
-            @Override
-            public TicketAuthenticatorWrapper call() throws RejectedException, StreamCorruptedException, CouldNotPerformException {
-                try {
-                    return authenticationHandler.handleSSRequest(SSSessionKey, SSPrivateKey, ticketAuthenticatorWrapper);
-                } catch (RejectedException ex) {
-                    ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
-                    throw new RejectedException(ex.getMessage());
-                } catch (StreamCorruptedException ex) {
-                    ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
-                    throw new StreamCorruptedException(ex.getMessage());
-                } catch (IOException ex) {
-                    ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
-                    throw new CouldNotPerformException("Internal server error. Please try again.");
-                }
+    public Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(() -> {
+            try {
+                return authenticationHandler.handleSSRequest(SSSessionKey, SSPrivateKey, ticketAuthenticatorWrapper);
+            } catch (RejectedException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
+                throw new RejectedException(ex.getMessage());
+            } catch (StreamCorruptedException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
+                throw new StreamCorruptedException(ex.getMessage());
+            } catch (IOException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+                throw new CouldNotPerformException("Internal server error. Please try again.");
             }
         });
     }

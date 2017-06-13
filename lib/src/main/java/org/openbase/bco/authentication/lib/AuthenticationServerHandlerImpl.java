@@ -23,8 +23,6 @@ package org.openbase.bco.authentication.lib;
  */
 import java.io.IOException;
 import java.io.StreamCorruptedException;
-import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.user.remote.UserRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
@@ -32,7 +30,6 @@ import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthentic
 import rst.domotic.authentication.AuthenticatorType.Authenticator;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 import rst.domotic.authentication.TicketType.Ticket;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.timing.IntervalType.Interval;
 import rst.timing.TimestampType.Timestamp;
 
@@ -43,13 +40,13 @@ import rst.timing.TimestampType.Timestamp;
 public class AuthenticationServerHandlerImpl implements AuthenticationServerHandler {
 
     @Override
-    public TicketSessionKeyWrapper handleKDCRequest(String clientID, String clientNetworkAddress, byte[] TGSSessionKey, byte[] TGSPrivateKey) throws NotAvailableException, InterruptedException, CouldNotPerformException, IOException {
-        String[] split = clientID.split("@", 2);
-        String userName = split[0];
-        final UserRegistryRemote userRegistry = Registries.getUserRegistry();
-
-        userRegistry.waitForData();
-        UnitConfig userConfig = userRegistry.getUserConfigByUserName(userName);
+    public TicketSessionKeyWrapper handleKDCRequest(String clientID, byte[] clientPassword, String clientNetworkAddress, byte[] TGSSessionKey, byte[] TGSPrivateKey) throws NotAvailableException, InterruptedException, CouldNotPerformException, IOException {
+//        String[] split = clientID.split("@", 2);
+//        String userName = split[0];
+//        final UserRegistryRemote userRegistry = Registries.getUserRegistry();
+//
+//        userRegistry.waitForData();
+//        UnitConfig userConfig = userRegistry.getUserConfigByUserName(userName);
 
         // set period
         long start = System.currentTimeMillis();
@@ -72,6 +69,7 @@ public class AuthenticationServerHandlerImpl implements AuthenticationServerHand
         TicketSessionKeyWrapper.Builder wb = TicketSessionKeyWrapper.newBuilder();
         wb.setTicket(EncryptionHelper.encrypt(tgtb.build(), TGSPrivateKey));
         // TODO: wb.setSessionKey(EncryptionHelper.encrypt(TGSSessionKey, userConfig.getUserConfig().getPassword()));
+         TODO: wb.setSessionKey(EncryptionHelper.encrypt(TGSSessionKey, EncryptionHelper.hash("password")));
 
         return wb.build();
     }

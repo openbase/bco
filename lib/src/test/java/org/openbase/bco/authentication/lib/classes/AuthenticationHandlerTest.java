@@ -122,7 +122,7 @@ public class AuthenticationHandlerTest {
 
         // handle KDC request on server side
         serverClientId = clientId;
-        TicketSessionKeyWrapper ticketSessionKeyWrapper = serverHandler.handleKDCRequest(serverClientId, serverClientNetworkAddress, serverTGSSessionKey, serverTGSPrivateKey);
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = serverHandler.handleKDCRequest(serverClientId, clientPasswordHash, serverClientNetworkAddress, serverTGSSessionKey, serverTGSPrivateKey);
 
         // handle KDC response on client side
         List<Object> list = clientHandler.handleKDCResponse(clientId, clientPasswordHash, ticketSessionKeyWrapper);
@@ -157,10 +157,11 @@ public class AuthenticationHandlerTest {
         System.out.println("testAuthenticationWithNonExistentUser");
 
         String nonExistentClientId = "NonExistentClientId";
+        clientPasswordHash = EncryptionHelper.hash(clientPassword);
         AuthenticationServerHandlerImpl serverHandler = new AuthenticationServerHandlerImpl();
 
         try {
-            serverHandler.handleKDCRequest(nonExistentClientId, serverClientNetworkAddress, serverTGSSessionKey, serverTGSPrivateKey);
+            serverHandler.handleKDCRequest(nonExistentClientId, clientPasswordHash, serverClientNetworkAddress, serverTGSSessionKey, serverTGSPrivateKey);
         } catch (NotAvailableException ex) {
             return;
         }
@@ -175,11 +176,12 @@ public class AuthenticationHandlerTest {
         System.out.println("testAuthenticationWithNonExistentUser");
 
         String clientId = "NonExistentClientId";
+        clientPasswordHash = EncryptionHelper.hash("wrong passwd");
 
         AuthenticationServerHandlerImpl serverHandler = new AuthenticationServerHandlerImpl();
         AuthenticationClientHandlerImpl clientHandler = new AuthenticationClientHandlerImpl();
 
-        TicketSessionKeyWrapper ticketSessionKeyWrapper = serverHandler.handleKDCRequest(clientId, serverClientNetworkAddress, serverTGSSessionKey, serverTGSPrivateKey);
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = serverHandler.handleKDCRequest(clientId, clientPasswordHash, serverClientNetworkAddress, serverTGSSessionKey, serverTGSPrivateKey);
         // TODO: handle exception when thrown
 //        try {
         List<Object> list = clientHandler.handleKDCResponse(clientId, clientPasswordHash, ticketSessionKeyWrapper);
