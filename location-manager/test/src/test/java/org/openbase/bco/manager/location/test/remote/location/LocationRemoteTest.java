@@ -57,6 +57,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
@@ -83,16 +84,9 @@ import rst.vision.HSBColorType.HSBColor;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class LocationRemoteTest {
+public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(LocationRemoteTest.class);
-
-    private static DeviceManagerLauncher deviceManagerLauncher;
-    private static LocationManagerLauncher locationManagerLauncher;
-    private static MockRegistry registry;
-
-    private static LocationRegistry locationRegistry;
-    private static UnitRegistry unitRegistry;
 
     private static LocationRemote locationRemote;
 
@@ -100,36 +94,13 @@ public class LocationRemoteTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
+    public static void setUpClass() throws Throwable {
         try {
-            JPService.setupJUnitTestMode();
-            registry = MockRegistryHolder.newMockRegistry();
-
-            deviceManagerLauncher = new DeviceManagerLauncher();
-            deviceManagerLauncher.launch();
-            Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
-
-            locationManagerLauncher = new LocationManagerLauncher();
-            locationManagerLauncher.launch();
-
-            locationRegistry = CachedLocationRegistryRemote.getRegistry();
-            unitRegistry = CachedUnitRegistryRemote.getRegistry();
+            AbstractBCOLocationManagerTest.setUpClass();
 
             locationRemote = Units.getUnit(Registries.getLocationRegistry().getRootLocationConfig(), true, Units.LOCATION);
         } catch (Throwable ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
-        }
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
-        try {
-            if (deviceManagerLauncher != null) {
-                deviceManagerLauncher.shutdown();
-            }
-            MockRegistryHolder.shutdownMockRegistry();
-        } catch (Throwable ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
     }
 
@@ -153,7 +124,7 @@ public class LocationRemoteTest {
 
         try {
             List<PowerStateOperationService> powerServiceList = new ArrayList<>();
-            for (UnitConfig dalUnitConfig : unitRegistry.getDalUnitConfigs()) {
+            for (UnitConfig dalUnitConfig : Registries.getUnitRegistry().getDalUnitConfigs()) {
                 if (dalUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                     continue;
                 }
@@ -181,8 +152,8 @@ public class LocationRemoteTest {
         }
     }
 
-    private boolean unitHasService(UnitConfig unitConfig, ServiceType serviceType, ServicePattern servicePattern) throws CouldNotPerformException {
-        for (ServiceDescription serviceDescription : unitRegistry.getUnitTemplateByType(unitConfig.getType()).getServiceDescriptionList()) {
+    private boolean unitHasService(UnitConfig unitConfig, ServiceType serviceType, ServicePattern servicePattern) throws CouldNotPerformException, NotAvailableException, InterruptedException {
+        for (ServiceDescription serviceDescription : Registries.getUnitRegistry().getUnitTemplateByType(unitConfig.getType()).getServiceDescriptionList()) {
             if (serviceDescription.getType() == serviceType && serviceDescription.getPattern() == servicePattern) {
                 return true;
             }
@@ -202,7 +173,7 @@ public class LocationRemoteTest {
         List<TemperatureSensorController> temperatureSensorList = new ArrayList<>();
         List<TemperatureControllerController> temperatureControllerList = new ArrayList<>();
         List<PowerConsumptionSensorController> powerConsumptionSensorList = new ArrayList<>();
-        for (UnitConfig dalUnitConfig : unitRegistry.getDalUnitConfigs()) {
+        for (UnitConfig dalUnitConfig : Registries.getUnitRegistry().getDalUnitConfigs()) {
             if (dalUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                 continue;
             }
@@ -301,14 +272,14 @@ public class LocationRemoteTest {
         System.out.println("testManipulatingByUnitType");
 
         try {
-            List<UnitType> lightTypes = unitRegistry.getSubUnitTypes(UnitType.LIGHT);
+            List<UnitType> lightTypes = Registries.getUnitRegistry().getSubUnitTypes(UnitType.LIGHT);
             lightTypes.add(UnitType.LIGHT);
             assertTrue("UnitType not found as subType of LIGHT!", lightTypes.contains(UnitType.LIGHT));
             assertTrue("UnitType not found as subType of LIGHT!", lightTypes.contains(UnitType.DIMMABLE_LIGHT));
             assertTrue("UnitType not found as subType of LIGHT!", lightTypes.contains(UnitType.COLORABLE_LIGHT));
 
             List<PowerStateOperationService> powerServiceList = new ArrayList<>();
-            for (UnitConfig dalUnitConfig : unitRegistry.getDalUnitConfigs()) {
+            for (UnitConfig dalUnitConfig : Registries.getUnitRegistry().getDalUnitConfigs()) {
                 if (dalUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                     continue;
                 }
@@ -361,7 +332,7 @@ public class LocationRemoteTest {
 
         try {
             MotionDetectorController motionDetectorController = null;
-            for (UnitConfig dalUnitConfig : unitRegistry.getDalUnitConfigs()) {
+            for (UnitConfig dalUnitConfig : Registries.getUnitRegistry().getDalUnitConfigs()) {
                 if (dalUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                     continue;
                 }
@@ -404,7 +375,7 @@ public class LocationRemoteTest {
 
         try {
             List<LightSensorController> lightSensorControllerList = new ArrayList<>();
-            for (UnitConfig dalUnitConfig : unitRegistry.getDalUnitConfigs()) {
+            for (UnitConfig dalUnitConfig : Registries.getUnitRegistry().getDalUnitConfigs()) {
                 if (dalUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                     continue;
                 }

@@ -45,7 +45,8 @@ import rst.domotic.unit.location.LocationDataType;
 
 /**
  *
- * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
+ * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo
+ * Michalski</a>
  */
 public class AbsenceEnergySavingAgent extends AbstractAgentController {
 
@@ -113,6 +114,7 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
     }
 
     private void switchlightsOff() {
+        System.out.println("Switch lights off");
         try {
             setLightPowerStateFuture = locationRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build(), UnitType.LIGHT);
             // TODO: Blocking setPowerState function that is trying to realloc all lights as long as jobs not cancelled. 

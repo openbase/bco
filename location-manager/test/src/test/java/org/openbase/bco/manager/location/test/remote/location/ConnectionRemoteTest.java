@@ -21,26 +21,14 @@ package org.openbase.bco.manager.location.test.remote.location;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.TimeUnit;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.bco.manager.location.core.LocationManagerLauncher;
-import org.openbase.bco.registry.location.lib.LocationRegistry;
-import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
-import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.unit.lib.UnitRegistry;
-import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Remote;
@@ -50,16 +38,9 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class ConnectionRemoteTest {
+public class ConnectionRemoteTest extends AbstractBCOLocationManagerTest {
 
     private static final org.slf4j.Logger logger = LoggerFactory.getLogger(LocationRemoteTest.class);
-
-    private static DeviceManagerLauncher deviceManagerLauncher;
-    private static LocationManagerLauncher locationManagerLauncher;
-    private static MockRegistry registry;
-
-    private static LocationRegistry locationRegistry;
-    private static UnitRegistry unitRegistry;
 
     private static ConnectionRemote connectionRemote;
 
@@ -67,42 +48,14 @@ public class ConnectionRemoteTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
+    public static void setUpClass() throws Throwable {
         try {
-            JPService.setupJUnitTestMode();
-            registry = MockRegistryHolder.newMockRegistry();
+            AbstractBCOLocationManagerTest.setUpClass();
 
-            deviceManagerLauncher = new DeviceManagerLauncher();
-            deviceManagerLauncher.launch();
-            Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
-
-            locationManagerLauncher = new LocationManagerLauncher();
-            locationManagerLauncher.launch();
-
-            locationRegistry = CachedLocationRegistryRemote.getRegistry();
-            unitRegistry = CachedUnitRegistryRemote.getRegistry();
-
-            connectionRemote = new ConnectionRemote();
-            connectionRemote.init(locationRegistry.getConnectionConfigs().get(0));
-            connectionRemote.activate();
+            connectionRemote = Units.getUnit(Registries.getLocationRegistry().getConnectionConfigs().get(0), true, ConnectionRemote.class);
             connectionRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
         } catch (Throwable ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
-        }
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws CouldNotPerformException, InterruptedException {
-        try {
-            if (deviceManagerLauncher != null) {
-                deviceManagerLauncher.shutdown();
-            }
-            if (connectionRemote != null) {
-                connectionRemote.shutdown();
-            }
-            MockRegistryHolder.shutdownMockRegistry();
-        } catch (Throwable ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
     }
 

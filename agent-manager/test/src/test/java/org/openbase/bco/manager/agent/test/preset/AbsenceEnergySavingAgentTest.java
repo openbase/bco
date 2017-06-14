@@ -21,38 +21,26 @@ package org.openbase.bco.manager.agent.test.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.awt.BorderLayout;
+import com.google.protobuf.GeneratedMessage;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.unit.ColorableLightController;
 import org.openbase.bco.dal.lib.layer.unit.MotionDetectorController;
-import org.openbase.bco.dal.remote.UnitStateAwaiter;
+import org.openbase.bco.dal.remote.unit.util.UnitStateAwaiter;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.MotionDetectorRemote;
-import org.openbase.bco.dal.remote.StateComparator;
+import org.openbase.bco.dal.remote.unit.util.StateComparator;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.manager.agent.core.AgentManagerLauncher;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.bco.manager.location.core.LocationManagerLauncher;
-import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
-import org.openbase.bco.registry.location.lib.LocationRegistry;
-import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.ActivationStateType.ActivationState;
@@ -62,6 +50,7 @@ import rst.domotic.state.MotionStateType.MotionState;
 import rst.domotic.state.PowerStateType;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.PresenceStateType;
+import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.agent.AgentClassType.AgentClass;
@@ -75,7 +64,7 @@ import rst.spatial.PlacementConfigType;
  * * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo
  * Michalski</a>
  */
-public class AbsenceEnergySavingAgentTest {
+public class AbsenceEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AbsenceEnergySavingAgentTest.class);
 
@@ -87,59 +76,9 @@ public class AbsenceEnergySavingAgentTest {
     private static final MotionStateType.MotionState NO_MOTION = MotionStateType.MotionState.newBuilder().setValue(MotionStateType.MotionState.State.NO_MOTION).build();
     private static final String LOCATION_LABEL = "Stairway to Heaven";
 
-    private static AgentRemote agent;
-    private static DeviceManagerLauncher deviceManagerLauncher;
-    private static AgentManagerLauncher agentManagerLauncher;
-    private static LocationManagerLauncher locationManagerLauncher;
+    private AgentRemote agent;
 
-    private static AgentRegistry agentRegistry;
-    private static LocationRegistry locationRegistry;
-
-    public AbsenceEnergySavingAgentTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
-        try {
-            JPService.setupJUnitTestMode();
-
-            MockRegistryHolder.newMockRegistry();
-
-            deviceManagerLauncher = new DeviceManagerLauncher();
-            deviceManagerLauncher.launch();
-
-            agentManagerLauncher = new AgentManagerLauncher();
-            agentManagerLauncher.launch();
-
-            locationManagerLauncher = new LocationManagerLauncher();
-            locationManagerLauncher.launch();
-
-            agentRegistry = CachedAgentRegistryRemote.getRegistry();
-            locationRegistry = CachedLocationRegistryRemote.getRegistry();
-
-            Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
-            agentManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
-        } catch (Throwable ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Throwable {
-        try {
-            if (deviceManagerLauncher != null) {
-                deviceManagerLauncher.shutdown();
-            }
-            if (agentManagerLauncher != null) {
-                agentManagerLauncher.shutdown();
-            }
-            if (locationManagerLauncher != null) {
-                locationManagerLauncher.shutdown();
-            }
-            MockRegistryHolder.shutdownMockRegistry();
-        } catch (Throwable ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
+    public AbsenceEnergySavingAgentTest() throws Exception {
     }
 
     @Before
@@ -153,13 +92,11 @@ public class AbsenceEnergySavingAgentTest {
     /**
      * Test of activate method, of class PowerStateSynchroniserAgent.
      */
-    @Test(timeout = 20000)
+    @Test(timeout = 10000)
     public void testAbsenceEnergySavingAgent() throws Exception {
-        long currentTime = System.currentTimeMillis();
         System.out.println("testAbsenceEnergySavingAgent");
-
         CachedAgentRegistryRemote.waitForData();
-
+        
         UnitConfig config = registerAgent();
         agent = Units.getUnitByLabel(config.getLabel(), true, Units.AGENT);
         agent.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()).get();
@@ -170,10 +107,9 @@ public class AbsenceEnergySavingAgentTest {
         Registries.waitForData();
 
         LocationRemote locationRemote = Units.getUnitByLabel(LOCATION_LABEL, true, Units.LOCATION);
-        ColorableLightRemote colorableLightRemote = Units.getUnit(locationRegistry.getUnitConfigsByLocationLabel(UnitType.COLORABLE_LIGHT, LOCATION_LABEL).get(0), true, Units.COLORABLE_LIGHT);
-        MotionDetectorRemote motionDetectorRemote = Units.getUnit(locationRegistry.getUnitConfigsByLocationLabel(UnitType.MOTION_DETECTOR, LOCATION_LABEL).get(0), true, Units.MOTION_DETECTOR);
+        ColorableLightRemote colorableLightRemote = Units.getUnit(Registries.getLocationRegistry().getUnitConfigsByLocationLabel(UnitType.COLORABLE_LIGHT, LOCATION_LABEL).get(0), true, Units.COLORABLE_LIGHT);
+        MotionDetectorRemote motionDetectorRemote = Units.getUnit(Registries.getLocationRegistry().getUnitConfigsByLocationLabel(UnitType.MOTION_DETECTOR, LOCATION_LABEL).get(0), true, Units.MOTION_DETECTOR);
         MotionDetectorController motionDetectorController = (MotionDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(motionDetectorRemote.getId());
-        ColorableLightController colorableLightController = (ColorableLightController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(colorableLightRemote.getId());
 
         UnitStateAwaiter<ColorableLightData, ColorableLightRemote> colorableLightStateAwaiter = new UnitStateAwaiter(colorableLightRemote);
         UnitStateAwaiter<MotionDetectorData, MotionDetectorRemote> motionDetectorStateAwaiter = new UnitStateAwaiter(motionDetectorRemote);
@@ -183,70 +119,52 @@ public class AbsenceEnergySavingAgentTest {
         locationRemote.waitForData();
         motionDetectorRemote.waitForData();
 
+        // create intial values with motion and lights on
         motionDetectorController.updateMotionStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(MOTION));
+        motionDetectorStateAwaiter.waitForState((MotionDetectorData data) -> data.getMotionState().getValue() == MotionState.State.MOTION);
+        locationStateAwaiter.waitForState((LocationData data) -> data.getPresenceState().getValue() == PresenceStateType.PresenceState.State.PRESENT);
         locationRemote.setPowerState(ON).get();
-        System.out.println("MotionController: " + motionDetectorController.getMotionState().getValue());
-        System.out.println("WaitForMotionState");
-        motionDetectorStateAwaiter.waitForState(new StateComparator<MotionDetectorData>() {
+        locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.ON);
+        colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.ON);
+        
+        assertEquals("MotionState of MotionDetector[" + motionDetectorRemote.getLabel() + "] has not switched to NO_MOTION", MotionStateType.MotionState.State.MOTION, motionDetectorRemote.getMotionState().getValue());
+        assertEquals("PresenceState of Location[" + locationRemote.getLabel() + "] has not switched to ABSENT.", PresenceStateType.PresenceState.State.PRESENT, locationRemote.getPresenceState().getValue());
+        assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has not switched to OFF", PowerStateType.PowerState.State.ON, locationRemote.getPowerState().getValue());
+        assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched to OFF", PowerStateType.PowerState.State.ON, colorableLightRemote.getPowerState().getValue());
 
-            @Override
-            public boolean equalState(MotionDetectorData data) {
-                try {
-                    System.out.println("["+motionDetectorController.getLabel()+"Controller: " + motionDetectorController.getMotionState().getValue() + ", Remote: " + data.getMotionState().getValue());
-                } catch (NotAvailableException ex) {
-                }
-                return data.getMotionState().getValue() == MotionState.State.MOTION;
-            }
-        });
-        locationStateAwaiter.waitForState(new StateComparator<LocationData>() {
-
-            @Override
-            public boolean equalState(LocationData data) {
-                return data.getPowerState().getValue() == PowerState.State.ON;
-            }
-        });
-        colorableLightStateAwaiter.waitForState(new StateComparator<ColorableLightData>() {
-
-            @Override
-            public boolean equalState(ColorableLightData data) {
-                try {
-                    System.out.println("["+colorableLightController.getLabel()+"]Controller: " + colorableLightController.getPowerState().getValue() + ", Remote: " + data.getPowerState().getValue());
-                } catch (NotAvailableException ex) {
-                }
-                return data.getPowerState().getValue() == PowerState.State.ON;
-            }
-        });
-
+        // test if on no motion the lights are turned off
         motionDetectorController.updateMotionStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(NO_MOTION));
-        Thread.sleep(100);
-        motionDetectorRemote.requestData().get();
-        locationRemote.requestData().get();
-        colorableLightRemote.requestData().get();
+        motionDetectorStateAwaiter.waitForState((MotionDetectorData data) -> data.getMotionState().getValue() == MotionState.State.NO_MOTION);
+        locationStateAwaiter.waitForState((LocationData data) -> data.getPresenceState().getValue() == PresenceStateType.PresenceState.State.ABSENT);
+        locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+        colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+
         assertEquals("MotionState of MotionDetector[" + motionDetectorRemote.getLabel() + "] has not switched to NO_MOTION", MotionStateType.MotionState.State.NO_MOTION, motionDetectorRemote.getMotionState().getValue());
         assertEquals("PresenceState of Location[" + locationRemote.getLabel() + "] has not switched to ABSENT.", PresenceStateType.PresenceState.State.ABSENT, locationRemote.getPresenceState().getValue());
+        assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has not switched to OFF", PowerStateType.PowerState.State.OFF, locationRemote.getPowerState().getValue());
         assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched to OFF", PowerStateType.PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
-        //assertEquals("Initial PowerState of Location[" + locationRemote.getLabel() + "] has not switched to OFF", PowerStateType.PowerState.State.OFF, locationRemote.getPowerState().getValue());
 
+        // test if the lights stay of on new motion
         motionDetectorController.updateMotionStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(MOTION));
-        Thread.sleep(100);
-        motionDetectorRemote.requestData().get();
-        locationRemote.requestData().get();
-        colorableLightRemote.requestData().get();
+        motionDetectorStateAwaiter.waitForState((MotionDetectorData data) -> data.getMotionState().getValue() == MotionState.State.MOTION);
+        locationStateAwaiter.waitForState((LocationData data) -> data.getPresenceState().getValue() == PresenceStateType.PresenceState.State.PRESENT);
+        locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+        colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+
         assertEquals("MotionState of MotionDetector[" + motionDetectorRemote.getLabel() + "] has not switched to MOTION", MotionStateType.MotionState.State.MOTION, motionDetectorRemote.getMotionState().getValue());
         assertEquals("PresenceState of Location[" + locationRemote.getLabel() + "] has not switched to PRESENT.", PresenceStateType.PresenceState.State.PRESENT, locationRemote.getPresenceState().getValue());
         assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has changes without intention", PowerStateType.PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
-        //assertEquals("Initial PowerState of Location[" + locationRemote.getLabel() + "] has changes without intention", PowerStateType.PowerState.State.ON, locationRemote.getPowerState().getValue());
-        System.out.println("Test took [" + (System.currentTimeMillis() - currentTime) + "]ms");
+        assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has changes without intention", PowerStateType.PowerState.State.OFF, locationRemote.getPowerState().getValue());
     }
 
     private UnitConfig registerAgent() throws CouldNotPerformException, InterruptedException, ExecutionException {
         System.out.println("Register the AbsenceEnergySavingAgent...");
 
         EnablingState enablingState = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
-        PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(locationRegistry.getLocationConfigsByLabel(LOCATION_LABEL).get(0).getId());
+        PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(Registries.getLocationRegistry().getLocationConfigsByLabel(LOCATION_LABEL).get(0).getId());
 
         String agentClassId = null;
-        for (AgentClass agentClass : agentRegistry.getAgentClasses()) {
+        for (AgentClass agentClass : Registries.getAgentRegistry().getAgentClasses()) {
             if (MockRegistry.ABSENCE_ENERGY_SAVING_AGENT_LABEL.equals(agentClass.getLabel())) {
                 agentClassId = agentClass.getId();
             }
@@ -258,6 +176,6 @@ public class AbsenceEnergySavingAgentTest {
 
         UnitConfig.Builder agentUnitConfig = UnitConfig.newBuilder().setLabel(ABSENCE_ENERGY_SAVING_AGENT_LABEL).setType(UnitType.AGENT).setPlacementConfig(placementConfig).setEnablingState(enablingState);
         agentUnitConfig.getAgentConfigBuilder().setAgentClassId(agentClassId);
-        return agentRegistry.registerAgentConfig(agentUnitConfig.build()).get();
+        return Registries.getAgentRegistry().registerAgentConfig(agentUnitConfig.build()).get();
     }
 }
