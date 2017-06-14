@@ -66,14 +66,16 @@ public class AgentTriggerPool implements Activatable, Shutdownable {
         };
         triggerOrObserver = (Observable<ActivationState> source, ActivationState data) -> {
             if (data.getValue().equals(ActivationState.State.ACTIVE)) {
-                this.triggerObservable.notifyObservers(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()));
+                if (!triggerObservable.getValue().getValue().equals(ActivationState.State.ACTIVE)) {
+                    triggerObservable.notifyObservers(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()));
+                }
             } else {
                 verifyCondition();
             }
         };
 
         try {
-            this.triggerObservable.notifyObservers(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));
+            triggerObservable.notifyObservers(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException("Could not set initial state", ex);
         }
@@ -129,9 +131,13 @@ public class AgentTriggerPool implements Activatable, Shutdownable {
 
     private void verifyCondition() throws CouldNotPerformException {
         if (verifyOrCondition() || verifyAndCondition()) {
-            this.triggerObservable.notifyObservers(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()));
+            if (!triggerObservable.getValue().getValue().equals(ActivationState.State.ACTIVE)) {
+                triggerObservable.notifyObservers(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()));
+            }
         } else {
-            this.triggerObservable.notifyObservers(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()));
+            if (!triggerObservable.getValue().getValue().equals(ActivationState.State.DEACTIVE)) {
+                triggerObservable.notifyObservers(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()));
+            }
         }
     }
 
@@ -141,7 +147,7 @@ public class AgentTriggerPool implements Activatable, Shutdownable {
                 return false;
             }
         }
-        return true;
+        return !triggerListAND.isEmpty();
     }
 
     private boolean verifyOrCondition() throws CouldNotPerformException {
@@ -188,7 +194,6 @@ public class AgentTriggerPool implements Activatable, Shutdownable {
 
     @Override
     public void shutdown() {
-        triggerObservable.shutdown();
         try {
             deactivate();
         } catch (InterruptedException ex) {
@@ -196,5 +201,6 @@ public class AgentTriggerPool implements Activatable, Shutdownable {
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not shutdown " + this, ex, LoggerFactory.getLogger(getClass()));
         }
+        triggerObservable.shutdown();
     }
 }
