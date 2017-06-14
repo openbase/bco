@@ -34,8 +34,7 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote.ConnectionState;
 import org.slf4j.LoggerFactory;
-import rst.domotic.service.ServiceTemplateType;
-import rst.domotic.state.ActivationStateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 
 /**
@@ -49,12 +48,12 @@ public class GenericTrigger<UR extends AbstractUnitRemote, DT extends GeneratedM
 
     private final UR unitRemote;
     private final STE targetState;
-    private final ServiceTemplateType.ServiceTemplate.ServiceType serviceType;
+    private final ServiceType serviceType;
     private final Observer<DT> dataObserver;
     private final Observer<ConnectionState> connectionObserver;
     private boolean active = false;
 
-    public GenericTrigger(final UR unitRemote, final STE targetState, final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws InstantiationException {
+    public GenericTrigger(final UR unitRemote, final STE targetState, final ServiceType serviceType) throws InstantiationException {
         super();
         this.unitRemote = unitRemote;
         this.targetState = targetState;
@@ -65,7 +64,7 @@ public class GenericTrigger<UR extends AbstractUnitRemote, DT extends GeneratedM
         };
 
         connectionObserver = (Observable<ConnectionState> source, ConnectionState data) -> {
-            notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationStateType.ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));
+            notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));
         };
     }
 
@@ -75,9 +74,9 @@ public class GenericTrigger<UR extends AbstractUnitRemote, DT extends GeneratedM
 
             Method method = serviceState.getClass().getMethod("getValue");
             if (method.invoke(serviceState).equals(targetState)) {
-                notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationStateType.ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()));
+                notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()));
             } else {
-                notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationStateType.ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()));
+                notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()));
             }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not verify condition " + this, ex, LoggerFactory.getLogger(getClass()));
@@ -107,7 +106,7 @@ public class GenericTrigger<UR extends AbstractUnitRemote, DT extends GeneratedM
         unitRemote.removeDataObserver(dataObserver);
         unitRemote.removeConnectionStateObserver(connectionObserver);
         active = false;
-        notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationStateType.ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));
+        notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));
     }
 
     @Override
