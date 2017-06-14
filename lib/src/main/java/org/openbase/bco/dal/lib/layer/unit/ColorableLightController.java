@@ -267,21 +267,4 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
             throw new NotAvailableException("brightnessState", ex);
         }
     }
-
-//    @Override
-//    public Future<Void> applyAction(ActionDescriptionType.ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
-//        System.out.println("ApplyAction[" + actionDescription.getServiceStateDescription().getServiceAttribute() + "] in colorableLightRemote[" + getLabel() + "] received");
-//        Future<Void> test = super.applyAction(actionDescription); //To change body of generated methods, choose Tools | Templates.
-//        GlobalCachedExecutorService.submit(new Callable<Void>() {
-//
-//            @Override
-//            public Void call() throws Exception {
-//                test.get();
-//                System.out.println("[" + getLabel() + "] action applied![" + getPowerState().getValue() + "]");
-//                return null;
-//            }
-//        });
-//        return test;
-//    }
-
 }
