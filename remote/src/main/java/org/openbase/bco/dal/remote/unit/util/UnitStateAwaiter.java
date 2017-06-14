@@ -1,4 +1,4 @@
-package org.openbase.bco.dal.remote;
+package org.openbase.bco.dal.remote.unit.util;
 
 /*-
  * #%L
