@@ -31,7 +31,7 @@ import com.google.protobuf.GeneratedMessage;
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  * @param <D>
  */
-public abstract class StateComparator<D extends GeneratedMessage> {
+public interface StateComparator<D extends GeneratedMessage> {
     
-    public abstract boolean equalState(D data);
+    public boolean equalState(D data);
 }
