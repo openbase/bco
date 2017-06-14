@@ -866,7 +866,7 @@ public class Units {
     public static <UR extends UnitRemote<?>> Future<List<UR>> getFutureUnitsByLabel(final String label, boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
         return GlobalCachedExecutorService.submit(() -> getUnitsByLabel(label, waitForData, unitRemoteClass));
     }
-    
+
     /**
      * Method establishes a connection to the unit referred by the given unit label.
      * The returned unit remote object is fully synchronized with the unit controller and all states locally cached.
