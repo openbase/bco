@@ -51,13 +51,17 @@ import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.FutureProcessor;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.LoggerFactory;
+import rct.Transform;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.registry.LocationRegistryDataType;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -378,6 +382,22 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
             throw new NotAvailableException("UnitTemplate");
         }
         return template;
+    }
+
+    /**
+     * Method returns the transformation between the root location and this unit.
+     * 
+     * @return a transformation future
+     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     */
+    public Future<Transform> getTransformation() throws InterruptedException {
+        final Future<LocationRegistryDataType.LocationRegistryData> dataFuture;
+        try {
+            dataFuture = Registries.getLocationRegistry().getDataFuture();
+            return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getLocationRegistry().getUnitTransformation(getConfig()), dataFuture);
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
+        }
     }
 
     /**
