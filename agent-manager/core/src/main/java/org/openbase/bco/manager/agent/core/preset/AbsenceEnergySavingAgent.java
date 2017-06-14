@@ -54,10 +54,11 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
 
         locationObserver = (final Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
             // Do nothing if the presence stats is unknown
-            if(data.getPresenceState().getValue() == PresenceState.State.UNKNOWN) {
+            if (data.getPresenceState().getValue() == PresenceState.State.UNKNOWN) {
                 return;
             }
-            
+            System.out.println("Agent receieved presenceState[" + data.getPresenceState().getValue() + "]");
+
             if (data.getPresenceState().getValue().equals(PresenceState.State.PRESENT) && !present) {
                 if (setLightPowerStateFuture != null && !setLightPowerStateFuture.isDone()) {
                     setLightPowerStateFuture.cancel(true);
@@ -69,6 +70,7 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
             } else if (!(data.getPresenceState().getValue().equals(PresenceState.State.PRESENT)) && present) {
                 present = false;
 
+                System.out.println("Test");
                 switchlightsOff();
                 switchMultimediaOff();
             }
@@ -94,6 +96,7 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
     }
 
     private void switchlightsOff() {
+        System.out.println("Switch lights off");
         try {
             setLightPowerStateFuture = locationRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build(), UnitType.LIGHT);
             // TODO: Blocking setPowerState function that is trying to realloc all lights as long as jobs not cancelled. 
@@ -104,7 +107,7 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
     }
 
     private void switchMultimediaOff() {
-
+        System.out.println("Switch multimedia off");
         UnitGroupRemote multimediaGroup;
         try {
             multimediaGroup = Units.getUnitByLabel(locationRemote.getLabel().concat("MultimediaGroup"), true, Units.UNITGROUP);

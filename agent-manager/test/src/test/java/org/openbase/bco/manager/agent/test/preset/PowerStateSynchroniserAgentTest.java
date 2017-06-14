@@ -22,33 +22,20 @@ package org.openbase.bco.manager.agent.test.preset;
  * #L%
  */
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.DimmerRemote;
 import org.openbase.bco.dal.remote.unit.PowerSwitchRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
-import org.openbase.bco.manager.agent.core.AgentManagerLauncher;
 import org.openbase.bco.manager.agent.core.preset.PowerStateSynchroniserAgent;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
-import org.openbase.bco.registry.location.lib.LocationRegistry;
-import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.unit.lib.UnitRegistry;
-import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
 import rst.configuration.EntryType.Entry;
 import rst.configuration.MetaConfigType.MetaConfig;
@@ -64,7 +51,7 @@ import rst.spatial.PlacementConfigType;
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class PowerStateSynchroniserAgentTest {
+public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(PowerStateSynchroniserAgentTest.class);
 
@@ -73,53 +60,8 @@ public class PowerStateSynchroniserAgentTest {
     private static final PowerState ON = PowerState.newBuilder().setValue(PowerState.State.ON).build();
     private static final PowerState OFF = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
     private static AgentRemote agent;
-    private static DeviceManagerLauncher deviceManagerLauncher;
-    private static AgentManagerLauncher agentManagerLauncher;
-
-    private static AgentRegistry agentRegistry;
-    private static UnitRegistry unitRegistry;
-    private static LocationRegistry locationRegistry;
 
     public PowerStateSynchroniserAgentTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
-        try {
-            JPService.setupJUnitTestMode();
-
-            MockRegistryHolder.newMockRegistry();
-
-            deviceManagerLauncher = new DeviceManagerLauncher();
-            deviceManagerLauncher.launch();
-
-            agentManagerLauncher = new AgentManagerLauncher();
-            agentManagerLauncher.launch();
-
-            agentRegistry = CachedAgentRegistryRemote.getRegistry();
-            unitRegistry = CachedUnitRegistryRemote.getRegistry();
-            locationRegistry = CachedLocationRegistryRemote.getRegistry();
-
-            Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
-            agentManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
-        } catch (Throwable ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Throwable {
-        try {
-            if (deviceManagerLauncher != null) {
-                deviceManagerLauncher.shutdown();
-            }
-            if (agentManagerLauncher != null) {
-                agentManagerLauncher.shutdown();
-            }
-            MockRegistryHolder.shutdownMockRegistry();
-        } catch (Throwable ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
     }
 
     @Before
@@ -136,8 +78,9 @@ public class PowerStateSynchroniserAgentTest {
 
     /**
      * Test of activate method, of class PowerStateSynchroniserAgent.
+     * @throws java.lang.Exception
      */
-    @Test(timeout = 30000)
+    @Test(timeout = 10000)
     public void testPowerStateSyncAgent() throws Exception {
         System.out.println("testPowerStateSyncAgent");
 
@@ -215,7 +158,7 @@ public class PowerStateSynchroniserAgentTest {
         Entry.Builder sourceBehaviour = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.SOURCE_BEHAVIOUR_KEY).setValue("OFF");
         Entry.Builder targetBehaviour = Entry.newBuilder().setKey(PowerStateSynchroniserAgent.TARGET_BEHAVIOUR_KEY).setValue("ON");
 
-        for (UnitConfig unit : unitRegistry.getDalUnitConfigs()) {
+        for (UnitConfig unit : Registries.getUnitRegistry().getDalUnitConfigs()) {
             if (unit.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                 continue;
             }
@@ -243,10 +186,10 @@ public class PowerStateSynchroniserAgentTest {
                 .addEntry(sourceBehaviour)
                 .addEntry(targetBehaviour).build();
         EnablingState enablingState = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
-        PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(locationRegistry.getRootLocationConfig().getId());
+        PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(Registries.getLocationRegistry().getRootLocationConfig().getId());
 
         String agentClassId = null;
-        for (AgentClass agentClass : agentRegistry.getAgentClasses()) {
+        for (AgentClass agentClass : Registries.getAgentRegistry().getAgentClasses()) {
             if (MockRegistry.POWER_STATE_SYNCHRONISER_AGENT_LABEL.equals(agentClass.getLabel())) {
                 agentClassId = agentClass.getId();
             }
@@ -258,6 +201,6 @@ public class PowerStateSynchroniserAgentTest {
 
         UnitConfig.Builder agentUnitConfig = UnitConfig.newBuilder().setLabel(POWER_STATE_SYNC_AGENT_LABEL).setType(UnitType.AGENT).setPlacementConfig(placementConfig).setMetaConfig(metaConfig).setEnablingState(enablingState);
         agentUnitConfig.getAgentConfigBuilder().setAgentClassId(agentClassId);
-        return agentRegistry.registerAgentConfig(agentUnitConfig.build()).get();
+        return Registries.getAgentRegistry().registerAgentConfig(agentUnitConfig.build()).get();
     }
 }

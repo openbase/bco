@@ -22,12 +22,9 @@ package org.openbase.bco.manager.agent.test.preset;
  * #L%
  */
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.unit.LightSensorController;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
@@ -35,20 +32,11 @@ import org.openbase.bco.dal.remote.unit.LightSensorRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.manager.agent.core.AgentManagerLauncher;
 import org.openbase.bco.manager.agent.core.preset.IlluminationLightSavingAgent;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.bco.manager.location.core.LocationManagerLauncher;
-import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
-import org.openbase.bco.registry.location.lib.LocationRegistry;
-import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
 import rst.configuration.EntryType;
 import rst.configuration.MetaConfigType;
@@ -64,71 +52,20 @@ import rst.spatial.PlacementConfigType;
 
 /**
  *
- * * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
+ * * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo
+ * Michalski</a>
  */
-public class IlluminationLightSavingAgentTest {
+public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(IlluminationLightSavingAgentTest.class);
 
     public static final String ILLUMINATION_LIGHT_SAVING_AGENT_LABEL = "Illumination_Light_Saving_Agent_Unit_Test";
 
-    private static final PowerState ON = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-    private static final PowerState OFF = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
     private static final String LOCATION_LABEL = "Stairway to Heaven";
 
-    private static AgentRemote agent;
-    private static DeviceManagerLauncher deviceManagerLauncher;
-    private static AgentManagerLauncher agentManagerLauncher;
-    private static LocationManagerLauncher locationManagerLauncher;
+    private AgentRemote agent;
 
-    private static AgentRegistry agentRegistry;
-    private static LocationRegistry locationRegistry;
-
-    public IlluminationLightSavingAgentTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
-        try {
-            JPService.setupJUnitTestMode();
-
-            MockRegistryHolder.newMockRegistry();
-
-            deviceManagerLauncher = new DeviceManagerLauncher();
-            deviceManagerLauncher.launch();
-
-            agentManagerLauncher = new AgentManagerLauncher();
-            agentManagerLauncher.launch();
-
-            locationManagerLauncher = new LocationManagerLauncher();
-            locationManagerLauncher.launch();
-
-            agentRegistry = CachedAgentRegistryRemote.getRegistry();
-            locationRegistry = CachedLocationRegistryRemote.getRegistry();
-
-            Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
-            agentManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
-        } catch (Throwable ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Throwable {
-        try {
-            if (deviceManagerLauncher != null) {
-                deviceManagerLauncher.shutdown();
-            }
-            if (agentManagerLauncher != null) {
-                agentManagerLauncher.shutdown();
-            }
-            if (locationManagerLauncher != null) {
-                locationManagerLauncher.shutdown();
-            }
-            MockRegistryHolder.shutdownMockRegistry();
-        } catch (Throwable ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
+    public IlluminationLightSavingAgentTest() throws Exception {
     }
 
     @Before
@@ -142,7 +79,7 @@ public class IlluminationLightSavingAgentTest {
     /**
      * Test of activate method, of class PowerStateSynchroniserAgent.
      */
-    @Test(timeout = 30000)
+    @Test(timeout = 10000)
     public void testIlluminationLightSavingAgent() throws Exception {
         System.out.println("testIlluminationLightSavingAgent");
 
@@ -158,8 +95,8 @@ public class IlluminationLightSavingAgentTest {
         Registries.waitForData();
 
         LocationRemote locationRemote = Units.getUnitByLabel(LOCATION_LABEL, true, Units.LOCATION);
-        ColorableLightRemote colorableLightRemote = Units.getUnit(locationRegistry.getUnitConfigsByLocationLabel(UnitType.COLORABLE_LIGHT, LOCATION_LABEL).get(0), true, Units.COLORABLE_LIGHT);
-        LightSensorRemote lightSensorRemote = Units.getUnit(locationRegistry.getUnitConfigsByLocationLabel(UnitType.LIGHT_SENSOR, LOCATION_LABEL).get(0), true, LightSensorRemote.class);
+        ColorableLightRemote colorableLightRemote = Units.getUnit(Registries.getLocationRegistry().getUnitConfigsByLocationLabel(UnitType.COLORABLE_LIGHT, LOCATION_LABEL).get(0), true, Units.COLORABLE_LIGHT);
+        LightSensorRemote lightSensorRemote = Units.getUnit(Registries.getLocationRegistry().getUnitConfigsByLocationLabel(UnitType.LIGHT_SENSOR, LOCATION_LABEL).get(0), true, LightSensorRemote.class);
         LightSensorController lightSensorController = (LightSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightSensorRemote.getId());
 
         colorableLightRemote.waitForData();
@@ -168,7 +105,7 @@ public class IlluminationLightSavingAgentTest {
         lightSensorController.waitForData();
 
         lightSensorController.updateIlluminanceStateProvider(IlluminanceStateType.IlluminanceState.newBuilder().setIlluminance(5000.0).build());
-        locationRemote.setPowerState(ON, UnitType.LIGHT).get();
+        locationRemote.setPowerState(PowerState.State.ON, UnitType.LIGHT).get();
         Thread.sleep(100);
         locationRemote.requestData().get();
         colorableLightRemote.requestData().get();
@@ -199,10 +136,10 @@ public class IlluminationLightSavingAgentTest {
         System.out.println("Register the IlluminationLightSavingAgent...");
 
         EnablingState enablingState = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
-        PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(locationRegistry.getLocationConfigsByLabel(LOCATION_LABEL).get(0).getId());
+        PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(Registries.getLocationRegistry().getLocationConfigsByLabel(LOCATION_LABEL).get(0).getId());
 
         String agentClassId = null;
-        for (AgentClass agentClass : agentRegistry.getAgentClasses()) {
+        for (AgentClass agentClass : Registries.getAgentRegistry().getAgentClasses()) {
             if (MockRegistry.ILLUMINATION_LIGHT_SAVING_AGENT_LABEL.equals(agentClass.getLabel())) {
                 agentClassId = agentClass.getId();
             }
@@ -222,6 +159,6 @@ public class IlluminationLightSavingAgentTest {
 
         UnitConfig.Builder agentUnitConfig = UnitConfig.newBuilder().setLabel(ILLUMINATION_LIGHT_SAVING_AGENT_LABEL).setType(UnitType.AGENT).setPlacementConfig(placementConfig).setMetaConfig(metaConfig).setEnablingState(enablingState);
         agentUnitConfig.getAgentConfigBuilder().setAgentClassId(agentClassId);
-        return agentRegistry.registerAgentConfig(agentUnitConfig.build()).get();
+        return Registries.getAgentRegistry().registerAgentConfig(agentUnitConfig.build()).get();
     }
 }

@@ -21,9 +21,7 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.TimeUnit;
 import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -31,13 +29,10 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.unit.BatteryController;
 import org.openbase.bco.dal.remote.unit.BatteryRemote;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
+import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
-import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.pattern.Remote;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.BatteryStateType.BatteryState;
@@ -46,13 +41,11 @@ import rst.domotic.state.BatteryStateType.BatteryState;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class BatteryRemoteTest {
+public class BatteryRemoteTest extends AbstractBCODeviceManagerTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BatteryRemoteTest.class);
 
     private static BatteryRemote batteryRemote;
-    private static DeviceManagerLauncher deviceManagerLauncher;
-    private static MockRegistry registry;
     private static String label;
 
     public BatteryRemoteTest() {
@@ -61,34 +54,11 @@ public class BatteryRemoteTest {
     @BeforeClass
     public static void setUpClass() throws Throwable {
         try {
-            JPService.setupJUnitTestMode();
-            registry = MockRegistryHolder.newMockRegistry();
-
-            deviceManagerLauncher = new DeviceManagerLauncher();
-            deviceManagerLauncher.launch();
-            Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
+            AbstractBCODeviceManagerTest.setUpClass();
 
             label = MockRegistry.BATTERY_LABEL;
 
-            batteryRemote = new BatteryRemote();
-            batteryRemote.initByLabel(label);
-            batteryRemote.activate();
-            batteryRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
-        } catch (Throwable ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Throwable {
-        try {
-            if (deviceManagerLauncher != null) {
-                deviceManagerLauncher.shutdown();
-            }
-            if (batteryRemote != null) {
-                batteryRemote.shutdown();
-            }
-            MockRegistryHolder.shutdownMockRegistry();
+            batteryRemote = Units.getUnitsByLabel(label, true, BatteryRemote.class).get(0);
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }

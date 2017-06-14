@@ -82,8 +82,8 @@
         </dependency>
         <dependency>
             <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.util</artifactId>
-            <version>${dependency.bco.registry.version}</version>
+            <artifactId>dal.test</artifactId>
+            <version>${dependency.bco.dal.version}</version>
             <scope>test</scope>
         </dependency>
     </dependencies>

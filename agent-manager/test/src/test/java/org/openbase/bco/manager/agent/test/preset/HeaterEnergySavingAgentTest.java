@@ -22,12 +22,9 @@ package org.openbase.bco.manager.agent.test.preset;
  * #L%
  */
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.unit.ReedContactController;
 import org.openbase.bco.dal.remote.unit.ReedContactRemote;
@@ -36,19 +33,10 @@ import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.manager.agent.core.AgentManagerLauncher;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.bco.manager.location.core.LocationManagerLauncher;
-import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
-import org.openbase.bco.registry.location.lib.LocationRegistry;
-import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.ActivationStateType.ActivationState;
@@ -64,9 +52,10 @@ import rst.spatial.PlacementConfigType;
 
 /**
  *
- * * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
+ * * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo
+ * Michalski</a>
  */
-public class HeaterEnergySavingAgentTest {
+public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(HeaterEnergySavingAgentTest.class);
 
@@ -79,58 +68,8 @@ public class HeaterEnergySavingAgentTest {
     private static final String LOCATION_LABEL = "Stairway to Heaven";
 
     private static AgentRemote agent;
-    private static DeviceManagerLauncher deviceManagerLauncher;
-    private static AgentManagerLauncher agentManagerLauncher;
-    private static LocationManagerLauncher locationManagerLauncher;
 
-    private static AgentRegistry agentRegistry;
-    private static LocationRegistry locationRegistry;
-
-    public HeaterEnergySavingAgentTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
-        try {
-            JPService.setupJUnitTestMode();
-
-            MockRegistryHolder.newMockRegistry();
-
-            deviceManagerLauncher = new DeviceManagerLauncher();
-            deviceManagerLauncher.launch();
-
-            agentManagerLauncher = new AgentManagerLauncher();
-            agentManagerLauncher.launch();
-
-            locationManagerLauncher = new LocationManagerLauncher();
-            locationManagerLauncher.launch();
-
-            agentRegistry = CachedAgentRegistryRemote.getRegistry();
-            locationRegistry = CachedLocationRegistryRemote.getRegistry();
-
-            Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
-            agentManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
-        } catch (Throwable ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Throwable {
-        try {
-            if (deviceManagerLauncher != null) {
-                deviceManagerLauncher.shutdown();
-            }
-            if (agentManagerLauncher != null) {
-                agentManagerLauncher.shutdown();
-            }
-            if (locationManagerLauncher != null) {
-                locationManagerLauncher.shutdown();
-            }
-            MockRegistryHolder.shutdownMockRegistry();
-        } catch (Throwable ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
+    public HeaterEnergySavingAgentTest() throws Exception {
     }
 
     @Before
@@ -144,7 +83,7 @@ public class HeaterEnergySavingAgentTest {
     /**
      * Test of activate method, of class PowerStateSynchroniserAgent.
      */
-    @Test//(timeout = 30000)
+    @Test(timeout = 10000)
     public void testHeaterEnergySavingAgent() throws Exception {
         System.out.println("testHeaterEnergySavingAgent");
 
@@ -160,7 +99,7 @@ public class HeaterEnergySavingAgentTest {
         Registries.waitForData();
 
         LocationRemote locationRemote = Units.getUnitByLabel(LOCATION_LABEL, true, Units.LOCATION);
-        TemperatureControllerRemote temperatureControllerRemote = Units.getUnit(locationRegistry.getUnitConfigsByLocationLabel(UnitType.TEMPERATURE_CONTROLLER, LOCATION_LABEL).get(0), true, Units.TEMPERATURE_CONTROLLER);
+        TemperatureControllerRemote temperatureControllerRemote = Units.getUnit(Registries.getLocationRegistry().getUnitConfigsByLocationLabel(UnitType.TEMPERATURE_CONTROLLER, LOCATION_LABEL).get(0), true, Units.TEMPERATURE_CONTROLLER);
         ConnectionRemote connectionRemote = Units.getUnitByLabel("Stairs_Hell_Lookout", true, Units.CONNECTION);
         ReedContactRemote reedContactRemote = Units.getUnitByLabel("Reed_Stairway_Window", true, Units.REED_CONTACT);
         ReedContactController reedContactController = (ReedContactController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(reedContactRemote.getId());
@@ -179,7 +118,7 @@ public class HeaterEnergySavingAgentTest {
         assertEquals("Initial ContactState of Connection[" + connectionRemote.getLabel() + "] is not CLOSED", WindowStateType.WindowState.State.CLOSED, connectionRemote.getWindowState().getValue());
         assertEquals("Initial TargetTemperature of TemperatureController[" + temperatureControllerRemote.getLabel() + "] is not 21.0", 21.0, temperatureControllerRemote.getTargetTemperatureState().getTemperature(), 1.0);
         assertEquals("Initial TargetTemperature of location[" + locationRemote.getLabel() + "] is not 21.0", 21.0, locationRemote.getTargetTemperatureState().getTemperature(), 1.0);
-    
+
         reedContactController.updateContactStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(OPEN));
         Thread.sleep(100);
         temperatureControllerRemote.requestData().get();
@@ -188,7 +127,7 @@ public class HeaterEnergySavingAgentTest {
         assertEquals("ContactState of Connection[" + connectionRemote.getLabel() + "] has not switched to OPEN", WindowStateType.WindowState.State.OPEN, connectionRemote.getWindowState().getValue());
         assertEquals("TargetTemperature of TemperatureController[" + temperatureControllerRemote.getLabel() + "] has not switched to 13.0", 13.0, temperatureControllerRemote.getTargetTemperatureState().getTemperature(), 1.0);
         assertEquals("TargetTemperature of location[" + locationRemote.getLabel() + "] has not switched to 13.0", 13.0, locationRemote.getTargetTemperatureState().getTemperature(), 1.0);
-    
+
         reedContactController.updateContactStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(CLOSED));
         Thread.sleep(100);
         temperatureControllerRemote.requestData().get();
@@ -203,10 +142,10 @@ public class HeaterEnergySavingAgentTest {
         System.out.println("Register the AbsenceEnergySavingAgent...");
 
         EnablingState enablingState = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
-        PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(locationRegistry.getLocationConfigsByLabel(LOCATION_LABEL).get(0).getId());
+        PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(Registries.getLocationRegistry().getLocationConfigsByLabel(LOCATION_LABEL).get(0).getId());
 
         String agentClassId = null;
-        for (AgentClass agentClass : agentRegistry.getAgentClasses()) {
+        for (AgentClass agentClass : Registries.getAgentRegistry().getAgentClasses()) {
             if (MockRegistry.HEATER_ENERGY_SAVING_AGENT_LABEL.equals(agentClass.getLabel())) {
                 agentClassId = agentClass.getId();
             }
@@ -218,6 +157,6 @@ public class HeaterEnergySavingAgentTest {
 
         UnitConfig.Builder agentUnitConfig = UnitConfig.newBuilder().setLabel(HEATER_ENERGY_SAVING_AGENT_LABEL).setType(UnitType.AGENT).setPlacementConfig(placementConfig).setEnablingState(enablingState);
         agentUnitConfig.getAgentConfigBuilder().setAgentClassId(agentClassId);
-        return agentRegistry.registerAgentConfig(agentUnitConfig.build()).get();
+        return Registries.getAgentRegistry().registerAgentConfig(agentUnitConfig.build()).get();
     }
 }

@@ -22,16 +22,14 @@ package org.openbase.bco.manager.user.test.remote.user;
  * #L%
  */
 import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.user.UserRemote;
 import org.openbase.bco.manager.user.core.UserManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
@@ -40,7 +38,6 @@ import org.slf4j.LoggerFactory;
 import rst.domotic.state.UserActivityStateType.UserActivityState;
 import rst.domotic.state.UserActivityStateType.UserActivityState.Activity;
 import rst.domotic.state.UserPresenceStateType.UserPresenceState;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -61,32 +58,8 @@ public class UserRemoteTest {
     @BeforeClass
     public static void setUpClass() throws Throwable {
         try {
-            JPService.setupJUnitTestMode();
-            registry = MockRegistryHolder.newMockRegistry();
-
-            userManagerLauncher = new UserManagerLauncher();
-            userManagerLauncher.launch();
-
-            UnitConfig unitConfig = MockRegistry.testUser;
-            userRemote = new UserRemote();
-            userRemote.init(unitConfig);
-            userRemote.activate();
-        } catch (Throwable ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Throwable {
-        try {
-            if (userManagerLauncher != null) {
-                userManagerLauncher.shutdown();
-            }
-            if (userRemote != null) {
-                userRemote.shutdown();
-            }
-            MockRegistryHolder.shutdownMockRegistry();
-        } catch (Throwable ex) {
+            userRemote = Units.getUnit(MockRegistry.testUser, true, UserRemote.class);
+        } catch (CouldNotPerformException | InterruptedException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
     }

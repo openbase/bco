@@ -22,32 +22,21 @@ package org.openbase.bco.manager.agent.test.preset;
  * #L%
  */
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.unit.MotionDetectorController;
+import org.openbase.bco.dal.remote.unit.util.UnitStateAwaiter;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.MotionDetectorRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.manager.agent.core.AgentManagerLauncher;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.bco.manager.location.core.LocationManagerLauncher;
-import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
-import org.openbase.bco.registry.location.lib.LocationRegistry;
-import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.ActivationStateType.ActivationState;
@@ -59,13 +48,14 @@ import rst.domotic.state.PresenceStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.agent.AgentClassType.AgentClass;
+import rst.domotic.unit.location.LocationDataType.LocationData;
 import rst.spatial.PlacementConfigType;
 
 /**
  *
  * * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class PresenceLightAgentTest {
+public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(PresenceLightAgentTest.class);
 
@@ -78,58 +68,8 @@ public class PresenceLightAgentTest {
     private static final String LOCATION_LABEL = "Stairway to Heaven";
 
     private static AgentRemote agent;
-    private static DeviceManagerLauncher deviceManagerLauncher;
-    private static AgentManagerLauncher agentManagerLauncher;
-    private static LocationManagerLauncher locationManagerLauncher;
-
-    private static AgentRegistry agentRegistry;
-    private static LocationRegistry locationRegistry;
 
     public PresenceLightAgentTest() {
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
-        try {
-            JPService.setupJUnitTestMode();
-
-            MockRegistryHolder.newMockRegistry();
-
-            deviceManagerLauncher = new DeviceManagerLauncher();
-            deviceManagerLauncher.launch();
-
-            agentManagerLauncher = new AgentManagerLauncher();
-            agentManagerLauncher.launch();
-
-            locationManagerLauncher = new LocationManagerLauncher();
-            locationManagerLauncher.launch();
-
-            agentRegistry = CachedAgentRegistryRemote.getRegistry();
-            locationRegistry = CachedLocationRegistryRemote.getRegistry();
-
-            Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
-            agentManagerLauncher.getLaunchable().waitForInit(30, TimeUnit.SECONDS);
-        } catch (Throwable ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Throwable {
-        try {
-            if (deviceManagerLauncher != null) {
-                deviceManagerLauncher.shutdown();
-            }
-            if (agentManagerLauncher != null) {
-                agentManagerLauncher.shutdown();
-            }
-            if (locationManagerLauncher != null) {
-                locationManagerLauncher.shutdown();
-            }
-            MockRegistryHolder.shutdownMockRegistry();
-        } catch (Throwable ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
     }
 
     @Before
@@ -142,8 +82,9 @@ public class PresenceLightAgentTest {
 
     /**
      * Test of activate method, of class PreseceLightAgent.
+     * @throws java.lang.Exception
      */
-    @Test(timeout = 30000)
+    @Test(timeout = 10000)
     public void testPreseceLightAgent() throws Exception {
         System.out.println("testPreseceLightAgent");
 
@@ -159,10 +100,13 @@ public class PresenceLightAgentTest {
         Registries.waitForData();
 
         LocationRemote locationRemote = Units.getUnitByLabel(LOCATION_LABEL, true, Units.LOCATION);
-        ColorableLightRemote colorableLightRemote = Units.getUnit(locationRegistry.getUnitConfigsByLocationLabel(UnitType.COLORABLE_LIGHT, LOCATION_LABEL).get(0), true, Units.COLORABLE_LIGHT);
-        MotionDetectorRemote motionDetectorRemote = Units.getUnit(locationRegistry.getUnitConfigsByLocationLabel(UnitType.MOTION_DETECTOR, LOCATION_LABEL).get(0), true, Units.MOTION_DETECTOR);
+        ColorableLightRemote colorableLightRemote = Units.getUnit(Registries.getLocationRegistry().getUnitConfigsByLocationLabel(UnitType.COLORABLE_LIGHT, LOCATION_LABEL).get(0), true, Units.COLORABLE_LIGHT);
+        MotionDetectorRemote motionDetectorRemote = Units.getUnit(Registries.getLocationRegistry().getUnitConfigsByLocationLabel(UnitType.MOTION_DETECTOR, LOCATION_LABEL).get(0), true, Units.MOTION_DETECTOR);
         MotionDetectorController motionDetectorController = (MotionDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(motionDetectorRemote.getId());
 
+        UnitStateAwaiter<LocationData, LocationRemote> locationDataAwaiter = new UnitStateAwaiter<>(locationRemote);
+        
+        
         colorableLightRemote.waitForData();
         locationRemote.waitForData();
         motionDetectorRemote.waitForData();
@@ -202,10 +146,10 @@ public class PresenceLightAgentTest {
         System.out.println("Register the PresenceLightAgent...");
 
         EnablingState enablingState = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
-        PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(locationRegistry.getLocationConfigsByLabel(LOCATION_LABEL).get(0).getId());
+        PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(Registries.getLocationRegistry().getLocationConfigsByLabel(LOCATION_LABEL).get(0).getId());
 
         String agentClassId = null;
-        for (AgentClass agentClass : agentRegistry.getAgentClasses()) {
+        for (AgentClass agentClass : Registries.getAgentRegistry().getAgentClasses()) {
             if (MockRegistry.PRESENCE_LIGHT_AGENT_LABEL.equals(agentClass.getLabel())) {
                 agentClassId = agentClass.getId();
             }
@@ -217,6 +161,6 @@ public class PresenceLightAgentTest {
 
         UnitConfig.Builder agentUnitConfig = UnitConfig.newBuilder().setLabel(PRESENCE_LIGHT_AGENT_LABEL).setType(UnitType.AGENT).setPlacementConfig(placementConfig).setEnablingState(enablingState);
         agentUnitConfig.getAgentConfigBuilder().setAgentClassId(agentClassId);
-        return agentRegistry.registerAgentConfig(agentUnitConfig.build()).get();
+        return Registries.getAgentRegistry().registerAgentConfig(agentUnitConfig.build()).get();
     }
 }
