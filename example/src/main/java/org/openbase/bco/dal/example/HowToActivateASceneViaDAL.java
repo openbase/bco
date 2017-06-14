@@ -54,14 +54,18 @@ public class HowToActivateASceneViaDAL {
 
             LOGGER.info("wait for registry connection...");
             Registries.waitForData();
-            
+
             LOGGER.info("print all scenes");
             for (UnitConfig sceneUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.SCENE)) {
                 LOGGER.info("found scene: " + sceneUnitConfig.getLabel());
             }
 
-            LOGGER.info("request the scene with the label \"WatchingTV\"");
-            testScene = Units.getUnitByLabel("WatchingTV", true, Units.SCENE);
+            LOGGER.info("request the first scene with the label \"WatchingTV\"");
+            if (Units.getUnitsByLabel("WatchingTV", false).isEmpty()) {
+                LOGGER.info("scene not found in your setup!");
+                return;
+            }
+            testScene = Units.getUnitsByLabel("WatchingTV", true, Units.SCENE).get(0);
 
             LOGGER.info("activate the scene");
             testScene.setActivationState(ActivationState.State.ACTIVE);

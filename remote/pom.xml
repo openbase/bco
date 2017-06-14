@@ -95,5 +95,10 @@
             <version>${dependency.jul.version}</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>registry.util</artifactId>
+            <version>${dependency.bco.registry.version}</version>
+        </dependency>
     </dependencies>
 </project>

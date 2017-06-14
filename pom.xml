@@ -180,6 +180,7 @@
         <module>task</module>
         <module>visual</module>
         <module>example</module>
+        <module>test</module>
     </modules>
 
     <properties>

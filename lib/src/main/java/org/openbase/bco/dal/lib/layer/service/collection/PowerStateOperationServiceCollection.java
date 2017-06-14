@@ -36,6 +36,10 @@ public interface PowerStateOperationServiceCollection extends PowerStateOperatio
 
     public Future<Void> setPowerState(final PowerState powerState, final UnitType unitType) throws CouldNotPerformException;
 
+    default public Future<Void> setPowerState(final PowerState.State powerState, final UnitType unitType) throws CouldNotPerformException {
+        return setPowerState(PowerState.newBuilder().setValue(powerState).build(), unitType);
+    }
+
     /**
      * Returns on if at least one of the power services is on and else off.
      *
@@ -46,7 +50,8 @@ public interface PowerStateOperationServiceCollection extends PowerStateOperatio
     public PowerState getPowerState() throws NotAvailableException;
 
     /**
-     * Returns on if at least one of the powerServices with given unitType is on and else off.
+     * Returns on if at least one of the powerServices with given unitType is on
+     * and else off.
      *
      * @param unitType
      * @return

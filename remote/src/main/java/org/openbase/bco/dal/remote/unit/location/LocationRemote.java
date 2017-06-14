@@ -263,14 +263,27 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     }
 
     /**
-     * Returns a Map of all units provided by this location sorted by their UnitType.
+     * Returns a Map of all units which directly or recursively provided by this location..
      *
-     * @return the Map of provided units.
+     * @return the Map of provided units sorted by their UnitType.
      * @throws org.openbase.jul.exception.NotAvailableException is thrown if the map is not available.
      * @throws java.lang.InterruptedException is thrown if the current thread was externally interrupted.
      */
     // TODO: move into interface as default implementation
     public Map<UnitType, List<UnitRemote>> getUnitMap() throws NotAvailableException, InterruptedException {
+        return getUnitMap(true);
+    }
+
+    /**
+     * Returns a Map of all units which are directly or recursively provided by this location..
+     *
+     * @param recursive defines if recursive related unit should be included as well.
+     * @return the Map of provided units sorted by their UnitType.
+     * @throws org.openbase.jul.exception.NotAvailableException is thrown if the map is not available.
+     * @throws java.lang.InterruptedException is thrown if the current thread was externally interrupted.
+     */
+    // TODO: move into interface as default implementation
+    public Map<UnitType, List<UnitRemote>> getUnitMap(final boolean recursive) throws NotAvailableException, InterruptedException {
         try {
             final Map<UnitType, List<UnitRemote>> unitRemoteMap = new TreeMap<>();
             MultiException.ExceptionStack exceptionStack = null;
@@ -278,6 +291,12 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
             for (final String unitId : getConfig().getLocationConfig().getUnitIdList()) {
                 try {
                     UnitRemote<? extends GeneratedMessage> unitRemote = Units.getUnit(unitId, false);
+                    
+                    // filter recursive units if needed.
+                    if (!recursive && !unitRemote.getConfig().getPlacementConfig().getLocationId().equals(getId())) {
+                        continue;
+                    }
+                    
                     if (!unitRemoteMap.containsKey(unitRemote.getType())) {
                         unitRemoteMap.put(unitRemote.getType(), new ArrayList<>());
                     }
