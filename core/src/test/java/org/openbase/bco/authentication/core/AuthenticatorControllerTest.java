@@ -45,7 +45,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * @author Tamino Huxohl <thuxohl@techfak.uni-bielefel.de>
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class AuthenticatorControllerTest {
 

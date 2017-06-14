@@ -31,7 +31,7 @@ import org.openbase.bco.authentication.lib.AuthenticationService;
  */
 /**
  *
- * @author Tamino Huxohl <thuxohl@techfak.uni-bielefeld.de>
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class AuthenticatorLauncher extends AbstractLauncher<AuthenticatorController> {
 

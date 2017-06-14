@@ -30,7 +30,7 @@ import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWr
 /**
  * Interface defining a service for Kerberos authentication.
  *
- * @author Tamino Huxohl <thuxohl@techfak.uni-bielefel.de>
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public interface AuthenticationService {
 

@@ -35,7 +35,7 @@ import rst.timing.TimestampType.Timestamp;
 
 /**
  *
- * @author Sebastian Fast <sfast@techfak.uni-bielefeld.de>
+ * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
 public class AuthenticationServerHandlerImpl implements AuthenticationServerHandler {
 

@@ -31,7 +31,7 @@ import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWr
 
 /**
  *
- * @author sebastian
+ * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
 public interface AuthenticationClientHandler {
     

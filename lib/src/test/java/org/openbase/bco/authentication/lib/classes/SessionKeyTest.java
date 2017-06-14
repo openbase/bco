@@ -32,7 +32,7 @@ import static org.junit.Assert.*;
 
 /**
  *
- * @author sebastian
+ * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
 public class SessionKeyTest {
     

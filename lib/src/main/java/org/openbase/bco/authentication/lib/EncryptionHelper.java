@@ -50,7 +50,7 @@ import org.openbase.jul.exception.FatalImplementationErrorException;
  * A key that is used to encrypt and decrypt tickets during Kerberos
  * authentication
  *
- * @author sebastian
+ * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
 public class EncryptionHelper {
 

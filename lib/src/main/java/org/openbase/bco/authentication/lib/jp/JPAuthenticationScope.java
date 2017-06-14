@@ -27,7 +27,7 @@ import rsb.Scope;
 
 /**
  *
- * @author Tamino Huxohl <thuxohl@techfak.uni-bielefeld.de>
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class JPAuthenticationScope extends JPScope {
 
