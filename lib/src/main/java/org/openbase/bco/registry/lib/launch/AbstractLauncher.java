@@ -67,6 +67,8 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
     //TODO major release: should be moved to jul pattern after modularisation of the pattern project to avoid direct rsb comm dependencies for the patter project.
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
+    private final ShutdownDeamon shutdownDeamon;
+    
     public static final long LAUNCHER_TIMEOUT = 60000;
     public static final String SCOPE_PREFIX_LAUNCHER = Scope.COMPONENT_SEPARATOR + "launcher";
 
@@ -92,7 +94,7 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
         super(ActivationState.newBuilder());
         this.launchableClass = launchableClass;
         this.applicationClass = applicationClass;
-        Shutdownable.registerShutdownHook(this);
+        this.shutdownDeamon = Shutdownable.registerShutdownHook(this);
     }
 
     @Override
@@ -218,6 +220,7 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
     public void shutdown() {
         stop();
         super.shutdown();
+        shutdownDeamon.cancel();
     }
 
     @Override
