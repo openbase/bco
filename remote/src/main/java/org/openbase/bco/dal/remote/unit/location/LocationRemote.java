@@ -45,6 +45,7 @@ import rst.domotic.state.TamperStateType;
 import rst.domotic.state.TemperatureStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.connection.ConnectionConfigType;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
 import rst.domotic.unit.location.LocationDataType;
 import rst.domotic.unit.location.LocationDataType.LocationData;
@@ -238,6 +239,15 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
             throw new CouldNotPerformException("Could not get all connections!", ex);
         }
         return connectionList;
+    }
+
+    public boolean hasRelatedConnectionOfType(final String locationID, final ConnectionConfigType.ConnectionConfig.ConnectionType connectionType, final boolean waitForData) throws CouldNotPerformException {
+        for (ConnectionRemote relatedConnection : getRelatedConnectionRemoteList(locationID, true)) {
+            if (relatedConnection.getConfig().getConnectionConfig().getType().equals(connectionType)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     /**
