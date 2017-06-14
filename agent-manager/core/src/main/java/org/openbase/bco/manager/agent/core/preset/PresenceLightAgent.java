@@ -51,7 +51,6 @@ public class PresenceLightAgent extends AbstractAgentController {
 
     private LocationRemote locationRemote;
     private Future<Void> setPowerStateFuture;
-    private GenericTrigger<LocationRemote, LocationData, PresenceState.State> agentTrigger;
     private final PresenceState.State triggerState = PresenceState.State.PRESENT;
     private final Observer<ActivationState> triggerHolderObserver;
 
@@ -80,7 +79,7 @@ public class PresenceLightAgent extends AbstractAgentController {
         }
 
         try {
-            agentTrigger = new GenericTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE);
+            GenericTrigger<LocationRemote, LocationData, PresenceState.State> agentTrigger = new GenericTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE);
             agentTriggerHolder.addTrigger(agentTrigger, AgentTriggerPool.TriggerOperation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not add agent to agentpool", ex);

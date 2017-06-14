@@ -52,7 +52,6 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
     private LocationRemote locationRemote;
     private Future<Void> setLightPowerStateFuture;
     private Future<Void> setMultimediaPowerStateFuture;
-    private GenericTrigger<LocationRemote, LocationDataType.LocationData, PresenceState.State> agentTrigger;
     private final PresenceState.State triggerState = PresenceState.State.ABSENT;
     private final Observer<ActivationState> triggerHolderObserver;
 
@@ -85,7 +84,7 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
         }
 
         try {
-            agentTrigger = new GenericTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE);
+            GenericTrigger<LocationRemote, LocationDataType.LocationData, PresenceState.State> agentTrigger = new GenericTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE);
             agentTriggerHolder.addTrigger(agentTrigger, AgentTriggerPool.TriggerOperation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not add agent to agentpool", ex);
