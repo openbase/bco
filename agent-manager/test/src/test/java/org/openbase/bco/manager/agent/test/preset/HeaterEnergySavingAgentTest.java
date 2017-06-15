@@ -33,6 +33,7 @@ import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
+import org.openbase.bco.dal.remote.unit.util.UnitStateAwaiter;
 import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
@@ -40,15 +41,19 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.state.ContactStateType;
+import rst.domotic.state.ContactStateType.ContactState;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.state.TemperatureStateType;
-import rst.domotic.state.WindowStateType;
+import rst.domotic.state.TemperatureStateType.TemperatureState;
+import rst.domotic.state.WindowStateType.WindowState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.agent.AgentClassType.AgentClass;
-import rst.spatial.PlacementConfigType;
+import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
+import rst.domotic.unit.dal.ReedContactDataType.ReedContactData;
+import rst.domotic.unit.dal.TemperatureControllerDataType.TemperatureControllerData;
+import rst.domotic.unit.location.LocationDataType.LocationData;
+import rst.spatial.PlacementConfigType.PlacementConfig;
 
 /**
  *
@@ -63,8 +68,8 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
 
     private static final PowerState ON = PowerState.newBuilder().setValue(PowerState.State.ON).build();
 
-    private static final ContactStateType.ContactState CLOSED = ContactStateType.ContactState.newBuilder().setValue(ContactStateType.ContactState.State.CLOSED).build();
-    private static final ContactStateType.ContactState OPEN = ContactStateType.ContactState.newBuilder().setValue(ContactStateType.ContactState.State.OPEN).build();
+    private static final ContactState CLOSED = ContactState.newBuilder().setValue(ContactState.State.CLOSED).build();
+    private static final ContactState OPEN = ContactState.newBuilder().setValue(ContactState.State.OPEN).build();
     private static final String LOCATION_LABEL = "Stairway to Heaven";
 
     private static AgentRemote agent;
@@ -90,50 +95,58 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         CachedAgentRegistryRemote.waitForData();
 
         UnitConfig config = registerAgent();
-        agent = Units.getUnitByLabel(config.getLabel(), true, Units.AGENT);
+        agent = Units.getUnit(config, true, Units.AGENT);
         agent.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()).get();
 
         // It can take some time until the execute() method of the agent has finished
         // TODO: enable to acces controller instances via remoteRegistry to check and wait for the execution of the agent
-//        Thread.sleep(500);
         Registries.waitForData();
 
-        LocationRemote locationRemote = Units.getUnitByLabel(LOCATION_LABEL, true, Units.LOCATION);
+        LocationRemote locationRemote = Units.getUnitsByLabel(LOCATION_LABEL, true, Units.LOCATION).get(0);
         TemperatureControllerRemote temperatureControllerRemote = Units.getUnit(Registries.getLocationRegistry().getUnitConfigsByLocationLabel(UnitType.TEMPERATURE_CONTROLLER, LOCATION_LABEL).get(0), true, Units.TEMPERATURE_CONTROLLER);
-        ConnectionRemote connectionRemote = Units.getUnitByLabel("Stairs_Hell_Lookout", true, Units.CONNECTION);
-        ReedContactRemote reedContactRemote = Units.getUnitByLabel("Reed_Stairway_Window", true, Units.REED_CONTACT);
+        ConnectionRemote connectionRemote = Units.getUnitsByLabel("Stairs_Hell_Lookout", true, Units.CONNECTION).get(0);
+        ReedContactRemote reedContactRemote = Units.getUnitsByLabel("Reed_Stairway_Window", true, Units.REED_CONTACT).get(0);
         ReedContactController reedContactController = (ReedContactController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(reedContactRemote.getId());
 
-        locationRemote.waitForData();
-        connectionRemote.waitForData();
-        reedContactRemote.waitForData();
-        temperatureControllerRemote.waitForData();
+        UnitStateAwaiter<ReedContactData, ReedContactRemote> reedContactStateAwaiter = new UnitStateAwaiter(reedContactRemote);
+        UnitStateAwaiter<ConnectionData, ConnectionRemote> connectionStateAwaiter = new UnitStateAwaiter(connectionRemote);
+        UnitStateAwaiter<TemperatureControllerData, TemperatureControllerRemote> temperatureControllerStateAwaiter = new UnitStateAwaiter(temperatureControllerRemote);
+        UnitStateAwaiter<LocationData, LocationRemote> locationStateAwaiter = new UnitStateAwaiter(locationRemote);
 
+        // create intial values with reed closed and target temperature at 21.0
         reedContactController.updateContactStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(CLOSED));
-        temperatureControllerRemote.setTargetTemperatureState(TimestampProcessor.updateTimestampWithCurrentTime(TemperatureStateType.TemperatureState.newBuilder().setTemperature(21.0).build()));
-        Thread.sleep(100);
-        temperatureControllerRemote.requestData().get();
-        locationRemote.requestData().get();
-        assertEquals("Initial ContactState of ReedContact[" + reedContactRemote.getLabel() + "] is not CLOSED", ContactStateType.ContactState.State.CLOSED, reedContactRemote.getContactState().getValue());
-        assertEquals("Initial ContactState of Connection[" + connectionRemote.getLabel() + "] is not CLOSED", WindowStateType.WindowState.State.CLOSED, connectionRemote.getWindowState().getValue());
+        temperatureControllerRemote.setTargetTemperatureState(TimestampProcessor.updateTimestampWithCurrentTime(TemperatureState.newBuilder().setTemperature(21.0).build()));
+        reedContactStateAwaiter.waitForState((ReedContactData data) -> data.getContactState().getValue() == ContactState.State.CLOSED);
+        connectionStateAwaiter.waitForState((ConnectionData data) -> data.getWindowState().getValue() == WindowState.State.CLOSED);
+        temperatureControllerStateAwaiter.waitForState((TemperatureControllerData data) -> data.getTargetTemperatureState().getTemperature() == 21.0);
+        locationStateAwaiter.waitForState((LocationData data) -> data.getTargetTemperatureState().getTemperature() == 21.0);
+
+        assertEquals("Initial ContactState of ReedContact[" + reedContactRemote.getLabel() + "] is not CLOSED", ContactState.State.CLOSED, reedContactRemote.getContactState().getValue());
+        assertEquals("Initial ContactState of Connection[" + connectionRemote.getLabel() + "] is not CLOSED", WindowState.State.CLOSED, connectionRemote.getWindowState().getValue());
         assertEquals("Initial TargetTemperature of TemperatureController[" + temperatureControllerRemote.getLabel() + "] is not 21.0", 21.0, temperatureControllerRemote.getTargetTemperatureState().getTemperature(), 1.0);
         assertEquals("Initial TargetTemperature of location[" + locationRemote.getLabel() + "] is not 21.0", 21.0, locationRemote.getTargetTemperatureState().getTemperature(), 1.0);
 
+        // test if on open reedsensor target temperature is set to 13.0
         reedContactController.updateContactStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(OPEN));
-        Thread.sleep(100);
-        temperatureControllerRemote.requestData().get();
-        locationRemote.requestData().get();
-        assertEquals("ContactState of ReedContact[" + reedContactRemote.getLabel() + "] has not switched to OPEN", ContactStateType.ContactState.State.OPEN, reedContactRemote.getContactState().getValue());
-        assertEquals("ContactState of Connection[" + connectionRemote.getLabel() + "] has not switched to OPEN", WindowStateType.WindowState.State.OPEN, connectionRemote.getWindowState().getValue());
+        reedContactStateAwaiter.waitForState((ReedContactData data) -> data.getContactState().getValue() == ContactState.State.OPEN);
+        connectionStateAwaiter.waitForState((ConnectionData data) -> data.getWindowState().getValue() == WindowState.State.OPEN);
+        temperatureControllerStateAwaiter.waitForState((TemperatureControllerData data) -> data.getTargetTemperatureState().getTemperature() == 13.0);
+        locationStateAwaiter.waitForState((LocationData data) -> data.getTargetTemperatureState().getTemperature() == 13.0);
+
+        assertEquals("ContactState of ReedContact[" + reedContactRemote.getLabel() + "] has not switched to OPEN", ContactState.State.OPEN, reedContactRemote.getContactState().getValue());
+        assertEquals("ContactState of Connection[" + connectionRemote.getLabel() + "] has not switched to OPEN", WindowState.State.OPEN, connectionRemote.getWindowState().getValue());
         assertEquals("TargetTemperature of TemperatureController[" + temperatureControllerRemote.getLabel() + "] has not switched to 13.0", 13.0, temperatureControllerRemote.getTargetTemperatureState().getTemperature(), 1.0);
         assertEquals("TargetTemperature of location[" + locationRemote.getLabel() + "] has not switched to 13.0", 13.0, locationRemote.getTargetTemperatureState().getTemperature(), 1.0);
 
+        // test if on closed reedsensor target temperature is set back to 21.0
         reedContactController.updateContactStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(CLOSED));
-        Thread.sleep(100);
-        temperatureControllerRemote.requestData().get();
-        locationRemote.requestData().get();
-        assertEquals("ContactState of ReedContact[" + reedContactRemote.getLabel() + "] has not switched to CLOSED", ContactStateType.ContactState.State.CLOSED, reedContactRemote.getContactState().getValue());
-        assertEquals("ContactState of Connection[" + connectionRemote.getLabel() + "] has not switched to CLOSED", WindowStateType.WindowState.State.CLOSED, connectionRemote.getWindowState().getValue());
+        reedContactStateAwaiter.waitForState((ReedContactData data) -> data.getContactState().getValue() == ContactState.State.CLOSED);
+        connectionStateAwaiter.waitForState((ConnectionData data) -> data.getWindowState().getValue() == WindowState.State.CLOSED);
+        temperatureControllerStateAwaiter.waitForState((TemperatureControllerData data) -> data.getTargetTemperatureState().getTemperature() == 21.0);
+        locationStateAwaiter.waitForState((LocationData data) -> data.getTargetTemperatureState().getTemperature() == 21.0);
+
+        assertEquals("ContactState of ReedContact[" + reedContactRemote.getLabel() + "] has not switched to CLOSED", ContactState.State.CLOSED, reedContactRemote.getContactState().getValue());
+        assertEquals("ContactState of Connection[" + connectionRemote.getLabel() + "] has not switched to CLOSED", WindowState.State.CLOSED, connectionRemote.getWindowState().getValue());
         assertEquals("TargetTemperature of TemperatureController[" + temperatureControllerRemote.getLabel() + "] has not switched to 21.0", 21.0, temperatureControllerRemote.getTargetTemperatureState().getTemperature(), 1.0);
         assertEquals("TargetTemperature of location[" + locationRemote.getLabel() + "] has not switched to 21.0", 21.0, locationRemote.getTargetTemperatureState().getTemperature(), 1.0);
     }
@@ -142,7 +155,7 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         System.out.println("Register the AbsenceEnergySavingAgent...");
 
         EnablingState enablingState = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
-        PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(Registries.getLocationRegistry().getLocationConfigsByLabel(LOCATION_LABEL).get(0).getId());
+        PlacementConfig.Builder placementConfig = PlacementConfig.newBuilder().setLocationId(Registries.getLocationRegistry().getLocationConfigsByLabel(LOCATION_LABEL).get(0).getId());
 
         String agentClassId = null;
         for (AgentClass agentClass : Registries.getAgentRegistry().getAgentClasses()) {

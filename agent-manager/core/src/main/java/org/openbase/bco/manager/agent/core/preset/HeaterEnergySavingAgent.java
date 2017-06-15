@@ -66,8 +66,6 @@ public class HeaterEnergySavingAgent extends AbstractAgentController {
                 regulateHeater();
             } else if (setTemperatureFuture != null) {
                 setTemperatureFuture.cancel(true);
-                setTemperatureFuture.get();
-                setTemperatureFuture = null;
                 restoreTemperatureState();
             }
         };

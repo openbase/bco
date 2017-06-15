@@ -31,7 +31,6 @@ import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.slf4j.LoggerFactory;
-import rst.domotic.state.ActivationStateType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 
 /**
@@ -42,11 +41,11 @@ public abstract class AbstractTrigger implements Shutdownable, Activatable {
 
     private final ObservableImpl<ActivationState> triggerObservable;
 
-    public AbstractTrigger() throws InstantiationException  {
+    public AbstractTrigger() throws InstantiationException {
         this.triggerObservable = new ObservableImpl<>(this);
 
         try {
-            this.triggerObservable.notifyObservers(TimestampProcessor.updateTimestampWithCurrentTime(ActivationStateType.ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));
+            this.triggerObservable.notifyObservers(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException("Could not set initial state", ex);
         }

@@ -32,6 +32,7 @@ import org.openbase.bco.dal.remote.unit.LightSensorRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
+import org.openbase.bco.dal.remote.unit.util.UnitStateAwaiter;
 import org.openbase.bco.manager.agent.core.preset.IlluminationLightSavingAgent;
 import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
 import org.openbase.bco.registry.mock.MockRegistry;
@@ -42,13 +43,15 @@ import rst.configuration.EntryType;
 import rst.configuration.MetaConfigType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.EnablingStateType.EnablingState;
-import rst.domotic.state.IlluminanceStateType;
-import rst.domotic.state.PowerStateType;
+import rst.domotic.state.IlluminanceStateType.IlluminanceState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.agent.AgentClassType.AgentClass;
-import rst.spatial.PlacementConfigType;
+import rst.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
+import rst.domotic.unit.dal.LightSensorDataType.LightSensorData;
+import rst.domotic.unit.location.LocationDataType.LocationData;
+import rst.spatial.PlacementConfigType.PlacementConfig;
 
 /**
  *
@@ -82,7 +85,6 @@ public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTes
     @Test(timeout = 10000)
     public void testIlluminationLightSavingAgent() throws Exception {
         System.out.println("testIlluminationLightSavingAgent");
-
         CachedAgentRegistryRemote.waitForData();
 
         UnitConfig config = registerAgent();
@@ -91,52 +93,60 @@ public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTes
 
         // It can take some time until the execute() method of the agent has finished
         // TODO: enable to acces controller instances via remoteRegistry to check and wait for the execution of the agent
-        //Thread.sleep(500);
         Registries.waitForData();
 
-        LocationRemote locationRemote = Units.getUnitByLabel(LOCATION_LABEL, true, Units.LOCATION);
+        LocationRemote locationRemote = Units.getUnitsByLabel(LOCATION_LABEL, true, Units.LOCATION).get(0);
         ColorableLightRemote colorableLightRemote = Units.getUnit(Registries.getLocationRegistry().getUnitConfigsByLocationLabel(UnitType.COLORABLE_LIGHT, LOCATION_LABEL).get(0), true, Units.COLORABLE_LIGHT);
         LightSensorRemote lightSensorRemote = Units.getUnit(Registries.getLocationRegistry().getUnitConfigsByLocationLabel(UnitType.LIGHT_SENSOR, LOCATION_LABEL).get(0), true, LightSensorRemote.class);
         LightSensorController lightSensorController = (LightSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightSensorRemote.getId());
 
-        colorableLightRemote.waitForData();
-        locationRemote.waitForData();
-        lightSensorRemote.waitForData();
-        lightSensorController.waitForData();
+        UnitStateAwaiter<LightSensorData, LightSensorRemote> lightSensorStateAwaiter = new UnitStateAwaiter(lightSensorRemote);
+        UnitStateAwaiter<ColorableLightData, ColorableLightRemote> colorableLightStateAwaiter = new UnitStateAwaiter(colorableLightRemote);
+        UnitStateAwaiter<LocationData, LocationRemote> locationStateAwaiter = new UnitStateAwaiter(locationRemote);
 
-        lightSensorController.updateIlluminanceStateProvider(IlluminanceStateType.IlluminanceState.newBuilder().setIlluminance(5000.0).build());
+        // create intial values with lights on and illuminance of 5000.0
+        lightSensorController.updateIlluminanceStateProvider(IlluminanceState.newBuilder().setIlluminance(5000.0).build());
         locationRemote.setPowerState(PowerState.State.ON, UnitType.LIGHT).get();
-        Thread.sleep(100);
-        locationRemote.requestData().get();
-        colorableLightRemote.requestData().get();
+        lightSensorStateAwaiter.waitForState((LightSensorData data) -> data.getIlluminanceState().getIlluminance() == 5000.0);
+        locationStateAwaiter.waitForState((LocationData data) -> data.getIlluminanceState().getIlluminance() == 5000.0);
+        locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.ON);
+        colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.ON);
+
         assertEquals("Initial Illuminance of LightSensor[" + lightSensorRemote.getLabel() + "] is not 5000", 5000.0, lightSensorRemote.getIlluminanceState().getIlluminance(), 1);
         assertEquals("Initial Illuminance of Location[" + locationRemote.getLabel() + "] is not 5000", 5000.0, locationRemote.getIlluminanceState().getIlluminance(), 1);
-        assertEquals("Initial PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] is not ON", PowerStateType.PowerState.State.ON, colorableLightRemote.getPowerState().getValue());
-        assertEquals("Initial PowerState of Location[" + locationRemote.getLabel() + "] is not ON", PowerStateType.PowerState.State.ON, locationRemote.getPowerState().getValue());
+        assertEquals("Initial PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] is not ON", PowerState.State.ON, colorableLightRemote.getPowerState().getValue());
+        assertEquals("Initial PowerState of Location[" + locationRemote.getLabel() + "] is not ON", PowerState.State.ON, locationRemote.getPowerState().getValue());
 
-        lightSensorController.updateIlluminanceStateProvider(IlluminanceStateType.IlluminanceState.newBuilder().setIlluminance(7000.0).build());
-        Thread.sleep(100);
-        locationRemote.requestData().get();
-        colorableLightRemote.requestData().get();
+        // test if on high illuminance lights get switched off
+        lightSensorController.updateIlluminanceStateProvider(IlluminanceState.newBuilder().setIlluminance(7000.0).build());
+        lightSensorStateAwaiter.waitForState((LightSensorData data) -> data.getIlluminanceState().getIlluminance() == 7000.0);
+        locationStateAwaiter.waitForState((LocationData data) -> data.getIlluminanceState().getIlluminance() == 7000.0);
+        colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+        locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+
         assertEquals("Initial Illuminance of LightSensor[" + lightSensorRemote.getLabel() + "] is not 7000", 7000.0, lightSensorRemote.getIlluminanceState().getIlluminance(), 1);
         assertEquals("Initial Illuminance of Location[" + locationRemote.getLabel() + "] is not 7000", 7000.0, locationRemote.getIlluminanceState().getIlluminance(), 1);
-        assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched to OFF", PowerStateType.PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
-        //assertEquals("Initial PowerState of Location[" + locationRemote.getLabel() + "] has not switched to OFF", PowerStateType.PowerState.State.OFF, locationRemote.getPowerState().getValue());
+        assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched to OFF", PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
+        //assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has not switched to OFF", PowerState.State.OFF, locationRemote.getPowerState().getValue());
 
-        lightSensorController.updateIlluminanceStateProvider(IlluminanceStateType.IlluminanceState.newBuilder().setIlluminance(2000.0).build());
-        Thread.sleep(100);
-        locationRemote.requestData().get();
-        colorableLightRemote.requestData().get();
+        // test if on low illuminance lights say off
+        lightSensorController.updateIlluminanceStateProvider(IlluminanceState.newBuilder().setIlluminance(2000.0).build());
+        lightSensorStateAwaiter.waitForState((LightSensorData data) -> data.getIlluminanceState().getIlluminance() == 2000.0);
+        locationStateAwaiter.waitForState((LocationData data) -> data.getIlluminanceState().getIlluminance() == 2000.0);
+        colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+        locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+
         assertEquals("Initial Illuminance of LightSensor[" + lightSensorRemote.getLabel() + "] is not 2000", 2000.0, lightSensorRemote.getIlluminanceState().getIlluminance(), 1);
         assertEquals("Initial Illuminance of Location[" + locationRemote.getLabel() + "] is not 2000", 2000.0, locationRemote.getIlluminanceState().getIlluminance(), 1);
-        assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has changes without intention", PowerStateType.PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
+        assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has changes without intention", PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
+        //assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has changes without intention", PowerState.State.OFF, locationRemote.getPowerState().getValue());
     }
 
     private UnitConfig registerAgent() throws CouldNotPerformException, InterruptedException, ExecutionException {
         System.out.println("Register the IlluminationLightSavingAgent...");
 
         EnablingState enablingState = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
-        PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(Registries.getLocationRegistry().getLocationConfigsByLabel(LOCATION_LABEL).get(0).getId());
+        PlacementConfig.Builder placementConfig = PlacementConfig.newBuilder().setLocationId(Registries.getLocationRegistry().getLocationConfigsByLabel(LOCATION_LABEL).get(0).getId());
 
         String agentClassId = null;
         for (AgentClass agentClass : Registries.getAgentRegistry().getAgentClasses()) {

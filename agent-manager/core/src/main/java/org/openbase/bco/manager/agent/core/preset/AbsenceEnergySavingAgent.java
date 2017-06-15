@@ -21,6 +21,7 @@ package org.openbase.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.remote.unit.UnitGroupRemote;
 import org.openbase.bco.dal.remote.unit.Units;
@@ -126,8 +127,11 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
 
     private void switchMultimediaOff() {
         try {
-            UnitGroupRemote multimediaGroup = Units.getUnitByLabel(locationRemote.getLabel().concat("MultimediaGroup"), true, Units.UNITGROUP);
-            setMultimediaPowerStateFuture = multimediaGroup.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build());
+            List<? extends UnitGroupRemote> unitsByLabel = Units.getUnitsByLabel(locationRemote.getLabel().concat("MultimediaGroup"), true, Units.UNITGROUP);
+            if (!unitsByLabel.isEmpty()) {
+                UnitGroupRemote multimediaGroup = unitsByLabel.get(0);
+                setMultimediaPowerStateFuture = multimediaGroup.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build());
+            }
         } catch (NotAvailableException ex) {
             logger.info("MultimediaGroup not available.");
         } catch (InterruptedException ex) {

@@ -21,6 +21,7 @@ package org.openbase.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.remote.unit.UnitGroupRemote;
 import org.openbase.bco.dal.remote.unit.Units;
@@ -148,10 +149,13 @@ public class IlluminationLightSavingAgent extends AbstractAgentController {
 
     private void regulateLightIntensity() throws CouldNotPerformException {
         try {
-            UnitGroupRemote ambientLightGroup = Units.getUnitByLabel(locationRemote.getLabel().concat("AmbientLightGroup"), true, Units.UNITGROUP);
-            setPowerStateFutureAmbient = ambientLightGroup.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build()); // Blocking and trying to realloc all lights
-            Thread.sleep(SLEEP_MILLI);
-        } catch (NotAvailableException | InterruptedException ex) {
+            List<? extends UnitGroupRemote> unitsByLabel = Units.getUnitsByLabel(locationRemote.getLabel().concat("AmbientLightGroup"), true, Units.UNITGROUP);
+            if (!unitsByLabel.isEmpty()) {
+                UnitGroupRemote ambientLightGroup = unitsByLabel.get(0);
+                setPowerStateFutureAmbient = ambientLightGroup.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build()); // Blocking and trying to realloc all lights
+                Thread.sleep(SLEEP_MILLI);
+            }
+        } catch (CouldNotPerformException | InterruptedException ex) {
         }
 
         if (locationRemote.getIlluminanceState().getIlluminance() > MAXIMUM_WANTED_ILLUMINATION) {

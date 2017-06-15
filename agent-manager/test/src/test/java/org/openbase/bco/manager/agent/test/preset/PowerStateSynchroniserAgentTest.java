@@ -31,6 +31,7 @@ import org.openbase.bco.dal.remote.unit.DimmerRemote;
 import org.openbase.bco.dal.remote.unit.PowerSwitchRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
+import org.openbase.bco.dal.remote.unit.util.UnitStateAwaiter;
 import org.openbase.bco.manager.agent.core.preset.PowerStateSynchroniserAgent;
 import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
 import org.openbase.bco.registry.mock.MockRegistry;
@@ -45,7 +46,10 @@ import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.agent.AgentClassType.AgentClass;
-import rst.spatial.PlacementConfigType;
+import rst.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
+import rst.domotic.unit.dal.DimmerDataType.DimmerData;
+import rst.domotic.unit.dal.PowerSwitchDataType.PowerSwitchData;
+import rst.spatial.PlacementConfigType.PlacementConfig;
 
 /**
  *
@@ -78,6 +82,7 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
 
     /**
      * Test of activate method, of class PowerStateSynchroniserAgent.
+     *
      * @throws java.lang.Exception
      */
     @Test(timeout = 10000)
@@ -99,52 +104,56 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
         ColorableLightRemote colorableLightRemote = Units.getUnit(targetId1, true, Units.COLORABLE_LIGHT);
         PowerSwitchRemote powerSwitchRemote = Units.getUnit(targetId2, true, Units.POWER_SWITCH);
 
+        UnitStateAwaiter<DimmerData, DimmerRemote> dimmerStateAwaiter = new UnitStateAwaiter(dimmerRemote);
+        UnitStateAwaiter<ColorableLightData, ColorableLightRemote> colorableLightStateAwaiter = new UnitStateAwaiter(colorableLightRemote);
+        UnitStateAwaiter<PowerSwitchData, PowerSwitchRemote> powerSwitchStateAwaiter = new UnitStateAwaiter(powerSwitchRemote);
+
         LOGGER.info("Dimmer id [" + sourceId + "]");
         LOGGER.info("Ambient light id [" + colorableLightRemote.getId() + "]");
         LOGGER.info("Power plug id [" + powerSwitchRemote.getId() + "]");
 
         dimmerRemote.setPowerState(OFF).get();
-        Thread.sleep(100);
-        dimmerRemote.requestData().get();
+        dimmerStateAwaiter.waitForState((DimmerData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+        colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+        powerSwitchStateAwaiter.waitForState((PowerSwitchData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+
         LOGGER.info("Dimmer state [" + dimmerRemote.getPowerState().getValue() + "]");
-        colorableLightRemote.requestData().get();
-        powerSwitchRemote.requestData().get();
         assertEquals("Dimmer[Source] has not been turned off", PowerState.State.OFF, dimmerRemote.getPowerState().getValue());
         assertEquals("AmbientLight[Target] has not been turned off as a reaction", PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
         assertEquals("PowerPlug[Target] has not been turned off as a reaction", PowerState.State.OFF, powerSwitchRemote.getPowerState().getValue());
 
         dimmerRemote.setPowerState(ON).get();
-        dimmerRemote.requestData().get();
-        Thread.sleep(100);
-        colorableLightRemote.requestData().get();
-        powerSwitchRemote.requestData().get();
+        dimmerStateAwaiter.waitForState((DimmerData data) -> data.getPowerState().getValue() == PowerState.State.ON);
+        colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.ON);
+        powerSwitchStateAwaiter.waitForState((PowerSwitchData data) -> data.getPowerState().getValue() == PowerState.State.ON);
+
         assertEquals("Dimmer[Source] has not been turned on", PowerState.State.ON, dimmerRemote.getPowerState().getValue());
         assertEquals("AmbientLight[Target] has not been turned on as a reaction", PowerState.State.ON, colorableLightRemote.getPowerState().getValue());
         assertEquals("PowerPlug[Target] has not been turned on as a reaction", PowerState.State.ON, powerSwitchRemote.getPowerState().getValue());
 
         colorableLightRemote.setPowerState(OFF).get();
-        colorableLightRemote.requestData().get();
-        Thread.sleep(100);
-        dimmerRemote.requestData().get();
-        powerSwitchRemote.requestData().get();
+        dimmerStateAwaiter.waitForState((DimmerData data) -> data.getPowerState().getValue() == PowerState.State.ON);
+        colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+        powerSwitchStateAwaiter.waitForState((PowerSwitchData data) -> data.getPowerState().getValue() == PowerState.State.ON);
+
         assertEquals("AmbientLight[Target] has not been turned off", PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
         assertEquals("PowerPlug[Target] should not have turned off as a reaction", PowerState.State.ON, powerSwitchRemote.getPowerState().getValue());
         assertEquals("Dimmer[Source] should not have been turned off as a reaction. One target was still on.", PowerState.State.ON, dimmerRemote.getPowerState().getValue());
 
         powerSwitchRemote.setPowerState(OFF).get();
-        powerSwitchRemote.requestData().get();
-        Thread.sleep(100);
-        colorableLightRemote.requestData().get();
-        dimmerRemote.requestData().get();
+        dimmerStateAwaiter.waitForState((DimmerData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+        colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+        powerSwitchStateAwaiter.waitForState((PowerSwitchData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+
         assertEquals("PowerPlug[Target] has not been turned off", PowerState.State.OFF, powerSwitchRemote.getPowerState().getValue());
         assertEquals("AmbientLight[Target] should still be off", PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
         assertEquals("Dimmer[Source] should have been turned off as a reaction.", PowerState.State.OFF, dimmerRemote.getPowerState().getValue());
 
         colorableLightRemote.setPowerState(ON).get();
-        colorableLightRemote.requestData().get();
-        Thread.sleep(100);
-        dimmerRemote.requestData().get();
-        powerSwitchRemote.requestData().get();
+        dimmerStateAwaiter.waitForState((DimmerData data) -> data.getPowerState().getValue() == PowerState.State.ON);
+        colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.ON);
+        powerSwitchStateAwaiter.waitForState((PowerSwitchData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+
         assertEquals("AmbientLight[Target] has not been turned on", PowerState.State.ON, colorableLightRemote.getPowerState().getValue());
         assertEquals("PowerPlug[Target] should still be off", PowerState.State.OFF, powerSwitchRemote.getPowerState().getValue());
         assertEquals("Dimmer[Source] has not been turned on as a reaction", PowerState.State.ON, dimmerRemote.getPowerState().getValue());
@@ -186,7 +195,7 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
                 .addEntry(sourceBehaviour)
                 .addEntry(targetBehaviour).build();
         EnablingState enablingState = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
-        PlacementConfigType.PlacementConfig.Builder placementConfig = PlacementConfigType.PlacementConfig.newBuilder().setLocationId(Registries.getLocationRegistry().getRootLocationConfig().getId());
+        PlacementConfig.Builder placementConfig = PlacementConfig.newBuilder().setLocationId(Registries.getLocationRegistry().getRootLocationConfig().getId());
 
         String agentClassId = null;
         for (AgentClass agentClass : Registries.getAgentRegistry().getAgentClasses()) {
