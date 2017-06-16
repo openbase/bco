@@ -22,46 +22,29 @@ package org.openbase.bco.manager.device.test;
  * #L%
  */
 import org.junit.After;
-import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
-import org.junit.BeforeClass;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
-import org.openbase.jps.core.JPService;
+import org.junit.Test;
+import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
+import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.registry.mock.MockRegistry;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
+import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class DalRegisterDeviceTest {
+public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DalRegisterDeviceTest.class);
+    private static final String deviceConfigLabel = "RunningDevice";
 
     public DalRegisterDeviceTest() {
-
-    }
-
-    @BeforeClass
-    public static void setUpClass() throws Throwable {
-        try {
-            JPService.setupJUnitTestMode();
-            MockRegistryHolder.newMockRegistry();
-        } catch (Throwable ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Throwable {
-        try {
-            MockRegistryHolder.shutdownMockRegistry();
-        } catch (Throwable ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
     }
 
     @Before
@@ -72,52 +55,25 @@ public class DalRegisterDeviceTest {
     public void tearDown() {
     }
 
-    // TODO thuxohl: test get timeouts on older maschines ;)
-    // Please try to figure out which part triggers the race condition and remove timeouts later on.
-//    @Test (timeout = 10000)
-//    public void testRegisterDeviceWhileRunning() throws Exception {
-//        System.out.println("testRegisterDeviceWhileRunning");
-//        DeviceManagerLauncher instance = new DeviceManagerLauncher();
-//        instance.launch();
-//
-//        Thread.sleep(1000);
-//
-//        DeviceRegistryRemote remote = new DeviceRegistryRemote();
-//        remote.init();
-//        remote.activate();
-//
-//        DeviceClass deviceClass = remote.registerDeviceClass(MockRegistry.getDeviceClass("TestRegisterDeviceWhileRunnint", "DeviceManagerLauncherAndCoKG123456", "DeviceManagerLauncherAndCoKG"));
-//        ArrayList<UnitConfig> units = new ArrayList<>();
-//        units.add(MockRegistry.getUnitConfig(UnitTemplateType.UnitTemplate.UnitType.AMBIENT_LIGHT, "DeviceManagerLauncherRegisterWhileRunningUnit"));
-//        DeviceConfig deviceConfig = remote.registerDeviceConfig(MockRegistry.getDeviceConfig("DeviceManagerLauncherTestRegisterWhileRunningDeviceConfig", "DeviceManagerLauncherTestSerialNumber", deviceClass, units));
-//        UnitConfig unit = deviceConfig.getUnitConfig(0);
-//        unit = unit.toBuilder().setLabel("ShorterLabel").build();
-//        deviceConfig = deviceConfig.toBuilder().clearUnitConfig().addUnitConfig(unit).build();
-//        deviceConfig = remote.updateDeviceConfig(deviceConfig);
-//
-//        Thread.sleep(1000);
-//        AmbientLightRemote ambientLightRemote = new AmbientLightRemote();
-//        ambientLightRemote.init(deviceConfig.getUnitConfig(0).getScope());
-//        ambientLightRemote.activate();
-//
-//        Thread.sleep(1000);
-//        ambientLightRemote.setPower(PowerStateType.PowerState.State.ON);
-//        assertTrue(ambientLightRemote.isConnected());
-//
-////        unit = unit.toBuilder().setMetaConfig(MetaConfigType.MetaConfig.newBuilder().addEntry(EntryType.Entry.newBuilder().setKey("Key").setValue("Value"))).build();
-////        deviceConfig = deviceConfig.toBuilder().clearUnitConfig().addUnitConfig(unit).build();
-////        deviceConfig = remote.updateDeviceConfig(deviceConfig);
-////        Thread.sleep(1000);
-////
-////        Thread.sleep(1000);
-////        assertTrue(ambientLightRemote.isConnected());
-//
-//        ambientLightRemote.shutdown();
-//        remote.shutdown();
-//        instance.shutdown();
-//    }
-//    @Test
-//    public void test() throws Exception {
-//        assertTrue(true);
-//    }
+    /**
+     * Test registering a new device while the device manager is running.
+     *
+     * @throws Exception
+     */
+    @Test(timeout = 5000)
+    public void testRegisterDeviceWhileRunning() throws Exception {
+        System.out.println("testRegisterDeviceWhileRunning");
+
+        DeviceClass deviceClass = Registries.getDeviceRegistry().registerDeviceClass(MockRegistry.getDeviceClass("TestRegisterDeviceWhileRunnint", "DeviceManagerLauncherAndCoKG123456", "DeviceManagerLauncherAndCoKG", UnitType.COLORABLE_LIGHT)).get();
+        mockRegistry.waitForDeviceClass(deviceClass);
+
+        UnitConfig deviceUnitConfig = Registries.getUnitRegistry().registerUnitConfig(MockRegistry.getDeviceConfig(deviceConfigLabel, "DeviceManagerLauncherTestSerialNumber", deviceClass)).get();
+        UnitConfig colorableLightConfig = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(0));
+
+        ColorableLightRemote colorableLightRemote = Units.getUnit(colorableLightConfig, true, ColorableLightRemote.class);
+
+        PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
+        colorableLightRemote.setPowerState(state).get();
+        assertEquals("Power state has not been set in time!", state.getValue(), colorableLightRemote.getData().getPowerState().getValue());
+    }
 }

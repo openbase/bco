@@ -21,9 +21,7 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.TimeUnit;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -31,66 +29,27 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.unit.ReedContactController;
 import org.openbase.bco.dal.remote.unit.ReedContactRemote;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
+import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
-import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.pattern.Remote;
-import org.slf4j.LoggerFactory;
 import rst.domotic.state.ContactStateType.ContactState;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class ReedContactRemoteTest {
-
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ReedContactRemoteTest.class);
+public class ReedContactRemoteTest extends AbstractBCODeviceManagerTest {
 
     private static ReedContactRemote reedContactRemote;
-    private static DeviceManagerLauncher deviceManagerLauncher;
-    private static MockRegistry registry;
-    private static String label;
 
     public ReedContactRemoteTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Throwable {
-        try {
-            JPService.setupJUnitTestMode();
-            registry = MockRegistryHolder.newMockRegistry();
+        AbstractBCODeviceManagerTest.setUpClass();
 
-            deviceManagerLauncher = new DeviceManagerLauncher();
-            deviceManagerLauncher.launch();
-            Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
-
-            label = MockRegistry.REED_CONTACT_LABEL;
-
-            reedContactRemote = new ReedContactRemote();
-            reedContactRemote.initByLabel(label);
-            reedContactRemote.activate();
-            reedContactRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
-        } catch (Throwable ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Throwable {
-        try {
-            if (deviceManagerLauncher != null) {
-                deviceManagerLauncher.shutdown();
-            }
-            if (reedContactRemote != null) {
-                reedContactRemote.shutdown();
-            }
-            MockRegistryHolder.shutdownMockRegistry();
-        } catch (Throwable ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
+        reedContactRemote = Units.getUnitsByLabel(MockRegistry.REED_CONTACT_LABEL, true, ReedContactRemote.class).get(0);
     }
 
     @Before

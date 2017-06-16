@@ -21,9 +21,7 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.TimeUnit;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -31,13 +29,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.unit.PowerConsumptionSensorController;
 import org.openbase.bco.dal.remote.unit.PowerConsumptionSensorRemote;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
+import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
-import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
 
@@ -45,52 +39,18 @@ import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class PowerConsumptionSensorRemoteTest {
-
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(PowerConsumptionSensorRemoteTest.class);
+public class PowerConsumptionSensorRemoteTest extends AbstractBCODeviceManagerTest {
 
     private static PowerConsumptionSensorRemote powerConsumptionRemote;
-    private static DeviceManagerLauncher deviceManagerLauncher;
-    private static MockRegistry registry;
-    private static String label;
 
     public PowerConsumptionSensorRemoteTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Throwable {
-        try {
-            JPService.setupJUnitTestMode();
-            registry = MockRegistryHolder.newMockRegistry();
+        AbstractBCODeviceManagerTest.setUpClass();
 
-            deviceManagerLauncher = new DeviceManagerLauncher();
-            deviceManagerLauncher.launch();
-            Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
-
-            label = MockRegistry.POWER_CONSUMPTION_LABEL;
-
-            powerConsumptionRemote = new PowerConsumptionSensorRemote();
-            powerConsumptionRemote.initByLabel(label);
-            powerConsumptionRemote.activate();
-            powerConsumptionRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
-        } catch (Throwable ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Throwable {
-        try {
-            if (deviceManagerLauncher != null) {
-                deviceManagerLauncher.shutdown();
-            }
-            if (powerConsumptionRemote != null) {
-                powerConsumptionRemote.shutdown();
-            }
-            MockRegistryHolder.shutdownMockRegistry();
-        } catch (Throwable ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
+        powerConsumptionRemote = Units.getUnitsByLabel(MockRegistry.POWER_CONSUMPTION_LABEL, true, PowerConsumptionSensorRemote.class).get(0);
     }
 
     @Before

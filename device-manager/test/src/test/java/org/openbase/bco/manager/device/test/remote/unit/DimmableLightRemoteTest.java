@@ -21,9 +21,7 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.TimeUnit;
 import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -31,17 +29,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.unit.DimmableLightController;
 import org.openbase.bco.dal.remote.unit.DimmableLightRemote;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
+import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
-import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.pattern.Remote;
-import org.slf4j.LoggerFactory;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.PowerStateType.PowerState;
 
@@ -50,41 +40,18 @@ import rst.domotic.state.PowerStateType.PowerState;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class DimmableLightRemoteTest {
-
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(DimmableLightRemoteTest.class);
+public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
 
     private static DimmableLightRemote dimmableLightRemote;
-    private static DeviceManagerLauncher deviceManagerLauncher;
-    private static MockRegistry registry;
 
     public DimmableLightRemoteTest() {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, org.openbase.jul.exception.InstantiationException, CouldNotPerformException, InterruptedException, JPServiceException {
-        JPService.setupJUnitTestMode();
-        MockRegistryHolder.newMockRegistry();
+    public static void setUpClass() throws Throwable {
+        AbstractBCODeviceManagerTest.setUpClass();
 
-        deviceManagerLauncher = new DeviceManagerLauncher();
-        deviceManagerLauncher.launch();
-        Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
-
-        dimmableLightRemote = new DimmableLightRemote();
-        dimmableLightRemote.initByLabel(MockRegistry.DIMMABLE_LIGHT_LABEL);
-        dimmableLightRemote.activate();
-        dimmableLightRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED, 30000);
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Throwable {
-        if (deviceManagerLauncher != null) {
-            deviceManagerLauncher.shutdown();
-        }
-        if (dimmableLightRemote != null) {
-            dimmableLightRemote.shutdown();
-        }
-        MockRegistryHolder.shutdownMockRegistry();
+        dimmableLightRemote = Units.getUnitsByLabel(MockRegistry.DIMMABLE_LIGHT_LABEL, true, DimmableLightRemote.class).get(0);
     }
 
     @Before
@@ -118,6 +85,7 @@ public class DimmableLightRemoteTest {
 
     /**
      * Test of getPower method, of class DimmerRemote.
+     * @throws java.lang.Exception
      */
     @Test(timeout = 10000)
     public void testGetPower() throws Exception {
@@ -130,6 +98,7 @@ public class DimmableLightRemoteTest {
 
     /**
      * Test of setDimm method, of class DimmerRemote.
+     * @throws java.lang.Exception
      */
     @Test(timeout = 10000)
     public void testSetBrightness() throws Exception {
@@ -143,6 +112,7 @@ public class DimmableLightRemoteTest {
 
     /**
      * Test of getDimm method, of class DimmerRemote.
+     * @throws java.lang.Exception
      */
     @Test(timeout = 10000)
     public void testGetBrightness() throws Exception {

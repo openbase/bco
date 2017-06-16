@@ -22,9 +22,7 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.awt.Color;
-import java.util.concurrent.TimeUnit;
 import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -32,21 +30,14 @@ import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.transform.HSBColorToRGBColorTransformer;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
+import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
-import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.pattern.Remote;
-import org.slf4j.LoggerFactory;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.PowerStateType.PowerState;
@@ -56,52 +47,18 @@ import rst.vision.HSBColorType.HSBColor;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class ColorableLightRemoteTest {
+public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
 
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ColorableLightRemoteTest.class);
-
-    private static DeviceManagerLauncher deviceManagerLauncher;
     private static ColorableLightRemote colorableLightRemote;
-    private static MockRegistry registry;
-    private static String label;
 
     public ColorableLightRemoteTest() {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InitializationException, InvalidStateException, InstantiationException, CouldNotPerformException, JPServiceException, InterruptedException {
-        try {
-            JPService.setupJUnitTestMode();
-            registry = MockRegistryHolder.newMockRegistry();
+    public static void setUpClass() throws Throwable {
+        AbstractBCODeviceManagerTest.setUpClass();
 
-            deviceManagerLauncher = new DeviceManagerLauncher();
-            deviceManagerLauncher.launch();
-            Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
-
-            label = MockRegistry.COLORABLE_LIGHT_LABEL;
-
-            colorableLightRemote = new ColorableLightRemote();
-            colorableLightRemote.initByLabel(label);
-            colorableLightRemote.activate();
-            colorableLightRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
-        } catch (Throwable ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Throwable {
-        try {
-            if (deviceManagerLauncher != null) {
-                deviceManagerLauncher.shutdown();
-            }
-            if (colorableLightRemote != null) {
-                colorableLightRemote.shutdown();
-            }
-            MockRegistryHolder.shutdownMockRegistry();
-        } catch (Throwable ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
+        colorableLightRemote = Units.getUnitsByLabel(MockRegistry.COLORABLE_LIGHT_LABEL, true, ColorableLightRemote.class).get(0);
     }
 
     @Before
@@ -185,7 +142,6 @@ public class ColorableLightRemoteTest {
 //            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
 //        }
 //    }
-    
     /**
      * Test of setColor method, of class AmbientLightRemote.
      *
