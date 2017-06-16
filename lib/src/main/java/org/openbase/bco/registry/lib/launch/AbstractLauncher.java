@@ -55,6 +55,7 @@ import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.Scope;
+import org.openbase.jul.exception.InstantiationException;
 import rst.domotic.state.ActivationStateType.ActivationState;
 
 /**
@@ -68,7 +69,7 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     private final ShutdownDeamon shutdownDeamon;
-    
+
     public static final long LAUNCHER_TIMEOUT = 60000;
     public static final String SCOPE_PREFIX_LAUNCHER = Scope.COMPONENT_SEPARATOR + "launcher";
 
@@ -90,11 +91,15 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
      * @param applicationClass the class representing this application. Those is used for scope generation if the getName() method is not overwritten.
      * @throws org.openbase.jul.exception.InstantiationException
      */
-    public AbstractLauncher(final Class applicationClass, final Class<L> launchableClass) throws org.openbase.jul.exception.InstantiationException {
+    public AbstractLauncher(final Class applicationClass, final Class<L> launchableClass) throws InstantiationException {
         super(ActivationState.newBuilder());
-        this.launchableClass = launchableClass;
-        this.applicationClass = applicationClass;
-        this.shutdownDeamon = Shutdownable.registerShutdownHook(this);
+        try {
+            this.launchableClass = launchableClass;
+            this.applicationClass = applicationClass;
+            this.shutdownDeamon = Shutdownable.registerShutdownHook(this);
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
     }
 
     @Override
@@ -137,7 +142,7 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
     protected L instantiateLaunchable() throws CouldNotPerformException {
         try {
             return launchableClass.newInstance();
-        } catch (InstantiationException | IllegalAccessException ex) {
+        } catch (java.lang.InstantiationException | IllegalAccessException ex) {
             throw new CouldNotPerformException("Could not load launchable class!", ex);
         }
     }
@@ -257,7 +262,7 @@ public abstract class AbstractLauncher<L extends Launchable> extends AbstractIde
         for (final Class<? extends AbstractLauncher> launcherClass : launchers) {
             try {
                 launcherMap.put(launcherClass, launcherClass.newInstance());
-            } catch (InstantiationException | IllegalAccessException ex) {
+            } catch (java.lang.InstantiationException | IllegalAccessException ex) {
                 errorExceptionStack = MultiException.push(application, new CouldNotPerformException("Could not load launcher class!", ex), errorExceptionStack);
             }
         }
