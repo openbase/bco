@@ -56,35 +56,36 @@ public class LocationRegistryTest {
     @BeforeClass
     public static void setUpClass() throws IOException, JPServiceException, InterruptedException, CouldNotPerformException, ExecutionException {
         JPService.setupJUnitTestMode();
+        
+        MockRegistryHolder.newMockRegistry();
+        locationRegistry = (LocationRegistryController) MockRegistry.getLocationRegistry();
     }
 
     @AfterClass
-    public static void tearDownClass() {
+    public static void tearDownClass() throws Throwable {
         try {
             MockRegistryHolder.shutdownMockRegistry();
         } catch (Throwable ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
     }
 
     @Before
     public void setUp() throws CouldNotPerformException {
-        MockRegistryHolder.newMockRegistry();
-        locationRegistry = (LocationRegistryController) MockRegistry.getLocationRegistry();
     }
 
     @After
     public void tearDown() throws CouldNotPerformException {
-        MockRegistryHolder.shutdownMockRegistry();
     }
 
     /**
      * Test of get getLocationConfigsByCoordinate method, of class
      * LocationRegistry.
+     * @throws java.lang.Exception
      */
     @Test(timeout = 5000)
     public void testGetLocationConfigsByCoordinate() throws Exception {
-        LOGGER.info("testGetLocationConfigsByCoordinate");
+        System.out.println("testGetLocationConfigsByCoordinate");
         List<UnitConfig> pointEden = locationRegistry.getLocationConfigsByCoordinate(Vec3DDouble.newBuilder().setX(1.5).setY(4).setZ(0).build());
         assertEquals(3, pointEden.size());
 
