@@ -43,6 +43,7 @@ import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.LoggerFactory;
+import org.openbase.jul.exception.InstantiationException;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -63,16 +64,21 @@ public class UnitSimulationManager implements Manageable<UnitControllerRegistry<
 
     /**
      * Creates a new unit simulator manager.
+     *
+     * @throws org.openbase.jul.exception.InstantiationException is thrown in case the instance could not be instantiated.
      */
-    public UnitSimulationManager() {
-        this.unitSimulatorMap = new HashMap<>();
-
-        this.shutdownDeamon = Shutdownable.registerShutdownHook(this);
-
+    public UnitSimulationManager() throws InstantiationException {
         try {
-            enabled = JPService.getProperty(JPHardwareSimulationMode.class).getValue() || JPService.getProperty(JPBenchmarkMode.class).getValue();
-        } catch (JPNotAvailableException ex) {
-            ExceptionPrinter.printHistory("Could not detect hardware simulation mode!", ex, LOGGER);
+            this.unitSimulatorMap = new HashMap<>();
+            this.shutdownDeamon = Shutdownable.registerShutdownHook(this);
+
+            try {
+                enabled = JPService.getProperty(JPHardwareSimulationMode.class).getValue() || JPService.getProperty(JPBenchmarkMode.class).getValue();
+            } catch (JPNotAvailableException ex) {
+                ExceptionPrinter.printHistory("Could not detect hardware simulation/benchmark mode!", ex, LOGGER);
+            }
+        } catch (final CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
         }
     }
 

@@ -55,7 +55,6 @@ import rst.rsb.ScopeType;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.preset.JPTestMode;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rct.Transform;
@@ -196,34 +195,34 @@ public class Units {
     static {
         try {
             unitRemoteRegistry = new RemoteControllerRegistry<>();
+            Shutdownable.registerShutdownHook(new Shutdownable() {
+                @Override
+                public void shutdown() {
+                    try {
+                        unitRemoteRegistry.getEntries().stream().parallel().forEach(((org.openbase.bco.dal.lib.layer.unit.UnitRemote unitRemote) -> {
+                            try {
+                                unitRemote.unlock(unitRemoteRegistry);
+                                unitRemote.shutdown();
+                            } catch (CouldNotPerformException ex) {
+                                ExceptionPrinter.printHistory("Could not properly shutdown " + unitRemote, ex, LOGGER);
+                            }
+                        }));
+                    } catch (Exception ex) {
+                        ExceptionPrinter.printHistory("Could not properly shutdown remote pool!", ex, LOGGER);
+                    } finally {
+                        unitRemoteRegistry.shutdown();
+                    }
+                }
+
+                @Override
+                public String toString() {
+                    return "UnitRemotePool";
+                }
+            });
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new FatalImplementationErrorException(Units.class, new org.openbase.jul.exception.InstantiationException(Units.class, ex)), LOGGER);
         }
 
-        Shutdownable.registerShutdownHook(new Shutdownable() {
-            @Override
-            public void shutdown() {
-                try {
-                    unitRemoteRegistry.getEntries().stream().parallel().forEach(((org.openbase.bco.dal.lib.layer.unit.UnitRemote unitRemote) -> {
-                        try {
-                            unitRemote.unlock(unitRemoteRegistry);
-                            unitRemote.shutdown();
-                        } catch (CouldNotPerformException ex) {
-                            ExceptionPrinter.printHistory("Could not properly shutdown " + unitRemote, ex, LOGGER);
-                        }
-                    }));
-                } catch (Exception ex) {
-                    ExceptionPrinter.printHistory("Could not properly shutdown remote pool!", ex, LOGGER);
-                } finally {
-                    unitRemoteRegistry.shutdown();
-                }
-            }
-
-            @Override
-            public String toString() {
-                return "UnitRemotePool";
-            }
-        });
     }
 
     /**
