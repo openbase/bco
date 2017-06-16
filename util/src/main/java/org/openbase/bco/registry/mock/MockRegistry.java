@@ -446,7 +446,7 @@ public class MockRegistry {
                 task.get();
             }
             registryStartupTasks.clear();
-            logger.info("UnitTemplates updated and devices, locations ,users and agentClasses registered!");
+            logger.info("UnitTemplates updated and devices, locations, users and agentClasses registered!");
         } catch (JPServiceException | InterruptedException | ExecutionException | CouldNotPerformException ex) {
             shutdown();
             throw new InstantiationException(this, ex);
@@ -741,15 +741,8 @@ public class MockRegistry {
         }
     }
 
-    private void waitForDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
-//        final SyncObject LOCK = new SyncObject("WaitForDeviceClassLock");
-//        final Observer notifyChangeObserver = (Observer) (Observable source, Object data) -> {
-//            synchronized (LOCK) {
-//                LOCK.notifyAll();
-//            }
-//        };
+    public void waitForDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
         synchronized (LOCK) {
-//            deviceRegistryRemote.addDataObserver(notifyChangeObserver);
             try {
                 while (!deviceRegistryRemote.containsDeviceClass(deviceClass)) {
                     LOCK.wait();
@@ -758,7 +751,6 @@ public class MockRegistry {
                 Thread.currentThread().interrupt();
             }
         }
-//        deviceRegistryRemote.removeDataObserver(notifyChangeObserver);
     }
 
     private static void updateUnitLabel(final List<String> unitIds) throws CouldNotPerformException, InterruptedException, ExecutionException {

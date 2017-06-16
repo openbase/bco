@@ -64,7 +64,7 @@ public class MockRegistryTest {
      *
      * @throws org.openbase.jul.exception.InstantiationException
      */
-    @Test(timeout = 60000)
+    @Test(timeout = 120000)
     public void testMockRegistryCreation() throws Exception {
         Stopwatch stopwatch = new Stopwatch();
         List<Long> times = new ArrayList<>();

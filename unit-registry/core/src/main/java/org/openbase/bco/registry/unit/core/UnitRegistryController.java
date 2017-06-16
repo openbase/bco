@@ -87,6 +87,7 @@ import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.UnitGroup
 import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.UnitGroupMemberListDuplicationConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.UnitGroupMemberListTypesConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.UnitGroupScopeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.UnitGroupServiceDescriptionServiceTemplateIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.UnitGroupUnitTypeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.unittemplate.UniteTemplateServiceTemplateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigLabelConsistencyHandler;
@@ -323,6 +324,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
         unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupMemberListDuplicationConsistencyHandler());
         unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupMemberExistsConsistencyHandler(agentUnitConfigRegistry, appUnitConfigRegistry, authorizationGroupUnitConfigRegistry, connectionUnitConfigRegistry, dalUnitConfigRegistry, deviceUnitConfigRegistry, locationUnitConfigRegistry, sceneUnitConfigRegistry, unitGroupUnitConfigRegistry, userUnitConfigRegistry));
+        unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupServiceDescriptionServiceTemplateIdConsistencyHandler(serviceTemplateRegistry));
         unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupUnitTypeConsistencyHandler(unitTemplateRegistry));
         unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupMemberListTypesConsistencyHandler(agentUnitConfigRegistry, appUnitConfigRegistry, authorizationGroupUnitConfigRegistry, connectionUnitConfigRegistry, dalUnitConfigRegistry, deviceUnitConfigRegistry, locationUnitConfigRegistry, sceneUnitConfigRegistry, unitGroupUnitConfigRegistry, userUnitConfigRegistry, unitTemplateRegistry));
         unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupScopeConsistencyHandler(locationUnitConfigRegistry));

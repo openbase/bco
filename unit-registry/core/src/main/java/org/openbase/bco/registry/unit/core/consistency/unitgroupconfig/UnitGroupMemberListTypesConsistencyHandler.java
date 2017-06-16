@@ -33,6 +33,7 @@ import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -85,7 +86,7 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
         UnitConfig.Builder unitGroupUnitConfig = entry.getMessage().toBuilder();
         UnitGroupConfig.Builder unitGroup = unitGroupUnitConfig.getUnitGroupConfigBuilder();
 
-        // check if all member units fullfill the according unit type or, if the unit type field is unkown ,have all the according services
+        // check if all member units fullfill the according unit type or, if the unit type field is unkown, have all the according services
         boolean modification = false;
         List<String> memberIds = new ArrayList<>();
         unitGroup.clearMemberId();
@@ -93,10 +94,12 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
             //check if every unit has all given services
             for (String memberId : entry.getMessage().getUnitGroupConfig().getMemberIdList()) {
                 UnitConfig unitConfig = getUnitConfigById(memberId);
-                boolean skip = false;
-                for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                    if (!unitGroup.getServiceDescriptionList().contains(serviceConfig.getServiceDescription())) {
-                        skip = true;
+                boolean skip = true;
+                for(ServiceDescription serviceDescription : unitGroup.getServiceDescriptionList()) {
+                    for(ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                        if(serviceDescription.equals(serviceConfig.getServiceDescription())) {
+                            skip = false;
+                        }
                     }
                 }
                 if (skip) {
