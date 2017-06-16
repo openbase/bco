@@ -133,6 +133,11 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      */
     @Override
     protected void registerRemoteRegistries() throws CouldNotPerformException {
+        /* ATTENTION: the order here is important, if somebody registers an observer
+         * on one of these remote registries and tries to get values from other remote registries
+         * which are registered later than these are not synced yet
+         */
+        registerRemoteRegistry(unitConfigRemoteRegistry);
         registerRemoteRegistry(unitTemplateRemoteRegistry);
         registerRemoteRegistry(serviceTemplateRemoteRegistry);
         registerRemoteRegistry(dalUnitConfigRemoteRegistry);
@@ -145,7 +150,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         registerRemoteRegistry(agentUnitConfigRemoteRegistry);
         registerRemoteRegistry(sceneUnitConfigRemoteRegistry);
         registerRemoteRegistry(appUnitConfigRemoteRegistry);
-        registerRemoteRegistry(unitConfigRemoteRegistry);
         registerRemoteRegistry(baseUnitConfigRemoteRegistry);
     }
 

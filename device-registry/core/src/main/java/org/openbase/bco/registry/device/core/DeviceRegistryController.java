@@ -98,7 +98,6 @@ public class DeviceRegistryController extends AbstractVirtualRegistryController<
     @Override
     protected void registerDependencies() throws CouldNotPerformException {
         deviceClassRegistry.registerDependency(unitRegistryRemote.getUnitTemplateRemoteRegistry());
-
     }
 
     @Override
