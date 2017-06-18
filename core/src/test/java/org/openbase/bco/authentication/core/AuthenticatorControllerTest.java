@@ -29,7 +29,7 @@ import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.authentication.lib.AuthenticationClientHandlerImpl;
+import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.ClientRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.jp.JPAuthentificationScope;
@@ -100,8 +100,6 @@ public class AuthenticatorControllerTest {
         }, true);
         listener.activate();
         
-        AuthenticationClientHandlerImpl clientHandler = new AuthenticationClientHandlerImpl();
-
         ClientRemote clientRemote = new ClientRemote();
         clientRemote.init();
         clientRemote.activate();
@@ -114,27 +112,26 @@ public class AuthenticatorControllerTest {
         TicketSessionKeyWrapper slr = clientRemote.requestTGT(client_id).get();
 
         // handle KDC response on client side
-        List<Object> list = clientHandler.handleKDCResponse(client_id, client_passwordHash, slr);
+        List<Object> list = AuthenticationClientHandler.handleKDCResponse(client_id, client_passwordHash, slr);
         TicketAuthenticatorWrapper client_at = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
         byte[] client_TGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
-
 
         // handle TGS request on server side
         slr = clientRemote.requestCST(client_at).get();
 
         // handle TGS response on client side
-        list = clientHandler.handleTGSResponse(client_id, client_TGSSessionKey, slr);
+        list = AuthenticationClientHandler.handleTGSResponse(client_id, client_TGSSessionKey, slr);
         client_at = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
         byte[] client_SSSessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
 
         // init SS request on client side
-        client_at = clientHandler.initSSRequest(client_SSSessionKey, client_at);
+        client_at = AuthenticationClientHandler.initSSRequest(client_SSSessionKey, client_at);
 
         // handle SS request on server side
         TicketAuthenticatorWrapper server_at = clientRemote.validateCST(client_at).get();
 
         // handle SS response on client side
-        client_at = clientHandler.handleSSResponse(client_SSSessionKey, client_at, server_at);
+        client_at = AuthenticationClientHandler.handleSSResponse(client_SSSessionKey, client_at, server_at);
 
         clientRemote.shutdown();
     }

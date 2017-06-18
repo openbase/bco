@@ -82,6 +82,13 @@
             <scope>test</scope>
             <version>4.11</version>
         </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>authentication.core</artifactId>
+            <version>1.4-SNAPSHOT</version>
+            <scope>test</scope>
+            <type>jar</type>
+        </dependency>
     </dependencies>
     <properties>
         <skipTests>false</skipTests>

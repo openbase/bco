@@ -23,7 +23,7 @@ package org.openbase.bco.authentication.core;
  */
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import org.openbase.bco.authentication.lib.AuthenticationServerHandlerImpl;
+import org.openbase.bco.authentication.lib.AuthenticationServerHandler;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -57,12 +57,12 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     private final byte[] SSSessionKey;
     private final byte[] SSPrivateKey;
 
-    private final AuthenticationServerHandlerImpl authenticationHandler;
+    private final AuthenticationServerHandler authenticationHandler;
 
     public AuthenticatorController() {
         this.server = new NotInitializedRSBLocalServer();
 
-        this.authenticationHandler = new AuthenticationServerHandlerImpl();
+        this.authenticationHandler = new AuthenticationServerHandler();
         this.TGSSessionKey = EncryptionHelper.generateKey();
         this.TGSPrivateKey = EncryptionHelper.generateKey();
         this.SSSessionKey = EncryptionHelper.generateKey();

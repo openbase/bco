@@ -1,4 +1,4 @@
-package org.openbase.bco.authentication.lib.classes;
+package org.openbase.bco.authentication.lib;
 
 /*-
  * #%L
@@ -30,8 +30,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.openbase.bco.authentication.lib.AuthenticationClientHandlerImpl;
-import org.openbase.bco.authentication.lib.AuthenticationServerHandlerImpl;
+import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
+import org.openbase.bco.authentication.lib.AuthenticationServerHandler;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.AuthenticatorType.Authenticator;
@@ -113,40 +113,39 @@ public class AuthenticationHandlerTest {
     @Test
     public void testAuthentification() throws Exception {
         System.out.println("TestAuthentification");
-        AuthenticationServerHandlerImpl serverHandler = new AuthenticationServerHandlerImpl();
-        AuthenticationClientHandlerImpl clientHandler = new AuthenticationClientHandlerImpl();
 
         // init KDC request on client side
         client_passwordHash = EncryptionHelper.hash(client_password);
 
         // handle KDC request on server side
         server_clientId = client_id;
-        TicketSessionKeyWrapper slr = serverHandler.handleKDCRequest(server_clientId, server_clientNetworkAddress, server_TGSSessionKey, server_TGSPrivateKey);
+        TicketSessionKeyWrapper slr = AuthenticationServerHandler.handleKDCRequest(server_clientId, server_clientNetworkAddress, server_TGSSessionKey, server_TGSPrivateKey);
 
         // handle KDC response on client side
-        List<Object> list = clientHandler.handleKDCResponse(client_id, client_passwordHash, slr);
+        List<Object> list = AuthenticationClientHandler.handleKDCResponse(client_id, client_passwordHash, slr);
         TicketAuthenticatorWrapper client_at = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
         client_TGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
 
         Assert.assertArrayEquals(server_TGSSessionKey, client_TGSSessionKey);
 
         // handle TGS request on server side
-        slr = serverHandler.handleTGSRequest(server_TGSSessionKey, server_TGSPrivateKey, server_SSSessionKey, server_SSPrivateKey, client_at);
+        slr = AuthenticationServerHandler.handleTGSRequest(server_TGSSessionKey, server_TGSPrivateKey, server_SSSessionKey, server_SSPrivateKey, client_at);
 
         // handle TGS response on client side
-        list = clientHandler.handleTGSResponse(client_id, client_TGSSessionKey, slr);
+        list = AuthenticationClientHandler.handleTGSResponse(client_id, client_TGSSessionKey, slr);
         client_at = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
         client_SSSessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
 
         Assert.assertArrayEquals(server_SSSessionKey, client_SSSessionKey);
 
         // init SS request on client side
-        client_at = clientHandler.initSSRequest(client_SSSessionKey, client_at);
+        client_at = AuthenticationClientHandler.initSSRequest(client_SSSessionKey, client_at);
 
         // handle SS request on server side
-        TicketAuthenticatorWrapper server_at = serverHandler.handleSSRequest(server_SSSessionKey, server_SSPrivateKey, client_at);
+        TicketAuthenticatorWrapper server_at = AuthenticationServerHandler.handleSSRequest(server_SSSessionKey, server_SSPrivateKey, client_at);
 
         // handle SS response on client side
-        client_at = clientHandler.handleSSResponse(client_SSSessionKey, client_at, server_at);
+        client_at = AuthenticationClientHandler.handleSSResponse(client_SSSessionKey, client_at, server_at);
     }
+
 }

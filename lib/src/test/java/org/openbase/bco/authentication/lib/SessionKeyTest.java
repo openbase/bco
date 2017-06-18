@@ -1,4 +1,4 @@
-package org.openbase.bco.authentication.lib.classes;
+package org.openbase.bco.authentication.lib;
 
 /*-
  * #%L
