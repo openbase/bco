@@ -29,6 +29,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
@@ -61,6 +62,7 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.registry.LocationRegistryDataType;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -487,6 +489,10 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
      */
     @Override
     public Future<Void> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+        byte[] sessionKey = null; // TODO: actionDescription.getSessionKey();
+        TicketAuthenticatorWrapper wrapper = null; // TODO: actionDescription.getTicketAuthenticationWrapper();
+        wrapper = AuthenticationClientHandler.initSSRequest(sessionKey, wrapper);
+        // TODO: actionDescription.setTicketAuthenticationWrapper(wrapper);
         return RPCHelper.callRemoteMethod(actionDescription, this, Void.class);
     }
 

@@ -100,5 +100,11 @@
             <artifactId>registry.util</artifactId>
             <version>${dependency.bco.registry.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>authentication.lib</artifactId>
+            <version>1.4-SNAPSHOT</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 </project>
