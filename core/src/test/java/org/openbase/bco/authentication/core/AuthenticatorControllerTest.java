@@ -90,24 +90,18 @@ public class AuthenticatorControllerTest {
      * @throws java.lang.Exception
      */
     //TODO: find error and reactivate
-//    @Test(timeout = 5000)
+    @Test(timeout = 5000)
     public void testCommunication() throws Exception {
         Registries.getUserRegistry().waitForData();
         UnitConfig userUnitConfig = Registries.getUserRegistry().getUserConfigs().get(0);
-        String clientID = userUnitConfig.getId();
+        String clientId = userUnitConfig.getId();
 
         RSBListener listener = RSBFactoryImpl.getInstance().createSynchronizedListener(JPService.getProperty(JPAuthenticationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
         listener.addHandler((Event event) -> {
             System.out.println(event.getData());
         }, true);
         listener.activate();
-<<<<<<< HEAD
         
-=======
-
-        AuthenticationClientHandlerImpl clientHandler = new AuthenticationClientHandlerImpl();
-
->>>>>>> 3ea6bfd38d223ba917cdb4de595765c964e8581b
         ClientRemote clientRemote = new ClientRemote();
         clientRemote.init();
         clientRemote.activate();
@@ -117,48 +111,31 @@ public class AuthenticatorControllerTest {
         byte[] clientPasswordHash = userUnitConfig.getUserConfig().getPassword().toByteArray();
 
         // handle KDC request on server side
-        TicketSessionKeyWrapper ticketSessionKeyWrapper = clientRemote.requestTicketGrantingTicket(clientID).get();
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = clientRemote.requestTicketGrantingTicket(clientId).get();
 
         System.out.println("Decryption with [" + userUnitConfig.getUserConfig().getPassword() + "]");
+        
         // handle KDC response on client side
-<<<<<<< HEAD
-        List<Object> list = AuthenticationClientHandler.handleKDCResponse(client_id, client_passwordHash, slr);
-        TicketAuthenticatorWrapper client_at = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
-=======
-        List<Object> list = clientHandler.handleKDCResponse(clientID, clientPasswordHash, ticketSessionKeyWrapper);
+        List<Object> list = AuthenticationClientHandler.handleKDCResponse(clientId, clientPasswordHash, ticketSessionKeyWrapper);
         TicketAuthenticatorWrapper clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
->>>>>>> 3ea6bfd38d223ba917cdb4de595765c964e8581b
-        byte[] client_TGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
+        byte[] clientTGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
 
         // handle TGS request on server side
         ticketSessionKeyWrapper = clientRemote.requestClientServerTicket(clientTicketAuthenticatorWrapper).get();
 
         // handle TGS response on client side
-<<<<<<< HEAD
-        list = AuthenticationClientHandler.handleTGSResponse(client_id, client_TGSSessionKey, slr);
-        client_at = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
-        byte[] client_SSSessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
-
-        // init SS request on client side
-        client_at = AuthenticationClientHandler.initSSRequest(client_SSSessionKey, client_at);
-=======
-        list = clientHandler.handleTGSResponse(clientID, client_TGSSessionKey, ticketSessionKeyWrapper);
+        list = AuthenticationClientHandler.handleTGSResponse(clientId, clientTGSSessionKey, ticketSessionKeyWrapper);
         clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
         byte[] clientSSSessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
 
         // init SS request on client side
-        clientTicketAuthenticatorWrapper = clientHandler.initSSRequest(clientSSSessionKey, clientTicketAuthenticatorWrapper);
->>>>>>> 3ea6bfd38d223ba917cdb4de595765c964e8581b
+        clientTicketAuthenticatorWrapper = AuthenticationClientHandler.initSSRequest(clientSSSessionKey, clientTicketAuthenticatorWrapper);
 
         // handle SS request on server side
         TicketAuthenticatorWrapper serverTicketAuthenticatorWrapper = clientRemote.validateClientServerTicket(clientTicketAuthenticatorWrapper).get();
 
         // handle SS response on client side
-<<<<<<< HEAD
-        client_at = AuthenticationClientHandler.handleSSResponse(client_SSSessionKey, client_at, server_at);
-=======
-        clientHandler.handleSSResponse(clientSSSessionKey, clientTicketAuthenticatorWrapper, serverTicketAuthenticatorWrapper);
->>>>>>> 3ea6bfd38d223ba917cdb4de595765c964e8581b
+        AuthenticationClientHandler.handleSSResponse(clientSSSessionKey, clientTicketAuthenticatorWrapper, serverTicketAuthenticatorWrapper);
 
         clientRemote.shutdown();
     }

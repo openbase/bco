@@ -1,17 +1,15 @@
 package org.openbase.bco.authentication.lib;
 
+import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import javax.crypto.KeyGenerator;
-import org.openbase.bco.authentication.lib.jp.JPAuthentificationScope;
-import org.openbase.jps.core.JPService;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
-import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
-import org.openbase.jul.extension.rsb.iface.RSBListener;
 import org.slf4j.LoggerFactory;
-import rsb.Event;
-import rsb.Handler;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType;
 
@@ -21,18 +19,18 @@ import rst.domotic.authentication.TicketSessionKeyWrapperType;
  */
 public class SessionManager {
     
-    private TicketAuthenticatorWrapper cst;
+    private TicketAuthenticatorWrapper clientServerTicket;
     private byte[] sessionKey;
     
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(KeyGenerator.class);
-    private ClientRemote clientRemote;
+    private final ClientRemote CLIENTREMOTE;
     
     public SessionManager() {
-        this.clientRemote = new ClientRemote();
+        this.CLIENTREMOTE = new ClientRemote();
     }
 
-    public TicketAuthenticatorWrapper getCst() {
-        return cst;
+    public TicketAuthenticatorWrapper getClientServerTicket() {
+        return clientServerTicket;
     }
 
     public byte[] getSessionKey() {
@@ -46,46 +44,41 @@ public class SessionManager {
      * @return Returns Returns an TicketAuthenticatorWrapperWrapper containing both the ClientServerTicket and Authenticator
      * @throws RejectedException Throws, if an error occurred during login process, e.g. clientId non existent
      */
-    public boolean login(String clientId, String clientPassword) {
-        try {
-            this.clientRemote.init();
-            this.clientRemote.activate();
-            
-            Thread.sleep(500);
+    public boolean login(String clientId, String clientPassword) throws InitializationException, InterruptedException, CouldNotPerformException, IOException, ExecutionException {
+        this.CLIENTREMOTE.init();
+        this.CLIENTREMOTE.activate();
 
-            // init KDC request on client side
-            byte[] clientPasswordHash = EncryptionHelper.hash(clientPassword);
+        Thread.sleep(500);
 
-            // request TGT
-            TicketSessionKeyWrapperType.TicketSessionKeyWrapper tskw = clientRemote.requestTGT(clientId).get();
+        // init KDC request on client side
+        byte[] clientPasswordHash = EncryptionHelper.hash(clientPassword);
 
-            // handle KDC response on client side
-            List<Object> list = AuthenticationClientHandler.handleKDCResponse(clientId, clientPasswordHash, tskw);
-            TicketAuthenticatorWrapper taw = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
-            byte[] TGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
+        // request TGT
+        TicketSessionKeyWrapperType.TicketSessionKeyWrapper tskw = CLIENTREMOTE.requestTicketGrantingTicket(clientId).get();
 
-            // request CST
-            tskw = clientRemote.requestCST(taw).get();
+        // handle KDC response on client side
+        List<Object> list = AuthenticationClientHandler.handleKDCResponse(clientId, clientPasswordHash, tskw);
+        TicketAuthenticatorWrapper taw = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
+        byte[] TGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
 
-            // handle TGS response on client side
-            list = AuthenticationClientHandler.handleTGSResponse(clientId, TGSSessionKey, tskw);
-            this.cst = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
-            this.sessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
-            
-            clientRemote.shutdown();
-            
-            return true;
-        } catch (Exception ex) {
-            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
-            return false;
-        }
+        // request CST
+        tskw = CLIENTREMOTE.requestClientServerTicket(taw).get();
+
+        // handle TGS response on client side
+        list = AuthenticationClientHandler.handleTGSResponse(clientId, TGSSessionKey, tskw);
+        this.clientServerTicket = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
+        this.sessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
+
+        CLIENTREMOTE.shutdown();
+
+        return true;
     }
     
     /**
      * Logs a user out by setting CST and session key to null
      */
     public void logout() {
-        this.cst = null;
+        this.clientServerTicket = null;
         this.sessionKey = null;
     }
 }

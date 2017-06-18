@@ -8,7 +8,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.openbase.bco.authentication.core.AuthenticatorLauncher;
-import org.openbase.bco.authentication.lib.jp.JPAuthentificationScope;
+import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
 import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
@@ -53,7 +53,7 @@ public class SessionManagerTest {
     @Before
     public void setUp() throws Exception {
         
-        listener = RSBFactoryImpl.getInstance().createSynchronizedListener(JPService.getProperty(JPAuthentificationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
+        listener = RSBFactoryImpl.getInstance().createSynchronizedListener(JPService.getProperty(JPAuthenticationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
         listener.addHandler(new Handler() {
             @Override
             public void internalNotify(Event event) {
@@ -92,7 +92,7 @@ public class SessionManagerTest {
         assertEquals(true, result);
         
         manager.logout();
-        assertEquals(null, manager.getCst());
+        assertEquals(null, manager.getClientServerTicket());
         assertEquals(null, manager.getSessionKey());
       
     }
