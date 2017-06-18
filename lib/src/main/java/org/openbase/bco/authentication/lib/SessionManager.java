@@ -23,10 +23,10 @@ public class SessionManager {
     private byte[] sessionKey;
     
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(KeyGenerator.class);
-    private final ClientRemote CLIENTREMOTE;
+    private ClientRemote clientRemote;
     
     public SessionManager() {
-        this.CLIENTREMOTE = new ClientRemote();
+        this.clientRemote = new ClientRemote();
     }
 
     public TicketAuthenticatorWrapper getClientServerTicket() {
@@ -45,32 +45,36 @@ public class SessionManager {
      * @throws RejectedException Throws, if an error occurred during login process, e.g. clientId non existent
      */
     public boolean login(String clientId, String clientPassword) throws InitializationException, InterruptedException, CouldNotPerformException, IOException, ExecutionException {
-        this.CLIENTREMOTE.init();
-        this.CLIENTREMOTE.activate();
+        this.clientRemote.init();
+        System.out.println("init");
+        this.clientRemote.activate();
+        System.out.println("activate");
 
         Thread.sleep(500);
-
+        System.out.println("sleep");
+        
         // init KDC request on client side
         byte[] clientPasswordHash = EncryptionHelper.hash(clientPassword);
 
         // request TGT
-        TicketSessionKeyWrapperType.TicketSessionKeyWrapper tskw = CLIENTREMOTE.requestTicketGrantingTicket(clientId).get();
-
+        TicketSessionKeyWrapperType.TicketSessionKeyWrapper tskw = clientRemote.requestTicketGrantingTicket(clientId).get();
+        System.out.println("tgt");
+        
         // handle KDC response on client side
         List<Object> list = AuthenticationClientHandler.handleKDCResponse(clientId, clientPasswordHash, tskw);
         TicketAuthenticatorWrapper taw = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
         byte[] TGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
 
         // request CST
-        tskw = CLIENTREMOTE.requestClientServerTicket(taw).get();
+        tskw = clientRemote.requestClientServerTicket(taw).get();
 
         // handle TGS response on client side
         list = AuthenticationClientHandler.handleTGSResponse(clientId, TGSSessionKey, tskw);
         this.clientServerTicket = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
         this.sessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
 
-        CLIENTREMOTE.shutdown();
-
+        clientRemote.shutdown();
+        System.out.println("shutdown");
         return true;
     }
     

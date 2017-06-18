@@ -1,6 +1,5 @@
 package org.openbase.bco.authentication.lib;
 
-import java.util.concurrent.Callable;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -15,7 +14,6 @@ import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
 import org.openbase.jul.extension.rsb.iface.RSBListener;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.Event;
-import rsb.Handler;
 
 /**
  *
@@ -33,13 +31,10 @@ public class SessionManagerTest {
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
 
-        GlobalCachedExecutorService.submit(new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                authenticatorLauncher = new AuthenticatorLauncher();
-                authenticatorLauncher.launch();
-                return null;
-            }
+        GlobalCachedExecutorService.submit(() -> {
+            authenticatorLauncher = new AuthenticatorLauncher();
+            authenticatorLauncher.launch();
+            return null;
         });
     }
     
@@ -52,13 +47,9 @@ public class SessionManagerTest {
     
     @Before
     public void setUp() throws Exception {
-        
         listener = RSBFactoryImpl.getInstance().createSynchronizedListener(JPService.getProperty(JPAuthenticationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
-        listener.addHandler(new Handler() {
-            @Override
-            public void internalNotify(Event event) {
-                System.out.println(event.getData());
-            }
+        listener.addHandler((Event event) -> {
+            System.out.println(event.getData());
         }, true);
         listener.activate();
     }
