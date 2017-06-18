@@ -6,6 +6,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.openbase.bco.registry.mock.MockRegistryHolder;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.authentication.core.AuthenticatorLauncher;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
 import org.openbase.jps.core.JPService;
@@ -14,6 +16,7 @@ import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
 import org.openbase.jul.extension.rsb.iface.RSBListener;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.Event;
+import rst.domotic.unit.UnitConfigType;
 
 /**
  *
@@ -31,6 +34,8 @@ public class SessionManagerTest {
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
 
+        MockRegistryHolder.newMockRegistry();
+        
         GlobalCachedExecutorService.submit(() -> {
             authenticatorLauncher = new AuthenticatorLauncher();
             authenticatorLauncher.launch();
@@ -43,6 +48,7 @@ public class SessionManagerTest {
         if (authenticatorLauncher != null) {
             authenticatorLauncher.shutdown();
         }
+        MockRegistryHolder.shutdownMockRegistry();
     }
     
     @Before
@@ -64,9 +70,12 @@ public class SessionManagerTest {
      */
     @Test(timeout = 5000)
     public void testLogin() throws Exception {
+        Registries.getUserRegistry().waitForData();
+        UnitConfigType.UnitConfig userUnitConfig = Registries.getUserRegistry().getUserConfigs().get(0);
+        String clientId = userUnitConfig.getId();
                 
         SessionManager manager = new SessionManager();
-        boolean result = manager.login("maxmustermann", "password");
+        boolean result = manager.login(clientId, userUnitConfig.getUserConfig().getPassword().toString());
         
         assertEquals(true, result);
     }
@@ -76,9 +85,12 @@ public class SessionManagerTest {
      */
     @Test(timeout = 5000)
     public void testLogout() throws Exception {
+        Registries.getUserRegistry().waitForData();
+        UnitConfigType.UnitConfig userUnitConfig = Registries.getUserRegistry().getUserConfigs().get(0);
+        String clientId = userUnitConfig.getId();
                 
         SessionManager manager = new SessionManager();
-        boolean result = manager.login("maxmustermann", "password");
+        boolean result = manager.login(clientId, userUnitConfig.getUserConfig().getPassword().toString());
         
         assertEquals(true, result);
         

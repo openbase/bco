@@ -7,8 +7,6 @@ import javax.crypto.KeyGenerator;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.RejectedException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType;
@@ -46,19 +44,15 @@ public class SessionManager {
      */
     public boolean login(String clientId, String clientPassword) throws InitializationException, InterruptedException, CouldNotPerformException, IOException, ExecutionException {
         this.clientRemote.init();
-        System.out.println("init");
         this.clientRemote.activate();
-        System.out.println("activate");
 
         Thread.sleep(500);
-        System.out.println("sleep");
         
         // init KDC request on client side
         byte[] clientPasswordHash = EncryptionHelper.hash(clientPassword);
 
         // request TGT
         TicketSessionKeyWrapperType.TicketSessionKeyWrapper tskw = clientRemote.requestTicketGrantingTicket(clientId).get();
-        System.out.println("tgt");
         
         // handle KDC response on client side
         List<Object> list = AuthenticationClientHandler.handleKDCResponse(clientId, clientPasswordHash, tskw);
@@ -74,7 +68,6 @@ public class SessionManager {
         this.sessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
 
         clientRemote.shutdown();
-        System.out.println("shutdown");
         return true;
     }
     

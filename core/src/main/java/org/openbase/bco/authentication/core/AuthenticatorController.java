@@ -124,7 +124,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 Registries.getUserRegistry().waitForData();
                 UnitConfig userUnitConfig = Registries.getUserRegistry().getUserConfigById(clientId);
                 System.out.println("Encryption with [" + userUnitConfig.getUserConfig().getPassword() + "]");
-                return authenticationHandler.handleKDCRequest(clientId, userUnitConfig.getUserConfig().getPassword().toByteArray(), "", TGSSessionKey, TGSPrivateKey);
+                return authenticationHandler.handleKDCRequest(clientId, EncryptionHelper.hash(userUnitConfig.getUserConfig().getPassword().toString()), "", TGSSessionKey, TGSPrivateKey);
             } catch (NotAvailableException ex) {
                 throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
             } catch (InterruptedException | CouldNotPerformException | IOException ex) {

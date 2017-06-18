@@ -42,7 +42,7 @@ public class AuthenticationClientHandler {
      * Decrypts the TicketGrantingServer (TGS) session key with client's hashed password
      * Creates an Authenticator containing the clientID and current timestamp encrypted with the TGS session key
      * @param clientID Identifier of the client - must be present in client database
-     * @param hashedClientPassword Client's hashed password
+     * @param clientPasswordHash Client's hashed password
      * @param wrapper TicketSessionKeyWrapper containing the TicketGrantingTicket and TGS session key
      * @return Returns a list of objects containing: 
      *         1. An TicketAuthenticatorWrapperWrapper containing both the TicketGrantingTicket and Authenticator
@@ -51,11 +51,11 @@ public class AuthenticationClientHandler {
      * @throws StreamCorruptedException If the decryption of the session key fails, probably because the entered password was wrong.
      * @throws IOException If de- or encryption fail because of a general I/O error.
      */
-    public static List<Object> handleKDCResponse(String clientID, byte[] hashedClientPassword, TicketSessionKeyWrapper wrapper) throws StreamCorruptedException, IOException {
+    public static List<Object> handleKDCResponse(String clientID, byte[] clientPasswordHash, TicketSessionKeyWrapper wrapper) throws StreamCorruptedException, IOException {
         // decrypt TGS session key
         byte[] TGSSessionKey;
 
-        TGSSessionKey = (byte[]) EncryptionHelper.decrypt(wrapper.getSessionKey(), hashedClientPassword);
+        TGSSessionKey = (byte[]) EncryptionHelper.decrypt(wrapper.getSessionKey(), clientPasswordHash);
 
         // create Authenticator with empty timestamp
         // set timestamp in initTGSRequest()

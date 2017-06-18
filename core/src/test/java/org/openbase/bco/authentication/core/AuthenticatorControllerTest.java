@@ -29,6 +29,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.ClientRemote;
+import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
@@ -107,7 +108,7 @@ public class AuthenticatorControllerTest {
 
         Thread.sleep(500);
 
-        byte[] clientPasswordHash = userUnitConfig.getUserConfig().getPassword().toByteArray();
+        byte[] clientPasswordHash = EncryptionHelper.hash(userUnitConfig.getUserConfig().getPassword().toString());
 
         // handle KDC request on server side
         TicketSessionKeyWrapper ticketSessionKeyWrapper = clientRemote.requestTicketGrantingTicket(clientId).get();
