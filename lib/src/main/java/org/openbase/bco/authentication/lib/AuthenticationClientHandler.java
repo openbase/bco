@@ -22,7 +22,12 @@ package org.openbase.bco.authentication.lib;
  * #L%
  */
 
+<<<<<<< HEAD
 import java.util.ArrayList;
+=======
+import java.io.IOException;
+import java.io.StreamCorruptedException;
+>>>>>>> 3ea6bfd38d223ba917cdb4de595765c964e8581b
 import java.util.List;
 import org.openbase.jul.exception.RejectedException;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType;
@@ -32,7 +37,11 @@ import rst.timing.TimestampType;
 
 /**
  *
+<<<<<<< HEAD
  * @author Sebastian Fast <sfast@techfak.uni-bielefeld.de>
+=======
+ * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
+>>>>>>> 3ea6bfd38d223ba917cdb4de595765c964e8581b
  */
 public class AuthenticationClientHandler {
     
@@ -46,8 +55,11 @@ public class AuthenticationClientHandler {
      * @return Returns a list of objects containing: 
      *         1. An TicketAuthenticatorWrapperWrapper containing both the TicketGrantingTicket and Authenticator
      *         2. A SessionKey representing the TGS session key
-     * @TODO: Exception description
+     *
+     * @throws StreamCorruptedException If the decryption of the session key fails, probably because the entered password was wrong.
+     * @throws IOException If de- or encryption fail because of a general I/O error.
      */
+<<<<<<< HEAD
     public static List<Object> handleKDCResponse(String clientId, byte[] hashedClientPassword, TicketSessionKeyWrapperType.TicketSessionKeyWrapper wrapper) throws RejectedException {
         // decrypt TGS session key
         byte[] TGSSessionKey = (byte[]) EncryptionHelper.decrypt(wrapper.getSessionKey(), hashedClientPassword);
@@ -72,6 +84,9 @@ public class AuthenticationClientHandler {
 
         return list;
     }
+=======
+    public List<Object> handleKDCResponse(String clientID, byte[] hashedClientPassword, TicketSessionKeyWrapper wrapper) throws IOException;
+>>>>>>> 3ea6bfd38d223ba917cdb4de595765c964e8581b
 
     /**
      * Handles a TGS response
@@ -83,8 +98,11 @@ public class AuthenticationClientHandler {
      * @return Returns a list of objects containing: 
      *         1. An TicketAuthenticatorWrapperWrapper containing both the ClientServerTicket and Authenticator
      *         2. A SessionKey representing the SS session key
-     * @TODO: Exception description
+     *
+     * @throws StreamCorruptedException If the decryption of the SS session key fails.
+     * @throws IOException If de- or encryption fail because of a general I/O error.
      */
+<<<<<<< HEAD
     public static List<Object> handleTGSResponse(String clientID, byte[] TGSSessionKey, TicketSessionKeyWrapperType.TicketSessionKeyWrapper wrapper) throws RejectedException {
         // decrypt SS session key
         byte[] SSSessionKey = (byte[]) EncryptionHelper.decrypt(wrapper.getSessionKey(), TGSSessionKey);
@@ -107,10 +125,15 @@ public class AuthenticationClientHandler {
         return list;
     }
   
+=======
+    public List<Object> handleTGSResponse(String clientID, byte[] TGSSessionKey, TicketSessionKeyWrapper wrapper) throws IOException;
+    
+>>>>>>> 3ea6bfd38d223ba917cdb4de595765c964e8581b
     /**
      * Initializes a SS request
      * Sets current timestamp in Authenticator
      * @param SSSessionKey SS session key provided by handleTGSResponse()
+<<<<<<< HEAD
      * @param wrapper TicketAuthenticatorWrapper wrapper that contains both encrypted Authenticator and ClientServerTicket
      * @return Returns a wrapper class containing both the ClientServerTicket and modified Authenticator
      * @TODO: Exception description
@@ -132,6 +155,16 @@ public class AuthenticationClientHandler {
         return atb.build();
     }
 
+=======
+     * @param wrapper TicketAuthenticatorWrapper wrapper that contains both encrypted Authenticator and CST
+     * @return Returns a wrapper class containing both the CST and modified Authenticator
+     *
+     * @throws StreamCorruptedException If the decryption of the Authenticator fails.
+     * @throws IOException If de- or encryption fail because of a general I/O error.
+     */
+    public TicketAuthenticatorWrapper initSSRequest(byte[] SSSessionKey, TicketAuthenticatorWrapper wrapper) throws StreamCorruptedException, IOException;
+    
+>>>>>>> 3ea6bfd38d223ba917cdb4de595765c964e8581b
     /**
      * Handles a SS response
      * Decrypts Authenticator of both last- and currentWrapper with SSSessionKey
@@ -139,6 +172,7 @@ public class AuthenticationClientHandler {
      * @param SSSessionKey SS session key provided by handleTGSResponse()
      * @param lastWrapper Last TicketAuthenticatorWrapper provided by either handleTGSResponse() or handleSSResponse()
      * @param currentWrapper Current TicketAuthenticatorWrapper provided by (Remote?)
+<<<<<<< HEAD
      * @return Returns an TicketAuthenticatorWrapperWrapper containing both the ClientServerTicket and Authenticator
      * @throws RejectedException Throws, if timestamps do not match
      * @TODO: Exception description
@@ -160,4 +194,12 @@ public class AuthenticationClientHandler {
         }
     }
 
+=======
+     * @return Returns an TicketAuthenticatorWrapperWrapper containing both the CST and Authenticator
+     *
+     * @throws RejectedException If the timestamps do not match.
+     * @throws IOException If the decryption of the Authenticators using the SSSessionKey fails.
+     */
+    public TicketAuthenticatorWrapper handleSSResponse(byte[] SSSessionKey, TicketAuthenticatorWrapper lastWrapper, TicketAuthenticatorWrapper currentWrapper) throws RejectedException, IOException;
+>>>>>>> 3ea6bfd38d223ba917cdb4de595765c964e8581b
 }

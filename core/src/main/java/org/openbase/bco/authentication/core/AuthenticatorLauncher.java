@@ -4,7 +4,7 @@ import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.bco.authentication.lib.jp.JPAuthentificationScope;
+import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.bco.authentication.lib.AuthenticationService;
 
@@ -31,7 +31,7 @@ import org.openbase.bco.authentication.lib.AuthenticationService;
  */
 /**
  *
- * @author Tamino Huxohl <thuxohl@techfak.uni-bielefeld.de>
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class AuthenticatorLauncher extends AbstractLauncher<AuthenticatorController> {
 
@@ -41,7 +41,7 @@ public class AuthenticatorLauncher extends AbstractLauncher<AuthenticatorControl
 
     @Override
     protected void loadProperties() {
-        JPService.registerProperty(JPAuthentificationScope.class);
+        JPService.registerProperty(JPAuthenticationScope.class);
     }
 
     /**

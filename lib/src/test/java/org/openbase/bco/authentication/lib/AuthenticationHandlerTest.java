@@ -33,30 +33,29 @@ import static org.junit.Assert.*;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.AuthenticationServerHandler;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
+import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.AuthenticatorType.Authenticator;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 
 /**
  *
- * @author sebastian
+ * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
 public class AuthenticationHandlerTest {
 
-    private String client_id;
-    private String client_password;
-    private byte[] client_passwordHash;
-    private byte[] client_TGSSessionKey;
-    private byte[] client_SSSessionKey;
+    private String clientId;
+    private String clientPassword;
+    private byte[] clientPasswordHash;
+    private byte[] clientTGSSessionKey;
+    private byte[] clientSSSessionKey;
 
-    private String server_clientId;
-    private String server_clientPassword;
-    private byte[] server_clientPasswordHash;
-    private String server_clientNetworkAddress;
-    private byte[] server_TGSSessionKey;
-    private byte[] server_TGSPrivateKey;
-    private byte[] server_SSSessionKey;
-    private byte[] server_SSPrivateKey;
+    private String serverClientId;
+    private String serverClientNetworkAddress;
+    private byte[] serverTGSSessionKey;
+    private byte[] serverTGSPrivateKey;
+    private byte[] serverSSSessionKey;
+    private byte[] serverSSPrivateKey;
 
     public AuthenticationHandlerTest() {
 
@@ -72,13 +71,13 @@ public class AuthenticationHandlerTest {
 
     @Before
     public void setUp() {
-        client_id = "maxmustermann";
-        client_password = "password";
-        server_clientNetworkAddress = "123.123.123.123";
-        server_TGSSessionKey = EncryptionHelper.generateKey();
-        server_TGSPrivateKey = EncryptionHelper.generateKey();
-        server_SSSessionKey = EncryptionHelper.generateKey();
-        server_SSPrivateKey = EncryptionHelper.generateKey();
+        clientId = "maxmustermann";
+        clientPassword = "password";
+        serverClientNetworkAddress = "123.123.123.123";
+        serverTGSSessionKey = EncryptionHelper.generateKey();
+        serverTGSPrivateKey = EncryptionHelper.generateKey();
+        serverSSSessionKey = EncryptionHelper.generateKey();
+        serverSSPrivateKey = EncryptionHelper.generateKey();
     }
 
     @After
@@ -88,14 +87,16 @@ public class AuthenticationHandlerTest {
     /**
      * Test of encryptObject and decryptObject method, of class
      * AuthenticationHandler.
+     *
+     * @throws java.lang.Exception
      */
     @Test
     public void testEncryptDecryptObject() throws Exception {
-        System.out.println("encrypt and decrypt object");
+        System.out.println("testEncryptDecryptObject");
 
-        Authenticator.Builder ab = Authenticator.newBuilder();
-        ab.setClientId(client_id);
-        Authenticator authenticator = ab.build();
+        Authenticator.Builder authenticatorBuilder = Authenticator.newBuilder();
+        authenticatorBuilder.setClientId(clientId);
+        Authenticator authenticator = authenticatorBuilder.build();
 
         byte[] key = EncryptionHelper.generateKey();
 
@@ -106,18 +107,26 @@ public class AuthenticationHandlerTest {
     }
 
     /**
-     * Test a full authentification cycle
+     * Test a full authentication cycle
      *
      * @throws Exception
      */
     @Test
+<<<<<<< HEAD:lib/src/test/java/org/openbase/bco/authentication/lib/AuthenticationHandlerTest.java
     public void testAuthentification() throws Exception {
         System.out.println("TestAuthentification");
+=======
+    public void testAuthentication() throws Exception {
+        System.out.println("TestAuthentication");
+        AuthenticationServerHandlerImpl serverHandler = new AuthenticationServerHandlerImpl();
+        AuthenticationClientHandlerImpl clientHandler = new AuthenticationClientHandlerImpl();
+>>>>>>> 3ea6bfd38d223ba917cdb4de595765c964e8581b:lib/src/test/java/org/openbase/bco/authentication/lib/classes/AuthenticationHandlerTest.java
 
         // init KDC request on client side
-        client_passwordHash = EncryptionHelper.hash(client_password);
+        clientPasswordHash = EncryptionHelper.hash(clientPassword);
 
         // handle KDC request on server side
+<<<<<<< HEAD:lib/src/test/java/org/openbase/bco/authentication/lib/AuthenticationHandlerTest.java
         server_clientId = client_id;
         TicketSessionKeyWrapper slr = AuthenticationServerHandler.handleKDCRequest(server_clientId, server_clientNetworkAddress, server_TGSSessionKey, server_TGSPrivateKey);
 
@@ -125,20 +134,39 @@ public class AuthenticationHandlerTest {
         List<Object> list = AuthenticationClientHandler.handleKDCResponse(client_id, client_passwordHash, slr);
         TicketAuthenticatorWrapper client_at = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
         client_TGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
+=======
+        serverClientId = clientId;
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = serverHandler.handleKDCRequest(serverClientId, clientPasswordHash, serverClientNetworkAddress, serverTGSSessionKey, serverTGSPrivateKey);
 
-        Assert.assertArrayEquals(server_TGSSessionKey, client_TGSSessionKey);
+        // handle KDC response on client side
+        List<Object> list = clientHandler.handleKDCResponse(clientId, clientPasswordHash, ticketSessionKeyWrapper);
+        TicketAuthenticatorWrapper clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
+        clientTGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
+>>>>>>> 3ea6bfd38d223ba917cdb4de595765c964e8581b:lib/src/test/java/org/openbase/bco/authentication/lib/classes/AuthenticationHandlerTest.java
+
+        Assert.assertArrayEquals(serverTGSSessionKey, clientTGSSessionKey);
 
         // handle TGS request on server side
+<<<<<<< HEAD:lib/src/test/java/org/openbase/bco/authentication/lib/AuthenticationHandlerTest.java
         slr = AuthenticationServerHandler.handleTGSRequest(server_TGSSessionKey, server_TGSPrivateKey, server_SSSessionKey, server_SSPrivateKey, client_at);
 
         // handle TGS response on client side
         list = AuthenticationClientHandler.handleTGSResponse(client_id, client_TGSSessionKey, slr);
         client_at = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
         client_SSSessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
+=======
+        ticketSessionKeyWrapper = serverHandler.handleTGSRequest(serverTGSSessionKey, serverTGSPrivateKey, serverSSSessionKey, serverSSPrivateKey, clientTicketAuthenticatorWrapper);
 
-        Assert.assertArrayEquals(server_SSSessionKey, client_SSSessionKey);
+        // handle TGS response on client side
+        list = clientHandler.handleTGSResponse(clientId, clientTGSSessionKey, ticketSessionKeyWrapper);
+        clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
+        clientSSSessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
+>>>>>>> 3ea6bfd38d223ba917cdb4de595765c964e8581b:lib/src/test/java/org/openbase/bco/authentication/lib/classes/AuthenticationHandlerTest.java
+
+        Assert.assertArrayEquals(serverSSSessionKey, clientSSSessionKey);
 
         // init SS request on client side
+<<<<<<< HEAD:lib/src/test/java/org/openbase/bco/authentication/lib/AuthenticationHandlerTest.java
         client_at = AuthenticationClientHandler.initSSRequest(client_SSSessionKey, client_at);
 
         // handle SS request on server side
@@ -146,6 +174,55 @@ public class AuthenticationHandlerTest {
 
         // handle SS response on client side
         client_at = AuthenticationClientHandler.handleSSResponse(client_SSSessionKey, client_at, server_at);
+=======
+        clientTicketAuthenticatorWrapper = clientHandler.initSSRequest(clientSSSessionKey, clientTicketAuthenticatorWrapper);
+
+        // handle SS request on server side
+        TicketAuthenticatorWrapper serverTicketAuthenticatorWrapper = serverHandler.handleSSRequest(serverSSSessionKey, serverSSPrivateKey, clientTicketAuthenticatorWrapper);
+
+        // handle SS response on client side
+        clientHandler.handleSSResponse(clientSSSessionKey, clientTicketAuthenticatorWrapper, serverTicketAuthenticatorWrapper);
+    }
+
+    // TODO: activate when working
+    //@Test
+    public void testAuthenticationWithNonExistentUser() throws Exception {
+        System.out.println("testAuthenticationWithNonExistentUser");
+
+        String nonExistentClientId = "NonExistentClientId";
+        clientPasswordHash = EncryptionHelper.hash(clientPassword);
+        AuthenticationServerHandlerImpl serverHandler = new AuthenticationServerHandlerImpl();
+
+        try {
+            serverHandler.handleKDCRequest(nonExistentClientId, clientPasswordHash, serverClientNetworkAddress, serverTGSSessionKey, serverTGSPrivateKey);
+        } catch (NotAvailableException ex) {
+            return;
+        }
+        fail("NotAvailableException has not been thrown even though there should be no user[" + nonExistentClientId + "] in the database!");
+    }
+
+    // TODO: activate when working
+    //@Test
+    public void testAuthenticationWithIncorrectPassword() throws Exception {
+        System.out.println("testAuthenticationWithIncorrectPassword");
+
+        System.out.println("testAuthenticationWithNonExistentUser");
+
+        String clientId = "NonExistentClientId";
+        clientPasswordHash = EncryptionHelper.hash("wrong passwd");
+
+        AuthenticationServerHandlerImpl serverHandler = new AuthenticationServerHandlerImpl();
+        AuthenticationClientHandlerImpl clientHandler = new AuthenticationClientHandlerImpl();
+
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = serverHandler.handleKDCRequest(clientId, clientPasswordHash, serverClientNetworkAddress, serverTGSSessionKey, serverTGSPrivateKey);
+        // TODO: handle exception when thrown
+//        try {
+        List<Object> list = clientHandler.handleKDCResponse(clientId, clientPasswordHash, ticketSessionKeyWrapper);
+//        } catch (NotAvailableException ex) {
+//            return;
+//        }
+        fail("NotAvailableException has not been thrown even though there should be no user[" + clientId + "] in the database!");
+>>>>>>> 3ea6bfd38d223ba917cdb4de595765c964e8581b:lib/src/test/java/org/openbase/bco/authentication/lib/classes/AuthenticationHandlerTest.java
     }
 
 }

@@ -3,25 +3,27 @@ package org.openbase.bco.authentication.lib;
 import com.google.protobuf.ByteString;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
+import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
+import java.io.StreamCorruptedException;
 import java.io.UnsupportedEncodingException;
+import java.security.InvalidKeyException;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
 import java.util.Arrays;
+import javax.crypto.BadPaddingException;
 import javax.crypto.Cipher;
 import javax.crypto.CipherInputStream;
 import javax.crypto.CipherOutputStream;
+import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
+import javax.crypto.NoSuchPaddingException;
 import javax.crypto.SealedObject;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import org.openbase.jul.exception.FatalImplementationErrorException;
-import org.openbase.jul.exception.RejectedException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
-import org.slf4j.LoggerFactory;
 
 /*-
  * #%L
@@ -44,38 +46,45 @@ import org.slf4j.LoggerFactory;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 /**
- * A key that is used to encrypt and decrypt tickets during Kerberos authentication
- * @author sebastian
+ * A key that is used to encrypt and decrypt tickets during Kerberos
+ * authentication
+ *
+ * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
 public class EncryptionHelper {
-            
+
     private static final String TRANSFORMATION = "AES";
-    
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(KeyGenerator.class);
-        
-    public static byte[] generateKey()  {
-        KeyGenerator keyGen = null;
+    private static final String HASH_ALGORITHM = "SHA-256";
+
+    /**
+     * Generate a 128bit key with the AES transformation which can then be used
+     * for en- or decryption.
+     *
+     * @return the generated key as a byte array
+     */
+    public static byte[] generateKey() {
         try {
-            keyGen = KeyGenerator.getInstance(TRANSFORMATION);
+            KeyGenerator keyGen = KeyGenerator.getInstance(TRANSFORMATION);
+            keyGen.init(128);
+            SecretKey secKey = keyGen.generateKey();
+            return secKey.getEncoded();
         } catch (NoSuchAlgorithmException ex) {
-            ExceptionPrinter.printHistory(new FatalImplementationErrorException("Key transformation non existent", keyGen, ex), LOGGER, LogLevel.ERROR);
+            new FatalImplementationErrorException("Key transformation non existent", TRANSFORMATION, ex);
+            return null;
         }
-        keyGen.init(128);
-        SecretKey secKey = keyGen.generateKey();
-        return secKey.getEncoded();
     }
-        
+
     /**
      * Encrypts any Object into a ByteString
+     *
      * @param obj Object to be encrypted
      * @param key byte[] to encrypt obj with
      * @return Returns encrypted object as ByteString
-     * @TODO: Exception description
-     * NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, IOException, IllegalBlockSizeException
+     * @throws IOException Any IO error occurring during the serialization and
+     * encryption.
      */
-    public static ByteString encrypt(Serializable obj, byte[] key) throws RejectedException {
+    public static ByteString encrypt(Serializable obj, byte[] key) throws IOException {
         try {
             // specify key
             SecretKeySpec sks = new SecretKeySpec(key, TRANSFORMATION);
@@ -88,26 +97,28 @@ public class EncryptionHelper {
             // cipher
             ByteArrayOutputStream baos = new ByteArrayOutputStream();
             CipherOutputStream cos = new CipherOutputStream(baos, cipher);
-            ObjectOutputStream outputStream = new ObjectOutputStream(cos);
-            outputStream.writeObject(sealedObject);
-            outputStream.close();
+            try (ObjectOutputStream outputStream = new ObjectOutputStream(cos)) {
+                outputStream.writeObject(sealedObject);
+            }
 
             return ByteString.copyFrom(baos.toByteArray());
-        } catch (Exception ex) {
-            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
-            throw new RejectedException("Encryption did not work. TODO: Proper exception description & handling", ex);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeyException ex) {
+            new FatalImplementationErrorException("Key transformation non existent", TRANSFORMATION, ex);
+            return null;
         }
     }
 
     /**
      * Decrypts a ByteString into an Object
+     *
      * @param bstr ByteString to be decrypted
-     * @param key  byte[] to decrypt bstr with
+     * @param key byte[] to decrypt bstr with
      * @return Returns decrypted object as Object
-     * @TODO: Exception description
-     * IOException, NoSuchAlgorithmException, NoSuchPaddingException, InvalidKeyException, ClassNotFoundException, IllegalBlockSizeException, BadPaddingException
+     * @throws StreamCorruptedException If the decryption fails, because of
+     * corrupted data or an invalid key.
+     * @throws IOException Any other I/O failure.
      */
-    public static Object decrypt(ByteString bstr, byte[] key) throws RejectedException {
+    public static Object decrypt(ByteString bstr, byte[] key) throws StreamCorruptedException, IOException {
         try {
             // specify key
             SecretKeySpec sks = new SecretKeySpec(key, TRANSFORMATION);
@@ -123,27 +134,27 @@ public class EncryptionHelper {
             SealedObject sealedObject = (SealedObject) inputStream.readObject();
 
             return sealedObject.getObject(cipher);
-        } catch (Exception ex) {
-            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
-            throw new RejectedException("Decryption did not work. TODO: Proper exception description & handling", ex);
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | BadPaddingException | IllegalBlockSizeException | ClassNotFoundException | InvalidKeyException ex) {
+            new FatalImplementationErrorException("Decryption failed.", TRANSFORMATION, ex);
+            return null;
         }
     }
-    
+
     /**
      * Hashes a string symmetrically
+     *
      * @param str String to be hashed
      * @return Returns a byte[] representing the hashed string
-     * @TODO: Exception description
      */
     public static byte[] hash(String str) {
         try {
             byte[] key = str.getBytes("UTF-8");
-            MessageDigest sha = MessageDigest.getInstance("SHA-256");
+            MessageDigest sha = MessageDigest.getInstance(HASH_ALGORITHM);
             key = sha.digest(key);
             return Arrays.copyOf(key, 16);
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
-            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+            new FatalImplementationErrorException("Hashing[" + str + "] failed!", HASH_ALGORITHM, ex);
+            return null;
         }
-        return str.getBytes();
     }
 }

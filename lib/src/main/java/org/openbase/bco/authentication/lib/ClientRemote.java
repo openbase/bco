@@ -23,12 +23,13 @@ package org.openbase.bco.authentication.lib;
  */
 
 import java.util.concurrent.Future;
-import org.openbase.bco.authentication.lib.jp.JPAuthentificationScope;
+import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.rsb.com.NotInitializedRSBRemoteServer;
+import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
 import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
 import org.openbase.jul.extension.rsb.iface.RSBRemoteServer;
@@ -40,7 +41,7 @@ import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWr
 
 /**
  *
- * @author Tamino Huxohl <thuxohl@techfak.uni-bielefel.de>
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class ClientRemote implements AuthenticationService, Manageable<Void>, VoidInitializable {
 
@@ -54,7 +55,7 @@ public class ClientRemote implements AuthenticationService, Manageable<Void>, Vo
     @Override
     public void init() throws InitializationException, InterruptedException {
         try {
-            remoteServer = RSBFactoryImpl.getInstance().createSynchronizedRemoteServer(JPService.getProperty(JPAuthentificationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
+            remoteServer = RSBFactoryImpl.getInstance().createSynchronizedRemoteServer(JPService.getProperty(JPAuthenticationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
 
             serverWatchDog = new WatchDog(remoteServer, "AuthenticatorWatchDog");
         } catch (JPNotAvailableException | CouldNotPerformException ex) {
@@ -78,18 +79,17 @@ public class ClientRemote implements AuthenticationService, Manageable<Void>, Vo
     }
 
     @Override
-    public Future<TicketSessionKeyWrapper> requestTGT(String clientId) throws CouldNotPerformException {
-        return remoteServer.callAsync("requestTGT", clientId);
+    public Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(String clientId) throws CouldNotPerformException {
+        return RPCHelper.callRemoteServerMethod(clientId, remoteServer, TicketSessionKeyWrapper.class);
     }
 
     @Override
-    public Future<TicketSessionKeyWrapper> requestCST(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
-        return remoteServer.callAsync("requestCST", ticketAuthenticatorWrapper);
+    public Future<TicketSessionKeyWrapper> requestClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
+        return RPCHelper.callRemoteServerMethod(ticketAuthenticatorWrapper, remoteServer, TicketSessionKeyWrapper.class);
     }
 
     @Override
-    public Future<TicketAuthenticatorWrapper> validateCST(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
-        return remoteServer.callAsync("validateCST", ticketAuthenticatorWrapper);
+    public Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
+        return RPCHelper.callRemoteServerMethod(ticketAuthenticatorWrapper, remoteServer, TicketAuthenticatorWrapper.class);
     }
-
 }

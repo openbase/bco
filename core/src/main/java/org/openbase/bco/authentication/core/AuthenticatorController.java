@@ -21,7 +21,8 @@ package org.openbase.bco.authentication.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Callable;
+import java.io.IOException;
+import java.io.StreamCorruptedException;
 import java.util.concurrent.Future;
 import org.openbase.bco.authentication.lib.AuthenticationServerHandler;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
@@ -29,7 +30,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
-import org.openbase.bco.authentication.lib.jp.JPAuthentificationScope;
+import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.extension.rsb.com.NotInitializedRSBLocalServer;
@@ -42,12 +43,22 @@ import org.openbase.jul.schedule.WatchDog;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 import org.openbase.bco.authentication.lib.AuthenticationService;
+import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.user.remote.UserRegistryRemote;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.RejectedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
+import org.slf4j.LoggerFactory;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * @author Tamino Huxohl <thuxohl@techfak.uni-bielefel.de>
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class AuthenticatorController implements AuthenticationService, Launchable<Void>, VoidInitializable {
+
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatorController.class);
 
     private RSBLocalServer server;
     private WatchDog serverWatchDog;
@@ -72,11 +83,11 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     @Override
     public void init() throws InitializationException, InterruptedException {
         try {
-            server = RSBFactoryImpl.getInstance().createSynchronizedLocalServer(JPService.getProperty(JPAuthentificationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
+            server = RSBFactoryImpl.getInstance().createSynchronizedLocalServer(JPService.getProperty(JPAuthenticationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
 
             // register rpc methods.
             RPCHelper.registerInterface(AuthenticationService.class, this, server);
-            
+
             serverWatchDog = new WatchDog(server, "AuthenticatorWatchDog");
         } catch (JPNotAvailableException | CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
@@ -105,31 +116,56 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     }
 
     @Override
-    public Future<TicketSessionKeyWrapper> requestTGT(String clientId) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.submit(new Callable<TicketSessionKeyWrapper>() {
-            @Override
-            public TicketSessionKeyWrapper call() throws Exception {
-                return authenticationHandler.handleKDCRequest(clientId, "", TGSSessionKey, TGSPrivateKey);
+    public Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(String clientId) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(() -> {
+            try {
+//                String[] split = clientId.split("@", 2);
+//                String userName = split[0];
+                Registries.getUserRegistry().waitForData();
+                UnitConfig userUnitConfig = Registries.getUserRegistry().getUserConfigById(clientId);
+                System.out.println("Encryption with [" + userUnitConfig.getUserConfig().getPassword() + "]");
+                return authenticationHandler.handleKDCRequest(clientId, userUnitConfig.getUserConfig().getPassword().toByteArray(), "", TGSSessionKey, TGSPrivateKey);
+            } catch (NotAvailableException ex) {
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
+            } catch (InterruptedException | CouldNotPerformException | IOException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+                throw new CouldNotPerformException("Internal server error. Please try again.");
             }
         });
     }
 
     @Override
-    public Future<TicketSessionKeyWrapper> requestCST(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.submit(new Callable<TicketSessionKeyWrapper>() {
-            @Override
-            public TicketSessionKeyWrapper call() throws Exception {
+    public Future<TicketSessionKeyWrapper> requestClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(() -> {
+            try {
                 return authenticationHandler.handleTGSRequest(TGSSessionKey, TGSPrivateKey, SSSessionKey, SSPrivateKey, ticketAuthenticatorWrapper);
+            } catch (RejectedException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
+                throw new RejectedException(ex.getMessage());
+            } catch (StreamCorruptedException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
+                throw new StreamCorruptedException(ex.getMessage());
+            } catch (IOException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+                throw new CouldNotPerformException("Internal server error. Please try again.");
             }
         });
     }
 
     @Override
-    public Future<TicketAuthenticatorWrapper> validateCST(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.submit(new Callable<TicketAuthenticatorWrapper>() {
-            @Override
-            public TicketAuthenticatorWrapper call() throws Exception {
+    public Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(() -> {
+            try {
                 return authenticationHandler.handleSSRequest(SSSessionKey, SSPrivateKey, ticketAuthenticatorWrapper);
+            } catch (RejectedException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
+                throw new RejectedException(ex.getMessage());
+            } catch (StreamCorruptedException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
+                throw new StreamCorruptedException(ex.getMessage());
+            } catch (IOException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+                throw new CouldNotPerformException("Internal server error. Please try again.");
             }
         });
     }
