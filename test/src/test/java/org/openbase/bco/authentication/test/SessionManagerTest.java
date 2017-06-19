@@ -29,14 +29,9 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.openbase.bco.authentication.core.AuthenticationRegistry;
 import org.openbase.bco.authentication.core.AuthenticatorController;
-import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
-import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
-import org.openbase.jul.extension.rsb.iface.RSBListener;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import rsb.Event;
 
 /**
  *
@@ -46,7 +41,6 @@ public class SessionManagerTest {
 
     private static AuthenticatorController authenticatorController;
     private static AuthenticationRegistry authenticationRegistry;
-    private static RSBListener listener;
 
     public SessionManagerTest() {
     }
@@ -63,21 +57,12 @@ public class SessionManagerTest {
             authenticatorController.activate();
             return null;
         });
-
-        listener = RSBFactoryImpl.getInstance().createSynchronizedListener(JPService.getProperty(JPAuthenticationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
-        listener.addHandler((Event event) -> {
-            System.out.println(event.getData());
-        }, true);
-        listener.activate();
     }
 
     @AfterClass
     public static void tearDownClass() throws Exception {
         if (authenticatorController != null) {
             authenticatorController.shutdown();
-        }
-        if (listener != null) {
-            listener.deactivate();
         }
     }
 
