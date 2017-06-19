@@ -39,8 +39,7 @@ public class JPInitializeCredentials extends AbstractJPBoolean {
     }
 
     /**
-     * returns true if JPS is in test mode or JPResetDB is enabled.
-     * @return
+     * @return true if JPS is in test mode or JPResetDB is enabled.
      */
     @Override
     protected Boolean getPropertyDefaultValue() {
