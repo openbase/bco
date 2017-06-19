@@ -177,6 +177,7 @@
     <modules>
         <module>core</module>
         <module>lib</module>
+        <module>test</module>
     </modules>
 
     <properties>

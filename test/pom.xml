@@ -2,10 +2,10 @@
     <modelVersion>4.0.0</modelVersion>
 
     <groupId>org.openbase.bco</groupId>
-    <artifactId>authentication.lib</artifactId>
+    <artifactId>authentication.test</artifactId>
     <packaging>jar</packaging>
 
-    <name>BCO Authentication Library</name>
+    <name>BCO Authentication Test</name>
     
     <parent>
         <groupId>org.openbase.bco</groupId>
@@ -52,39 +52,28 @@
             </plugin>
         </plugins>
     </build>
+    
+    <properties>
+        <skipTests>false</skipTests>
+    </properties>
+ 
+ 
     <dependencies>
-        <dependency>
-            <groupId>org.junit.jupiter</groupId>
-            <artifactId>junit-jupiter-api</artifactId>
-            <version>5.0.0-M4</version>
-        </dependency>
-        <dependency>
-            <groupId>org.seleniumhq.selenium</groupId>
-            <artifactId>selenium-java</artifactId>
-            <scope>test</scope>
-            <version>2.44.0</version>
-        </dependency>
-        <dependency>
-            <groupId>com.opera</groupId>
-            <artifactId>operadriver</artifactId>
-            <scope>test</scope>
-            <version>1.5</version>
-            <exclusions>
-                <exclusion>
-                    <groupId>org.seleniumhq.selenium</groupId>
-                    <artifactId>selenium-remote-driver</artifactId>
-                </exclusion>
-            </exclusions>
-        </dependency>
         <dependency>
             <groupId>junit</groupId>
             <artifactId>junit</artifactId>
             <scope>test</scope>
             <version>4.11</version>
         </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>authentication.core</artifactId>
+            <version>1.4-SNAPSHOT</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>authentication.lib</artifactId>
+            <version>1.4-SNAPSHOT</version>
+        </dependency>
     </dependencies>
-    <properties>
-        <skipTests>false</skipTests>
-    </properties>
-    
 </project>
