@@ -91,7 +91,7 @@ public class SessionManagerTest {
     /**
      * Test of login method, of class SessionManager.
      */
-    @Test(timeout = 5000)
+    @Test(timeout = 10000)
     public void testLogin() throws Exception {
         Registries.getUserRegistry().waitForData();
         UnitConfigType.UnitConfig userUnitConfig = Registries.getUserRegistry().getUserConfigs().get(0);
@@ -106,7 +106,7 @@ public class SessionManagerTest {
     /**
      * Test of login method, of class SessionManager.
      */
-    @Test(timeout = 5000)
+    @Test(timeout = 10000)
     public void testLogout() throws Exception {
         Registries.getUserRegistry().waitForData();
         UnitConfigType.UnitConfig userUnitConfig = Registries.getUserRegistry().getUserConfigs().get(0);

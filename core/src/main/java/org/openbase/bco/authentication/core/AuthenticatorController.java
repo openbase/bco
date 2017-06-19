@@ -43,14 +43,11 @@ import org.openbase.jul.schedule.WatchDog;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 import org.openbase.bco.authentication.lib.AuthenticationService;
-import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.user.remote.UserRegistryRemote;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.slf4j.LoggerFactory;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -69,8 +66,13 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     private final byte[] SSPrivateKey;
 
     private final AuthenticationServerHandler authenticationHandler;
+    private final AuthenticationRegistry authenticationRegistry;
 
     public AuthenticatorController() {
+        this(new AuthenticationRegistry());
+    }
+
+    public AuthenticatorController(AuthenticationRegistry authenticationRegistry) {
         this.server = new NotInitializedRSBLocalServer();
 
         this.authenticationHandler = new AuthenticationServerHandler();
@@ -78,6 +80,8 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         this.TGSPrivateKey = EncryptionHelper.generateKey();
         this.SSSessionKey = EncryptionHelper.generateKey();
         this.SSPrivateKey = EncryptionHelper.generateKey();
+
+        this.authenticationRegistry = authenticationRegistry;
     }
 
     @Override
@@ -92,6 +96,8 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         } catch (JPNotAvailableException | CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
+
+        authenticationRegistry.init();
     }
 
     @Override
@@ -119,12 +125,10 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     public Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(String clientId) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
             try {
-//                String[] split = clientId.split("@", 2);
-//                String userName = split[0];
-                Registries.getUserRegistry().waitForData();
-                UnitConfig userUnitConfig = Registries.getUserRegistry().getUserConfigById(clientId);
-                System.out.println("Encryption with [" + userUnitConfig.getUserConfig().getPassword() + "]");
-                return authenticationHandler.handleKDCRequest(clientId, EncryptionHelper.hash(userUnitConfig.getUserConfig().getPassword().toString()), "", TGSSessionKey, TGSPrivateKey);
+                String[] split = clientId.split("@", 2);
+                String userName = split[0];
+                byte[] passwordHash = authenticationRegistry.getCredentials(userName);
+                return authenticationHandler.handleKDCRequest(clientId, passwordHash, "", TGSSessionKey, TGSPrivateKey);
             } catch (NotAvailableException ex) {
                 throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
             } catch (InterruptedException | CouldNotPerformException | IOException ex) {
