@@ -135,7 +135,7 @@ public class AuthenticatorControllerTest {
      *
      * @throws Exception
      */
-    @Test
+    @Test(timeout = 5000)
     public void testAuthenticationWithNonExistentUser() throws Exception {
         System.out.println("testAuthenticationWithNonExistentUser");
 
@@ -155,7 +155,7 @@ public class AuthenticatorControllerTest {
      *
      * @throws Exception
      */
-    @Test
+    @Test(timeout = 5000)
     public void testAuthenticationWithIncorrectPassword() throws Exception {
         System.out.println("testAuthenticationWithIncorrectPassword");
 

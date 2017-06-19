@@ -21,16 +21,15 @@ package org.openbase.bco.authentication.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermission;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Map;
 import java.util.Set;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
+import org.openbase.bco.authentication.lib.jp.JPInitializeCredentials;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -64,8 +63,8 @@ public class AuthenticationRegistry {
     public void init() throws InitializationException {
         try {
             this.file = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), FILENAME);
-            this.setPermissions();
             this.load();
+            this.setPermissions();
         } catch (JPNotAvailableException | CouldNotPerformException | IOException ex) {
             throw new InitializationException(AuthenticationRegistry.class, ex);
         }
@@ -82,7 +81,7 @@ public class AuthenticationRegistry {
         if (!credentials.containsKey(userId)) {
             throw new NotAvailableException(userId);
         }
-        
+
         return credentials.get(userId);
     }
 
@@ -104,6 +103,14 @@ public class AuthenticationRegistry {
      * @throws CouldNotPerformException If the deserialization fails.
      */
     private void load() throws CouldNotPerformException {
+        try {
+            if (!file.exists() && JPService.getProperty(JPInitializeCredentials.class).getValue()) {
+                credentials = new HashMap<>();
+                save();
+            }
+        } catch (JPNotAvailableException ex) {
+            throw new CouldNotPerformException("Initialize credential property not available!", ex);
+        }
         credentials = fileProcessor.deserialize(file);
     }
 
