@@ -22,30 +22,48 @@ package org.openbase.bco.authentication.test;
  * #L%
  */
 
-import java.util.HashMap;
-import org.openbase.bco.authentication.core.AuthenticationRegistry;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
-import org.openbase.jul.exception.InitializationException;
+import org.junit.After;
+import org.junit.AfterClass;
+import org.junit.Before;
+import org.junit.BeforeClass;
+import org.junit.Test;
+import static org.junit.Assert.*;
 
 /**
  *
- * @author <a href="mailto:cromankiewicz@techfak.uni-bielefeld.de">Constantin Romankiewicz</a>
+ * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
-public class MockAuthenticationRegistry extends AuthenticationRegistry {
+public class SessionKeyTest {
     
-    public static final String CLIENT_ID = "maxmustermann";
-    public static final String PASSWORD = "password";
-    public static final byte[] PASSWORD_HASH = EncryptionHelper.hash(PASSWORD);
-
-    @Override
-    public void setCredentials(String userId, byte[] credentials) {
-        this.credentials.put(userId, credentials);
+    public SessionKeyTest() {
+    }
+    
+    @BeforeClass
+    public static void setUpClass() {
+    }
+    
+    @AfterClass
+    public static void tearDownClass() {
+    }
+    
+    @Before
+    public void setUp() {
+    }
+    
+    @After
+    public void tearDown() {
     }
 
-    @Override
-    public void init() throws InitializationException {
-        credentials = new HashMap<>();
-        credentials.put(CLIENT_ID, PASSWORD_HASH);
+    /**
+     * Test of generateKey method, of class SessionKey.
+     */
+    @Test
+    public void testGenerateKey() {
+        System.out.println("generateKey");
+        int expLen = 16;
+        int len = EncryptionHelper.generateKey().length;
+        assertEquals(expLen, len);
     }
-
+    
 }

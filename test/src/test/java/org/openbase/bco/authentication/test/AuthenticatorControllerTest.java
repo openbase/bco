@@ -26,11 +26,11 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import org.openbase.bco.authentication.core.AuthenticationRegistry;
 import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.ClientRemote;
-import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
@@ -49,8 +49,6 @@ public class AuthenticatorControllerTest {
 
     private static AuthenticatorController authenticatorController;
     private static AuthenticationRegistry authenticationRegistry;
-        String clientId = "maxmustermann";
-        String clientPassword = "password";
 
     public AuthenticatorControllerTest() {
     }
@@ -90,26 +88,26 @@ public class AuthenticatorControllerTest {
      * @throws java.lang.Exception
      */
     //TODO: find error and reactivate
-    //@Test(timeout = 5000)
+    @Test(timeout = 5000)
     public void testCommunication() throws Exception {
+        String clientId = MockAuthenticationRegistry.CLIENT_ID;
+        byte[] clientPasswordHash = MockAuthenticationRegistry.PASSWORD_HASH;
 
         RSBListener listener = RSBFactoryImpl.getInstance().createSynchronizedListener(JPService.getProperty(JPAuthenticationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
         listener.addHandler((Event event) -> {
             System.out.println(event.getData());
         }, true);
         listener.activate();
-        
+
         ClientRemote clientRemote = new ClientRemote();
         clientRemote.init();
         clientRemote.activate();
 
         Thread.sleep(500);
 
-        byte[] clientPasswordHash = EncryptionHelper.hash(clientPassword);
-
         // handle KDC request on server side
         TicketSessionKeyWrapper ticketSessionKeyWrapper = clientRemote.requestTicketGrantingTicket(clientId).get();
-        
+
         // handle KDC response on client side
         List<Object> list = AuthenticationClientHandler.handleKDCResponse(clientId, clientPasswordHash, ticketSessionKeyWrapper);
         TicketAuthenticatorWrapper clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
