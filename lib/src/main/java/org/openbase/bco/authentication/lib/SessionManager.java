@@ -68,6 +68,8 @@ public class SessionManager {
         try {
             this.clientRemote.init();
             this.clientRemote.activate();
+            
+            Thread.sleep(100);
 
             // init KDC request on client side
             byte[] clientPasswordHash = EncryptionHelper.hash(clientPassword);

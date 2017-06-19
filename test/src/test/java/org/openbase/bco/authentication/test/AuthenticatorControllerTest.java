@@ -22,7 +22,6 @@ package org.openbase.bco.authentication.test;
  * #L%
  */
 import java.io.IOException;
-import java.io.StreamCorruptedException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.junit.After;
@@ -35,8 +34,8 @@ import org.openbase.bco.authentication.core.AuthenticationRegistry;
 import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.ClientRemote;
+import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
@@ -46,7 +45,7 @@ import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWr
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class AuthenticatorControllerTest {
-    
+
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatorControllerTest.class);
 
     private static AuthenticatorController authenticatorController;
@@ -70,6 +69,8 @@ public class AuthenticatorControllerTest {
         clientRemote = new ClientRemote();
         clientRemote.init();
         clientRemote.activate();
+        
+        Thread.sleep(100);
     }
 
     @AfterClass
@@ -98,7 +99,7 @@ public class AuthenticatorControllerTest {
     @Test(timeout = 5000)
     public void testCommunication() throws Exception {
         System.out.println("testCommunication");
-        
+
         String clientId = MockAuthenticationRegistry.CLIENT_ID;
         byte[] clientPasswordHash = MockAuthenticationRegistry.PASSWORD_HASH;
 
@@ -126,15 +127,13 @@ public class AuthenticatorControllerTest {
 
         // handle SS response on client side
         AuthenticationClientHandler.handleSSResponse(clientSSSessionKey, clientTicketAuthenticatorWrapper, serverTicketAuthenticatorWrapper);
-
-        clientRemote.shutdown();
     }
 
     /**
      * Test if an exception is correctly thrown if a user requests a ticket granting ticket with
      * a wrong client id.
-     * 
-     * @throws Exception 
+     *
+     * @throws Exception
      */
     @Test
     public void testAuthenticationWithNonExistentUser() throws Exception {
@@ -151,43 +150,25 @@ public class AuthenticatorControllerTest {
         fail("Exception has not been thrown even though there should be no user[" + nonExistentClientId + "] in the database!");
     }
 
-     //TODO: activate when working
-//    @Test
-//    public void testAuthenticationWithIncorrectPassword() throws Exception {
-//        System.out.println("testAuthenticationWithIncorrectPassword");
-//
-//        String serverClientId = MockAuthenticationRegistry.CLIENT_ID;
-//        byte[] serverClientPasswordHash = EncryptionHelper.hash("correctPassword");
-//        byte[] clientPasswordHash = EncryptionHelper.hash("wrongPassword");
-//
-//        TicketSessionKeyWrapper ticketSessionKeyWrapper = clientRemote.requestTicketGrantingTicket(serverClientId).get();
-//        try {
-//            List<Object> list = AuthenticationClientHandler.handleKDCResponse(serverClientId, clientPasswordHash, ticketSessionKeyWrapper);
-//        } catch (StreamCorruptedException ex) {
-//            return;
-//        }
-//        fail("NotAvailableException has not been thrown even though there should be no user[" + serverClientId + "] in the database!");
-//    }
+    /**
+     * Test if the correct exception is thrown if the wrong password for a user is used.
+     *
+     * @throws Exception
+     */
+    @Test
+    public void testAuthenticationWithIncorrectPassword() throws Exception {
+        System.out.println("testAuthenticationWithIncorrectPassword");
 
-    // TODO: activate when working
-    //@Test
-//    public void testAuthenticationWithNonExistentUserAndIncorrectPassword() throws Exception {
-//        System.out.println("testAuthenticationWithIncorrectPassword");
-//        System.out.println("testAuthenticationWithNonExistentUser");
-//
-//        String clientId = "NonExistentClientId";
-//        clientPasswordHash = EncryptionHelper.hash("wrong passwd");
-//
-//        AuthenticationServerHandler serverHandler = new AuthenticationServerHandler();
-//        AuthenticationClientHandler clientHandler = new AuthenticationClientHandler();
-//
-//        TicketSessionKeyWrapper ticketSessionKeyWrapper = serverHandler.handleKDCRequest(clientId, clientPasswordHash, serverClientNetworkAddress, serverTGSSessionKey, serverTGSPrivateKey);
-//        // TODO: handle exception when thrown
-////        try {
-//        List<Object> list = clientHandler.handleKDCResponse(clientId, clientPasswordHash, ticketSessionKeyWrapper);
-////        } catch (NotAvailableException ex) {
-////            return;
-////        }
-//        fail("NotAvailableException has not been thrown even though there should be no user[" + clientId + "] in the database!");
-//    }
+        String clientId = MockAuthenticationRegistry.CLIENT_ID;
+        String password = "wrongpassword";
+        byte[] passwordHash = EncryptionHelper.hash(password);
+
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = clientRemote.requestTicketGrantingTicket(clientId).get();
+        try {
+            AuthenticationClientHandler.handleKDCResponse(clientId, passwordHash, ticketSessionKeyWrapper);
+        } catch (IOException ex) {
+            return;
+        }
+        fail("Exception has not been thrown even though user[" + clientId + "] does not use the password[" + password + "]!");
+    }
 }
