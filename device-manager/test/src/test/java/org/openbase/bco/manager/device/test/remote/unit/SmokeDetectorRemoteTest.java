@@ -21,10 +21,7 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -32,17 +29,9 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.unit.SmokeDetectorController;
 import org.openbase.bco.dal.remote.unit.SmokeDetectorRemote;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
+import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
-import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.pattern.Remote;
-import org.slf4j.LoggerFactory;
 import rst.domotic.state.AlarmStateType.AlarmState;
 import rst.domotic.state.SmokeStateType.SmokeState;
 
@@ -50,52 +39,18 @@ import rst.domotic.state.SmokeStateType.SmokeState;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class SmokeDetectorRemoteTest {
-
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SmokeDetectorRemoteTest.class);
+public class SmokeDetectorRemoteTest extends AbstractBCODeviceManagerTest {
 
     private static SmokeDetectorRemote smokeDetectorRemote;
-    private static DeviceManagerLauncher deviceManagerLauncher;
-    private static MockRegistry registry;
-    private static String label;
 
     public SmokeDetectorRemoteTest() {
     }
 
     @BeforeClass
-    public static void setUpClass() throws InstantiationException, CouldNotPerformException, InterruptedException, ExecutionException, JPServiceException {
-        try {
-            JPService.setupJUnitTestMode();
-            registry = MockRegistryHolder.newMockRegistry();
+    public static void setUpClass() throws Throwable {
+        AbstractBCODeviceManagerTest.setUpClass();
 
-            deviceManagerLauncher = new DeviceManagerLauncher();
-            deviceManagerLauncher.launch();
-            Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
-
-            label = MockRegistry.SMOKE_DETECTOR_LABEL;
-
-            smokeDetectorRemote = new SmokeDetectorRemote();
-            smokeDetectorRemote.initByLabel(label);
-            smokeDetectorRemote.activate();
-            smokeDetectorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
-        } catch (Throwable ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
-    }
-
-    @AfterClass
-    public static void tearDownClass() {
-        try {
-            if (deviceManagerLauncher != null) {
-                deviceManagerLauncher.shutdown();
-            }
-            if (smokeDetectorRemote != null) {
-                smokeDetectorRemote.shutdown();
-            }
-            MockRegistryHolder.shutdownMockRegistry();
-        } catch (Throwable ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
+        smokeDetectorRemote = Units.getUnitsByLabel(MockRegistry.SMOKE_DETECTOR_LABEL, true, SmokeDetectorRemote.class).get(0);
     }
 
     @Before

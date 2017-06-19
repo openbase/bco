@@ -21,27 +21,20 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.TimeUnit;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.unit.MotionDetectorController;
 import org.openbase.bco.dal.remote.unit.MotionDetectorRemote;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
+import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
-import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.TimestampJavaTimeTransform;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.schedule.Stopwatch;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.MotionStateType.MotionState;
@@ -50,52 +43,20 @@ import rst.domotic.state.MotionStateType.MotionState;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class MotionDetectorRemoteTest {
+public class MotionDetectorRemoteTest extends AbstractBCODeviceManagerTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MotionDetectorRemoteTest.class);
 
     private static MotionDetectorRemote motionDetectorRemote;
-    private static DeviceManagerLauncher deviceManagerLauncher;
-    private static MockRegistry registry;
-    private static String label;
 
     public MotionDetectorRemoteTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Throwable {
-        try {
-            JPService.setupJUnitTestMode();
-            registry = MockRegistryHolder.newMockRegistry();
+        AbstractBCODeviceManagerTest.setUpClass();
 
-            deviceManagerLauncher = new DeviceManagerLauncher();
-            deviceManagerLauncher.launch();
-            Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
-
-            label = MockRegistry.MOTION_DETECTOR_LABEL;
-
-            motionDetectorRemote = new MotionDetectorRemote();
-            motionDetectorRemote.initByLabel(label);
-            motionDetectorRemote.activate();
-            motionDetectorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
-        } catch (Throwable ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Throwable {
-        try {
-            if (deviceManagerLauncher != null) {
-                deviceManagerLauncher.shutdown();
-            }
-            if (motionDetectorRemote != null) {
-                motionDetectorRemote.shutdown();
-            }
-            MockRegistryHolder.shutdownMockRegistry();
-        } catch (Throwable ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
+        motionDetectorRemote = Units.getUnitsByLabel(MockRegistry.MOTION_DETECTOR_LABEL, true, MotionDetectorRemote.class).get(0);
     }
 
     @Before
@@ -104,13 +65,6 @@ public class MotionDetectorRemoteTest {
 
     @After
     public void tearDown() {
-    }
-
-    /**
-     * Test of notifyUpdated method, of class MotionSenorRemote.
-     */
-    @Ignore
-    public void testNotifyUpdated() {
     }
 
     /**
@@ -133,7 +87,7 @@ public class MotionDetectorRemoteTest {
      *
      * @throws java.lang.Exception
      */
-    @Test//(timeout = 10000)
+    @Test(timeout = 10000)
     public void testGetMotionStateTimestamp() throws Exception {
         LOGGER.debug("testGetMotionStateTimestamp");
         long timestamp;

@@ -32,9 +32,6 @@ import org.openbase.bco.dal.remote.unit.BatteryRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rst.domotic.state.BatteryStateType.BatteryState;
 
 /**
@@ -43,25 +40,16 @@ import rst.domotic.state.BatteryStateType.BatteryState;
  */
 public class BatteryRemoteTest extends AbstractBCODeviceManagerTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(BatteryRemoteTest.class);
-
     private static BatteryRemote batteryRemote;
-    private static String label;
 
     public BatteryRemoteTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Throwable {
-        try {
-            AbstractBCODeviceManagerTest.setUpClass();
+        AbstractBCODeviceManagerTest.setUpClass();
 
-            label = MockRegistry.BATTERY_LABEL;
-
-            batteryRemote = Units.getUnitsByLabel(label, true, BatteryRemote.class).get(0);
-        } catch (Throwable ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
+        batteryRemote = Units.getUnitsByLabel(MockRegistry.BATTERY_LABEL, true, BatteryRemote.class).get(0);
     }
 
     @Before

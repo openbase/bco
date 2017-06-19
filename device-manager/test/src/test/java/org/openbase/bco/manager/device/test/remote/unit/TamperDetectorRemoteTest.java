@@ -21,9 +21,7 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.TimeUnit;
 import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
@@ -33,69 +31,30 @@ import org.junit.Ignore;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.unit.TamperDetectorController;
 import org.openbase.bco.dal.remote.unit.TamperDetectorRemote;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
+import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
-import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.TimestampJavaTimeTransform;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.schedule.Stopwatch;
-import org.slf4j.LoggerFactory;
 import rst.domotic.state.TamperStateType.TamperState;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class TamperDetectorRemoteTest {
-
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(TamperDetectorRemoteTest.class);
+public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
 
     private static TamperDetectorRemote tamperDetectorRemote;
-    private static DeviceManagerLauncher deviceManagerLauncher;
-    private static MockRegistry registry;
-    private static String label;
 
     public TamperDetectorRemoteTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Throwable {
-        try {
-            JPService.setupJUnitTestMode();
-            registry = MockRegistryHolder.newMockRegistry();
+        AbstractBCODeviceManagerTest.setUpClass();
 
-            deviceManagerLauncher = new DeviceManagerLauncher();
-            deviceManagerLauncher.launch();
-            Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
-
-            label = MockRegistry.TAMPER_DETECTOR_LABEL;
-
-            tamperDetectorRemote = new TamperDetectorRemote();
-            tamperDetectorRemote.initByLabel(label);
-            tamperDetectorRemote.activate();
-            tamperDetectorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
-        } catch (Throwable ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Throwable {
-        try {
-            if (deviceManagerLauncher != null) {
-                deviceManagerLauncher.shutdown();
-            }
-            if (tamperDetectorRemote != null) {
-                tamperDetectorRemote.shutdown();
-            }
-            MockRegistryHolder.shutdownMockRegistry();
-        } catch (Throwable ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
+        tamperDetectorRemote = Units.getUnitsByLabel(MockRegistry.TAMPER_DETECTOR_LABEL, true, TamperDetectorRemote.class).get(0);
     }
 
     @Before
@@ -121,7 +80,7 @@ public class TamperDetectorRemoteTest {
     @Test(timeout = 10000)
     public void testGetTamperState() throws Exception {
         System.out.println("getTamperState");
-        TamperState tamperState =  TimestampProcessor.updateTimestampWithCurrentTime(TamperState.newBuilder().setValue(TamperState.State.TAMPER)).build();
+        TamperState tamperState = TimestampProcessor.updateTimestampWithCurrentTime(TamperState.newBuilder().setValue(TamperState.State.TAMPER)).build();
         ((TamperDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId())).updateTamperStateProvider(tamperState);
         tamperDetectorRemote.requestData().get();
         assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
@@ -134,7 +93,7 @@ public class TamperDetectorRemoteTest {
      */
     @Test(timeout = 10000)
     public void testGetTamperStateTimestamp() throws Exception {
-        LOGGER.debug("testGetTamperStateTimestamp");
+        System.out.println("testGetTamperStateTimestamp");
         long timestamp;
         Stopwatch stopwatch = new Stopwatch();
 

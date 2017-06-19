@@ -21,75 +21,34 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.TimeUnit;
 import org.junit.After;
-import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.unit.LightSensorController;
 import org.openbase.bco.dal.remote.unit.LightSensorRemote;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
+import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
-import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.pattern.Remote;
-import org.slf4j.LoggerFactory;
 import rst.domotic.state.IlluminanceStateType.IlluminanceState;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class LightSensorRemoteTest {
-
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(LightSensorRemoteTest.class);
+public class LightSensorRemoteTest extends AbstractBCODeviceManagerTest {
 
     private static LightSensorRemote lightSensorRemote;
-    private static DeviceManagerLauncher deviceManagerLauncher;
-    private static String label;
 
     public LightSensorRemoteTest() {
     }
 
     @BeforeClass
     public static void setUpClass() throws Throwable {
-        try {
-            JPService.setupJUnitTestMode();
-            MockRegistryHolder.newMockRegistry();
+        AbstractBCODeviceManagerTest.setUpClass();
 
-            deviceManagerLauncher = new DeviceManagerLauncher();
-            deviceManagerLauncher.launch();
-            Registries.getUnitRegistry().waitForData(30, TimeUnit.SECONDS);
-
-            label = MockRegistry.LIGHT_SENSOR_LABEL;
-
-            lightSensorRemote = new LightSensorRemote();
-            lightSensorRemote.initByLabel(label);
-            lightSensorRemote.activate();
-            lightSensorRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
-        } catch (Throwable ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Throwable {
-        try {
-            if (deviceManagerLauncher != null) {
-                deviceManagerLauncher.shutdown();
-            }
-            if (lightSensorRemote != null) {
-                lightSensorRemote.shutdown();
-            }
-            MockRegistryHolder.shutdownMockRegistry();
-        } catch (Throwable ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
+        lightSensorRemote = Units.getUnitsByLabel(MockRegistry.LIGHT_SENSOR_LABEL, true, LightSensorRemote.class).get(0);
     }
 
     @Before
@@ -98,13 +57,6 @@ public class LightSensorRemoteTest {
 
     @After
     public void tearDown() {
-    }
-
-    /**
-     * Test of notifyUpdated method, of class LightSensorRemote.
-     */
-    @Ignore
-    public void testNotifyUpdated() {
     }
 
     /**

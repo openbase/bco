@@ -21,6 +21,7 @@ package org.openbase.bco.manager.user.test.remote.user;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.openbase.bco.dal.test.AbstractBCOTest;
