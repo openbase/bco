@@ -82,11 +82,11 @@ public class NearFieldLightAgent extends AbstractAgentController {
 
         try {
             for (LocationRemote neigborRemote : neighborRemotes) {
-                 if (locationRemote.hasRelatedConnectionOfType(neigborRemote.getId(), ConnectionType.PASSAGE, true)) {
+                 if (locationRemote.hasDirectConnection(neigborRemote.getId(), ConnectionType.PASSAGE, true)) {
                     GenericTrigger<LocationRemote, LocationData, PresenceState.State> trigger = new GenericTrigger<>(neigborRemote, PresenceState.State.PRESENT, ServiceType.PRESENCE_STATE_SERVICE);
                     agentTriggerHolder.addTrigger(trigger, AgentTriggerPool.TriggerOperation.OR);
                 } else {
-                    for (ConnectionRemote relatedConnection : locationRemote.getRelatedConnectionRemoteList(neigborRemote.getId(), true)) {
+                    for (ConnectionRemote relatedConnection : locationRemote.getDirectConnectionList(neigborRemote.getId(), true)) {
                         NeighborConnectionPresenceTrigger trigger = new NeighborConnectionPresenceTrigger(neigborRemote, relatedConnection);
                         agentTriggerHolder.addTrigger(trigger, AgentTriggerPool.TriggerOperation.OR);
                     }
