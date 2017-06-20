@@ -45,7 +45,7 @@ import rst.domotic.state.TamperStateType;
 import rst.domotic.state.TemperatureStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.domotic.unit.connection.ConnectionConfigType;
+import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
 import rst.domotic.unit.location.LocationDataType;
 import rst.domotic.unit.location.LocationDataType.LocationData;
@@ -221,17 +221,23 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         return connectionList;
     }
 
-    public List<ConnectionRemote> getRelatedConnectionRemoteList(final String locationID, final boolean waitForData) throws CouldNotPerformException {
+    /**
+     * Method collects all connections between this and the given location and returns those instances.
+     * @param locationID the location id of the location to check.
+     * @param waitForData flag defines if the method should block until all needed instances are available.
+     * @return a collection of unit connection remotes.
+     * @throws CouldNotPerformException is thrown if the check could not be performed e.g. if some data is not available yet.
+     */
+    public List<ConnectionRemote> getDirectConnectionList(final String locationID, final boolean waitForData) throws CouldNotPerformException {
         if (!getConfig().getLocationConfig().getType().equals(LocationType.TILE)) {
             throw new CouldNotPerformException("Location is not a Tile!");
         }
 
         List<ConnectionRemote> connectionList = new ArrayList<>();
         try {
-            for (UnitConfig connectionUnitConfig : CachedLocationRegistryRemote.getRegistry().getConnectionConfigs()) {
+            for (UnitConfig connectionUnitConfig : Registries.getLocationRegistry().getConnectionConfigs()) {
                 ConnectionRemote connection = Units.getUnit(connectionUnitConfig, waitForData, CONNECTION);
-                if (connection.getConfig().getConnectionConfig().getTileIdList().contains(getId())
-                        && connection.getConfig().getConnectionConfig().getTileIdList().contains(locationID)) {
+                if (connectionUnitConfig.getConnectionConfig().getTileIdList().contains(getId()) && connectionUnitConfig.getConnectionConfig().getTileIdList().contains(locationID)) {
                     connectionList.add(connection);
                 }
             }
@@ -241,8 +247,17 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         return connectionList;
     }
 
-    public boolean hasRelatedConnectionOfType(final String locationID, final ConnectionConfigType.ConnectionConfig.ConnectionType connectionType, final boolean waitForData) throws CouldNotPerformException {
-        for (ConnectionRemote relatedConnection : getRelatedConnectionRemoteList(locationID, true)) {
+    /**
+     * Method checks if an direct connection exists between this and the given location.
+     * @param locationID the location id of the location to check.
+     * @param connectionType the type of the connection. To disable this filter use ConnectionType.UNKNOWN
+     * @param waitForData flag defines if the method should block until all needed instances are available.
+     * @return true if the specified connection exists.
+     * @throws CouldNotPerformException is thrown if the check could not be performed e.g. if some data is not available yet.
+     */
+    public boolean hasDirectConnection(final String locationID, final ConnectionType connectionType, final boolean waitForData) throws CouldNotPerformException {
+        // todo do not interrate over instances if configs providing all needed informations.
+        for (ConnectionRemote relatedConnection : getDirectConnectionList(locationID, true)) {
             if (relatedConnection.getConfig().getConnectionConfig().getType().equals(connectionType)) {
                 return true;
             }
