@@ -474,6 +474,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
     @Override
     public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
+        super.registerMethods(server);
         RPCHelper.registerInterface(UnitRegistry.class, this, server);
     }
 

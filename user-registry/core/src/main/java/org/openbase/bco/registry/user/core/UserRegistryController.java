@@ -109,6 +109,7 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
 
     @Override
     public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
+        super.registerMethods(server);
         RPCHelper.registerInterface(UserRegistry.class, this, server);
     }
 

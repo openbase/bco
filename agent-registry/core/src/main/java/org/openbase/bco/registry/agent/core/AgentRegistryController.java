@@ -149,6 +149,7 @@ public class AgentRegistryController extends AbstractVirtualRegistryController<A
 
     @Override
     public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
+        super.registerMethods(server);
         RPCHelper.registerInterface(AgentRegistry.class, this, server);
     }
 

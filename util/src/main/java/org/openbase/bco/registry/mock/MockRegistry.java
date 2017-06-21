@@ -597,7 +597,7 @@ public class MockRegistry {
             connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.WINDOW).addAllTileId(tileIds).addUnitId(reedContactId).build();
             locationRegistry.registerConnectionConfig(UnitConfig.newBuilder().setType(UnitType.CONNECTION).setLabel("Stairs_Hell_Lookout").setConnectionConfig(connectionConfig).build()).get();
 
-        } catch (ExecutionException ex) {
+        } catch (ExecutionException | IndexOutOfBoundsException ex) {
             throw new CouldNotPerformException(ex);
         }
     }

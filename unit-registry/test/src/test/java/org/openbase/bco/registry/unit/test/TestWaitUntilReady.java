@@ -22,6 +22,8 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
@@ -29,19 +31,24 @@ import org.junit.Test;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.unit.core.UnitRegistryController;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.schedule.Stopwatch;
+import org.openbase.jul.storage.registry.ConsistencyHandler;
+import org.openbase.jul.storage.registry.EntryModification;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
-import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
 
 /**
  *
@@ -51,6 +58,8 @@ public class TestWaitUntilReady {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestWaitUntilReady.class);
 
+    private static boolean deplayConsistencyCheck = false;
+
     public TestWaitUntilReady() {
     }
 
@@ -59,6 +68,33 @@ public class TestWaitUntilReady {
         try {
             JPService.setupJUnitTestMode();
             MockRegistryHolder.newMockRegistry();
+            ((UnitRegistryController) MockRegistry.getUnitRegistry()).getDeviceUnitConfigRegistry().registerConsistencyHandler(new ConsistencyHandler<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder>, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder>>() {
+
+                boolean alreadyDelayed = false;
+                int counter = 0;
+
+                @Override
+                public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+                    if (!registry.isSandbox() && !alreadyDelayed && deplayConsistencyCheck) {
+                        try {
+                            Thread.sleep(10);
+//                            LOGGER.info("counter : " + counter++);
+                        } catch (InterruptedException ex) {
+                            java.util.logging.Logger.getLogger(TestWaitUntilReady.class.getName()).log(Level.SEVERE, null, ex);
+                        }
+                        alreadyDelayed = true;
+                    }
+                }
+
+                @Override
+                public void reset() {
+                    alreadyDelayed = false;
+                }
+
+                @Override
+                public void shutdown() {
+                }
+            });
         } catch (JPServiceException | InstantiationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
@@ -75,7 +111,7 @@ public class TestWaitUntilReady {
 
     private boolean waitedUntilReady = false;
 
-    @Test(timeout = 10000)
+    @Test(timeout = 30000)
     public void testWaitUntilReady() throws Exception {
         System.out.println("testWaitUntilReady");
 
@@ -91,48 +127,31 @@ public class TestWaitUntilReady {
                 System.out.println("Received an update even though waitUntilReady has returned!");
                 assert false;
             } else {
-                System.out.println("update received");
+//                System.out.println("update received");
             }
         });
 
-        Stopwatch stopwatch = new Stopwatch();
-        stopwatch.start();
         final String deviceLabel = "ReadyDevice ";
-        final int iterations = 10;
+        final int iterations = 5;
+        deplayConsistencyCheck = true;
         for (int i = 0; i < iterations; ++i) {
             waitedUntilReady = false;
-//            UnitConfig deviceUnitConfig = getBasicDevice(deviceLabel + i, deviceClass);
             UnitConfig deviceUnitConfig = MockRegistry.getDeviceConfig(deviceLabel + i, String.valueOf(i), deviceClass);
-            System.out.println("Trigger device registration!");
+//            System.out.println("Trigger device registration!");
             Future<UnitConfig> registerUnitConfig = Registries.getUnitRegistry().registerUnitConfig(deviceUnitConfig);
-//            DeviceConfig.Builder device = test.getDeviceConfigBuilder();
-//            device.clearUnitId();
-//            Registries.getUnitRegistry().updateUnitConfig(test.build());
-            System.out.println("Wait until ready");
-            Thread.sleep(20);
-            stopwatch.restart();
+//            System.out.println("Wait until ready");
+
+            // needed to make sure the registry is processing the registration task.
+            Thread.sleep(5);
             Registries.waitUntilReady();
-            stopwatch.stop();
-            System.out.println("Waiting returned after " + stopwatch.getTime() + "ms");
-            stopwatch.restart();
-            registerUnitConfig.get();
-            stopwatch.stop();
-            if (stopwatch.getTime() >= 1) {
-                Assert.assertTrue("Get did not return immediatly but took " + stopwatch.getTime() + "ms!", false);
+            Assert.assertTrue("Test failed because registry is not consistent after wait until done returned.", Registries.getUnitRegistry().getData().getUnitConfigRegistryConsistent());
+            try {
+                registerUnitConfig.get(2, TimeUnit.MILLISECONDS);
+            } catch (Exception ex) {
+                Assert.assertTrue("Test failed because registration result is not available", false);
             }
             waitedUntilReady = true;
         }
-
-        Thread.sleep(1000);
-    }
-
-    private UnitConfig getBasicDevice(String label, DeviceClass deviceClass) {
-        UnitConfig.Builder deviceUnitConfig = UnitConfig.newBuilder();
-        DeviceConfig.Builder deviceConfig = deviceUnitConfig.getDeviceConfigBuilder();
-
-        deviceUnitConfig.setLabel(label);
-        deviceConfig.setDeviceClassId(deviceClass.getId());
-
-        return deviceUnitConfig.build();
+        deplayConsistencyCheck = false;
     }
 }

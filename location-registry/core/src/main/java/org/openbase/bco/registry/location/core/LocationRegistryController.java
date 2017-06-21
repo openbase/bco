@@ -128,6 +128,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
      */
     @Override
     public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
+        super.registerMethods(server);
         RPCHelper.registerInterface(LocationRegistry.class, this, server);
     }
 

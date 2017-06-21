@@ -24,6 +24,7 @@ package org.openbase.bco.registry.lib.com;
 import com.google.protobuf.GeneratedMessage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -123,7 +124,11 @@ public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends
             if (!isConnected()) {
                 return false;
             }
-            return RPCHelper.callRemoteMethod(this, Boolean.class).get(2000, TimeUnit.MILLISECONDS);
+            
+            System.out.println("try ping");
+            ping().get();
+            System.out.println("continue...");
+            return RPCHelper.callRemoteMethod(this, Boolean.class).get(30000, TimeUnit.MILLISECONDS);
         } catch (CouldNotPerformException | ExecutionException | TimeoutException ex) {
             ExceptionPrinter.printHistory("Could not check if registry is ready!", ex, logger);
             return false;
@@ -139,9 +144,9 @@ public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends
     @Override
     public void waitUntilReady() throws InterruptedException, CouldNotPerformException {
         try {
-            RPCHelper.callRemoteMethod(this);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not wait unit registry is ready!", ex);
+            RPCHelper.callRemoteMethod(this).get();
+        } catch (CouldNotPerformException | ExecutionException | CancellationException ex) {
+            throw new CouldNotPerformException("Could not wait until "+this+" is ready!", ex);
         }
     }
 

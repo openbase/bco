@@ -91,6 +91,7 @@ public class SceneRegistryController extends AbstractVirtualRegistryController<S
 
     @Override
     public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
+        super.registerMethods(server);
         RPCHelper.registerInterface(SceneRegistry.class, this, server);
     }
 

@@ -148,6 +148,7 @@ public class DeviceRegistryController extends AbstractVirtualRegistryController<
      */
     @Override
     public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
+        super.registerMethods(server);
         RPCHelper.registerInterface(DeviceRegistry.class, this, server);
     }
 
