@@ -215,23 +215,21 @@ git clone https://github.com/openbase/jul.git jul
 
 ## Setup Cor-Lab Debian Repository
 
-This repository provides a collection of precompiled libs and tools for rsb. This includes transport layers like spread as well as dev-libs for using rsb in python or c++. To register the repository to your local debian package manager follow these instructions:
-    * [http://packages.cor-lab.de/](http://packages.cor-lab.de/)
-    
-        * example for ubuntu xenial
-            ```
-            echo 'deb http://packages.cor-lab.de/ubuntu/ xenial main' | sudo tee -a /etc/apt/sources.list
-            echo 'deb http://packages.cor-lab.de/ubuntu/ xenial testing' | sudo tee -a /etc/apt/sources.list
-            wget -q http://packages.cor-lab.de/keys/cor-lab.asc -O- | sudo apt-key add -
-            sudo apt-get update
-            ```
+This repository provides a collection of precompiled libs and tools for rsb. This includes transport layers like spread as well as dev-libs for using rsb in python or c++. To register the repository to your local debian package manager follow the instructions on [http://packages.cor-lab.de/](http://packages.cor-lab.de/)
+* example for ubuntu xenial
+  ```
+  echo 'deb http://packages.cor-lab.de/ubuntu/ xenial main' | sudo tee -a /etc/apt/sources.list
+  echo 'deb http://packages.cor-lab.de/ubuntu/ xenial testing' | sudo tee -a /etc/apt/sources.list
+  wget -q http://packages.cor-lab.de/keys/cor-lab.asc -O- | sudo apt-key add -
+  sudo apt-get update
+  ```
 
 ## Spread Installation
 
 [Spread](http://www.spread.org/download.html) is the recommended and most stable transport protocol for bco.
 
 * Installation via Cor-Lab Debian Repository
-    * ```sudo apt-get install install spread librsbspread0.15```
+    * ```sudo apt-get install spread librsbspread0.15```
 * Official Installation Guide
     * [http://www.spread.org/download.html]
     
@@ -239,7 +237,7 @@ This repository provides a collection of precompiled libs and tools for rsb. Thi
 
 The rsb python and c++ libs can be installed via the cor-lab debian repository as well as the rsb developer tools:
 ```
-sudo apt-get librsc0.15 librsb0.15 rsb0.15 rst0.15 cl-rsb rsb-tools-cpp0.15 rsb-tools-cl0.15
+sudo apt-get install librsc0.15 librsb0.15 rsb0.15 rst0.15 cl-rsb rsb-tools-cpp0.15 rsb-tools-cl0.15
 ```
 
 ## RSB Configuration
