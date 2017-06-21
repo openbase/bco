@@ -59,12 +59,12 @@ import rst.rsb.ScopeType.Scope;
  * @param <MB>
  */
 public abstract class AbstractRegistryController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> implements RegistryController<M>, Launchable<Scope> {
-    
+
     public static final boolean SPARSELY_REGISTRY_DATA_FILTERED = true;
     public static final boolean SPARSELY_REGISTRY_DATA_NOTIFIED = false;
-    
+
     protected ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
-    
+
     private final SyncObject CHANGE_NOTIFIER = new SyncObject("WaitUntilReadySync");
 
     /**
@@ -108,7 +108,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         this.remoteRegistryList = new ArrayList<>();
         this.protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
     }
-    
+
     @Override
     public ScopeType.Scope getDefaultConfig() throws NotAvailableException {
         try {
@@ -117,7 +117,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             throw new NotAvailableException("DefaultConfig", ex);
         }
     }
-    
+
     @Override
     protected void postInit() throws InitializationException, InterruptedException {
         super.postInit();
@@ -127,49 +127,49 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not register all internal registries!", ex);
             }
-            
+
             try {
                 registerRegistryRemotes();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not register all registry remotes!", ex);
             }
-            
+
             try {
                 registerRemoteRegistries();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could register all remote registries!", ex);
             }
-            
+
             try {
                 initRemoteRegistries();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not init all remote registries!", ex);
             }
-            
+
             try {
                 activateVersionControl();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not activate version control for all internal registries!", ex);
             }
-            
+
             try {
                 loadRegistries();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not load all internal registries!", ex);
             }
-            
+
             try {
                 registerConsistencyHandler();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not register consistency handler for all internal registries!", ex);
             }
-            
+
             try {
                 registerPlugins();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not register plugins for all internal registries!", ex);
             }
-            
+
             try {
                 registerObserver();
             } catch (CouldNotPerformException ex) {
@@ -179,7 +179,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             throw new InitializationException(this, ex);
         }
     }
-    
+
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         try {
@@ -192,7 +192,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             throw new CouldNotPerformException("Could not activate location registry!", ex);
         }
     }
-    
+
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         super.deactivate();
@@ -200,7 +200,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         deactivateRegistryRemotes();
         removeDependencies();
     }
-    
+
     @Override
     public void shutdown() {
         super.shutdown();
@@ -214,38 +214,41 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             registry.shutdown();
         });
     }
-    
+
     @Override
     public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
         RPCHelper.registerInterface(RegistryController.class, this, server);
     }
-    
+
     @Override
     public void notifyChange() throws CouldNotPerformException, InterruptedException {
-        if (filterSparselyRegistryData) {
-            // filter notification if any internal registry is busy to avoid spreading incomplete registry context.
-            for (ProtoBufFileSynchronizedRegistry registry : getRegistries()) {
-                if (registry.isBusy()) {
-                    // skip notification
-                    return;
+        try {
+            if (filterSparselyRegistryData) {
+                // filter notification if any internal registry is busy to avoid spreading incomplete registry context.
+                for (ProtoBufFileSynchronizedRegistry registry : getRegistries()) {
+                    if (registry.isBusy()) {
+                        // skip notification
+                        return;
+                    }
                 }
             }
-        }
 
-        // continue notification
-        syncRegistryFlags();
-        super.notifyChange();
-        synchronized (CHANGE_NOTIFIER) {
-            CHANGE_NOTIFIER.notify();
+            // continue notification
+            syncRegistryFlags();
+            super.notifyChange();
+        } finally {
+            synchronized (CHANGE_NOTIFIER) {
+                CHANGE_NOTIFIER.notifyAll();
+            }
         }
     }
-    
+
     private void initRemoteRegistries() throws CouldNotPerformException, InterruptedException {
         for (final RegistryRemote remote : registryRemoteList) {
             remote.init();
         }
     }
-    
+
     protected void activateRemoteRegistries() throws CouldNotPerformException, InterruptedException {
         for (RemoteRegistry remoteRegistry : remoteRegistryList) {
             if (remoteRegistry instanceof SynchronizedRemoteRegistry) {
@@ -253,17 +256,17 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             }
         }
     }
-    
+
     private void activateRegistryRemotes() throws CouldNotPerformException, InterruptedException {
         for (final RegistryRemote remote : registryRemoteList) {
             remote.activate();
         }
-        
+
         for (final RegistryRemote remote : registryRemoteList) {
             remote.waitForData();
         }
     }
-    
+
     private void deactivateRemoteRegistries() throws CouldNotPerformException, InterruptedException {
         for (final RemoteRegistry remoteRegistry : remoteRegistryList) {
             if (remoteRegistry instanceof SynchronizedRemoteRegistry) {
@@ -271,19 +274,19 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             }
         }
     }
-    
+
     protected void deactivateRegistryRemotes() throws CouldNotPerformException, InterruptedException {
         for (final RegistryRemote remote : registryRemoteList) {
             remote.deactivate();
         }
     }
-    
+
     private void removeDependencies() throws CouldNotPerformException {
         registryList.stream().forEach((registry) -> {
             registry.removeAllDependencies();
         });
     }
-    
+
     private void registerObserver() throws CouldNotPerformException {
         registryList.stream().forEach((registry) -> {
             registry.addObserver((Observable source, Object data) -> {
@@ -291,13 +294,13 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             });
         });
     }
-    
+
     private void loadRegistries() throws CouldNotPerformException {
         for (final ProtoBufFileSynchronizedRegistry registry : registryList) {
             registry.loadRegistry();
         }
     }
-    
+
     private void activateVersionControl() throws CouldNotPerformException {
         Package versionConverterPackage;
         for (final ProtoBufFileSynchronizedRegistry registry : registryList) {
@@ -310,7 +313,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             registry.activateVersionControl(versionConverterPackage);
         }
     }
-    
+
     private void performInitialConsistencyCheck() throws CouldNotPerformException, InterruptedException {
         for (final ProtoBufFileSynchronizedRegistry registry : registryList) {
             try {
@@ -322,25 +325,25 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             }
         }
     }
-    
+
     protected void registerDependency(Registry dependency, Class messageClass) throws CouldNotPerformException {
         for (ProtoBufFileSynchronizedRegistry registry : registryList) {
             registry.registerDependency(dependency);
         }
     }
-    
+
     protected void registerRegistryRemote(final RegistryRemote registry) {
         registryRemoteList.add(registry);
     }
-    
+
     protected void registerRegistry(final ProtoBufFileSynchronizedRegistry registry) {
         registryList.add(registry);
     }
-    
+
     protected void registerRemoteRegistry(final RemoteRegistry registry) {
         remoteRegistryList.add(registry);
     }
-    
+
     protected void registerConsistencyHandler(final ConsistencyHandler consistencyHandler, final Class messageClass) throws CouldNotPerformException {
         for (ProtoBufFileSynchronizedRegistry registry : registryList) {
             if (messageClass.equals(registry.getMessageClass())) {
@@ -350,19 +353,19 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             }
         }
     }
-    
+
     protected List<RegistryRemote> getRegistryRemotes() {
         return registryRemoteList;
     }
-    
+
     public List<RemoteRegistry> getRemoteRegistries() {
         return remoteRegistryList;
     }
-    
+
     protected List<ProtoBufFileSynchronizedRegistry> getRegistries() {
         return registryList;
     }
-    
+
     private Package detectVersionConverterPackage() throws CouldNotPerformException {
         Package converterPackage;
         try {
@@ -386,14 +389,15 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             if (Thread.interrupted()) {
                 throw new InterruptedException();
             }
-            
+
             synchronized (CHANGE_NOTIFIER) {
                 // check ready state
                 if (isReady()) {
                     return;
                 }
                 // sleep until change
-                CHANGE_NOTIFIER.wait();
+                // todo: why is this timeout needed??? Is there any event skipped? Please debug me!
+                CHANGE_NOTIFIER.wait(500);
             }
         }
     }
@@ -412,18 +416,18 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         }
         return true;
     }
-    
+
     protected abstract void registerConsistencyHandler() throws CouldNotPerformException;
-    
+
     protected abstract void registerPlugins() throws CouldNotPerformException, InterruptedException;
-    
+
     protected abstract void registerRegistryRemotes() throws CouldNotPerformException;
-    
+
     protected abstract void registerRegistries() throws CouldNotPerformException;
-    
+
     protected abstract void registerDependencies() throws CouldNotPerformException;
-    
+
     protected abstract void syncRegistryFlags() throws CouldNotPerformException, InterruptedException;
-    
+
     protected abstract void registerRemoteRegistries() throws CouldNotPerformException;
 }

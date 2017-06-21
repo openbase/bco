@@ -142,8 +142,11 @@ public class TestWaitUntilReady {
 //            System.out.println("Wait until ready");
 
             // needed to make sure the registry is processing the registration task.
-            Thread.sleep(5);
+            Thread.sleep(20);
+
+//            System.out.println("wait");
             Registries.waitUntilReady();
+//            System.out.println("continue");
             Assert.assertTrue("Test failed because registry is not consistent after wait until done returned.", Registries.getUnitRegistry().getData().getUnitConfigRegistryConsistent());
             try {
                 registerUnitConfig.get(2, TimeUnit.MILLISECONDS);
