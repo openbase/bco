@@ -216,14 +216,15 @@ git clone https://github.com/openbase/jul.git jul
 ## Setup Cor-Lab Debian Repository
 
 This repository provides a collection of precompiled libs and tools for rsb. This includes transport layers like spread as well as dev-libs for using rsb in python or c++. To register the repository to your local debian package manager follow these instructions:
-    * [http://packages.cor-lab.de/](http://packages.cor-lab.de/)
-        * example for ubuntu xenial
-            ```
-            echo 'deb http://packages.cor-lab.de/ubuntu/ xenial main' | sudo tee -a /etc/apt/sources.list
-            echo 'deb http://packages.cor-lab.de/ubuntu/ xenial testing' | sudo tee -a /etc/apt/sources.list
-            wget -q http://packages.cor-lab.de/keys/cor-lab.asc -O- | sudo apt-key add -
-            sudo apt-get update
-            ```
+
+* [http://packages.cor-lab.de/](http://packages.cor-lab.de/)
+  * example for ubuntu xenial
+    ```
+    echo 'deb http://packages.cor-lab.de/ubuntu/ xenial main' | sudo tee -a /etc/apt/sources.list
+    echo 'deb http://packages.cor-lab.de/ubuntu/ xenial testing' | sudo tee -a /etc/apt/sources.list
+    wget -q http://packages.cor-lab.de/keys/cor-lab.asc -O- | sudo apt-key add -
+    sudo apt-get update
+    ```
 
 ## Spread Installation
 
