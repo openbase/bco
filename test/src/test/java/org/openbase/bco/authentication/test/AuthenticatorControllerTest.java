@@ -21,6 +21,7 @@ package org.openbase.bco.authentication.test;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.authentication.core.mock.MockAuthenticationRegistry;
 import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -30,11 +31,11 @@ import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.authentication.core.AuthenticationRegistry;
 import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.ClientRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
+import org.openbase.bco.authentication.lib.jp.JPAuthenticationSimulationMode;
 import org.openbase.jps.core.JPService;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
@@ -49,7 +50,6 @@ public class AuthenticatorControllerTest {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatorControllerTest.class);
 
     private static AuthenticatorController authenticatorController;
-    private static AuthenticationRegistry authenticationRegistry;
 
     private static ClientRemote clientRemote;
 
@@ -59,10 +59,9 @@ public class AuthenticatorControllerTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
+        JPService.registerProperty(JPAuthenticationSimulationMode.class, true);
 
-        authenticationRegistry = new MockAuthenticationRegistry();
-
-        authenticatorController = new AuthenticatorController(authenticationRegistry);
+        authenticatorController = new AuthenticatorController();
         authenticatorController.init();
         authenticatorController.activate();
 
