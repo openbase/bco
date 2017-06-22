@@ -21,7 +21,6 @@ package org.openbase.bco.authentication.lib.jp;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.io.File;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -43,7 +42,7 @@ public class JPCredentialsDirectory extends AbstractJPDirectory {
 
     public static FileHandler.ExistenceHandling existenceHandling = FileHandler.ExistenceHandling.Must;
     public static FileHandler.AutoMode autoMode = FileHandler.AutoMode.Off;
-    
+
     public static final String DEFAULT_CREDENTIALS_PATH = "bco/credentials";
 
     public static final String[] COMMAND_IDENTIFIERS = {"--cr", "--credentials"};
@@ -55,7 +54,7 @@ public class JPCredentialsDirectory extends AbstractJPDirectory {
     @Override
     public File getParentDirectory() throws JPServiceException {
         try {
-            if (new File(JPService.getProperty(JPVarDirectory.class).getValue(), DEFAULT_CREDENTIALS_PATH).exists() || JPService.testMode()) {
+            if (JPService.getProperty(JPVarDirectory.class).getValue().exists() || JPService.testMode()) {
                 return JPService.getProperty(JPVarDirectory.class).getValue();
             }
         } catch (JPNotAvailableException ex) {
@@ -63,7 +62,7 @@ public class JPCredentialsDirectory extends AbstractJPDirectory {
         }
 
         try {
-            if (new File(JPService.getProperty(JPShareDirectory.class).getValue(), DEFAULT_CREDENTIALS_PATH).exists()) {
+            if (JPService.getProperty(JPShareDirectory.class).getValue().exists()) {
                 return JPService.getProperty(JPShareDirectory.class).getValue();
             }
         } catch (JPNotAvailableException ex) {
@@ -85,7 +84,6 @@ public class JPCredentialsDirectory extends AbstractJPDirectory {
 
     @Override
     public void validate() throws JPValidationException {
-
         boolean reinitDetected = false;
 
         try {

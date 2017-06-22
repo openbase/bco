@@ -21,7 +21,6 @@ package org.openbase.bco.authentication.core.mock;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.HashMap;
 import org.openbase.bco.authentication.core.AuthenticationRegistry;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
@@ -32,7 +31,7 @@ import org.openbase.jul.exception.InitializationException;
  * @author <a href="mailto:cromankiewicz@techfak.uni-bielefeld.de">Constantin Romankiewicz</a>
  */
 public class MockAuthenticationRegistry extends AuthenticationRegistry {
-    
+
     public static final String CLIENT_ID = "maxmustermann";
     public static final String PASSWORD = "password";
     public static final byte[] PASSWORD_HASH = EncryptionHelper.hash(PASSWORD);
@@ -46,6 +45,9 @@ public class MockAuthenticationRegistry extends AuthenticationRegistry {
     public void init() throws InitializationException {
         credentials = new HashMap<>();
         credentials.put(CLIENT_ID, PASSWORD_HASH);
+
+        // add new user to the mock
+        credentials.put("example_client_id", EncryptionHelper.hash("example_password"));
     }
 
 }

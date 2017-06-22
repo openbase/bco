@@ -59,9 +59,8 @@ public class AuthenticatorControllerTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
-        JPService.registerProperty(JPAuthenticationSimulationMode.class, true);
 
-        authenticatorController = new AuthenticatorController();
+        authenticatorController = new AuthenticatorController(new MockAuthenticationRegistry());
         authenticatorController.init();
         authenticatorController.activate();
 
