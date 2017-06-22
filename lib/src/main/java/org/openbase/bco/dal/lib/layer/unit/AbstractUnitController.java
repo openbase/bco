@@ -64,6 +64,7 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.action.ActionFuture;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -405,7 +406,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     @Override
-    public Future<Void> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+    public Future<ActionFuture> applyAction(final ActionDescription actionDescription, boolean test) throws CouldNotPerformException, InterruptedException {
         try {
             logger.debug("applyAction: " + actionDescription.getLabel());
             final Object attribute = serviceJSonProcessor.deserialize(actionDescription.getServiceStateDescription().getServiceAttribute(), actionDescription.getServiceStateDescription().getServiceAttributeType());

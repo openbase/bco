@@ -22,6 +22,8 @@ package org.openbase.bco.dal.remote.service;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
+import java.io.IOException;
+import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -56,6 +58,7 @@ import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -428,7 +431,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     }
 
     @Override
-    public Future<Void> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+    public Future<TicketAuthenticatorWrapper> applyAction(final ActionDescription actionDescription, boolean test) throws CouldNotPerformException, InterruptedException, StreamCorruptedException {
         try {
             if (!actionDescription.getServiceStateDescription().getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
@@ -439,10 +442,10 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                 if (actionDescription.getServiceStateDescription().getUnitType() == UnitType.UNKNOWN
                         || actionDescription.getServiceStateDescription().getUnitType() == unitRemote.getType()
                         || UnitConfigProcessor.isBaseUnit(unitRemote.getType())) {
-                    actionFutureList.add(unitRemote.applyAction(actionDescription));
+                    actionFutureList.add(unitRemote.applyAction(actionDescription, test));
                 }
             }
-            return GlobalCachedExecutorService.allOf((Void) null, actionFutureList);
+            return GlobalCachedExecutorService.allOf((TicketAuthenticatorWrapper) null, actionFutureList);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }

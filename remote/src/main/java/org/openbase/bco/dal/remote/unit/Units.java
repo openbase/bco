@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.dal.remote.unit.app.AppRemote;
 import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
@@ -191,7 +192,9 @@ public class Units {
     private static RemoteControllerRegistry<String, org.openbase.bco.dal.lib.layer.unit.UnitRemote<? extends GeneratedMessage>> unitRemoteRegistry;
 
     public static final SyncObject UNIT_POOL_LOCK = new SyncObject("UnitPoolLock");
-
+    
+    private static SessionManager sessionManager;
+    
     static {
         try {
             unitRemoteRegistry = new RemoteControllerRegistry<>();
@@ -222,7 +225,8 @@ public class Units {
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new FatalImplementationErrorException(Units.class, new org.openbase.jul.exception.InstantiationException(Units.class, ex)), LOGGER);
         }
-
+        
+        sessionManager = new SessionManager();
     }
 
     /**
@@ -274,7 +278,7 @@ public class Units {
         Registries.getUnitRegistry().waitForData();
         return Registries.getUnitRegistry();
     }
-
+        
     /**
      * Returns the unit remote of the unit identified by the given unit id.
      *
@@ -313,6 +317,13 @@ public class Units {
                 unitRemote.activate();
                 unitRemote.lock(unitRemoteRegistry);
             }
+            
+            // TODO: if user is not logged in, login with public rights
+            if (!sessionManager.isLoggedIn()) {
+                throw new NotAvailableException("User is not logged in. Must be logged in before trying to access server.");
+            }
+            // appends a sessionManager to unitRemote
+            unitRemote.setSessionManager(sessionManager);
             return unitRemote;
         } catch (CouldNotPerformException | NullPointerException ex) {
             throw new NotAvailableException("UnitRemote[" + unitId + "]", ex);

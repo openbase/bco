@@ -22,6 +22,8 @@ package org.openbase.bco.dal.remote.unit;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
+import java.io.IOException;
+import java.io.StreamCorruptedException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -30,6 +32,7 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
@@ -42,6 +45,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.protobuf.processing.GenericMessageProcessor;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
@@ -60,6 +64,8 @@ import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
+import rst.domotic.action.ActionFuture;
+import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
@@ -86,9 +92,12 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Snapshot.getDefaultInstance()));
     }
 
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AbstractUnitRemote.class);
+    
     private UnitTemplate template;
     private UnitRegistry unitRegistry;
     private final Map<ServiceType, MessageObservable> serviceStateObservableMap;
+    private SessionManager sessionManager;
 
     public AbstractUnitRemote(final Class<M> dataClass) {
         super(dataClass, UnitConfig.class);
@@ -387,10 +396,12 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     }
 
     /**
-     * Method returns the transformation between the root location and this unit.
-     * 
+     * Method returns the transformation between the root location and this
+     * unit.
+     *
      * @return a transformation future
-     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     * @throws InterruptedException is thrown if the thread was externally
+     * interrupted.
      */
     public Future<Transform> getTransformation() throws InterruptedException {
         final Future<LocationRegistryDataType.LocationRegistryData> dataFuture;
@@ -436,7 +447,8 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
      * Method returns the parent location config of this unit.
      *
      * @return a unit config of the parent location.
-     * @throws NotAvailableException is thrown if the location config is currently not available.
+     * @throws NotAvailableException is thrown if the location config is
+     * currently not available.
      */
     public UnitConfig getParentLocationConfig() throws NotAvailableException, InterruptedException {
         try {
@@ -449,8 +461,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
     /**
      *
-     * @return
-     * @throws NotAvailableException
+     * @return @throws NotAvailableException
      * @deprecated please use getParentLocationConfig() instead.
      */
     @Deprecated
@@ -466,10 +477,13 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     /**
      * Method returns the parent location remote of this unit.
      *
-     * @param waitForData flag defines if the method should block until the remote is fully synchronized.
+     * @param waitForData flag defines if the method should block until the
+     * remote is fully synchronized.
      * @return a location remote instance.
-     * @throws NotAvailableException is thrown if the location remote is currently not available.
-     * @throws java.lang.InterruptedException is thrown if the current was externally interrupted.
+     * @throws NotAvailableException is thrown if the location remote is
+     * currently not available.
+     * @throws java.lang.InterruptedException is thrown if the current was
+     * externally interrupted.
      */
     public LocationRemote getParentLocationRemote(final boolean waitForData) throws NotAvailableException, InterruptedException {
         try {
@@ -477,6 +491,16 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("LocationRemote", ex);
         }
+    }
+
+    /**
+     * Sets the session Manager which is used for the authentication of the
+     * client/user
+     *
+     * @param sessionManager an instance of SessionManager
+     */
+    public void setSessionManager(SessionManager sessionManager) {
+        this.sessionManager = sessionManager;
     }
 
     /**
@@ -488,12 +512,20 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
      * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
-    public Future<Void> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
-        byte[] sessionKey = null; // TODO: actionDescription.getSessionKey();
-        TicketAuthenticatorWrapper wrapper = null; // TODO: actionDescription.getTicketAuthenticationWrapper();
-        wrapper = AuthenticationClientHandler.initSSRequest(sessionKey, wrapper);
-        // TODO: actionDescription.setTicketAuthenticationWrapper(wrapper);
-        return RPCHelper.callRemoteMethod(actionDescription, this, Void.class);
+    public Future<ActionFuture> applyAction(ActionDescription actionDescription, boolean test) throws CouldNotPerformException, InterruptedException, StreamCorruptedException {
+        try {
+            this.sessionManager.setTicketAuthenticatorWrapper(AuthenticationClientHandler.initSSRequest(this.sessionManager.getSessionKey(), this.sessionManager.getTicketAuthenticatorWrapper()));
+        } catch (StreamCorruptedException ex) {
+            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
+            throw new StreamCorruptedException(ex.getMessage());
+        } catch (IOException ex) {
+            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+            throw new CouldNotPerformException("Internal server error. Please try again.");
+        }
+        ActionAuthority.Builder builder = actionDescription.getActionAuthority().toBuilder();
+        builder.setTicketAuthenticatorWrapper(this.sessionManager.getTicketAuthenticatorWrapper());
+        return RPCHelper.callRemoteMethod(builder.build(), this, TicketAuthenticatorWrapper.class);
+// TODO: Authenticate() wird in AbstractUnitController aufgerufen
     }
 
     /**
@@ -509,7 +541,8 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     }
 
     /**
-     * Use if serviceType cannot be resolved from serviceAttribute. E.g. AlarmState.
+     * Use if serviceType cannot be resolved from serviceAttribute. E.g.
+     * AlarmState.
      *
      * @param actionDescription
      * @param serviceAttribute
