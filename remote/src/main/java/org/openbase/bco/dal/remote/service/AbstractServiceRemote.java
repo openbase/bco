@@ -22,7 +22,6 @@ package org.openbase.bco.dal.remote.service;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
-import java.io.IOException;
 import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -57,6 +56,7 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -431,7 +431,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     }
 
     @Override
-    public Future<TicketAuthenticatorWrapper> applyAction(final ActionDescription actionDescription, boolean test) throws CouldNotPerformException, InterruptedException, StreamCorruptedException {
+    public Future<ActionFuture> applyAction(final ActionDescription actionDescription, boolean test) throws CouldNotPerformException, InterruptedException, StreamCorruptedException {
         try {
             if (!actionDescription.getServiceStateDescription().getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
