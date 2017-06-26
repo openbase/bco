@@ -115,7 +115,7 @@ public class ActionImpl implements Action {
     }
 
     @Override
-    public Future<Void> execute() throws CouldNotPerformException, VerificationFailedException, InterruptedException {
+    public Future<Void> execute() throws CouldNotPerformException {
         try {
             synchronized (executionSync) {
 

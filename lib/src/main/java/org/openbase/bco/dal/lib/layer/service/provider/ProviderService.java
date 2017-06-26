@@ -21,7 +21,6 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.io.StreamCorruptedException;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.jul.exception.CouldNotPerformException;

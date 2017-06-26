@@ -51,6 +51,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -61,6 +62,7 @@ import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
+import org.slf4j.LoggerFactory;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -93,6 +95,8 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
     }
 
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AbstractUnitController.class);
+    
     public static long initTime = 0;
     public static long constructorTime = 0;
 
@@ -420,14 +424,19 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
-    public TicketAuthenticatorWrapper verifyAuthority(final ActionAuthority actionAuthority) throws VerificationFailedException, CouldNotPerformException, InterruptedException {
+    public TicketAuthenticatorWrapper verifyAuthority(final ActionAuthority actionAuthority) throws VerificationFailedException {
         // authenticate and (also authorize?)
-        clientRemote.init();
-        clientRemote.activate();
-        clientRemote.waitForActivation();
-        TicketAuthenticatorWrapper wrapper = clientRemote.validateClientServerTicket(actionAuthority.getTicketAuthenticatorWrapper()).get();
-        clientRemote.shutdown();
-        return wrapper;        
+            try {
+            clientRemote.init();
+            clientRemote.activate();
+            clientRemote.waitForActivation();
+            TicketAuthenticatorWrapper wrapper = clientRemote.validateClientServerTicket(actionAuthority.getTicketAuthenticatorWrapper()).get();
+            clientRemote.shutdown();
+            return wrapper;    
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+            throw new VerificationFailedException("Internal server error. Please try again.");
+        }    
     }
 
     @Override
