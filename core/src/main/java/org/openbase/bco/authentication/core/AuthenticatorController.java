@@ -50,6 +50,8 @@ import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.slf4j.LoggerFactory;
+import rst.domotic.authentication.AuthenticatorType.Authenticator;
+import rst.domotic.authentication.TicketType.Ticket;
 
 /**
  *
@@ -171,6 +173,40 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 return AuthenticationServerHandler.handleSSRequest(SSSessionKey, SSPrivateKey, ticketAuthenticatorWrapper);
+            } catch (RejectedException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
+                throw new RejectedException(ex.getMessage());
+            } catch (StreamCorruptedException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
+                throw new StreamCorruptedException(ex.getMessage());
+            } catch (IOException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+                throw new CouldNotPerformException("Internal server error. Please try again.");
+            }
+        });
+    }
+
+    @Override
+    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentials loginCredentials) throws RejectedException, StreamCorruptedException, IOException {
+        return GlobalCachedExecutorService.submit(() -> {
+            try {
+                TicketAuthenticatorWrapper wrapper = loginCredentials.getTicketAuthenticatorWrapper();
+                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(SSSessionKey, SSPrivateKey, wrapper);
+
+                Ticket CST = (Ticket) EncryptionHelper.decrypt(wrapper.getTicket(), SSPrivateKey);
+                Authenticator authenticator = (Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), SSSessionKey);
+                byte[] oldCredentials = EncryptionHelper.decrypt(loginCredentials.getOldCredentials(), SSSessionKey);
+                byte[] newCredentials = EncryptionHelper.decrypt(loginCredentials.getNewCredentials(), SSSessionKey);
+                String userId = loginCredentials.getId();
+
+                if (oldCredentials.equals(authenticationRegistry.getCredentials(userId))) {
+                    authenticationRegistry.setCredentials(userId, newCredentials);
+                }
+                else {
+                    throw new RejectedException("The old password is wrong.");
+                }
+
+                return response;
             } catch (RejectedException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
                 throw new RejectedException(ex.getMessage());

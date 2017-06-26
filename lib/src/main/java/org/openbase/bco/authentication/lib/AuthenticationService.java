@@ -1,10 +1,14 @@
 package org.openbase.bco.authentication.lib;
 
+import java.io.IOException;
+import java.io.StreamCorruptedException;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
+import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
 
 /*-
  * #%L
@@ -91,4 +95,20 @@ public interface AuthenticationService {
      */
     @RPCMethod
     public Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException;
+
+    /**
+     * Changes the credentials for a given user.
+     *
+     * @param loginCredentials Wrapper containing the user's ID, new and old password,
+     * and a TicketAuthenticatorWrapper to authenticate the user.
+     * @return TicketAuthenticatorWrapper which contains an updated validity period in
+     * the ClientServerTicket and an updated timestamp in the authenticator
+     * which has to be verified by the client to make sure that its the correct
+     * server answering the request.
+     * @throws RejectedException If the password change fails (invalid ticket, user has no permission, old password doesn't match).
+     * @throws StreamCorruptedException If any decryption fails.
+     * @throws IOException If de- or encryption fail because of a general I/O error.
+     */
+    @RPCMethod
+    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentials loginCredentials) throws RejectedException, StreamCorruptedException, IOException;
 }

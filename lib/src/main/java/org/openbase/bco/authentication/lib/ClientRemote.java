@@ -92,4 +92,9 @@ public class ClientRemote implements AuthenticationService, Manageable<Void>, Vo
     public Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
         return RPCHelper.callRemoteServerMethod(ticketAuthenticatorWrapper, remoteServer, TicketAuthenticatorWrapper.class);
     }
+
+    @Override
+    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentials loginCredentials) {
+        return RPCHelper.callRemoteServerMethod(loginCredentials, remoteServer, TicketAuthenticatorWrapper.class);
+    }
 }
