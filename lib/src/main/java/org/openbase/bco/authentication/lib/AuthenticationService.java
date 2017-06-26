@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StreamCorruptedException;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
@@ -108,7 +109,8 @@ public interface AuthenticationService {
      * @throws RejectedException If the password change fails (invalid ticket, user has no permission, old password doesn't match).
      * @throws StreamCorruptedException If any decryption fails.
      * @throws IOException If de- or encryption fail because of a general I/O error.
+     * @throws PermissionDeniedException If the user has no permission to change this password.
      */
     @RPCMethod
-    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentials loginCredentials) throws RejectedException, StreamCorruptedException, IOException;
+    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentials loginCredentials) throws RejectedException, StreamCorruptedException, IOException, PermissionDeniedException;
 }

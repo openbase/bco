@@ -46,6 +46,7 @@ import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWr
 import org.openbase.bco.authentication.lib.AuthenticationService;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationSimulationMode;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -198,13 +199,18 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 byte[] oldCredentials = EncryptionHelper.decrypt(loginCredentials.getOldCredentials(), SSSessionKey);
                 byte[] newCredentials = EncryptionHelper.decrypt(loginCredentials.getNewCredentials(), SSSessionKey);
                 String userId = loginCredentials.getId();
+                String[] split = authenticator.getClientId().split("@", 2);
+                String authenticatorUserId = split[0];
 
-                if (oldCredentials.equals(authenticationRegistry.getCredentials(userId))) {
-                    authenticationRegistry.setCredentials(userId, newCredentials);
+                if (!userId.equals(authenticatorUserId)) {
+                    throw new PermissionDeniedException("You are not permitted to perform this action.");
                 }
-                else {
+
+                if (!oldCredentials.equals(authenticationRegistry.getCredentials(userId))) {
                     throw new RejectedException("The old password is wrong.");
                 }
+
+                authenticationRegistry.setCredentials(userId, newCredentials);
 
                 return response;
             } catch (RejectedException ex) {
