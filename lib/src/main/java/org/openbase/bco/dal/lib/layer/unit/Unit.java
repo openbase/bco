@@ -21,6 +21,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.io.StreamCorruptedException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -151,7 +152,7 @@ public interface Unit<D> extends Service, LabelProvider, ScopeProvider, Identifi
 
     @RPCMethod
     @Override
-    public default Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
+    public default Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException, StreamCorruptedException {
         try {
             Collection<Future> futureCollection = new ArrayList<>();
             for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {

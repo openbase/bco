@@ -66,7 +66,7 @@ import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
-import rst.domotic.action.ActionFuture;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType.Snapshot;
@@ -514,13 +514,14 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
      * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
-    public Future<ActionFuture> applyAction(ActionDescription actionDescription, boolean test) throws CouldNotPerformException, InterruptedException, StreamCorruptedException, RejectedException {
+    public Future<ActionFuture> applyAction(ActionDescription actionDescription, boolean test) throws CouldNotPerformException, InterruptedException, RejectedException {
         // initialize request
         try {
             this.sessionManager.setTicketAuthenticatorWrapper(AuthenticationClientHandler.initSSRequest(this.sessionManager.getSessionKey(), this.sessionManager.getTicketAuthenticatorWrapper()));
         } catch (StreamCorruptedException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
-            throw new StreamCorruptedException(ex.getMessage());
+//            throw new StreamCorruptedException(ex.getMessage());
+            throw new CouldNotPerformException(ex.getMessage());
         } catch (IOException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
             throw new CouldNotPerformException("Internal server error. Please try again.");
@@ -540,7 +541,6 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         actionFutureBuilder.setTicketAuthenticatorWrapper(wrapper);
         
         return CompletableFuture.completedFuture(actionFutureBuilder.build());
-// TODO: Authenticate() wird in AbstractUnitController aufgerufen
     }
 
     /**

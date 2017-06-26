@@ -21,7 +21,6 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -309,7 +308,7 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
     }
 
     @Override
-    public Future<Void> restoreSnapshot(final SnapshotType.Snapshot snapshot) throws CouldNotPerformException, InterruptedException, StreamCorruptedException {
+    public Future<Void> restoreSnapshot(final SnapshotType.Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
         try {
             final Map<String, org.openbase.bco.dal.lib.layer.unit.UnitRemote<?>> unitRemoteMap = new HashMap<>();
             for (AbstractServiceRemote<?, ?> serviceRemote : this.getServiceRemoteList()) {

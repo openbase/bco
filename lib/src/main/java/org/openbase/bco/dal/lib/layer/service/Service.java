@@ -22,7 +22,6 @@ package org.openbase.bco.dal.lib.layer.service;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
-import java.io.StreamCorruptedException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -43,7 +42,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ContactStateType;
-import rst.domotic.action.ActionFuture;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 
 /**
  *
@@ -55,13 +54,13 @@ public interface Service {
     public static final Package SERVICE_STATE_PACKAGE = ContactStateType.class.getPackage();
     public static final String SERVICE_LABEL = Service.class.getSimpleName();
 
-    public default Future<Void> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException, StreamCorruptedException {
+    public default Future<Void> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         Future<ActionFuture> applyAction = applyAction(actionDescription, true);
         return new VoidFuture(applyAction);
     }
     
     @RPCMethod
-    public Future<ActionFuture> applyAction(final ActionDescription actionDescription, boolean test) throws CouldNotPerformException, InterruptedException, StreamCorruptedException;
+    public Future<ActionFuture> applyAction(final ActionDescription actionDescription, boolean test) throws CouldNotPerformException, InterruptedException;
 
     default public void addServiceStateObserver(ServiceType serviceType, Observer observer) {
     }

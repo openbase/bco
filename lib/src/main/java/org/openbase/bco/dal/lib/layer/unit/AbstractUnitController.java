@@ -42,6 +42,7 @@ import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
+import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -64,8 +65,9 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionFuture;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -419,7 +421,15 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             if (!actionDescription.getResourceAllocation().getSlot().hasBegin()) {
                 ActionDescriptionProcessor.updateResourceAllocationSlot(actionDescriptionBuilder);
             }
-
+            
+            // authenticate and (also authorize?)
+            AuthenticatorController authenticatorController = new AuthenticatorController();
+            authenticatorController.init();
+            authenticatorController.activate();
+            TicketAuthenticatorWrapper wrapper = authenticatorController.requestClientServerTicket(actionDescription.getActionAuthority().getTicketAuthenticatorWrapper()).get();
+            authenticatorController.deactivate();
+            ActionFuture.Builder actionFutureBuilder = ActionFuture.newBuilder().setTicketAuthenticatorWrapper(wrapper);
+            
             return GlobalCachedExecutorService.submit(() -> {
 //                UnitResourceAllocator unitResourceAllocator = new UnitResourceAllocator(actionDescription) {
 //
@@ -440,7 +450,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 //TODO: allocate and if executionTimePeriod = 0 free resource
                 Service.invokeServiceMethod(serviceDescription, AbstractUnitController.this, attribute);
 //                unitResourceAllocator.w
-                return null;
+                return actionFutureBuilder.build();
             });
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);

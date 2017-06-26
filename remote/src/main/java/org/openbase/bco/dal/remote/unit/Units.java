@@ -317,13 +317,8 @@ public class Units {
                 unitRemote.activate();
                 unitRemote.lock(unitRemoteRegistry);
             }
-            
-            // TODO: if user is not logged in, login with public rights
-            if (!sessionManager.isLoggedIn()) {
-                throw new NotAvailableException("User is not logged in. Must be logged in before trying to access server.");
-            }
-            // appends a sessionManager to unitRemote
-            unitRemote.setSessionManager(sessionManager);
+            // set sessionManager in unit remote
+            setSessionManager(unitRemote);
             return unitRemote;
         } catch (CouldNotPerformException | NullPointerException ex) {
             throw new NotAvailableException("UnitRemote[" + unitId + "]", ex);
@@ -367,12 +362,23 @@ public class Units {
                 unitRemote.activate();
                 unitRemote.lock(unitRemoteRegistry);
             }
+            // set sessionManager in unit remote
+            setSessionManager(unitRemote);
             return unitRemote;
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("UnitRemote[" + unitConfig.getId() + "]", ex);
         }
     }
-
+    
+    private static void setSessionManager(final UnitRemote unitRemote) throws NotAvailableException {
+        // TODO: if user is not logged in, login with public rights
+        if (!sessionManager.isLoggedIn()) {
+            throw new NotAvailableException("User is not logged in. Must be logged in before trying to access server.");
+        }
+        // appends a sessionManager to unitRemote
+        unitRemote.setSessionManager(sessionManager);
+    }
+    
     /**
      * Method waits for unit data if the waitForData flag is set.
      *

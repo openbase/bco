@@ -22,7 +22,6 @@ package org.openbase.bco.dal.remote.service;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
-import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -431,7 +430,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     }
 
     @Override
-    public Future<ActionFuture> applyAction(final ActionDescription actionDescription, boolean test) throws CouldNotPerformException, InterruptedException, StreamCorruptedException {
+    public Future<ActionFuture> applyAction(final ActionDescription actionDescription, boolean test) throws CouldNotPerformException, InterruptedException {
         try {
             if (!actionDescription.getServiceStateDescription().getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
