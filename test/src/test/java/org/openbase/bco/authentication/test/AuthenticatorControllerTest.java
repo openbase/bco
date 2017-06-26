@@ -37,6 +37,7 @@ import org.openbase.bco.authentication.lib.ClientRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationSimulationMode;
 import org.openbase.jps.core.JPService;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
@@ -140,10 +141,13 @@ public class AuthenticatorControllerTest {
         String nonExistentClientId = "12abc-15123";
 
         try {
+            ExceptionPrinter.setBeQuit(Boolean.TRUE);
             clientRemote.requestTicketGrantingTicket(nonExistentClientId).get();
         } catch (ExecutionException ex) {
             // test successful
             return;
+        } finally {
+            ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }
         fail("Exception has not been thrown even though there should be no user[" + nonExistentClientId + "] in the database!");
     }
@@ -163,9 +167,12 @@ public class AuthenticatorControllerTest {
 
         TicketSessionKeyWrapper ticketSessionKeyWrapper = clientRemote.requestTicketGrantingTicket(clientId).get();
         try {
+            ExceptionPrinter.setBeQuit(Boolean.TRUE);
             AuthenticationClientHandler.handleKDCResponse(clientId, passwordHash, ticketSessionKeyWrapper);
         } catch (IOException ex) {
             return;
+        } finally {
+            ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }
         fail("Exception has not been thrown even though user[" + clientId + "] does not use the password[" + password + "]!");
     }

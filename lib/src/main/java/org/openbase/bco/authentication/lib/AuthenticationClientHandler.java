@@ -26,6 +26,7 @@ import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.List;
 import org.openbase.jul.exception.RejectedException;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.AuthenticatorType.Authenticator;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
@@ -59,11 +60,9 @@ public class AuthenticationClientHandler {
 
         // create Authenticator with empty timestamp
         // set timestamp in initTGSRequest()
-        Timestamp.Builder tb = Timestamp.newBuilder();
-        tb.setTime(System.currentTimeMillis());
         Authenticator.Builder ab = Authenticator.newBuilder();
         ab.setClientId(clientID);
-        ab.setTimestamp(tb.build());
+        ab.setTimestamp(TimestampProcessor.getCurrentTimestamp());
 
         // create TicketAuthenticatorWrapper
         TicketAuthenticatorWrapper.Builder atb = TicketAuthenticatorWrapper.newBuilder();
@@ -130,10 +129,8 @@ public class AuthenticationClientHandler {
         Authenticator authenticator = (Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), SSSessionKey);
 
         // create Authenticator
-        Timestamp.Builder tb = Timestamp.newBuilder();
-        tb.setTime(System.currentTimeMillis());
         Authenticator.Builder ab = authenticator.toBuilder();
-        ab.setTimestamp(tb.build());
+        ab.setTimestamp(TimestampProcessor.getCurrentTimestamp());
 
         // create TicketAuthenticatorWrapper
         TicketAuthenticatorWrapper.Builder atb = wrapper.toBuilder();
