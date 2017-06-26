@@ -28,7 +28,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -36,10 +35,8 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
-import org.openbase.bco.dal.lib.layer.service.Service;
-import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.unit.AbstractExecutableBaseUnitController;
-import org.openbase.bco.dal.remote.control.action.Action;
+import org.openbase.bco.dal.remote.action.RemoteAction;
 import org.openbase.bco.dal.remote.unit.ButtonRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.scene.lib.SceneController;
@@ -53,15 +50,12 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.ButtonStateType.ButtonState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -71,7 +65,7 @@ import rst.domotic.unit.scene.SceneDataType.SceneData;
 
 /**
  *
- * UnitConfig
+ * UnitConfig   
  */
 public class SceneControllerImpl extends AbstractExecutableBaseUnitController<SceneData, SceneData.Builder> implements SceneController {
 
@@ -84,7 +78,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     private final static long ACTION_EXECUTION_TIMEOUT = 15000;
     private final Object buttonObserverLock = new SyncObject("ButtonObserverLock");
     private final Set<ButtonRemote> buttonRemoteSet;
-    private final List<Action> actionList;
+    private final List<RemoteAction> remoteActionList;
     private final SyncObject actionListSync = new SyncObject("ActionListSync");
     private final Observer<ButtonData> buttonObserver;
     private boolean executing = false;
@@ -92,7 +86,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     public SceneControllerImpl() throws org.openbase.jul.exception.InstantiationException {
         super(SceneControllerImpl.class, SceneData.newBuilder());
         this.buttonRemoteSet = new HashSet<>();
-        this.actionList = new ArrayList<>();
+        this.remoteActionList = new ArrayList<>();
         this.buttonObserver = (final Observable<ButtonData> source, ButtonData data) -> {
             if (data.getButtonState().getValue().equals(ButtonState.State.PRESSED)) {
                 setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
@@ -153,23 +147,23 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
 
         MultiException.ExceptionStack exceptionStack = null;
         synchronized (actionListSync) {
-            actionList.clear();
-            Action action;
+            remoteActionList.clear();
+            RemoteAction action;
             for (ServiceStateDescription serviceStateDescription : config.getSceneConfig().getRequiredServiceStateDescriptionList()) {
-                action = new Action();
+                action = new RemoteAction();
                 try {
                     action.init(ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build());
-                    actionList.add(action);
+                    remoteActionList.add(action);
                 } catch (CouldNotPerformException ex) {
                     exceptionStack = MultiException.push(this, ex, exceptionStack);
                 }
             }
 
             for (ServiceStateDescription serviceStateDescription : config.getSceneConfig().getOptionalServiceStateDescriptionList()) {
-                action = new Action();
+                action = new RemoteAction();
                 try {
                     action.init(ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build());
-                    actionList.add(action);
+                    remoteActionList.add(action);
                 } catch (CouldNotPerformException ex) {
                     exceptionStack = MultiException.push(this, ex, exceptionStack);
                 }
@@ -213,12 +207,12 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
 
         executing = true;
 
-        final Map<Future<Void>, Action> executionFutureList = new HashMap<>();
+        final Map<Future<Void>, RemoteAction> executionFutureList = new HashMap<>();
 
         // dublicate actions to make sure all actions are applied.
         for (int i = 0; i < ACTION_REPLAY; i++) {
             synchronized (actionListSync) {
-                for (final Action action : actionList) {
+                for (final RemoteAction action : remoteActionList) {
                     executionFutureList.put(action.execute(), action);
                 }
             }
@@ -235,11 +229,11 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
 
             long checkStart = System.currentTimeMillis() + ACTION_EXECUTION_TIMEOUT;
             long timeout;
-            for (Entry<Future<Void>, Action> futureActionEntry : executionFutureList.entrySet()) {
+            for (Entry<Future<Void>, RemoteAction> futureActionEntry : executionFutureList.entrySet()) {
                 if (futureActionEntry.getKey().isDone()) {
                     continue;
                 }
-                logger.debug("Waiting for action [" + futureActionEntry.getValue().getConfig().getServiceStateDescription().getServiceAttributeType()+ "]");
+                logger.debug("Waiting for action [" + futureActionEntry.getValue().getActionDescription().getServiceStateDescription().getServiceAttributeType()+ "]");
                 try {
                     timeout = checkStart - System.currentTimeMillis();
                     if (timeout <= 0) {
@@ -255,7 +249,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         } catch (CouldNotPerformException | CancellationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Scene[" + getConfig().getLabel() + "] execution failed!"), logger);
         } finally {
-            for (Entry<Future<Void>, Action> futureActionEntry : executionFutureList.entrySet()) {
+            for (Entry<Future<Void>, RemoteAction> futureActionEntry : executionFutureList.entrySet()) {
                 if (!futureActionEntry.getKey().isDone()) {
                     futureActionEntry.getKey().cancel(true);
                 }
@@ -273,24 +267,6 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     @Override
     public boolean isExecuting() {
         return executing;
-    }
-
-    @Override
-    public Future<Void> applyAction(final ActionDescription actionConfig) throws CouldNotPerformException, InterruptedException {
-        return GlobalCachedExecutorService.submit(new Callable<Void>() {
-            @Override
-            public Void call() throws Exception {
-                try {
-                    final Object attribute = new ServiceJSonProcessor().deserialize(actionConfig.getServiceStateDescription().getServiceAttribute(), actionConfig.getServiceStateDescription().getServiceAttributeType());
-                    // Since its an action it has to be an operation service pattern
-                    final ServiceDescription serviceDescription = ServiceDescription.newBuilder().setType(actionConfig.getServiceStateDescription().getServiceType()).setPattern(ServiceTemplate.ServicePattern.OPERATION).build();
-                    Service.invokeServiceMethod(serviceDescription, SceneControllerImpl.this, attribute);
-                    return null;
-                } catch (CouldNotPerformException ex) {
-                    throw new CouldNotPerformException("Could not apply action!", ex);
-                }
-            }
-        });
     }
 
     @Override
