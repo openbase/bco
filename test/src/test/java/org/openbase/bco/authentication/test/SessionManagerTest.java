@@ -52,12 +52,10 @@ public class SessionManagerTest {
 
         authenticationRegistry = new MockAuthenticationRegistry();
 
-        GlobalCachedExecutorService.submit(() -> {
-            authenticatorController = new AuthenticatorController(authenticationRegistry);
-            authenticatorController.init();
-            authenticatorController.activate();
-            return null;
-        });
+        authenticatorController = new AuthenticatorController(authenticationRegistry);
+        authenticatorController.init();
+        authenticatorController.activate();
+        authenticatorController.waitForActivation();
     }
 
     @AfterClass
@@ -69,7 +67,7 @@ public class SessionManagerTest {
 
     @Before
     public void setUp() throws Exception {
-        
+
     }
 
     @After

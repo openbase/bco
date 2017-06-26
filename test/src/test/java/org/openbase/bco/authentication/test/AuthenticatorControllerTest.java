@@ -62,6 +62,7 @@ public class AuthenticatorControllerTest {
         authenticatorController = new AuthenticatorController(new MockAuthenticationRegistry());
         authenticatorController.init();
         authenticatorController.activate();
+        authenticatorController.waitForActivation();
     }
 
     @AfterClass

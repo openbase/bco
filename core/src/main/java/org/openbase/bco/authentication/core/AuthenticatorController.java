@@ -132,6 +132,14 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         }
     }
 
+    public void waitForActivation() throws CouldNotPerformException, InterruptedException {
+        try {
+            serverWatchDog.waitForServiceActivation();
+        } catch (final CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not wait for activation!", ex);
+        }
+    }
+
     @Override
     public Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(String clientId) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
