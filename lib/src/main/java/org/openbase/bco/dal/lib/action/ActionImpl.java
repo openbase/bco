@@ -21,6 +21,7 @@ package org.openbase.bco.dal.lib.action;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -37,6 +38,7 @@ import org.openbase.jul.exception.NotInitializedException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -128,35 +130,39 @@ public class ActionImpl implements Action {
                     unit.verifyAuthority(actionDescriptionBuilder.getActionAuthority());
 
                     // Resource Allocation
-                    unitAllocation = UnitAllocator.allocate(actionDescriptionBuilder, () -> {
-                        try {
-                            // Execute
-                            updateActionState(ActionState.State.EXECUTING);
-
-                            try {
-                                Service.invokeServiceMethod(serviceDescription, unit, serviceAttribute);
-                            } catch (CouldNotPerformException ex) {
-                                if (ex.getCause() instanceof InterruptedException) {
-                                    updateActionState(ActionState.State.ABORTED);
-                                } else {
-                                    updateActionState(ActionState.State.EXECUTION_FAILED);
-                                }
-                                throw new ExecutionException(ex);
-                            }
-                            updateActionState(ActionState.State.FINISHING);
-                            return null;
-                        } catch (final CancellationException ex) {
-                            updateActionState(ActionState.State.ABORTED);
-                            throw ex;
-                        }
+//                    unitAllocation = UnitAllocator.allocate(actionDescriptionBuilder, () -> {
+//                        try {
+//                            // Execute
+//                            updateActionState(ActionState.State.EXECUTING);
+//
+//                            try {
+//                                Service.invokeServiceMethod(serviceDescription, unit, serviceAttribute);
+//                            } catch (CouldNotPerformException ex) {
+//                                if (ex.getCause() instanceof InterruptedException) {
+//                                    updateActionState(ActionState.State.ABORTED);
+//                                } else {
+//                                    updateActionState(ActionState.State.EXECUTION_FAILED);
+//                                }
+//                                throw new ExecutionException(ex);
+//                            }
+//                            updateActionState(ActionState.State.FINISHING);
+//                            return null;
+//                        } catch (final CancellationException ex) {
+//                            updateActionState(ActionState.State.ABORTED);
+//                            throw ex;
+//                        }
+//                    });
+//                    
+//                    // register allocation update handler
+//                    unitAllocation.getTaskExecutor().getRemote().addSchedulerListener((allocation) -> {
+//                        actionDescriptionBuilder.getResourceAllocationBuilder().mergeFrom(allocation);
+//                    });
+//                    
+//                    return unitAllocation.getTaskExecutor().getFuture();
+                    return GlobalCachedExecutorService.submit(() -> {
+                        Service.invokeServiceMethod(serviceDescription, unit, serviceAttribute);
+                        return null;
                     });
-                    
-                    // register allocation update handler
-                    unitAllocation.getTaskExecutor().getRemote().addSchedulerListener((allocation) -> {
-                        actionDescriptionBuilder.getResourceAllocationBuilder().mergeFrom(allocation);
-                    });
-                    
-                    return unitAllocation.getTaskExecutor().getFuture();
                 } catch (CouldNotPerformException ex) {
                     updateActionState(ActionState.State.REJECTED);
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
