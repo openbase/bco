@@ -38,6 +38,7 @@ import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
+import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 
@@ -164,5 +165,42 @@ public class AuthenticatorControllerTest {
             ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }
         fail("Exception has not been thrown even though user[" + clientId + "] does not use the password[" + password + "]!");
+    }
+
+    @Test(timeout = 5000)
+    public void testChangeCredentials() throws Exception {
+        System.out.println("testChangeCredentials");
+
+        String clientId = MockAuthenticationRegistry.CLIENT_ID;
+        byte[] clientPasswordHash = MockAuthenticationRegistry.PASSWORD_HASH;
+        byte[] newPasswordHash = MockAuthenticationRegistry.PASSWORD_HASH;
+
+        // handle KDC request on server side
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = CashedAuthenticationRemote.getRemote().requestTicketGrantingTicket(clientId).get();
+
+        // handle KDC response on client side
+        List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(clientId, clientPasswordHash, ticketSessionKeyWrapper);
+        TicketAuthenticatorWrapper clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
+        byte[] clientTGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
+
+        // handle TGS request on server side
+        ticketSessionKeyWrapper = CashedAuthenticationRemote.getRemote().requestClientServerTicket(clientTicketAuthenticatorWrapper).get();
+
+        // handle TGS response on client side
+        list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(clientId, clientTGSSessionKey, ticketSessionKeyWrapper);
+        clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
+        byte[] clientSSSessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
+
+        // init SS request on client side
+        clientTicketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(clientSSSessionKey, clientTicketAuthenticatorWrapper);
+
+        LoginCredentials loginCredentials = LoginCredentials.newBuilder()
+          .setId(MockAuthenticationRegistry.CLIENT_ID)
+          .setOldCredentials(EncryptionHelper.encrypt(clientPasswordHash, clientSSSessionKey))
+          .setNewCredentials(EncryptionHelper.encrypt(newPasswordHash, clientSSSessionKey))
+          .setTicketAuthenticatorWrapper(clientTicketAuthenticatorWrapper)
+          .build();
+
+        CashedAuthenticationRemote.getRemote().changeCredentials(loginCredentials).get();
     }
 }
