@@ -23,6 +23,8 @@ package org.openbase.bco.authentication.core;
  */
 import java.io.IOException;
 import java.io.StreamCorruptedException;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.concurrent.Future;
 import org.openbase.bco.authentication.core.mock.MockAuthenticationRegistry;
 import org.openbase.bco.authentication.lib.AuthenticationServerHandler;
@@ -59,36 +61,36 @@ import rst.domotic.authentication.TicketType.Ticket;
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class AuthenticatorController implements AuthenticationService, Launchable<Void>, VoidInitializable {
-    
+
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatorController.class);
-    
+
     private RSBLocalServer server;
     private WatchDog serverWatchDog;
-    
-    private final byte[] TGSSessionKey;
-    private final byte[] TGSPrivateKey;
-    private final byte[] SSSessionKey;
-    private final byte[] SSPrivateKey;
-    
+
+    private final byte[] ticketGrantingServicePrivateKey;
+    private final byte[] serviceServerPrivateKey;
+    private final Map<String, byte[]> ticketGrantingServiceSessionKeyMap;
+    private final Map<String, byte[]> serviceServerSessionKeyMap;
+
     private final AuthenticationRegistry authenticationRegistry;
-    
+
     public AuthenticatorController() {
         this(new AuthenticationRegistry());
     }
-    
+
     public AuthenticatorController(AuthenticationRegistry authenticationRegistry) {
         this.server = new NotInitializedRSBLocalServer();
-        
-        this.TGSSessionKey = EncryptionHelper.generateKey();
-        this.TGSPrivateKey = EncryptionHelper.generateKey();
-        this.SSSessionKey = EncryptionHelper.generateKey();
-        this.SSPrivateKey = EncryptionHelper.generateKey();
-        
+
+        this.ticketGrantingServicePrivateKey = EncryptionHelper.generateKey();
+        this.serviceServerPrivateKey = EncryptionHelper.generateKey();
+        this.ticketGrantingServiceSessionKeyMap = new HashMap<>();
+        this.serviceServerSessionKeyMap = new HashMap<>();
+
         boolean simulation = false;
         try {
             simulation = JPService.getProperty(JPAuthenticationSimulationMode.class).getValue();
         } catch (JPNotAvailableException ex) {
-            LOGGER.warn("Got not check simulation property!", ex);
+            LOGGER.warn("Could not check simulation property. Starting in normal mode.", ex);
         }
         if (simulation) {
             this.authenticationRegistry = new MockAuthenticationRegistry();
@@ -96,7 +98,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             this.authenticationRegistry = authenticationRegistry;
         }
     }
-    
+
     @Override
     public void init() throws InitializationException, InterruptedException {
         try {
@@ -104,27 +106,27 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
             // register rpc methods.
             RPCHelper.registerInterface(AuthenticationService.class, this, server);
-            
+
             serverWatchDog = new WatchDog(server, "AuthenticatorWatchDog");
         } catch (JPNotAvailableException | CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
-        
+
         authenticationRegistry.init();
     }
-    
+
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         serverWatchDog.activate();
     }
-    
+
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         if (serverWatchDog != null) {
             serverWatchDog.deactivate();
         }
     }
-    
+
     @Override
     public boolean isActive() {
         if (serverWatchDog != null) {
@@ -133,7 +135,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             return false;
         }
     }
-    
+
     @Override
     public Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(String clientId) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
@@ -141,7 +143,8 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 String[] split = clientId.split("@", 2);
                 String userName = split[0];
                 byte[] passwordHash = authenticationRegistry.getCredentials(userName);
-                return AuthenticationServerHandler.handleKDCRequest(clientId, passwordHash, "", TGSSessionKey, TGSPrivateKey);
+                ticketGrantingServiceSessionKeyMap.put(userName, EncryptionHelper.generateKey());
+                return AuthenticationServerHandler.handleKDCRequest(clientId, passwordHash, "", ticketGrantingServiceSessionKeyMap.get(userName), ticketGrantingServicePrivateKey);
             } catch (NotAvailableException ex) {
                 throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
             } catch (InterruptedException | CouldNotPerformException | IOException ex) {
@@ -150,12 +153,12 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             }
         });
     }
-    
+
     @Override
     public Future<TicketSessionKeyWrapper> requestClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
             try {
-                return AuthenticationServerHandler.handleTGSRequest(TGSSessionKey, TGSPrivateKey, SSSessionKey, SSPrivateKey, ticketAuthenticatorWrapper);
+                return AuthenticationServerHandler.handleTGSRequest(ticketGrantingServiceSessionKeyMap, serviceServerSessionKeyMap, ticketGrantingServicePrivateKey, serviceServerPrivateKey, ticketAuthenticatorWrapper);
             } catch (RejectedException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
                 throw new RejectedException(ex.getMessage());
@@ -168,12 +171,12 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             }
         });
     }
-    
+
     @Override
     public Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
             try {
-                return AuthenticationServerHandler.handleSSRequest(SSSessionKey, SSPrivateKey, ticketAuthenticatorWrapper);
+                return AuthenticationServerHandler.handleSSRequest(serviceServerSessionKeyMap, serviceServerPrivateKey, ticketAuthenticatorWrapper);
             } catch (RejectedException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
                 throw new RejectedException(ex.getMessage());
