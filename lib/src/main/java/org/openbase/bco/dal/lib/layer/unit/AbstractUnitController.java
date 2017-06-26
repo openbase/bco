@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
@@ -43,6 +44,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.bco.authentication.core.AuthenticatorController;
+import org.openbase.bco.authentication.lib.ClientRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -103,6 +105,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     private final ServiceJSonProcessor serviceJSonProcessor;
     private UnitTemplate template;
     private final Map<ServiceType, MessageObservable> serviceStateObservableMap;
+    private final ClientRemote clientRemote;
 
     public AbstractUnitController(final Class unitClass, final DB builder) throws InstantiationException {
         super(builder);
@@ -110,6 +113,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         this.serviceList = new ArrayList<>();
         this.serviceStateObservableMap = new HashMap<>();
 //        this.resourceAllocator = new UnitResourceAllocator<>(this);
+        this.clientRemote = new ClientRemote();
     }
 
     @Override
@@ -423,11 +427,11 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             }
             
             // authenticate and (also authorize?)
-            AuthenticatorController authenticatorController = new AuthenticatorController();
-            authenticatorController.init();
-            authenticatorController.activate();
-            TicketAuthenticatorWrapper wrapper = authenticatorController.requestClientServerTicket(actionDescription.getActionAuthority().getTicketAuthenticatorWrapper()).get();
-            authenticatorController.deactivate();
+            clientRemote.init();
+            clientRemote.activate();
+            clientRemote.waitForActivation();
+            TicketAuthenticatorWrapper wrapper = clientRemote.validateClientServerTicket(actionDescription.getActionAuthority().getTicketAuthenticatorWrapper()).get();
+            clientRemote.shutdown();
             ActionFuture.Builder actionFutureBuilder = ActionFuture.newBuilder().setTicketAuthenticatorWrapper(wrapper);
             
             return GlobalCachedExecutorService.submit(() -> {
