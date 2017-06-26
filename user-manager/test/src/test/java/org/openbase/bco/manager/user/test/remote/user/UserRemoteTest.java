@@ -28,7 +28,6 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.user.UserRemote;
-import org.openbase.bco.manager.user.core.UserManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -43,13 +42,11 @@ import rst.domotic.state.UserPresenceStateType.UserPresenceState;
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class UserRemoteTest {
+public class UserRemoteTest extends AbstractBCOUserManagerTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(UserRemoteTest.class);
 
-    private static UserManagerLauncher userManagerLauncher;
     private static UserRemote userRemote;
-    private static MockRegistry registry;
 
     public UserRemoteTest() {
 
@@ -58,6 +55,8 @@ public class UserRemoteTest {
     @BeforeClass
     public static void setUpClass() throws Throwable {
         try {
+            AbstractBCOUserManagerTest.setUpClass();
+
             userRemote = Units.getUnit(MockRegistry.testUser, true, UserRemote.class);
         } catch (CouldNotPerformException | InterruptedException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
