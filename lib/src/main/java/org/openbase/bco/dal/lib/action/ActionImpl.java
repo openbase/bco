@@ -102,7 +102,7 @@ public class ActionImpl implements Action {
                 throw new NotAvailableException("ActionDescription.ServiceStateDescription.UnitId");
             }
 
-            if (actionDescription.getServiceStateDescription().getUnitId().equals(unit.getId())) {
+            if (!actionDescription.getServiceStateDescription().getUnitId().equals(unit.getId())) {
                 throw new InvalidStateException("Referred unit is not compatible with the registered unit controller!");
             }
         } catch (CouldNotPerformException ex) {
@@ -150,12 +150,12 @@ public class ActionImpl implements Action {
                             throw ex;
                         }
                     });
-                    
+
                     // register allocation update handler
                     unitAllocation.getTaskExecutor().getRemote().addSchedulerListener((allocation) -> {
                         actionDescriptionBuilder.getResourceAllocationBuilder().mergeFrom(allocation);
                     });
-                    
+
                     return unitAllocation.getTaskExecutor().getFuture();
                 } catch (CouldNotPerformException ex) {
                     updateActionState(ActionState.State.REJECTED);
