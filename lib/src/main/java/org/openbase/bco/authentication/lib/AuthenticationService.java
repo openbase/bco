@@ -112,5 +112,5 @@ public interface AuthenticationService {
      * @throws PermissionDeniedException If the user has no permission to change this password.
      */
     @RPCMethod
-    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentials loginCredentials) throws RejectedException, StreamCorruptedException, IOException, PermissionDeniedException;
+    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentials loginCredentials) throws CouldNotPerformException, RejectedException, StreamCorruptedException, IOException, PermissionDeniedException;
 }
