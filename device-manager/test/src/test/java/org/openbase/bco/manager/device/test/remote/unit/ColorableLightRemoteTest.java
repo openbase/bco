@@ -28,7 +28,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
-import org.openbase.bco.dal.lib.transform.HSBColorToRGBColorTransformer;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
@@ -79,10 +78,10 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 10000)
     public void testSetColor_Color() throws Exception {
         System.out.println("setColor");
-        Color color = Color.MAGENTA;
+        HSBColor color = HSBColor.newBuilder().setBrightness(50).setSaturation(70).setHue(150).build();
         colorableLightRemote.setColor(color).get();
         colorableLightRemote.requestData().get();
-        assertEquals("Color has not been set in time!", HSBColorToRGBColorTransformer.transform(color), colorableLightRemote.getData().getColorState().getColor().getHsbColor());
+        assertEquals("Color has not been set in time!", color, colorableLightRemote.getData().getColorState().getColor().getHsbColor());
     }
 
 //    @Test//(timeout = 10000)
