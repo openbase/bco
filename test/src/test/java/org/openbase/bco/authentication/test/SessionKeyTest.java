@@ -1,8 +1,8 @@
-package org.openbase.bco.authentication.lib;
+package org.openbase.bco.authentication.test;
 
 /*-
  * #%L
- * BCO Authentication Library
+ * BCO Authentication Test
  * %%
  * Copyright (C) 2017 openbase.org
  * %%
@@ -21,7 +21,6 @@ package org.openbase.bco.authentication.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -29,28 +28,38 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
+import org.openbase.bco.authentication.core.AuthenticationRegistry;
+import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
+import org.openbase.bco.authentication.lib.jp.JPInitializeCredentials;
+import org.openbase.bco.authentication.lib.jp.JPResetCredentials;
+import org.openbase.jps.core.JPService;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.slf4j.LoggerFactory;
 
 /**
  *
  * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
 public class SessionKeyTest {
-    
+
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SessionKeyTest.class);
+
     public SessionKeyTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() {
     }
-    
+
     @AfterClass
     public static void tearDownClass() {
     }
-    
+
     @Before
     public void setUp() {
     }
-    
+
     @After
     public void tearDown() {
     }
@@ -65,5 +74,5 @@ public class SessionKeyTest {
         int len = EncryptionHelper.generateKey().length;
         assertEquals(expLen, len);
     }
-    
+
 }

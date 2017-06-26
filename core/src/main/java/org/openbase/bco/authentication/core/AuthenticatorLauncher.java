@@ -7,6 +7,10 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.bco.authentication.lib.AuthenticationService;
+import org.openbase.bco.authentication.lib.jp.JPAuthenticationSimulationMode;
+import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
+import org.openbase.bco.authentication.lib.jp.JPInitializeCredentials;
+import org.openbase.bco.authentication.lib.jp.JPResetCredentials;
 
 /*-
  * #%L
@@ -42,6 +46,10 @@ public class AuthenticatorLauncher extends AbstractLauncher<AuthenticatorControl
     @Override
     protected void loadProperties() {
         JPService.registerProperty(JPAuthenticationScope.class);
+        JPService.registerProperty(JPAuthenticationSimulationMode.class);
+        JPService.registerProperty(JPInitializeCredentials.class);
+        JPService.registerProperty(JPResetCredentials.class);
+        JPService.registerProperty(JPCredentialsDirectory.class);
     }
 
     /**

@@ -1,47 +1,45 @@
-package org.openbase.bco.authentication.core;
+package org.openbase.bco.authentication.test;
 
 /*-
  * #%L
- * BCO Authentication Core
+ * BCO Authentication Test
  * %%
  * Copyright (C) 2017 openbase.org
  * %%
  * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as
+ * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
  * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
+ * GNU General Lesser Public License for more details.
  * 
- * You should have received a copy of the GNU General Public
+ * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.authentication.core.mock.MockAuthenticationRegistry;
+import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.ClientRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
-import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
-import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.authentication.lib.jp.JPAuthenticationSimulationMode;
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
-import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
-import org.openbase.jul.extension.rsb.iface.RSBListener;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import rsb.Event;
+import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -49,7 +47,11 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public class AuthenticatorControllerTest {
 
-    private static AuthenticatorLauncher authenticatorLauncher;
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatorControllerTest.class);
+
+    private static AuthenticatorController authenticatorController;
+
+    private static ClientRemote clientRemote;
 
     public AuthenticatorControllerTest() {
     }
@@ -58,22 +60,25 @@ public class AuthenticatorControllerTest {
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
 
-        MockRegistryHolder.newMockRegistry();
+        authenticatorController = new AuthenticatorController(new MockAuthenticationRegistry());
+        authenticatorController.init();
+        authenticatorController.activate();
 
-        GlobalCachedExecutorService.submit(() -> {
-            authenticatorLauncher = new AuthenticatorLauncher();
-            authenticatorLauncher.launch();
-            return null;
-        });
+        clientRemote = new ClientRemote();
+        clientRemote.init();
+        clientRemote.activate();
+        
+        Thread.sleep(100);
     }
 
     @AfterClass
     public static void tearDownClass() {
-        if (authenticatorLauncher != null) {
-            authenticatorLauncher.shutdown();
+        if (clientRemote != null) {
+            clientRemote.shutdown();
         }
-
-        MockRegistryHolder.shutdownMockRegistry();
+        if (authenticatorController != null) {
+            authenticatorController.shutdown();
+        }
     }
 
     @Before
@@ -85,36 +90,20 @@ public class AuthenticatorControllerTest {
     }
 
     /**
-     * Test of init method, of class AuthenticatorController.
+     * Test of communication between ClientRemote and AuthenticatorController.
      *
      * @throws java.lang.Exception
      */
-    //TODO: find error and reactivate
     @Test(timeout = 5000)
     public void testCommunication() throws Exception {
-        Registries.getUserRegistry().waitForData();
-        UnitConfig userUnitConfig = Registries.getUserRegistry().getUserConfigs().get(0);
-        String clientId = userUnitConfig.getId();
+        System.out.println("testCommunication");
 
-        RSBListener listener = RSBFactoryImpl.getInstance().createSynchronizedListener(JPService.getProperty(JPAuthenticationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
-        listener.addHandler((Event event) -> {
-            System.out.println(event.getData());
-        }, true);
-        listener.activate();
-        
-        ClientRemote clientRemote = new ClientRemote();
-        clientRemote.init();
-        clientRemote.activate();
-
-        Thread.sleep(500);
-
-        byte[] clientPasswordHash = EncryptionHelper.hash(userUnitConfig.getUserConfig().getPassword().toString());
+        String clientId = MockAuthenticationRegistry.CLIENT_ID;
+        byte[] clientPasswordHash = MockAuthenticationRegistry.PASSWORD_HASH;
 
         // handle KDC request on server side
         TicketSessionKeyWrapper ticketSessionKeyWrapper = clientRemote.requestTicketGrantingTicket(clientId).get();
 
-        System.out.println("Decryption with [" + userUnitConfig.getUserConfig().getPassword() + "]");
-        
         // handle KDC response on client side
         List<Object> list = AuthenticationClientHandler.handleKDCResponse(clientId, clientPasswordHash, ticketSessionKeyWrapper);
         TicketAuthenticatorWrapper clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
@@ -136,8 +125,48 @@ public class AuthenticatorControllerTest {
 
         // handle SS response on client side
         AuthenticationClientHandler.handleSSResponse(clientSSSessionKey, clientTicketAuthenticatorWrapper, serverTicketAuthenticatorWrapper);
-
-        clientRemote.shutdown();
     }
 
+    /**
+     * Test if an exception is correctly thrown if a user requests a ticket granting ticket with
+     * a wrong client id.
+     *
+     * @throws Exception
+     */
+    @Test(timeout = 5000)
+    public void testAuthenticationWithNonExistentUser() throws Exception {
+        System.out.println("testAuthenticationWithNonExistentUser");
+
+        String nonExistentClientId = "12abc-15123";
+
+        try {
+            clientRemote.requestTicketGrantingTicket(nonExistentClientId).get();
+        } catch (ExecutionException ex) {
+            // test successful
+            return;
+        }
+        fail("Exception has not been thrown even though there should be no user[" + nonExistentClientId + "] in the database!");
+    }
+
+    /**
+     * Test if the correct exception is thrown if the wrong password for a user is used.
+     *
+     * @throws Exception
+     */
+    @Test(timeout = 5000)
+    public void testAuthenticationWithIncorrectPassword() throws Exception {
+        System.out.println("testAuthenticationWithIncorrectPassword");
+
+        String clientId = MockAuthenticationRegistry.CLIENT_ID;
+        String password = "wrongpassword";
+        byte[] passwordHash = EncryptionHelper.hash(password);
+
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = clientRemote.requestTicketGrantingTicket(clientId).get();
+        try {
+            AuthenticationClientHandler.handleKDCResponse(clientId, passwordHash, ticketSessionKeyWrapper);
+        } catch (IOException ex) {
+            return;
+        }
+        fail("Exception has not been thrown even though user[" + clientId + "] does not use the password[" + password + "]!");
+    }
 }

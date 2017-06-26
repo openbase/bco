@@ -1,8 +1,8 @@
-package org.openbase.bco.authentication.lib;
+package org.openbase.bco.authentication.test;
 
 /*-
  * #%L
- * BCO Authentication Library
+ * BCO Authentication Test
  * %%
  * Copyright (C) 2017 openbase.org
  * %%
@@ -33,7 +33,6 @@ import static org.junit.Assert.*;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.AuthenticationServerHandler;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
-import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.AuthenticatorType.Authenticator;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
@@ -146,62 +145,4 @@ public class AuthenticationHandlerTest {
         // handle SS response on client side
         AuthenticationClientHandler.handleSSResponse(clientSSSessionKey, clientTicketAuthenticationWrapper, serverTicketAuthenticationWrapper);
     }
-
-    // TODO: activate when working
-    //@Test
-    public void testAuthenticationWithNonExistentUser() throws Exception {
-        System.out.println("testAuthenticationWithNonExistentUser");
-
-        String nonExistentClientId = "NonExistentClientId";
-        clientPasswordHash = EncryptionHelper.hash(clientPassword);
-
-        try {
-            AuthenticationServerHandler.handleKDCRequest(nonExistentClientId, clientPasswordHash, serverClientNetworkAddress, serverTGSSessionKey, serverTGSPrivateKey);
-        } catch (NotAvailableException ex) {
-            return;
-        }
-        fail("NotAvailableException has not been thrown even though there should be no user[" + nonExistentClientId + "] in the database!");
-    }
-
-    // TODO: activate when working
-    @Test
-    public void testAuthenticationWithIncorrectPassword() throws Exception {
-        System.out.println("testAuthenticationWithIncorrectPassword");
-
-        String serverClientId = clientId;
-        byte[] serverClientPasswordHash = EncryptionHelper.hash("correctPassword");
-        byte[] clientPasswordHash = EncryptionHelper.hash("wrongPassword");
-
-        TicketSessionKeyWrapper ticketSessionKeyWrapper = AuthenticationServerHandler.handleKDCRequest(serverClientId, serverClientPasswordHash, serverClientNetworkAddress, serverTGSSessionKey, serverTGSPrivateKey);
-        // TODO: handle exception when thrown
-        try {
-            List<Object> list = AuthenticationClientHandler.handleKDCResponse(serverClientId, clientPasswordHash, ticketSessionKeyWrapper);
-        } catch (Exception ex) {
-            return;
-        }
-        fail("NotAvailableException has not been thrown even though there should be no user[" + serverClientId + "] in the database!");
-    }
-
-    // TODO: activate when working
-    //@Test
-    public void testAuthenticationWithNonExistentUserAndIncorrectPassword() throws Exception {
-        System.out.println("testAuthenticationWithIncorrectPassword");
-        System.out.println("testAuthenticationWithNonExistentUser");
-
-        String clientId = "NonExistentClientId";
-        clientPasswordHash = EncryptionHelper.hash("wrong passwd");
-
-        AuthenticationServerHandler serverHandler = new AuthenticationServerHandler();
-        AuthenticationClientHandler clientHandler = new AuthenticationClientHandler();
-
-        TicketSessionKeyWrapper ticketSessionKeyWrapper = serverHandler.handleKDCRequest(clientId, clientPasswordHash, serverClientNetworkAddress, serverTGSSessionKey, serverTGSPrivateKey);
-        // TODO: handle exception when thrown
-//        try {
-        List<Object> list = clientHandler.handleKDCResponse(clientId, clientPasswordHash, ticketSessionKeyWrapper);
-//        } catch (NotAvailableException ex) {
-//            return;
-//        }
-        fail("NotAvailableException has not been thrown even though there should be no user[" + clientId + "] in the database!");
-    }
-
 }

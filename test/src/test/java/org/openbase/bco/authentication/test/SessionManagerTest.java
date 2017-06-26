@@ -21,25 +21,18 @@ package org.openbase.bco.authentication.test;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
+import org.openbase.bco.authentication.core.mock.MockAuthenticationRegistry;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
-import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.authentication.core.AuthenticatorLauncher;
-import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
+import org.openbase.bco.authentication.core.AuthenticationRegistry;
+import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
-import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
-import org.openbase.jul.extension.rsb.iface.RSBListener;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import rsb.Event;
-import rst.domotic.unit.UnitConfigType;
 
 /**
  *
@@ -47,80 +40,84 @@ import rst.domotic.unit.UnitConfigType;
  */
 public class SessionManagerTest {
 
-    private static AuthenticatorLauncher authenticatorLauncher;
-    private RSBListener listener;
-    
+    private static AuthenticatorController authenticatorController;
+    private static AuthenticationRegistry authenticationRegistry;
+
     public SessionManagerTest() {
     }
-    
+
     @BeforeClass
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
 
-        MockRegistryHolder.newMockRegistry();
-        
+        authenticationRegistry = new MockAuthenticationRegistry();
+
         GlobalCachedExecutorService.submit(() -> {
-            authenticatorLauncher = new AuthenticatorLauncher();
-            authenticatorLauncher.launch();
+            authenticatorController = new AuthenticatorController(authenticationRegistry);
+            authenticatorController.init();
+            authenticatorController.activate();
             return null;
         });
     }
-    
+
     @AfterClass
-    public static void tearDownClass() {
-        if (authenticatorLauncher != null) {
-            authenticatorLauncher.shutdown();
+    public static void tearDownClass() throws Exception {
+        if (authenticatorController != null) {
+            authenticatorController.shutdown();
         }
-        MockRegistryHolder.shutdownMockRegistry();
     }
-    
+
     @Before
     public void setUp() throws Exception {
+<<<<<<< HEAD
         listener = RSBFactoryImpl.getInstance().createSynchronizedListener(JPService.getProperty(JPAuthenticationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
         listener.addHandler((Event event) -> {
 //            System.out.println(event.getData());
         }, true);
         listener.activate();
+=======
+>>>>>>> 141a53147e6fa0553dbd57124ab07292b140acd3
     }
-    
+
     @After
     public void tearDown() throws Exception {
-        listener.deactivate();
+
     }
 
     /**
      * Test of login method, of class SessionManager.
+     *
+     * @throws java.lang.Exception
      */
     @Test(timeout = 5000)
     public void testLogin() throws Exception {
-        Registries.getUserRegistry().waitForData();
-        UnitConfigType.UnitConfig userUnitConfig = Registries.getUserRegistry().getUserConfigs().get(0);
-        String clientId = userUnitConfig.getId();
-                
+        String clientId = MockAuthenticationRegistry.CLIENT_ID;
+        String password = MockAuthenticationRegistry.PASSWORD;
+
         SessionManager manager = new SessionManager();
-        boolean result = manager.login(clientId, userUnitConfig.getUserConfig().getPassword().toString());
-        
+        boolean result = manager.login(clientId, password);
+
         assertEquals(true, result);
     }
 
     /**
      * Test of login method, of class SessionManager.
+     *
+     * @throws java.lang.Exception
      */
     @Test(timeout = 5000)
     public void testLogout() throws Exception {
-        Registries.getUserRegistry().waitForData();
-        UnitConfigType.UnitConfig userUnitConfig = Registries.getUserRegistry().getUserConfigs().get(0);
-        String clientId = userUnitConfig.getId();
-                
+        String clientId = MockAuthenticationRegistry.CLIENT_ID;
+        String password = MockAuthenticationRegistry.PASSWORD;
+
         SessionManager manager = new SessionManager();
-        boolean result = manager.login(clientId, userUnitConfig.getUserConfig().getPassword().toString());
-        
+        boolean result = manager.login(clientId, password);
+
         assertEquals(true, result);
-        
+
         manager.logout();
         assertEquals(null, manager.getTicketAuthenticatorWrapper());
         assertEquals(null, manager.getSessionKey());
-      
     }
-    
+
 }

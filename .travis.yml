@@ -16,9 +16,10 @@ before_install:
   - echo $GPG_OWNERTRUST | base64 --decode | $GPG_EXECUTABLE --import-ownertrust
 
 notifications:
-    slack: openbase-org:vGz7LO4CvGoGMneYkEm3ON7E
     on_failure: change
     on_success: change
+    rooms:
+      - openbase-org:A7IqWSc394yow4q6uPKpLE5F#bco-authentication
 
 deploy:
   - provider: script
