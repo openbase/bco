@@ -39,18 +39,22 @@ import rst.domotic.authentication.TicketSessionKeyWrapperType;
  */
 public class SessionManager {
     
-    private TicketAuthenticatorWrapper clientServerTicket;
+    private TicketAuthenticatorWrapper ticketAuthenticatorWrapper;
     private byte[] sessionKey;
     
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(KeyGenerator.class);
-    private ClientRemote clientRemote;
+    private final ClientRemote clientRemote;
     
     public SessionManager() {
         this.clientRemote = new ClientRemote();
     }
 
-    public TicketAuthenticatorWrapper getClientServerTicket() {
-        return clientServerTicket;
+    public TicketAuthenticatorWrapper getTicketAuthenticatorWrapper() {
+        return ticketAuthenticatorWrapper;
+    }
+
+    public void setTicketAuthenticatorWrapper(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
+        this.ticketAuthenticatorWrapper = ticketAuthenticatorWrapper;
     }
 
     public byte[] getSessionKey() {
@@ -65,10 +69,9 @@ public class SessionManager {
      * @throws RejectedException Throws, if an error occurred during login process, e.g. clientId non existent
      */
     public boolean login(String clientId, String clientPassword) throws InitializationException, InterruptedException, CouldNotPerformException, IOException, ExecutionException {
-        this.clientRemote.init();
-        this.clientRemote.activate();
-
-        Thread.sleep(500);
+        clientRemote.init();
+        clientRemote.activate();
+        clientRemote.waitForActivation();
         
         // init KDC request on client side
         byte[] clientPasswordHash = EncryptionHelper.hash(clientPassword);
@@ -86,7 +89,7 @@ public class SessionManager {
 
         // handle TGS response on client side
         list = AuthenticationClientHandler.handleTGSResponse(clientId, TGSSessionKey, tskw);
-        this.clientServerTicket = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
+        this.ticketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
         this.sessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
 
         clientRemote.shutdown();
@@ -97,7 +100,15 @@ public class SessionManager {
      * Logs a user out by setting CST and session key to null
      */
     public void logout() {
-        this.clientServerTicket = null;
+        this.ticketAuthenticatorWrapper = null;
         this.sessionKey = null;
+    }
+    
+    /**
+     * determines if a user is logged in (does not validate ClientServerTicket and SessionKey)
+     * @return Returns true if logged in otherwise false
+     */
+    public boolean isLoggedIn() {
+        return this.ticketAuthenticatorWrapper != null && this.sessionKey != null;
     }
 }

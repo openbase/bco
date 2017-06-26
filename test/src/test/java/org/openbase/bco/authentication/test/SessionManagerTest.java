@@ -78,7 +78,7 @@ public class SessionManagerTest {
     public void setUp() throws Exception {
         listener = RSBFactoryImpl.getInstance().createSynchronizedListener(JPService.getProperty(JPAuthenticationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
         listener.addHandler((Event event) -> {
-            System.out.println(event.getData());
+//            System.out.println(event.getData());
         }, true);
         listener.activate();
     }
@@ -118,7 +118,7 @@ public class SessionManagerTest {
         assertEquals(true, result);
         
         manager.logout();
-        assertEquals(null, manager.getClientServerTicket());
+        assertEquals(null, manager.getTicketAuthenticatorWrapper());
         assertEquals(null, manager.getSessionKey());
       
     }

@@ -21,8 +21,8 @@ package org.openbase.bco.authentication.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -76,6 +76,14 @@ public class ClientRemote implements AuthenticationService, Manageable<Void>, Vo
     @Override
     public boolean isActive() {
         return remoteServer.isActive();
+    }
+
+    public void waitForActivation() throws CouldNotPerformException, InterruptedException {
+        try {
+            serverWatchDog.waitForServiceActivation();
+        } catch (final CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not wait for activation!", ex);
+        }
     }
 
     @Override
