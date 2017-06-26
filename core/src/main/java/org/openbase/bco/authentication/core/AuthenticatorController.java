@@ -23,8 +23,7 @@ package org.openbase.bco.authentication.core;
  */
 import java.io.IOException;
 import java.io.StreamCorruptedException;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.Arrays;
 import java.util.concurrent.Future;
 import org.openbase.bco.authentication.core.mock.MockAuthenticationRegistry;
 import org.openbase.bco.authentication.lib.AuthenticationServerHandler;
@@ -54,6 +53,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.AuthenticatorType.Authenticator;
+import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
 import rst.domotic.authentication.TicketType.Ticket;
 
 /**
@@ -69,8 +69,6 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
     private final byte[] ticketGrantingServicePrivateKey;
     private final byte[] serviceServerPrivateKey;
-    private final Map<String, byte[]> ticketGrantingServiceSessionKeyMap;
-    private final Map<String, byte[]> serviceServerSessionKeyMap;
 
     private final AuthenticationRegistry authenticationRegistry;
 
@@ -83,8 +81,6 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
         this.ticketGrantingServicePrivateKey = EncryptionHelper.generateKey();
         this.serviceServerPrivateKey = EncryptionHelper.generateKey();
-        this.ticketGrantingServiceSessionKeyMap = new HashMap<>();
-        this.serviceServerSessionKeyMap = new HashMap<>();
 
         boolean simulation = false;
         try {
@@ -143,8 +139,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 String[] split = clientId.split("@", 2);
                 String userName = split[0];
                 byte[] passwordHash = authenticationRegistry.getCredentials(userName);
-                ticketGrantingServiceSessionKeyMap.put(userName, EncryptionHelper.generateKey());
-                return AuthenticationServerHandler.handleKDCRequest(clientId, passwordHash, "", ticketGrantingServiceSessionKeyMap.get(userName), ticketGrantingServicePrivateKey);
+                return AuthenticationServerHandler.handleKDCRequest(clientId, passwordHash, "", ticketGrantingServicePrivateKey);
             } catch (NotAvailableException ex) {
                 throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
             } catch (InterruptedException | CouldNotPerformException | IOException ex) {
@@ -158,7 +153,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     public Future<TicketSessionKeyWrapper> requestClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
             try {
-                return AuthenticationServerHandler.handleTGSRequest(ticketGrantingServiceSessionKeyMap, serviceServerSessionKeyMap, ticketGrantingServicePrivateKey, serviceServerPrivateKey, ticketAuthenticatorWrapper);
+                return AuthenticationServerHandler.handleTGSRequest(ticketGrantingServicePrivateKey, serviceServerPrivateKey, ticketAuthenticatorWrapper);
             } catch (RejectedException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
                 throw new RejectedException(ex.getMessage());
@@ -176,7 +171,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     public Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
             try {
-                return AuthenticationServerHandler.handleSSRequest(serviceServerSessionKeyMap, serviceServerPrivateKey, ticketAuthenticatorWrapper);
+                return AuthenticationServerHandler.handleSSRequest(serviceServerPrivateKey, ticketAuthenticatorWrapper);
             } catch (RejectedException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
                 throw new RejectedException(ex.getMessage());
@@ -194,25 +189,31 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentials loginCredentials) throws RejectedException, StreamCorruptedException, IOException {
         return GlobalCachedExecutorService.submit(() -> {
             try {
+                // Validate the given authenticator and ticket.
                 TicketAuthenticatorWrapper wrapper = loginCredentials.getTicketAuthenticatorWrapper();
-                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(SSSessionKey, SSPrivateKey, wrapper);
+                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerPrivateKey, wrapper);
 
-                Ticket CST = (Ticket) EncryptionHelper.decrypt(wrapper.getTicket(), SSPrivateKey);
-                Authenticator authenticator = (Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), SSSessionKey);
-                byte[] oldCredentials = EncryptionHelper.decrypt(loginCredentials.getOldCredentials(), SSSessionKey);
-                byte[] newCredentials = EncryptionHelper.decrypt(loginCredentials.getNewCredentials(), SSSessionKey);
+                // Decrypt ticket, authenticator and credentials.
+                Ticket clientServerTicket = (Ticket) EncryptionHelper.decrypt(wrapper.getTicket(), serviceServerPrivateKey);
+                byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
+                Authenticator authenticator = (Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), clientServerSessionKey);
+                byte[] oldCredentials = (byte[]) EncryptionHelper.decrypt(loginCredentials.getOldCredentials(), clientServerSessionKey);
+                byte[] newCredentials = (byte[]) EncryptionHelper.decrypt(loginCredentials.getNewCredentials(), clientServerSessionKey);
                 String userId = loginCredentials.getId();
                 String[] split = authenticator.getClientId().split("@", 2);
                 String authenticatorUserId = split[0];
 
+                // Allow users to change their own password.
                 if (!userId.equals(authenticatorUserId)) {
                     throw new PermissionDeniedException("You are not permitted to perform this action.");
                 }
 
-                if (!oldCredentials.equals(authenticationRegistry.getCredentials(userId))) {
+                // Check if the given credentials correspond to the old one.
+                if (!Arrays.equals(oldCredentials, authenticationRegistry.getCredentials(userId))) {
                     throw new RejectedException("The old password is wrong.");
                 }
 
+                // Update credentials.
                 authenticationRegistry.setCredentials(userId, newCredentials);
 
                 return response;
