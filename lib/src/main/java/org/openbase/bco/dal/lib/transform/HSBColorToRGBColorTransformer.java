@@ -21,10 +21,10 @@ package org.openbase.bco.dal.lib.transform;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.awt.Color;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.TypeNotSupportedException;
 import rst.vision.HSBColorType.HSBColor;
+import rst.vision.RGBColorType.RGBColor;
 
 /**
  *
@@ -32,21 +32,96 @@ import rst.vision.HSBColorType.HSBColor;
  */
 public class HSBColorToRGBColorTransformer {
 
-    public static HSBColor transform(Color color) throws CouldNotTransformException {
+    public static HSBColor transform(RGBColor rgbColor) throws CouldNotTransformException {
         try {
-            float[] hsb = new float[3];
-            Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsb);
-            return HSBColor.newBuilder().setHue(hsb[0] * 360).setSaturation(hsb[1] * 100).setBrightness(hsb[2] * 100).build();
+            double hue, saturation, brightness;
+            int r = rgbColor.getRed();
+            int g = rgbColor.getGreen();
+            int b = rgbColor.getBlue();
+
+            int cmax = (r > g) ? r : g;
+            if (b > cmax) cmax = b;
+            int cmin = (r < g) ? r : g;
+            if (b < cmin) cmin = b;
+
+            brightness = ((float) cmax) / 255.0f;
+            if (cmax != 0)
+                saturation = ((float) (cmax - cmin)) / ((float) cmax);
+            else
+                saturation = 0;
+            if (saturation == 0)
+                hue = 0;
+            else {
+                float redc = ((float) (cmax - r)) / ((float) (cmax - cmin));
+                float greenc = ((float) (cmax - g)) / ((float) (cmax - cmin));
+                float bluec = ((float) (cmax - b)) / ((float) (cmax - cmin));
+                if (r == cmax)
+                    hue = bluec - greenc;
+                else if (g == cmax)
+                    hue = 2.0f + redc - bluec;
+                else
+                    hue = 4.0f + greenc - redc;
+                hue = hue / 6.0f;
+                if (hue < 0)
+                    hue = hue + 1.0f;
+            }
+            return HSBColor.newBuilder().setHue(hue).setSaturation(saturation).setBrightness(brightness).build();
         } catch (Exception ex) {
-            throw new CouldNotTransformException("Could not transform " + Color.class.getName() + " to " + HSBColor.class.getName() + "!", ex);
+            throw new CouldNotTransformException("Could not transform " + RGBColor.class.getName() + " to " + HSBColor.class.getName() + "!", ex);
         }
     }
 
-    public static Color transform(HSBColor color) throws TypeNotSupportedException, CouldNotTransformException {
+    public static RGBColor transform(HSBColor hsbColor) throws TypeNotSupportedException, CouldNotTransformException {
         try {
-            return Color.getHSBColor((((float) color.getHue()) / 360f), (((float) color.getSaturation()) / 100f), (((float) color.getBrightness()) / 100f));
+            int r = 0, g = 0, b = 0;
+            double hue = hsbColor.getHue();
+            double saturation = hsbColor.getSaturation();
+            double brightness = hsbColor.getBrightness();
+
+            if (saturation == 0) {
+                r = g = b = (int) (brightness * 255.0f + 0.5f);
+            } else {
+                double h = (hue - (float) Math.floor(hue)) * 6.0f;
+                double f = h - (float) java.lang.Math.floor(h);
+                double p = brightness * (1.0f - saturation);
+                double q = brightness * (1.0f - saturation * f);
+                double t = brightness * (1.0f - (saturation * (1.0f - f)));
+                switch ((int) h) {
+                    case 0:
+                        r = (int) (brightness * 255.0f + 0.5f);
+                        g = (int) (t * 255.0f + 0.5f);
+                        b = (int) (p * 255.0f + 0.5f);
+                        break;
+                    case 1:
+                        r = (int) (q * 255.0f + 0.5f);
+                        g = (int) (brightness * 255.0f + 0.5f);
+                        b = (int) (p * 255.0f + 0.5f);
+                        break;
+                    case 2:
+                        r = (int) (p * 255.0f + 0.5f);
+                        g = (int) (brightness * 255.0f + 0.5f);
+                        b = (int) (t * 255.0f + 0.5f);
+                        break;
+                    case 3:
+                        r = (int) (p * 255.0f + 0.5f);
+                        g = (int) (q * 255.0f + 0.5f);
+                        b = (int) (brightness * 255.0f + 0.5f);
+                        break;
+                    case 4:
+                        r = (int) (t * 255.0f + 0.5f);
+                        g = (int) (p * 255.0f + 0.5f);
+                        b = (int) (brightness * 255.0f + 0.5f);
+                        break;
+                    case 5:
+                        r = (int) (brightness * 255.0f + 0.5f);
+                        g = (int) (p * 255.0f + 0.5f);
+                        b = (int) (q * 255.0f + 0.5f);
+                        break;
+                }
+            }
+            return RGBColor.newBuilder().setRed(r).setGreen(g).setBlue(b).build();
         } catch (Exception ex) {
-            throw new CouldNotTransformException("Could not transform " + HSBColor.class.getName() + " to " + Color.class.getName() + "!", ex);
+            throw new CouldNotTransformException("Could not transform " + HSBColor.class.getName() + " to " + RGBColor.class.getName() + "!", ex);
         }
     }
 }
