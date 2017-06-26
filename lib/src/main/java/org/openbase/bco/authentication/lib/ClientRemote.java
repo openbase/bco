@@ -21,7 +21,6 @@ package org.openbase.bco.authentication.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.concurrent.Future;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
 import org.openbase.jps.core.JPService;
@@ -79,6 +78,14 @@ public class ClientRemote implements AuthenticationService, Manageable<Void>, Vo
         return remoteServer.isActive();
     }
 
+    public void waitForActivation() throws CouldNotPerformException, InterruptedException {
+        try {
+            serverWatchDog.waitForServiceActivation();
+        } catch (final CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not wait for activation!", ex);
+        }
+    }
+
     @Override
     public Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(String clientId) throws CouldNotPerformException {
         return RPCHelper.callRemoteServerMethod(clientId, remoteServer, TicketSessionKeyWrapper.class);
@@ -97,5 +104,10 @@ public class ClientRemote implements AuthenticationService, Manageable<Void>, Vo
     @Override
     public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentials loginCredentials) throws CouldNotPerformException {
         return RPCHelper.callRemoteServerMethod(loginCredentials, remoteServer, TicketAuthenticatorWrapper.class);
+    }
+
+    @Override
+    public Future<Void> registerClient(LoginCredentials loginCredentials) throws CouldNotPerformException {
+        return RPCHelper.callRemoteServerMethod(loginCredentials, remoteServer, Void.class);
     }
 }

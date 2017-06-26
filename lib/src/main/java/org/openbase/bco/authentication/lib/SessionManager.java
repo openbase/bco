@@ -30,24 +30,25 @@ import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthentic
 import rst.domotic.authentication.TicketSessionKeyWrapperType;
 
 /**
- * 
+ *
  * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
 public class SessionManager {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SessionManager.class);
 
-    private TicketAuthenticatorWrapper clientServerTicket;
+    private TicketAuthenticatorWrapper ticketAuthenticatorWrapper;
     private byte[] sessionKey;
 
-    private final ClientRemote clientRemote;
-
     public SessionManager() {
-        this.clientRemote = new ClientRemote();
     }
 
-    public TicketAuthenticatorWrapper getClientServerTicket() {
-        return clientServerTicket;
+    public TicketAuthenticatorWrapper getTicketAuthenticatorWrapper() {
+        return ticketAuthenticatorWrapper;
+    }
+
+    public void setTicketAuthenticatorWrapper(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
+        this.ticketAuthenticatorWrapper = ticketAuthenticatorWrapper;
     }
 
     public byte[] getSessionKey() {
@@ -66,31 +67,25 @@ public class SessionManager {
      */
     public boolean login(String clientId, String clientPassword) throws CouldNotPerformException {
         try {
-            this.clientRemote.init();
-            this.clientRemote.activate();
-            
-            Thread.sleep(100);
-
             // init KDC request on client side
             byte[] clientPasswordHash = EncryptionHelper.hash(clientPassword);
 
             // request TGT
-            TicketSessionKeyWrapperType.TicketSessionKeyWrapper tskw = clientRemote.requestTicketGrantingTicket(clientId).get();
+            TicketSessionKeyWrapperType.TicketSessionKeyWrapper ticketSessionKeyWrapper = CashedAuthenticationRemote.getRemote().requestTicketGrantingTicket(clientId).get();
 
             // handle KDC response on client side
-            List<Object> list = AuthenticationClientHandler.handleKDCResponse(clientId, clientPasswordHash, tskw);
+            List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(clientId, clientPasswordHash, ticketSessionKeyWrapper);
             TicketAuthenticatorWrapper taw = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
-            byte[] TGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
+            byte[] ticketGrantingServiceSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
 
             // request CST
-            tskw = clientRemote.requestClientServerTicket(taw).get();
+            ticketSessionKeyWrapper = CashedAuthenticationRemote.getRemote().requestClientServerTicket(taw).get();
 
             // handle TGS response on client side
-            list = AuthenticationClientHandler.handleTGSResponse(clientId, TGSSessionKey, tskw);
-            this.clientServerTicket = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
+            list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(clientId, ticketGrantingServiceSessionKey, ticketSessionKeyWrapper);
+            this.ticketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
             this.sessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
 
-            clientRemote.shutdown();
             return true;
         } catch (CouldNotPerformException | ExecutionException | IOException | InterruptedException ex) {
             throw new CouldNotPerformException("Login failed! Maybe username or password wrong?", ex);
@@ -101,7 +96,16 @@ public class SessionManager {
      * Logs a user out by setting CST and session key to null
      */
     public void logout() {
-        this.clientServerTicket = null;
+        this.ticketAuthenticatorWrapper = null;
         this.sessionKey = null;
+    }
+
+    /**
+     * determines if a user is logged in (does not validate ClientServerTicket and SessionKey)
+     *
+     * @return Returns true if logged in otherwise false
+     */
+    public boolean isLoggedIn() {
+        return this.ticketAuthenticatorWrapper != null && this.sessionKey != null;
     }
 }

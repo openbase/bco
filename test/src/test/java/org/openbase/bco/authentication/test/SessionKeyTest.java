@@ -28,13 +28,6 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.openbase.bco.authentication.core.AuthenticationRegistry;
-import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
-import org.openbase.bco.authentication.lib.jp.JPInitializeCredentials;
-import org.openbase.bco.authentication.lib.jp.JPResetCredentials;
-import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
 
 /**

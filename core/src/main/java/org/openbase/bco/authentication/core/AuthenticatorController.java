@@ -229,4 +229,13 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             }
         });
     }
+
+    @Override
+    public Future<Void> registerClient(LoginCredentials loginCredentials) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(() -> {
+            authenticationRegistry.setCredentials(loginCredentials.getId(), loginCredentials.getNewCredentials().toByteArray());
+            return null;
+        });
+
+    }
 }

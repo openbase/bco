@@ -69,6 +69,7 @@ public class SessionManagerTest {
 
     @Before
     public void setUp() throws Exception {
+        
     }
 
     @After
@@ -108,7 +109,7 @@ public class SessionManagerTest {
         assertEquals(true, result);
 
         manager.logout();
-        assertEquals(null, manager.getClientServerTicket());
+        assertEquals(null, manager.getTicketAuthenticatorWrapper());
         assertEquals(null, manager.getSessionKey());
     }
 

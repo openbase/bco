@@ -42,108 +42,109 @@ public class AuthenticationClientHandler {
      * Handles a KeyDistributionCenter (KDC) response
      * Decrypts the TicketGrantingServer (TGS) session key with client's hashed password
      * Creates an Authenticator containing the clientID and current timestamp encrypted with the TGS session key
+     *
      * @param clientID Identifier of the client - must be present in client database
      * @param clientPasswordHash Client's hashed password
      * @param wrapper TicketSessionKeyWrapper containing the TicketGrantingTicket and TGS session key
-     * @return Returns a list of objects containing: 
-     *         1. An TicketAuthenticatorWrapperWrapper containing both the TicketGrantingTicket and Authenticator
-     *         2. A SessionKey representing the TGS session key
+     * @return Returns a list of objects containing:
+     * 1. An TicketAuthenticatorWrapperWrapper containing both the TicketGrantingTicket and Authenticator
+     * 2. A SessionKey representing the TGS session key
      *
      * @throws StreamCorruptedException If the decryption of the session key fails, probably because the entered password was wrong.
      * @throws IOException If de- or encryption fail because of a general I/O error.
      */
-    public static List<Object> handleKDCResponse(String clientID, byte[] clientPasswordHash, TicketSessionKeyWrapper wrapper) throws StreamCorruptedException, IOException {
+    public static List<Object> handleKeyDistributionCenterResponse(String clientID, byte[] clientPasswordHash, TicketSessionKeyWrapper wrapper) throws StreamCorruptedException, IOException {
         // decrypt TGS session key
-        byte[] TGSSessionKey;
-
-        TGSSessionKey = (byte[]) EncryptionHelper.decrypt(wrapper.getSessionKey(), clientPasswordHash);
+        byte[] ticketGrantingServiceSessionKey = (byte[]) EncryptionHelper.decrypt(wrapper.getSessionKey(), clientPasswordHash);
 
         // create Authenticator with empty timestamp
         // set timestamp in initTGSRequest()
-        Authenticator.Builder ab = Authenticator.newBuilder();
-        ab.setClientId(clientID);
-        ab.setTimestamp(TimestampProcessor.getCurrentTimestamp());
+        Authenticator.Builder authenticator = Authenticator.newBuilder();
+        authenticator.setClientId(clientID);
+        authenticator.setTimestamp(TimestampProcessor.getCurrentTimestamp());
 
         // create TicketAuthenticatorWrapper
-        TicketAuthenticatorWrapper.Builder atb = TicketAuthenticatorWrapper.newBuilder();
-        atb.setAuthenticator(EncryptionHelper.encrypt(ab.build(), TGSSessionKey));
-        atb.setTicket(wrapper.getTicket());
+        TicketAuthenticatorWrapper.Builder ticketAuthenticatorWrapper = TicketAuthenticatorWrapper.newBuilder();
+        ticketAuthenticatorWrapper.setAuthenticator(EncryptionHelper.encrypt(authenticator.build(), ticketGrantingServiceSessionKey));
+        ticketAuthenticatorWrapper.setTicket(wrapper.getTicket());
 
         // create wrapper list
         List<Object> list = new ArrayList<>();
-        list.add(atb.build());
-        list.add(TGSSessionKey);
+        list.add(ticketAuthenticatorWrapper.build());
+        list.add(ticketGrantingServiceSessionKey);
 
         return list;
     }
 
     /**
-     * Handles a TGS response
+     * Handles a TicketGrantingService response
      * Decrypts the ServiceServer (SS) session key with TGS session key
      * Creates an Authenticator containing the clientID and empty timestamp encrypted with the SS session key
+     *
      * @param clientID Identifier of the client - must be present in client database
-     * @param TGSSessionKey TGS session key provided by handleKDCResponse()
+     * @param ticketGrantingServiceSessionKey TGS session key provided by handleKDCResponse()
      * @param wrapper TicketSessionKeyWrapper containing the ClientServerTicket and SS session key
-     * @return Returns a list of objects containing: 
-     *         1. An TicketAuthenticatorWrapperWrapper containing both the ClientServerTicket and Authenticator
-     *         2. A SessionKey representing the SS session key
+     * @return Returns a list of objects containing:
+     * 1. An TicketAuthenticatorWrapperWrapper containing both the ClientServerTicket and Authenticator
+     * 2. A SessionKey representing the SS session key
      *
      * @throws StreamCorruptedException If the decryption of the SS session key fails.
      * @throws IOException If de- or encryption fail because of a general I/O error.
      */
-    public static List<Object> handleTGSResponse(String clientID, byte[] TGSSessionKey, TicketSessionKeyWrapper wrapper) throws StreamCorruptedException, IOException {
+    public static List<Object> handleTicketGrantingServiceResponse(String clientID, byte[] ticketGrantingServiceSessionKey, TicketSessionKeyWrapper wrapper) throws StreamCorruptedException, IOException {
         // decrypt SS session key
-        byte[] SSSessionKey;
-        SSSessionKey = (byte[]) EncryptionHelper.decrypt(wrapper.getSessionKey(), TGSSessionKey);
+        byte[] SSSessionKey = (byte[]) EncryptionHelper.decrypt(wrapper.getSessionKey(), ticketGrantingServiceSessionKey);
 
         // create Authenticator with empty timestamp
         // set timestamp in initSSRequest()
-        Authenticator.Builder ab = Authenticator.newBuilder();
-        ab.setClientId(clientID);
+        Authenticator.Builder authenticator = Authenticator.newBuilder();
+        authenticator.setClientId(clientID);
 
         // create TicketAuthenticatorWrapper
-        TicketAuthenticatorWrapper.Builder atb = TicketAuthenticatorWrapper.newBuilder();
-        atb.setAuthenticator(EncryptionHelper.encrypt(ab.build(), SSSessionKey));
-        atb.setTicket(wrapper.getTicket());
+        TicketAuthenticatorWrapper.Builder ticketAuthenticatorWrapper = TicketAuthenticatorWrapper.newBuilder();
+        ticketAuthenticatorWrapper.setAuthenticator(EncryptionHelper.encrypt(authenticator.build(), SSSessionKey));
+        ticketAuthenticatorWrapper.setTicket(wrapper.getTicket());
 
         // create wrapper list
         List<Object> list = new ArrayList<>();
-        list.add(atb.build());
+        list.add(ticketAuthenticatorWrapper.build());
         list.add(SSSessionKey);
 
         return list;
     }
 
     /**
-     * Initializes a SS request
+     * Initializes a ServiceServer request
      * Sets current timestamp in Authenticator
-     * @param SSSessionKey SS session key provided by handleTGSResponse()
+     *
+     * @param serviceServerSessionKey SS session key provided by handleTGSResponse()
      * @param wrapper TicketAuthenticatorWrapper wrapper that contains both encrypted Authenticator and CST
      * @return Returns a wrapper class containing both the CST and modified Authenticator
      *
      * @throws StreamCorruptedException If the decryption of the Authenticator fails.
      * @throws IOException If de- or encryption fail because of a general I/O error.
      */
-    public static TicketAuthenticatorWrapper initSSRequest(byte[] SSSessionKey, TicketAuthenticatorWrapper wrapper) throws StreamCorruptedException, IOException {
+    public static TicketAuthenticatorWrapper initServiceServerRequest(byte[] serviceServerSessionKey, TicketAuthenticatorWrapper wrapper) throws StreamCorruptedException, IOException {
         // decrypt authenticator
-        Authenticator authenticator = (Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), SSSessionKey);
+        Authenticator authenticator = (Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), serviceServerSessionKey);
 
         // create Authenticator
         Authenticator.Builder ab = authenticator.toBuilder();
         ab.setTimestamp(TimestampProcessor.getCurrentTimestamp());
 
         // create TicketAuthenticatorWrapper
-        TicketAuthenticatorWrapper.Builder atb = wrapper.toBuilder();
-        atb.setAuthenticator(EncryptionHelper.encrypt(ab.build(), SSSessionKey));
+        TicketAuthenticatorWrapper.Builder ticketAuthenticatorWrapper = wrapper.toBuilder();
+        ticketAuthenticatorWrapper.setAuthenticator(EncryptionHelper.encrypt(ab.build(), serviceServerSessionKey));
 
-        return atb.build();
+        return ticketAuthenticatorWrapper.build();
     }
 
     /**
-     * Handles a SS response
-     * Decrypts Authenticator of both last- and currentWrapper with SSSessionKey
+     * Handles a ServiceServer response
+     * Decrypts Authenticator of both last- and currentWrapper with ServiceServerSessionKey
      * Compares timestamps of both Authenticators with each other
-     * @param SSSessionKey SS session key provided by handleTGSResponse()
+     *
+     * @param serviceServerSessionKey SS session key provided by handleTGSResponse()
      * @param lastWrapper Last TicketAuthenticatorWrapper provided by either handleTGSResponse() or handleSSResponse()
      * @param currentWrapper Current TicketAuthenticatorWrapper provided by (Remote?)
      * @return Returns an TicketAuthenticatorWrapperWrapper containing both the CST and Authenticator
@@ -151,10 +152,10 @@ public class AuthenticationClientHandler {
      * @throws RejectedException If the timestamps do not match.
      * @throws IOException If the decryption of the Authenticators using the SSSessionKey fails.
      */
-    public static TicketAuthenticatorWrapper handleSSResponse(byte[] SSSessionKey, TicketAuthenticatorWrapper lastWrapper, TicketAuthenticatorWrapper currentWrapper) throws RejectedException, IOException {
+    public static TicketAuthenticatorWrapper handleServiceServerResponse(final byte[] serviceServerSessionKey, final TicketAuthenticatorWrapper lastWrapper, final TicketAuthenticatorWrapper currentWrapper) throws RejectedException, IOException {
         // decrypt authenticators
-        Authenticator lastAuthenticator = (Authenticator) EncryptionHelper.decrypt(lastWrapper.getAuthenticator(), SSSessionKey);
-        Authenticator currentAuthenticator = (Authenticator) EncryptionHelper.decrypt(currentWrapper.getAuthenticator(), SSSessionKey);
+        Authenticator lastAuthenticator = (Authenticator) EncryptionHelper.decrypt(lastWrapper.getAuthenticator(), serviceServerSessionKey);
+        Authenticator currentAuthenticator = (Authenticator) EncryptionHelper.decrypt(currentWrapper.getAuthenticator(), serviceServerSessionKey);
 
         // compare both timestamps
         AuthenticationClientHandler.validateTimestamp(lastAuthenticator.getTimestamp(), currentAuthenticator.getTimestamp());
@@ -162,10 +163,16 @@ public class AuthenticationClientHandler {
         return currentWrapper;
     }
 
-    private static void validateTimestamp(Timestamp now, Timestamp then) throws RejectedException {
+    /**
+     * Validate if the timestamps are equal
+     *
+     * @param now the first timestamp
+     * @param then the second timestamp
+     * @throws RejectedException thrown if the timestamps have a different time
+     */
+    public static void validateTimestamp(Timestamp now, Timestamp then) throws RejectedException {
         if (now.getTime() != then.getTime()) {
             throw new RejectedException("Timestamps do not match");
         }
     }
-
 }

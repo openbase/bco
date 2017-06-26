@@ -7,6 +7,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.iface.annotations.RPCMethod;
+import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
@@ -113,4 +114,16 @@ public interface AuthenticationService {
      */
     @RPCMethod
     public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentials loginCredentials) throws CouldNotPerformException, RejectedException, StreamCorruptedException, IOException, PermissionDeniedException;
+
+    /**
+     * Register a new client in the authentication registry. This is only allowed if the authenticator is in registration mode.
+     * The LoginCredentials type contains more fields than needed because its also used to update an existing user.
+     * To use it for registration only the id field containing the client id and the new password field which contains the passwords are needed.
+     *
+     * @param loginCredentials the login credentials containing the information as described above
+     * @return a future of the action of registering the client
+     * @throws CouldNotPerformException if the authenticator is not in registration mode
+     */
+    @RPCMethod
+    public Future<Void> registerClient(LoginCredentials loginCredentials) throws CouldNotPerformException;
 }
