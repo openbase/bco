@@ -69,14 +69,7 @@ public class SessionManagerTest {
 
     @Before
     public void setUp() throws Exception {
-<<<<<<< HEAD
-        listener = RSBFactoryImpl.getInstance().createSynchronizedListener(JPService.getProperty(JPAuthenticationScope.class).getValue(), RSBSharedConnectionConfig.getParticipantConfig());
-        listener.addHandler((Event event) -> {
-//            System.out.println(event.getData());
-        }, true);
-        listener.activate();
-=======
->>>>>>> 141a53147e6fa0553dbd57124ab07292b140acd3
+        
     }
 
     @After
