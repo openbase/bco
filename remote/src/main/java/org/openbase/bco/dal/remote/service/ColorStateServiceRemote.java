@@ -21,7 +21,6 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.awt.Color;
 import java.util.Collection;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -40,6 +39,7 @@ import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.vision.ColorType;
 import rst.vision.HSBColorType.HSBColor;
+import rst.vision.RGBColorType.RGBColor;
 
 /**
  *
@@ -97,17 +97,17 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
                     continue;
                 }
 
-                Color color = HSBColorToRGBColorTransformer.transform(service.getColorState().getColor().getHsbColor());
-                averageRed += color.getRed();
-                averageGreen += color.getGreen();
-                averageBlue += color.getBlue();
+                RGBColor rgbColor = HSBColorToRGBColorTransformer.transform(service.getColorState().getColor().getHsbColor());
+                averageRed += rgbColor.getRed();
+                averageGreen += rgbColor.getGreen();
+                averageBlue += rgbColor.getBlue();
                 timestamp = Math.max(timestamp, service.getColorState().getTimestamp().getTime());
             }
             averageRed = averageRed / amount;
             averageGreen = averageGreen / amount;
             averageBlue = averageBlue / amount;
 
-            HSBColor hsbColor = HSBColorToRGBColorTransformer.transform(new Color((int) averageRed, (int) averageGreen, (int) averageBlue));
+            HSBColor hsbColor = HSBColorToRGBColorTransformer.transform(RGBColor.newBuilder().setRed((int) averageRed).setGreen((int) averageGreen).setBlue((int) averageBlue).build());
             return TimestampProcessor.updateTimestamp(timestamp, ColorState.newBuilder().setColor(ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(hsbColor)), TimeUnit.MICROSECONDS, logger).build();
         } catch (CouldNotTransformException | TypeNotSupportedException ex) {
             throw new NotAvailableException("Could not transform from HSB to RGB or vice-versa!", ex);
