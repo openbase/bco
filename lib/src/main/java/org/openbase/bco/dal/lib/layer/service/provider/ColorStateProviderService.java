@@ -21,8 +21,8 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.vision.ColorType.Color;
@@ -51,7 +51,20 @@ public interface ColorStateProviderService extends ProviderService {
         return getColorState().getColor().getRgbColor();
     }
 
+    /**
+     * Please use
+     *
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated please use org.openbase.jul.visual.swing.transform.AWTColorToHSBColorTransformer instead.
+     */
+    @Deprecated
     default public java.awt.Color getJavaAWTColor() throws CouldNotPerformException {
-        return HSBColorToRGBColorTransformer.transform(getHSBColor());
+        try {
+            final HSBColor color = getHSBColor();
+            return java.awt.Color.getHSBColor((((float) color.getHue()) / 360f), (((float) color.getSaturation()) / 100f), (((float) color.getBrightness()) / 100f));
+        } catch (Exception ex) {
+            throw new CouldNotTransformException("Could not transform " + HSBColor.class.getName() + " to " + java.awt.Color.class.getName() + "!", ex);
+        }
     }
 }

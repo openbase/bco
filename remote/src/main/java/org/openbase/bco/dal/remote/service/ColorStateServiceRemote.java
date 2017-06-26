@@ -27,7 +27,7 @@ import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.collection.ColorStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
-import org.openbase.bco.dal.lib.transform.HSBColorToRGBColorTransformer;
+import org.openbase.jul.extension.rst.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -90,8 +90,8 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
             double averageBlue = 0;
             int amount = getColorStateOperationServices().size();
             long timestamp = 0;
-            Collection<ColorStateOperationService> colorStateOperationServicCollection = getServices(unitType);
-            for (ColorStateOperationService service : colorStateOperationServicCollection) {
+            Collection<ColorStateOperationService> colorStateOperationServiceCollection = getServices(unitType);
+            for (ColorStateOperationService service : colorStateOperationServiceCollection) {
                 if (!((UnitRemote) service).isDataAvailable()) {
                     amount--;
                     continue;

@@ -48,6 +48,7 @@ import rst.domotic.state.ContactStateType;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @author <a href="mailto:agatting@techfak.uni-bielefeld.de">Andreas Gatting</a>
  */
+// release todo: Split into  Service interface and Services service class.
 public interface Service {
 
     public static final Package SERVICE_STATE_PACKAGE = ContactStateType.class.getPackage();

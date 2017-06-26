@@ -26,10 +26,10 @@ import javax.swing.event.ChangeListener;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ColorStateProviderService;
-import org.openbase.bco.dal.lib.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.visual.swing.transform.AWTColorToHSBColorTransformer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -53,7 +53,7 @@ public class ColorStateServicePanel extends AbstractServicePanel<ColorStateProvi
             @Override
             public void stateChanged(ChangeEvent e) {
                 try {
-                    notifyActionProcessing(getOperationService().setColor(HSBColorToRGBColorTransformer.transform(colorChooser.getColor())));
+                    notifyActionProcessing(getOperationService().setColor(AWTColorToHSBColorTransformer.transform(colorChooser.getColor())));
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set color value!", ex), logger);
                 }
