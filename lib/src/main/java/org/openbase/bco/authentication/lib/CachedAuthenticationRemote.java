@@ -33,10 +33,10 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class CashedAuthenticationRemote {
+public class CachedAuthenticationRemote {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CashedAuthenticationRemote.class);
-    private static ClientRemote authenticationRemote;
+    private static final Logger LOGGER = LoggerFactory.getLogger(CachedAuthenticationRemote.class);
+    private static AuthenticationRemote authenticationRemote;
     private static boolean shutdown = false;
 
     static {
@@ -58,7 +58,7 @@ public class CashedAuthenticationRemote {
      * @throws InterruptedException if in the first call to this methods the creation and activation of the remote is interrupted
      * @throws NotAvailableException if the cashed instance is not available
      */
-    public synchronized static ClientRemote getRemote() throws InterruptedException, NotAvailableException {
+    public synchronized static AuthenticationRemote getRemote() throws InterruptedException, NotAvailableException {
         try {
             if (shutdown) {
                 throw new InvalidStateException("Remote service is shutting down!");
@@ -66,7 +66,7 @@ public class CashedAuthenticationRemote {
 
             if (authenticationRemote == null) {
                 try {
-                    authenticationRemote = new ClientRemote();
+                    authenticationRemote = new AuthenticationRemote();
                     authenticationRemote.init();
                     authenticationRemote.activate();
                     authenticationRemote.waitForActivation();

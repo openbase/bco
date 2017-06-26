@@ -71,7 +71,7 @@ public class SessionManager {
             byte[] clientPasswordHash = EncryptionHelper.hash(clientPassword);
 
             // request TGT
-            TicketSessionKeyWrapperType.TicketSessionKeyWrapper ticketSessionKeyWrapper = CashedAuthenticationRemote.getRemote().requestTicketGrantingTicket(clientId).get();
+            TicketSessionKeyWrapperType.TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(clientId).get();
 
             // handle KDC response on client side
             List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(clientId, clientPasswordHash, ticketSessionKeyWrapper);
@@ -79,7 +79,7 @@ public class SessionManager {
             byte[] ticketGrantingServiceSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
 
             // request CST
-            ticketSessionKeyWrapper = CashedAuthenticationRemote.getRemote().requestClientServerTicket(taw).get();
+            ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestClientServerTicket(taw).get();
 
             // handle TGS response on client side
             list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(clientId, ticketGrantingServiceSessionKey, ticketSessionKeyWrapper);

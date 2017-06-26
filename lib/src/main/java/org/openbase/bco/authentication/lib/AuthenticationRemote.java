@@ -43,12 +43,12 @@ import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWr
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class ClientRemote implements AuthenticationService, Manageable<Void>, VoidInitializable {
+public class AuthenticationRemote implements AuthenticationService, Manageable<Void>, VoidInitializable {
 
     private RSBRemoteServer remoteServer;
     private WatchDog serverWatchDog;
 
-    public ClientRemote() {
+    public AuthenticationRemote() {
         this.remoteServer = new NotInitializedRSBRemoteServer();
     }
 
