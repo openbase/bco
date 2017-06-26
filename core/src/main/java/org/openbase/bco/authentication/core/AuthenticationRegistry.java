@@ -28,8 +28,10 @@ import java.nio.file.attribute.PosixFilePermission;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.bco.authentication.lib.jp.JPInitializeCredentials;
+import org.openbase.bco.authentication.lib.jp.JPRegistrationMode;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -56,8 +58,11 @@ public class AuthenticationRegistry {
     private final JSonObjectFileProcessor<HashMap> fileProcessor;
     private File file;
 
+    private final long startingTime;
+
     public AuthenticationRegistry() {
         this.fileProcessor = new JSonObjectFileProcessor<>(HashMap.class);
+        this.startingTime = System.currentTimeMillis();
     }
 
     public void init() throws InitializationException {
@@ -91,8 +96,22 @@ public class AuthenticationRegistry {
      *
      * @param userId ID of the user to modify.
      * @param credentials New encrypted credentials.
+     * @throws org.openbase.jul.exception.CouldNotPerformException
      */
-    public void setCredentials(String userId, byte[] credentials) {
+    public void setCredentials(String userId, byte[] credentials) throws CouldNotPerformException {
+        if (!this.credentials.containsKey(userId)) {
+            // only test for registration mode if user is not already registered
+            try {
+                int registrationMode = JPService.getProperty(JPRegistrationMode.class).getValue();
+                if (registrationMode == JPRegistrationMode.DEFAULT_REGISTRATION_MODE) {
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not set credentials for user[" + userId + "]. Registration mode not active."), LOGGER, LogLevel.WARN);
+                } else if (TimeUnit.MILLISECONDS.convert(registrationMode, TimeUnit.MINUTES) < (System.currentTimeMillis() - this.startingTime)) {
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not set credentials for user[" + userId + "]. Registration mode already expired."), LOGGER, LogLevel.WARN);
+                }
+            } catch (JPNotAvailableException ex) {
+                throw new CouldNotPerformException("Could not access JPRegistrationMode proptery.", ex);
+            }
+        }
         this.credentials.put(userId, credentials);
         this.save();
     }

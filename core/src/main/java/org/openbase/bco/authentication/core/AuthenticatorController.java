@@ -52,6 +52,7 @@ import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.slf4j.LoggerFactory;
+import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
 
 /**
  *
@@ -185,5 +186,14 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 throw new CouldNotPerformException("Internal server error. Please try again.");
             }
         });
+    }
+
+    @Override
+    public Future<Void> registerClient(LoginCredentials loginCredentials) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(() -> {
+            authenticationRegistry.setCredentials(loginCredentials.getId(), loginCredentials.getNewCredentials().toByteArray());
+            return null;
+        });
+
     }
 }
