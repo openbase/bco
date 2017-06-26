@@ -34,8 +34,8 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Future;
+import org.openbase.bco.dal.lib.action.ActionImpl;
 import org.openbase.bco.dal.lib.layer.service.Service;
-import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
@@ -48,6 +48,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
@@ -56,14 +57,13 @@ import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
-import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -95,18 +95,15 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     protected UnitRegistryRemote unitRegistry;
 
-//    private final UnitResourceAllocator<D, DB> resourceAllocator;
     private final List<Service> serviceList;
-    private final ServiceJSonProcessor serviceJSonProcessor;
+
     private UnitTemplate template;
     private final Map<ServiceType, MessageObservable> serviceStateObservableMap;
 
     public AbstractUnitController(final Class unitClass, final DB builder) throws InstantiationException {
         super(builder);
-        this.serviceJSonProcessor = new ServiceJSonProcessor();
         this.serviceList = new ArrayList<>();
         this.serviceStateObservableMap = new HashMap<>();
-//        this.resourceAllocator = new UnitResourceAllocator<>(this);
     }
 
     @Override
@@ -408,42 +405,16 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     public Future<Void> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         try {
             logger.debug("applyAction: " + actionDescription.getLabel());
-            final Object attribute = serviceJSonProcessor.deserialize(actionDescription.getServiceStateDescription().getServiceAttribute(), actionDescription.getServiceStateDescription().getServiceAttributeType());
-
-            // Since its an action it has to be an operation service pattern
-            final ServiceDescription serviceDescription = ServiceDescription.newBuilder().setType(actionDescription.getServiceStateDescription().getServiceType()).setPattern(ServiceTemplate.ServicePattern.OPERATION).build();
-
-            // Set resource allocation interval if not defined yet
-            ActionDescription.Builder actionDescriptionBuilder = actionDescription.toBuilder();
-            if (!actionDescription.getResourceAllocation().getSlot().hasBegin()) {
-                ActionDescriptionProcessor.updateResourceAllocationSlot(actionDescriptionBuilder);
-            }
-
-            return GlobalCachedExecutorService.submit(() -> {
-//                UnitResourceAllocator unitResourceAllocator = new UnitResourceAllocator(actionDescription) {
-//
-//                    @Override
-//                    public Object onAllocation() throws ExecutionException, InterruptedException {
-//                        try {
-//                            return Service.invokeServiceMethod(serviceTemplate, AbstractUnitController.this, attribute);
-//                        } catch (CouldNotPerformException ex) {
-//                            throw new ExecutionException(ex);
-//                        }
-//                    }
-//                };
-
-//                unitResourceAllocator.allocate();
-//                unitResourceAllocator.waitForExecution();
-                // should only be done if completionType is EXPIRE
-//                unitResourceAllocator.deallocate();
-                //TODO: allocate and if executionTimePeriod = 0 free resource
-                Service.invokeServiceMethod(serviceDescription, AbstractUnitController.this, attribute);
-//                unitResourceAllocator.w
-                return null;
-            });
+            final ActionImpl action = new ActionImpl(this);
+            action.init(actionDescription);
+            return action.execute();
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }
+    }
+
+    public void verifyAuthority(final ActionAuthority actionAuthority) throws VerificationFailedException {
+        // todo
     }
 
     @Override
