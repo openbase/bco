@@ -22,7 +22,6 @@ package org.openbase.bco.authentication.lib;
  * #L%
  */
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
