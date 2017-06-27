@@ -22,8 +22,8 @@ package org.openbase.bco.registry.user.core;
  * #L%
  */
 import org.openbase.bco.registry.lib.BCO;
-import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
+import org.openbase.jul.pattern.launch.AbstractLauncher;
 import org.openbase.bco.registry.user.lib.UserRegistry;
 import org.openbase.bco.registry.user.lib.jp.JPUserRegistryScope;
 import org.openbase.jps.core.JPService;
