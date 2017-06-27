@@ -21,6 +21,7 @@ notifications:
     on_success: change	
 
 deploy:
+    skip_cleanup: true
   - provider: script
     script: .travis/deploy.sh
     on:
