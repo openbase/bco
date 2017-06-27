@@ -26,11 +26,12 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Executable;
 import org.openbase.jul.iface.Initializable;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Action extends Initializable<ActionDescription>, Executable {
+public interface Action extends Initializable<ActionDescription>, Executable<ActionFuture> {
 
     /**
      * Method returns the action description of this action.

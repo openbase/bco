@@ -21,15 +21,11 @@ package org.openbase.bco.dal.lib.action;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Callable;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.unit.AbstractUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitAllocation;
-import org.openbase.bco.dal.lib.layer.unit.UnitAllocator;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
@@ -115,7 +111,7 @@ public class ActionImpl implements Action {
     }
 
     @Override
-    public Future<Void> execute() throws CouldNotPerformException {
+    public Future<ActionFuture> execute() throws CouldNotPerformException {
         try {
             synchronized (executionSync) {
 

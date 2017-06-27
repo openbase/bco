@@ -96,7 +96,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AbstractUnitController.class);
-    
+
     public static long initTime = 0;
     public static long constructorTime = 0;
 
@@ -426,17 +426,17 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     public TicketAuthenticatorWrapper verifyAuthority(final ActionAuthority actionAuthority) throws VerificationFailedException {
         // authenticate and (also authorize?)
-            try {
+        try {
             clientRemote.init();
             clientRemote.activate();
             clientRemote.waitForActivation();
             TicketAuthenticatorWrapper wrapper = clientRemote.validateClientServerTicket(actionAuthority.getTicketAuthenticatorWrapper()).get();
             clientRemote.shutdown();
-            return wrapper;    
+            return wrapper;
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
             throw new VerificationFailedException("Internal server error. Please try again.");
-        }    
+        }
     }
 
     @Override
