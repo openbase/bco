@@ -214,7 +214,7 @@
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>
-            <artifactId>jul.extension.rsb.com</artifactId>
+            <artifactId>jul.pattern.launch</artifactId>
             <version>${dependency.jul.version}</version>
         </dependency>
     </dependencies>

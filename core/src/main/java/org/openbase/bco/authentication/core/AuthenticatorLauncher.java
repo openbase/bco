@@ -1,7 +1,5 @@
 package org.openbase.bco.authentication.core;
 
-import org.openbase.bco.registry.lib.BCO;
-import org.openbase.bco.registry.lib.launch.AbstractLauncher;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationScope;
@@ -12,6 +10,7 @@ import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.bco.authentication.lib.jp.JPInitializeCredentials;
 import org.openbase.bco.authentication.lib.jp.JPRegistrationMode;
 import org.openbase.bco.authentication.lib.jp.JPResetCredentials;
+import org.openbase.jul.pattern.launch.AbstractLauncher;
 
 /*-
  * #%L
@@ -60,7 +59,7 @@ public class AuthenticatorLauncher extends AbstractLauncher<AuthenticatorControl
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
     public static void main(final String[] args) throws InterruptedException, CouldNotPerformException {
-        BCO.printLogo();
+//        BCO.printLogo();
         AbstractLauncher.main(args, AuthenticationService.class, AuthenticatorLauncher.class);
     }
 }
