@@ -24,7 +24,7 @@ package org.openbase.bco.manager.device.binding.openhab;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.openbase.bco.registry.lib.BCO;
-import org.openbase.bco.registry.lib.launch.AbstractLauncher;
+import org.openbase.jul.pattern.launch.AbstractLauncher;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;

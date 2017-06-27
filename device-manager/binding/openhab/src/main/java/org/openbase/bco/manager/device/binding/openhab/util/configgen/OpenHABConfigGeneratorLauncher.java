@@ -27,7 +27,7 @@ import org.openbase.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenH
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABDistribution;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABItemConfig;
 import org.openbase.bco.registry.lib.BCO;
-import org.openbase.bco.registry.lib.launch.AbstractLauncher;
+import org.openbase.jul.pattern.launch.AbstractLauncher;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPPrefix;
 import org.openbase.jul.exception.CouldNotPerformException;

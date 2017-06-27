@@ -24,7 +24,7 @@ package org.openbase.bco.manager.agent.binding.openhab;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.openbase.bco.registry.lib.BCO;
-import org.openbase.bco.registry.lib.launch.AbstractLauncher;
+import org.openbase.jul.pattern.launch.AbstractLauncher;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 

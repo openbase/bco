@@ -2,8 +2,8 @@ package org.openbase.bco.manager.app.core;
 
 import org.openbase.bco.manager.app.lib.AppManager;
 import org.openbase.bco.registry.lib.BCO;
-import org.openbase.bco.registry.lib.launch.AbstractLauncher;
-import static org.openbase.bco.registry.lib.launch.AbstractLauncher.main;
+import org.openbase.jul.pattern.launch.AbstractLauncher;
+import static org.openbase.jul.pattern.launch.AbstractLauncher.main;
 
 /*
  * #%L

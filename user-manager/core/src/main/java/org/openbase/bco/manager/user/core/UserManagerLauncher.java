@@ -23,7 +23,7 @@ package org.openbase.bco.manager.user.core;
  */
 import org.openbase.bco.manager.user.lib.UserManager;
 import org.openbase.bco.registry.lib.BCO;
-import org.openbase.bco.registry.lib.launch.AbstractLauncher;
+import org.openbase.jul.pattern.launch.AbstractLauncher;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 

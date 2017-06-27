@@ -28,7 +28,7 @@ import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.manager.location.core.LocationManagerLauncher;
 import org.openbase.bco.manager.scene.core.SceneManagerLauncher;
 import org.openbase.bco.manager.user.core.UserManagerLauncher;
-import org.openbase.bco.registry.lib.launch.AbstractLauncher;
+import org.openbase.jul.pattern.launch.AbstractLauncher;
 import org.openbase.jul.pattern.Manager;
 
 /**
