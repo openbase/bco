@@ -30,6 +30,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
@@ -95,7 +96,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     }
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AbstractUnitRemote.class);
-    
+
     private UnitTemplate template;
     private UnitRegistry unitRegistry;
     private final Map<ServiceType, MessageObservable> serviceStateObservableMap;
@@ -517,7 +518,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     public Future<ActionFuture> applyAction(ActionDescription actionDescription, boolean test) throws CouldNotPerformException, InterruptedException, RejectedException {
         // initialize request
         try {
-            this.sessionManager.setTicketAuthenticatorWrapper(AuthenticationClientHandler.initSSRequest(this.sessionManager.getSessionKey(), this.sessionManager.getTicketAuthenticatorWrapper()));
+            this.sessionManager.setTicketAuthenticatorWrapper(AuthenticationClientHandler.initServiceServerRequest(this.sessionManager.getSessionKey(), this.sessionManager.getTicketAuthenticatorWrapper()));
         } catch (StreamCorruptedException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
 //            throw new StreamCorruptedException(ex.getMessage());
@@ -528,19 +529,24 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         }
         ActionAuthority.Builder builder = actionDescription.getActionAuthority().toBuilder();
         builder.setTicketAuthenticatorWrapper(this.sessionManager.getTicketAuthenticatorWrapper());
-        
+
         // apply action
-        ActionFuture actionFuture = RPCHelper.callRemoteMethod(builder.build(), this, ActionFuture.class).get();
-        
-        // handle response
-        TicketAuthenticatorWrapper wrapper = AuthenticationClientHandler.handleSSResponse(
-                this.sessionManager.getSessionKey(), 
-                this.sessionManager.getTicketAuthenticatorWrapper(), 
-                actionFuture.getTicketAuthenticatorWrapper());
-        ActionFuture.Builder actionFutureBuilder = actionFuture.toBuilder();
-        actionFutureBuilder.setTicketAuthenticatorWrapper(wrapper);
-        
-        return CompletableFuture.completedFuture(actionFutureBuilder.build());
+        try {
+            ActionFuture actionFuture = RPCHelper.callRemoteMethod(builder.build(), this, ActionFuture.class).get();
+
+            //TODO: this has to be done inside of get of the actionFuture so that a real future is returned again
+            // handle response
+            TicketAuthenticatorWrapper wrapper = AuthenticationClientHandler.handleServiceServerResponse(
+                    this.sessionManager.getSessionKey(),
+                    this.sessionManager.getTicketAuthenticatorWrapper(),
+                    actionFuture.getTicketAuthenticatorWrapper());
+            ActionFuture.Builder actionFutureBuilder = actionFuture.toBuilder();
+            actionFutureBuilder.setTicketAuthenticatorWrapper(wrapper);
+
+            return CompletableFuture.completedFuture(actionFutureBuilder.build());
+        } catch (ExecutionException | IOException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("TODO: read todo above, this should not be thrown here"), logger);
+        }
     }
 
     /**

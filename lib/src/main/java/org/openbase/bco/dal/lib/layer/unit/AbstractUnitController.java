@@ -33,7 +33,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.dal.lib.action.ActionImpl;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
@@ -42,7 +44,6 @@ import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
-import org.openbase.bco.authentication.lib.ClientRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -106,14 +107,12 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     private UnitTemplate template;
     private final Map<ServiceType, MessageObservable> serviceStateObservableMap;
-    private final ClientRemote clientRemote;
 
     public AbstractUnitController(final Class unitClass, final DB builder) throws InstantiationException {
         super(builder);
         this.serviceList = new ArrayList<>();
         this.serviceStateObservableMap = new HashMap<>();
 //        this.resourceAllocator = new UnitResourceAllocator<>(this);
-        this.clientRemote = new ClientRemote();
     }
 
     @Override
@@ -427,15 +426,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     public TicketAuthenticatorWrapper verifyAuthority(final ActionAuthority actionAuthority) throws VerificationFailedException {
         // authenticate and (also authorize?)
         try {
-            clientRemote.init();
-            clientRemote.activate();
-            clientRemote.waitForActivation();
-            TicketAuthenticatorWrapper wrapper = clientRemote.validateClientServerTicket(actionAuthority.getTicketAuthenticatorWrapper()).get();
-            clientRemote.shutdown();
+            TicketAuthenticatorWrapper wrapper = CachedAuthenticationRemote.getRemote().validateClientServerTicket(actionAuthority.getTicketAuthenticatorWrapper()).get();
             return wrapper;
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
-            throw new VerificationFailedException("Internal server error. Please try again.");
+        } catch (CouldNotPerformException | ExecutionException ex) {
+            throw new VerificationFailedException("Verifying authority failed", ex);
+        } catch(InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(new VerificationFailedException("Interrupted while verifrying authority", ex), logger);
         }
     }
 
