@@ -25,7 +25,13 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.PermissionDeniedException;
+import org.openbase.jul.exception.RejectedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.slf4j.LoggerFactory;
+import rst.domotic.authentication.LoginCredentialsType;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType;
 
@@ -107,5 +113,57 @@ public class SessionManager {
      */
     public boolean isLoggedIn() {
         return this.ticketAuthenticatorWrapper != null && this.sessionKey != null;
+    }
+
+    /**
+     * Changes the login credentials for a given user.
+     *
+     * @param clientId ID of the user / client whose credentials should be changed.
+     * @param oldCredentials Old credentials, needed for verification.
+     * @param newCredentials New credentials to be set.
+     * @throws CouldNotPerformException
+     */
+    public void changeCredentials(String clientId, String oldCredentials, String newCredentials) throws CouldNotPerformException {
+        if (!this.isLoggedIn()) {
+            throw new CouldNotPerformException("Please log in first!");
+        }
+
+        try {
+            ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(sessionKey, ticketAuthenticatorWrapper);
+            byte[] oldHash = EncryptionHelper.hash(oldCredentials);
+            byte[] newHash = EncryptionHelper.hash(newCredentials);
+
+            LoginCredentialsType.LoginCredentials loginCredentials = LoginCredentialsType.LoginCredentials.newBuilder()
+              .setId(clientId)
+              .setOldCredentials(EncryptionHelper.encrypt(oldHash, sessionKey))
+              .setNewCredentials(EncryptionHelper.encrypt(newHash, sessionKey))
+              .setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper)
+              .build();
+
+            TicketAuthenticatorWrapper newTicketAuthenticatorWrapper = CachedAuthenticationRemote.getRemote().changeCredentials(loginCredentials).get();
+            AuthenticationClientHandler.handleServiceServerResponse(sessionKey, ticketAuthenticatorWrapper, newTicketAuthenticatorWrapper);
+        } catch (IOException ex) {
+            this.logout();
+            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+            throw new CouldNotPerformException("Decryption failed. You have been logged out for security reasons. Please log in again.");
+        } catch (RejectedException | NotAvailableException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
+        } catch (InterruptedException ex) {
+            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+            throw new CouldNotPerformException("Action was interrupted.", ex);
+        } catch (ExecutionException ex) {
+            Throwable cause = ex.getCause();
+
+            if (cause instanceof RejectedException) {
+                throw ExceptionPrinter.printHistoryAndReturnThrowable((RejectedException) cause, LOGGER, LogLevel.ERROR);
+            }
+
+            if (cause instanceof PermissionDeniedException) {
+                throw ExceptionPrinter.printHistoryAndReturnThrowable((PermissionDeniedException) cause, LOGGER, LogLevel.ERROR);
+            }
+
+            ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
+            throw new CouldNotPerformException("Internal server error.", cause);
+        }
     }
 }
