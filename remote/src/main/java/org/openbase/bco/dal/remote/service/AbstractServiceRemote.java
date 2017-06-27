@@ -57,7 +57,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -444,7 +443,11 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                     actionFutureList.add(unitRemote.applyAction(actionDescription, test));
                 }
             }
-            return GlobalCachedExecutorService.allOf((TicketAuthenticatorWrapper) null, actionFutureList);
+            
+            // todo: setup action future.
+            final ActionFuture actionFuture = ActionFuture.getDefaultInstance();
+            
+            return GlobalCachedExecutorService.allOf(actionFuture, actionFutureList);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }

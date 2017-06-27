@@ -21,9 +21,9 @@ package org.openbase.bco.dal.remote.action;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.remote.service.AbstractServiceRemote;
 import org.openbase.bco.dal.remote.service.ServiceRemoteFactory;
@@ -42,6 +42,7 @@ import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.EnablingStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -57,7 +58,7 @@ public class RemoteAction implements Action {
     private UnitConfig unitConfig;
     private ServiceRemoteFactory serviceRemoteFactory;
     private AbstractServiceRemote serviceRemote;
-    private Future executionFuture;
+    private Future<ActionFuture> executionFuture;
     private final SyncObject executionSync = new SyncObject(RemoteAction.class);
 
     @Override
@@ -93,18 +94,21 @@ public class RemoteAction implements Action {
     }
 
     @Override
-    public Future<Void> execute() throws CouldNotPerformException {
+    public Future<ActionFuture> execute() throws CouldNotPerformException {
         synchronized (executionSync) {
 
             // todo: Why is this double task encapsulation needed? I remember some synchronization issues by directly passing the apply action future. Investigate if this is just stupid code otherwise add some doc to explain this strategy.
-            final FutureTask task = new FutureTask(() -> {
+            final Callable<ActionFuture> task = () -> {
                 try {
                     serviceRemote.applyAction(getActionDescription()).get();
                 } catch (Exception ex) { // InterruptedException | CancellationException | CouldNotPerformException | NullPointerException
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Execution " + actionDescription.getActionState().getValue() + "!", ex), LOGGER, LogLevel.WARN);
                 }
-                return null;
-            });
+
+                // todo: setup action future.
+                final ActionFuture actionFuture = ActionFuture.getDefaultInstance();
+                return actionFuture;
+            };
             executionFuture = GlobalCachedExecutorService.submit(task);
         }
         return executionFuture;
