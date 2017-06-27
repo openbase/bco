@@ -2,7 +2,7 @@
 package org.openbase.bco.dal.task;
 
 import org.openbase.bco.registry.lib.BCO;
-import org.openbase.bco.registry.lib.launch.AbstractLauncher;
+import org.openbase.jul.pattern.launch.AbstractLauncher;
 import org.openbase.jul.exception.CouldNotPerformException;
 
 /*-

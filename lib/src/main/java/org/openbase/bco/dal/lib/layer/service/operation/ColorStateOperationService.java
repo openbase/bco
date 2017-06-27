@@ -23,8 +23,8 @@ package org.openbase.bco.dal.lib.layer.service.operation;
  */
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.provider.ColorStateProviderService;
-import org.openbase.bco.dal.lib.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.vision.ColorType.Color;
@@ -48,20 +48,34 @@ public interface ColorStateOperationService extends OperationService, ColorState
         return setColor(DEFAULT_NEUTRAL_WHITE);
     }
 
-    default public Future<Void> setColor(final Color color) throws CouldNotPerformException {
-        return setColorState(ColorState.newBuilder().setColor(color).build());
-    }
-
     @RPCMethod
     default public Future<Void> setColor(final HSBColor color) throws CouldNotPerformException {
         return setColor(Color.newBuilder().setType(Color.Type.HSB).setHsbColor(color).build());
+    }
+
+    default public Future<Void> setColor(final Color color) throws CouldNotPerformException {
+        return setColorState(ColorState.newBuilder().setColor(color).build());
     }
 
     default public Future<Void> setColor(final RGBColor color) throws CouldNotPerformException {
         return setColor(Color.newBuilder().setType(Color.Type.RGB).setRgbColor(color).build());
     }
 
+    /**
+     *
+     * @param color
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated Please use the org.openbase.jul.visual.swing.transform.AWTColorToHSBColorTransformer or org.openbase.jul.visual.javafx.transform.JFXColorToHSBColorTransformer to tranform colors into compatible types.
+     */
+    @Deprecated
     default public Future<Void> setColor(final java.awt.Color color) throws CouldNotPerformException {
-        return setColor(HSBColorToRGBColorTransformer.transform(color));
+        try {
+            float[] hsb = new float[3];
+            java.awt.Color.RGBtoHSB(color.getRed(), color.getGreen(), color.getBlue(), hsb);
+            return setColor(HSBColor.newBuilder().setHue(hsb[0] * 360).setSaturation(hsb[1] * 100).setBrightness(hsb[2] * 100).build());
+        } catch (Exception ex) {
+            throw new CouldNotTransformException("Could not transform " + java.awt.Color.class.getName() + " to " + HSBColor.class.getName() + "!", ex);
+        }
     }
 }

@@ -22,13 +22,13 @@ package org.openbase.bco.dal.visual.service;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.service.provider.PowerConsumptionStateProviderService;
-import org.openbase.bco.dal.lib.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import java.awt.Color;
 import java.text.DecimalFormat;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
+import org.openbase.jul.visual.swing.transform.AWTColorToHSBColorTransformer;
 import rst.vision.HSBColorType.HSBColor;
 
 /**
@@ -149,7 +149,7 @@ public class PowerConsumptionStateServicePanel extends AbstractServicePanel<Powe
             consumptionBar.setValue((int) (level * 100));
 
             double hue = Math.min(180, Math.max(0, 180 - level * 180));
-            colorPanel.setBackground(HSBColorToRGBColorTransformer.transform(HSBColor.newBuilder().setBrightness(80).setSaturation(100).setHue(hue).build()));
+            colorPanel.setBackground(AWTColorToHSBColorTransformer.transform(HSBColor.newBuilder().setBrightness(80).setSaturation(100).setHue(hue).build()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }

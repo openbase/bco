@@ -98,6 +98,12 @@
             <type>jar</type>
         </dependency>
         <dependency>
+            <groupId>org.openbase</groupId>
+            <artifactId>jul.extension.rst.transform</artifactId>
+            <version>${dependency.jul.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
             <groupId>de.citec.csra</groupId>
             <artifactId>rta-lib</artifactId>
             <version>${dependency.rta.lib.version}</version>
