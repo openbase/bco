@@ -21,14 +21,15 @@ notifications:
     on_success: change	
 
 deploy:
-    skip_cleanup: true
   - provider: script
+    skip_cleanup: true
     script: .travis/deploy.sh
     on:
         repo: openbase/bco.manager
         branch: master
         jdk: oraclejdk8
   - provider: script
+    skip_cleanup: true
     script: .travis/deploy.sh
     on:
         repo: openbase/bco.manager
