@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.io.StreamCorruptedException;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.iface.annotations.RPCMethod;
@@ -55,10 +56,11 @@ public interface AuthenticationService {
      * @param clientId the id of the client whose password is used for the
      * encryption of the session key
      * @return the described TicketSessionKeyWrapper
-     * @throws CouldNotPerformException if the request fails
+     * @throws NotAvailableException If the clientId could not be found.
+     * @throws CouldNotPerformException In the case of an internal server error or if the remote call fails.
      */
     @RPCMethod
-    public Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(String clientId) throws CouldNotPerformException;
+    public Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(String clientId) throws NotAvailableException, CouldNotPerformException;
 
     /**
      * Request a ClientServerTicket from the AuthenticatorService. The reply is
@@ -78,10 +80,13 @@ public interface AuthenticationService {
      * TicketGrantingTicket
      * @return a wrapper containing a ClientServerTicket and a session key as
      * described above
-     * @throws CouldNotPerformException it the request fails
+     * @throws RejectedException If timestamp in Authenticator does not fit to time period in TGT
+     * or, if clientID in Authenticator does not match clientID in TGT
+     * @throws StreamCorruptedException If the decryption of the Authenticator or TGT fails, probably because the wrong keys were used.
+     * @throws CouldNotPerformException In the case of an internal server error or if the remote call fails.
      */
     @RPCMethod
-    public Future<TicketSessionKeyWrapper> requestClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException;
+    public Future<TicketSessionKeyWrapper> requestClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws RejectedException, StreamCorruptedException, CouldNotPerformException;
 
     /**
      * Validate a ClientServierTicket. If validation is successful the reply is
@@ -93,10 +98,13 @@ public interface AuthenticationService {
      * @param ticketAuthenticatorWrapper a wrapper containing the authenticator
      * encrypted with the session key and the unchanged ClientServerTicket
      * @return a TicketAuthenticatorWrapper as described above
-     * @throws CouldNotPerformException if validation fails
+     * @throws RejectedException If timestamp in Authenticator does not fit to time period in TGT
+     * or, if clientID in Authenticator does not match clientID in TGT
+     * @throws StreamCorruptedException If the decryption of the Authenticator or CST fails, probably because the wrong keys were used.
+     * @throws CouldNotPerformException In the case of an internal server error or if the remote call fails.
      */
     @RPCMethod
-    public Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException;
+    public Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws RejectedException, StreamCorruptedException, CouldNotPerformException;
 
     /**
      * Changes the credentials for a given user.
