@@ -25,6 +25,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rct.GlobalTransformReceiver;
 import org.openbase.jul.iface.Shutdownable;
@@ -32,9 +33,11 @@ import org.openbase.jul.iface.annotations.RPCMethod;
 import rct.Transform;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.jul.schedule.FutureProcessor;
 import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.EnablingStateType.EnablingState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitProbabilityCollectionType.UnitProbabilityCollection;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -466,14 +469,12 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      *
      * @param unitConfigTarget the unit where the transformation leads to.
      * @return a transformation future
-     * @throws NotAvailableException is thrown if the transformation is not available for could not be computed.
-     * @throws InterruptedException is thrown if the thread was externally interrupted.
      */
-    public default Future<Transform> getUnitTransformation(final UnitConfig unitConfigTarget) throws NotAvailableException, InterruptedException {
+    public default Future<Transform> getUnitTransformation(final UnitConfig unitConfigTarget) {
         try {
             return getUnitTransformation(getRootLocationConfig(), unitConfigTarget);
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("UnitTransformation", ex);
+            return FutureProcessor.canceledFuture(new NotAvailableException("UnitTransformation", ex));
         }
     }
 
@@ -483,10 +484,17 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * @param unitConfigSource the unit used as transformation base.
      * @param unitConfigTarget the unit where the transformation leads to.
      * @return a transformation future
-     * @throws NotAvailableException is thrown if the transformation is not available for could not be computed.
-     * @throws InterruptedException is thrown if the thread was externally interrupted.
      */
-    public default Future<Transform> getUnitTransformation(final UnitConfig unitConfigSource, final UnitConfig unitConfigTarget) throws NotAvailableException, InterruptedException {
+    public default Future<Transform> getUnitTransformation(final UnitConfig unitConfigSource, final UnitConfig unitConfigTarget) {
+
+        if (unitConfigSource.getEnablingState().getValue() != State.ENABLED) {
+            return FutureProcessor.canceledFuture(new InvalidStateException("Target Unit[" + unitConfigSource.getLabel() + ":" + unitConfigSource.getId() + "] is disbled and does not provide any transformation!"));
+        }
+
+        if (unitConfigTarget.getEnablingState().getValue() != State.ENABLED) {
+            return FutureProcessor.canceledFuture(new InvalidStateException("Source Unit[" + unitConfigTarget.getLabel() + ":" + unitConfigTarget.getId() + "] is disbled and does not provide any transformation!"));
+        }
+
         Future<Transform> transformationFuture = GlobalTransformReceiver.getInstance().requestTransform(
                 unitConfigTarget.getPlacementConfig().getTransformationFrameId(),
                 unitConfigSource.getPlacementConfig().getTransformationFrameId(),

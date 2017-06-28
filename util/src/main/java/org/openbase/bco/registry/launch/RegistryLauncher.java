@@ -29,7 +29,7 @@ import org.openbase.bco.registry.app.core.AppRegistryLauncher;
 import org.openbase.bco.registry.device.core.DeviceRegistryLauncher;
 import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.user.core.UserRegistryLauncher;
-import org.openbase.bco.registry.lib.launch.AbstractLauncher;
+import org.openbase.jul.pattern.launch.AbstractLauncher;
 import org.openbase.bco.registry.location.core.LocationRegistryLauncher;
 import org.openbase.bco.registry.scene.core.SceneRegistryLauncher;
 import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;

@@ -22,7 +22,9 @@ package org.openbase.bco.registry.location.test;
  * #L%
  */
 import java.io.IOException;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import org.junit.AfterClass;

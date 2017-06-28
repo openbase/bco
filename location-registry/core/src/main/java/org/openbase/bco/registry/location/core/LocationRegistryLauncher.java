@@ -22,8 +22,8 @@ package org.openbase.bco.registry.location.core;
  * #L%
  */
 import org.openbase.bco.registry.lib.BCO;
-import static org.openbase.bco.registry.lib.launch.AbstractLauncher.main;
 import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
+import static org.openbase.jul.pattern.launch.AbstractLauncher.main;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.openbase.jps.core.JPService;

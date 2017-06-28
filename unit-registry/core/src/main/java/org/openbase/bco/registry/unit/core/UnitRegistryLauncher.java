@@ -25,8 +25,8 @@ package org.openbase.bco.registry.unit.core;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 import org.openbase.bco.registry.lib.BCO;
-import static org.openbase.bco.registry.lib.launch.AbstractLauncher.main;
 import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
+import static org.openbase.jul.pattern.launch.AbstractLauncher.main;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.jp.JPAgentConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPAppConfigDatabaseDirectory;

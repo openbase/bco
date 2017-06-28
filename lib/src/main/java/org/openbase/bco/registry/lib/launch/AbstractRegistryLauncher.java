@@ -29,6 +29,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.pattern.launch.AbstractLauncher;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 
 /**
