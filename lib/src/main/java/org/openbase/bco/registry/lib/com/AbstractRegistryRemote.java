@@ -125,9 +125,7 @@ public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends
                 return false;
             }
             
-            System.out.println("try ping");
             ping().get();
-            System.out.println("continue...");
             return RPCHelper.callRemoteMethod(this, Boolean.class).get(30000, TimeUnit.MILLISECONDS);
         } catch (CouldNotPerformException | ExecutionException | TimeoutException ex) {
             ExceptionPrinter.printHistory("Could not check if registry is ready!", ex, logger);
