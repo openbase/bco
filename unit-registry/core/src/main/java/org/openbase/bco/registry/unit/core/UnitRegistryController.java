@@ -273,7 +273,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     protected void registerConsistencyHandler() throws CouldNotPerformException {
         unitTemplateRegistry.registerConsistencyHandler(new UniteTemplateServiceTemplateConsistencyHandler(serviceTemplateRegistry));
-        
+
         //TODO: should be activated but fails in the current db version since agentClasses have just been introduced
         //agentUnitConfigRegistry.registerConsistencyHandler(new AgentConfigAgentClassIdConsistencyHandler(agentClassRegistry));
         agentUnitConfigRegistry.registerConsistencyHandler(new AgentLabelConsistencyHandler());
@@ -370,13 +370,15 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     protected void registerPlugins() throws CouldNotPerformException, InterruptedException {
         // TODO: write unit config generic transformation plugin and share instance. Publish transformations of unitGroupUnitConfigs as well.
+        serviceTemplateRegistry.registerPlugin(new ServiceTemplateCreatorRegistryPlugin(serviceTemplateRegistry));
+        unitTemplateRegistry.registerPlugin(new UnitTemplateCreatorRegistryPlugin(unitTemplateRegistry));
+
+        deviceUnitConfigRegistry.registerPlugin(new DeviceConfigDeviceClassUnitConsistencyPlugin(deviceRegistryRemote.getDeviceClassRemoteRegistry(), dalUnitConfigRegistry, deviceUnitConfigRegistry));
+
+        locationUnitConfigRegistry.registerPlugin(new PublishLocationTransformationRegistryPlugin());
         connectionUnitConfigRegistry.registerPlugin(new PublishConnectionTransformationRegistryPlugin(locationUnitConfigRegistry));
         dalUnitConfigRegistry.registerPlugin(new PublishDalUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
         deviceUnitConfigRegistry.registerPlugin(new PublishDeviceTransformationRegistryPlugin(locationUnitConfigRegistry));
-        deviceUnitConfigRegistry.registerPlugin(new DeviceConfigDeviceClassUnitConsistencyPlugin(deviceRegistryRemote.getDeviceClassRemoteRegistry(), dalUnitConfigRegistry, deviceUnitConfigRegistry));
-        serviceTemplateRegistry.registerPlugin(new ServiceTemplateCreatorRegistryPlugin(serviceTemplateRegistry));
-        unitTemplateRegistry.registerPlugin(new UnitTemplateCreatorRegistryPlugin(unitTemplateRegistry));
-        locationUnitConfigRegistry.registerPlugin(new PublishLocationTransformationRegistryPlugin());
     }
 
     /**
@@ -387,7 +389,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     protected void registerDependencies() throws CouldNotPerformException {
         unitTemplateRegistry.registerDependency(serviceTemplateRegistry);
-        
+
         registerDependency(unitTemplateRegistry, UnitConfig.class);
 
         dalUnitConfigRegistry.registerDependency(deviceUnitConfigRegistry);
@@ -437,7 +439,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
         setDataField(UnitRegistryData.UNIT_TEMPLATE_REGISTRY_READ_ONLY_FIELD_NUMBER, unitTemplateRegistry.isReadOnly());
         setDataField(UnitRegistryData.UNIT_TEMPLATE_REGISTRY_CONSISTENT_FIELD_NUMBER, unitTemplateRegistry.isConsistent());
-        
+
         setDataField(UnitRegistryData.SERVICE_TEMPLATE_REGISTRY_READ_ONLY_FIELD_NUMBER, unitTemplateRegistry.isReadOnly());
         setDataField(UnitRegistryData.SERVICE_TEMPLATE_REGISTRY_CONSISTENT_FIELD_NUMBER, unitTemplateRegistry.isConsistent());
 

@@ -41,7 +41,6 @@ import rct.TransformerException;
 import rct.TransformerFactory;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.geometry.PoseType;
 
 public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> {
 
@@ -127,9 +126,8 @@ public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPlugi
 
     @Override
     public void shutdown() {
-// TODO should be activated after rsb 16 adjustments.
-//        if (transformPublisher != null) {
-//            transformPublisher.shutdown();
-//        }
+        if (transformPublisher != null) {
+            transformPublisher.shutdown();
+        }
     }
 }

@@ -21,7 +21,6 @@ package org.openbase.bco.registry.location.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -30,9 +29,9 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rct.GlobalTransformReceiver;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.annotations.RPCMethod;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rct.Transform;
 import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;

@@ -124,7 +124,7 @@ import rst.spatial.ShapeType.Shape;
  */
 public class MockRegistry {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(MockRegistry.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MockRegistry.class);
 
     public static final String USER_NAME = "uSeRnAmE";
     public static UnitConfig testUser;
@@ -316,7 +316,7 @@ public class MockRegistry {
                     unitRegistryLauncher.launch();
                     unitRegistry = unitRegistryLauncher.getLaunchable();
                 } catch (CouldNotPerformException ex) {
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
                 }
                 return null;
             }));
@@ -326,7 +326,7 @@ public class MockRegistry {
                     deviceRegistryLauncher.launch();
                     deviceRegistry = deviceRegistryLauncher.getLaunchable();
                 } catch (CouldNotPerformException | InterruptedException ex) {
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
                 }
                 return null;
 //                    throw new CouldNotPerformException("Bad case!");
@@ -337,7 +337,7 @@ public class MockRegistry {
                     agentRegistryLauncher.launch();
                     agentRegistry = agentRegistryLauncher.getLaunchable();
                 } catch (CouldNotPerformException ex) {
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
                 }
                 return null;
             }));
@@ -347,17 +347,17 @@ public class MockRegistry {
                     appRegistryLauncher.launch();
                     appRegistry = appRegistryLauncher.getLaunchable();
                 } catch (CouldNotPerformException ex) {
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
                 }
                 return null;
             }));
-            logger.info("Starting all real registries: unit, device, agent, app ...");
+            LOGGER.info("Starting all real registries: unit, device, agent, app ...");
             for (Future<Void> task : registryStartupTasks) {
                 task.get();
             }
             registryStartupTasks.clear();
 
-            logger.info("Real registries started!");
+            LOGGER.info("Real registries started!");
 
             registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
@@ -365,7 +365,7 @@ public class MockRegistry {
                     locationRegistryLauncher.launch();
                     locationRegistry = locationRegistryLauncher.getLaunchable();
                 } catch (CouldNotPerformException ex) {
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
                 }
                 return null;
             }));
@@ -375,7 +375,7 @@ public class MockRegistry {
                     userRegistryLauncher.launch();
                     userRegisty = userRegistryLauncher.getLaunchable();
                 } catch (CouldNotPerformException | InterruptedException ex) {
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
                 }
                 return null;
             }));
@@ -385,18 +385,18 @@ public class MockRegistry {
                     sceneRegistryLauncher.launch();
                     sceneRegistry = sceneRegistryLauncher.getLaunchable();
                 } catch (CouldNotPerformException ex) {
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
                 }
                 return null;
             }));
-            logger.info("Waiting for purely virtual registries: location, user, scene ...");
+            LOGGER.info("Waiting for purely virtual registries: location, user, scene ...");
             for (Future<Void> task : registryStartupTasks) {
                 task.get();
             }
             registryStartupTasks.clear();
-            logger.info("Virtual registries started!");
+            LOGGER.info("Virtual registries started!");
 
-            logger.info("Reinitialized remotes!");
+            LOGGER.info("Reinitialized remotes!");
             Registries.reinitialize();
             CachedDeviceRegistryRemote.reinitialize();
             CachedLocationRegistryRemote.reinitialize();
@@ -406,47 +406,47 @@ public class MockRegistry {
 
             registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
-                    logger.info("Update unitTemplates...");
+                    LOGGER.info("Update unitTemplates...");
                     // load templates
                     for (MockUnitTemplate template : MockUnitTemplate.values()) {
                         String unitTemplateId = unitRegistry.getUnitTemplateByType(template.getTemplate().getType()).getId();
                         unitRegistry.updateUnitTemplate(template.getTemplate().toBuilder().setId(unitTemplateId).build()).get();
                     }
 
-                    logger.info("Register user...");
+                    LOGGER.info("Register user...");
                     registerUser();
 
-                    logger.info("Register agentClasses...");
+                    LOGGER.info("Register agentClasses...");
                     registerAgentClasses();
 
-                    logger.info("Register locations...");
+                    LOGGER.info("Register locations...");
                     registerLocations();
-                    logger.info("Wait until registry is ready...");
+                    LOGGER.info("Wait until registry is ready...");
                     Registries.waitUntilReady();
 
-                    logger.info("Register devices...");
+                    LOGGER.info("Register devices...");
                     registerDevices();
-                    logger.info("Wait until registry is ready...");
+                    LOGGER.info("Wait until registry is ready...");
                     Registries.waitUntilReady();
 
-                    logger.info("Register connections...");
+                    LOGGER.info("Register connections...");
                     registerConnections();
 
-                    logger.info("Wait for final consistency...");
+                    LOGGER.info("Wait for final consistency...");
                     Registries.waitUntilReady();
 
                 } catch (CouldNotPerformException | InterruptedException ex) {
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger, LogLevel.ERROR);
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
                 }
                 return null;
             }));
 
-            logger.info("Wait for unitTemplate updates; device, location and user registration...");
+            LOGGER.info("Wait for unitTemplate updates; device, location and user registration...");
             for (Future<Void> task : registryStartupTasks) {
                 task.get();
             }
             registryStartupTasks.clear();
-            logger.info("UnitTemplates updated and devices, locations, users and agentClasses registered!");
+            LOGGER.info("UnitTemplates updated and devices, locations, users and agentClasses registered!");
         } catch (JPServiceException | InterruptedException | ExecutionException | CouldNotPerformException ex) {
             shutdown();
             throw new InstantiationException(this, ex);
