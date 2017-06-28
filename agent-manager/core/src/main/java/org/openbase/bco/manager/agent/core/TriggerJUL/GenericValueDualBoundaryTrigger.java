@@ -46,7 +46,7 @@ import rst.domotic.state.ActivationStateType.ActivationState;
 public class GenericValueDualBoundaryTrigger<UR extends AbstractUnitRemote, DT extends GeneratedMessage> extends AbstractTrigger {
 
     public static enum TriggerOperation {
-        HIGH_ACTIVE, LOW_ACTIVE
+        HIGH_ACTIVE, LOW_ACTIVE, INSIDE_ACTIVE, OUTSIDE_ACTIVE
     }
 
     private final UR unitRemote;
@@ -87,17 +87,36 @@ public class GenericValueDualBoundaryTrigger<UR extends AbstractUnitRemote, DT e
             Method method = serviceState.getClass().getMethod(specificValueCall);
             double value = (Double) method.invoke(serviceState);
 
-            if (triggerOperation == TriggerOperation.HIGH_ACTIVE) {
-                if (value >= upperBoundary) {
-                    notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()));
-                } else if (value < lowerBoundary) {
-                    notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()));
-                }
-            } else {
-                if (value > upperBoundary) {
-                    notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()));
-                } else if (value <= lowerBoundary) {
-                    notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()));
+            if (null != triggerOperation) {
+                switch (triggerOperation) {
+                    case HIGH_ACTIVE:
+                        if (value >= upperBoundary) {
+                            notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()));
+                        } else if (value < lowerBoundary) {
+                            notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()));
+                        }
+                        break;
+                    case LOW_ACTIVE:
+                        if (value > upperBoundary) {
+                            notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()));
+                        } else if (value <= lowerBoundary) {
+                            notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()));
+                        }
+                        break;
+                    case INSIDE_ACTIVE:
+                        if (lowerBoundary <= value && value <= upperBoundary) {
+                            notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()));
+                        } else {
+                            notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()));
+                        }
+                        break;
+                    case OUTSIDE_ACTIVE:
+                        if (value < lowerBoundary || upperBoundary < value) {
+                            notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()));
+                        } else {
+                            notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()));
+                        }
+                        break;
                 }
             }
         } catch (CouldNotPerformException ex) {

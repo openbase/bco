@@ -1,6 +1,6 @@
 package org.openbase.bco.manager.agent.core.preset;
 
-/*
+/*-
  * #%L
  * BCO Manager Agent Core
  * %%
@@ -26,7 +26,6 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.remote.unit.TemperatureControllerRemote;
 import org.openbase.bco.dal.remote.unit.Units;
-import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.bco.manager.agent.core.TriggerDAL.AgentTriggerPool;
@@ -40,36 +39,35 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
-import rst.domotic.state.WindowStateType.WindowState;
 import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.domotic.unit.connection.ConnectionConfigType;
-import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
+import rst.domotic.unit.location.LocationDataType;
 
 /**
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class HeaterEnergySavingAgent extends AbstractAgentController {
+public class TemperatureControllerAgent extends AbstractAgentController {
 
     private LocationRemote locationRemote;
-    private Future<Void> setTemperatureFuture;
+    private Future<Void> regulateTemperatureFuture;
     private final Map<TemperatureControllerRemote, TemperatureState> previousTemperatureState;
+    private final PresenceState.State triggerState = PresenceState.State.ABSENT;
     private final Observer<ActivationState> triggerHolderObserver;
-    private final WindowState.State triggerState = WindowState.State.OPEN;
 
-    public HeaterEnergySavingAgent() throws InstantiationException {
-        super(HeaterEnergySavingAgent.class);
+    public TemperatureControllerAgent() throws InstantiationException {
+        super(TemperatureControllerAgent.class);
 
         previousTemperatureState = new HashMap();
 
         triggerHolderObserver = (Observable<ActivationState> source, ActivationState data) -> {
             if (data.getValue().equals(ActivationState.State.ACTIVE)) {
-                regulateHeater();
-            } else if (setTemperatureFuture != null) {
-                setTemperatureFuture.cancel(true);
-                restoreTemperatureState();
+                regulateTemperature();
+            } else if (regulateTemperatureFuture != null) {
+                regulateTemperatureFuture.cancel(true);
+                restoreTemperature();
             }
         };
     }
@@ -85,15 +83,11 @@ public class HeaterEnergySavingAgent extends AbstractAgentController {
                 throw new InitializationException("LocationRemote not available.", ex);
             }
 
-            for (ConnectionRemote connectionRemote : locationRemote.getConnectionList(true)) {
-                if (connectionRemote.getConfig().getConnectionConfig().getType().equals(ConnectionConfigType.ConnectionConfig.ConnectionType.WINDOW)) {
-                    try {
-                        GenericTrigger<ConnectionRemote, ConnectionData, WindowState.State> trigger = new GenericTrigger(connectionRemote, triggerState, ServiceType.WINDOW_STATE_SERVICE);
-                        agentTriggerHolder.addTrigger(trigger, AgentTriggerPool.TriggerOperation.OR);
-                    } catch (CouldNotPerformException ex) {
-                        throw new InitializationException("Could not add agent to agentpool", ex);
-                    }
-                }
+            try {
+                GenericTrigger<LocationRemote, LocationDataType.LocationData, PresenceState.State> agentTrigger = new GenericTrigger(locationRemote, triggerState, ServiceType.PRESENCE_STATE_SERVICE);
+                agentTriggerHolder.addTrigger(agentTrigger, AgentTriggerPool.TriggerOperation.OR);
+            } catch (CouldNotPerformException ex) {
+                throw new InitializationException("Could not add agent to agentpool", ex);
             }
 
             agentTriggerHolder.registerObserver(triggerHolderObserver);
@@ -121,7 +115,7 @@ public class HeaterEnergySavingAgent extends AbstractAgentController {
         super.shutdown();
     }
 
-    private void regulateHeater() {
+    private void regulateTemperature() {
         previousTemperatureState.clear();
         try {
             for (TemperatureControllerRemote remote : locationRemote.getUnits(UnitType.TEMPERATURE_CONTROLLER, true, Units.TEMPERATURE_CONTROLLER)) {
@@ -135,15 +129,15 @@ public class HeaterEnergySavingAgent extends AbstractAgentController {
         TemperatureState temperatureState;
         try {
             temperatureState = TimestampProcessor.updateTimestampWithCurrentTime(TemperatureState.newBuilder().setTemperature(13.0).build());
-            setTemperatureFuture = locationRemote.setTargetTemperatureState(temperatureState, UnitType.TEMPERATURE_CONTROLLER);
+            regulateTemperatureFuture = locationRemote.setTargetTemperatureState(temperatureState, UnitType.TEMPERATURE_CONTROLLER);
         } catch (CouldNotPerformException ex) {
             logger.error("Could not set targetTemperatureState.", ex);
         }
     }
 
-    private void restoreTemperatureState() {
-        if (setTemperatureFuture != null && !setTemperatureFuture.isDone()) {
-            setTemperatureFuture.cancel(true);
+    private void restoreTemperature() {
+        if (regulateTemperatureFuture != null && !regulateTemperatureFuture.isDone()) {
+            regulateTemperatureFuture.cancel(true);
         }
 
         if (previousTemperatureState == null | previousTemperatureState.isEmpty()) {
