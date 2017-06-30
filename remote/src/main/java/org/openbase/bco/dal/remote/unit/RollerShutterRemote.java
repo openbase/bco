@@ -23,6 +23,7 @@ package org.openbase.bco.dal.remote.unit;
  */
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.unit.RollerShutter;
+import org.openbase.bco.dal.remote.VoidFuture;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
@@ -61,7 +62,7 @@ public class RollerShutterRemote extends AbstractUnitRemote<RollerShutterData> i
     public Future<Void> setBlindState(BlindState blindState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return this.applyAction(updateActionDescription(actionDescription, blindState).build());
+            return new VoidFuture(this.applyAction(updateActionDescription(actionDescription, blindState).build()));
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting powerState.", ex);
         }

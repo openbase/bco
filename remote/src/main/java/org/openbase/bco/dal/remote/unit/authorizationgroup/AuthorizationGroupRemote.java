@@ -23,6 +23,7 @@ package org.openbase.bco.dal.remote.unit.authorizationgroup;
  */
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.unit.authorizationgroup.AuthorizationGroup;
+import org.openbase.bco.dal.remote.VoidFuture;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -67,7 +68,7 @@ public class AuthorizationGroupRemote extends AbstractUnitRemote<AuthorizationGr
     public Future<Void> setUserPresenceState(UserPresenceState userPresenceState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return this.applyAction(updateActionDescription(actionDescription, userPresenceState, ServiceType.PRESENCE_STATE_SERVICE).build());
+            return new VoidFuture(this.applyAction(updateActionDescription(actionDescription, userPresenceState, ServiceType.PRESENCE_STATE_SERVICE).build()));
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting activationState.", ex);
         }

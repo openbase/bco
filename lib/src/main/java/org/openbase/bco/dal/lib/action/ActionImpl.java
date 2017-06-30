@@ -43,6 +43,7 @@ import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.state.ActionStateType.ActionState;
@@ -113,7 +114,7 @@ public class ActionImpl implements Action {
     }
 
     @Override
-    public Future<Void> execute() throws CouldNotPerformException {
+    public Future<ActionFuture> execute() throws CouldNotPerformException {
         try {
             synchronized (executionSync) {
 

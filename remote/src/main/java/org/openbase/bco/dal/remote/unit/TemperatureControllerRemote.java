@@ -23,6 +23,7 @@ package org.openbase.bco.dal.remote.unit;
  */
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.unit.TemperatureController;
+import org.openbase.bco.dal.remote.VoidFuture;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
@@ -67,7 +68,7 @@ public class TemperatureControllerRemote extends AbstractUnitRemote<TemperatureC
     public Future<Void> setTargetTemperatureState(TemperatureState temperatureState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return this.applyAction(updateActionDescription(actionDescription, temperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE).build());
+            return new VoidFuture(this.applyAction(updateActionDescription(actionDescription, temperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE).build()));
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting temperatureState.", ex);
         }

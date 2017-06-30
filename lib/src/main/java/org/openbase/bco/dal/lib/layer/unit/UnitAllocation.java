@@ -31,15 +31,16 @@ import org.openbase.jul.exception.InstantiationException;
 import rsb.RSBException;
 import rst.communicationpatterns.ResourceAllocationType;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UnitAllocation {
 
-    private ExecutableResource<Void> taskExecutor;
+    private ExecutableResource<ActionFuture> taskExecutor;
 
-    public UnitAllocation(ExecutableResource taskExecutor) throws org.openbase.jul.exception.InstantiationException {
+    public UnitAllocation(ExecutableResource<ActionFuture> taskExecutor) throws org.openbase.jul.exception.InstantiationException {
         try {
             this.taskExecutor = taskExecutor;
             try {
@@ -52,7 +53,7 @@ public class UnitAllocation {
         }
     }
 
-    public ExecutableResource<Void> getTaskExecutor() {
+    public ExecutableResource<ActionFuture> getTaskExecutor() {
         return taskExecutor;
     }
 

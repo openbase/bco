@@ -26,6 +26,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 
 /**
  *
@@ -46,7 +47,7 @@ public class UnitAllocator {
      * @return
      * @throws CouldNotPerformException if starting the executableResource fails
      */
-    public static UnitAllocation allocate(final ActionDescription.Builder actionDescriptionBuilder, final Callable<Void> task) throws CouldNotPerformException {
+    public static UnitAllocation allocate(final ActionDescription.Builder actionDescriptionBuilder, final Callable<ActionFuture> task) throws CouldNotPerformException {
         try {
 
             // detect completion type
@@ -61,7 +62,7 @@ public class UnitAllocator {
             return new UnitAllocation(new ExecutableResource(actionDescriptionBuilder.getResourceAllocation(), completionType) {
 
                 @Override
-                public Void execute() throws ExecutionException, InterruptedException {
+                public ActionFuture execute() throws ExecutionException, InterruptedException {
                     try {
                         return task.call();
                     } catch (final InterruptedException ex) {

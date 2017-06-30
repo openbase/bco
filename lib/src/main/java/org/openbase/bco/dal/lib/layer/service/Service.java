@@ -35,6 +35,7 @@ import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType;
@@ -55,7 +56,7 @@ public interface Service {
     public static final String SERVICE_LABEL = Service.class.getSimpleName();
 
     @RPCMethod
-    public Future<Void> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException;
+    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException;
 
     default public void addServiceStateObserver(ServiceType serviceType, Observer observer) {
     }
