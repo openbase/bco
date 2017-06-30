@@ -31,6 +31,7 @@ import org.openbase.bco.registry.agent.core.AgentRegistryController;
 import org.openbase.bco.registry.app.core.AppRegistryController;
 import org.openbase.bco.registry.device.core.DeviceRegistryController;
 import org.openbase.bco.registry.location.core.LocationRegistryController;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.UnitRegistryController;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -197,6 +198,8 @@ public class VirtualRegistrySyncTest {
             if (locationRegistry != null) {
                 locationRegistry.shutdown();
             }
+            
+            Registries.shutdown();
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }

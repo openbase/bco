@@ -45,6 +45,11 @@ public class TestRemoteLocationRegistrySync {
         JPService.setupJUnitTestMode();
     }
 
+    /**
+     * TODO: if activated the shutdown also has to be handled
+     * 
+     * @throws Exception 
+     */
     //@Test(timeout = 120000)
     public void testInitialDBSync() throws Exception {
         GlobalCachedExecutorService.submit(this::startRegistry);

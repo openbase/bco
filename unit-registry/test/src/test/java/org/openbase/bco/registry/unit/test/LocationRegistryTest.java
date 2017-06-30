@@ -34,6 +34,7 @@ import org.junit.Test;
 import org.openbase.bco.registry.agent.core.AgentRegistryController;
 import org.openbase.bco.registry.app.core.AppRegistryController;
 import org.openbase.bco.registry.device.core.DeviceRegistryController;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.UnitRegistryController;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
@@ -159,6 +160,8 @@ public class LocationRegistryTest {
             if (agentRegistry != null) {
                 agentRegistry.shutdown();
             }
+            
+            Registries.shutdown();
         } catch (Throwable ex) {
             ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
