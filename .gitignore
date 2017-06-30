@@ -4,3 +4,10 @@
 **/*/target
 /target
 **/*/nbactions.xml
+/device-registry/target/
+/unit-registry/target/
+/location-registry/target/
+/user-registry/target/
+/app-registry/target/
+/agent-registry/target/
+/scene-registry/target/

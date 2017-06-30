@@ -26,14 +26,15 @@ import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
-import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
+import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
-import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
+import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -43,6 +44,7 @@ import org.openbase.jul.storage.registry.RegistryRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.registry.DeviceRegistryDataType.DeviceRegistryData;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -57,7 +59,7 @@ import rst.rsb.ScopeType;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryData> implements DeviceRegistry, RegistryRemote<DeviceRegistryData> {
+public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRegistryData> implements DeviceRegistry, RegistryRemote<DeviceRegistryData> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistryData.getDefaultInstance()));
@@ -70,7 +72,7 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
 
     private final SynchronizedRemoteRegistry<String, DeviceClass, DeviceClass.Builder> deviceClassRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> deviceUnitConfigRemoteRegistry;
-    private UnitRegistry unitRegistry;
+    private UnitRegistryRemote unitRegistry;
 
     public DeviceRegistryRemote() throws InstantiationException {
         super(JPDeviceRegistryScope.class, DeviceRegistryData.class);
@@ -83,19 +85,28 @@ public class DeviceRegistryRemote extends AbstractRegistryRemote<DeviceRegistryD
     }
 
     @Override
-    protected void postInit() throws InitializationException, InterruptedException {
-        super.postInit();
+    protected void registerRemoteRegistries() throws CouldNotPerformException {
+        registerRemoteRegistry(deviceClassRemoteRegistry);
+        registerRemoteRegistry(deviceUnitConfigRemoteRegistry);
+    }
+
+    @Override
+    protected void registerRegistryRemotes() throws InitializationException, InterruptedException {
         try {
-            this.unitRegistry = CachedUnitRegistryRemote.getRegistry();
+            unitRegistry = CachedUnitRegistryRemote.getRegistry();
+            registerRegistryRemote(unitRegistry);
         } catch (NotAvailableException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
     @Override
-    protected void registerRemoteRegistries() throws CouldNotPerformException {
-        registerRemoteRegistry(deviceClassRemoteRegistry);
-        registerRemoteRegistry(deviceUnitConfigRemoteRegistry);
+    protected void bindRegistryRemoteToRemoteRegistries() {
+        try {
+            bindRegistryRemoteToRemoteRegistry(deviceUnitConfigRemoteRegistry, unitRegistry, UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER);
+        } catch (CouldNotPerformException ex) {
+            new FatalImplementationErrorException("Could not bind registries", this, ex);
+        }
     }
 
     public SynchronizedRemoteRegistry<String, DeviceClass, DeviceClass.Builder> getDeviceClassRemoteRegistry() {

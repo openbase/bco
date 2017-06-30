@@ -24,14 +24,18 @@ package org.openbase.bco.registry.user.remote;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
-import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
+import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
+import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.bco.registry.user.lib.UserRegistry;
 import org.openbase.bco.registry.user.lib.jp.JPUserRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.FatalImplementationErrorException;
+import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -40,6 +44,7 @@ import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 import rst.domotic.registry.UserRegistryDataType.UserRegistryData;
@@ -49,7 +54,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class UserRegistryRemote extends AbstractRegistryRemote<UserRegistryData> implements UserRegistry, Remote<UserRegistryData> {
+public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegistryData> implements UserRegistry, Remote<UserRegistryData> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserRegistryData.getDefaultInstance()));
@@ -60,6 +65,8 @@ public class UserRegistryRemote extends AbstractRegistryRemote<UserRegistryData>
 
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> userConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> authorizationGroupConfigRemoteRegistry;
+
+    private UnitRegistryRemote unitRegistry;
 
     public UserRegistryRemote() throws InstantiationException, InterruptedException {
         super(JPUserRegistryScope.class, UserRegistryData.class);
@@ -75,6 +82,26 @@ public class UserRegistryRemote extends AbstractRegistryRemote<UserRegistryData>
     protected void registerRemoteRegistries() throws CouldNotPerformException {
         registerRemoteRegistry(userConfigRemoteRegistry);
         registerRemoteRegistry(authorizationGroupConfigRemoteRegistry);
+    }
+
+    @Override
+    protected void registerRegistryRemotes() throws InitializationException, InterruptedException {
+        try {
+            unitRegistry = CachedUnitRegistryRemote.getRegistry();
+            registerRegistryRemote(unitRegistry);
+        } catch (NotAvailableException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
+    @Override
+    protected void bindRegistryRemoteToRemoteRegistries() {
+        try {
+            bindRegistryRemoteToRemoteRegistry(userConfigRemoteRegistry, unitRegistry, UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
+            bindRegistryRemoteToRemoteRegistry(authorizationGroupConfigRemoteRegistry, unitRegistry, UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
+        } catch (CouldNotPerformException ex) {
+            new FatalImplementationErrorException("Could not bind registries", this, ex);
+        }
     }
 
     public RemoteRegistry<String, UnitConfig, UnitConfig.Builder> getUserConfigRemoteRegistry() {

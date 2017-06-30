@@ -93,16 +93,6 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
         }
     }
 
-//    @Override
-//    protected void postInit() throws InitializationException, InterruptedException {
-//        super.postInit();
-//        try {
-//            this.unitRegistry = CachedUnitRegistryRemote.getRegistry();
-//        } catch (NotAvailableException ex) {
-//            throw new InitializationException(this, ex);
-//        }
-//    }
-
     @Override
     protected void registerRemoteRegistries() throws CouldNotPerformException {
         registerRemoteRegistry(locationUnitConfigRemoteRegistry);

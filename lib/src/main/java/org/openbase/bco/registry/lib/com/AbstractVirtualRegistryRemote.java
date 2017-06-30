@@ -110,19 +110,19 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
         for (RegistryRemote registryRemote : registryRemotes) {
             registryRemote.waitForData();
         }
-        waitForVirtualRegistrySync();
         super.waitForData();
+        waitForVirtualRegistrySync();
     }
 
     private void waitForVirtualRegistrySync() throws CouldNotPerformException, InterruptedException {
         synchronized (virtualRegistrySyncLock) {
-            while (!equalMessageCountsInRemoteRegistriesAndRegistryRemotes()) {
+            while (!equalMessageCounts()) {
                 virtualRegistrySyncLock.wait();
             }
         }
     }
 
-    private boolean equalMessageCountsInRemoteRegistriesAndRegistryRemotes() throws CouldNotPerformException {
+    private boolean equalMessageCounts() throws CouldNotPerformException {
         for (RemoteRegistry remoteRegistry : remoteRegistrySyncMap.keySet()) {
             if (remoteRegistrySyncMap.get(remoteRegistry).getData().getRepeatedFieldCount(remoteRegistryFieldDescriptorMap.get(remoteRegistry)) != remoteRegistry.getMessages().size()) {
                 return false;

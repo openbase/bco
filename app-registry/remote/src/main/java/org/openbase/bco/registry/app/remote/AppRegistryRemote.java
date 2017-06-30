@@ -27,12 +27,16 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.registry.app.lib.AppRegistry;
 import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
-import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
+import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
+import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.FatalImplementationErrorException;
+import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -43,13 +47,14 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.unit.app.AppClassType.AppClass;
 import rst.domotic.registry.AppRegistryDataType.AppRegistryData;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>   
  */
-public class AppRegistryRemote extends AbstractRegistryRemote<AppRegistryData> implements AppRegistry, RegistryRemote<AppRegistryData> {
+public class AppRegistryRemote extends AbstractVirtualRegistryRemote<AppRegistryData> implements AppRegistry, RegistryRemote<AppRegistryData> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppRegistryData.getDefaultInstance()));
@@ -59,6 +64,8 @@ public class AppRegistryRemote extends AbstractRegistryRemote<AppRegistryData> i
 
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> appUnitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, AppClass, AppClass.Builder> appClassRemoteRegistry;
+    
+    private UnitRegistryRemote unitRegistry;
 
     public AppRegistryRemote() throws InstantiationException, InterruptedException {
         super(JPAppRegistryScope.class, AppRegistryData.class);
@@ -74,6 +81,25 @@ public class AppRegistryRemote extends AbstractRegistryRemote<AppRegistryData> i
     protected void registerRemoteRegistries() throws CouldNotPerformException {
         registerRemoteRegistry(appClassRemoteRegistry);
         registerRemoteRegistry(appUnitConfigRemoteRegistry);
+    }
+
+    @Override
+    protected void registerRegistryRemotes() throws InitializationException, InterruptedException {
+        try {
+            unitRegistry = CachedUnitRegistryRemote.getRegistry();
+            registerRegistryRemote(unitRegistry);
+        } catch (NotAvailableException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
+    @Override
+    protected void bindRegistryRemoteToRemoteRegistries() {
+        try {
+            bindRegistryRemoteToRemoteRegistry(appUnitConfigRemoteRegistry, unitRegistry, UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER);
+        } catch (CouldNotPerformException ex) {
+            new FatalImplementationErrorException("Could not bind registries", this, ex);
+        }
     }
 
     @Override

@@ -23,14 +23,18 @@ package org.openbase.bco.registry.scene.remote;
  */
 import java.util.List;
 import java.util.concurrent.Future;
-import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
+import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.scene.lib.SceneRegistry;
 import org.openbase.bco.registry.scene.lib.jp.JPSceneRegistryScope;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
+import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.FatalImplementationErrorException;
+import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -40,13 +44,14 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
 import rst.domotic.registry.SceneRegistryDataType.SceneRegistryData;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class SceneRegistryRemote extends AbstractRegistryRemote<SceneRegistryData> implements SceneRegistry, Remote<SceneRegistryData> {
+public class SceneRegistryRemote extends AbstractVirtualRegistryRemote<SceneRegistryData> implements SceneRegistry, Remote<SceneRegistryData> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneRegistryData.getDefaultInstance()));
@@ -55,6 +60,8 @@ public class SceneRegistryRemote extends AbstractRegistryRemote<SceneRegistryDat
     }
 
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> sceneConfigRemoteRegistry;
+    
+    private UnitRegistryRemote unitRegistry;
 
     public SceneRegistryRemote() throws InstantiationException, InterruptedException {
         super(JPSceneRegistryScope.class, SceneRegistryData.class);
@@ -68,6 +75,25 @@ public class SceneRegistryRemote extends AbstractRegistryRemote<SceneRegistryDat
     @Override
     protected void registerRemoteRegistries() throws CouldNotPerformException {
         registerRemoteRegistry(sceneConfigRemoteRegistry);
+    }
+
+    @Override
+    protected void registerRegistryRemotes() throws InitializationException, InterruptedException {
+        try {
+            unitRegistry = CachedUnitRegistryRemote.getRegistry();
+            registerRegistryRemote(unitRegistry);
+        } catch (NotAvailableException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
+    @Override
+    protected void bindRegistryRemoteToRemoteRegistries() {
+        try {
+            bindRegistryRemoteToRemoteRegistry(sceneConfigRemoteRegistry, unitRegistry, UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER);
+        } catch (CouldNotPerformException ex) {
+            new FatalImplementationErrorException("Could not bind registries", this, ex);
+        }
     }
 
     public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getSceneConfigRemoteRegistry() {
