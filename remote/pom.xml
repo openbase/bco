@@ -96,6 +96,12 @@
             <type>jar</type>
         </dependency>
         <dependency>
+            <groupId>org.openbase</groupId>
+            <artifactId>jul.extension.rst</artifactId>
+            <version>${dependency.jul.version}</version>
+            <type>jar</type>
+        </dependency>
+        <dependency>
             <groupId>org.openbase.bco</groupId>
             <artifactId>registry.util</artifactId>
             <version>${dependency.bco.registry.version}</version>

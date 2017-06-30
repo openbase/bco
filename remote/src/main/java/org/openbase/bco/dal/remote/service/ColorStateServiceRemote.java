@@ -109,7 +109,8 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
 
             HSBColor hsbColor = HSBColorToRGBColorTransformer.transform(RGBColor.newBuilder().setRed((int) averageRed).setGreen((int) averageGreen).setBlue((int) averageBlue).build());
             return TimestampProcessor.updateTimestamp(timestamp, ColorState.newBuilder().setColor(ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(hsbColor)), TimeUnit.MICROSECONDS, logger).build();
-        } catch (CouldNotTransformException | TypeNotSupportedException ex) {
+//        } catch (CouldNotTransformException | TypeNotSupportedException ex) {
+        } catch (CouldNotTransformException ex) {
             throw new NotAvailableException("Could not transform from HSB to RGB or vice-versa!", ex);
         }
     }
