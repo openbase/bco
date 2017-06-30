@@ -196,7 +196,7 @@ git clone https://github.com/openbase/bco.registry.git registry
 git clone https://github.com/openbase/bco.dal.git dal
 git clone https://github.com/openbase/bco.manager.git manager
 ```
-If needed you can downlownload the following bco repos as well:
+If needed you can download the following bco repos as well:
 ```
 cd ~/workspace/openbase/bco
 git clone https://github.com/openbase/bco.registry.editor.git registry-editor
