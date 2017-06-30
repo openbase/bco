@@ -54,6 +54,7 @@ import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -329,7 +330,7 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
         }
     }
 
-    public Future<Void> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         return getServiceRemote(actionDescription.getServiceStateDescription().getServiceType()).applyAction(actionDescription);
     }
 

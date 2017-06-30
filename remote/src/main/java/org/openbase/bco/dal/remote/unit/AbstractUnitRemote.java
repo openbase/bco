@@ -60,6 +60,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.registry.LocationRegistryDataType;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
@@ -486,8 +487,8 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
      * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
-    public Future<Void> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
-        return RPCHelper.callRemoteMethod(actionDescription, this, Void.class);
+    public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+        return RPCHelper.callRemoteMethod(actionDescription, this, ActionFuture.class);
     }
 
     /**

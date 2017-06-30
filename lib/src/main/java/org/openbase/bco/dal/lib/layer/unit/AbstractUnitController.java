@@ -65,6 +65,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -402,7 +403,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     @Override
-    public Future<Void> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         try {
             logger.debug("applyAction: " + actionDescription.getLabel());
             final ActionImpl action = new ActionImpl(this);

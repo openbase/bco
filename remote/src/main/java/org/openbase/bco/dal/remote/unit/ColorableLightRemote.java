@@ -23,6 +23,7 @@ package org.openbase.bco.dal.remote.unit;
  */
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.unit.ColorableLight;
+import org.openbase.bco.dal.remote.VoidFuture;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -71,7 +72,7 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
     public Future<Void> setColorState(final ColorState colorState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return this.applyAction(updateActionDescription(actionDescription, colorState).build());
+            return new VoidFuture(this.applyAction(updateActionDescription(actionDescription, colorState).build()));
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting colorState.", ex);
         }
@@ -86,7 +87,7 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
     public Future<Void> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return this.applyAction(updateActionDescription(actionDescription, brightnessState).build());
+            return new VoidFuture(this.applyAction(updateActionDescription(actionDescription, brightnessState).build()));
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting brightnessState.", ex);
         }
@@ -105,7 +106,7 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
     public Future<Void> setPowerState(PowerState powerState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return this.applyAction(updateActionDescription(actionDescription, powerState).build());
+            return new VoidFuture(this.applyAction(updateActionDescription(actionDescription, powerState).build()));
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting powerState.", ex);
         }

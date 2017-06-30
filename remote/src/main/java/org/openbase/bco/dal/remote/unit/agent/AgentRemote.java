@@ -23,6 +23,7 @@ package org.openbase.bco.dal.remote.unit.agent;
  */
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.unit.agent.Agent;
+import org.openbase.bco.dal.remote.VoidFuture;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -55,7 +56,7 @@ public class AgentRemote extends AbstractUnitRemote<AgentData> implements Agent 
         logger.info("Calling remote setActivationState to [" + activationState.getValue() + "] for agent");
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return this.applyAction(updateActionDescription(actionDescription, activationState).build());
+            return new VoidFuture(this.applyAction(updateActionDescription(actionDescription, activationState).build()));
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting activationState.", ex);
         }

@@ -45,6 +45,7 @@ import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.AlarmStateType;
@@ -216,7 +217,7 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
     }
 
     @Override
-    public Future<Void> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         return serviceRemoteManager.applyAction(actionDescription);
     }
 

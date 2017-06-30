@@ -29,6 +29,7 @@ import org.openbase.jul.pattern.Observable;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.AlarmStateType;
@@ -148,8 +149,8 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     }
 
     @Override
-    public Future<Void> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
-        return RPCHelper.callRemoteMethod(actionDescription, this, Void.class);
+    public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+        return RPCHelper.callRemoteMethod(actionDescription, this, ActionFuture.class);
     }
 
     @Override
