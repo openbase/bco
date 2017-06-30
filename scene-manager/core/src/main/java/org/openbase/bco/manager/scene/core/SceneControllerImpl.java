@@ -55,6 +55,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.ButtonStateType.ButtonState;
@@ -207,7 +208,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
 
         executing = true;
 
-        final Map<Future<Void>, RemoteAction> executionFutureList = new HashMap<>();
+        final Map<Future<ActionFuture>, RemoteAction> executionFutureList = new HashMap<>();
 
         // dublicate actions to make sure all actions are applied.
         for (int i = 0; i < ACTION_REPLAY; i++) {
@@ -229,7 +230,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
 
             long checkStart = System.currentTimeMillis() + ACTION_EXECUTION_TIMEOUT;
             long timeout;
-            for (Entry<Future<Void>, RemoteAction> futureActionEntry : executionFutureList.entrySet()) {
+            for (Entry<Future<ActionFuture>, RemoteAction> futureActionEntry : executionFutureList.entrySet()) {
                 if (futureActionEntry.getKey().isDone()) {
                     continue;
                 }
@@ -249,7 +250,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         } catch (CouldNotPerformException | CancellationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Scene[" + getConfig().getLabel() + "] execution failed!"), logger);
         } finally {
-            for (Entry<Future<Void>, RemoteAction> futureActionEntry : executionFutureList.entrySet()) {
+            for (Entry<Future<ActionFuture>, RemoteAction> futureActionEntry : executionFutureList.entrySet()) {
                 if (!futureActionEntry.getKey().isDone()) {
                     futureActionEntry.getKey().cancel(true);
                 }
