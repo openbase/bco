@@ -63,6 +63,14 @@ public class SessionManager {
         return sessionKey;
     }
 
+    public void initializeServiceServerRequest() throws RejectedException {
+        try {
+            this.ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(this.getSessionKey(), this.getTicketAuthenticatorWrapper());
+        } catch (IOException ex) {
+            throw new RejectedException("Initializing request rejected", ex);
+        }
+    }
+
     /**
      * Wraps the whole login process into one method
      *
@@ -161,11 +169,11 @@ public class SessionManager {
             byte[] newHash = EncryptionHelper.hash(newCredentials);
 
             LoginCredentialsType.LoginCredentials loginCredentials = LoginCredentialsType.LoginCredentials.newBuilder()
-              .setId(clientId)
-              .setOldCredentials(EncryptionHelper.encrypt(oldHash, sessionKey))
-              .setNewCredentials(EncryptionHelper.encrypt(newHash, sessionKey))
-              .setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper)
-              .build();
+                    .setId(clientId)
+                    .setOldCredentials(EncryptionHelper.encrypt(oldHash, sessionKey))
+                    .setNewCredentials(EncryptionHelper.encrypt(newHash, sessionKey))
+                    .setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper)
+                    .build();
 
             TicketAuthenticatorWrapper newTicketAuthenticatorWrapper = CachedAuthenticationRemote.getRemote().changeCredentials(loginCredentials).get();
             AuthenticationClientHandler.handleServiceServerResponse(sessionKey, ticketAuthenticatorWrapper, newTicketAuthenticatorWrapper);
