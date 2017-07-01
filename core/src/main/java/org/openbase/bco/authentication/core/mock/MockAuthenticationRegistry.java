@@ -24,7 +24,10 @@ package org.openbase.bco.authentication.core.mock;
 import java.util.HashMap;
 import org.openbase.bco.authentication.core.AuthenticationRegistry;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import rst.domotic.authentication.LoginCredentialsType;
+import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
 
 /**
  *
@@ -38,16 +41,35 @@ public class MockAuthenticationRegistry extends AuthenticationRegistry {
 
     @Override
     public void setCredentials(String userId, byte[] credentials) {
-        this.credentials.put(userId, credentials);
+        if (!this.credentials.containsKey(userId)) {
+            this.addCredentials(userId, credentials, false);
+        }
+        else {
+            LoginCredentials loginCredentials = LoginCredentials.newBuilder(this.credentials.get(userId))
+              .setCredentials(credentials)
+              .build();
+            this.credentials.put(userId, loginCredentials);
+        }
+    }
+
+    @Override
+    public void addCredentials(String userId, byte[] credentials, boolean admin) throws CouldNotPerformException {
+        LoginCredentials loginCredentials = LoginCredentials.newBuilder()
+          .setId(userId)
+          .setCredentials(credentials)
+          .setAdmin(admin)
+          .build();
+
+        this.credentials.put(userId, loginCredentials);
     }
 
     @Override
     public void init() throws InitializationException {
         credentials = new HashMap<>();
-        credentials.put(CLIENT_ID, PASSWORD_HASH);
+        this.setCredentials(CLIENT_ID, PASSWORD_HASH);
 
         // add new user to the mock
-        credentials.put("example_client_id", EncryptionHelper.hash("example_password"));
+        this.setCredentials("example_client_id", EncryptionHelper.hash("example_password"));
     }
 
 }

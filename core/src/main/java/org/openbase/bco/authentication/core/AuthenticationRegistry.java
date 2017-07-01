@@ -41,6 +41,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.processing.JSonObjectFileProcessor;
 import org.slf4j.LoggerFactory;
+import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
 
 /**
  * This class provides access to the storage of login credentials.
@@ -53,7 +54,7 @@ public class AuthenticationRegistry {
 
     private static final String FILENAME = "credentials.json";
 
-    protected HashMap<String, byte[]> credentials;
+    protected HashMap<String, LoginCredentials> credentials;
 
     private final JSonObjectFileProcessor<HashMap> fileProcessor;
     private File file;
@@ -87,7 +88,22 @@ public class AuthenticationRegistry {
             throw new NotAvailableException(userId);
         }
 
-        return credentials.get(userId);
+        return credentials.get(userId).getCredentials();
+    }
+
+    /**
+     * Tells whether a given user has administrator permissions.
+     *
+     * @param userId ID of the user whose credentials should be retrieved.
+     * @return Boolean value indicating whether the user has administrator permissions.
+     * @throws NotAvailableException If the user does not exist in the credentials storage.
+     */
+    public boolean isAdmin(String userId) throws NotAvailableException {
+        if (!credentials.containsKey(userId)) {
+            throw new NotAvailableException(userId);
+        }
+
+        return credentials.get(userId).isAdmin();
     }
 
     /**
@@ -100,19 +116,37 @@ public class AuthenticationRegistry {
      */
     public void setCredentials(String userId, byte[] credentials) throws CouldNotPerformException {
         if (!this.credentials.containsKey(userId)) {
-            // only test for registration mode if user is not already registered
-            try {
-                int registrationMode = JPService.getProperty(JPRegistrationMode.class).getValue();
-                if (registrationMode == JPRegistrationMode.DEFAULT_REGISTRATION_MODE) {
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not set credentials for user[" + userId + "]. Registration mode not active."), LOGGER, LogLevel.WARN);
-                } else if (TimeUnit.MILLISECONDS.convert(registrationMode, TimeUnit.MINUTES) < (System.currentTimeMillis() - this.startingTime)) {
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not set credentials for user[" + userId + "]. Registration mode already expired."), LOGGER, LogLevel.WARN);
-                }
-            } catch (JPNotAvailableException ex) {
-                throw new CouldNotPerformException("Could not access JPRegistrationMode proptery.", ex);
-            }
+            this.addCredentials(userId, credentials, false);
         }
-        this.credentials.put(userId, credentials);
+        else {
+            LoginCredentials loginCredentials = LoginCredentials.newBuilder(this.credentials.get(userId))
+              .setCredentials(credentials)
+              .build();
+            this.credentials.put(userId, loginCredentials);
+            this.save();
+        }
+    }
+
+    public void addCredentials(String userId, byte[] credentials, boolean admin) throws CouldNotPerformException {
+        // only test for registration mode if user is not already registered
+        try {
+            int registrationMode = JPService.getProperty(JPRegistrationMode.class).getValue();
+            if (registrationMode == JPRegistrationMode.DEFAULT_REGISTRATION_MODE) {
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not set credentials for user[" + userId + "]. Registration mode not active."), LOGGER, LogLevel.WARN);
+            } else if (TimeUnit.MILLISECONDS.convert(registrationMode, TimeUnit.MINUTES) < (System.currentTimeMillis() - this.startingTime)) {
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not set credentials for user[" + userId + "]. Registration mode already expired."), LOGGER, LogLevel.WARN);
+            }
+        } catch (JPNotAvailableException ex) {
+            throw new CouldNotPerformException("Could not access JPRegistrationMode proptery.", ex);
+        }
+
+        LoginCredentials loginCredentials = LoginCredentials.newBuilder()
+          .setId(userId)
+          .setCredentials(credentials)
+          .setAdmin(admin)
+          .build();
+
+        this.credentials.put(userId, loginCredentials);
         this.save();
     }
 
