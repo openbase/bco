@@ -23,6 +23,7 @@ package org.openbase.bco.dal.remote.unit.scene;
  */
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.unit.scene.Scene;
+import org.openbase.bco.dal.remote.VoidFuture;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -55,7 +56,7 @@ public class SceneRemote extends AbstractUnitRemote<SceneData> implements Scene 
     public Future<Void> setActivationState(ActivationState activationState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return this.applyAction(updateActionDescription(actionDescription, activationState).build());
+            return new VoidFuture(this.applyAction(updateActionDescription(actionDescription, activationState).build()));
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting activationState.", ex);
         }

@@ -52,7 +52,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -411,7 +410,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     @Override
-    public Future<ActionFuture> applyAction(final ActionDescription actionDescription, boolean test) throws CouldNotPerformException, InterruptedException {
+    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         try {
             logger.debug("applyAction: " + actionDescription.getLabel());
 
@@ -423,7 +422,19 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
+    /**
+     * Verifies the authority by verifying its internal TicketAuthenticationWrapper with the authenticator.
+     * It the authenticator has no TicketAuthenticationWrapper null is returned because no one is logged in. 
+     * 
+     * @param actionAuthority the authority verified
+     * @return an updated TicketAuthenticationWrapper of null if no one is logged in
+     * @throws VerificationFailedException if someone is logged in but the verification with the authenticator fails
+     */
     public TicketAuthenticatorWrapper verifyAuthority(final ActionAuthority actionAuthority) throws VerificationFailedException {
+        if(!actionAuthority.hasTicketAuthenticatorWrapper()) {
+            return null;
+        }
+        
         // authenticate and (also authorize?)
         try {
             TicketAuthenticatorWrapper wrapper = CachedAuthenticationRemote.getRemote().validateClientServerTicket(actionAuthority.getTicketAuthenticatorWrapper()).get();

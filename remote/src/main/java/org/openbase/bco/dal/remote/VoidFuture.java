@@ -1,8 +1,8 @@
-package org.openbase.bco.dal.lib.layer.service;
+package org.openbase.bco.dal.remote;
 
 /*-
  * #%L
- * BCO DAL Library
+ * BCO DAL Remote
  * %%
  * Copyright (C) 2014 - 2017 openbase.org
  * %%
@@ -29,29 +29,29 @@ import java.util.concurrent.TimeoutException;
 
 /**
  *
- * @author Sebastian Fast <sfast@techfak.uni-bielefeld.de>
+ * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
 public class VoidFuture implements Future<Void> {
-
-    private final Future internalFuture;
     
-    public VoidFuture(final Future internalFuture) {
+    private final Future internalFuture;
+
+    public VoidFuture(Future internalFuture) {
         this.internalFuture = internalFuture;
     }
-    
+
     @Override
-    public boolean cancel(boolean bln) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public boolean cancel(boolean mayInterruptIfRunning) {
+        return internalFuture.cancel(mayInterruptIfRunning);
     }
 
     @Override
     public boolean isCancelled() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return internalFuture.isCancelled();
     }
 
     @Override
     public boolean isDone() {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+        return internalFuture.isDone();
     }
 
     @Override
@@ -61,8 +61,8 @@ public class VoidFuture implements Future<Void> {
     }
 
     @Override
-    public Void get(long l, TimeUnit tu) throws InterruptedException, ExecutionException, TimeoutException {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
+    public Void get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
+        internalFuture.get(timeout, unit);
+        return null;
     }
-    
 }

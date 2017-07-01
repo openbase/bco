@@ -34,6 +34,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
+import org.openbase.bco.authentication.lib.AuthenticationFuture;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -67,9 +68,9 @@ import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
-import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.registry.LocationRegistryDataType;
@@ -502,6 +503,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
      *
      * @param sessionManager an instance of SessionManager
      */
+    @Override
     public void setSessionManager(SessionManager sessionManager) {
         this.sessionManager = sessionManager;
     }
@@ -515,38 +517,26 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
      * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
-    public Future<ActionFuture> applyAction(ActionDescription actionDescription, boolean test) throws CouldNotPerformException, InterruptedException, RejectedException {
-        // initialize request
-        try {
-            this.sessionManager.setTicketAuthenticatorWrapper(AuthenticationClientHandler.initServiceServerRequest(this.sessionManager.getSessionKey(), this.sessionManager.getTicketAuthenticatorWrapper()));
-        } catch (StreamCorruptedException ex) {
-            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
-//            throw new StreamCorruptedException(ex.getMessage());
-            throw new CouldNotPerformException(ex.getMessage());
-        } catch (IOException ex) {
-            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
-            throw new CouldNotPerformException("Internal server error. Please try again.");
+    public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException, RejectedException {
+        return new AuthenticationFuture(RPCHelper.callRemoteMethod(initializeRequest(actionDescription), this, ActionFuture.class), this.sessionManager);
+    }
+    
+    private ActionDescription initializeRequest(final ActionDescription actionDescription) throws RejectedException {
+        ActionDescription.Builder actionDescriptionBuilder = actionDescription.toBuilder();
+        if(isLoggedIn()) {
+            sessionManager.initializeServiceServerRequest();
+            ActionAuthority.Builder actionAuthorityBuilder = actionDescriptionBuilder.getActionAuthorityBuilder();
+            actionAuthorityBuilder.setTicketAuthenticatorWrapper(sessionManager.getTicketAuthenticatorWrapper());
+        } else {
+            // if not logged in all rights are used
+            // to make this clear to the receiving controller clear the actionAuthority
+            actionDescriptionBuilder.clearActionAuthority();
         }
-        ActionAuthority.Builder builder = actionDescription.getActionAuthority().toBuilder();
-        builder.setTicketAuthenticatorWrapper(this.sessionManager.getTicketAuthenticatorWrapper());
-
-        // apply action
-        try {
-            ActionFuture actionFuture = RPCHelper.callRemoteMethod(builder.build(), this, ActionFuture.class).get();
-
-            //TODO: this has to be done inside of get of the actionFuture so that a real future is returned again
-            // handle response
-            TicketAuthenticatorWrapper wrapper = AuthenticationClientHandler.handleServiceServerResponse(
-                    this.sessionManager.getSessionKey(),
-                    this.sessionManager.getTicketAuthenticatorWrapper(),
-                    actionFuture.getTicketAuthenticatorWrapper());
-            ActionFuture.Builder actionFutureBuilder = actionFuture.toBuilder();
-            actionFutureBuilder.setTicketAuthenticatorWrapper(wrapper);
-
-            return CompletableFuture.completedFuture(actionFutureBuilder.build());
-        } catch (ExecutionException | IOException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("TODO: read todo above, this should not be thrown here"), logger);
-        }
+        return actionDescriptionBuilder.build();
+    }
+    
+    private boolean isLoggedIn() {
+        return sessionManager != null && sessionManager.isLoggedIn();
     }
 
     /**

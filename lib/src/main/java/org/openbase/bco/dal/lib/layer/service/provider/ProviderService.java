@@ -27,6 +27,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotSupportedException;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType;
 
 /**
@@ -53,12 +54,7 @@ public interface ProviderService extends Service {
     }
 
     @Override
-    public default Future<Void> applyAction(ActionDescription actionConfig) throws CouldNotPerformException, InterruptedException {
-        throw new NotSupportedException("actions", ProviderService.class);
-    }
-    
-    @Override
-    public default Future<ActionFuture> applyAction(ActionDescription actionConfig, boolean test) throws CouldNotPerformException, InterruptedException {
+    public default Future<ActionFuture> applyAction(ActionDescription actionConfig) throws CouldNotPerformException, InterruptedException {
         throw new NotSupportedException("actions", ProviderService.class);
     }
 }

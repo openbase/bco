@@ -125,10 +125,13 @@ public class ActionImpl implements Action {
 
                 try {
                     // Verify authority
-                    TicketAuthenticatorWrapper ticketAuthenticatorWrapper = unit.verifyAuthority(actionDescriptionBuilder.getActionAuthority());
+                    final ActionFuture.Builder actionFutureBuilder = ActionFuture.newBuilder();
 
-                    ActionFuture.Builder actionFutureBuilder = ActionFuture.newBuilder().setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
-                    // Resource Allocation
+                    TicketAuthenticatorWrapper ticketAuthenticatorWrapper = unit.verifyAuthority(actionDescriptionBuilder.getActionAuthority());
+                    if (ticketAuthenticatorWrapper != null) {
+                        actionFutureBuilder.setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
+                    }
+//                  Resource Allocation
 //                    unitAllocation = UnitAllocator.allocate(actionDescriptionBuilder, () -> {
 //                        try {
 //                            // Execute

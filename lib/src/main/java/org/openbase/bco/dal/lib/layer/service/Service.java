@@ -54,14 +54,9 @@ public interface Service {
 
     public static final Package SERVICE_STATE_PACKAGE = ContactStateType.class.getPackage();
     public static final String SERVICE_LABEL = Service.class.getSimpleName();
-
-    public default Future<Void> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
-        Future<ActionFuture> applyAction = applyAction(actionDescription, true);
-        return new VoidFuture(applyAction);
-    }
     
     @RPCMethod
-    public Future<ActionFuture> applyAction(final ActionDescription actionDescription, boolean test) throws CouldNotPerformException, InterruptedException;
+    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException;
 
     default public void addServiceStateObserver(ServiceType serviceType, Observer observer) {
     }

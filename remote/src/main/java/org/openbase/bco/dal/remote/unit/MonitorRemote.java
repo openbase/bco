@@ -30,6 +30,7 @@ import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.unit.dal.MonitorDataType.MonitorData;
 import org.openbase.bco.dal.lib.layer.unit.Monitor;
+import org.openbase.bco.dal.remote.VoidFuture;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
@@ -68,7 +69,7 @@ public class MonitorRemote extends AbstractUnitRemote<MonitorData> implements Mo
     public Future<Void> setPowerState(PowerState powerState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return this.applyAction(updateActionDescription(actionDescription, powerState).build());
+            return new VoidFuture(this.applyAction(updateActionDescription(actionDescription, powerState).build()));
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting powerState.", ex);
         }
@@ -87,7 +88,7 @@ public class MonitorRemote extends AbstractUnitRemote<MonitorData> implements Mo
     public Future<Void> setStandbyState(StandbyState standbyState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return this.applyAction(updateActionDescription(actionDescription, standbyState).build());
+            return new VoidFuture(this.applyAction(updateActionDescription(actionDescription, standbyState).build()));
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting powerState.", ex);
         }

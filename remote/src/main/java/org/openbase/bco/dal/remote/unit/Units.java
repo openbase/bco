@@ -193,8 +193,6 @@ public class Units {
 
     public static final SyncObject UNIT_POOL_LOCK = new SyncObject("UnitPoolLock");
     
-    // hier initialisieren
-    // zzgl. getter!!!
     private static SessionManager sessionManager = new SessionManager();
     
     static {
@@ -229,6 +227,11 @@ public class Units {
         }
     }
     
+    /**
+     * Get the SessionManager of Units which can be used to login.
+     * 
+     * @return the SessionManager 
+     */
     public static SessionManager getSessionManager() {
         return sessionManager;
     }
@@ -322,7 +325,7 @@ public class Units {
                 unitRemote.lock(unitRemoteRegistry);
             }
             // set sessionManager in unit remote
-            addSessionManagerToRemote(unitRemote);
+            unitRemote.setSessionManager(sessionManager);
             return unitRemote;
         } catch (CouldNotPerformException | NullPointerException ex) {
             throw new NotAvailableException("UnitRemote[" + unitId + "]", ex);
@@ -367,28 +370,12 @@ public class Units {
                 unitRemote.lock(unitRemoteRegistry);
             }
             // set sessionManager in unit remote
-            addSessionManagerToRemote(unitRemote);
+            unitRemote.setSessionManager(sessionManager);
             return unitRemote;
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("UnitRemote[" + unitConfig.getId() + "]", ex);
         }
     }
-    
-    /**
-     * A wrapper for setting the Session Manager. Will not be called from outside this class!
-     * @param unitRemote The unit remote the session manager should be added to
-     * @throws NotAvailableException If user is not logged in.
-     */
-    private static void addSessionManagerToRemote(final UnitRemote unitRemote) throws NotAvailableException {
-        // TODO: if user is not logged in, login with public rights
-        if (!sessionManager.isLoggedIn()) {
-            throw new NotAvailableException("User is not logged in. Must be logged in before trying to access server.");
-        }
-        // appends a sessionManager to unitRemote
-        unitRemote.setSessionManager(sessionManager);
-    }
-    
- 
     
     /**
      * Method waits for unit data if the waitForData flag is set.
