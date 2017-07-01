@@ -21,7 +21,6 @@ package org.openbase.bco.authentication.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -73,6 +72,11 @@ public class AuthenticationFuture implements Future<ActionFuture> {
     }
 
     private ActionFuture verifyResponse(ActionFuture actionFuture) throws ExecutionException {
+        // only verify if logged in
+        if (!this.sessionManager.isLoggedIn()) {
+            return actionFuture;
+        }
+
         try {
             TicketAuthenticatorWrapper wrapper = AuthenticationClientHandler.handleServiceServerResponse(
                     this.sessionManager.getSessionKey(),
