@@ -35,7 +35,7 @@ import org.openbase.jul.extension.rsb.iface.RSBRemoteServer;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.schedule.WatchDog;
-import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
+import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 
@@ -102,12 +102,12 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
     }
 
     @Override
-    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentials loginCredentials) throws CouldNotPerformException {
-        return RPCHelper.callRemoteServerMethod(loginCredentials, remoteServer, TicketAuthenticatorWrapper.class);
+    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException {
+        return RPCHelper.callRemoteServerMethod(loginCredentialsChange, remoteServer, TicketAuthenticatorWrapper.class);
     }
 
     @Override
-    public Future<Void> registerClient(LoginCredentials loginCredentials) throws CouldNotPerformException {
-        return RPCHelper.callRemoteServerMethod(loginCredentials, remoteServer, Void.class);
+    public Future<Void> registerClient(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException {
+        return RPCHelper.callRemoteServerMethod(loginCredentialsChange, remoteServer, Void.class);
     }
 }

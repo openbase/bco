@@ -33,7 +33,7 @@ import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.slf4j.LoggerFactory;
-import rst.domotic.authentication.LoginCredentialsType;
+import rst.domotic.authentication.LoginCredentialsChangeType;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType;
 
@@ -168,14 +168,14 @@ public class SessionManager {
             byte[] oldHash = EncryptionHelper.hash(oldCredentials);
             byte[] newHash = EncryptionHelper.hash(newCredentials);
 
-            LoginCredentialsType.LoginCredentials loginCredentials = LoginCredentialsType.LoginCredentials.newBuilder()
+            LoginCredentialsChangeType.LoginCredentialsChange loginCredentialsChange = LoginCredentialsChangeType.LoginCredentialsChange.newBuilder()
                     .setId(clientId)
                     .setOldCredentials(EncryptionHelper.encrypt(oldHash, sessionKey))
                     .setNewCredentials(EncryptionHelper.encrypt(newHash, sessionKey))
                     .setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper)
                     .build();
 
-            TicketAuthenticatorWrapper newTicketAuthenticatorWrapper = CachedAuthenticationRemote.getRemote().changeCredentials(loginCredentials).get();
+            TicketAuthenticatorWrapper newTicketAuthenticatorWrapper = CachedAuthenticationRemote.getRemote().changeCredentials(loginCredentialsChange).get();
             AuthenticationClientHandler.handleServiceServerResponse(sessionKey, ticketAuthenticatorWrapper, newTicketAuthenticatorWrapper);
         } catch (IOException ex) {
             this.logout();
