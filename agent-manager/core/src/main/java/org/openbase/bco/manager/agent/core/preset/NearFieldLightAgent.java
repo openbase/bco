@@ -37,6 +37,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
@@ -52,7 +53,7 @@ import rst.domotic.unit.location.LocationDataType.LocationData;
 public class NearFieldLightAgent extends AbstractAgentController {
 
     private LocationRemote locationRemote;
-    private Future<Void> setBrightnessStateFuture;
+    private Future<ActionFuture> setBrightnessStateFuture;
     private boolean isDimmed = false;
     private List<LocationRemote> neighborRemotes;
     private final Observer<ActivationState> triggerHolderObserver;

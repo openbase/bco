@@ -32,6 +32,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.BlindStateType;
 import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.location.LocationDataType;
@@ -49,7 +50,7 @@ public class IlluminationRollerShutterAgent extends AbstractAgentController {
     private static double MAXIMUM_WANTED_ILLUMINATION = 40000;
 
     private LocationRemote locationRemote;
-    private Future<Void> setBlindStateFuture;
+    private Future<ActionFuture> setBlindStateFuture;
     private final Observer<LocationDataType.LocationData> locationObserver;
     private boolean regulatedDown = false;
     private boolean regulatedUp = false;

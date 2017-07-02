@@ -28,6 +28,7 @@ import org.openbase.bco.manager.device.binding.openhab.execution.OpenHABCommandF
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.BlindStateType.BlindState;
 
 /**
@@ -42,7 +43,7 @@ public class BlindStateServiceImpl<ST extends BlindStateOperationService & Unit<
     }
 
     @Override
-    public Future<Void> setBlindState(BlindState state) throws CouldNotPerformException {
+    public Future<ActionFuture> setBlindState(final BlindState state) throws CouldNotPerformException {
         switch (state.getMovementState()) {
             case UP:
                 return executeCommand(OpenHABCommandFactory.newUpDownCommand(state));

@@ -34,6 +34,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.PresenceStateType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -93,8 +94,8 @@ public class RandomLightPatternAgent extends AbstractAgentController {
 
     private class PersonSimulator extends Thread {
 
-        private Future<Void> setPowerStateOn;
-        private Future<Void> setPowerStateOff;
+        private Future<ActionFuture> setPowerStateOn;
+        private Future<ActionFuture> setPowerStateOff;
 
         @Override
         public void run() {

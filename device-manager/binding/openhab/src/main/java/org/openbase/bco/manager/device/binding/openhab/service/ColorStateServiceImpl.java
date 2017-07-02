@@ -29,6 +29,7 @@ import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.ColorStateType.ColorState;
 
 /**
@@ -48,7 +49,7 @@ public class ColorStateServiceImpl<ST extends ColorStateOperationService & Unit<
     }
 
     @Override
-    public Future<Void> setColorState(ColorState colorState) throws CouldNotPerformException {
+    public Future<ActionFuture> setColorState(final ColorState colorState) throws CouldNotPerformException {
         return executeCommand(OpenHABCommandFactory.newHSBCommand(colorState.getColor().getHsbColor()));
     }
 }

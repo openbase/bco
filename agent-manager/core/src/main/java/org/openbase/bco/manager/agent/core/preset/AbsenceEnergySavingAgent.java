@@ -35,6 +35,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.ActivationStateType;
 import rst.domotic.state.ActivationStateType.ActivationState;
@@ -52,8 +53,8 @@ import rst.domotic.unit.location.LocationDataType;
 public class AbsenceEnergySavingAgent extends AbstractAgentController {
 
     private LocationRemote locationRemote;
-    private Future<Void> setLightPowerStateFuture;
-    private Future<Void> setMultimediaPowerStateFuture;
+    private Future<ActionFuture> setLightPowerStateFuture;
+    private Future<ActionFuture> setMultimediaPowerStateFuture;
     private final PresenceState.State triggerState = PresenceState.State.ABSENT;
     private final Observer<ActivationState> triggerHolderObserver;
 

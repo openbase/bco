@@ -28,6 +28,7 @@ import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.PowerStateType.PowerState;
 
 /**
@@ -47,7 +48,7 @@ public class PowerStateServiceImpl<ST extends PowerStateOperationService & Unit<
     }
 
     @Override
-    public Future<Void> setPowerState(PowerState state) throws CouldNotPerformException {
+    public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
         return executeCommand(OpenHABCommandFactory.newOnOffCommand(state.getValue()));
     }
 }

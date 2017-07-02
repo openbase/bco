@@ -37,6 +37,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
@@ -53,7 +54,7 @@ import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
 public class HeaterEnergySavingAgent extends AbstractAgentController {
 
     private LocationRemote locationRemote;
-    private Future<Void> setTemperatureFuture;
+    private Future<ActionFuture> setTemperatureFuture;
     private Map<UnitConfigType.UnitConfig, TemperatureState> previousTemperatureState;
     private final Observer<ActivationState> triggerHolderObserver;
     private final WindowState.State triggerState = WindowState.State.OPEN;

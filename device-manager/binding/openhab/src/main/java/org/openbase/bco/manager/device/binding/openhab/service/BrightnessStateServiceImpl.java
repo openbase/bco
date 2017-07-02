@@ -29,6 +29,7 @@ import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 
 /**
@@ -48,7 +49,7 @@ public class BrightnessStateServiceImpl<UNIT extends BrightnessStateOperationSer
     }
 
     @Override
-    public Future<Void> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
+    public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
         return executeCommand(OpenHABCommandFactory.newPercentCommand(brightnessState.getBrightness()));
     }
 }
