@@ -37,6 +37,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType;
@@ -56,8 +57,8 @@ public class IlluminationLightSavingAgent extends AbstractAgentController {
     private static double MAXIMUM_WANTED_ILLUMINATION = 4000;
 
     private LocationRemote locationRemote;
-    private Future<Void> setPowerStateFutureAmbient;
-    private Future<Void> setPowerStateFuture;
+    private Future<ActionFuture> setPowerStateFutureAmbient;
+    private Future<ActionFuture> setPowerStateFuture;
     private final Observer<ActivationState> triggerHolderObserver;
 
     public IlluminationLightSavingAgent() throws InstantiationException {

@@ -35,6 +35,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.PowerStateType.PowerState;
@@ -50,7 +51,7 @@ import rst.domotic.unit.location.LocationDataType.LocationData;
 public class PresenceLightAgent extends AbstractAgentController {
 
     private LocationRemote locationRemote;
-    private Future<Void> setPowerStateFuture;
+    private Future<ActionFuture> setPowerStateFuture;
     private final PresenceState.State triggerState = PresenceState.State.PRESENT;
     private final Observer<ActivationState> triggerHolderObserver;
 

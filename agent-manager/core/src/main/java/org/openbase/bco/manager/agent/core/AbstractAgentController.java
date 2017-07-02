@@ -26,7 +26,6 @@ import org.openbase.bco.manager.agent.core.TriggerDAL.AgentTriggerPool;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.ActivationStateType.ActivationState;

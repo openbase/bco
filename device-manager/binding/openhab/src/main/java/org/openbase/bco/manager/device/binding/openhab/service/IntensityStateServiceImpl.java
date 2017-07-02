@@ -29,6 +29,7 @@ import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.IntensityStateType.IntensityState;
 
 /**
@@ -44,7 +45,7 @@ public class IntensityStateServiceImpl<UNIT extends IntensityStateOperationServi
     }
 
     @Override
-    public Future<Void> setIntensityState(IntensityState intensityState) throws CouldNotPerformException {
+    public Future<ActionFuture> setIntensityState(final IntensityState intensityState) throws CouldNotPerformException {
         return executeCommand(OpenHABCommandFactory.newPercentCommand(intensityState.getIntensity()));
     }
 
