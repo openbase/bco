@@ -37,6 +37,7 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.slf4j.LoggerFactory;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType.ColorState;
@@ -68,7 +69,7 @@ public class ServiceFactoryMock implements ServiceFactory {
             }
 
             @Override
-            public Future<Void> setBrightnessState(BrightnessState state) throws CouldNotPerformException {
+            public Future<ActionFuture> setBrightnessState(BrightnessState state) throws CouldNotPerformException {
                 return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
             }
         };
@@ -84,7 +85,7 @@ public class ServiceFactoryMock implements ServiceFactory {
             }
 
             @Override
-            public Future<Void> setColorState(ColorState state) throws CouldNotPerformException {
+            public Future<ActionFuture> setColorState(ColorState state) throws CouldNotPerformException {
                 return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
             }
         };
@@ -100,7 +101,7 @@ public class ServiceFactoryMock implements ServiceFactory {
             }
 
             @Override
-            public Future<Void> setPowerState(PowerState state) throws CouldNotPerformException {
+            public Future<ActionFuture> setPowerState(PowerState state) throws CouldNotPerformException {
                 return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
             }
         };
@@ -116,7 +117,7 @@ public class ServiceFactoryMock implements ServiceFactory {
             }
 
             @Override
-            public Future<Void> setBlindState(BlindState state) throws CouldNotPerformException {
+            public Future<ActionFuture> setBlindState(BlindState state) throws CouldNotPerformException {
                 return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
             }
         };
@@ -132,7 +133,7 @@ public class ServiceFactoryMock implements ServiceFactory {
             }
 
             @Override
-            public Future<Void> setStandbyState(StandbyStateType.StandbyState state) throws CouldNotPerformException {
+            public Future<ActionFuture> setStandbyState(StandbyStateType.StandbyState state) throws CouldNotPerformException {
                 return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
             }
         };
@@ -148,13 +149,13 @@ public class ServiceFactoryMock implements ServiceFactory {
             }
 
             @Override
-            public Future<Void> setTargetTemperatureState(TemperatureState state) throws CouldNotPerformException {
+            public Future<ActionFuture> setTargetTemperatureState(TemperatureState state) throws CouldNotPerformException {
                 return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
             }
         };
     }
 
-    private static Future<Void> update(final Object argument, final Unit unit) throws CouldNotPerformException {
+    private static Future<ActionFuture> update(final Object argument, final Unit unit) throws CouldNotPerformException {
         try {
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
             if (stackTrace == null) {

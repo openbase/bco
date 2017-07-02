@@ -25,6 +25,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.provider.PowerStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.annotations.RPCMethod;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.PowerStateType.PowerState;
 
 /**
@@ -34,9 +35,9 @@ import rst.domotic.state.PowerStateType.PowerState;
 public interface PowerStateOperationService extends OperationService, PowerStateProviderService {
 
     @RPCMethod
-    public Future<Void> setPowerState(final PowerState powerState) throws CouldNotPerformException;
+    public Future<ActionFuture> setPowerState(final PowerState powerState) throws CouldNotPerformException;
 
-    public default Future<Void> setPowerState(final PowerState.State powerState) throws CouldNotPerformException {
+    public default Future<ActionFuture> setPowerState(final PowerState.State powerState) throws CouldNotPerformException {
         return setPowerState(PowerState.newBuilder().setValue(powerState).build());
     }
 }

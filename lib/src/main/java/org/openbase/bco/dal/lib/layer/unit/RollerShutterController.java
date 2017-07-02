@@ -35,9 +35,10 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.unit.dal.RollerShutterDataType.RollerShutterData;
-import rst.domotic.unit.UnitConfigType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
@@ -57,7 +58,7 @@ public class RollerShutterController extends AbstractDALUnitController<RollerShu
     }
 
     @Override
-    public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
         try {
             blindStateService = getServiceFactory().newShutterService(this);
@@ -76,7 +77,7 @@ public class RollerShutterController extends AbstractDALUnitController<RollerShu
     }
 
     @Override
-    public Future<Void> setBlindState(final BlindState blindState) throws CouldNotPerformException {
+    public Future<ActionFuture> setBlindState(final BlindState blindState) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to BlindState [" + blindState + "]");
         // stop before moving in any direction.
         switch (blindState.getMovementState()) {

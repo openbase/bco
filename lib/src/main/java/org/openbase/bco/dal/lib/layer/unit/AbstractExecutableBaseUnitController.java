@@ -39,7 +39,8 @@ import org.openbase.jul.iface.Enableable;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
-import rst.domotic.state.ActivationStateType;
+import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
@@ -54,7 +55,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
     public static final String FIELD_AUTOSTART = "autostart";
 
     private final SyncObject enablingLock = new SyncObject(AbstractExecutableBaseUnitController.class);
-    private Future<Void> executionFuture;
+    private Future<ActionFuture> executionFuture;
     private final SyncObject executionLock = new SyncObject("ExecutionLock");
     private boolean enabled;
 
@@ -67,31 +68,31 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
         super.init(config);
     }
 
-    public ActivationStateType.ActivationState getActivationState() throws NotAvailableException {
-        return (ActivationStateType.ActivationState) getDataField(FIELD_ACTIVATION_STATE);
+    public ActivationState getActivationState() throws NotAvailableException {
+        return (ActivationState) getDataField(FIELD_ACTIVATION_STATE);
     }
 
-    public Future<Void> setActivationState(final ActivationStateType.ActivationState activation) throws CouldNotPerformException {
-        if (activation == null || activation.getValue().equals(ActivationStateType.ActivationState.State.UNKNOWN)) {
+    public Future<ActionFuture> setActivationState(final ActivationState activation) throws CouldNotPerformException {
+        if (activation == null || activation.getValue().equals(ActivationState.State.UNKNOWN)) {
             throw new InvalidStateException("Unknown is not a valid state!");
         }
 
-        Future<Void> result = null;
+        Future<ActionFuture> result = null;
 
         try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
             try {
                 synchronized (executionLock) {
-                    if (activation.getValue() == ActivationStateType.ActivationState.State.ACTIVE) {
+                    if (activation.getValue() == ActivationState.State.ACTIVE) {
 
                         // filter dublicated execution
                         if (isExecuting()) {
                             return executionFuture;
                         }
 
-                        executionFuture = GlobalCachedExecutorService.submit(new Callable<Void>() {
+                        executionFuture = GlobalCachedExecutorService.submit(new Callable<ActionFuture>() {
 
                             @Override
-                            public Void call() throws Exception {
+                            public ActionFuture call() throws Exception {
                                 try {
                                     execute();
                                 } catch (CouldNotPerformException ex) {
@@ -153,9 +154,9 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
                 enabled = true;
                 activate();
                 if (detectAutostart()) {
-                    setActivationState(ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.ACTIVE).build()).get();
+                    setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()).get();
                 } else {
-                    setActivationState(ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.DEACTIVE).build()).get();
+                    setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()).get();
                 }
             }
         } catch (ExecutionException ex) {
@@ -169,7 +170,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
             synchronized (enablingLock) {
                 cancelExecution();
                 enabled = false;
-                setActivationState(ActivationStateType.ActivationState.newBuilder().setValue(ActivationStateType.ActivationState.State.DEACTIVE).build()).get();
+                setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()).get();
                 deactivate();
             }
         } catch (ExecutionException ex) {

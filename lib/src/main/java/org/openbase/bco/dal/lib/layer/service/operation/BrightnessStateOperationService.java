@@ -1,4 +1,4 @@
-package org.openbase.bco.dal.lib.layer.service.operation;
+    package org.openbase.bco.dal.lib.layer.service.operation;
 
 /*
  * #%L
@@ -25,6 +25,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.provider.BrightnessStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.annotations.RPCMethod;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 
 /**
@@ -34,6 +35,6 @@ import rst.domotic.state.BrightnessStateType.BrightnessState;
 public interface BrightnessStateOperationService extends OperationService, BrightnessStateProviderService {
 
     @RPCMethod
-    public Future<Void> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException;
+    public Future<ActionFuture> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException;
 
 }

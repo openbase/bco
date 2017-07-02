@@ -30,7 +30,9 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.iface.Processable;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -46,12 +48,20 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
     }
 
     @Override
-    public Future<Void> setStandbyState(final StandbyState state) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf(super.getServices(), (StandbyStateOperationService input) -> input.setStandbyState(state));
+    public Future<ActionFuture> setStandbyState(final StandbyState state) throws CouldNotPerformException {
+         return GlobalCachedExecutorService.allOf(super.getServices(), new Processable<StandbyStateOperationService, Future<ActionFuture>>() {
+             @Override
+             public Future<ActionFuture> process(StandbyStateOperationService input) throws CouldNotPerformException, InterruptedException {
+                 return input.setStandbyState(state);
+             }
+         });
+        
+        
+//        return GlobalCachedExecutorService.allOf(super.getServices(), (StandbyStateOperationService input) -> input.setStandbyState(state));
     }
 
     @Override
-    public Future<Void> setStandbyState(final StandbyState state, final UnitType unitType) throws CouldNotPerformException {
+    public Future<ActionFuture> setStandbyState(final StandbyState state, final UnitType unitType) throws CouldNotPerformException {
         return GlobalCachedExecutorService.allOf(super.getServices(unitType), (StandbyStateOperationService input) -> input.setStandbyState(state));
     }
 

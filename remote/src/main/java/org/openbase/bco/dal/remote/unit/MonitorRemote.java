@@ -35,6 +35,7 @@ import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 
 /**
  *
@@ -66,7 +67,7 @@ public class MonitorRemote extends AbstractUnitRemote<MonitorData> implements Mo
     }
 
     @Override
-    public Future<Void> setPowerState(PowerState powerState) throws CouldNotPerformException {
+    public Future<ActionFuture> setPowerState(final PowerState powerState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
             return new VoidFuture(this.applyAction(updateActionDescription(actionDescription, powerState).build()));
@@ -85,7 +86,7 @@ public class MonitorRemote extends AbstractUnitRemote<MonitorData> implements Mo
     }
 
     @Override
-    public Future<Void> setStandbyState(StandbyState standbyState) throws CouldNotPerformException {
+    public Future<ActionFuture> setStandbyState(StandbyState standbyState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
             return new VoidFuture(this.applyAction(updateActionDescription(actionDescription, standbyState).build()));

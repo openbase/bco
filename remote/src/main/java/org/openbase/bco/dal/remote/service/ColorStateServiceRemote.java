@@ -31,9 +31,9 @@ import org.openbase.jul.extension.rst.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.TypeNotSupportedException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -68,12 +68,12 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
     }
 
     @Override
-    public Future<Void> setColorState(ColorState colorState) throws CouldNotPerformException {
+    public Future<ActionFuture> setColorState(final ColorState colorState) throws CouldNotPerformException {
         return GlobalCachedExecutorService.allOf(getServices(), (ColorStateOperationService input) -> input.setColorState(colorState));
     }
 
     @Override
-    public Future<Void> setColorState(final ColorState colorState, final UnitType unitType) throws CouldNotPerformException {
+    public Future<ActionFuture> setColorState(final ColorState colorState, final UnitType unitType) throws CouldNotPerformException {
         return GlobalCachedExecutorService.allOf(getServices(unitType), (ColorStateOperationService input) -> input.setColorState(colorState));
     }
 

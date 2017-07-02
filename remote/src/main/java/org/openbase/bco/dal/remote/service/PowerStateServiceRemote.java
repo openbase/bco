@@ -35,6 +35,7 @@ import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -108,12 +109,12 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
     }
 
     @Override
-    public Future<Void> setPowerState(PowerState powerState) throws CouldNotPerformException {
+    public Future<ActionFuture> setPowerState(final PowerState powerState) throws CouldNotPerformException {
         return GlobalCachedExecutorService.allOf(super.getServices(), (PowerStateOperationService input) -> input.setPowerState(powerState));
     }
 
     @Override
-    public Future<Void> setPowerState(final PowerState powerState, final UnitType unitType) throws CouldNotPerformException {
+    public Future<ActionFuture> setPowerState(final PowerState powerState, final UnitType unitType) throws CouldNotPerformException {
         return GlobalCachedExecutorService.allOf(super.getServices(unitType), (PowerStateOperationService input) -> input.setPowerState(powerState));
     }
 
