@@ -33,7 +33,7 @@
   artifact: ontology.lib
   group: org.openbase.bco
   
-- label: BCO Pointing Smart Control
+- label: BCO PSC
   id: bco.pointing-smart-control
   artifact: psc
   group: org.openbase.bco
@@ -58,9 +58,9 @@
   artifact: bcomfy
   group: org.openbase.bco
   
-- label: BCO Visual Stage
-  id: bco.visual-stage
-  artifact: visual-stage
+- label: BCO Stage
+  id: bco.stage
+  artifact: stage
   group: org.openbase.bco
 
 - label: openHAB RSB Binding
