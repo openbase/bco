@@ -25,6 +25,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.provider.IntensityStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.annotations.RPCMethod;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.IntensityStateType.IntensityState;
 
 /**
@@ -35,5 +36,5 @@ import rst.domotic.state.IntensityStateType.IntensityState;
 public interface IntensityStateOperationService extends OperationService, IntensityStateProviderService {
 
     @RPCMethod
-    public Future<Void> setIntensityState(final IntensityState intensityState) throws CouldNotPerformException;
+    public Future<ActionFuture> setIntensityState(final IntensityState intensityState) throws CouldNotPerformException;
 }

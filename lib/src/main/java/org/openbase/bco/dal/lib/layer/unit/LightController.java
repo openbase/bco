@@ -21,7 +21,6 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -33,6 +32,7 @@ import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.schedule.FutureProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.dal.LightDataType.LightData;
 import rst.domotic.unit.UnitConfigType;
@@ -74,12 +74,12 @@ public class LightController extends AbstractDALUnitController<LightData, LightD
     }
 
     @Override
-    public Future<Void> setPowerState(final PowerState state) throws CouldNotPerformException {
+    public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to PowerState [" + state + "]");
         try {
             verifyOperationServiceStateValue(state.getValue());
         } catch(VerificationFailedException ex) {
-            return FutureProcessor.canceledFuture(Void.class, ex);
+            return FutureProcessor.canceledFuture(ActionFuture.class, ex);
         }
         return powerService.setPowerState(state);
     }

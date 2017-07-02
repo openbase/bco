@@ -53,6 +53,7 @@ public class BrightnessSensorRemote extends AbstractUnitRemote<BrightnessSensorD
     }
 
     @Override
+    @Deprecated
     public BrightnessState getBrightnessState() throws NotAvailableException {
         try {
             return getData().getBrightnessState();

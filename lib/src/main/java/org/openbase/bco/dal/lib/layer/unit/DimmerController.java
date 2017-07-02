@@ -11,6 +11,7 @@ import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.schedule.FutureProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.dal.DimmerDataType.DimmerData;
@@ -68,11 +69,11 @@ public class DimmerController extends AbstractDALUnitController<DimmerData, Dimm
     }
 
     @Override
-    public Future<Void> setPowerState(PowerState state) throws CouldNotPerformException {
+    public Future<ActionFuture> setPowerState(PowerState state) throws CouldNotPerformException {
         try {
             verifyOperationServiceStateValue(state.getValue());
         } catch (VerificationFailedException ex) {
-            return FutureProcessor.canceledFuture(Void.class, ex);
+            return FutureProcessor.canceledFuture(ActionFuture.class, ex);
         }
         return powerStateService.setPowerState(state);
     }
@@ -97,7 +98,7 @@ public class DimmerController extends AbstractDALUnitController<DimmerData, Dimm
     }
 
     @Override
-    public Future<Void> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
+    public Future<ActionFuture> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
         return brightnessStateService.setBrightnessState(brightnessState);
     }
 

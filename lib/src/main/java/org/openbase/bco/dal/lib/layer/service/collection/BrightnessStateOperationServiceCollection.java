@@ -25,6 +25,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -34,7 +35,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public interface BrightnessStateOperationServiceCollection extends BrightnessStateOperationService {
 
-    public Future<Void> setBrightnessState(final BrightnessState brightnessState, final UnitType unitType) throws CouldNotPerformException;
+    public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState, final UnitType unitType) throws CouldNotPerformException;
 
     /**
      * Returns the average brightness value for a collection of brightnessServices.

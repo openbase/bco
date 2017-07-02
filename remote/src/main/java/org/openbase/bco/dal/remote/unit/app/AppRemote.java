@@ -23,7 +23,6 @@ package org.openbase.bco.dal.remote.unit.app;
  */
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.unit.app.App;
-import org.openbase.bco.dal.remote.VoidFuture;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -33,6 +32,7 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.unit.app.AppDataType.AppData;
 
@@ -52,10 +52,10 @@ public class AppRemote extends AbstractUnitRemote<AppData> implements App {
     }
 
     @Override
-    public Future<Void> setActivationState(ActivationState activationState) throws CouldNotPerformException {
+    public Future<ActionFuture> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return new VoidFuture(this.applyAction(updateActionDescription(actionDescription, activationState).build()));
+            return applyAction(updateActionDescription(actionDescription, activationState).build());
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting activationState.", ex);
         }
