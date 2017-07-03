@@ -31,7 +31,6 @@ import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.bco.manager.agent.core.TriggerDAL.AgentTriggerPool;
 import org.openbase.bco.manager.agent.core.TriggerJUL.GenericTrigger;
-import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -44,7 +43,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.state.WindowStateType.WindowState;
-import rst.domotic.unit.UnitConfigType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.connection.ConnectionConfigType;
 import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
@@ -77,7 +76,7 @@ public class HeaterEnergySavingAgent extends AbstractAgentController {
     }
 
     @Override
-    public void init(final UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         try {
             super.init(config);
 
@@ -107,7 +106,6 @@ public class HeaterEnergySavingAgent extends AbstractAgentController {
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
         logger.info("Activating [" + getConfig().getLabel() + "]");
-        previousTemperatureState = new HashMap<>();
         agentTriggerHolder.activate();
     }
 

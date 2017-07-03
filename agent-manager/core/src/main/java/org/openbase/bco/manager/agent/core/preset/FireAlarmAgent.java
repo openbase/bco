@@ -35,6 +35,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.AlarmStateType.AlarmState;
@@ -51,8 +52,8 @@ import rst.domotic.unit.location.LocationDataType.LocationData;
 public class FireAlarmAgent extends AbstractAgentController {
 
     private LocationRemote locationRemote;
-    private Future<Void> setLightFuture;
-    private Future<Void> setBlindFuture;
+    private Future<ActionFuture> setLightFuture;
+    private Future<ActionFuture> setBlindFuture;
     private final AlarmState.State triggerState = AlarmState.State.ALARM;
     private final Observer<ActivationState> triggerHolderObserver;
 
