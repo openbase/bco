@@ -21,7 +21,6 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
@@ -38,10 +37,9 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.schedule.FutureProcessor;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionDescriptionType;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
 import rst.domotic.service.ServiceTemplateType;
@@ -171,7 +169,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
     }
 
     @Override
-    public Future<Void> setNeutralWhite() throws CouldNotPerformException {
+    public Future<ActionFuture> setNeutralWhite() throws CouldNotPerformException {
         return setColor(neutralWhite);
     }
 
@@ -186,12 +184,12 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
     }
 
     @Override
-    public Future<Void> setPowerState(final PowerState state) throws CouldNotPerformException {
+    public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
         logger.debug("Set " + getType().name() + "[" + getLabel() + "] to PowerState [" + state + "]");
         try {
             verifyOperationServiceStateValue(state.getValue());
         } catch (VerificationFailedException ex) {
-            return FutureProcessor.canceledFuture(Void.class, ex);
+            return FutureProcessor.canceledFuture(ActionFuture.class, ex);
         }
         return powerService.setPowerState(state);
     }
@@ -220,7 +218,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
     }
 
     @Override
-    public Future<Void> setColorState(final ColorState colorState) throws CouldNotPerformException {
+    public Future<ActionFuture> setColorState(final ColorState colorState) throws CouldNotPerformException {
         return colorService.setColorState(colorState);
     }
 
@@ -254,7 +252,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
     }
 
     @Override
-    public Future<Void> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
+    public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
         logger.debug("Set " + getType().name() + "[" + getLabel() + "] to BrightnessState[" + brightnessState + "]");
         return brightnessService.setBrightnessState(brightnessState);
     }

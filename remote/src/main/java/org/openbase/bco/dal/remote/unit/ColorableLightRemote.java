@@ -23,7 +23,6 @@ package org.openbase.bco.dal.remote.unit;
  */
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.unit.ColorableLight;
-import org.openbase.bco.dal.remote.VoidFuture;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -33,6 +32,8 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionFutureType;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType;
 import rst.domotic.state.ColorStateType.ColorState;
@@ -69,25 +70,25 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
     }
 
     @Override
-    public Future<Void> setColorState(final ColorState colorState) throws CouldNotPerformException {
+    public Future<ActionFutureType.ActionFuture> setColorState(final ColorState colorState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return new VoidFuture(this.applyAction(updateActionDescription(actionDescription, colorState).build()));
+            return applyAction(updateActionDescription(actionDescription, colorState).build());
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting colorState.", ex);
         }
     }
 
     @Override
-    public Future<Void> setNeutralWhite() throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(this, Void.class);
+    public Future<ActionFuture> setNeutralWhite() throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(this, ActionFuture.class);
     }
 
     @Override
-    public Future<Void> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
+    public Future<ActionFuture> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return new VoidFuture(this.applyAction(updateActionDescription(actionDescription, brightnessState).build()));
+            return applyAction(updateActionDescription(actionDescription, brightnessState).build());
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting brightnessState.", ex);
         }
@@ -103,10 +104,10 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
     }
 
     @Override
-    public Future<Void> setPowerState(PowerState powerState) throws CouldNotPerformException {
+    public Future<ActionFuture> setPowerState(PowerState powerState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return new VoidFuture(this.applyAction(updateActionDescription(actionDescription, powerState).build()));
+            return applyAction(updateActionDescription(actionDescription, powerState).build());
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting powerState.", ex);
         }

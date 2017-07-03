@@ -31,6 +31,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -62,7 +63,7 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
 
     @Override
     public BlindState getBlindState() throws NotAvailableException {
-        return getServiceState();
+        return getData();
     }
 
     // TODO: das filtern nach dem unit typen fehlt noch...
@@ -107,12 +108,12 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
     }
 
     @Override
-    public Future<Void> setBlindState(final BlindState state) throws CouldNotPerformException {
+    public Future<ActionFuture> setBlindState(final BlindState state) throws CouldNotPerformException {
         return GlobalCachedExecutorService.allOf(super.getServices(), (BlindStateOperationService input) -> input.setBlindState(state));
     }
 
     @Override
-    public Future<Void> setBlindState(final BlindState state, final UnitType unitType) throws CouldNotPerformException {
+    public Future<ActionFuture> setBlindState(final BlindState state, final UnitType unitType) throws CouldNotPerformException {
         return GlobalCachedExecutorService.allOf(super.getServices(unitType), (BlindStateOperationService input) -> input.setBlindState(state));
     }
 }

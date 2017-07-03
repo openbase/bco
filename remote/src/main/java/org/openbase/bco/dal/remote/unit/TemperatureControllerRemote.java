@@ -23,7 +23,6 @@ package org.openbase.bco.dal.remote.unit;
  */
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.unit.TemperatureController;
-import org.openbase.bco.dal.remote.VoidFuture;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
@@ -32,6 +31,7 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.dal.TemperatureControllerDataType.TemperatureControllerData;
@@ -65,10 +65,10 @@ public class TemperatureControllerRemote extends AbstractUnitRemote<TemperatureC
     }
 
     @Override
-    public Future<Void> setTargetTemperatureState(TemperatureState temperatureState) throws CouldNotPerformException {
+    public Future<ActionFuture> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return new VoidFuture(this.applyAction(updateActionDescription(actionDescription, temperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE).build()));
+            return applyAction(updateActionDescription(actionDescription, temperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE).build());
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting temperatureState.", ex);
         }

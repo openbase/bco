@@ -25,6 +25,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -34,7 +35,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public interface BlindStateOperationServiceCollection extends BlindStateOperationService {
 
-    public Future<Void> setBlindState(final BlindState blindState, final UnitType unitType) throws CouldNotPerformException;
+    public Future<ActionFuture> setBlindState(final BlindState blindState, final UnitType unitType) throws CouldNotPerformException;
 
     /**
      * Returns up if all shutter services are up and else the from up differing

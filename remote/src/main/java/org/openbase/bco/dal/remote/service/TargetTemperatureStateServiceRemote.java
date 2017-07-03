@@ -31,6 +31,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -50,12 +51,12 @@ public class TargetTemperatureStateServiceRemote extends AbstractServiceRemote<T
     }
 
     @Override
-    public Future<Void> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException {
+    public Future<ActionFuture> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException {
         return GlobalCachedExecutorService.allOf(getServices(), (TargetTemperatureStateOperationService input) -> input.setTargetTemperatureState(temperatureState));
     }
 
     @Override
-    public Future<Void> setTargetTemperatureState(final TemperatureState temperatureState, final UnitType unitType) throws CouldNotPerformException {
+    public Future<ActionFuture> setTargetTemperatureState(final TemperatureState temperatureState, final UnitType unitType) throws CouldNotPerformException {
         return GlobalCachedExecutorService.allOf(getServices(unitType), (TargetTemperatureStateOperationService input) -> input.setTargetTemperatureState(temperatureState));
     }
 
@@ -73,7 +74,7 @@ public class TargetTemperatureStateServiceRemote extends AbstractServiceRemote<T
 
     @Override
     public TemperatureState getTargetTemperatureState() throws NotAvailableException {
-        return getServiceState();
+        return getData();
     }
 
     @Override

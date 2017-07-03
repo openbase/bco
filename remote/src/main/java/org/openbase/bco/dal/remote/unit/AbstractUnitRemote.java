@@ -92,6 +92,7 @@ import rst.rsb.ScopeType;
 public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends AbstractConfigurableRemote<M, UnitConfig> implements UnitRemote<M> {
 
     static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionFuture.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(Snapshot.getDefaultInstance()));
     }
@@ -99,7 +100,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AbstractUnitRemote.class);
 
     private UnitTemplate template;
-    private UnitRegistry unitRegistry;
+
     private final Map<ServiceType, MessageObservable> serviceStateObservableMap;
     private SessionManager sessionManager;
 

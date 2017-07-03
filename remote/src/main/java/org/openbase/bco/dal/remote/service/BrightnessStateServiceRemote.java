@@ -31,6 +31,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -51,12 +52,12 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
     }
 
     @Override
-    public Future<Void> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
+    public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
         return GlobalCachedExecutorService.allOf(getServices(), (BrightnessStateOperationService input) -> input.setBrightnessState(brightnessState));
     }
 
     @Override
-    public Future<Void> setBrightnessState(final BrightnessState brightnessState, final UnitType unitType) throws CouldNotPerformException {
+    public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState, final UnitType unitType) throws CouldNotPerformException {
         return GlobalCachedExecutorService.allOf(getServices(unitType), (BrightnessStateOperationService input) -> input.setBrightnessState(brightnessState));
     }
 
