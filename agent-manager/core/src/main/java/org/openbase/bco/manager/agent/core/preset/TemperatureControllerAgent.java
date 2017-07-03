@@ -37,6 +37,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.PresenceStateType.PresenceState;
@@ -52,7 +53,7 @@ import rst.domotic.unit.location.LocationDataType;
 public class TemperatureControllerAgent extends AbstractAgentController {
 
     private LocationRemote locationRemote;
-    private Future<Void> regulateTemperatureFuture;
+    private Future<ActionFuture> regulateTemperatureFuture;
     private final Map<TemperatureControllerRemote, TemperatureState> previousTemperatureState;
     private final PresenceState.State triggerState = PresenceState.State.ABSENT;
     private final Observer<ActivationState> triggerHolderObserver;
