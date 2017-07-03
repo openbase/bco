@@ -27,6 +27,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.NotInitializedRSBRemoteServer;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
@@ -35,6 +36,8 @@ import org.openbase.jul.extension.rsb.iface.RSBRemoteServer;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.schedule.WatchDog;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
@@ -45,6 +48,12 @@ import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWr
  */
 public class AuthenticationRemote implements AuthenticationService, Manageable<Void>, VoidInitializable {
 
+    static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketSessionKeyWrapper.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketAuthenticatorWrapper.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LoginCredentials.getDefaultInstance()));
+    }
+    
     private RSBRemoteServer remoteServer;
     private WatchDog serverWatchDog;
 
@@ -109,5 +118,10 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
     @Override
     public Future<Void> registerClient(LoginCredentials loginCredentials) throws CouldNotPerformException {
         return RPCHelper.callRemoteServerMethod(loginCredentials, remoteServer, Void.class);
+    }
+
+    @Override
+    public Future<Boolean> isInRegistrationMode() throws CouldNotPerformException {
+        return RPCHelper.callRemoteServerMethod(remoteServer, Boolean.class);
     }
 }

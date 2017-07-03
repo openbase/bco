@@ -8,7 +8,6 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.iface.annotations.RPCMethod;
-import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
@@ -134,4 +133,12 @@ public interface AuthenticationService {
      */
     @RPCMethod
     public Future<Void> registerClient(LoginCredentials loginCredentials) throws CouldNotPerformException;
+    
+    /**
+     * 
+     * @return
+     * @throws CouldNotPerformException 
+     */
+    @RPCMethod
+    public Future<Boolean> isInRegistrationMode() throws CouldNotPerformException;
 }

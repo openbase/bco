@@ -24,6 +24,7 @@ package org.openbase.bco.authentication.core;
 import java.io.IOException;
 import java.io.StreamCorruptedException;
 import java.util.Arrays;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import org.openbase.bco.authentication.core.mock.MockAuthenticationRegistry;
 import org.openbase.bco.authentication.lib.AuthenticationServerHandler;
@@ -52,6 +53,8 @@ import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.slf4j.LoggerFactory;
+import rsb.converter.DefaultConverterRepository;
+import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.authentication.AuthenticatorType.Authenticator;
 import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
 import rst.domotic.authentication.TicketType.Ticket;
@@ -62,6 +65,12 @@ import rst.domotic.authentication.TicketType.Ticket;
  */
 public class AuthenticatorController implements AuthenticationService, Launchable<Void>, VoidInitializable {
 
+    static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketSessionKeyWrapper.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketAuthenticatorWrapper.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LoginCredentials.getDefaultInstance()));
+    }
+    
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatorController.class);
 
     private RSBLocalServer server;
@@ -244,6 +253,10 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             authenticationRegistry.setCredentials(loginCredentials.getId(), loginCredentials.getNewCredentials().toByteArray());
             return null;
         });
+    }
 
+    @Override
+    public Future<Boolean> isInRegistrationMode() throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(() -> false);
     }
 }
