@@ -38,7 +38,7 @@ import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.schedule.WatchDog;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
+import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 
@@ -51,7 +51,7 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketSessionKeyWrapper.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketAuthenticatorWrapper.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LoginCredentials.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LoginCredentialsChange.getDefaultInstance()));
     }
     
     private RSBRemoteServer remoteServer;
@@ -111,13 +111,13 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
     }
 
     @Override
-    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentials loginCredentials) throws CouldNotPerformException {
-        return RPCHelper.callRemoteServerMethod(loginCredentials, remoteServer, TicketAuthenticatorWrapper.class);
+    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException {
+        return RPCHelper.callRemoteServerMethod(loginCredentialsChange, remoteServer, TicketAuthenticatorWrapper.class);
     }
 
     @Override
-    public Future<Void> registerClient(LoginCredentials loginCredentials) throws CouldNotPerformException {
-        return RPCHelper.callRemoteServerMethod(loginCredentials, remoteServer, Void.class);
+    public Future<Void> registerClient(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException {
+        return RPCHelper.callRemoteServerMethod(loginCredentialsChange, remoteServer, Void.class);
     }
 
     @Override

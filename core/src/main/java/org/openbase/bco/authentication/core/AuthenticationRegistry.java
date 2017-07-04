@@ -21,7 +21,12 @@ package org.openbase.bco.authentication.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.ByteString;
+import com.google.protobuf.CodedInputStream;
+import com.google.protobuf.CodedOutputStream;
 import java.io.File;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermission;
@@ -29,6 +34,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.bco.authentication.lib.jp.JPInitializeCredentials;
 import org.openbase.bco.authentication.lib.jp.JPRegistrationMode;
@@ -41,6 +48,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.processing.JSonObjectFileProcessor;
 import org.slf4j.LoggerFactory;
+import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
 
 /**
  * This class provides access to the storage of login credentials.
@@ -51,9 +59,9 @@ public class AuthenticationRegistry {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticationRegistry.class);
 
-    private static final String FILENAME = "credentials.json";
+    private static final String FILENAME = "credentials.dat";
 
-    protected HashMap<String, byte[]> credentials;
+    protected HashMap<String, LoginCredentials> credentials;
 
     private final JSonObjectFileProcessor<HashMap> fileProcessor;
     private File file;
@@ -87,7 +95,22 @@ public class AuthenticationRegistry {
             throw new NotAvailableException(userId);
         }
 
-        return credentials.get(userId);
+        return credentials.get(userId).getCredentials().toByteArray();
+    }
+
+    /**
+     * Tells whether a given user has administrator permissions.
+     *
+     * @param userId ID of the user whose credentials should be retrieved.
+     * @return Boolean value indicating whether the user has administrator permissions.
+     * @throws NotAvailableException If the user does not exist in the credentials storage.
+     */
+    public boolean isAdmin(String userId) throws NotAvailableException {
+        if (!credentials.containsKey(userId)) {
+            throw new NotAvailableException(userId);
+        }
+
+        return credentials.get(userId).getAdmin();
     }
 
     /**
@@ -100,24 +123,42 @@ public class AuthenticationRegistry {
      */
     public void setCredentials(String userId, byte[] credentials) throws CouldNotPerformException {
         if (!this.credentials.containsKey(userId)) {
-            // only test for registration mode if user is not already registered
-            try {
-                int registrationMode = JPService.getProperty(JPRegistrationMode.class).getValue();
-                if (registrationMode == JPRegistrationMode.DEFAULT_REGISTRATION_MODE) {
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not set credentials for user[" + userId + "]. Registration mode not active."), LOGGER, LogLevel.WARN);
-                } else if (TimeUnit.MILLISECONDS.convert(registrationMode, TimeUnit.MINUTES) < (System.currentTimeMillis() - this.startingTime)) {
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not set credentials for user[" + userId + "]. Registration mode already expired."), LOGGER, LogLevel.WARN);
-                }
-            } catch (JPNotAvailableException ex) {
-                throw new CouldNotPerformException("Could not access JPRegistrationMode proptery.", ex);
-            }
+            this.addCredentials(userId, credentials, false);
         }
-        this.credentials.put(userId, credentials);
+        else {
+            LoginCredentials loginCredentials = LoginCredentials.newBuilder(this.credentials.get(userId))
+              .setCredentials(ByteString.copyFrom(credentials))
+              .build();
+            this.credentials.put(userId, loginCredentials);
+            this.save();
+        }
+    }
+
+    public void addCredentials(String userId, byte[] credentials, boolean admin) throws CouldNotPerformException {
+        // only test for registration mode if user is not already registered
+        try {
+            int registrationMode = JPService.getProperty(JPRegistrationMode.class).getValue();
+            if (registrationMode == JPRegistrationMode.DEFAULT_REGISTRATION_MODE) {
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not set credentials for user[" + userId + "]. Registration mode not active."), LOGGER, LogLevel.WARN);
+            } else if (TimeUnit.MILLISECONDS.convert(registrationMode, TimeUnit.MINUTES) < (System.currentTimeMillis() - this.startingTime)) {
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not set credentials for user[" + userId + "]. Registration mode already expired."), LOGGER, LogLevel.WARN);
+            }
+        } catch (JPNotAvailableException ex) {
+            throw new CouldNotPerformException("Could not access JPRegistrationMode proptery.", ex);
+        }
+
+        LoginCredentials loginCredentials = LoginCredentials.newBuilder()
+          .setId(userId)
+          .setCredentials(ByteString.copyFrom(credentials))
+          .setAdmin(admin)
+          .build();
+
+        this.credentials.put(userId, loginCredentials);
         this.save();
     }
 
     /**
-     * Loads the credentials from a JSON file.
+     * Loads the credentials from a protobuf binary file.
      *
      * @throws CouldNotPerformException If the deserialization fails.
      */
@@ -130,16 +171,33 @@ public class AuthenticationRegistry {
         } catch (JPNotAvailableException ex) {
             throw new CouldNotPerformException("Initialize credential property not available!", ex);
         }
-        credentials = fileProcessor.deserialize(file);
+
+        credentials = new HashMap<>();
+        try {
+            final CodedInputStream inputStream = CodedInputStream.newInstance(new FileInputStream(file));
+
+            while (!inputStream.isAtEnd()) {
+                LoginCredentials entry = LoginCredentials.parseFrom(inputStream);
+                credentials.put(entry.getId(), entry);
+            }
+        } catch (IOException ex) {
+            Logger.getLogger(AuthenticationRegistry.class.getName()).log(Level.SEVERE, null, ex);
+        }
     }
 
     /**
-     * Stores the credentials in a JSON file.
+     * Stores the credentials in a protobuf binary file.
      */
     private void save() {
         try {
-            fileProcessor.serialize(credentials, file);
-        } catch (CouldNotPerformException ex) {
+            final CodedOutputStream outputStream = CodedOutputStream.newInstance(new FileOutputStream(file));
+
+            for (LoginCredentials entry : credentials.values()) {
+                entry.writeTo(outputStream);
+            }
+
+            outputStream.flush();
+        } catch (IOException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
         }
     }
