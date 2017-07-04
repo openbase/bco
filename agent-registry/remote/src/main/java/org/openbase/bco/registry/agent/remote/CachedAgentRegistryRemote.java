@@ -24,10 +24,13 @@ package org.openbase.bco.registry.agent.remote;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -37,7 +40,10 @@ import org.slf4j.LoggerFactory;
  */
 public class CachedAgentRegistryRemote {
 
-    private static final Logger logger = LoggerFactory.getLogger(CachedAgentRegistryRemote.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CachedAgentRegistryRemote.class);
+
+    private static final SyncObject REMOTE_LOCK = new SyncObject("CachedAgentRegistryRemoteLock");
+
     private static AgentRegistryRemote registryRemote;
     private static boolean shutdown = false;
 
@@ -52,10 +58,15 @@ public class CachedAgentRegistryRemote {
         });
     }
 
-    public static void reinitialize() throws InterruptedException, CouldNotPerformException {
+    public synchronized static void reinitialize() throws InterruptedException, CouldNotPerformException {
         try {
-            getRegistry();
-            registryRemote.requestData().get(10, TimeUnit.SECONDS);
+            if (shutdown) {
+                throw new InvalidStateException("Remote service is shutting down!");
+            }
+            getRegistry().unlock(REMOTE_LOCK);
+            getRegistry().init();
+            getRegistry().lock(REMOTE_LOCK);
+            getRegistry().requestData().get(10, TimeUnit.SECONDS);
         } catch (ExecutionException | TimeoutException | CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not reinitialize " + CachedAgentRegistryRemote.class.getSimpleName() + "!", ex);
         }
@@ -77,12 +88,14 @@ public class CachedAgentRegistryRemote {
                     registryRemote = new AgentRegistryRemote();
                     registryRemote.init();
                     registryRemote.activate();
-                } catch (CouldNotPerformException ex) {
+                    registryRemote.lock(REMOTE_LOCK);
+                } catch (Exception ex) {
                     if (registryRemote != null) {
+                        registryRemote.unlock(REMOTE_LOCK);
                         registryRemote.shutdown();
                         registryRemote = null;
                     }
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not start cached agent registry remote!", ex), logger);
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not start cached agent registry remote!", ex), LOGGER);
                 }
             }
             return registryRemote;
@@ -105,25 +118,44 @@ public class CachedAgentRegistryRemote {
         registryRemote.waitForData(timeout, timeUnit);
     }
 
-    public static void shutdown() {
-        if (registryRemote != null) {
-            registryRemote.shutdown();
-            registryRemote = null;
-        }
-    }
-    
     /**
      * Method blocks until the registry is not handling any tasks and is currently consistent.
-     * 
+     *
      * Note: If you have just modified the registry this method can maybe return immediately if the task is not yet received by the registry controller. So you should prefer the futures of the modification methods for synchronization tasks.
      *
      * @throws InterruptedException is thrown in case the thread was externally interrupted.
      * @throws org.openbase.jul.exception.CouldNotPerformException is thrown if the wait could not be performed.
      */
     public static void waitUntilReady() throws InterruptedException, CouldNotPerformException {
-        if (registryRemote == null) {
-            getRegistry();
+        getRegistry().waitUntilReady();
+    }
+
+    /**
+     * Method shutdown the cached registry instances.
+     *
+     * Please use method with care!
+     * Make sure no other instances are using the cached remote instances before shutdown.
+     *
+     * Note: This method takes only effect in unit tests, otherwise this call is ignored. During normal operation there is not need for a manual registry shutdown because each registry takes care of its shutdown.
+     */
+    public static void shutdown() {
+
+        // check if externally called.
+        if (shutdown == false && !JPService.testMode()) {
+            LOGGER.warn("This manual registry shutdown is only available during unit tests and not allowed during normal operation!");
+            return;
         }
-        registryRemote.waitUntilReady();
+
+        synchronized (REMOTE_LOCK) {
+            if (registryRemote != null) {
+                try {
+                    registryRemote.unlock(REMOTE_LOCK);
+                } catch (final CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(new FatalImplementationErrorException("Internal remote was locked by an external instance!", CachedAgentRegistryRemote.class, ex), LOGGER);
+                }
+                registryRemote.shutdown();
+                registryRemote = null;
+            }
+        }
     }
 }

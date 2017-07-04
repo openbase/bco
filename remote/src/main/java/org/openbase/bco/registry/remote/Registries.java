@@ -41,7 +41,7 @@ import org.openbase.jul.exception.NotAvailableException;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class Registries {
+public class Registries{ 
 
     /**
      * Returns an initialized and activated remote registry.
@@ -126,7 +126,7 @@ public class Registries {
      * Please use method with care!
      * Make sure no other instances are using the cached remote instances before shutdown.
      *
-     * There is generally no need for the manual registry shutdown because the registries take care of the shutdown.
+     * Note: This method takes only effect in unit tests, otherwise this call is ignored. During normal operation there is not need for a manual registry shutdown because each registry takes care of its shutdown.
      */
     public static void shutdown() {
         CachedUnitRegistryRemote.shutdown();
