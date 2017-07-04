@@ -21,12 +21,12 @@ package org.openbase.bco.authentication.core.mock;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.ByteString;
 import java.util.HashMap;
 import org.openbase.bco.authentication.core.AuthenticationRegistry;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import rst.domotic.authentication.LoginCredentialsType;
 import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
 
 /**
@@ -40,13 +40,13 @@ public class MockAuthenticationRegistry extends AuthenticationRegistry {
     public static final byte[] PASSWORD_HASH = EncryptionHelper.hash(PASSWORD);
 
     @Override
-    public void setCredentials(String userId, byte[] credentials) {
+    public void setCredentials(String userId, byte[] credentials) throws CouldNotPerformException {
         if (!this.credentials.containsKey(userId)) {
             this.addCredentials(userId, credentials, false);
         }
         else {
             LoginCredentials loginCredentials = LoginCredentials.newBuilder(this.credentials.get(userId))
-              .setCredentials(credentials)
+              .setCredentials(ByteString.copyFrom(credentials))
               .build();
             this.credentials.put(userId, loginCredentials);
         }
@@ -56,7 +56,7 @@ public class MockAuthenticationRegistry extends AuthenticationRegistry {
     public void addCredentials(String userId, byte[] credentials, boolean admin) throws CouldNotPerformException {
         LoginCredentials loginCredentials = LoginCredentials.newBuilder()
           .setId(userId)
-          .setCredentials(credentials)
+          .setCredentials(ByteString.copyFrom(credentials))
           .setAdmin(admin)
           .build();
 
@@ -66,10 +66,15 @@ public class MockAuthenticationRegistry extends AuthenticationRegistry {
     @Override
     public void init() throws InitializationException {
         credentials = new HashMap<>();
-        this.setCredentials(CLIENT_ID, PASSWORD_HASH);
 
-        // add new user to the mock
-        this.setCredentials("example_client_id", EncryptionHelper.hash("example_password"));
+        try {
+            this.setCredentials(CLIENT_ID, PASSWORD_HASH);
+
+            // add new user to the mock
+            this.setCredentials("example_client_id", EncryptionHelper.hash("example_password"));
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
 }
