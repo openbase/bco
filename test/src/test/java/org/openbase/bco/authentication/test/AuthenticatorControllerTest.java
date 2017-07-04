@@ -38,7 +38,7 @@ import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
-import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
+import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 
@@ -195,13 +195,13 @@ public class AuthenticatorControllerTest {
         // init SS request on client side
         clientTicketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(clientSSSessionKey, clientTicketAuthenticatorWrapper);
 
-        LoginCredentials loginCredentials = LoginCredentials.newBuilder()
+        LoginCredentialsChange loginCredentialsChange = LoginCredentialsChange.newBuilder()
           .setId(MockAuthenticationRegistry.CLIENT_ID)
           .setOldCredentials(EncryptionHelper.encrypt(clientPasswordHash, clientSSSessionKey))
           .setNewCredentials(EncryptionHelper.encrypt(newPasswordHash, clientSSSessionKey))
           .setTicketAuthenticatorWrapper(clientTicketAuthenticatorWrapper)
           .build();
 
-        CachedAuthenticationRemote.getRemote().changeCredentials(loginCredentials).get();
+        CachedAuthenticationRemote.getRemote().changeCredentials(loginCredentialsChange).get();
     }
 }

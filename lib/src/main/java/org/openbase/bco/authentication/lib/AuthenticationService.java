@@ -10,7 +10,7 @@ import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
-import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
+import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 
 /*-
  * #%L
@@ -108,7 +108,7 @@ public interface AuthenticationService {
     /**
      * Changes the credentials for a given user.
      *
-     * @param loginCredentials Wrapper containing the user's ID, new and old password,
+     * @param loginCredentialsChange Wrapper containing the user's ID, new and old password,
      * and a TicketAuthenticatorWrapper to authenticate the user.
      * @return TicketAuthenticatorWrapper which contains an updated validity period in
      * the ClientServerTicket and an updated timestamp in the authenticator
@@ -120,19 +120,19 @@ public interface AuthenticationService {
      * @throws PermissionDeniedException If the user has no permission to change this password.
      */
     @RPCMethod
-    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentials loginCredentials) throws CouldNotPerformException, RejectedException, StreamCorruptedException, IOException, PermissionDeniedException;
+    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, StreamCorruptedException, IOException, PermissionDeniedException;
 
     /**
      * Register a new client in the authentication registry. This is only allowed if the authenticator is in registration mode.
-     * The LoginCredentials type contains more fields than needed because its also used to update an existing user.
+     * The LoginCredentialsChange type contains more fields than needed because its also used to update an existing user.
      * To use it for registration only the id field containing the client id and the new password field which contains the passwords are needed.
      *
-     * @param loginCredentials the login credentials containing the information as described above
+     * @param loginCredentialsChange the login credentials containing the information as described above
      * @return a future of the action of registering the client
      * @throws CouldNotPerformException if the authenticator is not in registration mode
      */
     @RPCMethod
-    public Future<Void> registerClient(LoginCredentials loginCredentials) throws CouldNotPerformException;
+    public Future<Void> registerClient(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException;
     
     /**
      * 

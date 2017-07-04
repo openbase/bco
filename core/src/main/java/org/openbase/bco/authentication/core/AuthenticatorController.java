@@ -56,7 +56,7 @@ import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.authentication.AuthenticatorType.Authenticator;
-import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
+import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketType.Ticket;
 
 /**
@@ -68,7 +68,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketSessionKeyWrapper.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketAuthenticatorWrapper.getDefaultInstance()));
-        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LoginCredentials.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LoginCredentialsChange.getDefaultInstance()));
     }
     
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatorController.class);
@@ -203,20 +203,20 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     }
 
     @Override
-    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentials loginCredentials) throws RejectedException, StreamCorruptedException, IOException {
+    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentialsChange loginCredentialsChange) throws RejectedException, StreamCorruptedException, IOException {
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 // Validate the given authenticator and ticket.
-                TicketAuthenticatorWrapper wrapper = loginCredentials.getTicketAuthenticatorWrapper();
+                TicketAuthenticatorWrapper wrapper = loginCredentialsChange.getTicketAuthenticatorWrapper();
                 TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerPrivateKey, wrapper);
 
                 // Decrypt ticket, authenticator and credentials.
                 Ticket clientServerTicket = (Ticket) EncryptionHelper.decrypt(wrapper.getTicket(), serviceServerPrivateKey);
                 byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
                 Authenticator authenticator = (Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), clientServerSessionKey);
-                byte[] oldCredentials = (byte[]) EncryptionHelper.decrypt(loginCredentials.getOldCredentials(), clientServerSessionKey);
-                byte[] newCredentials = (byte[]) EncryptionHelper.decrypt(loginCredentials.getNewCredentials(), clientServerSessionKey);
-                String userId = loginCredentials.getId();
+                byte[] oldCredentials = (byte[]) EncryptionHelper.decrypt(loginCredentialsChange.getOldCredentials(), clientServerSessionKey);
+                byte[] newCredentials = (byte[]) EncryptionHelper.decrypt(loginCredentialsChange.getNewCredentials(), clientServerSessionKey);
+                String userId = loginCredentialsChange.getId();
                 String[] split = authenticator.getClientId().split("@", 2);
                 String authenticatorUserId = split[0];
 
@@ -248,9 +248,9 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     }
 
     @Override
-    public Future<Void> registerClient(LoginCredentials loginCredentials) throws CouldNotPerformException {
+    public Future<Void> registerClient(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
-            authenticationRegistry.setCredentials(loginCredentials.getId(), loginCredentials.getNewCredentials().toByteArray());
+            authenticationRegistry.setCredentials(loginCredentialsChange.getId(), loginCredentialsChange.getNewCredentials().toByteArray());
             return null;
         });
     }
