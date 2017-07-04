@@ -36,6 +36,7 @@ import org.slf4j.LoggerFactory;
 public class CachedAuthenticationRemote {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CachedAuthenticationRemote.class);
+    
     private static AuthenticationRemote authenticationRemote;
     private static boolean shutdown = false;
 
