@@ -29,6 +29,7 @@ import java.util.List;
 import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.rsb.scope.jp.JPScope;
 import org.openbase.jul.pattern.Observable;
@@ -71,8 +72,13 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
         bindRegistryRemoteToRemoteRegistries();
     }
 
+    /**
+     * {@inheritDoc }
+     *
+     * @param remoteRegistry {@inheritDoc }
+     */
     @Override
-    protected void registerRemoteRegistry(RemoteRegistry remoteRegistry) {
+    protected void registerRemoteRegistry(RemoteRegistry<?, ?, ?> remoteRegistry) {
         super.registerRemoteRegistry(remoteRegistry);
         remoteRegistry.addObserver(snchronisationObserver);
     }
@@ -114,6 +120,22 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
         waitForVirtualRegistrySync();
     }
 
+    @Override
+    public Boolean isReady() throws InterruptedException {
+        return isDataAvailable() && super.isReady();
+    }
+
+    @Override
+    public boolean isDataAvailable() {
+        for (RegistryRemote registryRemote : registryRemotes) {
+            if (!registryRemote.isDataAvailable()) {
+                return false;
+            }
+        }
+
+        return super.isDataAvailable() && equalMessageCounts();
+    }
+
     private void waitForVirtualRegistrySync() throws CouldNotPerformException, InterruptedException {
         synchronized (virtualRegistrySyncLock) {
             while (!equalMessageCounts()) {
@@ -122,9 +144,14 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
         }
     }
 
-    private boolean equalMessageCounts() throws CouldNotPerformException {
+    private boolean equalMessageCounts() {
         for (RemoteRegistry remoteRegistry : remoteRegistrySyncMap.keySet()) {
-            if (remoteRegistrySyncMap.get(remoteRegistry).getData().getRepeatedFieldCount(remoteRegistryFieldDescriptorMap.get(remoteRegistry)) != remoteRegistry.getMessages().size()) {
+            try {
+                if (remoteRegistrySyncMap.get(remoteRegistry).getData().getRepeatedFieldCount(remoteRegistryFieldDescriptorMap.get(remoteRegistry)) != remoteRegistry.getMessages().size()) {
+                    return false;
+                }
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory("Could not check if registries contains the same amount of entries!", ex, logger);
                 return false;
             }
         }

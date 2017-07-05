@@ -81,6 +81,8 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
 
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> locationUnitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> connectionUnitConfigRemoteRegistry;
+    
+    // should be removed!!!
     private UnitRegistryRemote unitRegistry;
 
     public LocationRegistryRemote() throws InstantiationException {
@@ -115,7 +117,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
     @Override
     protected void registerRegistryRemotes() throws InitializationException, InterruptedException {
         try {
-            this.unitRegistry = CachedUnitRegistryRemote.getRegistry();
+            unitRegistry = CachedUnitRegistryRemote.getRegistry();
             registerRegistryRemote(unitRegistry);
         } catch (NotAvailableException ex) {
             throw new InitializationException(this, ex);
