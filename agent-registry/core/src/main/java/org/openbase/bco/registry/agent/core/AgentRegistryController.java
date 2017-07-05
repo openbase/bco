@@ -31,6 +31,7 @@ import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryController;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -72,7 +73,7 @@ public class AgentRegistryController extends AbstractVirtualRegistryController<A
     public AgentRegistryController() throws InstantiationException, InterruptedException {
         super(JPAgentRegistryScope.class, AgentRegistryData.newBuilder());
         try {
-            unitRegistryRemote = new UnitRegistryRemote();
+            unitRegistryRemote = CachedUnitRegistryRemote.getRegistry();
             agentClassRegistry = new ProtoBufFileSynchronizedRegistry<>(AgentClass.class, getBuilderSetup(), getDataFieldDescriptor(AgentRegistryData.AGENT_CLASS_FIELD_NUMBER), new AgentClassIdGenerator(), JPService.getProperty(JPAgentClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(unitRegistryRemote, UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER);
         } catch (JPServiceException | CouldNotPerformException ex) {

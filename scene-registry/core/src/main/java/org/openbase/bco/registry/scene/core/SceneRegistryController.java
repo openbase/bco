@@ -28,6 +28,7 @@ import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.scene.lib.SceneRegistry;
 import org.openbase.bco.registry.scene.lib.jp.JPSceneRegistryScope;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -61,8 +62,12 @@ public class SceneRegistryController extends AbstractVirtualRegistryController<S
 
     public SceneRegistryController() throws InstantiationException, InterruptedException {
         super(JPSceneRegistryScope.class, SceneRegistryData.newBuilder());
-        unitRegistryRemote = new UnitRegistryRemote();
-        sceneUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(unitRegistryRemote, UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER);
+        try {
+            unitRegistryRemote = CachedUnitRegistryRemote.getRegistry();
+            sceneUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(unitRegistryRemote, UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER);
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
     }
 
     @Override

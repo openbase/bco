@@ -127,6 +127,10 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
+        if (active) {
+            logger.warn("Already acitvated");
+            return;
+        }
         remoteService.addDataObserver(remoteRegistrySynchronizer);
         active = true;
     }
@@ -145,7 +149,7 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
     @Override
     public String getName() {
         if (fieldDescriptors == null || fieldDescriptors.length == 0) {
-            return getClass().getSimpleName() + "[" + (remoteService != null ? remoteService.toString() : "?")  + "]";
+            return getClass().getSimpleName() + "[" + (remoteService != null ? remoteService.toString() : "?") + "]";
         } else {
             String fieldDescritorNames = "[";
             fieldDescritorNames += fieldDescriptors[0].getName();
