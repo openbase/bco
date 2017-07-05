@@ -396,10 +396,9 @@ public class MockRegistry {
             registryStartupTasks.clear();
             LOGGER.info("Virtual registries started!");
 
-            LOGGER.info("Reinitialized remotes!");
+            LOGGER.info("Reinitialize remotes...");
             Registries.reinitialize();
-            CachedDeviceRegistryRemote.reinitialize();
-            CachedLocationRegistryRemote.reinitialize();
+            LOGGER.info("Reinitialized remotes!");
             Registries.waitForData();
 
             deviceRegistryRemote = unitRegistryLauncher.getLaunchable().getDeviceRegistryRemote();

@@ -68,19 +68,25 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
     @Override
     protected void postInit() throws InitializationException, InterruptedException {
         super.postInit();
+        registryRemotes.clear();
         registerRegistryRemotes();
         bindRegistryRemoteToRemoteRegistries();
     }
 
-    /**
-     * {@inheritDoc }
-     *
-     * @param remoteRegistry {@inheritDoc }
-     */
     @Override
-    protected void registerRemoteRegistry(RemoteRegistry<?, ?, ?> remoteRegistry) {
-        super.registerRemoteRegistry(remoteRegistry);
-        remoteRegistry.addObserver(snchronisationObserver);
+    public void activate() throws InterruptedException, CouldNotPerformException {
+        super.activate();
+        getRemoteRegistries().forEach((remoteRegistry) -> {
+            remoteRegistry.addObserver(snchronisationObserver);
+        });
+    }
+
+    @Override
+    public void deactivate() throws InterruptedException, CouldNotPerformException {
+        getRemoteRegistries().forEach((remoteRegistry) -> {
+            remoteRegistry.removeObserver(snchronisationObserver);
+        });
+        super.deactivate();
     }
 
     protected void registerRegistryRemote(RegistryRemote<? extends GeneratedMessage> registryRemote) {

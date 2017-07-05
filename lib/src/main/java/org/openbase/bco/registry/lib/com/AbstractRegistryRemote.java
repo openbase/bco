@@ -71,6 +71,7 @@ public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends
         super.postInit();
         try {
             try {
+                remoteRegistries.clear();
                 registerRemoteRegistries();
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not activate version control for all internal registries!", ex);
@@ -178,4 +179,7 @@ public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends
 
     protected abstract void registerRemoteRegistries() throws CouldNotPerformException;
 
+    protected List<RemoteRegistry> getRemoteRegistries() {
+        return remoteRegistries;
+    }
 }
