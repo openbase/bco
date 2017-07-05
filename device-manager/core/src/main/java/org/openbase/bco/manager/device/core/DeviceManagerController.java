@@ -53,6 +53,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
 
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceManagerController.class);
 
+    //TODO: please remove in future release
     private static DeviceManagerController instance;
 
     private final DeviceFactory deviceFactory;

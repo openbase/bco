@@ -24,11 +24,9 @@ package org.openbase.bco.manager.scene.core;
 import org.openbase.bco.manager.scene.lib.SceneController;
 import org.openbase.bco.manager.scene.lib.SceneFactory;
 import org.openbase.bco.manager.scene.lib.SceneManager;
-import org.openbase.bco.registry.scene.lib.provider.SceneRegistryProvider;
-import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.storage.registry.ControllerRegistryImpl;
@@ -43,24 +41,20 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class SceneManagerController implements SceneRegistryProvider, SceneManager, Launchable<Void>, VoidInitializable {
+public class SceneManagerController implements SceneManager, Launchable<Void>, VoidInitializable {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(SceneManagerController.class);
 
-    private static SceneManagerController instance;
     private final SceneFactory factory;
     private final ControllerRegistryImpl<String, SceneController> sceneRegistry;
-    private final SceneRegistryRemote sceneRegistryRemote;
     private final EnableableEntryRegistrySynchronizer<String, SceneController, UnitConfig, UnitConfig.Builder> sceneRegistrySynchronizer;
 
     public SceneManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
-            this.instance = this;
             this.factory = SceneFactoryImpl.getInstance();
             this.sceneRegistry = new ControllerRegistryImpl<>();
-            this.sceneRegistryRemote = new SceneRegistryRemote();
 
-            this.sceneRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, SceneController, UnitConfig, UnitConfig.Builder>(sceneRegistry, sceneRegistryRemote.getSceneConfigRemoteRegistry(), factory) {
+            this.sceneRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, SceneController, UnitConfig, UnitConfig.Builder>(sceneRegistry, Registries.getSceneRegistry().getSceneConfigRemoteRegistry(), factory) {
 
                 @Override
                 public boolean enablingCondition(UnitConfig config) {
@@ -72,49 +66,29 @@ public class SceneManagerController implements SceneRegistryProvider, SceneManag
         }
     }
 
-    public static SceneManagerController getInstance() throws NotAvailableException {
-        if (instance == null) {
-            throw new NotAvailableException(SceneManagerController.class);
-        }
-        return instance;
-    }
-
     @Override
     public void init() throws InitializationException, InterruptedException {
-        try {
-            sceneRegistryRemote.init();
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
+        // This has to stay. Else do not implement VoidInitializable. 
     }
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        sceneRegistryRemote.activate();
         sceneRegistrySynchronizer.activate();
     }
 
     @Override
     public boolean isActive() {
-        return sceneRegistryRemote.isActive();
+        return sceneRegistrySynchronizer.isActive();
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         sceneRegistrySynchronizer.deactivate();
-        sceneRegistryRemote.deactivate();
     }
 
     @Override
     public void shutdown() {
         sceneRegistrySynchronizer.shutdown();
-        sceneRegistryRemote.shutdown();
-        instance = null;
-    }
-
-    @Override
-    public org.openbase.bco.registry.scene.lib.SceneRegistry getSceneRegistry() throws NotAvailableException {
-        return sceneRegistryRemote;
     }
 
     public RegistryImpl<String, SceneController> getSceneControllerRegistry() {

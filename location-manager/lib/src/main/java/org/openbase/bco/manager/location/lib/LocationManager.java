@@ -1,6 +1,5 @@
 package org.openbase.bco.manager.location.lib;
 
-import org.openbase.bco.registry.location.lib.provider.LocationRegistryProvider;
 import org.openbase.jul.storage.registry.RegistryImpl;
 
 /*
@@ -28,9 +27,9 @@ import org.openbase.jul.storage.registry.RegistryImpl;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface LocationManager extends LocationRegistryProvider {
+public interface LocationManager {
 
     public RegistryImpl<String, LocationController> getLocationControllerRegistry();
-    
+
     public RegistryImpl<String, ConnectionController> getConnectionControllerRegistry();
 }

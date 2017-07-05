@@ -170,9 +170,11 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
         presenceDetector.deactivate();
     }
 
-    private void updateUnitData() throws InterruptedException {
+    private synchronized void updateUnitData() throws InterruptedException {
         try (ClosableDataBuilder<LocationDataType.LocationData.Builder> dataBuilder = getDataBuilder(this)) {
+            LOGGER.info("UPDATE data builder of location [" + getLabel() + "]");
             serviceRemoteManager.updateBuilderWithAvailableServiceStates(dataBuilder.getInternalBuilder(), getDataClass(), getSupportedServiceTypes());
+            LOGGER.info("CLOSING data builder of location[" + getLabel() + "]");
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), LOGGER, LogLevel.WARN);
         }
@@ -219,8 +221,12 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
     @Override
     public List<String> getNeighborLocationIds() throws CouldNotPerformException {
         List<String> neighborIdList = new ArrayList<>();
-        for (UnitConfig locationConfig : LocationManagerController.getInstance().getLocationRegistry().getNeighborLocations(getId())) {
-            neighborIdList.add(locationConfig.getId());
+        try {
+            for (UnitConfig locationConfig : Registries.getLocationRegistry().getNeighborLocations(getId())) {
+                neighborIdList.add(locationConfig.getId());
+            }
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
         }
         return neighborIdList;
     }
