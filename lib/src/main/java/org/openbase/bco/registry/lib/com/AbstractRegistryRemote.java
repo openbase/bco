@@ -26,6 +26,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import org.openbase.jps.core.JPService;
@@ -36,6 +37,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBRemoteService;
 import org.openbase.jul.extension.rsb.scope.jp.JPScope;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 
@@ -124,7 +126,7 @@ public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends
             if (!isConnected()) {
                 return false;
             }
-            
+
             ping().get();
             return RPCHelper.callRemoteMethod(this, Boolean.class).get(30000, TimeUnit.MILLISECONDS);
         } catch (CouldNotPerformException | ExecutionException | TimeoutException ex) {
@@ -142,9 +144,24 @@ public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends
     @Override
     public void waitUntilReady() throws InterruptedException, CouldNotPerformException {
         try {
-            RPCHelper.callRemoteMethod(this).get();
-        } catch (CouldNotPerformException | ExecutionException | CancellationException ex) {
-            throw new CouldNotPerformException("Could not wait until "+this+" is ready!", ex);
+            RPCHelper.callRemoteMethod(this, Void.class).get();
+        } catch (final CouldNotPerformException | ExecutionException | CancellationException ex) {
+            throw new CouldNotPerformException("Could not wait until " + this + " is ready!", ex);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws InterruptedException {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public Future<Void> waitUntilReadyFuture() {
+        try {
+            return RPCHelper.callRemoteMethod(this, Void.class);
+        } catch (final CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(null, ex);
         }
     }
 
