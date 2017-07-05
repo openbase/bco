@@ -153,9 +153,6 @@ public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends
 
     /**
      * {@inheritDoc}
-     *
-     * @throws InterruptedException {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<Void> waitUntilReadyFuture() {
