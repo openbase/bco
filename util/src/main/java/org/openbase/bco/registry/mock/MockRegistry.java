@@ -741,6 +741,11 @@ public class MockRegistry {
     }
 
     public void waitForDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
+        try {
+            deviceRegistryRemote.waitForData();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
         synchronized (LOCK) {
             try {
                 while (!deviceRegistryRemote.containsDeviceClass(deviceClass)) {
