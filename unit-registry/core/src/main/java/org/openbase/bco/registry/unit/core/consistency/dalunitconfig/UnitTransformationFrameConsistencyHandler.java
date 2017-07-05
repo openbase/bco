@@ -43,21 +43,21 @@ public class UnitTransformationFrameConsistencyHandler extends AbstractTransform
     @Override
     public void processData(final String id, final IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, final ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, final ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
 
-        UnitConfig.Builder dalUnitConfig = entry.getMessage().toBuilder();
+        UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
         boolean modification = false;
         PlacementConfig placementConfig;
 
-        placementConfig = verifyAndUpdatePlacement(dalUnitConfig.getLabel(), dalUnitConfig.getPlacementConfig());
+        placementConfig = verifyAndUpdatePlacement(unitConfig.getLabel(), unitConfig.getPlacementConfig());
 
         if (placementConfig != null) {
-            dalUnitConfig.setPlacementConfig(placementConfig);
-            logger.debug("UnitTransformationFrameConsistencyHandler Upgrade Unit[" + dalUnitConfig.getId() + "] frame to " + placementConfig.getTransformationFrameId());
+            unitConfig.setPlacementConfig(placementConfig);
+            logger.debug("UnitTransformationFrameConsistencyHandler Upgrade Unit[" + unitConfig.getId() + "] frame to " + placementConfig.getTransformationFrameId());
             modification = true;
         }
 
         if (modification) {
-            logger.debug("UnitTransformationFrameConsistencyHandler Publish Device[" + dalUnitConfig.getId() + "]!");
-            throw new EntryModification(entry.setMessage(dalUnitConfig), this);
+            logger.debug("UnitTransformationFrameConsistencyHandler Publish Device[" + unitConfig.getId() + "]!");
+            throw new EntryModification(entry.setMessage(unitConfig), this);
         }
     }
 }

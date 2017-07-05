@@ -38,6 +38,7 @@ import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.storage.registry.RemoteRegistry;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -47,6 +48,8 @@ import org.openbase.jul.storage.registry.RemoteRegistry;
  * @param <MB>
  */
 public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB extends M.Builder<MB>> extends RemoteRegistry<KEY, M, MB> implements Activatable {
+
+    protected static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SynchronizedRemoteRegistry.class);
 
     /**
      * The field descriptor which is used for the internal registry synchronization.
@@ -128,6 +131,16 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         remoteService.addDataObserver(remoteRegistrySynchronizer);
+
+        // trigger initial synch if data is available
+        if (remoteService.isDataAvailable()) {
+            try {
+                remoteRegistrySynchronizer.update(null, remoteService.getData());
+            } catch (Exception ex) {
+                ExceptionPrinter.printHistory("Initial synchronization of " + this + " failed!", ex, LOGGER);
+            }
+        }
+
         active = true;
     }
 
@@ -140,12 +153,12 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
     @Override
     public boolean isActive() {
         return active;
-    }
+    } 
 
     @Override
     public String getName() {
         if (fieldDescriptors == null || fieldDescriptors.length == 0) {
-            return getClass().getSimpleName() + "[" + (remoteService != null ? remoteService.toString() : "?")  + "]";
+            return getClass().getSimpleName() + "[" + (remoteService != null ? remoteService.toString() : "?") + "]";
         } else {
             String fieldDescritorNames = "[";
             fieldDescritorNames += fieldDescriptors[0].getName();

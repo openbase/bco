@@ -165,7 +165,13 @@ public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends
         }
     }
 
-    protected void registerRemoteRegistry(final RemoteRegistry registry) {
+    /**
+     * This method registers this registry remote as a registry proxy for the registry controller where the given remote registry is based on.
+     * This object than can be used for registry state checks and synchronization issues.
+     *
+     * @param registry a remote registry which must not be compatible with the Message type {@code M} declared for this registry remote.
+     */
+    protected void registerRemoteRegistry(final RemoteRegistry<?, ?, ?> registry) {
         remoteRegistries.add(registry);
         registry.setRegistryRemote(this);
     }
