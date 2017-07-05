@@ -186,7 +186,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
 
     @Override
     public void shutdown() {
-        super.shutdown();;
+        super.shutdown();
         remoteRegistryList.stream().forEach((remoteRegistry) -> {
             remoteRegistry.shutdown();
         });
@@ -355,7 +355,6 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     /**
      * {@inheritDoc}
      *
-     * @throws InterruptedException {@inheritDoc}
      */
     @Override
     public Future<Void> waitUntilReadyFuture() {
@@ -373,10 +372,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
      */
     @Override
     public Boolean isReady() throws InterruptedException {
-        if (!registryList.stream().noneMatch((registry) -> (!registry.isReady()))) {
-            return false;
-        }
-        return true;
+        return registryList.stream().noneMatch((registry) -> (!registry.isReady()));
     }
 
     protected abstract void registerConsistencyHandler() throws CouldNotPerformException;
