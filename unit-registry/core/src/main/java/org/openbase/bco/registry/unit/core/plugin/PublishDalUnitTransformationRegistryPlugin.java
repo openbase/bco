@@ -123,7 +123,11 @@ public class PublishDalUnitTransformationRegistryPlugin extends FileRegistryPlug
     @Override
     public void shutdown() {
         if (transformPublisher != null) {
-            transformPublisher.shutdown();
+            try {
+                transformPublisher.shutdown();
+            } catch (Exception ex) {
+                logger.warn("Could not shutdown transformation publisher");
+            }
         }
     }
 }
