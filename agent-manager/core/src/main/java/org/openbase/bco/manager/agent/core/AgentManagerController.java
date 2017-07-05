@@ -73,7 +73,7 @@ public class AgentManagerController implements AgentManager, Launchable<Void>, V
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         // TODO: pleminoq: let us analyse why this wait For Datta is needed. Without the sychnchronizer sync task is interrupted. And why is this never happening in the unit tests???
-        Registries.getAgentRegistry().waitForData();
+        Registries.waitForData();
 
         agentRegistrySynchronizer.activate();
     }

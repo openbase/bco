@@ -72,6 +72,9 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
+        //TODO: why is this necessary
+        Registries.waitForData();
+
         appRegistrySynchronizer.activate();
     }
 

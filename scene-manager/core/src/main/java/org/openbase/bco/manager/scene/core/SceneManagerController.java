@@ -73,6 +73,9 @@ public class SceneManagerController implements SceneManager, Launchable<Void>, V
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
+        //TODO: why is this necessary
+        Registries.waitForData();
+
         sceneRegistrySynchronizer.activate();
     }
 
