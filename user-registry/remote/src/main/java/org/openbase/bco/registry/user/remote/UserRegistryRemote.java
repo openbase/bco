@@ -77,6 +77,19 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
             throw new InstantiationException(this, ex);
         }
     }
+    
+    /**
+     * {@inheritDoc }
+     * @throws InterruptedException {@inheritDoc }
+     * @throws CouldNotPerformException {@inheritDoc }
+     */
+    @Override
+    public void activate() throws InterruptedException, CouldNotPerformException {
+        if (!CachedUserRegistryRemote.getRegistry().equals(this)) {
+            logger.warn("You are using a "+getClass().getSimpleName()+" which is not maintained by the global registry singelton! This is extremely inefficient! Please use \"Registries.get"+getClass().getSimpleName().replace("Remote", "")+"()\" instead creating your own instances!");
+        }
+        super.activate();
+    }
 
     @Override
     protected void registerRemoteRegistries() throws CouldNotPerformException {

@@ -24,6 +24,7 @@ package org.openbase.bco.registry.lib.com;
 import com.google.protobuf.GeneratedMessage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.Future;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -40,6 +41,7 @@ import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rsb.scope.jp.JPScope;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ConsistencyHandler;
@@ -400,6 +402,20 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
                 CHANGE_NOTIFIER.wait(500);
             }
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws InterruptedException {@inheritDoc}
+     */
+    @Override
+    public Future<Void> waitUntilReadyFuture() {
+        //todo maybe think about a better strategy instead just polling.
+        return GlobalCachedExecutorService.submit(() -> {
+            waitUntilReady();
+            return null;
+        });
     }
 
     /**
