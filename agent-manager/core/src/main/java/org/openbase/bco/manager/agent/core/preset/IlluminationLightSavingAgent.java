@@ -139,13 +139,16 @@ public class IlluminationLightSavingAgent extends AbstractAgentController {
     protected void stop() throws CouldNotPerformException, InterruptedException {
         logger.info("Deactivating [" + getConfig().getLabel() + "]");
         agentTriggerHolder.deactivate();
+        logger.info("Deactivated [" + getConfig().getLabel() + "]");
     }
 
     @Override
     public void shutdown() {
+        logger.info("shutdown [Illumination_Light_Saving_Agent_Unit_Test]");
         agentTriggerHolder.deregisterObserver(triggerHolderObserver);
         agentTriggerHolder.shutdown();
         super.shutdown();
+        logger.info("Finished shutdown [Illumination_Light_Saving_Agent_Unit_Test]");
     }
 
     private void regulateLightIntensity() throws CouldNotPerformException {

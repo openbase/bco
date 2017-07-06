@@ -26,7 +26,11 @@ import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
+import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.provider.IlluminanceStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.LightSensorController;
+import org.openbase.bco.dal.remote.service.IlluminanceStateServiceRemote;
+import org.openbase.bco.dal.remote.service.PowerStateServiceRemote;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.LightSensorRemote;
 import org.openbase.bco.dal.remote.unit.Units;
@@ -38,9 +42,11 @@ import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.slf4j.LoggerFactory;
 import rst.configuration.EntryType;
 import rst.configuration.MetaConfigType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.IlluminanceStateType.IlluminanceState;
@@ -106,10 +112,42 @@ public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTes
 
         // create intial values with lights on and illuminance of 5000.0
         lightSensorController.updateIlluminanceStateProvider(IlluminanceState.newBuilder().setIlluminance(5000.0).build());
-        locationRemote.setPowerState(PowerState.State.ON, UnitType.LIGHT).get();
+        locationRemote.setPowerState(PowerState.State.ON).get();
+        LOGGER.info("WaitFor LightSensor illumincance update");
         lightSensorStateAwaiter.waitForState((LightSensorData data) -> data.getIlluminanceState().getIlluminance() == 5000.0);
-        locationStateAwaiter.waitForState((LocationData data) -> data.getIlluminanceState().getIlluminance() == 5000.0);
-        locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.ON);
+        LOGGER.info("WaitFor location illumincance update");
+//        locationStateAwaiter.waitForState((LocationData data) -> data.getIlluminanceState().getIlluminance() == 5000.0);
+        locationStateAwaiter.waitForState((LocationData data) -> {
+            try {
+                LOGGER.info("Received location[" + locationRemote.getLabel() + "] illuminance update");
+                IlluminanceStateServiceRemote serviceRemote = (IlluminanceStateServiceRemote) locationRemote.getServiceRemote(ServiceType.ILLUMINANCE_STATE_SERVICE);
+                LOGGER.info("ServiceRemote [" + serviceRemote.getData().getIlluminance() + "]");
+                for (IlluminanceStateProviderService service : serviceRemote.getServices()) {
+                    LOGGER.info("Service[" + service.getIlluminanceState().getIlluminance() + "]");
+                }
+            } catch (NotAvailableException ex) {
+
+            }
+            LOGGER.info("Data illuminance: " + data.getIlluminanceState().getIlluminance());
+            return data.getIlluminanceState().getIlluminance() == 5000.0;
+        });
+        LOGGER.info("WaitFor Location power update");
+//        locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.ON);
+        locationStateAwaiter.waitForState((LocationData data) -> {
+            try {
+                LOGGER.info("Received location[" + locationRemote.getLabel() + "] power update");
+                PowerStateServiceRemote serviceRemote = (PowerStateServiceRemote) locationRemote.getServiceRemote(ServiceType.POWER_STATE_SERVICE);
+                LOGGER.info("ServiceRemote [" + serviceRemote.getData().getValue().name() + "]");
+                for (PowerStateOperationService service : serviceRemote.getServices()) {
+                    LOGGER.info("Service[" + service.getPowerState().getValue().name() + "]");
+                }
+            } catch (NotAvailableException ex) {
+
+            }
+            LOGGER.info("Data power: " + data.getPowerState().getValue().name());
+            return data.getPowerState().getValue() == PowerState.State.ON;
+        });
+        LOGGER.info("WaitFor ColorableLight power update");
         colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.ON);
 
         assertEquals("Initial Illuminance of LightSensor[" + lightSensorRemote.getLabel() + "] is not 5000", 5000.0, lightSensorRemote.getIlluminanceState().getIlluminance(), 1);
@@ -119,9 +157,13 @@ public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTes
 
         // test if on high illuminance lights get switched off
         lightSensorController.updateIlluminanceStateProvider(IlluminanceState.newBuilder().setIlluminance(7000.0).build());
+        LOGGER.info("WaitFor LightSensor illumincance update");
         lightSensorStateAwaiter.waitForState((LightSensorData data) -> data.getIlluminanceState().getIlluminance() == 7000.0);
+        LOGGER.info("WaitFor location illumincance update");
         locationStateAwaiter.waitForState((LocationData data) -> data.getIlluminanceState().getIlluminance() == 7000.0);
+        LOGGER.info("WaitFor ColorableLight power update");
         colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+        LOGGER.info("WaitFor Location power update");
         locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
 
         assertEquals("Initial Illuminance of LightSensor[" + lightSensorRemote.getLabel() + "] is not 7000", 7000.0, lightSensorRemote.getIlluminanceState().getIlluminance(), 1);
@@ -131,9 +173,13 @@ public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTes
 
         // test if on low illuminance lights say off
         lightSensorController.updateIlluminanceStateProvider(IlluminanceState.newBuilder().setIlluminance(2000.0).build());
+        LOGGER.info("WaitFor LightSensor illumincance update");
         lightSensorStateAwaiter.waitForState((LightSensorData data) -> data.getIlluminanceState().getIlluminance() == 2000.0);
+        LOGGER.info("WaitFor location illumincance update");
         locationStateAwaiter.waitForState((LocationData data) -> data.getIlluminanceState().getIlluminance() == 2000.0);
+        LOGGER.info("WaitFor ColorableLight power update");
         colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+        LOGGER.info("WaitFor Location power update");
         locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
 
         assertEquals("Initial Illuminance of LightSensor[" + lightSensorRemote.getLabel() + "] is not 2000", 2000.0, lightSensorRemote.getIlluminanceState().getIlluminance(), 1);
