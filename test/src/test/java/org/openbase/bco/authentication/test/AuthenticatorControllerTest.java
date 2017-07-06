@@ -36,6 +36,7 @@ import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.jps.core.JPService;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
@@ -125,22 +126,13 @@ public class AuthenticatorControllerTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 5000)
+    @Test(timeout = 5000, expected = ExecutionException.class)
     public void testAuthenticationWithNonExistentUser() throws Exception {
         System.out.println("testAuthenticationWithNonExistentUser");
 
         String nonExistentUserId = "12abc-15123";
 
-        try {
-            ExceptionPrinter.setBeQuit(Boolean.TRUE);
-            CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(nonExistentUserId).get();
-        } catch (ExecutionException ex) {
-            // test successful
-            return;
-        } finally {
-            ExceptionPrinter.setBeQuit(Boolean.FALSE);
-        }
-        fail("Exception has not been thrown even though there should be no user[" + nonExistentUserId + "] in the database!");
+        CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(nonExistentUserId).get();
     }
 
     /**
@@ -148,7 +140,7 @@ public class AuthenticatorControllerTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 5000)
+    @Test(timeout = 5000, expected = AssertionError.class)
     public void testAuthenticationWithIncorrectPassword() throws Exception {
         System.out.println("testAuthenticationWithIncorrectPassword");
 
@@ -157,15 +149,7 @@ public class AuthenticatorControllerTest {
         byte[] passwordHash = EncryptionHelper.hash(password);
 
         TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket("@" + userId).get();
-        try {
-            ExceptionPrinter.setBeQuit(Boolean.TRUE);
-            AuthenticationClientHandler.handleKeyDistributionCenterResponse(userId, passwordHash, true, ticketSessionKeyWrapper);
-        } catch (IOException ex) {
-            return;
-        } finally {
-            ExceptionPrinter.setBeQuit(Boolean.FALSE);
-        }
-        fail("Exception has not been thrown even though user[" + userId + "] does not use the password[" + password + "]!");
+        AuthenticationClientHandler.handleKeyDistributionCenterResponse(userId, passwordHash, true, ticketSessionKeyWrapper);  
     }
 
     @Test(timeout = 5000)
