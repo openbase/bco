@@ -26,11 +26,9 @@ import org.openbase.bco.manager.location.lib.ConnectionFactory;
 import org.openbase.bco.manager.location.lib.LocationController;
 import org.openbase.bco.manager.location.lib.LocationFactory;
 import org.openbase.bco.manager.location.lib.LocationManager;
-import org.openbase.bco.registry.location.lib.LocationRegistry;
-import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
@@ -48,8 +46,6 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(LocationManagerController.class);
 
-    private static LocationManagerController instance;
-    private final LocationRegistryRemote locationRegistryRemote;
     private final LocationFactory locationFactory;
     private final ConnectionFactory connectionFactory;
     private final ControllerRegistryImpl<String, LocationController> locationRegistry;
@@ -59,20 +55,18 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
 
     public LocationManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
-            this.instance = this;
-            this.locationRegistryRemote = new LocationRegistryRemote();
             this.locationFactory = LocationFactoryImpl.getInstance();
             this.connectionFactory = ConnectionFactoryImpl.getInstance();
             this.locationRegistry = new ControllerRegistryImpl<>();
             this.connectionRegistry = new ControllerRegistryImpl<>();
-            this.locationRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, LocationController, UnitConfig, UnitConfig.Builder>(locationRegistry, locationRegistryRemote.getLocationConfigRemoteRegistry(), locationFactory) {
+            this.locationRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, LocationController, UnitConfig, UnitConfig.Builder>(locationRegistry, Registries.getLocationRegistry().getLocationConfigRemoteRegistry(), locationFactory) {
 
                 @Override
                 public boolean activationCondition(final UnitConfig config) {
                     return true;
                 }
             };
-            this.connectionRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, ConnectionController, UnitConfig, UnitConfig.Builder>(connectionRegistry, locationRegistryRemote.getConnectionConfigRemoteRegistry(), connectionFactory) {
+            this.connectionRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, ConnectionController, UnitConfig, UnitConfig.Builder>(connectionRegistry, Registries.getLocationRegistry().getConnectionConfigRemoteRegistry(), connectionFactory) {
 
                 @Override
                 public boolean activationCondition(final UnitConfig config) {
@@ -84,28 +78,15 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
         }
     }
 
-    public static LocationManagerController getInstance() throws NotAvailableException {
-        if (instance == null) {
-            throw new NotAvailableException(LocationManagerController.class);
-        }
-        return instance;
-    }
-
     @Override
     public void init() throws InitializationException, InterruptedException {
-        try {
-            locationRegistryRemote.init();
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
+        // This has to stay. Else do not implement VoidInitializable. 
     }
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        locationRegistryRemote.activate();
-//        CachedLocationRegistryRemote.waitForData();
         // TODO: pleminoq: let us analyse why this waitForData is needed. Without the sychnchronizer sync task is interrupted. And why is this never happening in the unit tests???
-        locationRegistryRemote.waitForData();
+        Registries.getLocationRegistry().waitForData();
 //        System.out.println("Locations: "+CachedLocationRegistryRemote.getRegistry().getLocationConfigs().size());
 //        System.out.println("Connection: "+CachedLocationRegistryRemote.getRegistry().getConnectionConfigs().size());
 //        System.out.println("Loc: "+locationRegistryRemote.getLocationConfigs().size());
@@ -115,27 +96,19 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
 
     @Override
     public boolean isActive() {
-        return locationRegistryRemote.isActive();
+        return locationRegistrySynchronizer.isActive() && connectionRegistrySynchronizer.isActive();
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         locationRegistrySynchronizer.deactivate();
         connectionRegistrySynchronizer.deactivate();
-        locationRegistryRemote.deactivate();
     }
 
     @Override
     public void shutdown() {
         locationRegistrySynchronizer.shutdown();
         connectionRegistrySynchronizer.shutdown();
-        locationRegistryRemote.shutdown();
-        instance = null;
-    }
-
-    @Override
-    public LocationRegistry getLocationRegistry() throws NotAvailableException {
-        return locationRegistryRemote;
     }
 
     @Override

@@ -28,10 +28,9 @@ import java.util.concurrent.TimeUnit;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.bco.manager.agent.lib.AgentFactory;
 import org.openbase.bco.manager.agent.lib.AgentManager;
-import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.storage.registry.ControllerRegistryImpl;
@@ -45,21 +44,16 @@ public class AgentManagerController implements AgentManager, Launchable<Void>, V
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(AgentManagerController.class);
 
-    private static AgentManagerController instance;
-
     private final AgentFactory factory;
     private final ControllerRegistryImpl<String, AgentController> agentRegistry;
-    private final AgentRegistryRemote agentRegistryRemote;
     private final EnableableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder> agentRegistrySynchronizer;
 
     public AgentManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
-            this.instance = this;
             this.factory = AgentFactoryImpl.getInstance();
             this.agentRegistry = new ControllerRegistryImpl<>();
-            this.agentRegistryRemote = new AgentRegistryRemote();
 
-            this.agentRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder>(agentRegistry, agentRegistryRemote.getAgentConfigRemoteRegistry(), factory) {
+            this.agentRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder>(agentRegistry, Registries.getAgentRegistry().getAgentConfigRemoteRegistry(), factory) {
 
                 @Override
                 public boolean enablingCondition(final UnitConfig config) {
@@ -72,52 +66,35 @@ public class AgentManagerController implements AgentManager, Launchable<Void>, V
         }
     }
 
-    public static AgentManagerController getInstance() throws NotAvailableException {
-        if (instance == null) {
-            throw new NotAvailableException(AgentManagerController.class);
-        }
-        return instance;
-    }
-
     @Override
     public void init() throws InitializationException, InterruptedException {
-        try {
-            agentRegistryRemote.init();
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
     }
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        agentRegistryRemote.activate();
-        
         // TODO: pleminoq: let us analyse why this wait For Datta is needed. Without the sychnchronizer sync task is interrupted. And why is this never happening in the unit tests???
-        agentRegistryRemote.waitForData();
-        
+        Registries.waitForData();
+
         agentRegistrySynchronizer.activate();
     }
 
     @Override
     public boolean isActive() {
-        return agentRegistryRemote.isActive();
+        return agentRegistrySynchronizer.isActive();
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         agentRegistrySynchronizer.deactivate();
-        agentRegistryRemote.deactivate();
     }
 
     @Override
     public void shutdown() {
         agentRegistrySynchronizer.shutdown();
-        agentRegistryRemote.shutdown();
-        instance = null;
     }
 
     @Override
     public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
-        agentRegistryRemote.waitForData(timeout, timeUnit);
+        Registries.getAgentRegistry().waitForData(timeout, timeUnit);
     }
 }

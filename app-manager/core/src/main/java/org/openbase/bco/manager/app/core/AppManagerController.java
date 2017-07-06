@@ -25,10 +25,8 @@ import org.openbase.bco.manager.app.lib.AppController;
 import org.openbase.bco.manager.app.lib.AppFactory;
 import org.openbase.bco.manager.app.lib.AppManager;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.storage.registry.ControllerRegistryImpl;
@@ -46,20 +44,16 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(AppManagerController.class);
 
-    private static AppManagerController instance;
     private final AppFactory factory;
     private final ControllerRegistryImpl<String, AppController> appRegistry;
-    private final UnitRegistryRemote unitRegistryRemote;
     private final EnableableEntryRegistrySynchronizer<String, AppController, UnitConfig, UnitConfig.Builder> appRegistrySynchronizer;
 
     public AppManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
-            this.instance = this;
             this.factory = AppFactoryImpl.getInstance();
             this.appRegistry = new ControllerRegistryImpl<>();
-            this.unitRegistryRemote = Registries.getUnitRegistry();
 
-            this.appRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AppController, UnitConfig, UnitConfig.Builder>(appRegistry, unitRegistryRemote.getAppUnitConfigRemoteRegistry(), factory) {
+            this.appRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AppController, UnitConfig, UnitConfig.Builder>(appRegistry, Registries.getUnitRegistry().getAppUnitConfigRemoteRegistry(), factory) {
 
                 @Override
                 public boolean enablingCondition(final UnitConfig config) {
@@ -72,24 +66,15 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
         }
     }
 
-    public static AppManagerController getInstance() throws NotAvailableException {
-        if (instance == null) {
-            throw new NotAvailableException(AppManagerController.class);
-        }
-        return instance;
-    }
-
     @Override
     public void init() throws InitializationException, InterruptedException {
-        try {
-            unitRegistryRemote.waitForData();
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
     }
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
+        //TODO: why is this necessary
+        Registries.waitForData();
+
         appRegistrySynchronizer.activate();
     }
 
@@ -106,6 +91,5 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
     @Override
     public void shutdown() {
         appRegistrySynchronizer.shutdown();
-        instance = null;
     }
 }

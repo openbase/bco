@@ -24,12 +24,9 @@ package org.openbase.bco.manager.user.core;
 import org.openbase.bco.manager.user.lib.UserController;
 import org.openbase.bco.manager.user.lib.UserFactory;
 import org.openbase.bco.manager.user.lib.UserManager;
-import org.openbase.bco.registry.user.lib.UserRegistry;
-import org.openbase.bco.registry.user.lib.provider.UserRegistryProvider;
-import org.openbase.bco.registry.user.remote.UserRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.storage.registry.ControllerRegistryImpl;
@@ -43,24 +40,20 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class UserManagerController implements UserRegistryProvider, UserManager, Launchable<Void>, VoidInitializable {
+public class UserManagerController implements UserManager, Launchable<Void>, VoidInitializable {
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(UserManagerController.class);
 
-    private static UserManagerController instance;
     private final UserFactory factory;
     private final ControllerRegistryImpl<String, UserController> userRegistry;
-    private final UserRegistryRemote userRegistryRemote;
     private final EnableableEntryRegistrySynchronizer<String, UserController, UnitConfig, UnitConfig.Builder> registrySynchronizer;
 
     public UserManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
-            this.instance = this;
             this.factory = UserFactoryImpl.getInstance();
             this.userRegistry = new ControllerRegistryImpl<>();
-            this.userRegistryRemote = new UserRegistryRemote();
 
-            this.registrySynchronizer = new EnableableEntryRegistrySynchronizer<String, UserController, UnitConfig, UnitConfig.Builder>(userRegistry, userRegistryRemote.getUserConfigRemoteRegistry(), factory) {
+            this.registrySynchronizer = new EnableableEntryRegistrySynchronizer<String, UserController, UnitConfig, UnitConfig.Builder>(userRegistry, Registries.getUserRegistry().getUserConfigRemoteRegistry(), factory) {
 
                 @Override
                 public boolean enablingCondition(UnitConfig config) {
@@ -73,37 +66,24 @@ public class UserManagerController implements UserRegistryProvider, UserManager,
         }
     }
 
-    public static UserManagerController getInstance() throws NotAvailableException {
-        if (instance == null) {
-            throw new NotAvailableException(UserManagerController.class);
-        }
-        return instance;
-    }
-
     @Override
     public void init() throws InitializationException, InterruptedException {
-        try {
-            userRegistryRemote.init();
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
+        // This has to stay. Else do not implement VoidInitializable. 
     }
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        userRegistryRemote.activate();
-        userRegistryRemote.waitForData();
+        Registries.getUserRegistry().waitForData();
         registrySynchronizer.activate();
     }
 
     @Override
     public boolean isActive() {
-        return userRegistryRemote.isActive();
+        return registrySynchronizer.isActive();
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        userRegistryRemote.deactivate();
         registrySynchronizer.deactivate();
         userRegistry.clear();
     }
@@ -111,13 +91,6 @@ public class UserManagerController implements UserRegistryProvider, UserManager,
     @Override
     public void shutdown() {
         registrySynchronizer.shutdown();
-        userRegistryRemote.shutdown();
         userRegistry.shutdown();
-        instance = null;
-    }
-
-    @Override
-    public UserRegistry getUserRegistry() throws NotAvailableException {
-        return userRegistryRemote;
     }
 }
