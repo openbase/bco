@@ -91,10 +91,10 @@ public class AuthenticationRegistry {
      * @throws NotAvailableException If the user does not exist in the credentials storage.
      */
     public byte[] getCredentials(String userId) throws NotAvailableException {
-        if (!credentials.containsKey(userId)) {
+        if (!credentials.containsKey(userId)) {;
             throw new NotAvailableException(userId);
         }
-
+        
         return credentials.get(userId).getCredentials().toByteArray();
     }
 

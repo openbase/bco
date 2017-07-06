@@ -22,6 +22,7 @@ package org.openbase.bco.authentication.core.mock;
  * #L%
  */
 import com.google.protobuf.ByteString;
+import java.security.KeyPair;
 import java.util.HashMap;
 import org.openbase.bco.authentication.core.AuthenticationRegistry;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
@@ -35,9 +36,13 @@ import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
  */
 public class MockAuthenticationRegistry extends AuthenticationRegistry {
 
-    public static final String CLIENT_ID = "maxmustermann";
-    public static final String PASSWORD = "password";
-    public static final byte[] PASSWORD_HASH = EncryptionHelper.hash(PASSWORD);
+    public static final String USER_ID = "maxmustermann";
+    public static final String USER_PASSWORD = "password";
+    public static final byte[] USER_PASSWORD_HASH = EncryptionHelper.hash(USER_PASSWORD);
+
+    public static final String CLIENT_ID = "client";
+    public static byte[] CLIENT_PRIVATE_KEY;
+    public static byte[] CLIENT_PUBLIC_KEY;
 
     @Override
     public void setCredentials(String userId, byte[] credentials) throws CouldNotPerformException {
@@ -66,10 +71,16 @@ public class MockAuthenticationRegistry extends AuthenticationRegistry {
     @Override
     public void init() throws InitializationException {
         credentials = new HashMap<>();
-
+                
         try {
-            this.setCredentials(CLIENT_ID, PASSWORD_HASH);
-
+            this.setCredentials(USER_ID, USER_PASSWORD_HASH);
+            
+            // TODO: Add private key to credentials
+            KeyPair keyPair = EncryptionHelper.generateKeyPair();
+            CLIENT_PRIVATE_KEY = keyPair.getPrivate().getEncoded();
+            CLIENT_PUBLIC_KEY = keyPair.getPublic().getEncoded();
+            this.setCredentials(CLIENT_ID, CLIENT_PUBLIC_KEY);
+            
             // add new user to the mock
             this.setCredentials("example_client_id", EncryptionHelper.hash("example_password"));
         } catch (CouldNotPerformException ex) {

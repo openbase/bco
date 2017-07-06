@@ -21,6 +21,8 @@ package org.openbase.bco.authentication.test;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.ByteString;
+import java.security.KeyPair;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -34,11 +36,11 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
-public class SessionKeyTest {
+public class EncryptionHelperTest {
 
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SessionKeyTest.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(EncryptionHelperTest.class);
 
-    public SessionKeyTest() {
+    public EncryptionHelperTest() {
     }
 
     @BeforeClass
@@ -57,15 +59,41 @@ public class SessionKeyTest {
     public void tearDown() {
     }
 
-    /**
-     * Test of generateKey method, of class SessionKey.
-     */
     @Test
     public void testGenerateKey() {
-        System.out.println("generateKey");
+        LOGGER.info("test key generation");
         int expLen = 16;
         int len = EncryptionHelper.generateKey().length;
         assertEquals(expLen, len);
+    }
+
+    @Test
+    public void testSymmetricHashing() {
+        LOGGER.info("test if hashing method hashes symmetrically");
+        byte[] hash1 = EncryptionHelper.hash("test");
+        byte[] hash2 = EncryptionHelper.hash("test");
+        assertArrayEquals(hash1, hash2);
+    }
+
+    @Test
+    public void testSymmetricEncryptionDecryption() throws Exception {
+        LOGGER.info("test symmetric encryption and decryption");
+        String str = "test";
+        byte[] key = EncryptionHelper.generateKey();
+//        byte[] iv = EncryptionHelper.createCiptherBlockChainingVector();
+        ByteString encrypted = EncryptionHelper.encrypt(str, key);
+        String decrypted = (String) EncryptionHelper.decrypt(encrypted, key);
+        assertEquals(str, decrypted);
+    }
+
+    @Test
+    public void testAsymmetricEncryptionDecryption() throws Exception {
+        LOGGER.info("test asymmetric encryption and decryption");
+        String str = "test";
+        KeyPair keyPair = EncryptionHelper.generateKeyPair();
+        ByteString encrypted = EncryptionHelper.encryptAsymmetric(str, keyPair.getPublic().getEncoded());
+        String decrypted = (String) EncryptionHelper.decryptAsymmetric(encrypted, keyPair.getPrivate().getEncoded());
+        assertEquals(str, decrypted);
     }
 
 }

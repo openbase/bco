@@ -81,9 +81,9 @@ public class SessionManagerTest {
      * @throws java.lang.Exception
      */
     @Test(timeout = 5000)
-    public void testLogin() throws Exception {
-        String clientId = MockAuthenticationRegistry.CLIENT_ID;
-        String password = MockAuthenticationRegistry.PASSWORD;
+    public void testUserLogin() throws Exception {
+        String clientId = MockAuthenticationRegistry.USER_ID;
+        String password = MockAuthenticationRegistry.USER_PASSWORD;
 
         SessionManager manager = new SessionManager();
         boolean result = manager.login(clientId, password);
@@ -97,9 +97,26 @@ public class SessionManagerTest {
      * @throws java.lang.Exception
      */
     @Test(timeout = 5000)
-    public void testLogout() throws Exception {
+    public void testClientLogin() throws Exception {
         String clientId = MockAuthenticationRegistry.CLIENT_ID;
-        String password = MockAuthenticationRegistry.PASSWORD;
+        byte[] privateKey = MockAuthenticationRegistry.CLIENT_PRIVATE_KEY;
+        byte[] publicKey = MockAuthenticationRegistry.CLIENT_PUBLIC_KEY;
+
+        SessionManager manager = new SessionManager(privateKey, publicKey);
+        boolean result = manager.login(clientId);
+
+        assertEquals(true, result);
+    }
+
+    /**
+     * Test of login method, of class SessionManager.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 5000)
+    public void testLogout() throws Exception {
+        String clientId = MockAuthenticationRegistry.USER_ID;
+        String password = MockAuthenticationRegistry.USER_PASSWORD;
 
         SessionManager manager = new SessionManager();
         boolean result = manager.login(clientId, password);

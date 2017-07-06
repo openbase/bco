@@ -90,14 +90,14 @@ public class AuthenticatorControllerTest {
     public void testCommunication() throws Exception {
         System.out.println("testCommunication");
 
-        String clientId = MockAuthenticationRegistry.CLIENT_ID;
-        byte[] clientPasswordHash = MockAuthenticationRegistry.PASSWORD_HASH;
+        String userId = MockAuthenticationRegistry.USER_ID;
+        byte[] userPasswordHash = MockAuthenticationRegistry.USER_PASSWORD_HASH;
 
         // handle KDC request on server side
-        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(clientId).get();
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket("@" + userId).get();
 
         // handle KDC response on client side
-        List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(clientId, clientPasswordHash, ticketSessionKeyWrapper);
+        List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(userId, userPasswordHash, true, ticketSessionKeyWrapper);
         TicketAuthenticatorWrapper clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
         byte[] clientTGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
 
@@ -105,7 +105,7 @@ public class AuthenticatorControllerTest {
         ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestClientServerTicket(clientTicketAuthenticatorWrapper).get();
 
         // handle TGS response on client side
-        list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(clientId, clientTGSSessionKey, ticketSessionKeyWrapper);
+        list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(userId, clientTGSSessionKey, ticketSessionKeyWrapper);
         clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
         byte[] clientSSSessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
 
@@ -129,18 +129,18 @@ public class AuthenticatorControllerTest {
     public void testAuthenticationWithNonExistentUser() throws Exception {
         System.out.println("testAuthenticationWithNonExistentUser");
 
-        String nonExistentClientId = "12abc-15123";
+        String nonExistentUserId = "12abc-15123";
 
         try {
             ExceptionPrinter.setBeQuit(Boolean.TRUE);
-            CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(nonExistentClientId).get();
+            CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(nonExistentUserId).get();
         } catch (ExecutionException ex) {
             // test successful
             return;
         } finally {
             ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }
-        fail("Exception has not been thrown even though there should be no user[" + nonExistentClientId + "] in the database!");
+        fail("Exception has not been thrown even though there should be no user[" + nonExistentUserId + "] in the database!");
     }
 
     /**
@@ -152,35 +152,35 @@ public class AuthenticatorControllerTest {
     public void testAuthenticationWithIncorrectPassword() throws Exception {
         System.out.println("testAuthenticationWithIncorrectPassword");
 
-        String clientId = MockAuthenticationRegistry.CLIENT_ID;
+        String userId = MockAuthenticationRegistry.USER_ID;
         String password = "wrongpassword";
         byte[] passwordHash = EncryptionHelper.hash(password);
 
-        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(clientId).get();
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket("@" + userId).get();
         try {
             ExceptionPrinter.setBeQuit(Boolean.TRUE);
-            AuthenticationClientHandler.handleKeyDistributionCenterResponse(clientId, passwordHash, ticketSessionKeyWrapper);
+            AuthenticationClientHandler.handleKeyDistributionCenterResponse(userId, passwordHash, true, ticketSessionKeyWrapper);
         } catch (IOException ex) {
             return;
         } finally {
             ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }
-        fail("Exception has not been thrown even though user[" + clientId + "] does not use the password[" + password + "]!");
+        fail("Exception has not been thrown even though user[" + userId + "] does not use the password[" + password + "]!");
     }
 
     @Test(timeout = 5000)
     public void testChangeCredentials() throws Exception {
         System.out.println("testChangeCredentials");
 
-        String clientId = MockAuthenticationRegistry.CLIENT_ID;
-        byte[] clientPasswordHash = MockAuthenticationRegistry.PASSWORD_HASH;
-        byte[] newPasswordHash = MockAuthenticationRegistry.PASSWORD_HASH;
+        String userId = MockAuthenticationRegistry.USER_ID;
+        byte[] userPasswordHash = MockAuthenticationRegistry.USER_PASSWORD_HASH;
+        byte[] newPasswordHash = MockAuthenticationRegistry.USER_PASSWORD_HASH;
 
         // handle KDC request on server side
-        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(clientId).get();
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket("@" + userId).get();
 
         // handle KDC response on client side
-        List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(clientId, clientPasswordHash, ticketSessionKeyWrapper);
+        List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(userId, userPasswordHash, true, ticketSessionKeyWrapper);
         TicketAuthenticatorWrapper clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
         byte[] clientTGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
 
@@ -188,7 +188,7 @@ public class AuthenticatorControllerTest {
         ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestClientServerTicket(clientTicketAuthenticatorWrapper).get();
 
         // handle TGS response on client side
-        list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(clientId, clientTGSSessionKey, ticketSessionKeyWrapper);
+        list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(userId, clientTGSSessionKey, ticketSessionKeyWrapper);
         clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
         byte[] clientSSSessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
 
@@ -196,8 +196,8 @@ public class AuthenticatorControllerTest {
         clientTicketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(clientSSSessionKey, clientTicketAuthenticatorWrapper);
 
         LoginCredentialsChange loginCredentialsChange = LoginCredentialsChange.newBuilder()
-          .setId(MockAuthenticationRegistry.CLIENT_ID)
-          .setOldCredentials(EncryptionHelper.encrypt(clientPasswordHash, clientSSSessionKey))
+          .setId(MockAuthenticationRegistry.USER_ID)
+          .setOldCredentials(EncryptionHelper.encrypt(userPasswordHash, clientSSSessionKey))
           .setNewCredentials(EncryptionHelper.encrypt(newPasswordHash, clientSSSessionKey))
           .setTicketAuthenticatorWrapper(clientTicketAuthenticatorWrapper)
           .build();

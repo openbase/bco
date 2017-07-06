@@ -23,6 +23,9 @@ package org.openbase.bco.authentication.lib;
  */
 import java.io.IOException;
 import java.io.StreamCorruptedException;
+import java.security.KeyPair;
+import java.security.PrivateKey;
+import java.security.PublicKey;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -47,8 +50,28 @@ public class SessionManager {
 
     private TicketAuthenticatorWrapper ticketAuthenticatorWrapper;
     private byte[] sessionKey;
+    
+    // TODO: Replace this with a store
+    private String clientId;
+    private byte[] clientPrivateKey;
+    private byte[] clientPublicKey;
+    private String userId;
+    private byte[] userPassword;
+    private boolean userKeepSession;
 
     public SessionManager() {
+        // this is a mockup!
+        // TODO: remove this and instead access the key/password store on the client side directly
+        this.clientId = "";
+    }
+
+    // this is a mockup!
+    // TODO: remove this and instead access the key/password store on the client side directly
+    public SessionManager(byte[] privateKey, byte[] publicKey) {
+        this();
+        this.clientPrivateKey = privateKey;
+        this.clientPublicKey = publicKey;
+        this.userKeepSession = true;
     }
 
     public TicketAuthenticatorWrapper getTicketAuthenticatorWrapper() {
@@ -72,27 +95,60 @@ public class SessionManager {
     }
 
     /**
-     * Wraps the whole login process into one method
+     * Perform a login for a given userId and password.
      *
-     * @param clientId Identifier of the client - must be present in client
-     * database
-     * @param clientPassword Password of the client
+     * @param userId Identifier of the user
+     * @param userPassword Password of the user
      * @return Returns Returns an TicketAuthenticatorWrapperWrapper containing
      * both the ClientServerTicket and Authenticator
      * @throws StreamCorruptedException If the password was wrong.
      * @throws NotAvailableException If the entered clientId could not be found.
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
-    public boolean login(String clientId, String clientPassword) throws StreamCorruptedException, CouldNotPerformException, NotAvailableException, RejectedException {
-        try {
-            // init KDC request on client side
-            byte[] clientPasswordHash = EncryptionHelper.hash(clientPassword);
+    public boolean login(String userId, String userPassword) throws StreamCorruptedException, CouldNotPerformException, NotAvailableException {
+            byte[] clientPasswordHash = EncryptionHelper.hash(userPassword);
+            return this.internalLogin(userId, clientPasswordHash, true);
+    }
 
+    /**
+     * Perform a login for a given clientId.
+     *
+     * @param clientId Identifier of the user
+     * @return Returns Returns an TicketAuthenticatorWrapperWrapper containing
+     * both the ClientServerTicket and Authenticator
+     * @throws StreamCorruptedException If the password was wrong.
+     * @throws NotAvailableException If the entered clientId could not be found.
+     * @throws CouldNotPerformException In case of a communication error between client and server.
+     */
+    public boolean login(String clientId) throws StreamCorruptedException, CouldNotPerformException, NotAvailableException {
+        // TODO: replace both of this with some kind of retrievel from a store
+        this.clientId = clientId;
+        byte[] key = this.clientPrivateKey;
+        return this.internalLogin(clientId, key, false);
+    }
+
+    /**
+     * Perform a login for a given userId and password.
+     *
+     * @param id Identifier of the user or client
+     * @param key Password or private key of the user or client
+     * @return Returns Returns an TicketAuthenticatorWrapperWrapper containing
+     * both the ClientServerTicket and Authenticator
+     * @throws StreamCorruptedException If the password was wrong.
+     * @throws NotAvailableException If the entered clientId could not be found.
+     * @throws CouldNotPerformException In case of a communication error between client and server.
+     */
+    private boolean internalLogin(String id, byte[] key, boolean isUser) throws StreamCorruptedException, CouldNotPerformException, NotAvailableException {
+        try {
+            // prepend clientId to userId for TicketGranteningTicket request
+            String clientIdAtUserId = this.clientId + "@";
+            if (isUser == true) clientIdAtUserId += id;
+            
             // request TGT
-            TicketSessionKeyWrapperType.TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(clientId).get();
+            TicketSessionKeyWrapperType.TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(clientIdAtUserId).get();
 
             // handle KDC response on client side
-            List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(clientId, clientPasswordHash, ticketSessionKeyWrapper);
+            List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(id, key, isUser, ticketSessionKeyWrapper);
             TicketAuthenticatorWrapper taw = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
             byte[] ticketGrantingServiceSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
 
@@ -100,7 +156,7 @@ public class SessionManager {
             ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestClientServerTicket(taw).get();
 
             // handle TGS response on client side
-            list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(clientId, ticketGrantingServiceSessionKey, ticketSessionKeyWrapper);
+            list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(id, ticketGrantingServiceSessionKey, ticketSessionKeyWrapper);
             this.ticketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
             this.sessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
 

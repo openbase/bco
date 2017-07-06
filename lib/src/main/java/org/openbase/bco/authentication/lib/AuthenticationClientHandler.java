@@ -43,8 +43,9 @@ public class AuthenticationClientHandler {
      * Decrypts the TicketGrantingServer (TGS) session key with client's hashed password
      * Creates an Authenticator containing the clientID and current timestamp encrypted with the TGS session key
      *
-     * @param clientID Identifier of the client - must be present in client database
-     * @param clientPasswordHash Client's hashed password
+     * @param id Identifier of the client or user
+     * @param key hashed password or private key of user or client respectively
+     * @param isUser true if ticket was requested for a user. This is important for the decryption method to be chosen.
      * @param wrapper TicketSessionKeyWrapper containing the TicketGrantingTicket and TGS session key
      * @return Returns a list of objects containing:
      * 1. An TicketAuthenticatorWrapperWrapper containing both the TicketGrantingTicket and Authenticator
@@ -53,14 +54,18 @@ public class AuthenticationClientHandler {
      * @throws StreamCorruptedException If the decryption of the session key fails, probably because the entered password was wrong.
      * @throws IOException If de- or encryption fail because of a general I/O error.
      */
-    public static List<Object> handleKeyDistributionCenterResponse(String clientID, byte[] clientPasswordHash, TicketSessionKeyWrapper wrapper) throws StreamCorruptedException, IOException {
+    public static List<Object> handleKeyDistributionCenterResponse(String id, byte[] key, boolean isUser, TicketSessionKeyWrapper wrapper) throws StreamCorruptedException, IOException {
         // decrypt TGS session key
-        byte[] ticketGrantingServiceSessionKey = (byte[]) EncryptionHelper.decrypt(wrapper.getSessionKey(), clientPasswordHash);
+        byte[] ticketGrantingServiceSessionKey = null;
+        if (isUser == true)
+            ticketGrantingServiceSessionKey = (byte[]) EncryptionHelper.decrypt(wrapper.getSessionKey(), key);
+        else
+            ticketGrantingServiceSessionKey = (byte[]) EncryptionHelper.decryptAsymmetric(wrapper.getSessionKey(), key);
 
         // create Authenticator with empty timestamp
         // set timestamp in initTGSRequest()
         Authenticator.Builder authenticator = Authenticator.newBuilder();
-        authenticator.setClientId(clientID);
+        authenticator.setClientId(id);
         authenticator.setTimestamp(TimestampProcessor.getCurrentTimestamp());
 
         // create TicketAuthenticatorWrapper

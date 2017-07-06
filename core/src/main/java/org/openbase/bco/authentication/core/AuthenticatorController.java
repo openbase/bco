@@ -150,13 +150,23 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     }
 
     @Override
-    public Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(String clientId) throws CouldNotPerformException {
+    public Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(String id) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
             try {
-                String[] split = clientId.split("@", 2);
-                String userName = split[0];
-                byte[] passwordHash = authenticationRegistry.getCredentials(userName);
-                return AuthenticationServerHandler.handleKDCRequest(clientId, passwordHash, "", ticketGrantingServicePrivateKey);
+                String[] split = id.split("@", 2);
+                String _id;
+                byte[] key;
+                boolean isUser = false;
+                if (split[1].length() > 0) {
+                    isUser = true;
+                    _id = split[1].trim();
+                    key = authenticationRegistry.getCredentials(_id);
+                }
+                else {
+                    _id = split[0].trim();
+                    key = authenticationRegistry.getCredentials(_id);
+                }
+                return AuthenticationServerHandler.handleKDCRequest(_id, key, isUser, "", ticketGrantingServicePrivateKey);
             } catch (NotAvailableException ex) {
                 throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
             } catch (InterruptedException | CouldNotPerformException | IOException ex) {
