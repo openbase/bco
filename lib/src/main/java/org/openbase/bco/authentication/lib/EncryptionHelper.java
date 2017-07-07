@@ -22,8 +22,6 @@ import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
-import java.security.spec.RSAPrivateKeySpec;
-import java.security.spec.RSAPublicKeySpec;
 import java.security.spec.X509EncodedKeySpec;
 import java.util.Arrays;
 import javax.crypto.BadPaddingException;
@@ -31,7 +29,6 @@ import javax.crypto.Cipher;
 import javax.crypto.IllegalBlockSizeException;
 import javax.crypto.KeyGenerator;
 import javax.crypto.NoSuchPaddingException;
-import javax.crypto.SealedObject;
 import javax.crypto.SecretKey;
 import javax.crypto.spec.SecretKeySpec;
 import org.openbase.jul.exception.FatalImplementationErrorException;
@@ -136,7 +133,6 @@ public class EncryptionHelper {
      *
      * @param obj Object to be encrypted
      * @param key byte[] to encrypt obj with
-     * @param initializingVector a byteArray of 16 bytes used for Cipher Block Chaining
      * @return Returns encrypted object as ByteString
      * @throws IOException Any IO error occurring during the serialization and
      * encryption.
@@ -173,7 +169,6 @@ public class EncryptionHelper {
      *
      * @param bstr ByteString to be decrypted
      * @param key byte[] to decrypt bstr with
-     * @param initializingVector a byteArray of 16 bytes used for Cipher Block Chaining
      * @return Returns decrypted object as Object
      * @throws StreamCorruptedException If the decryption fails, because of
      * corrupted data or an invalid key.
