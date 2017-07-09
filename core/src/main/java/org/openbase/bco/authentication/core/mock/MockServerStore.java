@@ -21,16 +21,11 @@ package org.openbase.bco.authentication.core.mock;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.google.protobuf.ByteString;
 import java.util.HashMap;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openbase.bco.authentication.core.ServerStore;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
 
 /**
  *

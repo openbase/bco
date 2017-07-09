@@ -21,7 +21,6 @@ package org.openbase.bco.authentication.core.mock;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.security.KeyPair;
 import java.util.HashMap;
 import org.openbase.bco.authentication.lib.ClientStore;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
