@@ -93,8 +93,8 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
     public void testSetColorWithAuthentication() throws Exception {
         System.out.println("login prior to requesting units");
 
-        String clientId = MockAuthenticationRegistry.CLIENT_ID;
-        String password = MockAuthenticationRegistry.PASSWORD;
+        String clientId = MockAuthenticationRegistry.USER_ID;
+        String password = MockAuthenticationRegistry.USER_PASSWORD;
 
         SessionManager manager = Units.getSessionManager();
         boolean result = manager.login(clientId, password);
