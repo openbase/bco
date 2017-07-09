@@ -24,6 +24,7 @@ package org.openbase.bco.authentication.test;
 import org.openbase.bco.authentication.core.mock.MockAuthenticationRegistry;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -125,7 +126,7 @@ public class SessionManagerTest {
 
         manager.logout();
         assertEquals(null, manager.getTicketAuthenticatorWrapper());
-        assertEquals(null, manager.getSessionKey());
+        assertArrayEquals(null, manager.getSessionKey());
     }
 
 }

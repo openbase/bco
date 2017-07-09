@@ -157,13 +157,13 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 String _id;
                 byte[] key;
                 boolean isUser = false;
-                if (split[1].length() > 0) {
+                if (split[0].length() > 0) {
                     isUser = true;
-                    _id = split[1].trim();
+                    _id = split[0].trim();
                     key = authenticationRegistry.getCredentials(_id);
                 }
                 else {
-                    _id = split[0].trim();
+                    _id = split[1].trim();
                     key = authenticationRegistry.getCredentials(_id);
                 }
                 return AuthenticationServerHandler.handleKDCRequest(_id, key, isUser, "", ticketGrantingServicePrivateKey);

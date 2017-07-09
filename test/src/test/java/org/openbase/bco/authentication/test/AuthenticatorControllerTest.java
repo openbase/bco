@@ -22,12 +22,10 @@ package org.openbase.bco.authentication.test;
  * #L%
  */
 import org.openbase.bco.authentication.core.mock.MockAuthenticationRegistry;
-import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import org.junit.AfterClass;
-import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -36,8 +34,6 @@ import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
@@ -95,7 +91,7 @@ public class AuthenticatorControllerTest {
         byte[] userPasswordHash = MockAuthenticationRegistry.USER_PASSWORD_HASH;
 
         // handle KDC request on server side
-        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket("@" + userId).get();
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userId + "@").get();
 
         // handle KDC response on client side
         List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(userId, userPasswordHash, true, ticketSessionKeyWrapper);
@@ -132,7 +128,7 @@ public class AuthenticatorControllerTest {
 
         String nonExistentUserId = "12abc-15123";
 
-        CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(nonExistentUserId).get();
+        CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(nonExistentUserId + "@").get();
     }
 
     /**
@@ -148,7 +144,7 @@ public class AuthenticatorControllerTest {
         String password = "wrongpassword";
         byte[] passwordHash = EncryptionHelper.hash(password);
 
-        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket("@" + userId).get();
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userId + "@").get();
         AuthenticationClientHandler.handleKeyDistributionCenterResponse(userId, passwordHash, true, ticketSessionKeyWrapper);  
     }
 
@@ -161,7 +157,7 @@ public class AuthenticatorControllerTest {
         byte[] newPasswordHash = MockAuthenticationRegistry.USER_PASSWORD_HASH;
 
         // handle KDC request on server side
-        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket("@" + userId).get();
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userId + "@").get();
 
         // handle KDC response on client side
         List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(userId, userPasswordHash, true, ticketSessionKeyWrapper);

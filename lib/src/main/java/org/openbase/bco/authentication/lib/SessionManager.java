@@ -23,9 +23,6 @@ package org.openbase.bco.authentication.lib;
  */
 import java.io.IOException;
 import java.io.StreamCorruptedException;
-import java.security.KeyPair;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -141,11 +138,11 @@ public class SessionManager {
     private boolean internalLogin(String id, byte[] key, boolean isUser) throws StreamCorruptedException, CouldNotPerformException, NotAvailableException {
         try {
             // prepend clientId to userId for TicketGranteningTicket request
-            String clientIdAtUserId = this.clientId + "@";
-            if (isUser == true) clientIdAtUserId += id;
+            String userIdAtClientId = "@" + this.clientId;
+            if (isUser == true) userIdAtClientId = id + userIdAtClientId;
             
             // request TGT
-            TicketSessionKeyWrapperType.TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(clientIdAtUserId).get();
+            TicketSessionKeyWrapperType.TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userIdAtClientId).get();
 
             // handle KDC response on client side
             List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(id, key, isUser, ticketSessionKeyWrapper);
