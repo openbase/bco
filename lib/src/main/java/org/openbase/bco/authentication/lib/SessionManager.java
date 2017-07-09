@@ -195,12 +195,55 @@ public class SessionManager {
     }
 
     /**
-     * determines if a user is logged in (does not validate ClientServerTicket and SessionKey)
+     * determines if a user is logged in.
+     * does not validate ClientServerTicket and SessionKey
      *
      * @return Returns true if logged in otherwise false
      */
     public boolean isLoggedIn() {
         return this.ticketAuthenticatorWrapper != null && this.sessionKey != null;
+    }
+    
+    /**
+     * determines if a user is authenticated.
+     * does validate ClientServerTicket and SessionKey
+     *
+     * @return Returns true if authenticated otherwise false
+     * @throws org.openbase.jul.exception.CouldNotPerformException In case of a communication error between client and server.
+     */
+    public boolean isAuthenticated() throws CouldNotPerformException {
+        if (!this.isLoggedIn()) return false;
+        
+        try {
+            this.ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(this.sessionKey, this.ticketAuthenticatorWrapper);
+            TicketAuthenticatorWrapper wrapper = CachedAuthenticationRemote.getRemote().validateClientServerTicket(this.ticketAuthenticatorWrapper).get();
+            wrapper = AuthenticationClientHandler.handleServiceServerResponse(
+                    this.sessionKey,
+                    this.ticketAuthenticatorWrapper,
+                    wrapper);
+            this.ticketAuthenticatorWrapper = wrapper;
+            return true;
+        } catch (IOException ex) {
+            this.logout();
+            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+            throw new CouldNotPerformException("Decryption failed. You have been logged out for security reasons. Please log in again.");
+        } catch (InterruptedException ex) {
+            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+            throw new CouldNotPerformException("Action was interrupted.", ex);
+        } catch (ExecutionException ex) {
+            Throwable cause = ex.getCause();
+
+            if (cause instanceof RejectedException) {
+                throw ExceptionPrinter.printHistoryAndReturnThrowable((RejectedException) cause, LOGGER, LogLevel.ERROR);
+            }
+
+            if (cause instanceof PermissionDeniedException) {
+                throw ExceptionPrinter.printHistoryAndReturnThrowable((PermissionDeniedException) cause, LOGGER, LogLevel.ERROR);
+            }
+
+            ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
+            throw new CouldNotPerformException("Internal server error.", cause);
+        }
     }
 
     /**
@@ -209,7 +252,7 @@ public class SessionManager {
      * @param clientId ID of the user / client whose credentials should be changed.
      * @param oldCredentials Old credentials, needed for verification.
      * @param newCredentials New credentials to be set.
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException In case of a communication error between client and server.
      */
     public void changeCredentials(String clientId, String oldCredentials, String newCredentials) throws CouldNotPerformException {
         if (!this.isLoggedIn()) {

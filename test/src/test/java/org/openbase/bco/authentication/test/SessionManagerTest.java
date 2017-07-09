@@ -24,7 +24,6 @@ package org.openbase.bco.authentication.test;
 import org.openbase.bco.authentication.core.mock.MockAuthenticationRegistry;
 import org.junit.After;
 import org.junit.AfterClass;
-import org.junit.Assert;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -33,7 +32,6 @@ import org.openbase.bco.authentication.core.AuthenticationRegistry;
 import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 
 /**
  *
@@ -77,7 +75,7 @@ public class SessionManagerTest {
     }
 
     /**
-     * Test of login method, of class SessionManager.
+     * Test of SessionManager.login() for user.
      *
      * @throws java.lang.Exception
      */
@@ -93,7 +91,7 @@ public class SessionManagerTest {
     }
 
     /**
-     * Test of login method, of class SessionManager.
+     * Test of SessionManager.login() for client.
      *
      * @throws java.lang.Exception
      */
@@ -110,7 +108,55 @@ public class SessionManagerTest {
     }
 
     /**
-     * Test of login method, of class SessionManager.
+     * Test of SessionManager.isLoggedIn().
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 5000)
+    public void testUserIsLoggedIn() throws Exception {
+        String clientId = MockAuthenticationRegistry.USER_ID;
+        String password = MockAuthenticationRegistry.USER_PASSWORD;
+        
+        SessionManager manager = new SessionManager();
+        
+        // user should not be authenticated
+        assertEquals(false, manager.isLoggedIn());
+        
+        boolean result = manager.login(clientId, password);
+        
+        // should result true
+        assertEquals(true, result);
+        
+        // user should be authenticated
+        assertEquals(true, manager.isLoggedIn());
+    }
+
+    /**
+     * Test of SessionManager.isAuthenticated().
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 5000)
+    public void testUserIsAuthenticated() throws Exception {
+        String clientId = MockAuthenticationRegistry.USER_ID;
+        String password = MockAuthenticationRegistry.USER_PASSWORD;
+        
+        SessionManager manager = new SessionManager();
+        
+        // user should not be authenticated
+        assertEquals(false, manager.isAuthenticated());
+        
+        boolean result = manager.login(clientId, password);
+        
+        // should result in true
+        assertEquals(true, result);
+        
+        // user should be authenticated
+        assertEquals(true, manager.isAuthenticated());
+    }
+
+    /**
+     * Test of SessionManager.logout().
      *
      * @throws java.lang.Exception
      */

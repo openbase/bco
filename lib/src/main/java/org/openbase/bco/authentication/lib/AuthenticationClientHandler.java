@@ -61,7 +61,6 @@ public class AuthenticationClientHandler {
             ticketGrantingServiceSessionKey = (byte[]) EncryptionHelper.decrypt(wrapper.getSessionKey(), key);
         else
             ticketGrantingServiceSessionKey = (byte[]) EncryptionHelper.decryptAsymmetric(wrapper.getSessionKey(), key);
-        System.out.println("key " + ticketGrantingServiceSessionKey);
 
         // create Authenticator with empty timestamp
         // set timestamp in initTGSRequest()
