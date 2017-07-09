@@ -24,9 +24,8 @@ package org.openbase.bco.authentication.core;
 import java.io.IOException;
 import java.io.StreamCorruptedException;
 import java.util.Arrays;
-import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
-import org.openbase.bco.authentication.core.mock.MockAuthenticationRegistry;
+import org.openbase.bco.authentication.core.mock.MockServerStore;
 import org.openbase.bco.authentication.lib.AuthenticationServerHandler;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -46,6 +45,7 @@ import org.openbase.jul.schedule.WatchDog;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 import org.openbase.bco.authentication.lib.AuthenticationService;
+import org.openbase.bco.authentication.lib.Store;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationSimulationMode;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.PermissionDeniedException;
@@ -79,13 +79,13 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     private final byte[] ticketGrantingServicePrivateKey;
     private final byte[] serviceServerPrivateKey;
 
-    private final AuthenticationRegistry authenticationRegistry;
+    private final Store store;
 
     public AuthenticatorController() {
-        this(new AuthenticationRegistry());
+        this(new ServerStore());
     }
 
-    public AuthenticatorController(AuthenticationRegistry authenticationRegistry) {
+    public AuthenticatorController(Store authenticationRegistry) {
         this.server = new NotInitializedRSBLocalServer();
 
         this.ticketGrantingServicePrivateKey = EncryptionHelper.generateKey();
@@ -98,9 +98,9 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             LOGGER.warn("Could not check simulation property. Starting in normal mode.", ex);
         }
         if (simulation) {
-            this.authenticationRegistry = new MockAuthenticationRegistry();
+            this.store = new MockServerStore();
         } else {
-            this.authenticationRegistry = authenticationRegistry;
+            this.store = authenticationRegistry;
         }
     }
 
@@ -117,7 +117,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             throw new InitializationException(this, ex);
         }
 
-        authenticationRegistry.init();
+        store.init();
     }
 
     @Override
@@ -160,11 +160,11 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 if (split[0].length() > 0) {
                     isUser = true;
                     _id = split[0].trim();
-                    key = authenticationRegistry.getCredentials(_id);
+                    key = store.getCredentials(_id);
                 }
                 else {
                     _id = split[1].trim();
-                    key = authenticationRegistry.getCredentials(_id);
+                    key = store.getCredentials(_id);
                 }
                 return AuthenticationServerHandler.handleKDCRequest(_id, key, isUser, "", ticketGrantingServicePrivateKey);
             } catch (NotAvailableException ex) {
@@ -236,13 +236,103 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 }
 
                 // Check if the given credentials correspond to the old one.
-                if (!Arrays.equals(oldCredentials, authenticationRegistry.getCredentials(userId))) {
+                if (!Arrays.equals(oldCredentials, store.getCredentials(userId))) {
                     throw new RejectedException("The old password is wrong.");
                 }
 
                 // Update credentials.
-                authenticationRegistry.setCredentials(userId, newCredentials);
+                store.setCredentials(userId, newCredentials);
 
+                return response;
+            } catch (RejectedException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
+                throw new RejectedException(ex.getMessage());
+            } catch (StreamCorruptedException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
+                throw new StreamCorruptedException(ex.getMessage());
+            } catch (IOException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+                throw new CouldNotPerformException("Internal server error. Please try again.");
+            }
+        });
+    }
+
+    @Override
+    public Future<TicketAuthenticatorWrapper> register(LoginCredentialsChange loginCredentialsChange) throws RejectedException, StreamCorruptedException, IOException {
+        return GlobalCachedExecutorService.submit(() -> {
+            try {
+                // validate the given authenticator and ticket.
+                TicketAuthenticatorWrapper wrapper = loginCredentialsChange.getTicketAuthenticatorWrapper();
+                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerPrivateKey, wrapper);
+
+                // decrypt ticket and authenticator
+                Ticket clientServerTicket = (Ticket) EncryptionHelper.decrypt(wrapper.getTicket(), serviceServerPrivateKey);
+                byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
+                
+                Authenticator authenticator = (Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), clientServerSessionKey);
+                String authenticatorUserId = authenticator.getClientId().split("@", 2)[0];
+                String newId = loginCredentialsChange.getId();
+                
+                // check if performing user is admin
+                if (!store.isAdmin(authenticatorUserId))
+                    throw new PermissionDeniedException("You are not permitted to perform this action.");
+                
+                // don't allow administrators to overwrite themselves
+                // don't allow to overwrite somebody else
+                if (newId.equals(authenticatorUserId) || store.hasEntry(newId))
+                    throw new CouldNotPerformException("You cannot register an existing user.");
+                
+                // decrypt key
+                byte[] key = (byte[]) EncryptionHelper.decrypt(loginCredentialsChange.getNewCredentials(), clientServerSessionKey);
+
+                // register
+                store.addCredentials(newId, key, loginCredentialsChange.getAdmin());
+                
+                return response;
+            } catch (RejectedException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
+                throw new RejectedException(ex.getMessage());
+            } catch (StreamCorruptedException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
+                throw new StreamCorruptedException(ex.getMessage());
+            } catch (IOException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+                throw new CouldNotPerformException("Internal server error. Please try again.");
+            }
+        });
+    }
+
+    @Override
+    public Future<TicketAuthenticatorWrapper> setAdministrator(LoginCredentialsChange loginCredentialsChange) throws RejectedException, StreamCorruptedException, IOException {
+        return GlobalCachedExecutorService.submit(() -> {
+            try {
+                // validate the given authenticator and ticket.
+                TicketAuthenticatorWrapper wrapper = loginCredentialsChange.getTicketAuthenticatorWrapper();
+                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerPrivateKey, wrapper);
+
+                // decrypt ticket and authenticator
+                Ticket clientServerTicket = (Ticket) EncryptionHelper.decrypt(wrapper.getTicket(), serviceServerPrivateKey);
+                byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
+                
+                Authenticator authenticator = (Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), clientServerSessionKey);
+                String authenticatorUserId = authenticator.getClientId().split("@", 2)[0];
+                String newId = loginCredentialsChange.getId();
+                
+                // check if performing user is admin
+                if (!this.store.isAdmin(authenticatorUserId))
+                    throw new PermissionDeniedException("You are not permitted to perform this action.");
+                
+                // don't allow administrators to change administrator status of themselves
+                if (newId.equals(authenticatorUserId))
+                    throw new CouldNotPerformException("You cannot register an existing user.");
+                
+                // don't allow administrators to change administrator status of nonexistent entry
+                if (!this.store.hasEntry(newId))
+                    throw new CouldNotPerformException("Given user does not exist.");
+            
+                // register
+                this.store.setAdmin(newId, loginCredentialsChange.getAdmin());
+                
                 return response;
             } catch (RejectedException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
@@ -260,7 +350,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     @Override
     public Future<Void> registerClient(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
-            authenticationRegistry.setCredentials(loginCredentialsChange.getId(), loginCredentialsChange.getNewCredentials().toByteArray());
+            store.setCredentials(loginCredentialsChange.getId(), loginCredentialsChange.getNewCredentials().toByteArray());
             return null;
         });
     }

@@ -21,7 +21,7 @@ package org.openbase.bco.authentication.test;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.authentication.core.mock.MockAuthenticationRegistry;
+import org.openbase.bco.authentication.core.mock.MockServerStore;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.junit.After;
@@ -56,7 +56,7 @@ public class AuthenticatorControllerTest {
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
 
-        authenticatorController = new AuthenticatorController(new MockAuthenticationRegistry());
+        authenticatorController = new AuthenticatorController(new MockServerStore());
         authenticatorController.init();
         authenticatorController.activate();
         authenticatorController.waitForActivation();
@@ -87,8 +87,8 @@ public class AuthenticatorControllerTest {
     public void testCommunication() throws Exception {
         System.out.println("testCommunication");
 
-        String userId = MockAuthenticationRegistry.USER_ID;
-        byte[] userPasswordHash = MockAuthenticationRegistry.USER_PASSWORD_HASH;
+        String userId = MockServerStore.USER_ID;
+        byte[] userPasswordHash = MockServerStore.USER_PASSWORD_HASH;
 
         // handle KDC request on server side
         TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userId + "@").get();
@@ -140,7 +140,7 @@ public class AuthenticatorControllerTest {
     public void testAuthenticationWithIncorrectPassword() throws Exception {
         System.out.println("testAuthenticationWithIncorrectPassword");
 
-        String userId = MockAuthenticationRegistry.USER_ID;
+        String userId = MockServerStore.USER_ID;
         String password = "wrongpassword";
         byte[] passwordHash = EncryptionHelper.hash(password);
 
@@ -152,9 +152,9 @@ public class AuthenticatorControllerTest {
     public void testChangeCredentials() throws Exception {
         System.out.println("testChangeCredentials");
 
-        String userId = MockAuthenticationRegistry.USER_ID;
-        byte[] userPasswordHash = MockAuthenticationRegistry.USER_PASSWORD_HASH;
-        byte[] newPasswordHash = MockAuthenticationRegistry.USER_PASSWORD_HASH;
+        String userId = MockServerStore.USER_ID;
+        byte[] userPasswordHash = MockServerStore.USER_PASSWORD_HASH;
+        byte[] newPasswordHash = MockServerStore.USER_PASSWORD_HASH;
 
         // handle KDC request on server side
         TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userId + "@").get();
@@ -176,7 +176,7 @@ public class AuthenticatorControllerTest {
         clientTicketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(clientSSSessionKey, clientTicketAuthenticatorWrapper);
 
         LoginCredentialsChange loginCredentialsChange = LoginCredentialsChange.newBuilder()
-          .setId(MockAuthenticationRegistry.USER_ID)
+          .setId(MockServerStore.USER_ID)
           .setOldCredentials(EncryptionHelper.encrypt(userPasswordHash, clientSSSessionKey))
           .setNewCredentials(EncryptionHelper.encrypt(newPasswordHash, clientSSSessionKey))
           .setTicketAuthenticatorWrapper(clientTicketAuthenticatorWrapper)

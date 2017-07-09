@@ -23,10 +23,16 @@ package org.openbase.bco.authentication.lib;
  */
 import java.io.IOException;
 import java.io.StreamCorruptedException;
+import java.security.KeyPair;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import org.openbase.bco.authentication.core.mock.MockClientStore;
+import org.openbase.bco.authentication.lib.jp.JPAuthenticationSimulationMode;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
+import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.exception.RejectedException;
@@ -34,6 +40,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.LoginCredentialsChangeType;
+import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType;
 
@@ -48,27 +55,38 @@ public class SessionManager {
     private TicketAuthenticatorWrapper ticketAuthenticatorWrapper;
     private byte[] sessionKey;
     
-    // TODO: Replace this with a store
-    private String clientId;
-    private byte[] clientPrivateKey;
-    private byte[] clientPublicKey;
-    private String userId;
-    private byte[] userPassword;
+    private final Store store;
+    
+    // TODO: maybe replace this with something else
     private boolean userKeepSession;
+    
+    // remember id of client during session
+    private String clientId;
 
     public SessionManager() {
-        // this is a mockup!
-        // TODO: remove this and instead access the key/password store on the client side directly
-        this.clientId = "";
+        this(new ClientStore());
     }
 
-    // this is a mockup!
-    // TODO: remove this and instead access the key/password store on the client side directly
-    public SessionManager(byte[] privateKey, byte[] publicKey) {
-        this();
-        this.clientPrivateKey = privateKey;
-        this.clientPublicKey = publicKey;
+    public SessionManager(Store userStore) {
+        // TODO: maybe replace this with something else
         this.userKeepSession = true;
+        
+        // load registry
+        boolean simulation = false;
+        try {
+            simulation = JPService.getProperty(JPAuthenticationSimulationMode.class).getValue();
+        } catch (JPNotAvailableException ex) {
+            LOGGER.warn("Could not check simulation property. Starting in normal mode.", ex);
+        }
+        if (simulation) {
+            this.store = new MockClientStore();
+        } else {
+            this.store = userStore;
+        }
+    }
+    
+    public void init() throws InitializationException {
+        this.store.init();
     }
 
     public TicketAuthenticatorWrapper getTicketAuthenticatorWrapper() {
@@ -120,7 +138,7 @@ public class SessionManager {
     public boolean login(String clientId) throws StreamCorruptedException, CouldNotPerformException, NotAvailableException {
         // TODO: replace both of this with some kind of retrievel from a store
         this.clientId = clientId;
-        byte[] key = this.clientPrivateKey;
+        byte[] key = this.store.getCredentials(clientId);
         return this.internalLogin(clientId, key, false);
     }
 
@@ -136,6 +154,8 @@ public class SessionManager {
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
     private boolean internalLogin(String id, byte[] key, boolean isUser) throws StreamCorruptedException, CouldNotPerformException, NotAvailableException {
+        if (this.isLoggedIn()) throw new CouldNotPerformException("You are already logged in.");
+        
         try {
             // prepend clientId to userId for TicketGranteningTicket request
             String userIdAtClientId = "@" + this.clientId;
@@ -156,7 +176,12 @@ public class SessionManager {
             list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(id, ticketGrantingServiceSessionKey, ticketSessionKeyWrapper);
             this.ticketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
             this.sessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
-
+            
+            // save credentials
+            // TODO: isAdmin flat is irrelevant here - client side doesn't need to know about that 
+            if (!this.store.hasEntry(id))
+                this.store.addCredentials(id, key, false);
+            
             return true;
         } catch (StreamCorruptedException ex) {
             throw new CouldNotPerformException("The password you have entered was wrong. Please try again!");
@@ -208,11 +233,11 @@ public class SessionManager {
      * determines if a user is authenticated.
      * does validate ClientServerTicket and SessionKey
      *
-     * @return Returns true if authenticated otherwise false
+     * @return Returns true if authenticated otherwise appropriate exception
      * @throws org.openbase.jul.exception.CouldNotPerformException In case of a communication error between client and server.
      */
     public boolean isAuthenticated() throws CouldNotPerformException {
-        if (!this.isLoggedIn()) return false;
+        if (!this.isLoggedIn()) throw new CouldNotPerformException("Please log in first!");
         
         try {
             this.ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(this.sessionKey, this.ticketAuthenticatorWrapper);
@@ -273,6 +298,11 @@ public class SessionManager {
 
             TicketAuthenticatorWrapper newTicketAuthenticatorWrapper = CachedAuthenticationRemote.getRemote().changeCredentials(loginCredentialsChange).get();
             AuthenticationClientHandler.handleServiceServerResponse(sessionKey, ticketAuthenticatorWrapper, newTicketAuthenticatorWrapper);
+            
+            // save new credentials
+            if (this.store.hasEntry(clientId))
+                this.store.setCredentials(clientId, newHash);
+            
         } catch (IOException ex) {
             this.logout();
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
@@ -296,5 +326,126 @@ public class SessionManager {
             ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
             throw new CouldNotPerformException("Internal server error.", cause);
         }
+    }
+    
+    /**
+     * Registers a client.
+     * 
+     * @param clientId the id of the client
+     * @throws org.openbase.jul.exception.CouldNotPerformException
+     */
+    public void registerClient(String clientId) throws CouldNotPerformException {        
+        KeyPair keyPair = EncryptionHelper.generateKeyPair();
+        boolean isAdmin = false;
+        this.internalRegister(clientId, keyPair.getPublic().getEncoded(), isAdmin);
+        if (this.store.hasEntry(clientId))
+            this.store.removeEntry(clientId);
+        this.store.addCredentials(clientId, keyPair.getPrivate().getEncoded(), isAdmin);
+    }
+    
+    /**
+     * Registers a user.
+     * 
+     * @param userId the id of the user
+     * @param password the password of the user
+     * @param isAdmin flag if user should be an administrator
+     * @throws org.openbase.jul.exception.CouldNotPerformException
+     */
+    public void registerUser(String userId, String password, boolean isAdmin) throws CouldNotPerformException {        
+        byte[] key = EncryptionHelper.hash(password);
+        this.internalRegister(userId, key, isAdmin);
+    }
+    
+    /**
+     * Registers a user or client.
+     * Assumes an administrator who has permissions for this already exists and is logged in with current session manager.
+     * Overwrites duplicate entries on client, if entry to be registered does not exist on server.
+     * Does not overwrite duplicate entries on client, if entry does exist on server.
+     * 
+     * @param userId the id of the user
+     * @param password the password of the user
+     * @param isAdmin flag if user should be an administrator
+     * @throws org.openbase.jul.exception.CouldNotPerformException
+     */
+    private void internalRegister(String id, byte[] key, boolean isAdmin) throws CouldNotPerformException {
+        if (!this.isLoggedIn()) throw new CouldNotPerformException("Please log in first!");
+        
+        try {
+            ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(this.sessionKey, this.ticketAuthenticatorWrapper);
+
+            LoginCredentialsChange loginCredentialsChange = LoginCredentialsChange.newBuilder()
+                    .setId(id)
+                    .setNewCredentials(EncryptionHelper.encrypt(key, this.sessionKey))
+                    .setTicketAuthenticatorWrapper(this.ticketAuthenticatorWrapper)
+                    .setAdmin(isAdmin)
+                    .build();
+         
+            TicketAuthenticatorWrapper wrapper = CachedAuthenticationRemote.getRemote().register(loginCredentialsChange).get();
+            AuthenticationClientHandler.handleServiceServerResponse(this.sessionKey, this.ticketAuthenticatorWrapper, wrapper);        
+        } catch (IOException ex) {
+            this.logout();
+            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+            throw new CouldNotPerformException("Decryption failed. You have been logged out for security reasons. Please log in again.");
+        } catch (RejectedException | NotAvailableException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
+        } catch (InterruptedException ex) {
+            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+            throw new CouldNotPerformException("Action was interrupted.", ex);
+        } catch (ExecutionException ex) {
+            Throwable cause = ex.getCause();
+
+            if (cause instanceof RejectedException) {
+                throw ExceptionPrinter.printHistoryAndReturnThrowable((RejectedException) cause, LOGGER, LogLevel.ERROR);
+            }
+
+            if (cause instanceof PermissionDeniedException) {
+                throw ExceptionPrinter.printHistoryAndReturnThrowable((PermissionDeniedException) cause, LOGGER, LogLevel.ERROR);
+            }
+
+            ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
+            throw new CouldNotPerformException("Internal server error.", cause);
+        }
+    }
+    
+    public void setAdministrator(String id, boolean isAdmin) throws CouldNotPerformException {
+        if (!this.isLoggedIn()) throw new CouldNotPerformException("Please log in first!");
+        
+        try {
+            ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(this.sessionKey, this.ticketAuthenticatorWrapper);
+
+            LoginCredentialsChange loginCredentialsChange = LoginCredentialsChange.newBuilder()
+                    .setId(id)
+                    .setTicketAuthenticatorWrapper(this.ticketAuthenticatorWrapper)
+                    .setAdmin(isAdmin)
+                    .build();
+         
+            TicketAuthenticatorWrapper wrapper = CachedAuthenticationRemote.getRemote().setAdministrator(loginCredentialsChange).get();
+            AuthenticationClientHandler.handleServiceServerResponse(this.sessionKey, this.ticketAuthenticatorWrapper, wrapper);    
+            
+            if (this.store.hasEntry(id))
+                this.store.setAdmin(id, isAdmin);
+        } catch (IOException ex) {
+            this.logout();
+            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+            throw new CouldNotPerformException("Decryption failed. You have been logged out for security reasons. Please log in again.");
+        } catch (RejectedException | NotAvailableException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
+        } catch (InterruptedException ex) {
+            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+            throw new CouldNotPerformException("Action was interrupted.", ex);
+        } catch (ExecutionException ex) {
+            Throwable cause = ex.getCause();
+
+            if (cause instanceof RejectedException) {
+                throw ExceptionPrinter.printHistoryAndReturnThrowable((RejectedException) cause, LOGGER, LogLevel.ERROR);
+            }
+
+            if (cause instanceof PermissionDeniedException) {
+                throw ExceptionPrinter.printHistoryAndReturnThrowable((PermissionDeniedException) cause, LOGGER, LogLevel.ERROR);
+            }
+
+            ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
+            throw new CouldNotPerformException("Internal server error.", cause);
+        }        
     }
 }

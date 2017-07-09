@@ -112,6 +112,23 @@ public class AuthenticationRegistry {
 
         return credentials.get(userId).getAdmin();
     }
+    
+    /**
+     * Changes the admin-flag of an entry.
+     * 
+     * @param userId user to change flag of
+     * @param isAdmin boolean whether user is admin or not
+     * @throws NotAvailableException Throws if there is no user given userId
+     */
+    public void setAdmin(String userId, boolean isAdmin) throws NotAvailableException {
+        if (!credentials.containsKey(userId))
+            throw new NotAvailableException(userId);
+        LoginCredentials loginCredentials = LoginCredentials.newBuilder(this.credentials.get(userId))
+            .setAdmin(isAdmin)
+            .build();
+        this.credentials.put(userId, loginCredentials);
+        this.save();
+    }
 
     /**
      * Sets the login credentials for a given user. If there is already an entry in the storage for
@@ -154,6 +171,26 @@ public class AuthenticationRegistry {
           .build();
 
         this.credentials.put(userId, loginCredentials);
+        this.save();
+    }
+    
+    /**
+     * Determines if there is an entry with given id.
+     * 
+     * @param id the id to check
+     * @return true if existent, false otherwise
+     */
+    public boolean hasEntry(String id) {
+        return credentials.containsKey(id);
+    }
+    
+    /**
+     * Removes entry from store given id.
+     * 
+     * @param id the credentials to remove
+     */
+    public void removeEntry(String id) {
+        if (this.hasEntry(id)) this.credentials.remove(id);
         this.save();
     }
 
