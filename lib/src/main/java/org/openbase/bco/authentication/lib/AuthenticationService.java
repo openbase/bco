@@ -115,12 +115,11 @@ public interface AuthenticationService {
      * which has to be verified by the client to make sure that its the correct
      * server answering the request.
      * @throws RejectedException If the password change fails (invalid ticket, user has no permission, old password doesn't match).
-     * @throws StreamCorruptedException If any decryption fails.
      * @throws IOException If de- or encryption fail because of a general I/O error.
      * @throws PermissionDeniedException If the user has no permission to change this password.
      */
     @RPCMethod
-    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, StreamCorruptedException, IOException, PermissionDeniedException;
+    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, IOException, PermissionDeniedException;
 
     /**
      * Registers a client or user.

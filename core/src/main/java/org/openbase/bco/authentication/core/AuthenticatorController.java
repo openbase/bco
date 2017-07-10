@@ -26,6 +26,7 @@ import java.io.StreamCorruptedException;
 import java.util.Arrays;
 import java.util.concurrent.Future;
 import org.openbase.bco.authentication.core.mock.MockServerStore;
+import javax.crypto.BadPaddingException;
 import org.openbase.bco.authentication.lib.AuthenticationServerHandler;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -70,7 +71,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketAuthenticatorWrapper.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LoginCredentialsChange.getDefaultInstance()));
     }
-    
+
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatorController.class);
 
     private RSBLocalServer server;
@@ -181,12 +182,9 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 return AuthenticationServerHandler.handleTGSRequest(ticketGrantingServicePrivateKey, serviceServerPrivateKey, ticketAuthenticatorWrapper);
-            } catch (RejectedException ex) {
+            } catch (RejectedException | BadPaddingException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
-                throw new RejectedException(ex.getMessage());
-            } catch (StreamCorruptedException ex) {
-                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
-                throw new StreamCorruptedException(ex.getMessage());
+                throw ex;
             } catch (IOException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
                 throw new CouldNotPerformException("Internal server error. Please try again.");
@@ -199,12 +197,9 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 return AuthenticationServerHandler.handleSSRequest(serviceServerPrivateKey, ticketAuthenticatorWrapper);
-            } catch (RejectedException ex) {
+            } catch (RejectedException | BadPaddingException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
-                throw new RejectedException(ex.getMessage());
-            } catch (StreamCorruptedException ex) {
-                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
-                throw new StreamCorruptedException(ex.getMessage());
+                throw ex;
             } catch (IOException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
                 throw new CouldNotPerformException("Internal server error. Please try again.");
@@ -213,7 +208,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     }
 
     @Override
-    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentialsChange loginCredentialsChange) throws RejectedException, StreamCorruptedException, IOException {
+    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentialsChange loginCredentialsChange) throws RejectedException, IOException {
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 // Validate the given authenticator and ticket.
@@ -221,11 +216,11 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerPrivateKey, wrapper);
 
                 // Decrypt ticket, authenticator and credentials.
-                Ticket clientServerTicket = (Ticket) EncryptionHelper.decrypt(wrapper.getTicket(), serviceServerPrivateKey);
+                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerPrivateKey, Ticket.class);
                 byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
-                Authenticator authenticator = (Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), clientServerSessionKey);
-                byte[] oldCredentials = (byte[]) EncryptionHelper.decrypt(loginCredentialsChange.getOldCredentials(), clientServerSessionKey);
-                byte[] newCredentials = (byte[]) EncryptionHelper.decrypt(loginCredentialsChange.getNewCredentials(), clientServerSessionKey);
+                Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);
+                byte[] oldCredentials = EncryptionHelper.decryptSymmetric(loginCredentialsChange.getOldCredentials(), clientServerSessionKey, byte[].class);
+                byte[] newCredentials = EncryptionHelper.decryptSymmetric(loginCredentialsChange.getNewCredentials(), clientServerSessionKey, byte[].class);
                 String userId = loginCredentialsChange.getId();
                 String[] split = authenticator.getClientId().split("@", 2);
                 String authenticatorUserId = split[0];
@@ -244,15 +239,12 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 store.setCredentials(userId, newCredentials);
 
                 return response;
-            } catch (RejectedException ex) {
+            } catch (RejectedException | BadPaddingException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
-                throw new RejectedException(ex.getMessage());
-            } catch (StreamCorruptedException ex) {
-                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
-                throw new StreamCorruptedException(ex.getMessage());
+                throw ex;
             } catch (IOException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
-                throw new CouldNotPerformException("Internal server error. Please try again.");
+                throw ex;
             }
         });
     }
@@ -266,10 +258,10 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerPrivateKey, wrapper);
 
                 // decrypt ticket and authenticator
-                Ticket clientServerTicket = (Ticket) EncryptionHelper.decrypt(wrapper.getTicket(), serviceServerPrivateKey);
+                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerPrivateKey, Ticket.class);
                 byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
                 
-                Authenticator authenticator = (Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), clientServerSessionKey);
+                Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);
                 String authenticatorUserId = authenticator.getClientId().split("@", 2)[0];
                 String newId = loginCredentialsChange.getId();
                 
@@ -283,7 +275,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                     throw new CouldNotPerformException("You cannot register an existing user.");
                 
                 // decrypt key
-                byte[] key = (byte[]) EncryptionHelper.decrypt(loginCredentialsChange.getNewCredentials(), clientServerSessionKey);
+                byte[] key = EncryptionHelper.decryptSymmetric(loginCredentialsChange.getNewCredentials(), clientServerSessionKey, byte[].class);
 
                 // register
                 store.addCredentials(newId, key, loginCredentialsChange.getAdmin());
@@ -311,10 +303,10 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerPrivateKey, wrapper);
 
                 // decrypt ticket and authenticator
-                Ticket clientServerTicket = (Ticket) EncryptionHelper.decrypt(wrapper.getTicket(), serviceServerPrivateKey);
+                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerPrivateKey, Ticket.class);
                 byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
                 
-                Authenticator authenticator = (Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), clientServerSessionKey);
+                Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);
                 String authenticatorUserId = authenticator.getClientId().split("@", 2)[0];
                 String newId = loginCredentialsChange.getId();
                 

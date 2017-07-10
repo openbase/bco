@@ -25,6 +25,7 @@ import java.io.IOException;
 import java.io.StreamCorruptedException;
 import java.util.ArrayList;
 import java.util.List;
+import javax.crypto.BadPaddingException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
@@ -51,16 +52,13 @@ public class AuthenticationClientHandler {
      * 1. An TicketAuthenticatorWrapperWrapper containing both the TicketGrantingTicket and Authenticator
      * 2. A SessionKey representing the TGS session key
      *
-     * @throws StreamCorruptedException If the decryption of the session key fails, probably because the entered password was wrong.
+     * @throws javax.crypto.BadPaddingException If the decryption of the session key fails, probably because the entered key was wrong.
      * @throws IOException If de- or encryption fail because of a general I/O error.
      */
-    public static List<Object> handleKeyDistributionCenterResponse(String id, byte[] key, boolean isUser, TicketSessionKeyWrapper wrapper) throws StreamCorruptedException, IOException {
+    public static List<Object> handleKeyDistributionCenterResponse(String id, byte[] key, boolean isUser, TicketSessionKeyWrapper wrapper) throws IOException, BadPaddingException {
         // decrypt TGS session key
-        byte[] ticketGrantingServiceSessionKey = null;
-        if (isUser == true)
-            ticketGrantingServiceSessionKey = (byte[]) EncryptionHelper.decrypt(wrapper.getSessionKey(), key);
-        else
-            ticketGrantingServiceSessionKey = (byte[]) EncryptionHelper.decryptAsymmetric(wrapper.getSessionKey(), key);
+        // isUser directly corresponds to using a symmetric decriyption
+        byte[] ticketGrantingServiceSessionKey = EncryptionHelper.decrypt(wrapper.getSessionKey(), key, byte[].class, isUser);
 
         // create Authenticator with empty timestamp
         // set timestamp in initTGSRequest()
@@ -70,7 +68,7 @@ public class AuthenticationClientHandler {
 
         // create TicketAuthenticatorWrapper
         TicketAuthenticatorWrapper.Builder ticketAuthenticatorWrapper = TicketAuthenticatorWrapper.newBuilder();
-        ticketAuthenticatorWrapper.setAuthenticator(EncryptionHelper.encrypt(authenticator.build(), ticketGrantingServiceSessionKey));
+        ticketAuthenticatorWrapper.setAuthenticator(EncryptionHelper.encryptSymmetric(authenticator.build(), ticketGrantingServiceSessionKey));
         ticketAuthenticatorWrapper.setTicket(wrapper.getTicket());
 
         // create wrapper list
@@ -93,12 +91,12 @@ public class AuthenticationClientHandler {
      * 1. An TicketAuthenticatorWrapperWrapper containing both the ClientServerTicket and Authenticator
      * 2. A SessionKey representing the SS session key
      *
-     * @throws StreamCorruptedException If the decryption of the SS session key fails.
      * @throws IOException If de- or encryption fail because of a general I/O error.
+     * @throws javax.crypto.BadPaddingException If the decryption of the service server session key fails because of an incorrect key.
      */
-    public static List<Object> handleTicketGrantingServiceResponse(String clientID, byte[] ticketGrantingServiceSessionKey, TicketSessionKeyWrapper wrapper) throws StreamCorruptedException, IOException {
+    public static List<Object> handleTicketGrantingServiceResponse(String clientID, byte[] ticketGrantingServiceSessionKey, TicketSessionKeyWrapper wrapper) throws IOException, BadPaddingException {
         // decrypt SS session key
-        byte[] SSSessionKey = (byte[]) EncryptionHelper.decrypt(wrapper.getSessionKey(), ticketGrantingServiceSessionKey);
+        byte[] SSSessionKey = EncryptionHelper.decryptSymmetric(wrapper.getSessionKey(), ticketGrantingServiceSessionKey, byte[].class);
 
         // create Authenticator with empty timestamp
         // set timestamp in initSSRequest()
@@ -107,7 +105,7 @@ public class AuthenticationClientHandler {
 
         // create TicketAuthenticatorWrapper
         TicketAuthenticatorWrapper.Builder ticketAuthenticatorWrapper = TicketAuthenticatorWrapper.newBuilder();
-        ticketAuthenticatorWrapper.setAuthenticator(EncryptionHelper.encrypt(authenticator.build(), SSSessionKey));
+        ticketAuthenticatorWrapper.setAuthenticator(EncryptionHelper.encryptSymmetric(authenticator.build(), SSSessionKey));
         ticketAuthenticatorWrapper.setTicket(wrapper.getTicket());
 
         // create wrapper list
@@ -119,19 +117,18 @@ public class AuthenticationClientHandler {
     }
 
     /**
-     * Initializes a ServiceServer request
-     * Sets current timestamp in Authenticator
+     * Initializes a ServiceServer request by setting the current timestamp in the authenticator.
      *
      * @param serviceServerSessionKey SS session key provided by handleTGSResponse()
      * @param wrapper TicketAuthenticatorWrapper wrapper that contains both encrypted Authenticator and CST
      * @return Returns a wrapper class containing both the CST and modified Authenticator
      *
-     * @throws StreamCorruptedException If the decryption of the Authenticator fails.
+     * @throws javax.crypto.BadPaddingException If the decryption of the Authenticator fails.
      * @throws IOException If de- or encryption fail because of a general I/O error.
      */
-    public static TicketAuthenticatorWrapper initServiceServerRequest(byte[] serviceServerSessionKey, TicketAuthenticatorWrapper wrapper) throws StreamCorruptedException, IOException {
+    public static TicketAuthenticatorWrapper initServiceServerRequest(byte[] serviceServerSessionKey, TicketAuthenticatorWrapper wrapper) throws IOException, BadPaddingException {
         // decrypt authenticator
-        Authenticator authenticator = (Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), serviceServerSessionKey);
+        Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), serviceServerSessionKey, Authenticator.class);
 
         // create Authenticator
         Authenticator.Builder ab = authenticator.toBuilder();
@@ -139,7 +136,7 @@ public class AuthenticationClientHandler {
 
         // create TicketAuthenticatorWrapper
         TicketAuthenticatorWrapper.Builder ticketAuthenticatorWrapper = wrapper.toBuilder();
-        ticketAuthenticatorWrapper.setAuthenticator(EncryptionHelper.encrypt(ab.build(), serviceServerSessionKey));
+        ticketAuthenticatorWrapper.setAuthenticator(EncryptionHelper.encryptSymmetric(ab.build(), serviceServerSessionKey));
 
         return ticketAuthenticatorWrapper.build();
     }
@@ -156,11 +153,12 @@ public class AuthenticationClientHandler {
      *
      * @throws RejectedException If the timestamps do not match.
      * @throws IOException If the decryption of the Authenticators using the SSSessionKey fails.
+     * @throws javax.crypto.BadPaddingException if an incorrect key is used
      */
-    public static TicketAuthenticatorWrapper handleServiceServerResponse(final byte[] serviceServerSessionKey, final TicketAuthenticatorWrapper lastWrapper, final TicketAuthenticatorWrapper currentWrapper) throws RejectedException, IOException {
+    public static TicketAuthenticatorWrapper handleServiceServerResponse(final byte[] serviceServerSessionKey, final TicketAuthenticatorWrapper lastWrapper, final TicketAuthenticatorWrapper currentWrapper) throws RejectedException, IOException, BadPaddingException {
         // decrypt authenticators
-        Authenticator lastAuthenticator = (Authenticator) EncryptionHelper.decrypt(lastWrapper.getAuthenticator(), serviceServerSessionKey);
-        Authenticator currentAuthenticator = (Authenticator) EncryptionHelper.decrypt(currentWrapper.getAuthenticator(), serviceServerSessionKey);
+        Authenticator lastAuthenticator = EncryptionHelper.decryptSymmetric(lastWrapper.getAuthenticator(), serviceServerSessionKey, Authenticator.class);
+        Authenticator currentAuthenticator = EncryptionHelper.decryptSymmetric(currentWrapper.getAuthenticator(), serviceServerSessionKey, Authenticator.class);
 
         // compare both timestamps
         AuthenticationClientHandler.validateTimestamp(lastAuthenticator.getTimestamp(), currentAuthenticator.getTimestamp());

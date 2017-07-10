@@ -30,6 +30,7 @@ import org.openbase.bco.authentication.core.mock.MockClientStore;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationSimulationMode;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
+import javax.crypto.BadPaddingException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.InitializationException;
@@ -104,7 +105,7 @@ public class SessionManager {
     public void initializeServiceServerRequest() throws RejectedException {
         try {
             this.ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(this.getSessionKey(), this.getTicketAuthenticatorWrapper());
-        } catch (IOException ex) {
+        } catch (IOException | BadPaddingException ex) {
             throw new RejectedException("Initializing request rejected", ex);
         }
     }
@@ -183,7 +184,7 @@ public class SessionManager {
                 this.store.addCredentials(id, key, false);
             
             return true;
-        } catch (StreamCorruptedException ex) {
+        } catch (BadPaddingException ex) {
             throw new CouldNotPerformException("The password you have entered was wrong. Please try again!");
         } catch (ExecutionException ex) {
             Throwable cause = ex.getCause();
@@ -248,7 +249,7 @@ public class SessionManager {
                     wrapper);
             this.ticketAuthenticatorWrapper = wrapper;
             return true;
-        } catch (IOException ex) {
+        } catch (IOException | BadPaddingException ex) {
             this.logout();
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
             throw new CouldNotPerformException("Decryption failed. You have been logged out for security reasons. Please log in again.");
@@ -291,19 +292,19 @@ public class SessionManager {
 
             LoginCredentialsChangeType.LoginCredentialsChange loginCredentialsChange = LoginCredentialsChangeType.LoginCredentialsChange.newBuilder()
                     .setId(clientId)
-                    .setOldCredentials(EncryptionHelper.encrypt(oldHash, sessionKey))
-                    .setNewCredentials(EncryptionHelper.encrypt(newHash, sessionKey))
+                    .setOldCredentials(EncryptionHelper.encryptSymmetric(oldHash, sessionKey))
+                    .setNewCredentials(EncryptionHelper.encryptSymmetric(newHash, sessionKey))
                     .setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper)
                     .build();
 
             TicketAuthenticatorWrapper newTicketAuthenticatorWrapper = CachedAuthenticationRemote.getRemote().changeCredentials(loginCredentialsChange).get();
             AuthenticationClientHandler.handleServiceServerResponse(sessionKey, ticketAuthenticatorWrapper, newTicketAuthenticatorWrapper);
-            
+         
             // save new credentials
             if (this.store.hasEntry(clientId))
                 this.store.setCredentials(clientId, newHash);
             
-        } catch (IOException ex) {
+        } catch (IOException | BadPaddingException ex) {
             this.logout();
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
             throw new CouldNotPerformException("Decryption failed. You have been logged out for security reasons. Please log in again.");
@@ -375,14 +376,14 @@ public class SessionManager {
 
             LoginCredentialsChange loginCredentialsChange = LoginCredentialsChange.newBuilder()
                     .setId(id)
-                    .setNewCredentials(EncryptionHelper.encrypt(key, this.sessionKey))
+                    .setNewCredentials(EncryptionHelper.encryptSymmetric(key, this.sessionKey))
                     .setTicketAuthenticatorWrapper(this.ticketAuthenticatorWrapper)
                     .setAdmin(isAdmin)
                     .build();
          
             TicketAuthenticatorWrapper wrapper = CachedAuthenticationRemote.getRemote().register(loginCredentialsChange).get();
             AuthenticationClientHandler.handleServiceServerResponse(this.sessionKey, this.ticketAuthenticatorWrapper, wrapper);        
-        } catch (IOException ex) {
+        } catch (IOException | BadPaddingException ex) {
             this.logout();
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
             throw new CouldNotPerformException("Decryption failed. You have been logged out for security reasons. Please log in again.");
@@ -424,7 +425,7 @@ public class SessionManager {
             
             if (this.store.hasEntry(id))
                 this.store.setAdmin(id, isAdmin);
-        } catch (IOException ex) {
+        } catch (IOException | BadPaddingException ex) {
             this.logout();
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
             throw new CouldNotPerformException("Decryption failed. You have been logged out for security reasons. Please log in again.");

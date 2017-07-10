@@ -23,6 +23,7 @@ package org.openbase.bco.authentication.test;
  */
 import com.google.protobuf.ByteString;
 import java.security.KeyPair;
+import javax.crypto.BadPaddingException;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -81,8 +82,8 @@ public class EncryptionHelperTest {
         String str = "test";
         byte[] key = EncryptionHelper.generateKey();
 //        byte[] iv = EncryptionHelper.createCiptherBlockChainingVector();
-        ByteString encrypted = EncryptionHelper.encrypt(str, key);
-        String decrypted = (String) EncryptionHelper.decrypt(encrypted, key);
+        ByteString encrypted = EncryptionHelper.encryptSymmetric(str, key);
+        String decrypted = EncryptionHelper.decryptSymmetric(encrypted, key, String.class);
         assertEquals(str, decrypted);
     }
 
@@ -92,8 +93,33 @@ public class EncryptionHelperTest {
         String str = "test";
         KeyPair keyPair = EncryptionHelper.generateKeyPair();
         ByteString encrypted = EncryptionHelper.encryptAsymmetric(str, keyPair.getPublic().getEncoded());
-        String decrypted = (String) EncryptionHelper.decryptAsymmetric(encrypted, keyPair.getPrivate().getEncoded());
+        String decrypted = EncryptionHelper.decryptAsymmetric(encrypted, keyPair.getPrivate().getEncoded(), String.class);
         assertEquals(str, decrypted);
     }
 
+    @Test(expected = BadPaddingException.class)
+    public void testExceptionsWithWrongKeySymmetric() throws Exception {
+        LOGGER.info("testExceptionsWithWrongKey");
+
+        byte[] correctPassword = EncryptionHelper.hash("123654");
+        byte[] wrongPassword = EncryptionHelper.hash("654321");
+
+        String value = "This String should be encrypted";
+        ByteString encryptedValue = EncryptionHelper.encryptSymmetric(value, correctPassword);
+
+        EncryptionHelper.decryptSymmetric(encryptedValue, wrongPassword, String.class);
+    }
+
+    @Test(expected = BadPaddingException.class)
+    public void testExceptionsWithWrongKeyAsymmetric() throws Exception {
+        LOGGER.info("testExceptionsWithWrongKeyAsymmetric");
+
+        KeyPair correctKeyPair = EncryptionHelper.generateKeyPair();
+        KeyPair wrongKeyPair = EncryptionHelper.generateKeyPair();
+
+        String value = "This String should be encrypted";
+        ByteString encryptedValue = EncryptionHelper.encryptAsymmetric(value, correctKeyPair.getPublic().getEncoded());
+
+        EncryptionHelper.decryptAsymmetric(encryptedValue, wrongKeyPair.getPrivate().getEncoded(), String.class);
+    }
 }
