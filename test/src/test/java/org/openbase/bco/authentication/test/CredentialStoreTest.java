@@ -44,11 +44,11 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class ServerStoreTest {
+public class CredentialStoreTest {
 
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ServerStoreTest.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CredentialStoreTest.class);
 
-    public ServerStoreTest() {
+    public CredentialStoreTest() {
     }
 
     @BeforeClass
