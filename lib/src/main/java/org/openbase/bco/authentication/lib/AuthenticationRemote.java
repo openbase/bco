@@ -128,9 +128,4 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
     public Future<Void> registerClient(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException {
         return RPCHelper.callRemoteServerMethod(loginCredentialsChange, remoteServer, Void.class);
     }
-
-    @Override
-    public Future<Boolean> isInRegistrationMode() throws CouldNotPerformException {
-        return RPCHelper.callRemoteServerMethod(remoteServer, Boolean.class);
-    }
 }

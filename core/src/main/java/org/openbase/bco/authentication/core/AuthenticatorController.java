@@ -378,11 +378,6 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         });
     }
 
-    @Override
-    public Future<Boolean> isInRegistrationMode() throws CouldNotPerformException {
-        return GlobalCachedExecutorService.submit(() -> false);
-    }
-
     private class InitialPasswordPrinterRunnable implements Runnable {
 
         private String message;

@@ -8,7 +8,6 @@ import org.openbase.bco.authentication.lib.AuthenticationService;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationSimulationMode;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.bco.authentication.lib.jp.JPInitializeCredentials;
-import org.openbase.bco.authentication.lib.jp.JPRegistrationMode;
 import org.openbase.bco.authentication.lib.jp.JPResetCredentials;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
 
@@ -50,7 +49,6 @@ public class AuthenticatorLauncher extends AbstractLauncher<AuthenticatorControl
         JPService.registerProperty(JPInitializeCredentials.class);
         JPService.registerProperty(JPResetCredentials.class);
         JPService.registerProperty(JPCredentialsDirectory.class);
-        JPService.registerProperty(JPRegistrationMode.class);
     }
 
     /**

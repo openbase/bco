@@ -33,7 +33,6 @@ import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.CredentialStore;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.bco.authentication.lib.jp.JPInitializeCredentials;
-import org.openbase.bco.authentication.lib.jp.JPRegistrationMode;
 import org.openbase.bco.authentication.lib.jp.JPResetCredentials;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.NotAvailableException;
@@ -57,7 +56,6 @@ public class CredentialStoreTest {
         JPService.registerProperty(JPResetCredentials.class);
         JPService.registerProperty(JPInitializeCredentials.class);
         JPService.registerProperty(JPCredentialsDirectory.class);
-        JPService.registerProperty(JPRegistrationMode.class, 5);
     }
 
     @AfterClass

@@ -166,12 +166,4 @@ public interface AuthenticationService {
      */
     @RPCMethod
     public Future<Void> registerClient(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException;
-    
-    /**
-     * 
-     * @return
-     * @throws CouldNotPerformException 
-     */
-    @RPCMethod
-    public Future<Boolean> isInRegistrationMode() throws CouldNotPerformException;
 }
