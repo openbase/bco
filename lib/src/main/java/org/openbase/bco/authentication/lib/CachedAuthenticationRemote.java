@@ -22,10 +22,12 @@ package org.openbase.bco.authentication.lib;
  * #L%
  */
 
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -86,6 +88,12 @@ public class CachedAuthenticationRemote {
     }
 
     public static void shutdown() {
+        // check if externally called.
+        if (shutdown == false && !JPService.testMode()) {
+            LOGGER.warn("This manual authentication remote shutdown is only available during unit tests and not allowed during normal operation!");
+            return;
+        }
+        
         if (authenticationRemote != null) {
             authenticationRemote.shutdown();
             authenticationRemote = null;

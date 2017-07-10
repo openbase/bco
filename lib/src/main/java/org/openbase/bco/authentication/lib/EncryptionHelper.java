@@ -4,21 +4,17 @@ import com.google.protobuf.ByteString;
 import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-import java.io.ObjectInput;
 import java.io.ObjectInputStream;
-import java.io.ObjectOutput;
 import java.io.ObjectOutputStream;
 import java.io.Serializable;
-import java.io.StreamCorruptedException;
 import java.io.UnsupportedEncodingException;
 import java.security.InvalidKeyException;
+import java.security.Key;
 import java.security.KeyFactory;
 import java.security.KeyPair;
 import java.security.KeyPairGenerator;
 import java.security.MessageDigest;
 import java.security.NoSuchAlgorithmException;
-import java.security.PrivateKey;
-import java.security.PublicKey;
 import java.security.SecureRandom;
 import java.security.spec.InvalidKeySpecException;
 import java.security.spec.PKCS8EncodedKeySpec;
@@ -66,12 +62,12 @@ public class EncryptionHelper {
 //    private static final String ASYMMETRIC_TRANSFORMATION = "RSA/ECB/OAEPWithSHA-256AndMGF1Padding";
     private static final String ASYMMETRIC_TRANSFORMATION = ASYMMETRIC_ALGORITHM;
     private static final int ASYMMETRIC_KEY_LENGTH = 1024;
-    
+
     private static final String SYMMETRIC_ALGORITHM = "AES";
 //    private static final String SYMMETRIC_TRANSFORMATION = "AES/CBC/PKCS5Padding";
     private static final String SYMMETRIC_TRANSFORMATION = SYMMETRIC_ALGORITHM;
     private static final int SYMMETRIC_KEY_LENGTH = 128;
-    
+
     private static final String HASH_ALGORITHM = "SHA-256";
 
     /**
@@ -87,7 +83,7 @@ public class EncryptionHelper {
             SecretKey secretKey = keyGenerator.generateKey();
             return secretKey.getEncoded();
         } catch (NoSuchAlgorithmException ex) {
-            new FatalImplementationErrorException("Key transformation non existent", SYMMETRIC_ALGORITHM, ex);
+            new FatalImplementationErrorException("Key transformation non existent", EncryptionHelper.class, ex);
             return null;
         }
     }
@@ -104,177 +100,172 @@ public class EncryptionHelper {
             keyPairGenerator.initialize(ASYMMETRIC_KEY_LENGTH);
             return keyPairGenerator.generateKeyPair();
         } catch (NoSuchAlgorithmException ex) {
-            new FatalImplementationErrorException("Key transformation non existent", ASYMMETRIC_TRANSFORMATION, ex);
+            new FatalImplementationErrorException("Key transformation non existent", EncryptionHelper.class, ex);
             return null;
         }
     }
 
     /**
-     * Hashes a string symmetrically.
-     * str must be in UTF-8 encoding
+     * Hashes a string that has to be UTF-8 encoeded symmetrically.
      *
-     * @param str String to be hashed
+     * @param string String to be hashed
      * @return Returns a byte[] representing the hashed string
      */
-    public static byte[] hash(String str) {
+    public static byte[] hash(final String string) {
         try {
-            byte[] key = str.getBytes("UTF-8");
+            byte[] key = string.getBytes("UTF-8");
             MessageDigest sha = MessageDigest.getInstance(HASH_ALGORITHM);
             key = sha.digest(key);
             return Arrays.copyOf(key, 16);
         } catch (NoSuchAlgorithmException | UnsupportedEncodingException ex) {
-            new FatalImplementationErrorException("Hashing[" + str + "] failed!", HASH_ALGORITHM, ex);
+            new FatalImplementationErrorException("Hashing[" + string + "] failed!", EncryptionHelper.class, ex);
             return null;
         }
     }
 
     /**
-     * Encrypts any Object into a ByteString using a symmetric key
+     * Encrypts any Object into a ByteString using a symmetric key.
      *
-     * @param obj Object to be encrypted
-     * @param key byte[] to encrypt obj with
+     * @param object Object to be encrypted
+     * @param key byte[] to encrypt object with
      * @return Returns encrypted object as ByteString
      * @throws IOException Any IO error occurring during the serialization and
      * encryption.
      */
-    public static ByteString encrypt(Serializable obj, byte[] key) throws IOException {
-        ByteArrayOutputStream baos = null;
-        ObjectOutput out = null;
-        try {
-            // specify key
-            SecretKeySpec sks = new SecretKeySpec(key, SYMMETRIC_ALGORITHM);
+    public static ByteString encryptSymmetric(final Serializable object, final byte[] key) throws IOException {
+        return encrypt(object, key, true);
+    }
 
-            // create cipher
-//            IvParameterSpec iv = new IvParameterSpec(initializingVector);
-            Cipher cipher = Cipher.getInstance(SYMMETRIC_TRANSFORMATION);
-            cipher.init(Cipher.ENCRYPT_MODE, sks);
+    /**
+     * Encrypts any Object into a ByteString using a symmetric key
+     *
+     * @param object Object to be encrypted
+     * @param key byte[] to encrypt object with
+     * @return Returns encrypted object as ByteString
+     * @throws IOException Any IO error occurring during the serialization and
+     * encryption.
+     */
+    public static ByteString encryptAsymmetric(final Serializable object, final byte[] key) throws IOException {
+        return encrypt(object, key, false);
+    }
+
+    /**
+     * Encrypts any Object into a ByteString.
+     *
+     * @param object Object to be encrypted
+     * @param key byte[] to encrypt object with
+     * @param symmetric if the encryption should use a symmetric or asymmetric key
+     * @return Returns encrypted object as ByteString
+     * @throws IOException Any IO error occurring during the serialization and
+     * encryption.
+     */
+    public static ByteString encrypt(final Serializable object, final byte[] key, final boolean symmetric) throws IOException {
+        try {
+            Key keyType;
+            Cipher cipher;
+            // specify key and generate cipher
+            if (symmetric) {
+                keyType = new SecretKeySpec(key, SYMMETRIC_ALGORITHM);
+                cipher = Cipher.getInstance(SYMMETRIC_TRANSFORMATION);
+            } else {
+                keyType = KeyFactory.getInstance(ASYMMETRIC_TRANSFORMATION).generatePublic(new X509EncodedKeySpec(key));
+                cipher = Cipher.getInstance(ASYMMETRIC_TRANSFORMATION);
+            }
+            cipher.init(Cipher.ENCRYPT_MODE, keyType);
 
             // cipher
-            baos = new ByteArrayOutputStream();
-            out = new ObjectOutputStream(baos);
-            out.writeObject(obj);
-            out.flush();
-            return ByteString.copyFrom(cipher.doFinal(baos.toByteArray()));
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeyException | BadPaddingException ex) {
-            new FatalImplementationErrorException("Key transformation non existent", SYMMETRIC_TRANSFORMATION, ex);
+            try (ByteArrayOutputStream byteArrayOutputStream = new ByteArrayOutputStream()) {
+                try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
+                    objectOutputStream.writeObject(object);
+                    objectOutputStream.flush();
+                    return ByteString.copyFrom(cipher.doFinal(byteArrayOutputStream.toByteArray()));
+                }
+            }
+        } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeyException | BadPaddingException | InvalidKeySpecException ex) {
+            new FatalImplementationErrorException("Unable to encrypt object[" + object + "]", EncryptionHelper.class, ex);
             return null;
-        } finally {
-            if (baos != null) baos.close();
-            if (out != null) out.close();
         }
     }
 
     /**
-     * Decrypts a ByteString into an Object using a symmetric key
+     * Decrypt an object with a symmetric key and directly cast it to type T.
      *
-     * @param bstr ByteString to be decrypted
-     * @param key byte[] to decrypt bstr with
-     * @return Returns decrypted object as Object
-     * @throws StreamCorruptedException If the decryption fails, because of
-     * corrupted data or an invalid key.
-     * @throws IOException Any other I/O failure.
+     * @param <T> the type to which the encrypted object is casted
+     * @param encryptedObject the object encrypted as a ByteString
+     * @param key the key used to decrypt the object
+     * @param encryptedClass the class to which the decrypted object is cast
+     * @return the decrypted object cast as T
+     * @throws IOException if the encrypted data is corrupted
+     * @throws BadPaddingException if the wrong key is used for decryption
+     * @throws ClassCastException if the encrypted object can not be cast to T
      */
-    public static Object decrypt(ByteString bstr, byte[] key) throws StreamCorruptedException, IOException {
-        ByteArrayInputStream bais = null;
-        ObjectInput in = null;
-        try {
-            // specify key
-            SecretKeySpec sks = new SecretKeySpec(key, SYMMETRIC_ALGORITHM);
+    public static <T> T decryptSymmetric(final ByteString encryptedObject, final byte[] key, final Class<T> encryptedClass) throws IOException, BadPaddingException {
+        return decrypt(encryptedObject, key, encryptedClass, true);
+    }
 
-            // create cipher
-//            IvParameterSpec iv = new IvParameterSpec(initializingVector);
-            Cipher cipher = Cipher.getInstance(SYMMETRIC_TRANSFORMATION);
-            cipher.init(Cipher.DECRYPT_MODE, sks);
+    /**
+     * Decrypt an object using an asymmetric key and directly cast it to type T.
+     *
+     * @param <T> the type to which the encrypted object is casted
+     * @param encryptedObject the object encrypted as a ByteString
+     * @param key the key used to decrypt the object
+     * @param encryptedClass the class to which the decrypted object is cast
+     * @return the decrypted object cast as T
+     * @throws IOException if the encrypted data is corrupted
+     * @throws BadPaddingException if the wrong key is used for decryption
+     * @throws ClassCastException if the encrypted object can not be cast to T
+     */
+    public static <T> T decryptAsymmetric(final ByteString encryptedObject, final byte[] key, final Class<T> encryptedClass) throws IOException, BadPaddingException {
+        return decrypt(encryptedObject, key, encryptedClass, false);
+    }
+
+    /**
+     * Decrypts a ByteString into an Object of type T.
+     *
+     * @param <T> the type to which the encrypted object is casted
+     * @param encryptedObject ByteString to be decrypted
+     * @param key byte[] to decrypt the encrypted object with
+     * @param encryptedClass the class to which the decrypted object is cast
+     * @param symmetric if the key is symmetric or asymmetric
+     * @return Returns decrypted object as Object
+     * @throws javax.crypto.BadPaddingException if a wrong key is used
+     * @throws IOException if corrupted data
+     * @throws ClassCastException if the encrypted object can not be cast to T
+     */
+    public static <T> T decrypt(final ByteString encryptedObject, final byte[] key, final Class<T> encryptedClass, final boolean symmetric) throws IOException, BadPaddingException, ClassCastException {
+        try {
+            Key keyType;
+            Cipher cipher;
+            // specify key and generate cipher
+            if (symmetric) {
+                keyType = new SecretKeySpec(key, SYMMETRIC_ALGORITHM);
+                cipher = Cipher.getInstance(SYMMETRIC_TRANSFORMATION);
+            } else {
+                keyType = KeyFactory.getInstance(ASYMMETRIC_TRANSFORMATION).generatePrivate(new PKCS8EncodedKeySpec(key));
+                cipher = Cipher.getInstance(ASYMMETRIC_TRANSFORMATION);
+            }
+            cipher.init(Cipher.DECRYPT_MODE, keyType);
+            byte[] decrypted = cipher.doFinal(encryptedObject.toByteArray());
 
             // decipher
-            bais = new ByteArrayInputStream(cipher.doFinal(bstr.toByteArray()));
-            in = new ObjectInputStream(bais);
-            return in.readObject();
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | BadPaddingException | IllegalBlockSizeException | ClassNotFoundException | InvalidKeyException ex) {
-            new FatalImplementationErrorException("Decryption failed.", SYMMETRIC_TRANSFORMATION, ex);
+            try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(decrypted)) {
+                try (ObjectInputStream objectInputStream = new ObjectInputStream(byteArrayInputStream)) {
+                    return (T) objectInputStream.readObject();
+                }
+            }
+        } catch (NoSuchAlgorithmException | ClassNotFoundException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeyException | InvalidKeySpecException ex) {
+            new FatalImplementationErrorException("Decryption of [" + encryptedObject + "] failed", EncryptionHelper.class, ex);
             return null;
-        } finally {
-            if (bais != null) bais.close();
-            if (in != null) in.close();
         }
     }
 
     /**
-     * Encrypts any Object into a ByteString using a symmetric key
-     *
-     * @param obj Object to be encrypted
-     * @param key byte[] to encrypt obj with
-     * @return Returns encrypted object as ByteString
-     * @throws IOException Any IO error occurring during the serialization and
-     * encryption.
-     */
-    public static ByteString encryptAsymmetric(Serializable obj, byte[] key) throws IOException {
-        ByteArrayOutputStream baos = null;
-        ObjectOutput out = null;
-        try {
-            // generate public key from byte[] key
-            PublicKey publicKey = KeyFactory.getInstance(ASYMMETRIC_TRANSFORMATION).generatePublic(new X509EncodedKeySpec(key));
-            
-            // create cipher
-            Cipher cipher = Cipher.getInstance(ASYMMETRIC_TRANSFORMATION);
-            cipher.init(Cipher.ENCRYPT_MODE, publicKey);
-            
-            baos = new ByteArrayOutputStream();
-            out = new ObjectOutputStream(baos);
-            out.writeObject(obj);
-            out.flush();
-            return ByteString.copyFrom(cipher.doFinal(baos.toByteArray()));
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeyException | InvalidKeySpecException ex) {
-            new FatalImplementationErrorException("Key transformation non existent", ASYMMETRIC_TRANSFORMATION, ex);
-            return null;
-        } catch (BadPaddingException ex) {
-            throw new IOException(ex);
-        } finally {
-            if (baos != null) baos.close();
-            if (out != null) out.close();
-        }
-    }
-
-    /**
-     * Decrypts a ByteString into an Object using a symmetric key
-     *
-     * @param bstr ByteString to be decrypted
-     * @param key byte[] to decrypt bstr with
-     * @return Returns decrypted object as Object
-     * @throws StreamCorruptedException If the decryption fails, because of
-     * corrupted data or an invalid key.
-     * @throws IOException Any other I/O failure.
-     */
-    public static Object decryptAsymmetric(ByteString bstr, byte[] key) throws StreamCorruptedException, IOException {
-        ByteArrayInputStream bais = null;
-        ObjectInput in = null;
-        try {
-            // generate private key from byte[] key
-            PrivateKey privateKey = KeyFactory.getInstance(ASYMMETRIC_TRANSFORMATION).generatePrivate(new PKCS8EncodedKeySpec(key));
-            
-            // create cipher
-            Cipher cipher = Cipher.getInstance(ASYMMETRIC_TRANSFORMATION);
-            cipher.init(Cipher.DECRYPT_MODE, privateKey);
-
-            // decipher
-            bais = new ByteArrayInputStream(cipher.doFinal(bstr.toByteArray()));
-            in = new ObjectInputStream(bais);
-            return in.readObject();
-        } catch (NoSuchAlgorithmException | NoSuchPaddingException | BadPaddingException | IllegalBlockSizeException | InvalidKeyException | InvalidKeySpecException | ClassNotFoundException ex) {
-            new FatalImplementationErrorException("Decryption failed.", ASYMMETRIC_TRANSFORMATION, ex);
-            return null;
-        } finally {
-            if (bais != null) bais.close();
-            if (in != null) in.close();
-        }
-    }
-    
-    /**
-     * Creates an initializing vector used for Cipher Block Chaining.
+     * Creates an initialized vector used for Cipher Block Chaining.
      * Use this same vector for encryption and decryption
+     *
      * @return byteArray of length 16
      */
-    public static byte[] createCiptherBlockChainingVector() {
+    public static byte[] createCipherBlockChainingVector() {
         byte[] iv = new byte[16];
         new SecureRandom().nextBytes(iv);
         return iv;

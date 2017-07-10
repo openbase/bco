@@ -24,6 +24,7 @@ package org.openbase.bco.authentication.test;
 import org.openbase.bco.authentication.core.mock.MockAuthenticationRegistry;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
+import javax.crypto.BadPaddingException;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -34,6 +35,7 @@ import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.jps.core.JPService;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
@@ -125,10 +127,15 @@ public class AuthenticatorControllerTest {
     @Test(timeout = 5000, expected = ExecutionException.class)
     public void testAuthenticationWithNonExistentUser() throws Exception {
         System.out.println("testAuthenticationWithNonExistentUser");
+        try {
+            ExceptionPrinter.setBeQuit(Boolean.TRUE);
 
-        String nonExistentUserId = "12abc-15123";
+            String nonExistentUserId = "12abc-15123";
 
-        CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(nonExistentUserId + "@").get();
+            CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(nonExistentUserId + "@").get();
+        } finally {
+            ExceptionPrinter.setBeQuit(Boolean.FALSE);
+        }
     }
 
     /**
@@ -136,7 +143,7 @@ public class AuthenticatorControllerTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 5000, expected = AssertionError.class)
+    @Test(timeout = 5000, expected = BadPaddingException.class)
     public void testAuthenticationWithIncorrectPassword() throws Exception {
         System.out.println("testAuthenticationWithIncorrectPassword");
 
@@ -145,7 +152,7 @@ public class AuthenticatorControllerTest {
         byte[] passwordHash = EncryptionHelper.hash(password);
 
         TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userId + "@").get();
-        AuthenticationClientHandler.handleKeyDistributionCenterResponse(userId, passwordHash, true, ticketSessionKeyWrapper);  
+        AuthenticationClientHandler.handleKeyDistributionCenterResponse(userId, passwordHash, true, ticketSessionKeyWrapper);
     }
 
     @Test(timeout = 5000)
@@ -176,11 +183,11 @@ public class AuthenticatorControllerTest {
         clientTicketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(clientSSSessionKey, clientTicketAuthenticatorWrapper);
 
         LoginCredentialsChange loginCredentialsChange = LoginCredentialsChange.newBuilder()
-          .setId(MockAuthenticationRegistry.USER_ID)
-          .setOldCredentials(EncryptionHelper.encrypt(userPasswordHash, clientSSSessionKey))
-          .setNewCredentials(EncryptionHelper.encrypt(newPasswordHash, clientSSSessionKey))
-          .setTicketAuthenticatorWrapper(clientTicketAuthenticatorWrapper)
-          .build();
+                .setId(MockAuthenticationRegistry.USER_ID)
+                .setOldCredentials(EncryptionHelper.encryptSymmetric(userPasswordHash, clientSSSessionKey))
+                .setNewCredentials(EncryptionHelper.encryptSymmetric(newPasswordHash, clientSSSessionKey))
+                .setTicketAuthenticatorWrapper(clientTicketAuthenticatorWrapper)
+                .build();
 
         CachedAuthenticationRemote.getRemote().changeCredentials(loginCredentialsChange).get();
     }

@@ -26,6 +26,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import javax.crypto.BadPaddingException;
 import org.openbase.jul.exception.RejectedException;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
@@ -84,7 +85,7 @@ public class AuthenticationFuture implements Future<ActionFuture> {
                     actionFuture.getTicketAuthenticatorWrapper());
 
             return actionFuture.toBuilder().setTicketAuthenticatorWrapper(wrapper).build();
-        } catch (IOException | RejectedException ex) {
+        } catch (IOException | RejectedException | BadPaddingException ex) {
             throw new ExecutionException("Could not verify ServiceServer Response", ex);
         }
     }

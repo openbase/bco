@@ -47,23 +47,19 @@ public class MockAuthenticationRegistry extends AuthenticationRegistry {
     @Override
     public void setCredentials(String userId, byte[] credentials) throws CouldNotPerformException {
         if (!this.credentials.containsKey(userId)) {
-            this.addCredentials(userId, credentials, false);
-        }
-        else {
-            LoginCredentials loginCredentials = LoginCredentials.newBuilder(this.credentials.get(userId))
-              .setCredentials(ByteString.copyFrom(credentials))
-              .build();
-            this.credentials.put(userId, loginCredentials);
+            this.setCredentials(userId, credentials, false);
+        } else {
+            this.setCredentials(userId, credentials, this.credentials.get(userId).getAdmin());
         }
     }
 
     @Override
-    public void addCredentials(String userId, byte[] credentials, boolean admin) throws CouldNotPerformException {
+    public void setCredentials(String userId, byte[] credentials, boolean admin) throws CouldNotPerformException {
         LoginCredentials loginCredentials = LoginCredentials.newBuilder()
-          .setId(userId)
-          .setCredentials(ByteString.copyFrom(credentials))
-          .setAdmin(admin)
-          .build();
+                .setId(userId)
+                .setCredentials(ByteString.copyFrom(credentials))
+                .setAdmin(admin)
+                .build();
 
         this.credentials.put(userId, loginCredentials);
     }
@@ -71,21 +67,30 @@ public class MockAuthenticationRegistry extends AuthenticationRegistry {
     @Override
     public void init() throws InitializationException {
         credentials = new HashMap<>();
-                
+
         try {
             this.setCredentials(USER_ID, USER_PASSWORD_HASH);
-            
+
             // TODO: Add private key to credentials
             KeyPair keyPair = EncryptionHelper.generateKeyPair();
             CLIENT_PRIVATE_KEY = keyPair.getPrivate().getEncoded();
             CLIENT_PUBLIC_KEY = keyPair.getPublic().getEncoded();
             this.setCredentials(CLIENT_ID, CLIENT_PUBLIC_KEY);
-            
-            // add new user to the mock
+
+            // add new user to the mock authentication registry
             this.setCredentials("example_client_id", EncryptionHelper.hash("example_password"));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
+    @Override
+    protected void load() throws CouldNotPerformException {
+        // do nothing
+    }
+
+    @Override
+    protected void save() {
+        // do nothing
+    }
 }
