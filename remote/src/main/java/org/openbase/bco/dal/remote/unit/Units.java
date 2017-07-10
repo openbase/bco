@@ -193,7 +193,7 @@ public class Units {
 
     public static final SyncObject UNIT_POOL_LOCK = new SyncObject("UnitPoolLock");
     
-    private static SessionManager sessionManager = new SessionManager();
+    private static final SessionManager SESSION_MANAGER = new SessionManager();
     
     static {
         try {
@@ -222,6 +222,7 @@ public class Units {
                     return "UnitRemotePool";
                 }
             });
+            SESSION_MANAGER.init();
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new FatalImplementationErrorException(Units.class, new org.openbase.jul.exception.InstantiationException(Units.class, ex)), LOGGER);
         }
@@ -233,7 +234,7 @@ public class Units {
      * @return the SessionManager 
      */
     public static SessionManager getSessionManager() {
-        return sessionManager;
+        return SESSION_MANAGER;
     }
 
     /**
@@ -325,7 +326,7 @@ public class Units {
                 unitRemote.lock(unitRemoteRegistry);
             }
             // set sessionManager in unit remote
-            unitRemote.setSessionManager(sessionManager);
+            unitRemote.setSessionManager(SESSION_MANAGER);
             return unitRemote;
         } catch (CouldNotPerformException | NullPointerException ex) {
             throw new NotAvailableException("UnitRemote[" + unitId + "]", ex);
@@ -370,7 +371,7 @@ public class Units {
                 unitRemote.lock(unitRemoteRegistry);
             }
             // set sessionManager in unit remote
-            unitRemote.setSessionManager(sessionManager);
+            unitRemote.setSessionManager(SESSION_MANAGER);
             return unitRemote;
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("UnitRemote[" + unitConfig.getId() + "]", ex);
