@@ -29,8 +29,9 @@ import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.authentication.core.AuthenticationRegistry;
+import org.openbase.bco.authentication.core.ServerStore;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
+import org.openbase.bco.authentication.lib.Store;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.bco.authentication.lib.jp.JPInitializeCredentials;
 import org.openbase.bco.authentication.lib.jp.JPRegistrationMode;
@@ -44,11 +45,11 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class AuthenticationRegistryTest {
+public class ServerStoreTest {
 
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticationRegistryTest.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ServerStoreTest.class);
 
-    public AuthenticationRegistryTest() {
+    public ServerStoreTest() {
     }
 
     @BeforeClass
@@ -81,7 +82,7 @@ public class AuthenticationRegistryTest {
         System.out.println("testSavingAndLoading");
 
         // create initial instance which has to create a new file
-        AuthenticationRegistry registry = new AuthenticationRegistry();
+        Store registry = new ServerStore();
         registry.init();
 
         // add a client to this registry
@@ -90,7 +91,7 @@ public class AuthenticationRegistryTest {
         registry.setCredentials(clientId, EncryptionHelper.hash(password));
 
         // start a second registry which loads the file from the first one
-        AuthenticationRegistry loadingRegistry = new AuthenticationRegistry();
+        Store loadingRegistry = new ServerStore();
         loadingRegistry.init();
 
         // test if they produce the same result

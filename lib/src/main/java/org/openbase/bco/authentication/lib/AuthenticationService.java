@@ -122,6 +122,40 @@ public interface AuthenticationService {
     public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, IOException, PermissionDeniedException;
 
     /**
+     * Registers a client or user.
+     *
+     * @param loginCredentialsChange Wrapper containing the user's ID, password or public key, isAdmin flag,
+     * and a TicketAuthenticatorWrapper to authenticate the user.
+     * @return TicketAuthenticatorWrapper which contains an updated validity period in
+     * the ClientServerTicket and an updated timestamp in the authenticator
+     * which has to be verified by the client to make sure that its the correct
+     * server answering the request.
+     * @throws RejectedException If the password change fails (invalid ticket, user has no permission, old password doesn't match).
+     * @throws StreamCorruptedException If any decryption fails.
+     * @throws IOException If de- or encryption fail because of a general I/O error.
+     * @throws PermissionDeniedException If the user has no permission to change this password.
+     */
+    @RPCMethod
+    public Future<TicketAuthenticatorWrapper> register(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, StreamCorruptedException, IOException, PermissionDeniedException;
+
+    /**
+     * Appoints a normal user to an administrator.
+     *
+     * @param loginCredentialsChange Wrapper containing the user's ID, password or public key, isAdmin flag,
+     * and a TicketAuthenticatorWrapper to authenticate the user.
+     * @return TicketAuthenticatorWrapper which contains an updated validity period in
+     * the ClientServerTicket and an updated timestamp in the authenticator
+     * which has to be verified by the client to make sure that its the correct
+     * server answering the request.
+     * @throws RejectedException If the password change fails (invalid ticket, user has no permission, old password doesn't match).
+     * @throws StreamCorruptedException If any decryption fails.
+     * @throws IOException If de- or encryption fail because of a general I/O error.
+     * @throws PermissionDeniedException If the user has no permission to change this password.
+     */
+    @RPCMethod
+    public Future<TicketAuthenticatorWrapper> setAdministrator(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, StreamCorruptedException, IOException, PermissionDeniedException;
+
+    /**
      * Register a new client in the authentication registry. This is only allowed if the authenticator is in registration mode.
      * The LoginCredentialsChange type contains more fields than needed because its also used to update an existing user.
      * To use it for registration only the id field containing the client id and the new password field which contains the passwords are needed.

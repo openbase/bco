@@ -27,7 +27,6 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.com.NotInitializedRSBRemoteServer;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
@@ -112,6 +111,16 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
 
     @Override
     public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException {
+        return RPCHelper.callRemoteServerMethod(loginCredentialsChange, remoteServer, TicketAuthenticatorWrapper.class);
+    }
+
+    @Override
+    public Future<TicketAuthenticatorWrapper> register(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException {
+        return RPCHelper.callRemoteServerMethod(loginCredentialsChange, remoteServer, TicketAuthenticatorWrapper.class);
+    }
+
+    @Override
+    public Future<TicketAuthenticatorWrapper> setAdministrator(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException {
         return RPCHelper.callRemoteServerMethod(loginCredentialsChange, remoteServer, TicketAuthenticatorWrapper.class);
     }
 

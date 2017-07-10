@@ -21,17 +21,19 @@ package org.openbase.bco.authentication.test;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.authentication.core.mock.MockAuthenticationRegistry;
+import org.openbase.bco.authentication.core.mock.MockServerStore;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
-import org.openbase.bco.authentication.core.AuthenticationRegistry;
 import org.openbase.bco.authentication.core.AuthenticatorController;
+import org.openbase.bco.authentication.core.mock.MockClientStore;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.Store;
 import org.openbase.jps.core.JPService;
+import org.openbase.jul.exception.CouldNotPerformException;
 
 /**
  *
@@ -40,7 +42,8 @@ import org.openbase.jps.core.JPService;
 public class SessionManagerTest {
 
     private static AuthenticatorController authenticatorController;
-    private static AuthenticationRegistry authenticationRegistry;
+    private static Store serverStore;
+    private static Store clientStore;
 
     public SessionManagerTest() {
     }
@@ -49,9 +52,10 @@ public class SessionManagerTest {
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
 
-        authenticationRegistry = new MockAuthenticationRegistry();
+        serverStore = new MockServerStore();
+        clientStore = new MockClientStore();
 
-        authenticatorController = new AuthenticatorController(authenticationRegistry);
+        authenticatorController = new AuthenticatorController(serverStore);
         authenticatorController.init();
         authenticatorController.activate();
         authenticatorController.waitForActivation();
@@ -75,34 +79,32 @@ public class SessionManagerTest {
     }
 
     /**
-     * Test of SessionManager.login() for user.
-     *
-     * @throws java.lang.Exception
-     */
-    @Test(timeout = 5000)
-    public void testUserLogin() throws Exception {
-        String clientId = MockAuthenticationRegistry.USER_ID;
-        String password = MockAuthenticationRegistry.USER_PASSWORD;
-
-        SessionManager manager = new SessionManager();
-        boolean result = manager.login(clientId, password);
-
-        assertEquals(true, result);
-    }
-
-    /**
      * Test of SessionManager.login() for client.
      *
      * @throws java.lang.Exception
      */
     @Test(timeout = 5000)
-    public void testClientLogin() throws Exception {
-        String clientId = MockAuthenticationRegistry.CLIENT_ID;
-        byte[] privateKey = MockAuthenticationRegistry.CLIENT_PRIVATE_KEY;
-        byte[] publicKey = MockAuthenticationRegistry.CLIENT_PUBLIC_KEY;
+    public void registerUser() throws Exception {
+        SessionManager manager = new SessionManager(clientStore);
+        manager.init();
+        
+        // login admin
+        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+        
+        // register client
+        manager.registerUser("test_user2", "test_password", true);
+    }
 
-        SessionManager manager = new SessionManager(privateKey, publicKey);
-        boolean result = manager.login(clientId);
+    /**
+     * Test of SessionManager.login() for user.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 5000)
+    public void loginUser() throws Exception {
+        SessionManager manager = new SessionManager(clientStore);
+        manager.init();
+        boolean result = manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
 
         assertEquals(true, result);
     }
@@ -113,20 +115,14 @@ public class SessionManagerTest {
      * @throws java.lang.Exception
      */
     @Test(timeout = 5000)
-    public void testUserIsLoggedIn() throws Exception {
-        String clientId = MockAuthenticationRegistry.USER_ID;
-        String password = MockAuthenticationRegistry.USER_PASSWORD;
-        
-        SessionManager manager = new SessionManager();
-        
-        // user should not be authenticated
-        assertEquals(false, manager.isLoggedIn());
-        
-        boolean result = manager.login(clientId, password);
-        
+    public void isLoggedIn() throws Exception {
+        SessionManager manager = new SessionManager(clientStore);
+        manager.init();
+        boolean result = manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+
         // should result true
         assertEquals(true, result);
-        
+
         // user should be authenticated
         assertEquals(true, manager.isLoggedIn());
     }
@@ -137,20 +133,14 @@ public class SessionManagerTest {
      * @throws java.lang.Exception
      */
     @Test(timeout = 5000)
-    public void testUserIsAuthenticated() throws Exception {
-        String clientId = MockAuthenticationRegistry.USER_ID;
-        String password = MockAuthenticationRegistry.USER_PASSWORD;
-        
-        SessionManager manager = new SessionManager();
-        
-        // user should not be authenticated
-        assertEquals(false, manager.isAuthenticated());
-        
-        boolean result = manager.login(clientId, password);
-        
+    public void isAuthenticated() throws Exception {
+        SessionManager manager = new SessionManager(clientStore);
+        manager.init();
+        boolean result = manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+
         // should result in true
         assertEquals(true, result);
-        
+
         // user should be authenticated
         assertEquals(true, manager.isAuthenticated());
     }
@@ -161,18 +151,102 @@ public class SessionManagerTest {
      * @throws java.lang.Exception
      */
     @Test(timeout = 5000)
-    public void testLogout() throws Exception {
-        String clientId = MockAuthenticationRegistry.USER_ID;
-        String password = MockAuthenticationRegistry.USER_PASSWORD;
-
-        SessionManager manager = new SessionManager();
-        boolean result = manager.login(clientId, password);
+    public void logout() throws Exception {
+        SessionManager manager = new SessionManager(clientStore);
+        manager.init();
+        boolean result = manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
 
         assertEquals(true, result);
 
         manager.logout();
         assertEquals(null, manager.getTicketAuthenticatorWrapper());
         assertArrayEquals(null, manager.getSessionKey());
+    }
+
+    /**
+     * Test of SessionManager.login() for client.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 5000, expected = CouldNotPerformException.class)
+    public void registerClientAndLogin() throws Exception {
+        SessionManager manager = new SessionManager(clientStore);
+        manager.init();
+        
+        // login admin
+        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+        
+        // register client
+        manager.registerClient(MockClientStore.CLIENT_ID);
+        
+        // logout admin
+        manager.logout();
+        
+        // login client
+        boolean result = manager.login(MockClientStore.CLIENT_ID);
+        assertEquals(true, result);
+        
+        // logout client
+        manager.logout();
+        
+        // login admin
+        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+        
+        // register same client should result in Exception
+        manager.registerClient(MockClientStore.ADMIN_ID);
+    }
+
+    /**
+     * Test of SessionManager.login() for client.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 5000, expected = CouldNotPerformException.class)
+    public void registerClientAsNonAdmin() throws Exception {
+        SessionManager manager = new SessionManager(clientStore);
+        manager.init();
+        
+        // login admin
+        manager.login(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD);
+        
+        // register client
+        manager.registerClient(MockClientStore.USER_ID);
+    }
+
+    /**
+     * Test of SessionManager.login() for client.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 5000)
+    public void setAdmin() throws Exception {
+        SessionManager manager = new SessionManager(clientStore);
+        manager.init();
+        
+        // login admin
+        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+        
+        // register client
+        manager.registerUser("test_user", "test_password", false);
+        manager.setAdministrator("test_user", true);
+        manager.setAdministrator("test_user", false);
+    }
+
+    /**
+     * Test of SessionManager.login() for client.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 5000, expected = CouldNotPerformException.class)
+    public void setAdminAsNonAdmin() throws Exception {
+        SessionManager manager = new SessionManager(clientStore);
+        manager.init();
+        
+        // login admin
+        manager.login(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD);
+        
+        // register client
+        manager.setAdministrator(MockClientStore.USER_ID, true);
     }
 
 }
