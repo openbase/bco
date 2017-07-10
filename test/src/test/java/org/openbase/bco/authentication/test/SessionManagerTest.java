@@ -21,7 +21,7 @@ package org.openbase.bco.authentication.test;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.authentication.core.mock.MockServerStore;
+import org.openbase.bco.authentication.core.mock.MockCredentialStore;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
 import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.core.mock.MockClientStore;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.Store;
+import org.openbase.bco.authentication.lib.CredentialStore;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 
@@ -42,8 +42,8 @@ import org.openbase.jul.exception.CouldNotPerformException;
 public class SessionManagerTest {
 
     private static AuthenticatorController authenticatorController;
-    private static Store serverStore;
-    private static Store clientStore;
+    private static CredentialStore serverStore;
+    private static CredentialStore clientStore;
 
     public SessionManagerTest() {
     }
@@ -52,7 +52,7 @@ public class SessionManagerTest {
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
 
-        serverStore = new MockServerStore();
+        serverStore = new MockCredentialStore();
         clientStore = new MockClientStore();
 
         authenticatorController = new AuthenticatorController(serverStore);

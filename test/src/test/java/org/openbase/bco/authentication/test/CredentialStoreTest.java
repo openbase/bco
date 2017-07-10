@@ -29,9 +29,8 @@ import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.authentication.core.ServerStore;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
-import org.openbase.bco.authentication.lib.Store;
+import org.openbase.bco.authentication.lib.CredentialStore;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.bco.authentication.lib.jp.JPInitializeCredentials;
 import org.openbase.bco.authentication.lib.jp.JPRegistrationMode;
@@ -45,11 +44,11 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class ServerStoreTest {
+public class CredentialStoreTest {
 
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ServerStoreTest.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CredentialStoreTest.class);
 
-    public ServerStoreTest() {
+    public CredentialStoreTest() {
     }
 
     @BeforeClass
@@ -80,9 +79,11 @@ public class ServerStoreTest {
     @Test
     public void testSavingAndLoading() throws Exception {
         System.out.println("testSavingAndLoading");
+        
+        String storeFileName = "credential_store.json";
 
         // create initial instance which has to create a new file
-        Store registry = new ServerStore();
+        CredentialStore registry = new CredentialStore(storeFileName);
         registry.init();
 
         // add a client to this registry
@@ -91,7 +92,7 @@ public class ServerStoreTest {
         registry.setCredentials(clientId, EncryptionHelper.hash(password));
 
         // start a second registry which loads the file from the first one
-        Store loadingRegistry = new ServerStore();
+        CredentialStore loadingRegistry = new CredentialStore(storeFileName);
         loadingRegistry.init();
 
         // test if they produce the same result

@@ -45,7 +45,9 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.protobuf.processing.ProtoBufFileProcessor;
 import org.slf4j.LoggerFactory;
+import rst.domotic.authentication.LoginCredentialsCollectionType.LoginCredentialsCollection;
 import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
 
 /**
@@ -54,11 +56,11 @@ import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
  * @author <a href="mailto:cromankiewicz@techfak.uni-bielefeld.de">Constantin
  * Romankiewicz</a>
  */
-public class Store {
+public class CredentialStore {
 
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Store.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CredentialStore.class);
 
-    private static String filename;
+    private String filename;
 
     protected HashMap<String, LoginCredentials> credentials;
 
@@ -66,24 +68,27 @@ public class Store {
     private final Base64.Encoder encoder;
     private final Base64.Decoder decoder;
 
-    public Store(final String filename) {
-        Store.filename = filename;
+    private ProtoBufFileProcessor<LoginCredentialsCollection, LoginCredentialsCollection, LoginCredentialsCollection.Builder> fileProcessor;
+
+    public CredentialStore(final String filename) {
+        this.filename = filename;
         encoder = Base64.getEncoder();
         decoder = Base64.getDecoder();
     }
 
     public void init() throws InitializationException {
         try {
+            this.fileProcessor = new ProtoBufFileProcessor<>(LoginCredentialsCollection.newBuilder());
             this.file = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), filename);
             this.loadStore();
             this.setStorePermissions();
         } catch (JPNotAvailableException | CouldNotPerformException | IOException ex) {
-            throw new InitializationException(Store.class, ex);
+            throw new InitializationException(CredentialStore.class, ex);
         }
     }
 
     /**
-     * Loads the credentials from a protobuf binary file.
+     * Loads the credentials from a protobuf JSON file.
      *
      * @throws CouldNotPerformException If the deserialization fails.
      */
@@ -98,31 +103,23 @@ public class Store {
         }
 
         credentials = new HashMap<>();
-        try {
-            final CodedInputStream inputStream = CodedInputStream.newInstance(new FileInputStream(file));
-
-            while (!inputStream.isAtEnd()) {
-                LoginCredentials entry = LoginCredentials.parseFrom(inputStream);
-                credentials.put(entry.getId(), entry);
-            }
-        } catch (IOException ex) {
-            Logger.getLogger(Store.class.getName()).log(Level.SEVERE, null, ex);
-        }
+        LoginCredentialsCollection collection = fileProcessor.deserialize(file);
+        collection.getElementList().forEach((entry) -> {
+            credentials.put(entry.getId(), entry);
+        });
     }
 
     /**
-     * Stores the credentials in a protobuf binary file.
+     * Stores the credentials in a protobuf JSON file.
      */
     protected void saveStore() {
         try {
-            final CodedOutputStream outputStream = CodedOutputStream.newInstance(new FileOutputStream(file));
+            LoginCredentialsCollection collection = LoginCredentialsCollection.newBuilder()
+              .addAllElement(credentials.values())
+              .build();
 
-            for (LoginCredentials entry : credentials.values()) {
-                entry.writeTo(outputStream);
-            }
-
-            outputStream.flush();
-        } catch (IOException ex) {
+            fileProcessor.serialize(collection, file);
+        } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
         }
     }

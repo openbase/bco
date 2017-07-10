@@ -27,7 +27,7 @@ import java.util.Arrays;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.RandomStringUtils;
-import org.openbase.bco.authentication.core.mock.MockServerStore;
+import org.openbase.bco.authentication.core.mock.MockCredentialStore;
 import javax.crypto.BadPaddingException;
 import org.openbase.bco.authentication.lib.AuthenticationServerHandler;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
@@ -48,7 +48,7 @@ import org.openbase.jul.schedule.WatchDog;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 import org.openbase.bco.authentication.lib.AuthenticationService;
-import org.openbase.bco.authentication.lib.Store;
+import org.openbase.bco.authentication.lib.CredentialStore;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationSimulationMode;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.PermissionDeniedException;
@@ -76,6 +76,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     }
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatorController.class);
+    private static final String STORE_FILENAME = "server_crediential_store.json";
 
     private RSBLocalServer server;
     private WatchDog serverWatchDog;
@@ -83,16 +84,16 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     private final byte[] ticketGrantingServicePrivateKey;
     private final byte[] serviceServerPrivateKey;
 
-    private final Store store;
+    private final CredentialStore store;
 
     private String initialPassword;
     private Future initialPasswordPrinterFuture;
 
     public AuthenticatorController() {
-        this(new ServerStore());
+        this(new CredentialStore(STORE_FILENAME));
     }
-    
-    public AuthenticatorController(Store authenticationRegistry) {
+
+    public AuthenticatorController(CredentialStore authenticationRegistry) {
         this.server = new NotInitializedRSBLocalServer();
 
         this.ticketGrantingServicePrivateKey = EncryptionHelper.generateKey();
@@ -105,7 +106,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             LOGGER.warn("Could not check simulation property. Starting in normal mode.", ex);
         }
         if (simulation) {
-            this.store = new MockServerStore();
+            this.store = new MockCredentialStore();
         } else {
             this.store = authenticationRegistry;
         }
@@ -159,14 +160,6 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             serverWatchDog.waitForServiceActivation();
         } catch (final CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not wait for activation!", ex);
-        }
-    }
-    
-    public String getInitialPassword() throws NotAvailableException {
-        if(initialPassword == null) {
-            throw new NotAvailableException("initialPassword");
-        } else {
-            return initialPassword;
         }
     }
 

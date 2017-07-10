@@ -22,7 +22,7 @@ package org.openbase.bco.authentication.core.mock;
  * #L%
  */
 import java.util.HashMap;
-import org.openbase.bco.authentication.core.ServerStore;
+import org.openbase.bco.authentication.lib.CredentialStore;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -31,7 +31,7 @@ import org.openbase.jul.exception.InitializationException;
  *
  * @author <a href="mailto:cromankiewicz@techfak.uni-bielefeld.de">Constantin Romankiewicz</a>
  */
-public class MockServerStore extends ServerStore {
+public class MockCredentialStore extends CredentialStore {
 
     public static final String USER_ID = "admin";
     public static final String USER_PASSWORD = "password";
@@ -43,6 +43,10 @@ public class MockServerStore extends ServerStore {
 
     public static final String CLIENT_ID = "client";
 
+    public MockCredentialStore() {
+        super("mock_server_store.json");
+    }
+    
     @Override
     public void init() throws InitializationException {
         credentials = new HashMap<>();
