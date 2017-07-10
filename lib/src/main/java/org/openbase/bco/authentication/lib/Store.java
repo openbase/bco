@@ -30,6 +30,7 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermission;
+import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
@@ -62,9 +63,13 @@ public class Store {
     protected HashMap<String, LoginCredentials> credentials;
 
     private File file;
+    private final Base64.Encoder encoder;
+    private final Base64.Decoder decoder;
 
     public Store(final String filename) {
         Store.filename = filename;
+        encoder = Base64.getEncoder();
+        decoder = Base64.getDecoder();
     }
 
     public void init() throws InitializationException {
@@ -172,7 +177,7 @@ public class Store {
         if (!credentials.containsKey(userId)) {
             throw new NotAvailableException(userId);
         }
-        return credentials.get(userId).getCredentials().toByteArray();
+        return decoder.decode(credentials.get(userId).getCredentials());
     }
 
     /**
@@ -187,11 +192,7 @@ public class Store {
         if (!this.credentials.containsKey(userId)) {
             this.addCredentials(userId, credentials, false);
         } else {
-            LoginCredentials loginCredentials = LoginCredentials.newBuilder(this.credentials.get(userId))
-                    .setCredentials(ByteString.copyFrom(credentials))
-                    .build();
-            this.credentials.put(userId, loginCredentials);
-            this.saveStore();
+            this.addCredentials(userId, credentials, this.credentials.get(userId).getAdmin());
         }
     }
 
@@ -205,7 +206,7 @@ public class Store {
     public void addCredentials(String id, byte[] credentials, boolean admin) {
         LoginCredentials loginCredentials = LoginCredentials.newBuilder()
                 .setId(id)
-                .setCredentials(ByteString.copyFrom(credentials))
+                .setCredentials(encoder.encodeToString(credentials))
                 .setAdmin(admin)
                 .build();
 
