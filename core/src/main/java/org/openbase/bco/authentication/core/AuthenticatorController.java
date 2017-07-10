@@ -26,7 +26,9 @@ import java.io.StreamCorruptedException;
 import java.util.Arrays;
 import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 import javax.crypto.BadPaddingException;
+import org.apache.commons.lang.RandomStringUtils;
 import org.openbase.bco.authentication.core.mock.MockAuthenticationRegistry;
 import org.openbase.bco.authentication.lib.AuthenticationServerHandler;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
@@ -53,6 +55,7 @@ import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -81,6 +84,9 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     private final byte[] serviceServerPrivateKey;
 
     private final AuthenticationRegistry authenticationRegistry;
+
+    private String initialPassword;
+    private Future initialPasswordPrinterFuture;
 
     public AuthenticatorController() {
         this(new AuthenticationRegistry());
@@ -124,6 +130,12 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         serverWatchDog.activate();
+
+//        if (authenticationRegistry.isEmpty()) {
+            initialPassword = RandomStringUtils.randomAscii(10);
+            InitialPasswordPrinterRunnable initialPasswordPrinterCallback = new InitialPasswordPrinterRunnable(initialPassword);
+            initialPasswordPrinterFuture = GlobalScheduledExecutorService.scheduleAtFixedRate(initialPasswordPrinterCallback, 0, 30, TimeUnit.SECONDS);
+//        }
     }
 
     @Override
@@ -251,7 +263,17 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     @Override
     public Future<Void> registerClient(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
-            authenticationRegistry.setCredentials(loginCredentialsChange.getId(), loginCredentialsChange.getNewCredentials().toByteArray());
+            if (authenticationRegistry.isEmpty()) {
+                byte[] decryptedPassword = EncryptionHelper.decryptSymmetric(loginCredentialsChange.getNewCredentials(), EncryptionHelper.hash(initialPassword), byte[].class);
+                authenticationRegistry.setCredentials(loginCredentialsChange.getId(), decryptedPassword, true);
+
+                initialPasswordPrinterFuture.cancel(true);
+                initialPassword = null;
+                initialPasswordPrinterFuture = null;
+            } else {
+                //TODO:
+                authenticationRegistry.setCredentials(loginCredentialsChange.getId(), loginCredentialsChange.getNewCredentials().toByteArray());
+            }
             return null;
         });
     }
@@ -259,5 +281,22 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     @Override
     public Future<Boolean> isInRegistrationMode() throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> false);
+    }
+
+    private class InitialPasswordPrinterRunnable implements Runnable {
+
+        private String message;
+
+        public InitialPasswordPrinterRunnable(final String password) {
+            this.message = "\nUse the following password to decrypt the first password";
+            this.message += "\n==================================================";
+            this.message += "\n================== " + password + " ====================";
+            this.message += "\n==================================================";
+        }
+
+        @Override
+        public void run() {
+            LOGGER.info(message);
+        }
     }
 }
