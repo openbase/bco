@@ -161,7 +161,7 @@ public class SessionManager {
         try {
             // prepend clientId to userId for TicketGranteningTicket request
             String userIdAtClientId = "@" + this.clientId;
-            if (isUser == true) userIdAtClientId = id + userIdAtClientId;
+            if (isUser) userIdAtClientId = id + userIdAtClientId;
             
             // request TGT
             TicketSessionKeyWrapperType.TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userIdAtClientId).get();
@@ -178,11 +178,6 @@ public class SessionManager {
             list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(id, ticketGrantingServiceSessionKey, ticketSessionKeyWrapper);
             this.ticketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
             this.sessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
-            
-            // save credentials
-            // TODO: isAdmin flat is irrelevant here - client side doesn't need to know about that 
-            if (!this.store.hasEntry(id))
-                this.store.addCredentials(id, key, false);
             
             return true;
         } catch (BadPaddingException ex) {
@@ -299,12 +294,7 @@ public class SessionManager {
                     .build();
 
             TicketAuthenticatorWrapper newTicketAuthenticatorWrapper = CachedAuthenticationRemote.getRemote().changeCredentials(loginCredentialsChange).get();
-            AuthenticationClientHandler.handleServiceServerResponse(sessionKey, ticketAuthenticatorWrapper, newTicketAuthenticatorWrapper);
-         
-            // save new credentials
-            if (this.store.hasEntry(clientId))
-                this.store.setCredentials(clientId, newHash);
-            
+            AuthenticationClientHandler.handleServiceServerResponse(sessionKey, ticketAuthenticatorWrapper, newTicketAuthenticatorWrapper);    
         } catch (IOException | BadPaddingException ex) {
             this.logout();
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
@@ -338,11 +328,8 @@ public class SessionManager {
      */
     public void registerClient(String clientId) throws CouldNotPerformException {        
         KeyPair keyPair = EncryptionHelper.generateKeyPair();
-        boolean isAdmin = false;
-        this.internalRegister(clientId, keyPair.getPublic().getEncoded(), isAdmin);
-        if (this.store.hasEntry(clientId))
-            this.store.removeEntry(clientId);
-        this.store.addCredentials(clientId, keyPair.getPrivate().getEncoded(), isAdmin);
+        this.internalRegister(clientId, keyPair.getPublic().getEncoded(), false);
+        this.store.setCredentials(clientId, keyPair.getPrivate().getEncoded());
     }
     
     /**
@@ -423,9 +410,6 @@ public class SessionManager {
          
             TicketAuthenticatorWrapper wrapper = CachedAuthenticationRemote.getRemote().setAdministrator(loginCredentialsChange).get();
             AuthenticationClientHandler.handleServiceServerResponse(this.sessionKey, this.ticketAuthenticatorWrapper, wrapper);    
-            
-            if (this.store.hasEntry(id))
-                this.store.setAdmin(id, isAdmin);
         } catch (IOException | BadPaddingException ex) {
             this.logout();
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
