@@ -214,6 +214,11 @@
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>
+            <artifactId>jul.extension.protobuf</artifactId>
+            <version>${dependency.jul.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase</groupId>
             <artifactId>jul.pattern.launch</artifactId>
             <version>${dependency.jul.version}</version>
         </dependency>
