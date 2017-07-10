@@ -31,7 +31,7 @@ import static org.junit.Assert.*;
 import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.core.mock.MockClientStore;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.Store;
+import org.openbase.bco.authentication.lib.CredentialStore;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 
@@ -42,8 +42,8 @@ import org.openbase.jul.exception.CouldNotPerformException;
 public class SessionManagerTest {
 
     private static AuthenticatorController authenticatorController;
-    private static Store serverStore;
-    private static Store clientStore;
+    private static CredentialStore serverStore;
+    private static CredentialStore clientStore;
 
     public SessionManagerTest() {
     }

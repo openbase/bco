@@ -46,7 +46,7 @@ import org.openbase.jul.schedule.WatchDog;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 import org.openbase.bco.authentication.lib.AuthenticationService;
-import org.openbase.bco.authentication.lib.Store;
+import org.openbase.bco.authentication.lib.CredentialStore;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationSimulationMode;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.PermissionDeniedException;
@@ -73,6 +73,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     }
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatorController.class);
+    private static final String STORE_FILENAME = "server_crediential_store.json";
 
     private RSBLocalServer server;
     private WatchDog serverWatchDog;
@@ -80,13 +81,13 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     private final byte[] ticketGrantingServicePrivateKey;
     private final byte[] serviceServerPrivateKey;
 
-    private final Store store;
+    private final CredentialStore store;
 
     public AuthenticatorController() {
-        this(new ServerStore());
+        this(new CredentialStore(STORE_FILENAME));
     }
 
-    public AuthenticatorController(Store authenticationRegistry) {
+    public AuthenticatorController(CredentialStore authenticationRegistry) {
         this.server = new NotInitializedRSBLocalServer();
 
         this.ticketGrantingServicePrivateKey = EncryptionHelper.generateKey();
@@ -99,7 +100,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             LOGGER.warn("Could not check simulation property. Starting in normal mode.", ex);
         }
         if (simulation) {
-            this.store = new MockServerStore();
+            this.store = new MockServerStore(STORE_FILENAME);
         } else {
             this.store = authenticationRegistry;
         }

@@ -52,27 +52,21 @@ import rst.domotic.authentication.TicketSessionKeyWrapperType;
 public class SessionManager {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SessionManager.class);
+    private static final String STORE_FILENAME = "client_crediential_store.json";
 
     private TicketAuthenticatorWrapper ticketAuthenticatorWrapper;
     private byte[] sessionKey;
     
-    private final Store store;
-    
-    // TODO: Set this during login
-    // TODO: maybe replace this with something else
-    private boolean keepUserLoggedIn;
-    
+    private final CredentialStore store;
+        
     // remember id of client during session
     private String clientId;
 
     public SessionManager() {
-        this(new ClientStore());
+        this(new CredentialStore(STORE_FILENAME));
     }
 
-    public SessionManager(Store userStore) {
-        // TODO: maybe replace this with something else
-        this.keepUserLoggedIn = true;
-        
+    public SessionManager(CredentialStore userStore) {        
         // load registry
         boolean simulation = false;
         try {
@@ -81,7 +75,7 @@ public class SessionManager {
             LOGGER.warn("Could not check simulation property. Starting in normal mode.", ex);
         }
         if (simulation) {
-            this.store = new MockClientStore();
+            this.store = new MockClientStore(STORE_FILENAME);
         } else {
             this.store = userStore;
         }

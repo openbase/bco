@@ -54,9 +54,9 @@ import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
  * @author <a href="mailto:cromankiewicz@techfak.uni-bielefeld.de">Constantin
  * Romankiewicz</a>
  */
-public class Store {
+public class CredentialStore {
 
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(Store.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CredentialStore.class);
 
     private static String filename;
 
@@ -66,8 +66,8 @@ public class Store {
     private final Base64.Encoder encoder;
     private final Base64.Decoder decoder;
 
-    public Store(final String filename) {
-        Store.filename = filename;
+    public CredentialStore(final String filename) {
+        CredentialStore.filename = filename;
         encoder = Base64.getEncoder();
         decoder = Base64.getDecoder();
     }
@@ -78,7 +78,7 @@ public class Store {
             this.loadStore();
             this.setStorePermissions();
         } catch (JPNotAvailableException | CouldNotPerformException | IOException ex) {
-            throw new InitializationException(Store.class, ex);
+            throw new InitializationException(CredentialStore.class, ex);
         }
     }
 
@@ -106,7 +106,7 @@ public class Store {
                 credentials.put(entry.getId(), entry);
             }
         } catch (IOException ex) {
-            Logger.getLogger(Store.class.getName()).log(Level.SEVERE, null, ex);
+            Logger.getLogger(CredentialStore.class.getName()).log(Level.SEVERE, null, ex);
         }
     }
 
