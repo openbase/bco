@@ -57,8 +57,9 @@ public class SessionManager {
     
     private final Store store;
     
+    // TODO: Set this during login
     // TODO: maybe replace this with something else
-    private boolean userKeepSession;
+    private boolean keepUserLoggedIn;
     
     // remember id of client during session
     private String clientId;
@@ -69,7 +70,7 @@ public class SessionManager {
 
     public SessionManager(Store userStore) {
         // TODO: maybe replace this with something else
-        this.userKeepSession = true;
+        this.keepUserLoggedIn = true;
         
         // load registry
         boolean simulation = false;
@@ -109,7 +110,7 @@ public class SessionManager {
         }
     }
 
-    /**
+    /** TODO: Save Login data, if keepUserLoggedIn set to true
      * Perform a login for a given userId and password.
      *
      * @param userId Identifier of the user
@@ -121,8 +122,8 @@ public class SessionManager {
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
     public boolean login(String userId, String userPassword) throws StreamCorruptedException, CouldNotPerformException, NotAvailableException {
-            byte[] clientPasswordHash = EncryptionHelper.hash(userPassword);
-            return this.internalLogin(userId, clientPasswordHash, true);
+        byte[] clientPasswordHash = EncryptionHelper.hash(userPassword);
+        return this.internalLogin(userId, clientPasswordHash, true);
     }
 
     /**
