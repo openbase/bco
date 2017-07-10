@@ -25,6 +25,7 @@ import com.google.protobuf.ByteString;
 import java.io.IOException;
 import java.io.StreamCorruptedException;
 import java.util.Map;
+import javax.crypto.BadPaddingException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
@@ -76,9 +77,9 @@ public class AuthenticationServerHandler {
 
         // create TicketSessionKeyWrapper
         TicketSessionKeyWrapper.Builder ticketSessionKeyWrapper = TicketSessionKeyWrapper.newBuilder();
-        ticketSessionKeyWrapper.setTicket(EncryptionHelper.encrypt(ticketGrantingTicket.build(), ticketGrantingServicePrivateKey));
+        ticketSessionKeyWrapper.setTicket(EncryptionHelper.encryptSymmetric(ticketGrantingTicket.build(), ticketGrantingServicePrivateKey));
         if (isUser == true)
-            ticketSessionKeyWrapper.setSessionKey(EncryptionHelper.encrypt(ticketGrantingServiceSessionKey, key));
+            ticketSessionKeyWrapper.setSessionKey(EncryptionHelper.encryptSymmetric(ticketGrantingServiceSessionKey, key));
         else
             ticketSessionKeyWrapper.setSessionKey(EncryptionHelper.encryptAsymmetric(ticketGrantingServiceSessionKey, key));
 
@@ -97,14 +98,14 @@ public class AuthenticationServerHandler {
      *
      * @throws RejectedException If timestamp in Authenticator does not fit to time period in TGT
      * or, if clientID in Authenticator does not match clientID in TGT
-     * @throws StreamCorruptedException If the decryption of the Authenticator or TGT fails, probably because the wrong keys were used.
      * @throws IOException If de- or encryption fail because of a general I/O error.
+     * @throws javax.crypto.BadPaddingException If the decryption of the Authenticator or TGT fails, probably because the wrong keys were used.
      */
-    public static TicketSessionKeyWrapper handleTGSRequest(final byte[] ticketGrantingServicePrivateKey, final byte[] serviceServerPrivateKey, final TicketAuthenticatorWrapper wrapper) throws RejectedException, StreamCorruptedException, IOException {
+    public static TicketSessionKeyWrapper handleTGSRequest(final byte[] ticketGrantingServicePrivateKey, final byte[] serviceServerPrivateKey, final TicketAuthenticatorWrapper wrapper) throws RejectedException, IOException, BadPaddingException {
         // decrypt ticket and authenticator
-        Ticket ticketGrantingTicket = (Ticket) EncryptionHelper.decrypt(wrapper.getTicket(), ticketGrantingServicePrivateKey);
+        Ticket ticketGrantingTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), ticketGrantingServicePrivateKey, Ticket.class);
         byte[] ticketGrantingServiceSessionKey = ticketGrantingTicket.getSessionKeyBytes().toByteArray();
-        Authenticator authenticator = (Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), ticketGrantingServiceSessionKey);
+        Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), ticketGrantingServiceSessionKey, Authenticator.class);
 
         // compare clientIDs and timestamp to period
         AuthenticationServerHandler.validateTicket(ticketGrantingTicket, authenticator);
@@ -119,8 +120,8 @@ public class AuthenticationServerHandler {
 
         // create TicketSessionKeyWrapper
         TicketSessionKeyWrapper.Builder ticketSessionKeyWrapper = TicketSessionKeyWrapper.newBuilder();
-        ticketSessionKeyWrapper.setTicket(EncryptionHelper.encrypt(clientServerTicket.build(), serviceServerPrivateKey));
-        ticketSessionKeyWrapper.setSessionKey(EncryptionHelper.encrypt(serviceServerSessionKey, ticketGrantingServiceSessionKey));
+        ticketSessionKeyWrapper.setTicket(EncryptionHelper.encryptSymmetric(clientServerTicket.build(), serviceServerPrivateKey));
+        ticketSessionKeyWrapper.setSessionKey(EncryptionHelper.encryptSymmetric(serviceServerSessionKey, ticketGrantingServiceSessionKey));
 
         return ticketSessionKeyWrapper.build();
     }
@@ -135,13 +136,13 @@ public class AuthenticationServerHandler {
      *
      * @throws RejectedException If timestamp in Authenticator does not fit to time period in TGT
      * or, if clientID in Authenticator does not match clientID in TGT
-     * @throws StreamCorruptedException If the decryption of the Authenticator or CST fails, probably because the wrong keys were used.
      * @throws IOException If de- or encryption fail because of a general I/O error.
+     * @throws javax.crypto.BadPaddingException If the decryption of the Authenticator or CST fails, probably because the wrong keys were used.
      */
-    public static TicketAuthenticatorWrapper handleSSRequest(final byte[] serviceServerPrivateKey, final TicketAuthenticatorWrapper wrapper) throws RejectedException, StreamCorruptedException, IOException {
+    public static TicketAuthenticatorWrapper handleSSRequest(final byte[] serviceServerPrivateKey, final TicketAuthenticatorWrapper wrapper) throws RejectedException, IOException, BadPaddingException {
         // decrypt ticket and authenticator
-        Ticket clientServerTicket = (Ticket) EncryptionHelper.decrypt(wrapper.getTicket(), serviceServerPrivateKey);
-        Authenticator authenticator = (Authenticator) EncryptionHelper.decrypt(wrapper.getAuthenticator(), clientServerTicket.getSessionKeyBytes().toByteArray());
+        Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerPrivateKey, Ticket.class);
+        Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), clientServerTicket.getSessionKeyBytes().toByteArray(), Authenticator.class);
 
         // compare clientIDs and timestamp to period
         AuthenticationServerHandler.validateTicket(clientServerTicket, authenticator);
@@ -152,7 +153,7 @@ public class AuthenticationServerHandler {
 
         // update TicketAuthenticatorWrapper
         TicketAuthenticatorWrapper.Builder ticketAuthenticatorWrapper = wrapper.toBuilder();
-        ticketAuthenticatorWrapper.setTicket(EncryptionHelper.encrypt(clientServerTicket, serviceServerPrivateKey));
+        ticketAuthenticatorWrapper.setTicket(EncryptionHelper.encryptSymmetric(clientServerTicket, serviceServerPrivateKey));
 
         return ticketAuthenticatorWrapper.build();
     }

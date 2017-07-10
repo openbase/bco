@@ -91,10 +91,10 @@ public class AuthenticationRegistry {
      * @throws NotAvailableException If the user does not exist in the credentials storage.
      */
     public byte[] getCredentials(String userId) throws NotAvailableException {
-        if (!credentials.containsKey(userId)) {;
+        if (!credentials.containsKey(userId)) {
             throw new NotAvailableException(userId);
         }
-        
+
         return credentials.get(userId).getCredentials().toByteArray();
     }
 
@@ -132,7 +132,7 @@ public class AuthenticationRegistry {
 
     /**
      * Sets the login credentials for a given user. If there is already an entry in the storage for
-     * this user, it will be replaced. Otherwise, a new entry will be created.
+     * this user, it will be replaced. Otherwise, a new entry without admin rights will be created.
      *
      * @param userId ID of the user to modify.
      * @param credentials New encrypted credentials.
@@ -140,18 +140,13 @@ public class AuthenticationRegistry {
      */
     public void setCredentials(String userId, byte[] credentials) throws CouldNotPerformException {
         if (!this.credentials.containsKey(userId)) {
-            this.addCredentials(userId, credentials, false);
-        }
-        else {
-            LoginCredentials loginCredentials = LoginCredentials.newBuilder(this.credentials.get(userId))
-              .setCredentials(ByteString.copyFrom(credentials))
-              .build();
-            this.credentials.put(userId, loginCredentials);
-            this.save();
+            this.setCredentials(userId, credentials, false);
+        } else {
+            this.setCredentials(userId, credentials, this.credentials.get(userId).getAdmin());
         }
     }
 
-    public void addCredentials(String userId, byte[] credentials, boolean admin) throws CouldNotPerformException {
+    public void setCredentials(String userId, byte[] credentials, boolean admin) throws CouldNotPerformException {
         // only test for registration mode if user is not already registered
         try {
             int registrationMode = JPService.getProperty(JPRegistrationMode.class).getValue();
@@ -165,10 +160,10 @@ public class AuthenticationRegistry {
         }
 
         LoginCredentials loginCredentials = LoginCredentials.newBuilder()
-          .setId(userId)
-          .setCredentials(ByteString.copyFrom(credentials))
-          .setAdmin(admin)
-          .build();
+                .setId(userId)
+                .setCredentials(ByteString.copyFrom(credentials))
+                .setAdmin(admin)
+                .build();
 
         this.credentials.put(userId, loginCredentials);
         this.save();
@@ -199,7 +194,7 @@ public class AuthenticationRegistry {
      *
      * @throws CouldNotPerformException If the deserialization fails.
      */
-    private void load() throws CouldNotPerformException {
+    protected void load() throws CouldNotPerformException {
         try {
             if (!file.exists() && JPService.getProperty(JPInitializeCredentials.class).getValue()) {
                 credentials = new HashMap<>();
@@ -225,7 +220,7 @@ public class AuthenticationRegistry {
     /**
      * Stores the credentials in a protobuf binary file.
      */
-    private void save() {
+    protected void save() {
         try {
             final CodedOutputStream outputStream = CodedOutputStream.newInstance(new FileOutputStream(file));
 
