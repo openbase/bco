@@ -27,8 +27,16 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
+import java.util.logging.Logger;
+import javax.media.j3d.Transform3D;
+import javax.vecmath.Point3d;
+import javax.vecmath.Quat4d;
+import javax.vecmath.Vector3d;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
@@ -52,7 +60,6 @@ import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.FutureProcessor;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.LoggerFactory;
 import rct.Transform;
 import rsb.Scope;
@@ -62,7 +69,6 @@ import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType.Snapshot;
-import rst.domotic.registry.LocationRegistryDataType;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -71,6 +77,9 @@ import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.geometry.AxisAlignedBoundingBox3DFloatType.AxisAlignedBoundingBox3DFloat;
+import rst.geometry.RotationType.Rotation;
+import rst.geometry.TranslationType.Translation;
 import rst.rsb.ScopeType;
 
 /**
@@ -393,10 +402,8 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      */
     public Future<Transform> getTransformation() throws InterruptedException {
-        final Future<LocationRegistryDataType.LocationRegistryData> dataFuture;
         try {
-            dataFuture = Registries.getLocationRegistry().getDataFuture();
-            return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getLocationRegistry().getUnitTransformation(getConfig()), dataFuture);
+            return Units.getUnitTransformation(getConfig());
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
         }
@@ -547,5 +554,146 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
 
         return Service.upateActionDescription(actionDescription, serviceAttribute);
+    }
+    
+    /**
+     * Gets the position of the unit relative to its parent location.
+     * 
+     * @return relative position
+     * @throws NotAvailableException is thrown if the config is not available.
+     */
+    public Translation getLocalPosition() throws NotAvailableException{
+        return getConfig().getPlacementConfig().getPosition().getTranslation();
+    }
+    
+    /**
+     * Gets the rotation of the unit relative to its parent location.
+     * 
+     * @return relative rotation
+     * @throws NotAvailableException is thrown if the config is not available.
+     */
+    public Rotation getLocalRotation() throws NotAvailableException{
+        return getConfig().getPlacementConfig().getPosition().getRotation();
+    }
+    
+    /**
+     * Gets the Transform3D of the transformation relative to the root location.
+     * 
+     * @return transform relative to root location
+     * @throws NotAvailableException is thrown if the transformation is not available.
+     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     */
+    public Transform3D getTransform3D() throws NotAvailableException, InterruptedException{
+        try {
+            return getTransformation().get(200, TimeUnit.MILLISECONDS).getTransform();
+        } catch (ExecutionException | TimeoutException ex) {
+            throw new NotAvailableException("Transform3D", ex);
+        }
+    }
+    
+    /**
+     * Gets the position of the unit relative to the root location as a Point3d object.
+     * 
+     * @return position relative to the root location
+     * @throws NotAvailableException is thrown if the transformation is not available.
+     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     */
+    public Point3d getGlobalPositionPoint3d() throws NotAvailableException, InterruptedException{
+        try {
+            Transform3D transformation = getTransform3D();
+            Vector3d pos = new Vector3d();
+            transformation.get(pos);
+            return new Point3d(pos);
+        } catch (NotAvailableException ex) {
+            throw new NotAvailableException("GlobalPositionVector", ex);
+        }
+    }
+    
+    
+    /**
+     * Gets the position of the unit relative to the root location as a Translation object.
+     * 
+     * @return position relative to the root location
+     * @throws NotAvailableException is thrown if the transformation is not available.
+     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     */
+    public Translation getGlobalPosition() throws NotAvailableException, InterruptedException {
+        try {
+            Point3d pos = getGlobalPositionPoint3d();
+            return Translation.newBuilder().setX(pos.x).setY(pos.y).setZ(pos.z).build();
+        } catch (NotAvailableException ex) {
+            throw new NotAvailableException("GlobalPosition", ex);
+        }
+    }
+    
+    /**
+     * Gets the rotation of the unit relative to the root location as a Quat4d object.
+     * 
+     * @return rotation relative to the root location
+     * @throws NotAvailableException is thrown if the transformation is not available.
+     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     */
+    public Quat4d getGlobalRotationQuat4d() throws NotAvailableException, InterruptedException {
+        try {
+            Transform3D transformation = getTransform3D();
+            Quat4d quat = new Quat4d();
+            transformation.get(quat);
+            return quat;
+        } catch (NotAvailableException ex) {
+            throw new NotAvailableException("GlobalRotationQuat", ex);
+        }
+    }
+    
+    /**
+     * Gets the rotation of the unit relative to the root location as a Rotation object.
+     * 
+     * @return rotation relative to the root location
+     * @throws NotAvailableException is thrown if the transformation is not available.
+     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     */
+    public Rotation getGlobalRotation() throws NotAvailableException, InterruptedException {
+        try {
+            Quat4d quat = getGlobalRotationQuat4d();
+            return Rotation.newBuilder().setQw(quat.w).setQx(quat.x).setQy(quat.y).setQz(quat.z).build();
+        } catch (NotAvailableException ex) {
+            throw new NotAvailableException("GlobalRotation", ex);
+        }
+    }
+    
+    /**
+     * Gets the center coordinates of the unit's BoundingBox in the unit coordinate system as a Point3d object.
+     * 
+     * @return center coordinates of the unit's BoundingBox relative to unit
+     * @throws NotAvailableException is thrown if the center can not be calculate.
+     */
+    public Point3d getLocalBoundingBoxCenterPoint3d() throws NotAvailableException {
+        try {
+            AxisAlignedBoundingBox3DFloat bb = getConfig().getPlacementConfig().getShape().getBoundingBox();
+            Translation lfc = bb.getLeftFrontBottom();
+            
+            Point3d center = new Point3d(bb.getWidth(), bb.getDepth(), bb.getHeight());
+            center.scale(0.5);
+            center.add(new Point3d(lfc.getX(), lfc.getY(), lfc.getZ()));
+            return center;
+        } catch (NotAvailableException ex) {
+            throw new NotAvailableException("LocalBoundingBoxCenter", ex);
+        }
+    }
+    
+    /**
+     * Gets the center coordinates of the unit's BoundingBox in the coordinate system of the root location as a Point3d object.
+     * 
+     * @return center coordinates of the unit's BoundingBox relative to root location
+     * @throws NotAvailableException is thrown if the center can not be calculate.
+     */
+    public Point3d getGlobalBoundingBoxCenterPoint3d() throws NotAvailableException, InterruptedException {
+        try {
+            Transform3D transformation = getTransform3D();
+            Point3d center = getLocalBoundingBoxCenterPoint3d();
+            transformation.transform(center);
+            return center;
+        } catch (NotAvailableException ex) {
+            throw new NotAvailableException("GlobalBoundingBoxCenter", ex);
+        }
     }
 }
