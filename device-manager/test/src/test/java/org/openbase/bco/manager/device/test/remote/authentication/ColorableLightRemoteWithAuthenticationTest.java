@@ -42,7 +42,7 @@ import rst.domotic.state.PowerStateType;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
 public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODeviceManagerTest {
 
