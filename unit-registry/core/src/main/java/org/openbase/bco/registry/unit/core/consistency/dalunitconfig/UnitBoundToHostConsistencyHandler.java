@@ -65,8 +65,9 @@ public class UnitBoundToHostConsistencyHandler extends AbstractProtoBufRegistryC
         }
 
         // Overwrite unit bounds by device bounds
-        if (deviceUnitConfig.getBoundToUnitHost() && !dalUnitConfig.getBoundToUnitHost()) {
-            dalUnitConfig.setBoundToUnitHost(true);
+        if (deviceUnitConfig.getBoundToUnitHost() != dalUnitConfig.getBoundToUnitHost()) {
+            dalUnitConfig.setBoundToUnitHost(deviceUnitConfig.getBoundToUnitHost());
+            modification = true;
         }
 
         // Copy device placement, location and label if bound to device is enabled.
