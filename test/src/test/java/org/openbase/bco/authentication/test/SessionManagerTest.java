@@ -34,6 +34,7 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.CredentialStore;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 
 /**
  *
@@ -85,6 +86,7 @@ public class SessionManagerTest {
      */
     @Test(timeout = 5000)
     public void registerUser() throws Exception {
+        System.out.println("registerUser");
         SessionManager manager = new SessionManager(clientStore);
         manager.init();
         
@@ -102,6 +104,7 @@ public class SessionManagerTest {
      */
     @Test(timeout = 5000)
     public void loginUser() throws Exception {
+        System.out.println("loginUser");
         SessionManager manager = new SessionManager(clientStore);
         manager.init();
         boolean result = manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
@@ -116,6 +119,7 @@ public class SessionManagerTest {
      */
     @Test(timeout = 5000)
     public void isLoggedIn() throws Exception {
+        System.out.println("isLoggedIn");
         SessionManager manager = new SessionManager(clientStore);
         manager.init();
         boolean result = manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
@@ -134,6 +138,7 @@ public class SessionManagerTest {
      */
     @Test(timeout = 5000)
     public void isAuthenticated() throws Exception {
+        System.out.println("isAuthenticated");
         SessionManager manager = new SessionManager(clientStore);
         manager.init();
         boolean result = manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
@@ -152,6 +157,7 @@ public class SessionManagerTest {
      */
     @Test(timeout = 5000)
     public void logout() throws Exception {
+        System.out.println("logout");
         SessionManager manager = new SessionManager(clientStore);
         manager.init();
         boolean result = manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
@@ -170,30 +176,36 @@ public class SessionManagerTest {
      */
     @Test(timeout = 5000, expected = CouldNotPerformException.class)
     public void registerClientAndLogin() throws Exception {
-        SessionManager manager = new SessionManager(clientStore);
-        manager.init();
-        
-        // login admin
-        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
-        
-        // register client
-        manager.registerClient(MockClientStore.CLIENT_ID);
-        
-        // logout admin
-        manager.logout();
-        
-        // login client
-        boolean result = manager.login(MockClientStore.CLIENT_ID);
-        assertEquals(true, result);
-        
-        // logout client
-        manager.logout();
-        
-        // login admin
-        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
-        
-        // register same client should result in Exception
-        manager.registerClient(MockClientStore.ADMIN_ID);
+        System.out.println("registerClientAndLogin");
+        try {
+            ExceptionPrinter.setBeQuit(Boolean.TRUE);
+            SessionManager manager = new SessionManager(clientStore);
+            manager.init();
+
+            // login admin
+            manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+
+            // register client
+            manager.registerClient(MockClientStore.CLIENT_ID);
+
+            // logout admin
+            manager.logout();
+
+            // login client
+            boolean result = manager.login(MockClientStore.CLIENT_ID);
+            assertEquals(true, result);
+
+            // logout client
+            manager.logout();
+
+            // login admin
+            manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+
+            // register same client should result in Exception
+            manager.registerClient(MockClientStore.ADMIN_ID);
+        } finally {
+            ExceptionPrinter.setBeQuit(Boolean.FALSE);
+        }
     }
 
     /**
@@ -203,14 +215,20 @@ public class SessionManagerTest {
      */
     @Test(timeout = 5000, expected = CouldNotPerformException.class)
     public void registerClientAsNonAdmin() throws Exception {
-        SessionManager manager = new SessionManager(clientStore);
-        manager.init();
-        
-        // login admin
-        manager.login(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD);
-        
-        // register client
-        manager.registerClient(MockClientStore.USER_ID);
+        System.out.println("registerClientAsNonAdmin");
+        try {
+            ExceptionPrinter.setBeQuit(Boolean.TRUE);
+            SessionManager manager = new SessionManager(clientStore);
+            manager.init();
+
+            // login admin
+            manager.login(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD);
+
+            // register client
+            manager.registerClient(MockClientStore.USER_ID);
+        } finally {
+            ExceptionPrinter.setBeQuit(Boolean.FALSE);
+        }
     }
 
     /**
@@ -220,6 +238,7 @@ public class SessionManagerTest {
      */
     @Test(timeout = 5000)
     public void setAdmin() throws Exception {
+        System.out.println("setAdmin");
         SessionManager manager = new SessionManager(clientStore);
         manager.init();
         
@@ -239,14 +258,20 @@ public class SessionManagerTest {
      */
     @Test(timeout = 5000, expected = CouldNotPerformException.class)
     public void setAdminAsNonAdmin() throws Exception {
-        SessionManager manager = new SessionManager(clientStore);
-        manager.init();
-        
-        // login admin
-        manager.login(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD);
-        
-        // register client
-        manager.setAdministrator(MockClientStore.USER_ID, true);
+        System.out.println("setAdminAsNonAdmin");
+        try {
+            ExceptionPrinter.setBeQuit(Boolean.TRUE);
+            SessionManager manager = new SessionManager(clientStore);
+            manager.init();
+
+            // login admin
+            manager.login(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD);
+
+            // register client
+            manager.setAdministrator(MockClientStore.USER_ID, true);
+        } finally {
+            ExceptionPrinter.setBeQuit(Boolean.FALSE);
+        }
     }
 
 }
