@@ -1,1 +1,0 @@
-[Architecture](https://github.com/openbase/bco.authentication/wiki/home/architecture)
