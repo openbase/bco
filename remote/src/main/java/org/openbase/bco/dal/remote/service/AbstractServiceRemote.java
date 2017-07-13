@@ -28,12 +28,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
+import org.openbase.bco.dal.lib.layer.unit.UnitAllocation;
+import org.openbase.bco.dal.lib.layer.unit.UnitAllocator;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
@@ -62,6 +65,7 @@ import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.ActionReferenceType.ActionReference;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.ActionStateType.ActionState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -438,7 +442,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             if (!actionDescription.getServiceStateDescription().getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
-            
+
             List<String> unitIds = new ArrayList<>();
             for (final UnitRemote unitRemote : getInternalUnits()) {
                 if (actionDescription.getServiceStateDescription().getUnitType() == UnitType.UNKNOWN
@@ -447,36 +451,45 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                     unitIds.add((String) unitRemote.getId());
                 }
             }
-            
+
             ActionDescription.Builder actBuilder = actionDescription.toBuilder();
             ActionDescriptionProcessor.getDefaultActionParameter();
             ResourceAllocation.Builder resourceAllocation = actBuilder.getResourceAllocationBuilder();
             resourceAllocation.addAllResourceIds(unitIds);
-            
 
-            List<Future> actionFutureList = new ArrayList<>();
-            for (final UnitRemote unitRemote : getInternalUnits()) {
-                if (actionDescription.getServiceStateDescription().getUnitType() == UnitType.UNKNOWN
-                        || actionDescription.getServiceStateDescription().getUnitType() == unitRemote.getType()
-                        || UnitConfigProcessor.isBaseUnit(unitRemote.getType())) {
-                    ActionDescription.Builder unitActionDescription = ActionDescription.newBuilder(actionDescription);
-                    ActionReference.Builder actionReference = ActionReference.newBuilder();
-                    actionReference.setActionId(actionDescription.getId());
-                    actionReference.setAuthority(actionDescription.getActionAuthority());
-                    actionReference.setServiceStateDescription(actionDescription.getServiceStateDescription());
-                    unitActionDescription.addActionChain(actionReference);
-                    
-                    ServiceStateDescription.Builder serviceStateDescription = unitActionDescription.getServiceStateDescriptionBuilder();
-                    serviceStateDescription.setUnitId((String) unitRemote.getId());
-                    
-                    actionFutureList.add(unitRemote.applyAction(unitActionDescription.build()));
-                }
+            switch (actBuilder.getMultiResourceAllocationStrategy().getStrategy()) {
+                case AT_LEAST_ONE:
+                    return null;
+                case ALL_OR_NOTHING:
+                    logger.debug("applyAction: " + actionDescription.getLabel());
+
+                    // Resource Allocation
+                    UnitAllocation unitAllocation = UnitAllocator.allocate(actionDescription.toBuilder(), () -> {
+                        List<Future> actionFutureList = new ArrayList<>();
+                        for (String unitId : unitIds) {
+                            UnitRemote unitRemote = unitRemoteMap.get(unitId);
+                            ActionDescription.Builder unitActionDescription = ActionDescription.newBuilder(actionDescription);
+                            ActionReference.Builder actionReference = ActionReference.newBuilder();
+                            actionReference.setActionId(actionDescription.getId());
+                            actionReference.setAuthority(actionDescription.getActionAuthority());
+                            actionReference.setServiceStateDescription(actionDescription.getServiceStateDescription());
+                            unitActionDescription.addActionChain(actionReference);
+
+                            ServiceStateDescription.Builder serviceStateDescription = unitActionDescription.getServiceStateDescriptionBuilder();
+                            serviceStateDescription.setUnitId((String) unitRemote.getId());
+
+                            actionFutureList.add(unitRemote.applyAction(unitActionDescription.build()));
+
+                        }
+                        
+                        // todo: setup action future.
+                        final ActionFuture actionFuture = ActionFuture.getDefaultInstance();
+                        return GlobalCachedExecutorService.allOf(actionFuture, actionFutureList).get();
+                    });
+                    return unitAllocation.getTaskExecutor().getFuture();
+                default:
+                    return null;
             }
-            
-            // todo: setup action future.
-            final ActionFuture actionFuture = ActionFuture.getDefaultInstance();
-            
-            return GlobalCachedExecutorService.allOf(actionFuture, actionFutureList);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }
