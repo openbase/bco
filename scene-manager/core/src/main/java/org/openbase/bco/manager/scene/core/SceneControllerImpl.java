@@ -199,7 +199,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         super.deactivate();
     }
 
-    public static final int ACTION_REPLAY = 3;
+    public static final int ACTION_REPLAY = 1;
     public static final int ACTION_EXECUTION_DEPLAY = 5500;
 
     @Override
