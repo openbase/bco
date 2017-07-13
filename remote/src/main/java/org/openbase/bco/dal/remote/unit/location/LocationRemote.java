@@ -25,12 +25,14 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.pattern.Observable;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.AlarmStateType;
 import rst.domotic.state.BlindStateType;
@@ -150,7 +152,18 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
 
     @Override
     public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
-        return RPCHelper.callRemoteMethod(actionDescription, this, ActionFuture.class);
+        return RPCHelper.callRemoteMethod(updateActionDescription(actionDescription.toBuilder()).build(), this, ActionFuture.class);
+    }
+    
+    protected ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription) throws CouldNotPerformException {
+        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
+        serviceStateDescription.setUnitId(getId());
+
+        actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
+        //TODO: update USER key with authentification
+        actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
+        
+        return actionDescription;
     }
 
     @Override
