@@ -57,6 +57,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionReferenceType.ActionReference;
+import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -440,7 +442,17 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                 if (actionDescription.getServiceStateDescription().getUnitType() == UnitType.UNKNOWN
                         || actionDescription.getServiceStateDescription().getUnitType() == unitRemote.getType()
                         || UnitConfigProcessor.isBaseUnit(unitRemote.getType())) {
-                    actionFutureList.add(unitRemote.applyAction(actionDescription));
+                    ActionDescription.Builder unitActionDescription = ActionDescription.newBuilder(actionDescription);
+                    ActionReference.Builder actionReference = ActionReference.newBuilder();
+                    actionReference.setActionId(actionDescription.getId());
+                    actionReference.setAuthority(actionDescription.getActionAuthority());
+                    actionReference.setServiceStateDescription(actionDescription.getServiceStateDescription());
+                    unitActionDescription.addActionChain(actionReference);
+                    
+                    ServiceStateDescription.Builder serviceStateDescription = unitActionDescription.getServiceStateDescriptionBuilder();
+                    serviceStateDescription.setUnitId((String) unitRemote.getId());
+                    
+                    actionFutureList.add(unitRemote.applyAction(unitActionDescription.build()));
                 }
             }
             
