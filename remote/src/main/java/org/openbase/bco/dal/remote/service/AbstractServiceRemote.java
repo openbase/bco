@@ -28,12 +28,15 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
+import org.openbase.bco.dal.lib.layer.unit.UnitAllocation;
+import org.openbase.bco.dal.lib.layer.unit.UnitAllocator;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
@@ -47,6 +50,7 @@ import org.openbase.jul.exception.ShutdownException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
@@ -55,9 +59,13 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionReferenceType.ActionReference;
+import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.ActionStateType.ActionState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -435,19 +443,53 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
 
-            List<Future> actionFutureList = new ArrayList<>();
+            List<String> unitIds = new ArrayList<>();
             for (final UnitRemote unitRemote : getInternalUnits()) {
                 if (actionDescription.getServiceStateDescription().getUnitType() == UnitType.UNKNOWN
                         || actionDescription.getServiceStateDescription().getUnitType() == unitRemote.getType()
                         || UnitConfigProcessor.isBaseUnit(unitRemote.getType())) {
-                    actionFutureList.add(unitRemote.applyAction(actionDescription));
+                    unitIds.add((String) unitRemote.getId());
                 }
             }
-            
-            // todo: setup action future.
-            final ActionFuture actionFuture = ActionFuture.getDefaultInstance();
-            
-            return GlobalCachedExecutorService.allOf(actionFuture, actionFutureList);
+
+            ActionDescription.Builder actBuilder = actionDescription.toBuilder();
+            ActionDescriptionProcessor.getDefaultActionParameter();
+            ResourceAllocation.Builder resourceAllocation = actBuilder.getResourceAllocationBuilder();
+            resourceAllocation.addAllResourceIds(unitIds);
+
+            switch (actBuilder.getMultiResourceAllocationStrategy().getStrategy()) {
+                case AT_LEAST_ONE:
+                    return null;
+                case ALL_OR_NOTHING:
+                    logger.debug("applyAction: " + actionDescription.getLabel());
+
+                    // Resource Allocation
+                    UnitAllocation unitAllocation = UnitAllocator.allocate(actionDescription.toBuilder(), () -> {
+                        List<Future> actionFutureList = new ArrayList<>();
+                        for (String unitId : unitIds) {
+                            UnitRemote unitRemote = unitRemoteMap.get(unitId);
+                            ActionDescription.Builder unitActionDescription = ActionDescription.newBuilder(actionDescription);
+                            ActionReference.Builder actionReference = ActionReference.newBuilder();
+                            actionReference.setActionId(actionDescription.getId());
+                            actionReference.setAuthority(actionDescription.getActionAuthority());
+                            actionReference.setServiceStateDescription(actionDescription.getServiceStateDescription());
+                            unitActionDescription.addActionChain(actionReference);
+
+                            ServiceStateDescription.Builder serviceStateDescription = unitActionDescription.getServiceStateDescriptionBuilder();
+                            serviceStateDescription.setUnitId((String) unitRemote.getId());
+
+                            actionFutureList.add(unitRemote.applyAction(unitActionDescription.build()));
+
+                        }
+                        
+                        // todo: setup action future.
+                        final ActionFuture actionFuture = ActionFuture.getDefaultInstance();
+                        return GlobalCachedExecutorService.allOf(actionFuture, actionFutureList).get();
+                    });
+                    return unitAllocation.getTaskExecutor().getFuture();
+                default:
+                    return null;
+            }
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }
