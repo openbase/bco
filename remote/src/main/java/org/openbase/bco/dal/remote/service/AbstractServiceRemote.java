@@ -28,13 +28,13 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.CancellationException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
+import org.openbase.bco.dal.lib.layer.unit.MultiUnitServiceFusion;
 import org.openbase.bco.dal.lib.layer.unit.UnitAllocation;
 import org.openbase.bco.dal.lib.layer.unit.UnitAllocator;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -50,6 +50,7 @@ import org.openbase.jul.exception.ShutdownException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
@@ -393,6 +394,17 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     }
 
     @Override
+    public Collection<org.openbase.bco.dal.lib.layer.unit.UnitRemote> getInternalUnits(UnitType unitType) throws NotAvailableException {
+        List<UnitRemote> unitRemotes = new ArrayList<>();
+        for (UnitRemote unitRemote : unitRemoteMap.values()) {
+            if (unitType == UnitType.UNKNOWN || unitType == unitRemote.getType() || UnitConfigProcessor.isBaseUnit(unitRemote.getType())) {
+                unitRemotes.add(unitRemote);
+            }
+        }
+        return Collections.unmodifiableCollection(unitRemotes);
+    }
+
+    @Override
     public boolean hasInternalRemotes() {
         return !unitRemoteMap.isEmpty();
     }
@@ -439,36 +451,44 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     @Override
     public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         try {
+            logger.info("applyAction");
             if (!actionDescription.getServiceStateDescription().getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
 
-            List<String> unitIds = new ArrayList<>();
-            for (final UnitRemote unitRemote : getInternalUnits()) {
-                if (actionDescription.getServiceStateDescription().getUnitType() == UnitType.UNKNOWN
-                        || actionDescription.getServiceStateDescription().getUnitType() == unitRemote.getType()
-                        || UnitConfigProcessor.isBaseUnit(unitRemote.getType())) {
-                    unitIds.add((String) unitRemote.getId());
+            Map<String, UnitRemote> scopeUnitMap = new HashMap();
+            for (final UnitRemote unitRemote : getInternalUnits(actionDescription.getServiceStateDescription().getUnitType())) {
+                if (unitRemote instanceof MultiUnitServiceFusion) {
+                    MultiUnitServiceFusion multiUnitServiceFusion = (MultiUnitServiceFusion) unitRemote;
+                    Collection<UnitRemote> units = (Collection<UnitRemote>) multiUnitServiceFusion.getServiceRemote(serviceType).getInternalUnits(actionDescription.getServiceStateDescription().getUnitType());
+                    for (UnitRemote unit : units) {
+                        scopeUnitMap.put(ScopeGenerator.generateStringRep(unit.getScope()), unit);
+                    }
+                } else {
+                    scopeUnitMap.put(ScopeGenerator.generateStringRep(unitRemote.getScope()), unitRemote);
                 }
             }
 
             ActionDescription.Builder actBuilder = actionDescription.toBuilder();
             ActionDescriptionProcessor.getDefaultActionParameter();
             ResourceAllocation.Builder resourceAllocation = actBuilder.getResourceAllocationBuilder();
-            resourceAllocation.addAllResourceIds(unitIds);
+            resourceAllocation.clearResourceIds();
+            resourceAllocation.addAllResourceIds(scopeUnitMap.keySet());
+            ActionDescriptionProcessor.updateResourceAllocationSlot(actBuilder);
+            actBuilder.setActionState(ActionState.newBuilder().setValue(ActionState.State.INITIALIZED).build());
+
+            UnitAllocation unitAllocation;
 
             switch (actBuilder.getMultiResourceAllocationStrategy().getStrategy()) {
                 case AT_LEAST_ONE:
-                    return null;
-                case ALL_OR_NOTHING:
-                    logger.debug("applyAction: " + actionDescription.getLabel());
+                    logger.info("applyAction: " + actionDescription.getLabel() + resourceAllocation.build());
 
                     // Resource Allocation
-                    UnitAllocation unitAllocation = UnitAllocator.allocate(actionDescription.toBuilder(), () -> {
+                    unitAllocation = UnitAllocator.allocate(actBuilder, () -> {
+                        logger.info("Execute");
                         List<Future> actionFutureList = new ArrayList<>();
-                        for (String unitId : unitIds) {
-                            UnitRemote unitRemote = unitRemoteMap.get(unitId);
-                            ActionDescription.Builder unitActionDescription = ActionDescription.newBuilder(actionDescription);
+                        for (UnitRemote unitRemote : scopeUnitMap.values()) {
+                            ActionDescription.Builder unitActionDescription = actBuilder;
                             ActionReference.Builder actionReference = ActionReference.newBuilder();
                             actionReference.setActionId(actionDescription.getId());
                             actionReference.setAuthority(actionDescription.getActionAuthority());
@@ -481,14 +501,65 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                             actionFutureList.add(unitRemote.applyAction(unitActionDescription.build()));
 
                         }
-                        
+
+                        // todo: setup action future.
+                        final ActionFuture actionFuture = ActionFuture.getDefaultInstance();
+                        return GlobalCachedExecutorService.allOf(actionFuture, actionFutureList).get();
+                    });
+                    logger.info("Allocation created!");
+                    return unitAllocation.getTaskExecutor().getFuture();
+                case ALL_OR_NOTHING:
+                    logger.info("applyAction: " + actionDescription.getLabel() + resourceAllocation.build());
+
+                    // Resource Allocation
+                    unitAllocation = UnitAllocator.allocate(actionDescription.toBuilder(), () -> {
+                        List<Future> actionFutureList = new ArrayList<>();
+                        for (UnitRemote unitRemote : scopeUnitMap.values()) {
+                            ActionDescription.Builder unitActionDescription = actBuilder;
+                            ActionReference.Builder actionReference = ActionReference.newBuilder();
+                            actionReference.setActionId(actionDescription.getId());
+                            actionReference.setAuthority(actionDescription.getActionAuthority());
+                            actionReference.setServiceStateDescription(actionDescription.getServiceStateDescription());
+                            unitActionDescription.addActionChain(actionReference);
+
+                            ServiceStateDescription.Builder serviceStateDescription = unitActionDescription.getServiceStateDescriptionBuilder();
+                            serviceStateDescription.setUnitId((String) unitRemote.getId());
+
+                            actionFutureList.add(unitRemote.applyAction(unitActionDescription.build()));
+
+                        }
+
                         // todo: setup action future.
                         final ActionFuture actionFuture = ActionFuture.getDefaultInstance();
                         return GlobalCachedExecutorService.allOf(actionFuture, actionFutureList).get();
                     });
                     return unitAllocation.getTaskExecutor().getFuture();
                 default:
-                    return null;
+                    logger.info("applyAction: " + actionDescription.getLabel() + resourceAllocation.build());
+
+                    // Resource Allocation
+                    unitAllocation = UnitAllocator.allocate(actionDescription.toBuilder(), () -> {
+                        List<Future> actionFutureList = new ArrayList<>();
+                        for (UnitRemote unitRemote : scopeUnitMap.values()) {
+                            ActionDescription.Builder unitActionDescription = actBuilder;
+                            ActionReference.Builder actionReference = ActionReference.newBuilder();
+                            actionReference.setActionId(actionDescription.getId());
+                            actionReference.setAuthority(actionDescription.getActionAuthority());
+                            actionReference.setServiceStateDescription(actionDescription.getServiceStateDescription());
+                            unitActionDescription.addActionChain(actionReference);
+
+                            ServiceStateDescription.Builder serviceStateDescription = unitActionDescription.getServiceStateDescriptionBuilder();
+                            serviceStateDescription.setUnitId((String) unitRemote.getId());
+
+                            actionFutureList.add(unitRemote.applyAction(unitActionDescription.build()));
+
+                        }
+
+                        // todo: setup action future.
+                        final ActionFuture actionFuture = ActionFuture.getDefaultInstance();
+                        return GlobalCachedExecutorService.allOf(actionFuture, actionFutureList).get();
+                    });
+                    return unitAllocation.getTaskExecutor().getFuture();
             }
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);

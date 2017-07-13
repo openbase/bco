@@ -21,6 +21,7 @@ package org.openbase.bco.dal.remote.action;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.FutureTask;
@@ -41,10 +42,12 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.EnablingStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.timing.IntervalType.Interval;
 
 /**
  *
@@ -100,6 +103,14 @@ public class RemoteAction implements Action {
             // todo: Why is this double task encapsulation needed? I remember some synchronization issues by directly passing the apply action future. Investigate if this is just stupid code otherwise add some doc to explain this strategy.
             final FutureTask task = new FutureTask(() -> {
                 try {
+                    ResourceAllocation.Builder resourceAllocation = ResourceAllocation.newBuilder();
+                    resourceAllocation.setPolicy(ResourceAllocation.Policy.FIRST);
+                    resourceAllocation.setInitiator(ResourceAllocation.Initiator.SYSTEM);
+                    resourceAllocation.setPriority(ResourceAllocation.Priority.NORMAL);
+                    resourceAllocation.setId(UUID.randomUUID().toString());
+                    resourceAllocation.setState(ResourceAllocation.State.REQUESTED);
+                    resourceAllocation.setSlot(Interval.getDefaultInstance());
+                    actionDescription = actionDescription.toBuilder().setResourceAllocation(resourceAllocation).build();
                     serviceRemote.applyAction(getActionDescription()).get();
                 } catch (Exception ex) { // InterruptedException | CancellationException | CouldNotPerformException | NullPointerException
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Execution " + actionDescription.getActionState().getValue() + "!", ex), LOGGER, LogLevel.WARN);

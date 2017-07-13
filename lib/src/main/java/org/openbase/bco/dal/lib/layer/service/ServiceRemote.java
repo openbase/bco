@@ -35,6 +35,7 @@ import org.openbase.jul.pattern.Remote;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitTemplateType;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -57,6 +58,8 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
      * @return a collection of unit remotes limited to the service interface.
      */
     Collection<UnitRemote> getInternalUnits();
+
+    Collection<UnitRemote> getInternalUnits(UnitType unitType) throws NotAvailableException;
 
     /**
      *
