@@ -470,12 +470,12 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             }
 
             ActionDescription.Builder actBuilder = actionDescription.toBuilder();
-            ActionDescriptionProcessor.getDefaultActionParameter();
             ResourceAllocation.Builder resourceAllocation = actBuilder.getResourceAllocationBuilder();
             resourceAllocation.clearResourceIds();
             resourceAllocation.addAllResourceIds(scopeUnitMap.keySet());
             ActionDescriptionProcessor.updateResourceAllocationSlot(actBuilder);
             actBuilder.setActionState(ActionState.newBuilder().setValue(ActionState.State.INITIALIZED).build());
+            ActionDescriptionProcessor.generateToken(actBuilder);
 
             UnitAllocation unitAllocation;
 
@@ -488,18 +488,17 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                         logger.info("Execute");
                         List<Future> actionFutureList = new ArrayList<>();
                         for (UnitRemote unitRemote : scopeUnitMap.values()) {
-                            ActionDescription.Builder unitActionDescription = actBuilder;
-                            ActionReference.Builder actionReference = ActionReference.newBuilder();
-                            actionReference.setActionId(actionDescription.getId());
-                            actionReference.setAuthority(actionDescription.getActionAuthority());
-                            actionReference.setServiceStateDescription(actionDescription.getServiceStateDescription());
-                            unitActionDescription.addActionChain(actionReference);
+                            ActionDescription.Builder unitActionDescription = actBuilder.clone();
+                            ActionDescriptionProcessor.updateResourceAllocationId(unitActionDescription);
+                            ActionDescriptionProcessor.updateActionChain(unitActionDescription, actBuilder);
+                            ResourceAllocation.Builder unitResourceAllocation = unitActionDescription.getResourceAllocationBuilder();
+                            unitResourceAllocation.clearResourceIds();
+                            unitResourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(unitRemote.getScope()));
 
                             ServiceStateDescription.Builder serviceStateDescription = unitActionDescription.getServiceStateDescriptionBuilder();
                             serviceStateDescription.setUnitId((String) unitRemote.getId());
 
                             actionFutureList.add(unitRemote.applyAction(unitActionDescription.build()));
-
                         }
 
                         // todo: setup action future.
