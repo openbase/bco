@@ -47,6 +47,7 @@ import org.openbase.jul.exception.ShutdownException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
@@ -55,6 +56,7 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -434,6 +436,21 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             if (!actionDescription.getServiceStateDescription().getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
+            
+            List<String> unitIds = new ArrayList<>();
+            for (final UnitRemote unitRemote : getInternalUnits()) {
+                if (actionDescription.getServiceStateDescription().getUnitType() == UnitType.UNKNOWN
+                        || actionDescription.getServiceStateDescription().getUnitType() == unitRemote.getType()
+                        || UnitConfigProcessor.isBaseUnit(unitRemote.getType())) {
+                    unitIds.add((String) unitRemote.getId());
+                }
+            }
+            
+            ActionDescription.Builder actBuilder = actionDescription.toBuilder();
+            ActionDescriptionProcessor.getDefaultActionParameter();
+            ResourceAllocation.Builder resourceAllocation = actBuilder.getResourceAllocationBuilder();
+            resourceAllocation.addAllResourceIds(unitIds);
+            
 
             List<Future> actionFutureList = new ArrayList<>();
             for (final UnitRemote unitRemote : getInternalUnits()) {
