@@ -345,8 +345,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         sceneUnitConfigRegistry.registerConsistencyHandler(new SceneLabelConsistencyHandler());
         sceneUnitConfigRegistry.registerConsistencyHandler(new SceneScopeConsistencyHandler(locationUnitConfigRegistry));
 
-        // add consistency handler for all unitConfig registries
-        registerConsistencyHandler(new BoundingBoxCleanerConsistencyHandler(), UnitConfig.class);
+        // add consistency handler for all unitConfig registries        
+       
         registerConsistencyHandler(new ServiceConfigUnitIdConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new UnitConfigUnitTemplateConsistencyHandler(unitTemplateRegistry), UnitConfig.class);
         registerConsistencyHandler(new UnitEnablingStateConsistencyHandler(), UnitConfig.class);
@@ -359,6 +359,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         } catch (JPNotAvailableException ex) {
             // do nothing if not available.
         }
+        registerConsistencyHandler(new BoundingBoxCleanerConsistencyHandler(), UnitConfig.class);
     }
 
     /**

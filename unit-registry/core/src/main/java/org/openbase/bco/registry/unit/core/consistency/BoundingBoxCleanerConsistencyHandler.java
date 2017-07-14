@@ -22,8 +22,6 @@ package org.openbase.bco.registry.unit.core.consistency;
  * #L%
  */
 import java.util.List;
-import javax.vecmath.Point3d;
-import org.openbase.bco.registry.unit.core.consistency.*;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
@@ -31,13 +29,9 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType;
-import rst.geometry.AxisAlignedBoundingBox3DFloatType;
 import rst.geometry.AxisAlignedBoundingBox3DFloatType.AxisAlignedBoundingBox3DFloat;
-import rst.geometry.PoseType.Pose;
 import rst.geometry.TranslationType.Translation;
 import rst.math.Vec3DDoubleType;
-import rst.spatial.ShapeType;
 import rst.spatial.ShapeType.Shape;
 
 /**
@@ -51,33 +45,31 @@ public class BoundingBoxCleanerConsistencyHandler extends AbstractProtoBufRegist
         UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
 
         //todo boundingbox included in all types?
-        if (unitConfig.hasPlacementConfig() && unitConfig.getPlacementConfig().hasShape()) {
+        if (!unitConfig.hasPlacementConfig() || !unitConfig.getPlacementConfig().hasShape()) {
+            return;
+        }
 
-            Shape shape = unitConfig.getPlacementConfig().getShape();
+        Shape shape = unitConfig.getPlacementConfig().getShape();
 
-            if (!shape.hasBoundingBox()) {
-                return;
-            }
+        if (!shape.hasBoundingBox()) {
+            return;
+        }
+        //TODO clean out empty bounding boxes?   
 
-            AxisAlignedBoundingBox3DFloat bb = shape.getBoundingBox();
-            AxisAlignedBoundingBox3DFloat newBB;
-            
-            newBB = updateBB(shape); 
-            
-            //detect changes
-            if(bb.getDepth() != newBB.getDepth()
-                || bb.getHeight() != newBB.getHeight()
-                || bb.getWidth() != newBB.getWidth()
-                || bb.getLeftFrontBottom() != newBB.getLeftFrontBottom()){
-                
-                unitConfig.getPlacementConfigBuilder().getShapeBuilder().setBoundingBox(newBB);
-                throw new EntryModification(entry.setMessage(unitConfig), this);
-            }
-           
+        AxisAlignedBoundingBox3DFloat newBoundingBox = updateBoundingBox(shape);
+
+        //detect changes
+   //     if(!shape.getBoundingBox().equals(newBoundingBox)) {
+        if (shape.getBoundingBox().getDepth() != newBoundingBox.getDepth()
+            || shape.getBoundingBox().getHeight() != newBoundingBox.getHeight()
+            || shape.getBoundingBox().getWidth() != newBoundingBox.getWidth()) {
+
+            unitConfig.getPlacementConfigBuilder().getShapeBuilder().setBoundingBox(newBoundingBox);
+            throw new EntryModification(entry.setMessage(unitConfig), this);
         }
     }
 
-    private AxisAlignedBoundingBox3DFloat updateBB(Shape shape) {
+    private AxisAlignedBoundingBox3DFloat updateBoundingBox(final Shape shape) {
 
         double maxX = 0.0;
         double minX = Double.MAX_VALUE;
@@ -91,36 +83,26 @@ public class BoundingBoxCleanerConsistencyHandler extends AbstractProtoBufRegist
 
         // Iterate over all vertices
         for (final Vec3DDoubleType.Vec3DDouble rstVertex : roomShape) {
-            if (rstVertex.getX() < minX) {
-                minX = rstVertex.getX();
-            }
-            if (rstVertex.getX() > maxX) {
-                maxX = rstVertex.getX();
-            }
-            if (rstVertex.getY() < minY) {
-                minY = rstVertex.getY();
-            }
-            if (rstVertex.getY() > maxY) {
-                maxY = rstVertex.getY();
-            }
-            if (rstVertex.getZ() < minZ) {
-                minZ = rstVertex.getZ();
-            }
-            if (rstVertex.getZ() > maxZ) {
-                maxZ = rstVertex.getZ();
-            }
+            
+            minX = Math.min(rstVertex.getX(), minX);
+            maxX = Math.max(rstVertex.getX(), maxX);
+            
+            minY = Math.min(rstVertex.getY(), minY);
+            maxY = Math.max(rstVertex.getY(), maxY);
+            
+            minZ = Math.min(rstVertex.getZ(), minZ);
+            maxZ = Math.max(rstVertex.getZ(), maxZ);
+            
         }
         AxisAlignedBoundingBox3DFloat.Builder builder = AxisAlignedBoundingBox3DFloat.newBuilder();
-        builder.setDepth((float)(maxY - minY));
-        builder.setHeight((float) (maxZ-minZ));
-        builder.setWidth((float) (maxX-minX));
+        builder.setDepth((float) (maxY - minY));
+        builder.setHeight((float) (maxZ - minZ));
+        builder.setWidth((float) (maxX - minX));
         Translation.Builder translationBuilder = Translation.newBuilder().setX(0).setY(0).setZ(0);
         builder.setLeftFrontBottom(translationBuilder);
-        
+
         AxisAlignedBoundingBox3DFloat newBB = builder.build();
-        
+
         return newBB;
     }
 }
-
-
