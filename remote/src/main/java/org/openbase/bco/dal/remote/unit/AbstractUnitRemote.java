@@ -585,7 +585,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
      */
     public Transform3D getTransform3D() throws NotAvailableException, InterruptedException{
         try {
-            return getTransformation().get(200, TimeUnit.MILLISECONDS).getTransform();
+            return getTransformation().get(1000, TimeUnit.MILLISECONDS).getTransform();
         } catch (ExecutionException | TimeoutException ex) {
             throw new NotAvailableException("Transform3D", ex);
         }
