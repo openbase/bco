@@ -127,7 +127,11 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
     @Override
     public void shutdown() {
         if (transformPublisher != null) {
-            transformPublisher.shutdown();
+            try {
+                transformPublisher.shutdown();
+            } catch (Exception ex) {
+                logger.warn("Could not shutdown transformation publisher");
+            }
         }
     }
 }

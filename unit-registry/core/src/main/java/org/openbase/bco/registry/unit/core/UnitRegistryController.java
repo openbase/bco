@@ -26,7 +26,10 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
+import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
 import org.openbase.bco.registry.app.remote.AppRegistryRemote;
+import org.openbase.bco.registry.app.remote.CachedAppRegistryRemote;
+import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
 import org.openbase.bco.registry.unit.core.consistency.BoundingBoxCleanerConsistencyHandler;
@@ -229,24 +232,12 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             this.baseUnitConfigRegistryList.add(sceneUnitConfigRegistry);
             this.baseUnitConfigRegistryList.add(agentUnitConfigRegistry);
             this.baseUnitConfigRegistryList.add(appUnitConfigRegistry);
-            this.deviceRegistryRemote = new DeviceRegistryRemote();
-            this.appRegistryRemote = new AppRegistryRemote();
-            this.agentRegistryRemote = new AgentRegistryRemote();
-        } catch (JPServiceException | NullPointerException ex) {
+            this.deviceRegistryRemote = CachedDeviceRegistryRemote.getRegistry();
+            this.appRegistryRemote = CachedAppRegistryRemote.getRegistry();
+            this.agentRegistryRemote = CachedAgentRegistryRemote.getRegistry();
+        } catch (JPServiceException | NullPointerException | NotAvailableException ex) {
             throw new InstantiationException(this, ex);
         }
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
-     */
-    @Override
-    protected void registerRegistryRemotes() throws CouldNotPerformException {
-        registerRegistryRemote(deviceRegistryRemote);
-        registerRegistryRemote(appRegistryRemote);
-        registerRegistryRemote(agentRegistryRemote);
     }
 
     /**

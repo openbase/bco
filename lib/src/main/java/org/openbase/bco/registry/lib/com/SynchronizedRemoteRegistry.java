@@ -130,6 +130,10 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
+        if (active) {
+            logger.warn("Already activated");
+            return;
+        }
         remoteService.addDataObserver(remoteRegistrySynchronizer);
 
         // trigger initial synch if data is available
@@ -153,7 +157,7 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
     @Override
     public boolean isActive() {
         return active;
-    } 
+    }
 
     @Override
     public String getName() {

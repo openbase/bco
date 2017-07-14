@@ -22,13 +22,17 @@ package org.openbase.bco.registry.lib.com;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
+import java.util.ArrayList;
+import java.util.List;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.scope.jp.JPScope;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.storage.registry.RegistryRemote;
 
 /**
  *
@@ -40,6 +44,11 @@ import org.openbase.jul.pattern.Observer;
 public abstract class AbstractVirtualRegistryController<M extends GeneratedMessage, MB extends M.Builder<MB>, RM> extends AbstractRegistryController<M, MB> {
 
     private final VirtualRegistrySynchronizer virtualRegistrySynchronizer;
+
+    /**
+     * These are the depending registries where this registry is based on.
+     */
+    private final List<RegistryRemote> registryRemoteList;
 
     /**
      * Constructor creates a new RegistryController based on the given scope and publishing registry data of the given builder.
@@ -55,6 +64,7 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
     public AbstractVirtualRegistryController(Class<? extends JPScope> jpScopePropery, MB builder) throws InstantiationException {
         super(jpScopePropery, builder);
         this.virtualRegistrySynchronizer = new VirtualRegistrySynchronizer();
+        this.registryRemoteList = new ArrayList<>();
     }
 
     /**
@@ -68,6 +78,22 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
     public AbstractVirtualRegistryController(final Class<? extends JPScope> jpScopePropery, MB builder, final boolean filterSparselyRegistryData) throws InstantiationException {
         super(jpScopePropery, builder, filterSparselyRegistryData);
         this.virtualRegistrySynchronizer = new VirtualRegistrySynchronizer();
+        this.registryRemoteList = new ArrayList<>();
+    }
+
+    @Override
+    protected void postInit() throws InitializationException, InterruptedException {
+        super.postInit(); //To change body of generated methods, choose Tools | Templates.
+
+        try {
+            try {
+                registerRegistryRemotes();
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not register all registry remotes!", ex);
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     @Override
@@ -107,12 +133,22 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
     }
 
     @Override
-    protected void deactivateRegistryRemotes() throws CouldNotPerformException, InterruptedException {
+    protected void deactivateRemoteRegistries() throws CouldNotPerformException, InterruptedException {
         getRegistryRemotes().forEach((registryRemote) -> {
             registryRemote.removeDataObserver(virtualRegistrySynchronizer);
         });
-        super.deactivateRegistryRemotes();
+        super.deactivateRemoteRegistries();
     }
+
+    protected void registerRegistryRemote(final RegistryRemote registry) {
+        registryRemoteList.add(registry);
+    }
+
+    protected List<RegistryRemote> getRegistryRemotes() {
+        return registryRemoteList;
+    }
+
+    protected abstract void registerRegistryRemotes() throws CouldNotPerformException;
 
     protected abstract void syncVirtualRegistryFields(final MB virtualDataBuilder, final RM realData) throws CouldNotPerformException;
 

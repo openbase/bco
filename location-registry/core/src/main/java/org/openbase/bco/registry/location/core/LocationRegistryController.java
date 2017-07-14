@@ -38,6 +38,7 @@ import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -84,9 +85,13 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
 
     public LocationRegistryController() throws InstantiationException, InterruptedException {
         super(JPLocationRegistryScope.class, LocationRegistryData.newBuilder());
-        unitRegistryRemote = new UnitRegistryRemote();
-        locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(unitRegistryRemote, UnitRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER);
-        connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(unitRegistryRemote, UnitRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER);
+        try {
+            unitRegistryRemote = CachedUnitRegistryRemote.getRegistry();
+            locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(unitRegistryRemote, UnitRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER);
+            connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(unitRegistryRemote, UnitRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER);
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
     }
 
     @Override
@@ -285,7 +290,7 @@ public class LocationRegistryController extends AbstractVirtualRegistryControlle
     public List<UnitConfig> getUnitConfigsByLocation(final String locationId) throws CouldNotPerformException {
         return getUnitConfigsByLocation(locationId, true);
     }
-    
+
     /**
      * {@inheritDoc}
      *
