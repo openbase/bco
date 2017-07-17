@@ -34,6 +34,7 @@ import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
 import org.openbase.bco.registry.unit.core.consistency.DeviceInventoryStateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.ExecutableUnitAutostartConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.OtherPermissionConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.ServiceConfigServiceTemplateIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.ServiceConfigUnitIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitConfigUnitTemplateConsistencyHandler;
@@ -341,6 +342,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         registerConsistencyHandler(new UnitEnablingStateConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new ServiceConfigServiceTemplateIdConsistencyHandler(serviceTemplateRegistry), UnitConfig.class);
         registerConsistencyHandler(new UnitTransformationFrameConsistencyHandler(locationUnitConfigRegistry), UnitConfig.class);
+        registerConsistencyHandler(new OtherPermissionConsistencyHandler(), UnitConfig.class);
         try {
             if (JPService.getProperty(JPClearUnitPosition.class).getValue()) {
                 registerConsistencyHandler(new UnitPositionCleanerConsistencyHandler(), UnitConfig.class);
