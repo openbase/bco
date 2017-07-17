@@ -21,6 +21,7 @@ package org.openbase.bco.manager.device.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.mock.ServiceFactoryMock;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
@@ -139,6 +140,11 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
     public void init() throws InitializationException, InterruptedException {
         // this overwrite is needed to overwrite the default implementation!
         unitSimulationManager.init(unitControllerRegistry);
+        try {
+            AuthenticatorController.getInstance();
+        } catch (NotAvailableException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
 
     @Override
