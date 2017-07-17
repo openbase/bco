@@ -24,6 +24,9 @@ package org.openbase.bco.authentication.lib;
 
 import com.google.protobuf.ProtocolStringList;
 import java.util.HashMap;
+import java.util.List;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig.MapFieldEntry;
 import rst.domotic.authentication.PermissionType.Permission;
@@ -99,6 +102,24 @@ public class AuthorizationHelper {
     }
 
     /**
+     * Builds a HashMap of AuthorizationGroupConfigs from a list of UnitConfigs,
+     * like they are given from the AuthorizationGroupRegistry.
+     *
+     * @param entries Entries containing UnitConfigs which contain AuthorizationGroupConfigs.
+     * @return HashMap of AuthorizationGroupConfigs, indexed by their IDs.
+     * @throws NotAvailableException
+     */
+    public static HashMap<String, AuthorizationGroupConfig> authorizationGroupsMap(List<IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> entries) throws NotAvailableException {
+        HashMap<String, AuthorizationGroupConfig> map = new HashMap<>();
+
+        for (IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry : entries) {
+            map.put(entry.getId(), entry.getMessage().getAuthorizationGroupConfig());
+        }
+
+        return map;
+    }
+
+    /**
      * Internal helper method to check one of the permissions on a unit.
      *
      * @param unitConfig The unit for which the permissions apply.
@@ -115,12 +136,21 @@ public class AuthorizationHelper {
             return true;
         }
 
+        // If no user was given, only "other" rights apply.
+        if (userId == null) {
+            return false;
+        }
+
         // Owner
         if (permissionConfig.getOwnerId().equals(userId) && permitted(permissionConfig.getOwnerPermission(), type)) {
             return true;
         }
 
         // Groups
+        if (groups == null) {
+            return false;
+        }
+
         ProtocolStringList groupMembers;
 
         for (MapFieldEntry entry : permissionConfig.getGroupPermissionList()) {
