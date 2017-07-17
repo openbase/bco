@@ -35,6 +35,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import org.openbase.bco.authentication.core.AuthenticatorController;
+import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.dal.lib.action.ActionImpl;
 import org.openbase.bco.dal.lib.layer.service.Service;
@@ -50,8 +52,10 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
+import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -80,6 +84,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
 import rst.rsb.ScopeType;
 
 /**
@@ -431,18 +436,35 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      * @return an updated TicketAuthenticationWrapper of null if no one is logged in
      * @throws VerificationFailedException if someone is logged in but the verification with the authenticator fails
      */
-    public TicketAuthenticatorWrapper verifyAuthority(final ActionAuthority actionAuthority) throws VerificationFailedException {
+    public TicketAuthenticatorWrapper verifyAuthority(final ActionAuthority actionAuthority) throws VerificationFailedException, PermissionDeniedException {
+        // If there is no TicketAuthenticationWrapper, check permissions without userId and groups.
         if(!actionAuthority.hasTicketAuthenticatorWrapper()) {
-            return null;
+            try {
+                if (!AuthorizationHelper.canWrite(getConfig(), null, null)) {
+                    throw new PermissionDeniedException("You have no permission to execute this action.");
+                }
+
+                return null;
+            } catch (NotAvailableException ex) {
+                throw new VerificationFailedException("Verifying authority failed", ex);
+            }
         }
-        
+
         // authenticate and (also authorize?)
         try {
-            TicketAuthenticatorWrapper wrapper = CachedAuthenticationRemote.getRemote().validateClientServerTicket(actionAuthority.getTicketAuthenticatorWrapper()).get();
+            List<IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> entries = getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntries();
+            HashMap<String, AuthorizationGroupConfig> groups = AuthorizationHelper.authorizationGroupsMap(entries);
+            TicketAuthenticatorWrapper wrapper = actionAuthority.getTicketAuthenticatorWrapper();
+            String userId = AuthenticatorController.getInstance().getClientID(wrapper);
+
+            if (!AuthorizationHelper.canWrite(getConfig(), userId, groups)) {
+                throw new PermissionDeniedException("You have no permission to execute this action.");
+            }
+
             return wrapper;
-        } catch (CouldNotPerformException | ExecutionException ex) {
+        } catch (CouldNotPerformException ex) {
             throw new VerificationFailedException("Verifying authority failed", ex);
-        } catch(InterruptedException ex) {
+        } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw ExceptionPrinter.printHistoryAndReturnThrowable(new VerificationFailedException("Interrupted while verifrying authority", ex), logger);
         }
