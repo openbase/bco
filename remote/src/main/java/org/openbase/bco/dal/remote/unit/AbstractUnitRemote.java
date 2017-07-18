@@ -577,7 +577,9 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     }
     
     /**
-     * Gets the Transform3D of the transformation relative to the root location.
+     * Gets the Transform3D of the transformation relative to the root location. 
+     * This is basically rotation and translation of the object in the root coordinate system 
+     * and thereby the inverse transformation to the one returned by getTransformation().
      * 
      * @return transform relative to root location
      * @throws NotAvailableException is thrown if the transformation is not available.
@@ -585,7 +587,9 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
      */
     public Transform3D getTransform3D() throws NotAvailableException, InterruptedException{
         try {
-            return getTransformation().get(1000, TimeUnit.MILLISECONDS).getTransform();
+            Transform3D transform = getTransformation().get(1000, TimeUnit.MILLISECONDS).getTransform();
+            transform.invert();
+            return transform;
         } catch (ExecutionException | TimeoutException ex) {
             throw new NotAvailableException("Transform3D", ex);
         }
