@@ -600,7 +600,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
      * @throws NotAvailableException is thrown if the transformation is not available.
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      */
-    public Transform3D getTransform3Dinverse() throws NotAvailableException, InterruptedException{
+    public Transform3D getTransform3DInverse() throws NotAvailableException, InterruptedException{
         try {
             Transform3D transform = getTransform3D();
             transform.invert();
@@ -619,7 +619,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
      */
     public Point3d getGlobalPositionPoint3d() throws NotAvailableException, InterruptedException{
         try {
-            Transform3D transformation = getTransform3Dinverse();
+            Transform3D transformation = getTransform3DInverse();
             Vector3d pos = new Vector3d();
             transformation.get(pos);
             return new Point3d(pos);
@@ -654,7 +654,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
      */
     public Quat4d getGlobalRotationQuat4d() throws NotAvailableException, InterruptedException {
         try {
-            Transform3D transformation = getTransform3Dinverse();
+            Transform3D transformation = getTransform3DInverse();
             Quat4d quat = new Quat4d();
             transformation.get(quat);
             return quat;
@@ -707,7 +707,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
      */
     public Point3d getGlobalBoundingBoxCenterPoint3d() throws NotAvailableException, InterruptedException {
         try {
-            Transform3D transformation = getTransform3Dinverse();
+            Transform3D transformation = getTransform3DInverse();
             Point3d center = getLocalBoundingBoxCenterPoint3d();
             transformation.transform(center);
             return center;
