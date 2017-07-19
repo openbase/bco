@@ -274,6 +274,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                     
                     this.store.addCredentials(loginCredentialsChange.getId(), decryptedCredentials, true);
                     
+                    initialPassword = null;
                     initialPasswordPrinterFuture.cancel(true);
                     
                     return null;
@@ -393,5 +394,16 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         public void run() {
             LOGGER.info(message);
         }
+    }
+
+    /**
+     * Get the initial password which is randomly generated on startup with an empty 
+     * store. Else it is null and will also be reset to null after registration of the
+     * first user.
+     * 
+     * @return the password required for the registration of the initial user
+     */
+    public String getInitialPassword() {
+        return initialPassword;
     }
 }

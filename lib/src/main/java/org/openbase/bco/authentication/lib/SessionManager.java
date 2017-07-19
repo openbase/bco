@@ -480,6 +480,30 @@ public class SessionManager {
         }
     }
 
+    /**
+     * Method used to register the first user.
+     * 
+     * @param initialPassword the initial password as printed by the authenticationController
+     * @param userId the id of the first user to be registered
+     * @param userPassword the password chosen by the first user
+     * @throws CouldNotPerformException if the registration fails, e.g. used for a second user or wrong initialPassword
+     * @throws InterruptedException if the task is interrupted
+     */
+    public void initialRegistration(String initialPassword, String userId, String userPassword) throws CouldNotPerformException, InterruptedException {
+        try {
+            byte[] passwordHash = EncryptionHelper.hash(userPassword);
+
+            LoginCredentialsChange.Builder loginCredentialsChange = LoginCredentialsChange.newBuilder();
+            loginCredentialsChange.setNewCredentials(EncryptionHelper.encrypt(passwordHash, EncryptionHelper.hash(initialPassword), true));
+            loginCredentialsChange.setId(userId);
+            CachedAuthenticationRemote.getRemote().register(loginCredentialsChange.build()).get();
+        } catch (IOException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Encryption failed", ex), LOGGER, LogLevel.ERROR);
+        } catch (ExecutionException | CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Initial registration failed", ex);
+        }
+    }
+
     public String getUserId() {
         return userId;
     }
