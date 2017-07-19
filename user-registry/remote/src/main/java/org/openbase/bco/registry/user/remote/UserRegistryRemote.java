@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
+import org.openbase.bco.registry.lib.com.AuthorizationFilter;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
@@ -63,6 +64,7 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthorizationGroupConfig.getDefaultInstance()));
     }
 
+    private final AuthorizationFilter authorizationFilter;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> userConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> authorizationGroupConfigRemoteRegistry;
 
@@ -71,8 +73,10 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
     public UserRegistryRemote() throws InstantiationException, InterruptedException {
         super(JPUserRegistryScope.class, UserRegistryData.class);
         try {
-            userConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UserRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
-            authorizationGroupConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UserRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
+            authorizationFilter = new AuthorizationFilter();
+            
+            userConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, UserRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
+            authorizationGroupConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, UserRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -88,6 +92,7 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
         if (!CachedUserRegistryRemote.getRegistry().equals(this)) {
             logger.warn("You are using a "+getClass().getSimpleName()+" which is not maintained by the global registry singelton! This is extremely inefficient! Please use \"Registries.get"+getClass().getSimpleName().replace("Remote", "")+"()\" instead creating your own instances!");
         }
+        authorizationFilter.setAuthorizationGroupRegistry(unitRegistry.getAuthorizationGroupUnitConfigRemoteRegistry());
         super.activate();
     }
 

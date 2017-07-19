@@ -27,6 +27,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
+import org.openbase.bco.registry.lib.com.AuthorizationFilter;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
@@ -70,6 +71,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
     }
 
+    private final AuthorizationFilter authorizationFilter;
     private final SynchronizedRemoteRegistry<String, DeviceClass, DeviceClass.Builder> deviceClassRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> deviceUnitConfigRemoteRegistry;
     private UnitRegistryRemote unitRegistry;
@@ -77,8 +79,10 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
     public DeviceRegistryRemote() throws InstantiationException {
         super(JPDeviceRegistryScope.class, DeviceRegistryData.class);
         try {
+            authorizationFilter = new AuthorizationFilter();
+            
             deviceClassRemoteRegistry = new SynchronizedRemoteRegistry<>(this, DeviceRegistryData.DEVICE_CLASS_FIELD_NUMBER);
-            deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, DeviceRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER);
+            deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, DeviceRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -94,6 +98,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
         if (!CachedDeviceRegistryRemote.getRegistry().equals(this)) {
             logger.warn("You are using a "+getClass().getSimpleName()+" which is not maintained by the global registry singelton! This is extremely inefficient! Please use \"Registries.get"+getClass().getSimpleName().replace("Remote", "")+"()\" instead creating your own instances!");
         }
+        authorizationFilter.setAuthorizationGroupRegistry(unitRegistry.getAuthorizationGroupUnitConfigRemoteRegistry());
         super.activate();
     }
 

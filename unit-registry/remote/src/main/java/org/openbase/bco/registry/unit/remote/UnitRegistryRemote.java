@@ -25,7 +25,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.apache.commons.io.filefilter.AbstractFileFilter;
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
+import org.openbase.bco.registry.lib.com.AuthorizationFilter;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.jp.JPUnitRegistryScope;
@@ -66,6 +68,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ServiceTemplate.getDefaultInstance()));
     }
 
+    private final AuthorizationFilter authorizationFilter;
     private final SynchronizedRemoteRegistry<String, UnitTemplate, UnitTemplate.Builder> unitTemplateRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, ServiceTemplate, ServiceTemplate.Builder> serviceTemplateRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> dalUnitConfigRemoteRegistry;
@@ -81,24 +84,24 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> unitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> baseUnitConfigRemoteRegistry;
 
-    ;
-
     public UnitRegistryRemote() throws InstantiationException {
         super(JPUnitRegistryScope.class, UnitRegistryData.class);
         try {
             this.unitTemplateRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.UNIT_TEMPLATE_FIELD_NUMBER);
             this.serviceTemplateRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.SERVICE_TEMPLATE_FIELD_NUMBER);
-            this.dalUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry(this, UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER);
-            this.userUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
-            this.authorizationGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
-            this.deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER);
-            this.unitGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.UNIT_GROUP_UNIT_CONFIG_FIELD_NUMBER);
-            this.locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER);
-            this.connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER);
-            this.agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER);
-            this.sceneUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER);
-            this.appUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER);
-            this.unitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this,
+            
+            this.authorizationFilter = new AuthorizationFilter();
+            this.dalUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry(this, authorizationFilter, UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER);
+            this.userUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
+            this.authorizationGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
+            this.deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER);
+            this.unitGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, UnitRegistryData.UNIT_GROUP_UNIT_CONFIG_FIELD_NUMBER);
+            this.locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, UnitRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER);
+            this.connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, UnitRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER);
+            this.agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER);
+            this.sceneUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER);
+            this.appUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER);
+            this.unitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter,
                     UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER,
@@ -110,7 +113,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                     UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER
             );
-            this.baseUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this,
+            this.baseUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter,
                     UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.UNIT_GROUP_UNIT_CONFIG_FIELD_NUMBER,
@@ -121,6 +124,8 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                     UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER
             );
+            
+            authorizationFilter.setAuthorizationGroupRegistry(authorizationGroupUnitConfigRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -137,12 +142,12 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
          * on one of these remote registries and tries to get values from other remote registries
          * which are registered later than these are not synced yet
          */
+        registerRemoteRegistry(authorizationGroupUnitConfigRemoteRegistry);
         registerRemoteRegistry(unitConfigRemoteRegistry);
         registerRemoteRegistry(unitTemplateRemoteRegistry);
         registerRemoteRegistry(serviceTemplateRemoteRegistry);
         registerRemoteRegistry(dalUnitConfigRemoteRegistry);
         registerRemoteRegistry(userUnitConfigRemoteRegistry);
-        registerRemoteRegistry(authorizationGroupUnitConfigRemoteRegistry);
         registerRemoteRegistry(deviceUnitConfigRemoteRegistry);
         registerRemoteRegistry(unitGroupUnitConfigRemoteRegistry);
         registerRemoteRegistry(locationUnitConfigRemoteRegistry);
