@@ -39,6 +39,8 @@ import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.ObservableImpl;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.LoginCredentialsChangeType;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
@@ -67,25 +69,31 @@ public class SessionManager {
     // remember user id during session
     private String userId;
 
+    /**
+     * Observable on which it will be notified if login or logout is triggered.
+     */
+    private final ObservableImpl<Boolean> loginObervable;
+
     public static synchronized SessionManager getInstance() throws NotAvailableException {
         try {
             if (instance == null) {
                 instance = new SessionManager();
                 instance.init();
             }
-            
+
             return instance;
         } catch (InitializationException ex) {
             throw new NotAvailableException("SessionManager", ex);
         }
     }
-    
+
     public SessionManager() {
         this(new CredentialStore(STORE_FILENAME));
     }
 
     public SessionManager(CredentialStore userStore) {
         // load registry
+        this.loginObervable = new ObservableImpl<>();
         boolean simulation = false;
         try {
             simulation = JPService.getProperty(JPAuthenticationSimulationMode.class).getValue();
@@ -197,6 +205,11 @@ public class SessionManager {
             this.ticketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
             this.sessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
 
+            try {
+                loginObervable.notifyObservers(true);
+            } catch (CouldNotPerformException ex) {
+                LOGGER.warn("Could not notify logout to observer", ex);
+            }
             return true;
         } catch (BadPaddingException ex) {
             throw new CouldNotPerformException("The password you have entered was wrong. Please try again!");
@@ -233,6 +246,11 @@ public class SessionManager {
         this.ticketAuthenticatorWrapper = null;
         this.sessionKey = null;
         this.userId = null;
+        try {
+            loginObervable.notifyObservers(false);
+        } catch (CouldNotPerformException ex) {
+            LOGGER.warn("Could not notify logout to observer", ex);
+        }
     }
 
     /**
@@ -464,5 +482,9 @@ public class SessionManager {
 
     public String getUserId() {
         return userId;
+    }
+
+    public Observable<Boolean> getLoginObervable() {
+        return loginObervable;
     }
 }
