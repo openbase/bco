@@ -140,11 +140,6 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
     public void init() throws InitializationException, InterruptedException {
         // this overwrite is needed to overwrite the default implementation!
         unitSimulationManager.init(unitControllerRegistry);
-        try {
-            AuthenticatorController.getInstance();
-        } catch (NotAvailableException ex) {
-            throw new InitializationException(this, ex);
-        }
     }
 
     @Override

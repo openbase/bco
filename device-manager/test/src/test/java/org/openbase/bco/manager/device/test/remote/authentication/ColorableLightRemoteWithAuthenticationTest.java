@@ -27,18 +27,25 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.authentication.core.AuthenticationRegistry;
 import org.openbase.bco.authentication.core.AuthenticatorController;
-import org.openbase.bco.authentication.core.mock.MockAuthenticationRegistry;
+import org.openbase.bco.authentication.core.mock.MockCredentialStore;
+import org.openbase.bco.authentication.lib.CredentialStore;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.NotAvailableException;
+import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
+import rst.domotic.authentication.PermissionType.Permission;
+import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.PowerStateType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -47,7 +54,7 @@ import rst.domotic.state.PowerStateType;
 public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODeviceManagerTest {
 
     private static AuthenticatorController authenticatorController;
-    private static AuthenticationRegistry authenticationRegistry;
+    private static CredentialStore credentialStore;
 
     private static ColorableLightRemote colorableLightRemote;
 
@@ -58,9 +65,9 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
 
-        authenticationRegistry = new MockAuthenticationRegistry();
+        credentialStore = new MockCredentialStore();
 
-        authenticatorController = new AuthenticatorController(authenticationRegistry);
+        authenticatorController = new AuthenticatorController(credentialStore);
         authenticatorController.init();
         authenticatorController.activate();
         authenticatorController.waitForActivation();
@@ -93,10 +100,10 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
     public void testSetColorWithAuthentication() throws Exception {
         System.out.println("login prior to requesting units");
 
-        String clientId = MockAuthenticationRegistry.USER_ID;
-        String password = MockAuthenticationRegistry.USER_PASSWORD;
+        String clientId = MockCredentialStore.USER_ID;
+        String password = MockCredentialStore.USER_PASSWORD;
 
-        SessionManager manager = Units.getSessionManager();
+        SessionManager manager = SessionManager.getInstance();
         boolean result = manager.login(clientId, password);
         assertEquals(true, result);
 
@@ -105,5 +112,8 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         colorableLightRemote.setPowerState(PowerStateType.PowerState.State.ON).get();
         colorableLightRemote.requestData().get();
         assertEquals("Power has not been set in time!", PowerStateType.PowerState.State.ON, colorableLightRemote.getData().getPowerState().getValue());
+
+        // logout
+        SessionManager.getInstance().logout();
     }
 }
