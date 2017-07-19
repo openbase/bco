@@ -452,12 +452,11 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
         // authenticate and (also authorize?)
         try {
-            List<IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> entries = getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntries();
-            HashMap<String, AuthorizationGroupConfig> groups = AuthorizationHelper.authorizationGroupsMap(entries);
             TicketAuthenticatorWrapper wrapper = actionAuthority.getTicketAuthenticatorWrapper();
-            String userId = AuthenticatorController.getInstance().getClientID(wrapper);
+//            String userId = AuthenticatorController.getInstance().getClientID(wrapper);
+            String userId = null;
 
-            if (!AuthorizationHelper.canWrite(getConfig(), userId, groups)) {
+            if (!AuthorizationHelper.canWrite(getConfig(), userId, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap())) {
                 throw new PermissionDeniedException("You have no permission to execute this action.");
             }
 
