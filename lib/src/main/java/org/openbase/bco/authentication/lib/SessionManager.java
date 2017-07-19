@@ -54,19 +54,37 @@ public class SessionManager {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SessionManager.class);
     private static final String STORE_FILENAME = "client_crediential_store.json";
 
+    private static SessionManager instance;
+
     private TicketAuthenticatorWrapper ticketAuthenticatorWrapper;
     private byte[] sessionKey;
-    
+
     private final CredentialStore store;
-        
+
     // remember id of client during session
     private String clientId;
 
+    // remember user id during session
+    private String userId;
+
+    public static synchronized SessionManager getInstance() throws NotAvailableException {
+        try {
+            if (instance == null) {
+                instance = new SessionManager();
+                instance.init();
+            }
+            
+            return instance;
+        } catch (InitializationException ex) {
+            throw new NotAvailableException("SessionManager", ex);
+        }
+    }
+    
     public SessionManager() {
         this(new CredentialStore(STORE_FILENAME));
     }
 
-    public SessionManager(CredentialStore userStore) {        
+    public SessionManager(CredentialStore userStore) {
         // load registry
         boolean simulation = false;
         try {
@@ -80,7 +98,7 @@ public class SessionManager {
             this.store = userStore;
         }
     }
-    
+
     public void init() throws InitializationException {
         this.store.init();
     }
@@ -105,7 +123,8 @@ public class SessionManager {
         }
     }
 
-    /** TODO: Save Login data, if keepUserLoggedIn set to true
+    /**
+     * TODO: Save Login data, if keepUserLoggedIn set to true
      * Perform a login for a given userId and password.
      *
      * @param userId Identifier of the user
@@ -118,6 +137,7 @@ public class SessionManager {
      */
     public boolean login(String userId, String userPassword) throws StreamCorruptedException, CouldNotPerformException, NotAvailableException {
         byte[] clientPasswordHash = EncryptionHelper.hash(userPassword);
+        this.userId = userId;
         return this.internalLogin(userId, clientPasswordHash, true);
     }
 
@@ -150,13 +170,17 @@ public class SessionManager {
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
     private boolean internalLogin(String id, byte[] key, boolean isUser) throws StreamCorruptedException, CouldNotPerformException, NotAvailableException {
-        if (this.isLoggedIn()) throw new CouldNotPerformException("You are already logged in.");
-        
+        if (this.isLoggedIn()) {
+            throw new CouldNotPerformException("You are already logged in.");
+        }
+
         try {
             // prepend clientId to userId for TicketGranteningTicket request
             String userIdAtClientId = "@" + this.clientId;
-            if (isUser) userIdAtClientId = id + userIdAtClientId;
-            
+            if (isUser) {
+                userIdAtClientId = id + userIdAtClientId;
+            }
+
             // request TGT
             TicketSessionKeyWrapperType.TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userIdAtClientId).get();
 
@@ -172,7 +196,7 @@ public class SessionManager {
             list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(id, ticketGrantingServiceSessionKey, ticketSessionKeyWrapper);
             this.ticketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
             this.sessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
-            
+
             return true;
         } catch (BadPaddingException ex) {
             throw new CouldNotPerformException("The password you have entered was wrong. Please try again!");
@@ -208,6 +232,7 @@ public class SessionManager {
     public void logout() {
         this.ticketAuthenticatorWrapper = null;
         this.sessionKey = null;
+        this.userId = null;
     }
 
     /**
@@ -219,7 +244,7 @@ public class SessionManager {
     public boolean isLoggedIn() {
         return this.ticketAuthenticatorWrapper != null && this.sessionKey != null;
     }
-    
+
     /**
      * determines if a user is authenticated.
      * does validate ClientServerTicket and SessionKey
@@ -228,8 +253,10 @@ public class SessionManager {
      * @throws org.openbase.jul.exception.CouldNotPerformException In case of a communication error between client and server.
      */
     public boolean isAuthenticated() throws CouldNotPerformException {
-        if (!this.isLoggedIn()) throw new CouldNotPerformException("Please log in first!");
-        
+        if (!this.isLoggedIn()) {
+            return false;
+        }
+
         try {
             this.ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(this.sessionKey, this.ticketAuthenticatorWrapper);
             TicketAuthenticatorWrapper wrapper = CachedAuthenticationRemote.getRemote().validateClientServerTicket(this.ticketAuthenticatorWrapper).get();
@@ -244,6 +271,8 @@ public class SessionManager {
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
             throw new CouldNotPerformException("Decryption failed. You have been logged out for security reasons. Please log in again.");
         } catch (InterruptedException ex) {
+            // keep the interruption
+            Thread.currentThread().interrupt();
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
             throw new CouldNotPerformException("Action was interrupted.", ex);
         } catch (ExecutionException ex) {
@@ -288,7 +317,7 @@ public class SessionManager {
                     .build();
 
             TicketAuthenticatorWrapper newTicketAuthenticatorWrapper = CachedAuthenticationRemote.getRemote().changeCredentials(loginCredentialsChange).get();
-            AuthenticationClientHandler.handleServiceServerResponse(sessionKey, ticketAuthenticatorWrapper, newTicketAuthenticatorWrapper);    
+            AuthenticationClientHandler.handleServiceServerResponse(sessionKey, ticketAuthenticatorWrapper, newTicketAuthenticatorWrapper);
         } catch (IOException | BadPaddingException ex) {
             this.logout();
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
@@ -313,46 +342,48 @@ public class SessionManager {
             throw new CouldNotPerformException("Internal server error.", cause);
         }
     }
-    
+
     /**
      * Registers a client.
-     * 
+     *
      * @param clientId the id of the client
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
-    public void registerClient(String clientId) throws CouldNotPerformException {        
+    public void registerClient(String clientId) throws CouldNotPerformException {
         KeyPair keyPair = EncryptionHelper.generateKeyPair();
         this.internalRegister(clientId, keyPair.getPublic().getEncoded(), false);
         this.store.setCredentials(clientId, keyPair.getPrivate().getEncoded());
     }
-    
+
     /**
      * Registers a user.
-     * 
+     *
      * @param userId the id of the user
      * @param password the password of the user
      * @param isAdmin flag if user should be an administrator
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
-    public void registerUser(String userId, String password, boolean isAdmin) throws CouldNotPerformException {        
+    public void registerUser(String userId, String password, boolean isAdmin) throws CouldNotPerformException {
         byte[] key = EncryptionHelper.hash(password);
         this.internalRegister(userId, key, isAdmin);
     }
-    
+
     /**
      * Registers a user or client.
      * Assumes an administrator who has permissions for this already exists and is logged in with current session manager.
      * Overwrites duplicate entries on client, if entry to be registered does not exist on server.
      * Does not overwrite duplicate entries on client, if entry does exist on server.
-     * 
+     *
      * @param userId the id of the user
      * @param password the password of the user
      * @param isAdmin flag if user should be an administrator
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
     private void internalRegister(String id, byte[] key, boolean isAdmin) throws CouldNotPerformException {
-        if (!this.isLoggedIn()) throw new CouldNotPerformException("Please log in first!");
-        
+        if (!this.isLoggedIn()) {
+            throw new CouldNotPerformException("Please log in first!");
+        }
+
         try {
             ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(this.sessionKey, this.ticketAuthenticatorWrapper);
 
@@ -362,9 +393,9 @@ public class SessionManager {
                     .setTicketAuthenticatorWrapper(this.ticketAuthenticatorWrapper)
                     .setAdmin(isAdmin)
                     .build();
-         
+
             TicketAuthenticatorWrapper wrapper = CachedAuthenticationRemote.getRemote().register(loginCredentialsChange).get();
-            AuthenticationClientHandler.handleServiceServerResponse(this.sessionKey, this.ticketAuthenticatorWrapper, wrapper);        
+            AuthenticationClientHandler.handleServiceServerResponse(this.sessionKey, this.ticketAuthenticatorWrapper, wrapper);
         } catch (IOException | BadPaddingException ex) {
             this.logout();
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
@@ -389,10 +420,12 @@ public class SessionManager {
             throw new CouldNotPerformException("Internal server error.", cause);
         }
     }
-    
+
     public void setAdministrator(String id, boolean isAdmin) throws CouldNotPerformException {
-        if (!this.isLoggedIn()) throw new CouldNotPerformException("Please log in first!");
-        
+        if (!this.isLoggedIn()) {
+            throw new CouldNotPerformException("Please log in first!");
+        }
+
         try {
             ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(this.sessionKey, this.ticketAuthenticatorWrapper);
 
@@ -401,9 +434,9 @@ public class SessionManager {
                     .setTicketAuthenticatorWrapper(this.ticketAuthenticatorWrapper)
                     .setAdmin(isAdmin)
                     .build();
-         
+
             TicketAuthenticatorWrapper wrapper = CachedAuthenticationRemote.getRemote().setAdministrator(loginCredentialsChange).get();
-            AuthenticationClientHandler.handleServiceServerResponse(this.sessionKey, this.ticketAuthenticatorWrapper, wrapper);    
+            AuthenticationClientHandler.handleServiceServerResponse(this.sessionKey, this.ticketAuthenticatorWrapper, wrapper);
         } catch (IOException | BadPaddingException ex) {
             this.logout();
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
@@ -426,6 +459,10 @@ public class SessionManager {
 
             ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
             throw new CouldNotPerformException("Internal server error.", cause);
-        }        
+        }
+    }
+
+    public String getUserId() {
+        return userId;
     }
 }

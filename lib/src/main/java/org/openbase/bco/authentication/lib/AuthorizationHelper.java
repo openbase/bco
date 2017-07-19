@@ -25,6 +25,7 @@ package org.openbase.bco.authentication.lib;
 import com.google.protobuf.ProtocolStringList;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
@@ -56,7 +57,7 @@ public class AuthorizationHelper {
      * @param groups All available groups in the system, indexed by their group ID.
      * @return True if the user can read from the unit, false if not.
      */
-    public static boolean canRead(UnitConfig unitConfig, String userId, HashMap<String, AuthorizationGroupConfig> groups) {
+    public static boolean canRead(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups) {
         return canDo(unitConfig, userId, groups, Type.READ);
     }
 
@@ -69,7 +70,7 @@ public class AuthorizationHelper {
      * @param groups All available groups in the system, indexed by their group ID.
      * @return True if the user can write to the unit, false if not.
      */
-    public static boolean canWrite(UnitConfig unitConfig, String userId, HashMap<String, AuthorizationGroupConfig> groups) {
+    public static boolean canWrite(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups) {
         return canDo(unitConfig, userId, groups, Type.WRITE);
     }
 
@@ -81,7 +82,7 @@ public class AuthorizationHelper {
      * @param groups All available groups in the system, indexed by their group ID.
      * @return True if the user can access the unit, false if not.
      */
-    public static boolean canAccess(UnitConfig unitConfig, String userId, HashMap<String, AuthorizationGroupConfig> groups) {
+    public static boolean canAccess(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups) {
         return canDo(unitConfig, userId, groups, Type.ACCESS);
     }
 
@@ -93,7 +94,7 @@ public class AuthorizationHelper {
      * @param groups All available groups in the system, indexed by their group ID.
      * @return Permission object representing the maximum permissions for the given user on the given unit.
      */
-    public static Permission getPermission(UnitConfig unitConfig, String userId, HashMap<String, AuthorizationGroupConfig> groups) {
+    public static Permission getPermission(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups) {
         return Permission.newBuilder()
           .setAccess(canAccess(unitConfig, userId, groups))
           .setRead(canRead(unitConfig, userId, groups))
@@ -128,7 +129,7 @@ public class AuthorizationHelper {
      * @param type The permission type to check.
      * @return True if the user has the given permission, false if not.
      */
-    private static boolean canDo(UnitConfig unitConfig, String userId, HashMap<String, AuthorizationGroupConfig> groups, Type type) {
+    private static boolean canDo(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Type type) {
         PermissionConfig permissionConfig = unitConfig.getPermissionConfig();
 
         // Other
@@ -154,7 +155,7 @@ public class AuthorizationHelper {
         ProtocolStringList groupMembers;
 
         for (MapFieldEntry entry : permissionConfig.getGroupPermissionList()) {
-            groupMembers = groups.get(entry.getGroupId()).getMemberIdList();
+            groupMembers = groups.get(entry.getGroupId()).getMessage().getAuthorizationGroupConfig().getMemberIdList();
 
             // Check if the user belongs to the group.
             if (groupMembers.contains(userId) && permitted(entry.getPermission(), type)) {

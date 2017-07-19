@@ -21,8 +21,8 @@ package org.openbase.bco.authentication.test;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.util.HashMap;
+import java.util.Map;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -30,34 +30,37 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
+import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
 import rst.domotic.authentication.PermissionType.Permission;
+import rst.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
  * @author <a href="mailto:cromankiewicz@techfak.uni-bielefeld.de">Constantin Romankiewicz</a>
  */
-import rst.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
 public class AuthorizationHelperTest {
+
     private static final Permission RWX = Permission.newBuilder().setRead(true).setWrite(true).setAccess(true).build();
     private static final Permission NONE = Permission.newBuilder().setRead(false).setWrite(false).setAccess(false).build();
-    private HashMap<String, AuthorizationGroupConfig> groups;
     private static final String GROUP_1 = "group1";
     private static final String GROUP_2 = "group2";
     private static final String USER_1 = "user1";
     private static final String USER_2 = "user2";
     private static final String USER_3 = "user3";
 
+    private final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups;
 
-    public AuthorizationHelperTest() {
+    public AuthorizationHelperTest() throws Exception {
         groups = new HashMap<>();
-        AuthorizationGroupConfig group1 = AuthorizationGroupConfig.newBuilder()
-          .addMemberId(USER_1).addMemberId(USER_2).build();
-        AuthorizationGroupConfig group2 = AuthorizationGroupConfig.newBuilder()
-          .addMemberId(USER_1).addMemberId(USER_3).build();
-        groups.put(GROUP_1, group1);
-        groups.put(GROUP_2, group2);
+        AuthorizationGroupConfig group1 = AuthorizationGroupConfig.newBuilder().addMemberId(USER_1).addMemberId(USER_2).build();
+        AuthorizationGroupConfig group2 = AuthorizationGroupConfig.newBuilder() .addMemberId(USER_1).addMemberId(USER_3).build();
+        UnitConfig unitConfig1 = UnitConfig.newBuilder().setLabel(GROUP_1).setId(GROUP_1).setType(UnitType.AUTHORIZATION_GROUP).setAuthorizationGroupConfig(group1).build();
+        UnitConfig unitConfig2 = UnitConfig.newBuilder().setLabel(GROUP_2).setId(GROUP_2).setType(UnitType.AUTHORIZATION_GROUP).setAuthorizationGroupConfig(group2).build();
+        groups.put(GROUP_1, new IdentifiableMessage<>(unitConfig1));
+        groups.put(GROUP_2, new IdentifiableMessage<>(unitConfig2));
     }
 
     @BeforeClass
@@ -84,8 +87,8 @@ public class AuthorizationHelperTest {
         System.out.println("testOwnerPermissions");
 
         PermissionConfig.Builder configBuilder = PermissionConfig.newBuilder()
-          .setOwnerId(USER_1)
-          .setOtherPermission(NONE);
+                .setOwnerId(USER_1)
+                .setOtherPermission(NONE);
         Permission.Builder permissionBuilder = Permission.newBuilder();
 
         boolean[] bools = {true, false};
@@ -99,8 +102,8 @@ public class AuthorizationHelperTest {
                 for (boolean access : bools) {
                     permissionBuilder.setAccess(access);
                     UnitConfig unitConfig = UnitConfig.newBuilder()
-                      .setPermissionConfig(configBuilder.setOwnerPermission(permissionBuilder))
-                      .build();
+                            .setPermissionConfig(configBuilder.setOwnerPermission(permissionBuilder))
+                            .build();
 
                     // Test the "owner" permissions.
                     assertEquals(AuthorizationHelper.canRead(unitConfig, USER_1, groups), read);
@@ -117,27 +120,27 @@ public class AuthorizationHelperTest {
     }
 
     /**
-     * Tests all possible permission combinations for a member of the group, 
+     * Tests all possible permission combinations for a member of the group,
      * while keeping the "other" permissions false and the "owner" permissions true.
      */
     @Test
     public void testGroupPermissions() {
         System.out.println("testGroupPermissions");
         PermissionConfig.MapFieldEntry.Builder groupsBuilder = PermissionConfig.MapFieldEntry.newBuilder()
-          .setGroupId(GROUP_2).setPermission(NONE);
+                .setGroupId(GROUP_2).setPermission(NONE);
 
         PermissionConfig.Builder configBuilder = PermissionConfig.newBuilder()
-          .setOwnerId(USER_1)
-          .setOwnerPermission(RWX)
-          .setOtherPermission(NONE)
-          .addGroupPermission(0, groupsBuilder);
+                .setOwnerId(USER_1)
+                .setOwnerPermission(RWX)
+                .setOtherPermission(NONE)
+                .addGroupPermission(0, groupsBuilder);
         Permission.Builder permissionBuilder = Permission.newBuilder();
 
         boolean[] bools = {true, false};
 
         // Add our group to the list, initially with no permissions.
         groupsBuilder.setGroupId(GROUP_1)
-          .setPermission(NONE);
+                .setPermission(NONE);
         configBuilder.addGroupPermission(1, groupsBuilder);
 
         for (boolean read : bools) {
@@ -153,9 +156,9 @@ public class AuthorizationHelperTest {
                     groupsBuilder.setPermission(permissionBuilder);
 
                     UnitConfig unitConfig = UnitConfig.newBuilder()
-                      // Change the entry of our group.
-                      .setPermissionConfig(configBuilder.setGroupPermission(1, groupsBuilder))
-                      .build();
+                            // Change the entry of our group.
+                            .setPermissionConfig(configBuilder.setGroupPermission(1, groupsBuilder))
+                            .build();
 
                     // Test if group permissions match for the group member.
                     assertEquals(AuthorizationHelper.canRead(unitConfig, USER_2, groups), read);
@@ -184,8 +187,8 @@ public class AuthorizationHelperTest {
         System.out.println("testOtherPermissions");
 
         PermissionConfig.Builder configBuilder = PermissionConfig.newBuilder()
-          .setOwnerId(USER_1)
-          .setOwnerPermission(RWX);
+                .setOwnerId(USER_1)
+                .setOwnerPermission(RWX);
         Permission.Builder permissionBuilder = Permission.newBuilder();
 
         boolean[] bools = {true, false};
@@ -199,8 +202,8 @@ public class AuthorizationHelperTest {
                 for (boolean access : bools) {
                     permissionBuilder.setAccess(access);
                     UnitConfig unitConfig = UnitConfig.newBuilder()
-                      .setPermissionConfig(configBuilder.setOtherPermission(permissionBuilder))
-                      .build();
+                            .setPermissionConfig(configBuilder.setOtherPermission(permissionBuilder))
+                            .build();
 
                     // Test if "other" permissions match.
                     assertEquals(AuthorizationHelper.canRead(unitConfig, USER_2, groups), read);
