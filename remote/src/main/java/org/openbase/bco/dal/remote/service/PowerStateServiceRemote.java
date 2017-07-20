@@ -40,6 +40,7 @@ import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType.PowerState;
@@ -116,7 +117,7 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
     @Override
     public Future<ActionFuture> setPowerState(final PowerState powerState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-
+        actionDescription.setMultiResourceAllocationStrategy(MultiResourceAllocationStrategy.newBuilder().setStrategy(MultiResourceAllocationStrategy.Strategy.ALL_OR_NOTHING)).build();
         try {
             return applyAction(Service.upateActionDescription(actionDescription, powerState, getServiceType()).build());
         } catch (InterruptedException ex) {
