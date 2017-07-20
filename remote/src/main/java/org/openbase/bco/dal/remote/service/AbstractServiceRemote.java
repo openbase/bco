@@ -42,6 +42,7 @@ import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -63,7 +64,6 @@ import org.slf4j.LoggerFactory;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
-import rst.domotic.action.ActionReferenceType.ActionReference;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActionStateType.ActionState;
@@ -393,6 +393,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         return Collections.unmodifiableCollection(unitRemoteMap.values());
     }
 
+    /**
+     * {@inheritDoc}
+     */
     @Override
     public Collection<org.openbase.bco.dal.lib.layer.unit.UnitRemote> getInternalUnits(UnitType unitType) throws NotAvailableException {
         List<UnitRemote> unitRemotes = new ArrayList<>();
@@ -459,6 +462,16 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             Map<String, UnitRemote> scopeUnitMap = new HashMap();
             for (final UnitRemote unitRemote : getInternalUnits(actionDescription.getServiceStateDescription().getUnitType())) {
                 if (unitRemote instanceof MultiUnitServiceFusion) {
+                    /*
+                     * For units which control other units themselves, e.g. locations, do not list the unit itself
+                     * but all units it controls. Because the resource allocation has to allocate all these units at the
+                     * same time and all units would themselve again try to allocate themselves a token is used in the
+                     * ResourceAllocation. But when an allocation has a token all following requests will just return the
+                     * state of this allocation so that this token cannot be used to allocate more resources. That is why
+                     * they all have to be allocated at the same time. Futhermore the allocation is done hierarchaly. So
+                     * an allocation for a location blocks everything else going on in that location and maybe not only the
+                     * homeautomation.
+                     */
                     MultiUnitServiceFusion multiUnitServiceFusion = (MultiUnitServiceFusion) unitRemote;
                     Collection<UnitRemote> units = (Collection<UnitRemote>) multiUnitServiceFusion.getServiceRemote(serviceType).getInternalUnits(actionDescription.getServiceStateDescription().getUnitType());
                     for (UnitRemote unit : units) {
@@ -469,100 +482,66 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                 }
             }
 
-            ActionDescription.Builder actBuilder = actionDescription.toBuilder();
-            ResourceAllocation.Builder resourceAllocation = actBuilder.getResourceAllocationBuilder();
+            // Setup ActionDescription with resource ids, token and slot
+            ActionDescription.Builder actionDescriptionBuilder = actionDescription.toBuilder();
+            ResourceAllocation.Builder resourceAllocation = actionDescriptionBuilder.getResourceAllocationBuilder();
             resourceAllocation.clearResourceIds();
             resourceAllocation.addAllResourceIds(scopeUnitMap.keySet());
-            ActionDescriptionProcessor.updateResourceAllocationSlot(actBuilder);
-            actBuilder.setActionState(ActionState.newBuilder().setValue(ActionState.State.INITIALIZED).build());
-            ActionDescriptionProcessor.generateToken(actBuilder);
+            ActionDescriptionProcessor.updateResourceAllocationSlot(actionDescriptionBuilder);
+            actionDescriptionBuilder.setActionState(ActionState.newBuilder().setValue(ActionState.State.INITIALIZED).build());
 
             UnitAllocation unitAllocation;
-
-            switch (actBuilder.getMultiResourceAllocationStrategy().getStrategy()) {
+            List<Future> actionFutureList = new ArrayList<>();
+            switch (actionDescriptionBuilder.getMultiResourceAllocationStrategy().getStrategy()) {
                 case AT_LEAST_ONE:
-                    logger.info("applyAction: " + actionDescription.getLabel() + resourceAllocation.build());
+                    logger.info("AT_LEAST_ONE!");
 
-                    // Resource Allocation
-                    unitAllocation = UnitAllocator.allocate(actBuilder, () -> {
-                        logger.info("Execute");
-                        List<Future> actionFutureList = new ArrayList<>();
-                        for (UnitRemote unitRemote : scopeUnitMap.values()) {
-                            ActionDescription.Builder unitActionDescription = actBuilder.clone();
-                            ActionDescriptionProcessor.updateResourceAllocationId(unitActionDescription);
-                            ActionDescriptionProcessor.updateActionChain(unitActionDescription, actBuilder);
-                            ResourceAllocation.Builder unitResourceAllocation = unitActionDescription.getResourceAllocationBuilder();
-                            unitResourceAllocation.clearResourceIds();
-                            unitResourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(unitRemote.getScope()));
+                    for (UnitRemote unitRemote : scopeUnitMap.values()) {
+                        actionFutureList.add(unitRemote.applyAction(updateActionDescriptionForUnit(actionDescriptionBuilder.build(), unitRemote)));
+                    }
 
-                            ServiceStateDescription.Builder serviceStateDescription = unitActionDescription.getServiceStateDescriptionBuilder();
-                            serviceStateDescription.setUnitId((String) unitRemote.getId());
-
-                            actionFutureList.add(unitRemote.applyAction(unitActionDescription.build()));
-                        }
-
-                        // todo: setup action future.
-                        final ActionFuture actionFuture = ActionFuture.getDefaultInstance();
-                        return GlobalCachedExecutorService.allOf(actionFuture, actionFutureList).get();
-                    });
-                    logger.info("Allocation created!");
-                    return unitAllocation.getTaskExecutor().getFuture();
+                    // todo: setup action future.
+                    return GlobalCachedExecutorService.atLeastOne(ActionFuture.getDefaultInstance(), actionFutureList);
                 case ALL_OR_NOTHING:
-                    logger.info("applyAction: " + actionDescription.getLabel() + resourceAllocation.build());
+                    logger.info("ALL_OR_NOTHING!");
+                    // generate token for all or nothing allocation
+                    ActionDescriptionProcessor.generateToken(actionDescriptionBuilder);
 
                     // Resource Allocation
-                    unitAllocation = UnitAllocator.allocate(actionDescription.toBuilder(), () -> {
-                        List<Future> actionFutureList = new ArrayList<>();
+                    unitAllocation = UnitAllocator.allocate(actionDescriptionBuilder, () -> {
+//                        List<Future> actionFutureList = new ArrayList<>();
                         for (UnitRemote unitRemote : scopeUnitMap.values()) {
-                            ActionDescription.Builder unitActionDescription = actBuilder;
-                            ActionReference.Builder actionReference = ActionReference.newBuilder();
-                            actionReference.setActionId(actionDescription.getId());
-                            actionReference.setAuthority(actionDescription.getActionAuthority());
-                            actionReference.setServiceStateDescription(actionDescription.getServiceStateDescription());
-                            unitActionDescription.addActionChain(actionReference);
-
-                            ServiceStateDescription.Builder serviceStateDescription = unitActionDescription.getServiceStateDescriptionBuilder();
-                            serviceStateDescription.setUnitId((String) unitRemote.getId());
-
-                            actionFutureList.add(unitRemote.applyAction(unitActionDescription.build()));
-
+                            actionFutureList.add(unitRemote.applyAction(updateActionDescriptionForUnit(actionDescriptionBuilder.build(), unitRemote)));
                         }
 
                         // todo: setup action future.
-                        final ActionFuture actionFuture = ActionFuture.getDefaultInstance();
-                        return GlobalCachedExecutorService.allOf(actionFuture, actionFutureList).get();
+                        return GlobalCachedExecutorService.allOf(ActionFuture.getDefaultInstance(), actionFutureList).get();
                     });
                     return unitAllocation.getTaskExecutor().getFuture();
                 default:
-                    logger.info("applyAction: " + actionDescription.getLabel() + resourceAllocation.build());
-
-                    // Resource Allocation
-                    unitAllocation = UnitAllocator.allocate(actionDescription.toBuilder(), () -> {
-                        List<Future> actionFutureList = new ArrayList<>();
-                        for (UnitRemote unitRemote : scopeUnitMap.values()) {
-                            ActionDescription.Builder unitActionDescription = actBuilder;
-                            ActionReference.Builder actionReference = ActionReference.newBuilder();
-                            actionReference.setActionId(actionDescription.getId());
-                            actionReference.setAuthority(actionDescription.getActionAuthority());
-                            actionReference.setServiceStateDescription(actionDescription.getServiceStateDescription());
-                            unitActionDescription.addActionChain(actionReference);
-
-                            ServiceStateDescription.Builder serviceStateDescription = unitActionDescription.getServiceStateDescriptionBuilder();
-                            serviceStateDescription.setUnitId((String) unitRemote.getId());
-
-                            actionFutureList.add(unitRemote.applyAction(unitActionDescription.build()));
-
-                        }
-
-                        // todo: setup action future.
-                        final ActionFuture actionFuture = ActionFuture.getDefaultInstance();
-                        return GlobalCachedExecutorService.allOf(actionFuture, actionFutureList).get();
-                    });
-                    return unitAllocation.getTaskExecutor().getFuture();
+                    throw new FatalImplementationErrorException("Resource allocation strategy[" + actionDescription.getMultiResourceAllocationStrategy().getStrategy().name() + "] not handled", this);
             }
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }
+    }
+
+    private ActionDescription updateActionDescriptionForUnit(ActionDescription actionDescription, UnitRemote unitRemote) throws CouldNotPerformException {
+        // create new builder and copy fields
+        ActionDescription.Builder unitActionDescription = ActionDescription.newBuilder(actionDescription);
+        // get a new resource allocation id
+        ActionDescriptionProcessor.updateResourceAllocationId(unitActionDescription);
+        // update the action chain
+        ActionDescriptionProcessor.updateActionChain(unitActionDescription, actionDescription);
+        // resource ids should only contain that unit
+        ResourceAllocation.Builder unitResourceAllocation = unitActionDescription.getResourceAllocationBuilder();
+        unitResourceAllocation.clearResourceIds();
+        unitResourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(unitRemote.getScope()));
+        // update the id in the serviceStateDescription to that of the unit
+        ServiceStateDescription.Builder serviceStateDescription = unitActionDescription.getServiceStateDescriptionBuilder();
+        serviceStateDescription.setUnitId((String) unitRemote.getId());
+
+        return unitActionDescription.build();
     }
 
     /**
