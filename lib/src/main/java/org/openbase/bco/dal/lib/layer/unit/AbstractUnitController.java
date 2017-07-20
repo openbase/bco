@@ -35,6 +35,7 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.action.ActionImpl;
+import org.openbase.bco.dal.lib.action.RescheduledActionImpl;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
@@ -407,7 +408,8 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         try {
             logger.debug("applyAction: " + actionDescription.getLabel());
-            final ActionImpl action = new ActionImpl(this);
+//            final ActionImpl action = new ActionImpl(this);
+            final ActionImpl action = new RescheduledActionImpl(this);
             action.init(actionDescription);
             return action.execute();
         } catch (CouldNotPerformException ex) {

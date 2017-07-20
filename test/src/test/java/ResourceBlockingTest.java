@@ -21,14 +21,11 @@
  */
 
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.Units;
-import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
@@ -36,14 +33,10 @@ import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
-import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.vision.ColorType.Color;
-import rst.vision.HSBColorType.HSBColor;
 
 /**
  *
@@ -51,43 +44,56 @@ import rst.vision.HSBColorType.HSBColor;
  */
 public class ResourceBlockingTest {
 
-    @Test
+//    @Test
     public void blockColorableLight() throws Exception {
         Registries.waitForData();
         UnitConfig location = Registries.getLocationRegistry().getLocationConfigsByLabel("Wardrobe").get(0);
         List<UnitConfig> lights = Registries.getLocationRegistry().getUnitConfigsByLocation(UnitType.COLORABLE_LIGHT, location.getId());
         ColorableLightRemote remote = Units.getUnit(lights.get(0), true, ColorableLightRemote.class);
 
-        ColorState.Builder colorState = ColorState.newBuilder();
-        Color.Builder color = colorState.getColorBuilder();
-        HSBColor.Builder HSBColor = color.getHsbColorBuilder();
-        HSBColor.setBrightness(100);
-        HSBColor.setSaturation(100);
-        HSBColor.setSaturation(0);
-        color.setType(Color.Type.HSB);
+//        ColorState.Builder colorState = ColorState.newBuilder();
+//        Color.Builder color = colorState.getColorBuilder();
+//        HSBColor.Builder HSBColor = color.getHsbColorBuilder();
+//        HSBColor.setBrightness(100);
+//        HSBColor.setSaturation(100);
+//        HSBColor.setSaturation(0);
+//        color.setType(Color.Type.HSB);
         
         ActionDescription.Builder powerAction = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+        ResourceAllocation.Builder resourceAllocation1 = powerAction.getResourceAllocationBuilder();
+        resourceAllocation1.setPolicy(ResourceAllocation.Policy.PRESERVE);
         PowerState.Builder powerState = PowerState.newBuilder();
         powerState.setValue(PowerState.State.ON);
         updateActionDescription(powerAction, powerState.build(), remote);
         
-        Future<ActionFuture> applyAction = remote.applyAction(powerAction.build());
-        applyAction.get();
+        ActionDescription.Builder powerActionHigh = powerAction.clone();
+        ResourceAllocation.Builder resourceAllocation = powerActionHigh.getResourceAllocationBuilder();
+        resourceAllocation.setPriority(ResourceAllocation.Priority.URGENT);
+        powerActionHigh.setExecutionTimePeriod(10000);
+        ActionDescriptionProcessor.updateResourceAllocationSlot(powerActionHigh);
+        ActionDescriptionProcessor.updateResourceAllocationId(powerActionHigh);
         
-        LocationRemote locationRemote = Units.getUnit(location, true, LocationRemote.class);
-        // should work without exception
-        locationRemote.setColorState(colorState.build()).get();
+        remote.applyAction(powerActionHigh.build()).get();
         
-        try{
-            locationRemote.setPowerState(powerState.build()).get();
-        } catch(CouldNotPerformException | ExecutionException ex) {
-            System.out.println("Exception as expected");
-        }
+        Thread.sleep(5000);
+        
+        remote.applyAction(powerAction.build()).get();
+        
+        
+//        LocationRemote locationRemote = Units.getUnit(location, true, LocationRemote.class);
+//        // should work without exception
+//        locationRemote.setColorState(colorState.build()).get();
+//        
+//        try{
+//            locationRemote.setPowerState(powerState.build()).get();
+//        } catch(CouldNotPerformException | ExecutionException ex) {
+//            System.out.println("Exception as expected");
+//        }
     }
 
     public ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Object serviceAttribute, final UnitRemote unitRemote) throws CouldNotPerformException {
         // 5 minute retaining:
-        actionDescription.setExecutionTimePeriod(1000 * 60 * 5);
+        actionDescription.setExecutionTimePeriod(1000 * 30);
         
         ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
         ResourceAllocation.Builder resourceAllocation = actionDescription.getResourceAllocationBuilder();

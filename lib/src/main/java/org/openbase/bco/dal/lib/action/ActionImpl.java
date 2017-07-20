@@ -57,7 +57,7 @@ public class ActionImpl implements Action {
     private final SyncObject executionSync = new SyncObject(ActionImpl.class);
     private final AbstractUnitController unit;
     private final ServiceJSonProcessor serviceJSonProcessor;
-    private ActionDescription.Builder actionDescriptionBuilder;
+    protected ActionDescription.Builder actionDescriptionBuilder;
     private Object serviceAttribute;
     private ServiceDescription serviceDescription;
 
@@ -113,6 +113,10 @@ public class ActionImpl implements Action {
 
     @Override
     public Future<ActionFuture> execute() throws CouldNotPerformException {
+        return internalExecute().getTaskExecutor().getFuture();
+    }
+
+    protected UnitAllocation internalExecute() throws CouldNotPerformException {
         try {
             synchronized (executionSync) {
 
@@ -151,13 +155,13 @@ public class ActionImpl implements Action {
                             throw ex;
                         }
                     });
-                    
+
                     // register allocation update handler
-                    unitAllocation.getTaskExecutor().getRemote().addSchedulerListener((allocation) -> {
-                        actionDescriptionBuilder.getResourceAllocationBuilder().mergeFrom(allocation);
-                    });
-                    
-                    return unitAllocation.getTaskExecutor().getFuture();
+//                    unitAllocation.getTaskExecutor().getRemote().addSchedulerListener((allocation) -> {
+//                        actionDescriptionBuilder.getResourceAllocationBuilder().mergeFrom(allocation);
+//                    });
+
+                    return unitAllocation;
                 } catch (CouldNotPerformException ex) {
                     updateActionState(ActionState.State.REJECTED);
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
