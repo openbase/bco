@@ -68,6 +68,7 @@ public class SessionManager {
 
     // remember user id during session
     private String userId;
+    private String userPassword;
 
     /**
      * Observable on which it will be notified if login or logout is triggered.
@@ -144,8 +145,14 @@ public class SessionManager {
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
     public boolean login(String userId, String userPassword) throws StreamCorruptedException, CouldNotPerformException, NotAvailableException {
+        return this.login(userId, userPassword, false);
+    }
+    
+    public boolean login(String userId, String userPassword, boolean rememberPassword) throws StreamCorruptedException, CouldNotPerformException, NotAvailableException {
         byte[] clientPasswordHash = EncryptionHelper.hash(userPassword);
         this.userId = userId;
+        if (rememberPassword)
+            this.userPassword = userPassword;
         return this.internalLogin(userId, clientPasswordHash, true);
     }
 
@@ -165,6 +172,33 @@ public class SessionManager {
         byte[] key = this.store.getCredentials(clientId);
         return this.internalLogin(clientId, key, false);
     }
+    
+    /**
+     * Perform a relog for the client registered in the store.
+     *
+     * @param clientId Identifier of the user
+     * @return Returns true if relog successful, appropriate exception otherwise
+     * @throws StreamCorruptedException If the password was wrong.
+     * @throws NotAvailableException If the entered clientId could not be found. Or if the clientId was not set in the beginning.
+     * @throws CouldNotPerformException In case of a communication error between client and server.
+     */
+    public boolean relog() throws CouldNotPerformException, StreamCorruptedException, NotAvailableException {
+        this.ticketAuthenticatorWrapper = null;
+        this.sessionKey = null;
+                
+        // if user is logged in and can login again
+        if (this.canUserLoginAgain())
+            return this.login(this.userId, this.userPassword, true);
+        
+        // if user is not logged in and the client can login again
+        if (this.canClientLoginAgain())
+            return this.login(this.clientId);
+        
+        // if neither user or client can login again
+        this.logout();
+        throw new CouldNotPerformException("Your session has expired. You have been logged out for security reasons. Please log in again.");
+    }
+
 
     /**
      * Perform a login for a given userId and password.
@@ -210,6 +244,7 @@ public class SessionManager {
             } catch (CouldNotPerformException ex) {
                 LOGGER.warn("Could not notify logout to observer", ex);
             }
+            
             return true;
         } catch (BadPaddingException ex) {
             throw new CouldNotPerformException("The password you have entered was wrong. Please try again!");
@@ -246,6 +281,7 @@ public class SessionManager {
         this.ticketAuthenticatorWrapper = null;
         this.sessionKey = null;
         this.userId = null;
+        this.userPassword = null;
         try {
             loginObervable.notifyObservers(false);
         } catch (CouldNotPerformException ex) {
@@ -261,6 +297,28 @@ public class SessionManager {
      */
     public boolean isLoggedIn() {
         return this.ticketAuthenticatorWrapper != null && this.sessionKey != null;
+    }
+    
+    /**
+     * determines if a user can login again.
+     * 
+     * @return true if so, false otherwise
+     */
+    public boolean canUserLoginAgain() {
+        if (this.userId != null) {
+            if (this.userPassword != null) return true;
+            else return false;
+        }
+        return false;
+    }
+    
+    /**
+     * determines if a client can login again.
+     * 
+     * @return true if so, false otherwise
+     */
+    public boolean canClientLoginAgain() {
+        return this.clientId != null && this.store.hasEntry(this.clientId);
     }
 
     /**

@@ -88,16 +88,24 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
     private String initialPassword;
     private Future initialPasswordPrinterFuture;
-
+    
     public AuthenticatorController() {
-        this(new CredentialStore(STORE_FILENAME));
+        this(new CredentialStore(STORE_FILENAME), EncryptionHelper.generateKey());
     }
-
-    public AuthenticatorController(CredentialStore authenticationRegistry) {
+    
+    public AuthenticatorController(CredentialStore store) {
+        this(store, EncryptionHelper.generateKey());
+    }
+    
+    public AuthenticatorController(byte[] serviceServerPrivateKey) {
+        this(new CredentialStore(STORE_FILENAME), serviceServerPrivateKey);
+    }
+    
+    public AuthenticatorController(CredentialStore store, byte[] serviceServerPrivateKey) {
         this.server = new NotInitializedRSBLocalServer();
 
         this.ticketGrantingServicePrivateKey = EncryptionHelper.generateKey();
-        this.serviceServerPrivateKey = EncryptionHelper.generateKey();
+        this.serviceServerPrivateKey = serviceServerPrivateKey;
 
         boolean simulation = false;
         try {
@@ -108,7 +116,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         if (simulation) {
             this.store = new MockCredentialStore();
         } else {
-            this.store = authenticationRegistry;
+            this.store = store;
         }
     }
 
