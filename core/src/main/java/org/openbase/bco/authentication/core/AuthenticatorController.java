@@ -21,6 +21,7 @@ package org.openbase.bco.authentication.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.ByteString;
 import java.io.IOException;
 import java.io.StreamCorruptedException;
 import java.util.Arrays;
@@ -59,6 +60,7 @@ import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.AuthenticatorType.Authenticator;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketType.Ticket;
@@ -376,6 +378,37 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         return GlobalCachedExecutorService.submit(() -> {
             store.setCredentials(loginCredentialsChange.getId(), loginCredentialsChange.getNewCredentials().toByteArray());
             return null;
+        });
+    }
+
+    @Override
+    public Future<AuthenticatedValue> requestServiceServerSecretKey(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(() -> {
+            try {
+                // Validate the given authenticator and ticket.
+                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerSecretKey, ticketAuthenticatorWrapper);
+
+                // Decrypt ticket, authenticator and credentials.
+                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(ticketAuthenticatorWrapper.getTicket(), serviceServerSecretKey, Ticket.class);
+                byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
+                Authenticator authenticator = EncryptionHelper.decryptSymmetric(ticketAuthenticatorWrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);
+
+                if(!authenticator.getClientId().equals("")) {
+                    throw new RejectedException("Client["+authenticator.getClientId()+"] is not authorized to request the ServiceServerSecretKey");
+                }
+                
+                AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
+                authenticatedValue.setTicketAuthenticatorWrapper(response);
+                authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(this.serviceServerSecretKey, clientServerSessionKey));
+
+                return authenticatedValue.build();
+            } catch (RejectedException | BadPaddingException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
+                throw ex;
+            } catch (IOException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+                throw ex;
+            }
         });
     }
 
