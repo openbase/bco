@@ -21,9 +21,16 @@ package org.openbase.bco.authentication.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StreamCorruptedException;
+import java.nio.file.Files;
+import java.nio.file.attribute.PosixFilePermission;
+import java.security.KeyPair;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.RandomStringUtils;
@@ -50,6 +57,7 @@ import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWr
 import org.openbase.bco.authentication.lib.AuthenticationService;
 import org.openbase.bco.authentication.lib.CredentialStore;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationSimulationMode;
+import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.exception.RejectedException;
@@ -76,7 +84,8 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     }
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatorController.class);
-    private static final String STORE_FILENAME = "server_crediential_store.json";
+    private static final String STORE_FILENAME = "server_credential_store.json";
+    private static final String SERVICE_SERVER_PRIVATE_KEY_FILENAME = "service_server_private_key";
 
     private RSBLocalServer server;
     private WatchDog serverWatchDog;
@@ -131,9 +140,30 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         if (store.isEmpty()) {
+            // Generate initial password.
             initialPassword = RandomStringUtils.randomAlphanumeric(15);
             InitialPasswordPrinterRunnable initialPasswordPrinterCallback = new InitialPasswordPrinterRunnable(initialPassword);
             initialPasswordPrinterFuture = GlobalScheduledExecutorService.scheduleAtFixedRate(initialPasswordPrinterCallback, 5, 30, TimeUnit.SECONDS);
+
+            // Generate private/public key pair for service servers.
+            KeyPair keyPair = EncryptionHelper.generateKeyPair();
+            store.addCredentials(CredentialStore.SERVICE_SERVER_ID, keyPair.getPublic().getEncoded(), false);
+            try {
+                File privateKeyFile = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), SERVICE_SERVER_PRIVATE_KEY_FILENAME);
+                FileOutputStream outputStream = new FileOutputStream(privateKeyFile);
+                outputStream.write(keyPair.getPrivate().getEncoded());
+                outputStream.flush();
+                outputStream.close();
+                Set<PosixFilePermission> perms = new HashSet<>();
+                perms.add(PosixFilePermission.OWNER_READ);
+                perms.add(PosixFilePermission.OWNER_WRITE);
+
+                Files.setPosixFilePermissions(privateKeyFile.toPath(), perms);
+            } catch (JPNotAvailableException ex) {
+                throw new CouldNotPerformException("Could not load property.", ex);
+            } catch (IOException ex) {
+                throw new CouldNotPerformException("Could not write private key.", ex);
+            }
         }
 
         serverWatchDog.activate();
@@ -265,7 +295,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     public Future<TicketAuthenticatorWrapper> register(LoginCredentialsChange loginCredentialsChange) throws RejectedException, StreamCorruptedException, IOException {
         return GlobalCachedExecutorService.submit(() -> {
             try {
-                if (store.isEmpty()) {
+                if (store.isEmpty() || store.hasOnlyServiceServer()) {
                     if (!loginCredentialsChange.hasId() || !loginCredentialsChange.hasNewCredentials()) {
                         throw new RejectedException("Cannot register first user, id and/or new credentials empty");
                     }
