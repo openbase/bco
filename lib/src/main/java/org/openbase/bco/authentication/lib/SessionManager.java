@@ -176,7 +176,6 @@ public class SessionManager {
     /**
      * Perform a relog for the client registered in the store.
      *
-     * @param clientId Identifier of the user
      * @return Returns true if relog successful, appropriate exception otherwise
      * @throws StreamCorruptedException If the password was wrong.
      * @throws NotAvailableException If the entered clientId could not be found. Or if the clientId was not set in the beginning.
