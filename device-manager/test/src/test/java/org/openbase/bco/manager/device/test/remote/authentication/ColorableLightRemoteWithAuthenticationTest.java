@@ -28,7 +28,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.authentication.core.AuthenticatorController;
-import org.openbase.bco.authentication.core.mock.MockClientStore;
+import org.openbase.bco.authentication.lib.mock.MockClientStore;
 import org.openbase.bco.authentication.core.mock.MockCredentialStore;
 import static org.openbase.bco.authentication.lib.AuthenticationServerHandler.VALIDITY_PERIOD_IN_MILLIS;
 import org.openbase.bco.authentication.lib.CredentialStore;
