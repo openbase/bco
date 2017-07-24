@@ -21,12 +21,7 @@ package org.openbase.bco.authentication.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import com.google.protobuf.ByteString;
-import com.google.protobuf.CodedInputStream;
-import com.google.protobuf.CodedOutputStream;
 import java.io.File;
-import java.io.FileInputStream;
-import java.io.FileOutputStream;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermission;
@@ -34,8 +29,6 @@ import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.bco.authentication.lib.jp.JPInitializeCredentials;
 import org.openbase.jps.core.JPService;
@@ -60,7 +53,7 @@ public class CredentialStore {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CredentialStore.class);
 
-    private String filename;
+    private final String filename;
 
     protected HashMap<String, LoginCredentials> credentials;
 
