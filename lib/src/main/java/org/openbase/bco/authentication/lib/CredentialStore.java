@@ -51,6 +51,8 @@ import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
  */
 public class CredentialStore {
 
+    public static final String SERVICE_SERVER_ID = "serviceServer";
+
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CredentialStore.class);
 
     private final String filename;
@@ -131,12 +133,21 @@ public class CredentialStore {
     }
 
     /**
-     * Return if the internal map is empty.
+     * Return whether the internal map is empty.
      *
      * @return true if no client/user is registered
      */
     public boolean isEmpty() {
         return this.credentials.isEmpty();
+    }
+
+    /**
+     * Return whether the internal map only holds one entry for the service server.
+     *
+     * @return true if no client/user is registered except the service server.
+     */
+    public boolean hasOnlyServiceServer() {
+        return (this.credentials.size() == 1 && this.credentials.containsKey(SERVICE_SERVER_ID));
     }
 
     /**
