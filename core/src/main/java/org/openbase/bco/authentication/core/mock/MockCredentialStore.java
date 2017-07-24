@@ -21,6 +21,7 @@ package org.openbase.bco.authentication.core.mock;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.security.KeyPair;
 import java.util.HashMap;
 import org.openbase.bco.authentication.lib.CredentialStore;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
@@ -43,6 +44,8 @@ public class MockCredentialStore extends CredentialStore {
 
     public static final String CLIENT_ID = "client";
 
+    public static final KeyPair SERVICE_SERVER_KEY_PAIR = EncryptionHelper.generateKeyPair();
+
     public MockCredentialStore() {
         super("mock_server_store.json");
     }
@@ -52,6 +55,7 @@ public class MockCredentialStore extends CredentialStore {
         credentials = new HashMap<>();
         this.setCredentials(ADMIN_ID, ADMIN_PASSWORD_HASH);
         this.setCredentials(USER_ID, USER_PASSWORD_HASH);
+        this.setCredentials(SERVICE_SERVER_ID, SERVICE_SERVER_KEY_PAIR.getPublic().getEncoded());
         try {
             this.setAdmin(ADMIN_ID, true);
         } catch (CouldNotPerformException ex) {
