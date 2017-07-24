@@ -521,23 +521,46 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException, RejectedException {
         return new AuthenticationFuture(RPCHelper.callRemoteMethod(initializeRequest(actionDescription), this, ActionFuture.class), this.sessionManager);
     }
-    
-    private ActionDescription initializeRequest(final ActionDescription actionDescription) throws RejectedException {
+
+    private ActionDescription initializeRequest(final ActionDescription actionDescription) throws CouldNotPerformException {
         ActionDescription.Builder actionDescriptionBuilder = actionDescription.toBuilder();
-        if(isLoggedIn()) {
+
+        // if not authenticated, but was and is able to login again, then do so, otherwise log out
+        if (this.isLoggedIn()) {
+            try {
+                this.isAuthenticated();
+            } catch (CouldNotPerformException ex) {
+                try {
+                    this.sessionManager.relog();
+                } catch (StreamCorruptedException | CouldNotPerformException ex2) {
+                    // Logout and return CouldNotPerformException, if anything went wrong
+                    this.sessionManager.logout();
+                    ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+                    throw new CouldNotPerformException("Your session has expired. You have been logged out for security reasons. Please log in again.");
+                }
+            }
+        }
+        
+        // then, after relog or incase unit was already or never authenticated
+        if (this.isAuthenticated()) {
             sessionManager.initializeServiceServerRequest();
             ActionAuthority.Builder actionAuthorityBuilder = actionDescriptionBuilder.getActionAuthorityBuilder();
             actionAuthorityBuilder.setTicketAuthenticatorWrapper(sessionManager.getTicketAuthenticatorWrapper());
         } else {
-            // if not logged in all rights are used
+            // if still not authenticated and cannot login again all rights are used
             // to make this clear to the receiving controller clear the actionAuthority
             actionDescriptionBuilder.clearActionAuthority();
         }
+
         return actionDescriptionBuilder.build();
     }
-    
+
     private boolean isLoggedIn() {
         return sessionManager != null && sessionManager.isLoggedIn();
+    }
+
+    private boolean isAuthenticated() throws CouldNotPerformException {
+        return sessionManager != null && sessionManager.isAuthenticated();
     }
 
     /**

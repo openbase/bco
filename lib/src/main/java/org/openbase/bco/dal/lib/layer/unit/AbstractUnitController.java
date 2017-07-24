@@ -450,7 +450,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             }
         }
 
-        // authenticate and (also authorize?)
         try {
             TicketAuthenticatorWrapper wrapper = actionAuthority.getTicketAuthenticatorWrapper();
 //            String userId = AuthenticatorController.getInstance().getClientID(wrapper);
