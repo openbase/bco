@@ -141,20 +141,15 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         if (store.isEmpty()) {
-            // Generate initial password.
-            initialPassword = RandomStringUtils.randomAlphanumeric(15);
-            InitialPasswordPrinterRunnable initialPasswordPrinterCallback = new InitialPasswordPrinterRunnable(initialPassword);
-            initialPasswordPrinterFuture = GlobalScheduledExecutorService.scheduleAtFixedRate(initialPasswordPrinterCallback, 5, 30, TimeUnit.SECONDS);
-
             // Generate private/public key pair for service servers.
             KeyPair keyPair = EncryptionHelper.generateKeyPair();
             store.addCredentials(CredentialStore.SERVICE_SERVER_ID, keyPair.getPublic().getEncoded(), false);
             try {
                 File privateKeyFile = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), SERVICE_SERVER_PRIVATE_KEY_FILENAME);
-                FileOutputStream outputStream = new FileOutputStream(privateKeyFile);
-                outputStream.write(keyPair.getPrivate().getEncoded());
-                outputStream.flush();
-                outputStream.close();
+                try (FileOutputStream outputStream = new FileOutputStream(privateKeyFile)) {
+                    outputStream.write(keyPair.getPrivate().getEncoded());
+                    outputStream.flush();
+                }
                 Set<PosixFilePermission> perms = new HashSet<>();
                 perms.add(PosixFilePermission.OWNER_READ);
                 perms.add(PosixFilePermission.OWNER_WRITE);
@@ -166,7 +161,14 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 throw new CouldNotPerformException("Could not write private key.", ex);
             }
         }
-
+        
+        if (store.hasOnlyServiceServer()) {
+            // Generate initial password.
+            initialPassword = RandomStringUtils.randomAlphanumeric(15);
+            InitialPasswordPrinterRunnable initialPasswordPrinterCallback = new InitialPasswordPrinterRunnable(initialPassword);
+            initialPasswordPrinterFuture = GlobalScheduledExecutorService.scheduleAtFixedRate(initialPasswordPrinterCallback, 5, 30, TimeUnit.SECONDS);
+        }
+        
         serverWatchDog.activate();
     }
 
@@ -302,12 +304,12 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                     }
 
                     byte[] decryptedCredentials = EncryptionHelper.decryptSymmetric(loginCredentialsChange.getNewCredentials(), EncryptionHelper.hash(initialPassword), byte[].class);
-                    
+
                     this.store.addCredentials(loginCredentialsChange.getId(), decryptedCredentials, true);
-                    
+
                     initialPassword = null;
                     initialPasswordPrinterFuture.cancel(true);
-                    
+
                     return null;
                 }
 
@@ -422,10 +424,10 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
                 Authenticator authenticator = EncryptionHelper.decryptSymmetric(ticketAuthenticatorWrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);
 
-                if(!authenticator.getClientId().equals(CredentialStore.SERVICE_SERVER_ID)) {
-                    throw new RejectedException("Client["+authenticator.getClientId()+"] is not authorized to request the ServiceServerSecretKey");
+                if (!authenticator.getClientId().equals(CredentialStore.SERVICE_SERVER_ID)) {
+                    throw new RejectedException("Client[" + authenticator.getClientId() + "] is not authorized to request the ServiceServerSecretKey");
                 }
-                
+
                 AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
                 authenticatedValue.setTicketAuthenticatorWrapper(response);
                 authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(this.serviceServerSecretKey, clientServerSessionKey));
@@ -459,10 +461,10 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     }
 
     /**
-     * Get the initial password which is randomly generated on startup with an empty 
+     * Get the initial password which is randomly generated on startup with an empty
      * store. Else it is null and will also be reset to null after registration of the
      * first user.
-     * 
+     *
      * @return the password required for the registration of the initial user
      */
     public String getInitialPassword() {
