@@ -55,7 +55,7 @@ public class CredentialStore {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CredentialStore.class);
 
-    private String filename;
+    private final String filename;
 
     protected HashMap<String, LoginCredentials> credentials;
 

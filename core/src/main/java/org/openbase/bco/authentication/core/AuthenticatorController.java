@@ -90,8 +90,8 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     private RSBLocalServer server;
     private WatchDog serverWatchDog;
 
-    private final byte[] ticketGrantingServicePrivateKey;
-    private final byte[] serviceServerPrivateKey;
+    private final byte[] ticketGrantingServiceSecretKey;
+    private final byte[] serviceServerSecretKey;
 
     private final CredentialStore store;
 
@@ -105,8 +105,8 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     public AuthenticatorController(CredentialStore authenticationRegistry) {
         this.server = new NotInitializedRSBLocalServer();
 
-        this.ticketGrantingServicePrivateKey = EncryptionHelper.generateKey();
-        this.serviceServerPrivateKey = EncryptionHelper.generateKey();
+        this.ticketGrantingServiceSecretKey = EncryptionHelper.generateKey();
+        this.serviceServerSecretKey = EncryptionHelper.generateKey();
 
         boolean simulation = false;
         try {
@@ -209,7 +209,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                     _id = split[1].trim();
                     key = store.getCredentials(_id);
                 }
-                return AuthenticationServerHandler.handleKDCRequest(_id, key, isUser, "", ticketGrantingServicePrivateKey);
+                return AuthenticationServerHandler.handleKDCRequest(_id, key, isUser, "", ticketGrantingServiceSecretKey);
             } catch (NotAvailableException ex) {
                 throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
             } catch (InterruptedException | CouldNotPerformException | IOException ex) {
@@ -223,7 +223,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     public Future<TicketSessionKeyWrapper> requestClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
             try {
-                return AuthenticationServerHandler.handleTGSRequest(ticketGrantingServicePrivateKey, serviceServerPrivateKey, ticketAuthenticatorWrapper);
+                return AuthenticationServerHandler.handleTGSRequest(ticketGrantingServiceSecretKey, serviceServerSecretKey, ticketAuthenticatorWrapper);
             } catch (RejectedException | BadPaddingException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
                 throw ex;
@@ -238,7 +238,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     public Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
             try {
-                return AuthenticationServerHandler.handleSSRequest(serviceServerPrivateKey, ticketAuthenticatorWrapper);
+                return AuthenticationServerHandler.handleSSRequest(serviceServerSecretKey, ticketAuthenticatorWrapper);
             } catch (RejectedException | BadPaddingException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
                 throw ex;
@@ -255,10 +255,10 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             try {
                 // Validate the given authenticator and ticket.
                 TicketAuthenticatorWrapper wrapper = loginCredentialsChange.getTicketAuthenticatorWrapper();
-                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerPrivateKey, wrapper);
+                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerSecretKey, wrapper);
 
                 // Decrypt ticket, authenticator and credentials.
-                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerPrivateKey, Ticket.class);
+                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerSecretKey, Ticket.class);
                 byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
                 Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);
                 byte[] oldCredentials = EncryptionHelper.decryptSymmetric(loginCredentialsChange.getOldCredentials(), clientServerSessionKey, byte[].class);
@@ -312,10 +312,10 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
                 // validate the given authenticator and ticket.
                 TicketAuthenticatorWrapper wrapper = loginCredentialsChange.getTicketAuthenticatorWrapper();
-                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerPrivateKey, wrapper);
+                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerSecretKey, wrapper);
 
                 // decrypt ticket and authenticator
-                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerPrivateKey, Ticket.class);
+                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerSecretKey, Ticket.class);
                 byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
 
                 Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);
@@ -359,10 +359,10 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             try {
                 // validate the given authenticator and ticket.
                 TicketAuthenticatorWrapper wrapper = loginCredentialsChange.getTicketAuthenticatorWrapper();
-                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerPrivateKey, wrapper);
+                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerSecretKey, wrapper);
 
                 // decrypt ticket and authenticator
-                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerPrivateKey, Ticket.class);
+                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerSecretKey, Ticket.class);
                 byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
 
                 Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);

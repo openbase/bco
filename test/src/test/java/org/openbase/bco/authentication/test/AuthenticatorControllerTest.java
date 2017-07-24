@@ -31,7 +31,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.authentication.core.AuthenticatorController;
-import org.openbase.bco.authentication.core.mock.MockClientStore;
+import org.openbase.bco.authentication.lib.mock.MockClientStore;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
