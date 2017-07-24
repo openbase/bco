@@ -158,7 +158,7 @@ public class AuthenticationServerHandler {
         return ticketAuthenticatorWrapper.build();
     }
 
-    private static void validateTicket(Ticket ticket, Authenticator authenticator) throws RejectedException {
+    public static void validateTicket(Ticket ticket, Authenticator authenticator) throws RejectedException {
         if (ticket.getClientId() == null) {
             throw new RejectedException("ClientId null in ticket");
         }

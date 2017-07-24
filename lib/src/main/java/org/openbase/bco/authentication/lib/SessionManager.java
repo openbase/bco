@@ -335,7 +335,7 @@ public class SessionManager {
                     .build();
 
             TicketAuthenticatorWrapper newTicketAuthenticatorWrapper = CachedAuthenticationRemote.getRemote().changeCredentials(loginCredentialsChange).get();
-            AuthenticationClientHandler.handleServiceServerResponse(sessionKey, ticketAuthenticatorWrapper, newTicketAuthenticatorWrapper);
+            ticketAuthenticatorWrapper = AuthenticationClientHandler.handleServiceServerResponse(sessionKey, ticketAuthenticatorWrapper, newTicketAuthenticatorWrapper);
         } catch (IOException | BadPaddingException ex) {
             this.logout();
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
@@ -413,7 +413,7 @@ public class SessionManager {
                     .build();
 
             TicketAuthenticatorWrapper wrapper = CachedAuthenticationRemote.getRemote().register(loginCredentialsChange).get();
-            AuthenticationClientHandler.handleServiceServerResponse(this.sessionKey, this.ticketAuthenticatorWrapper, wrapper);
+            ticketAuthenticatorWrapper = AuthenticationClientHandler.handleServiceServerResponse(this.sessionKey, this.ticketAuthenticatorWrapper, wrapper);
         } catch (IOException | BadPaddingException ex) {
             this.logout();
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
@@ -454,7 +454,7 @@ public class SessionManager {
                     .build();
 
             TicketAuthenticatorWrapper wrapper = CachedAuthenticationRemote.getRemote().setAdministrator(loginCredentialsChange).get();
-            AuthenticationClientHandler.handleServiceServerResponse(this.sessionKey, this.ticketAuthenticatorWrapper, wrapper);
+            ticketAuthenticatorWrapper = AuthenticationClientHandler.handleServiceServerResponse(this.sessionKey, this.ticketAuthenticatorWrapper, wrapper);
         } catch (IOException | BadPaddingException ex) {
             this.logout();
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);

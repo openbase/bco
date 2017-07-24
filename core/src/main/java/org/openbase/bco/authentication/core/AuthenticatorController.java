@@ -56,6 +56,7 @@ import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthentic
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 import org.openbase.bco.authentication.lib.AuthenticationService;
 import org.openbase.bco.authentication.lib.CredentialStore;
+import org.openbase.bco.authentication.lib.ServiceServerManager;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationSimulationMode;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.jul.exception.NotAvailableException;
@@ -86,7 +87,6 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatorController.class);
     private static final String STORE_FILENAME = "server_credential_store.json";
-    private static final String SERVICE_SERVER_PRIVATE_KEY_FILENAME = "service_server_private_key";
 
     private RSBLocalServer server;
     private WatchDog serverWatchDog;
@@ -150,7 +150,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             KeyPair keyPair = EncryptionHelper.generateKeyPair();
             store.addCredentials(CredentialStore.SERVICE_SERVER_ID, keyPair.getPublic().getEncoded(), false);
             try {
-                File privateKeyFile = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), SERVICE_SERVER_PRIVATE_KEY_FILENAME);
+                File privateKeyFile = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), ServiceServerManager.SERVICE_SERVER_PRIVATE_KEY_FILENAME);
                 FileOutputStream outputStream = new FileOutputStream(privateKeyFile);
                 outputStream.write(keyPair.getPrivate().getEncoded());
                 outputStream.flush();
