@@ -28,24 +28,25 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.authentication.core.AuthenticatorController;
+import org.openbase.bco.authentication.core.mock.MockClientStore;
 import org.openbase.bco.authentication.core.mock.MockCredentialStore;
+import static org.openbase.bco.authentication.lib.AuthenticationServerHandler.VALIDITY_PERIOD_IN_MILLIS;
 import org.openbase.bco.authentication.lib.CredentialStore;
+import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.NotAvailableException;
-import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
-import rst.domotic.authentication.PermissionType.Permission;
-import rst.domotic.state.EnablingStateType.EnablingState;
+import org.openbase.jul.extension.rst.processing.TimestampJavaTimeTransform;
+import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import rst.domotic.authentication.TicketType.Ticket;
 import rst.domotic.state.PowerStateType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.timing.IntervalType;
+import rst.timing.IntervalType.Interval;
 
 /**
  *
@@ -57,6 +58,8 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
     private static CredentialStore credentialStore;
 
     private static ColorableLightRemote colorableLightRemote;
+    
+    private static byte[] serviceServerSecretKey;
 
     public ColorableLightRemoteWithAuthenticationTest() {
     }
@@ -64,10 +67,12 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
     @BeforeClass
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
+        
+        serviceServerSecretKey = EncryptionHelper.generateKey();
 
         credentialStore = new MockCredentialStore();
 
-        authenticatorController = new AuthenticatorController(credentialStore);
+        authenticatorController = new AuthenticatorController(credentialStore, serviceServerSecretKey);
         authenticatorController.init();
         authenticatorController.activate();
         authenticatorController.waitForActivation();
@@ -88,17 +93,17 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
 
     @After
     public void tearDown() throws CouldNotPerformException {
-
+        SessionManager.getInstance().logout();
     }
 
     /**
-     * Test of setColor method, of class AmbientLightRemote.
+     * Test if executing an action works with prior user login and authentication.
      *
      * @throws java.lang.Exception
      */
     @Test(timeout = 10000)
     public void testSetColorWithAuthentication() throws Exception {
-        System.out.println("login prior to requesting units");
+        System.out.println("testSetColorWithAuthentication");
 
         String clientId = MockCredentialStore.USER_ID;
         String password = MockCredentialStore.USER_PASSWORD;
@@ -112,8 +117,110 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         colorableLightRemote.setPowerState(PowerStateType.PowerState.State.ON).get();
         colorableLightRemote.requestData().get();
         assertEquals("Power has not been set in time!", PowerStateType.PowerState.State.ON, colorableLightRemote.getData().getPowerState().getValue());
+    }
 
-        // logout
-        SessionManager.getInstance().logout();
+    /**
+     * Test if executing an action works with prior client login and authentication, but then with an expired session.
+     * So first, the relog should be executed for a client and then the action should be executed.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 10000)
+    public void testSetColorWithClientWithoutAuthentication() throws Exception {
+        System.out.println("testSetColorWithClientWithoutAuthentication");
+
+        String clientId = MockClientStore.ADMIN_ID;
+        String password = MockClientStore.ADMIN_PASSWORD;
+
+        // login admin
+        System.out.println("login admin");
+        SessionManager manager = SessionManager.getInstance();
+        boolean result = manager.login(clientId, password);
+        assertEquals(true, result);
+        
+        // register client
+        System.out.println("register client");
+        manager.registerClient(MockClientStore.CLIENT_ID);
+        
+        // logout admin
+        System.out.println("logout admin");
+        manager.logout();
+        
+        // login client
+        System.out.println("login client");
+        result = manager.login(MockClientStore.CLIENT_ID);
+        assertEquals(true, result);
+        
+        // make ticket invalid
+        System.out.println("make ticket invalid");
+        Ticket ticket = EncryptionHelper.decryptSymmetric(manager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
+        
+        long currentTime = 0;
+        Interval.Builder validityInterval = IntervalType.Interval.newBuilder();
+        validityInterval.setBegin(TimestampJavaTimeTransform.transform(currentTime));
+        validityInterval.setEnd(TimestampJavaTimeTransform.transform(currentTime + VALIDITY_PERIOD_IN_MILLIS));
+        validityInterval.build();
+        
+        Ticket.Builder cstb = ticket.toBuilder();
+        cstb.setValidityPeriod(validityInterval.build());
+
+        TicketAuthenticatorWrapper.Builder wrapperBuilder = manager.getTicketAuthenticatorWrapper().toBuilder();
+        wrapperBuilder.setTicket(EncryptionHelper.encryptSymmetric(cstb.build(), serviceServerSecretKey));
+          
+        manager.setTicketAuthenticatorWrapper(wrapperBuilder.build());
+        
+        // execute action
+        System.out.println("execute action");
+        colorableLightRemote = Units.getUnitsByLabel(MockRegistry.COLORABLE_LIGHT_LABEL, true, ColorableLightRemote.class).get(0);
+
+        colorableLightRemote.setPowerState(PowerStateType.PowerState.State.ON).get();
+        colorableLightRemote.requestData().get();
+        assertEquals("Power has not been set in time!", PowerStateType.PowerState.State.ON, colorableLightRemote.getData().getPowerState().getValue());
+    }
+
+    /**
+     * Test if executing an action works with prior user login and authentication, but then with an expired session.
+     * So first, the relog should be executed for a user and then the action should be executed.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 10000)
+    public void testSetColorWithUserWithoutAuthentication() throws Exception {
+        System.out.println("testSetColorWithClientWithoutAuthentication");
+
+        String clientId = MockClientStore.ADMIN_ID;
+        String password = MockClientStore.ADMIN_PASSWORD;
+
+        // login admin
+        System.out.println("login admin");
+        SessionManager manager = SessionManager.getInstance();
+        boolean result = manager.login(clientId, password, true);
+        assertEquals(true, result);
+                        
+        // make ticket invalid
+        System.out.println("make ticket invalid");
+        Ticket ticket = EncryptionHelper.decryptSymmetric(manager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
+        
+        long currentTime = 0;
+        Interval.Builder validityInterval = IntervalType.Interval.newBuilder();
+        validityInterval.setBegin(TimestampJavaTimeTransform.transform(currentTime));
+        validityInterval.setEnd(TimestampJavaTimeTransform.transform(currentTime + VALIDITY_PERIOD_IN_MILLIS));
+        validityInterval.build();
+        
+        Ticket.Builder cstb = ticket.toBuilder();
+        cstb.setValidityPeriod(validityInterval.build());
+
+        TicketAuthenticatorWrapper.Builder wrapperBuilder = manager.getTicketAuthenticatorWrapper().toBuilder();
+        wrapperBuilder.setTicket(EncryptionHelper.encryptSymmetric(cstb.build(), serviceServerSecretKey));
+          
+        manager.setTicketAuthenticatorWrapper(wrapperBuilder.build());
+        
+        // execute action
+        System.out.println("execute action");
+        colorableLightRemote = Units.getUnitsByLabel(MockRegistry.COLORABLE_LIGHT_LABEL, true, ColorableLightRemote.class).get(0);
+
+        colorableLightRemote.setPowerState(PowerStateType.PowerState.State.ON).get();
+        colorableLightRemote.requestData().get();
+        assertEquals("Power has not been set in time!", PowerStateType.PowerState.State.ON, colorableLightRemote.getData().getPowerState().getValue());
     }
 }
