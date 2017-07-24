@@ -1,4 +1,4 @@
-package org.openbase.bco.authentication.core.mock;
+package org.openbase.bco.authentication.lib.mock;
 
 /*-
  * #%L

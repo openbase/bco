@@ -26,7 +26,7 @@ import java.io.StreamCorruptedException;
 import java.security.KeyPair;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import org.openbase.bco.authentication.core.mock.MockClientStore;
+import org.openbase.bco.authentication.lib.mock.MockClientStore;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationSimulationMode;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;

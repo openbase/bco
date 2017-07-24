@@ -29,7 +29,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.openbase.bco.authentication.core.AuthenticatorController;
-import org.openbase.bco.authentication.core.mock.MockClientStore;
+import org.openbase.bco.authentication.lib.mock.MockClientStore;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.CredentialStore;
 import org.openbase.jps.core.JPService;

@@ -8,6 +8,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.iface.annotations.RPCMethod;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
@@ -166,4 +167,15 @@ public interface AuthenticationService {
      */
     @RPCMethod
     public Future<Void> registerClient(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException;
+    
+    /**
+     * Validates the client server ticket and returns the service server secret key encrypted
+     * with the session key. This method will only work if a special client is logged in.
+     * 
+     * @param ticketAuthenticatorWrapper a wrapper containing the authenticator
+     * encrypted with the session key and the unchanged ClientServerTicket
+     * @return an authenticated value containing the updated client server ticket an the encrypted service server secret key
+     * @throws CouldNotPerformException if the validation of the client server ticket fails or the logged in client is not the service server
+     */
+    public Future<AuthenticatedValue> requestServiceServerSecretKey(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException;
 }

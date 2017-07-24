@@ -21,9 +21,16 @@ package org.openbase.bco.authentication.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.StreamCorruptedException;
+import java.nio.file.Files;
+import java.nio.file.attribute.PosixFilePermission;
+import java.security.KeyPair;
 import java.util.Arrays;
+import java.util.HashSet;
+import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.RandomStringUtils;
@@ -50,6 +57,7 @@ import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWr
 import org.openbase.bco.authentication.lib.AuthenticationService;
 import org.openbase.bco.authentication.lib.CredentialStore;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationSimulationMode;
+import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.exception.RejectedException;
@@ -59,6 +67,7 @@ import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.AuthenticatorType.Authenticator;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketType.Ticket;
@@ -76,13 +85,14 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     }
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatorController.class);
-    private static final String STORE_FILENAME = "server_crediential_store.json";
+    private static final String STORE_FILENAME = "server_credential_store.json";
+    private static final String SERVICE_SERVER_PRIVATE_KEY_FILENAME = "service_server_private_key";
 
     private RSBLocalServer server;
     private WatchDog serverWatchDog;
 
-    private final byte[] ticketGrantingServicePrivateKey;
-    private final byte[] serviceServerPrivateKey;
+    private final byte[] ticketGrantingServiceSecretKey;
+    private final byte[] serviceServerSecretKey;
 
     private final CredentialStore store;
 
@@ -104,8 +114,8 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     public AuthenticatorController(CredentialStore store, byte[] serviceServerPrivateKey) {
         this.server = new NotInitializedRSBLocalServer();
 
-        this.ticketGrantingServicePrivateKey = EncryptionHelper.generateKey();
-        this.serviceServerPrivateKey = serviceServerPrivateKey;
+        this.ticketGrantingServiceSecretKey = EncryptionHelper.generateKey();
+        this.serviceServerSecretKey = serviceServerPrivateKey;
 
         boolean simulation = false;
         try {
@@ -139,11 +149,34 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         if (store.isEmpty()) {
+            // Generate private/public key pair for service servers.
+            KeyPair keyPair = EncryptionHelper.generateKeyPair();
+            store.addCredentials(CredentialStore.SERVICE_SERVER_ID, keyPair.getPublic().getEncoded(), false);
+            try {
+                File privateKeyFile = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), SERVICE_SERVER_PRIVATE_KEY_FILENAME);
+                try (FileOutputStream outputStream = new FileOutputStream(privateKeyFile)) {
+                    outputStream.write(keyPair.getPrivate().getEncoded());
+                    outputStream.flush();
+                }
+                Set<PosixFilePermission> perms = new HashSet<>();
+                perms.add(PosixFilePermission.OWNER_READ);
+                perms.add(PosixFilePermission.OWNER_WRITE);
+
+                Files.setPosixFilePermissions(privateKeyFile.toPath(), perms);
+            } catch (JPNotAvailableException ex) {
+                throw new CouldNotPerformException("Could not load property.", ex);
+            } catch (IOException ex) {
+                throw new CouldNotPerformException("Could not write private key.", ex);
+            }
+        }
+        
+        if (store.hasOnlyServiceServer()) {
+            // Generate initial password.
             initialPassword = RandomStringUtils.randomAlphanumeric(15);
             InitialPasswordPrinterRunnable initialPasswordPrinterCallback = new InitialPasswordPrinterRunnable(initialPassword);
             initialPasswordPrinterFuture = GlobalScheduledExecutorService.scheduleAtFixedRate(initialPasswordPrinterCallback, 5, 30, TimeUnit.SECONDS);
         }
-
+        
         serverWatchDog.activate();
     }
 
@@ -187,7 +220,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                     _id = split[1].trim();
                     key = store.getCredentials(_id);
                 }
-                return AuthenticationServerHandler.handleKDCRequest(_id, key, isUser, "", ticketGrantingServicePrivateKey);
+                return AuthenticationServerHandler.handleKDCRequest(_id, key, isUser, "", ticketGrantingServiceSecretKey);
             } catch (NotAvailableException ex) {
                 throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
             } catch (InterruptedException | CouldNotPerformException | IOException ex) {
@@ -201,7 +234,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     public Future<TicketSessionKeyWrapper> requestClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
             try {
-                return AuthenticationServerHandler.handleTGSRequest(ticketGrantingServicePrivateKey, serviceServerPrivateKey, ticketAuthenticatorWrapper);
+                return AuthenticationServerHandler.handleTGSRequest(ticketGrantingServiceSecretKey, serviceServerSecretKey, ticketAuthenticatorWrapper);
             } catch (RejectedException | BadPaddingException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
                 throw ex;
@@ -216,7 +249,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     public Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
             try {
-                return AuthenticationServerHandler.handleSSRequest(serviceServerPrivateKey, ticketAuthenticatorWrapper);
+                return AuthenticationServerHandler.handleSSRequest(serviceServerSecretKey, ticketAuthenticatorWrapper);
             } catch (RejectedException | BadPaddingException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
                 throw ex;
@@ -233,10 +266,10 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             try {
                 // Validate the given authenticator and ticket.
                 TicketAuthenticatorWrapper wrapper = loginCredentialsChange.getTicketAuthenticatorWrapper();
-                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerPrivateKey, wrapper);
+                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerSecretKey, wrapper);
 
                 // Decrypt ticket, authenticator and credentials.
-                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerPrivateKey, Ticket.class);
+                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerSecretKey, Ticket.class);
                 byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
                 Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);
                 byte[] oldCredentials = EncryptionHelper.decryptSymmetric(loginCredentialsChange.getOldCredentials(), clientServerSessionKey, byte[].class);
@@ -273,27 +306,27 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     public Future<TicketAuthenticatorWrapper> register(LoginCredentialsChange loginCredentialsChange) throws RejectedException, StreamCorruptedException, IOException {
         return GlobalCachedExecutorService.submit(() -> {
             try {
-                if (store.isEmpty()) {
+                if (store.isEmpty() || store.hasOnlyServiceServer()) {
                     if (!loginCredentialsChange.hasId() || !loginCredentialsChange.hasNewCredentials()) {
                         throw new RejectedException("Cannot register first user, id and/or new credentials empty");
                     }
 
                     byte[] decryptedCredentials = EncryptionHelper.decryptSymmetric(loginCredentialsChange.getNewCredentials(), EncryptionHelper.hash(initialPassword), byte[].class);
-                    
+
                     this.store.addCredentials(loginCredentialsChange.getId(), decryptedCredentials, true);
-                    
+
                     initialPassword = null;
                     initialPasswordPrinterFuture.cancel(true);
-                    
+
                     return null;
                 }
 
                 // validate the given authenticator and ticket.
                 TicketAuthenticatorWrapper wrapper = loginCredentialsChange.getTicketAuthenticatorWrapper();
-                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerPrivateKey, wrapper);
+                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerSecretKey, wrapper);
 
                 // decrypt ticket and authenticator
-                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerPrivateKey, Ticket.class);
+                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerSecretKey, Ticket.class);
                 byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
 
                 Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);
@@ -337,10 +370,10 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             try {
                 // validate the given authenticator and ticket.
                 TicketAuthenticatorWrapper wrapper = loginCredentialsChange.getTicketAuthenticatorWrapper();
-                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerPrivateKey, wrapper);
+                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerSecretKey, wrapper);
 
                 // decrypt ticket and authenticator
-                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerPrivateKey, Ticket.class);
+                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerSecretKey, Ticket.class);
                 byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
 
                 Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);
@@ -387,6 +420,37 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         });
     }
 
+    @Override
+    public Future<AuthenticatedValue> requestServiceServerSecretKey(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(() -> {
+            try {
+                // Validate the given authenticator and ticket.
+                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerSecretKey, ticketAuthenticatorWrapper);
+
+                // Decrypt ticket, authenticator and credentials.
+                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(ticketAuthenticatorWrapper.getTicket(), serviceServerSecretKey, Ticket.class);
+                byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
+                Authenticator authenticator = EncryptionHelper.decryptSymmetric(ticketAuthenticatorWrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);
+
+                if (!authenticator.getClientId().equals(CredentialStore.SERVICE_SERVER_ID)) {
+                    throw new RejectedException("Client[" + authenticator.getClientId() + "] is not authorized to request the ServiceServerSecretKey");
+                }
+
+                AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
+                authenticatedValue.setTicketAuthenticatorWrapper(response);
+                authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(this.serviceServerSecretKey, clientServerSessionKey));
+
+                return authenticatedValue.build();
+            } catch (RejectedException | BadPaddingException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
+                throw ex;
+            } catch (IOException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+                throw ex;
+            }
+        });
+    }
+
     private class InitialPasswordPrinterRunnable implements Runnable {
 
         private String message;
@@ -405,10 +469,10 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     }
 
     /**
-     * Get the initial password which is randomly generated on startup with an empty 
+     * Get the initial password which is randomly generated on startup with an empty
      * store. Else it is null and will also be reset to null after registration of the
      * first user.
-     * 
+     *
      * @return the password required for the registration of the initial user
      */
     public String getInitialPassword() {
