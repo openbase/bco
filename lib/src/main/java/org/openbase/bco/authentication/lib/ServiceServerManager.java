@@ -55,7 +55,7 @@ public class ServiceServerManager {
     public static final String SERVICE_SERVER_PRIVATE_KEY_FILENAME = "service_server_private_key";
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ServiceServerManager.class);
     private byte [] serviceServerSecretKey;
-    private ServiceServerManager instance;
+    private static ServiceServerManager instance;
     private TicketAuthenticatorWrapper ticketAuthenticatorWrapper;
     private byte [] sessionKey;
 
@@ -64,7 +64,7 @@ public class ServiceServerManager {
         this.requestServiceServerSecretKey();
     }
 
-    public synchronized ServiceServerManager getInstance() throws CouldNotPerformException, InterruptedException {
+    public static synchronized ServiceServerManager getInstance() throws CouldNotPerformException, InterruptedException {
         if (instance == null) {
             instance = new ServiceServerManager();
         }
