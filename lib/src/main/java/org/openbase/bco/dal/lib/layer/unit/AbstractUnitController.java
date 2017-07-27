@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -33,11 +34,9 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
-import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
+import org.openbase.bco.authentication.lib.ServiceServerManager;
 import org.openbase.bco.dal.lib.action.ActionImpl;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
@@ -55,7 +54,6 @@ import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -84,7 +82,6 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
-import rst.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
 import rst.rsb.ScopeType;
 
 /**
@@ -452,15 +449,14 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
         try {
             TicketAuthenticatorWrapper wrapper = actionAuthority.getTicketAuthenticatorWrapper();
-//            String userId = AuthenticatorController.getInstance().getClientID(wrapper);
-            String userId = null;
+            String clientId = ServiceServerManager.getInstance().evaluateClientServerTicket(wrapper);
 
-            if (!AuthorizationHelper.canWrite(getConfig(), userId, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap())) {
+            if (!AuthorizationHelper.canWrite(getConfig(), clientId, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap())) {
                 throw new PermissionDeniedException("You have no permission to execute this action.");
             }
 
             return wrapper;
-        } catch (CouldNotPerformException ex) {
+        } catch (IOException | CouldNotPerformException ex) {
             throw new VerificationFailedException("Verifying authority failed", ex);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
