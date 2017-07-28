@@ -28,7 +28,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -507,6 +506,11 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                     return GlobalCachedExecutorService.atLeastOne(actionFuture.build(), actionFutureList);
                 case ALL_OR_NOTHING:
                     logger.info("ALL_OR_NOTHING!");
+                    if (scopeUnitMap.isEmpty()) {
+                        CompletableFuture<ActionFuture> completableFuture = new CompletableFuture<>();
+                        completableFuture.complete(actionFuture.build());
+                        return completableFuture;
+                    }
                     // generate token for all or nothing allocation
                     ActionDescriptionProcessor.generateToken(actionDescriptionBuilder);
                     actionFuture.addActionDescription(actionDescriptionBuilder);
@@ -518,7 +522,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                             actionFuture.addActionDescription(unitActionDescription);
                             actionFutureList.add(unitRemote.applyAction(unitActionDescription));
                         }
-                        
+
                         return GlobalCachedExecutorService.allOf(actionFuture.build(), actionFutureList).get();
                     });
                     return unitAllocation.getTaskExecutor().getFuture();
