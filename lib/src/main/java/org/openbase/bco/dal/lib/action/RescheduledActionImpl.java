@@ -69,7 +69,7 @@ public class RescheduledActionImpl extends ActionImpl {
 
                 }
                 System.out.println("Execution finished");
-                return null;
+                return unitAllocation.getTaskExecutor().getFuture().get();
             }
         });
     }
