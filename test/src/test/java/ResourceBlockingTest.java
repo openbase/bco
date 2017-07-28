@@ -44,7 +44,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public class ResourceBlockingTest {
 
-    @Test
+//    @Test
     public void blockColorableLight() throws Exception {
         Registries.waitForData();
         UnitConfig location = Registries.getLocationRegistry().getLocationConfigsByLabel("Wardrobe").get(0);
