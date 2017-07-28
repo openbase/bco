@@ -398,10 +398,10 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * {@inheritDoc}
      */
     @Override
-    public Collection<org.openbase.bco.dal.lib.layer.unit.UnitRemote> getInternalUnits(UnitType unitType) throws NotAvailableException {
+    public Collection<org.openbase.bco.dal.lib.layer.unit.UnitRemote> getInternalUnits(UnitType unitType) throws CouldNotPerformException, InterruptedException {
         List<UnitRemote> unitRemotes = new ArrayList<>();
         for (UnitRemote unitRemote : unitRemoteMap.values()) {
-            if (unitType == UnitType.UNKNOWN || unitType == unitRemote.getType() || UnitConfigProcessor.isBaseUnit(unitRemote.getType())) {
+            if (unitType == UnitType.UNKNOWN || unitType == unitRemote.getType() || UnitConfigProcessor.isBaseUnit(unitRemote.getType()) || Registries.getUnitRegistry().getSubUnitTypes(unitType).contains(unitRemote.getType())) {
                 unitRemotes.add(unitRemote);
             }
         }
@@ -493,54 +493,33 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
             UnitAllocation unitAllocation;
             final List<Future> actionFutureList = new ArrayList<>();
+            final ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
             switch (actionDescriptionBuilder.getMultiResourceAllocationStrategy().getStrategy()) {
                 case AT_LEAST_ONE:
                     logger.info("AT_LEAST_ONE!");
 
                     for (UnitRemote unitRemote : scopeUnitMap.values()) {
-                        actionFutureList.add(unitRemote.applyAction(updateActionDescriptionForUnit(actionDescriptionBuilder.build(), unitRemote)));
+                        ActionDescription unitActionDescription = updateActionDescriptionForUnit(actionDescriptionBuilder.build(), unitRemote);
+                        actionFuture.addActionDescription(unitActionDescription);
+                        actionFutureList.add(unitRemote.applyAction(unitActionDescription));
                     }
 
-                    Callable<ActionFuture> actionFutureCallable = actionFutureCallable = () -> {
-                        ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
-                        // when this callable is called all futures from the list should already been done or cancelled
-                        //TODO: the cancelled ones will not provide any result -> add the actionDescription before it was send or both?
-                        for (Future<ActionFuture> future : actionFutureList) {
-                            if (!future.isCancelled()) {
-                                actionFuture.addAllActionDescription(future.get().getActionDescriptionList());
-                            }
-                        }
-
-                        return actionFuture.build();
-                    };
-                    return GlobalCachedExecutorService.atLeastOne(actionFutureCallable, actionFutureList);
+                    return GlobalCachedExecutorService.atLeastOne(actionFuture.build(), actionFutureList);
                 case ALL_OR_NOTHING:
                     logger.info("ALL_OR_NOTHING!");
                     // generate token for all or nothing allocation
                     ActionDescriptionProcessor.generateToken(actionDescriptionBuilder);
-                    final ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
                     actionFuture.addActionDescription(actionDescriptionBuilder);
 
                     // Resource Allocation
                     unitAllocation = UnitAllocator.allocate(actionDescriptionBuilder, () -> {
-//                        List<Future> actionFutureList = new ArrayList<>();
                         for (UnitRemote unitRemote : scopeUnitMap.values()) {
-                            actionFutureList.add(unitRemote.applyAction(updateActionDescriptionForUnit(actionDescriptionBuilder.build(), unitRemote)));
+                            ActionDescription unitActionDescription = updateActionDescriptionForUnit(actionDescriptionBuilder.build(), unitRemote);
+                            actionFuture.addActionDescription(unitActionDescription);
+                            actionFutureList.add(unitRemote.applyAction(unitActionDescription));
                         }
-
-                        Callable<ActionFuture> test = () -> {
-                            // when this callable is called all futures from the list should already been done or cancelled
-                            //TODO: the cancelled ones will not provide any result -> add the actionDescription before it was send or both?
-                            for (Future<ActionFuture> future : actionFutureList) {
-                                if (!future.isCancelled()) {
-                                    actionFuture.addAllActionDescription(future.get().getActionDescriptionList());
-                                }
-                            }
-
-                            return actionFuture.build();
-                        };
-                        // todo: setup action future.
-                        return GlobalCachedExecutorService.allOf(test, actionFutureList).get();
+                        
+                        return GlobalCachedExecutorService.allOf(actionFuture.build(), actionFutureList).get();
                     });
                     return unitAllocation.getTaskExecutor().getFuture();
 
