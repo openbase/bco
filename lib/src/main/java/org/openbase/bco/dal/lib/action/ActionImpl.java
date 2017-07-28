@@ -113,7 +113,10 @@ public class ActionImpl implements Action {
 
     @Override
     public Future<ActionFuture> execute() throws CouldNotPerformException {
-        return internalExecute().getTaskExecutor().getFuture();
+        UnitAllocation internalExecute = internalExecute();
+        System.out.println("Task executor: " + internalExecute.getTaskExecutor().toString());
+        System.out.println("Task executor: " + internalExecute.getTaskExecutor().getFuture());
+        return internalExecute.getTaskExecutor().getFuture();
     }
 
     protected UnitAllocation internalExecute() throws CouldNotPerformException {
@@ -135,6 +138,10 @@ public class ActionImpl implements Action {
                     // Resource Allocation
                     unitAllocation = UnitAllocator.allocate(actionDescriptionBuilder, () -> {
                         try {
+                            System.out.println("This is a test!");
+                            ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
+                            actionFuture.addActionDescription(actionDescriptionBuilder);
+                            
                             // Execute
                             updateActionState(ActionState.State.EXECUTING);
 
@@ -149,7 +156,8 @@ public class ActionImpl implements Action {
                                 throw new ExecutionException(ex);
                             }
                             updateActionState(ActionState.State.FINISHING);
-                            return null;
+                            System.out.println("UnitRemote returns actionFuture: " + actionFuture.build());
+                            return actionFuture.build();
                         } catch (final CancellationException ex) {
                             updateActionState(ActionState.State.ABORTED);
                             throw ex;
@@ -157,9 +165,9 @@ public class ActionImpl implements Action {
                     });
 
                     // register allocation update handler
-//                    unitAllocation.getTaskExecutor().getRemote().addSchedulerListener((allocation) -> {
-//                        actionDescriptionBuilder.getResourceAllocationBuilder().mergeFrom(allocation);
-//                    });
+                    unitAllocation.getTaskExecutor().getRemote().addSchedulerListener((allocation) -> {
+                        actionDescriptionBuilder.setResourceAllocation(allocation);
+                    });
 
                     return unitAllocation;
                 } catch (CouldNotPerformException ex) {

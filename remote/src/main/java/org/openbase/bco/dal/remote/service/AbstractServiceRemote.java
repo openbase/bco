@@ -28,6 +28,7 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -491,7 +492,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             actionDescriptionBuilder.setActionState(ActionState.newBuilder().setValue(ActionState.State.INITIALIZED).build());
 
             UnitAllocation unitAllocation;
-            List<Future> actionFutureList = new ArrayList<>();
+            final List<Future> actionFutureList = new ArrayList<>();
             switch (actionDescriptionBuilder.getMultiResourceAllocationStrategy().getStrategy()) {
                 case AT_LEAST_ONE:
                     logger.info("AT_LEAST_ONE!");
@@ -500,12 +501,27 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                         actionFutureList.add(unitRemote.applyAction(updateActionDescriptionForUnit(actionDescriptionBuilder.build(), unitRemote)));
                     }
 
-                    // todo: setup action future.
-                    return GlobalCachedExecutorService.atLeastOne(ActionFuture.getDefaultInstance(), actionFutureList);
+                    Callable<ActionFuture> actionFutureCallable = actionFutureCallable = () -> {
+                        System.out.println("Action FUture Callable called");
+                        ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
+                        // when this callable is called all futures from the list should already been done or cancelled
+                        //TODO: the cancelled ones will not provide any result -> add the actionDescription before it was send or both?
+                        for (Future<ActionFuture> future : actionFutureList) {
+                            if (!future.isCancelled()) {
+                                actionFuture.addAllActionDescription(future.get().getActionDescriptionList());
+                            }
+                        }
+
+                        System.out.println("ActionFuture: " + actionFuture.build());
+                        return actionFuture.build();
+                    };
+                    return GlobalCachedExecutorService.atLeastOne(actionFutureCallable, actionFutureList);
                 case ALL_OR_NOTHING:
                     logger.info("ALL_OR_NOTHING!");
                     // generate token for all or nothing allocation
                     ActionDescriptionProcessor.generateToken(actionDescriptionBuilder);
+                    final ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
+                    actionFuture.addActionDescription(actionDescriptionBuilder);
 
                     // Resource Allocation
                     unitAllocation = UnitAllocator.allocate(actionDescriptionBuilder, () -> {
@@ -514,10 +530,27 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                             actionFutureList.add(unitRemote.applyAction(updateActionDescriptionForUnit(actionDescriptionBuilder.build(), unitRemote)));
                         }
 
+                        Callable<ActionFuture> test = () -> {
+                            // when this callable is called all futures from the list should already been done or cancelled
+                            //TODO: the cancelled ones will not provide any result -> add the actionDescription before it was send or both?
+                            System.out.println("test callable: " + actionFuture.build());
+                            for (Future<ActionFuture> future : actionFutureList) {
+                                if (!future.isCancelled()) {
+                                    System.out.println("Future" + future);
+                                    System.out.println("Has action Future: " + future.get());
+                                    System.out.println("Listzie: " + future.get().getActionDescriptionCount());
+                                    actionFuture.addAllActionDescription(future.get().getActionDescriptionList());
+                                }
+                            }
+
+                            System.out.println("ActionFuture: " + actionFuture.build());
+                            return actionFuture.build();
+                        };
                         // todo: setup action future.
-                        return GlobalCachedExecutorService.allOf(ActionFuture.getDefaultInstance(), actionFutureList).get();
+                        return GlobalCachedExecutorService.allOf(test, actionFutureList).get();
                     });
                     return unitAllocation.getTaskExecutor().getFuture();
+
                 default:
                     throw new FatalImplementationErrorException("Resource allocation strategy[" + actionDescription.getMultiResourceAllocationStrategy().getStrategy().name() + "] not handled", this);
             }

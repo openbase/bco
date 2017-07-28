@@ -33,6 +33,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.action.ActionImpl;
 import org.openbase.bco.dal.lib.action.RescheduledActionImpl;
@@ -411,7 +412,14 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 //            final ActionImpl action = new ActionImpl(this);
             final ActionImpl action = new RescheduledActionImpl(this);
             action.init(actionDescription);
-            return action.execute();
+            Future<ActionFuture> future = action.execute();
+            try {
+                System.out.println("ActionFuture: " + future.get());
+            } catch (ExecutionException ex) {
+                System.out.println("Execution error");
+            }
+            return future;
+//            return action.execute();
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }

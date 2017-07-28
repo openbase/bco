@@ -44,7 +44,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public class ResourceBlockingTest {
 
-//    @Test
+    @Test
     public void blockColorableLight() throws Exception {
         Registries.waitForData();
         UnitConfig location = Registries.getLocationRegistry().getLocationConfigsByLabel("Wardrobe").get(0);
@@ -73,11 +73,11 @@ public class ResourceBlockingTest {
         ActionDescriptionProcessor.updateResourceAllocationSlot(powerActionHigh);
         ActionDescriptionProcessor.updateResourceAllocationId(powerActionHigh);
         
-        remote.applyAction(powerActionHigh.build()).get();
+        System.out.println("Result " + remote.applyAction(powerActionHigh.build()).get());
         
-        Thread.sleep(5000);
-        
-        remote.applyAction(powerAction.build()).get();
+//        Thread.sleep(5000);
+//        
+//        System.out.println("Result " + remote.applyAction(powerAction.build()).get());
         
         
 //        LocationRemote locationRemote = Units.getUnit(location, true, LocationRemote.class);
