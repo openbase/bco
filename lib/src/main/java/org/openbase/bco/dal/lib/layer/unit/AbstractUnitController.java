@@ -410,16 +410,9 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         try {
             logger.debug("applyAction: " + actionDescription.getLabel());
 //            final ActionImpl action = new ActionImpl(this);
-            final ActionImpl action = new RescheduledActionImpl(this);
+            final RescheduledActionImpl action = new RescheduledActionImpl(this);
             action.init(actionDescription);
-            Future<ActionFuture> future = action.execute();
-            try {
-                System.out.println("ActionFuture: " + future.get());
-            } catch (ExecutionException ex) {
-                System.out.println("Execution error");
-            }
-            return future;
-//            return action.execute();
+            return action.execute();
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
         }

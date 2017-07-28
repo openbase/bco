@@ -502,7 +502,6 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                     }
 
                     Callable<ActionFuture> actionFutureCallable = actionFutureCallable = () -> {
-                        System.out.println("Action FUture Callable called");
                         ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
                         // when this callable is called all futures from the list should already been done or cancelled
                         //TODO: the cancelled ones will not provide any result -> add the actionDescription before it was send or both?
@@ -512,7 +511,6 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                             }
                         }
 
-                        System.out.println("ActionFuture: " + actionFuture.build());
                         return actionFuture.build();
                     };
                     return GlobalCachedExecutorService.atLeastOne(actionFutureCallable, actionFutureList);
@@ -533,17 +531,12 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                         Callable<ActionFuture> test = () -> {
                             // when this callable is called all futures from the list should already been done or cancelled
                             //TODO: the cancelled ones will not provide any result -> add the actionDescription before it was send or both?
-                            System.out.println("test callable: " + actionFuture.build());
                             for (Future<ActionFuture> future : actionFutureList) {
                                 if (!future.isCancelled()) {
-                                    System.out.println("Future" + future);
-                                    System.out.println("Has action Future: " + future.get());
-                                    System.out.println("Listzie: " + future.get().getActionDescriptionCount());
                                     actionFuture.addAllActionDescription(future.get().getActionDescriptionList());
                                 }
                             }
 
-                            System.out.println("ActionFuture: " + actionFuture.build());
                             return actionFuture.build();
                         };
                         // todo: setup action future.
