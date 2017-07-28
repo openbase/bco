@@ -24,6 +24,7 @@ package org.openbase.bco.dal.lib.action;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.logging.Level;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.unit.AbstractUnitController;
@@ -36,6 +37,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotInitializedException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
@@ -55,7 +57,7 @@ public class ActionImpl implements Action {
     private static final Logger LOGGER = LoggerFactory.getLogger(ActionImpl.class);
 
     private final SyncObject executionSync = new SyncObject(ActionImpl.class);
-    private final AbstractUnitController unit;
+    protected final AbstractUnitController unit;
     private final ServiceJSonProcessor serviceJSonProcessor;
     protected ActionDescription.Builder actionDescriptionBuilder;
     private Object serviceAttribute;
@@ -137,7 +139,7 @@ public class ActionImpl implements Action {
                         try {
                             ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
                             actionFuture.addActionDescription(actionDescriptionBuilder);
-                            
+
                             // Execute
                             updateActionState(ActionState.State.EXECUTING);
 
@@ -161,6 +163,13 @@ public class ActionImpl implements Action {
 
                     // register allocation update handler
                     unitAllocation.getTaskExecutor().getRemote().addSchedulerListener((allocation) -> {
+                        try {
+                            System.out.println("Update Allocation - Scope: " + ScopeGenerator.generateStringRep(unit.getScope()) + " State: " + allocation.getState());
+                        } catch (NotAvailableException ex) {
+                            java.util.logging.Logger.getLogger(ActionImpl.class.getName()).log(Level.SEVERE, null, ex);
+                        } catch (CouldNotPerformException ex) {
+                            java.util.logging.Logger.getLogger(ActionImpl.class.getName()).log(Level.SEVERE, null, ex);
+                        }
                         actionDescriptionBuilder.setResourceAllocation(allocation);
                     });
 
@@ -196,6 +205,6 @@ public class ActionImpl implements Action {
         if (actionDescriptionBuilder == null) {
             return getClass().getSimpleName() + "[?]";
         }
-        return getClass().getSimpleName() + "[" + actionDescriptionBuilder.getServiceStateDescription().getUnitId() + "|" + actionDescriptionBuilder.getServiceStateDescription().getServiceType() + "|" + actionDescriptionBuilder.getServiceStateDescription().getServiceAttribute() + "|" + actionDescriptionBuilder.getServiceStateDescription().getUnitId() + "]";
+        return getClass().getSimpleName() + "[" + actionDescriptionBuilder.getServiceStateDescription().getUnitId() + "|" + actionDescriptionBuilder.getServiceStateDescription().getServiceType() + "|" + actionDescriptionBuilder.getServiceStateDescription().getServiceAttribute() + "|" + actionDescriptionBuilder.getResourceAllocation().getId() + "]";
     }
 }

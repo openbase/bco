@@ -27,6 +27,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.unit.AbstractUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitAllocation;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.action.ActionFutureType.ActionFuture;
@@ -50,9 +51,11 @@ public class RescheduledActionImpl extends ActionImpl {
                 try {
                     unitAllocation.getTaskExecutor().getFuture().get();
                 } catch (CancellationException ex) {
+                    System.out.println("Canceled! Scope: " + ScopeGenerator.generateStringRep(unit.getScope()));
                     // do nothing because cancellation only occurs if resource state is one which is handled below
                 }
 
+                System.out.println("Executor Allocation State - " + unitAllocation.getTaskExecutor().getRemote().getCurrentState());
                 switch (unitAllocation.getTaskExecutor().getRemote().getCurrentState()) {
                     case REJECTED:
                         // rejected because the resource is blocked by someone else
@@ -69,6 +72,9 @@ public class RescheduledActionImpl extends ActionImpl {
 
                 }
                 System.out.println("Execution finished");
+                if (unitAllocation.getTaskExecutor().getFuture().isCancelled()) {
+                    return null;
+                }
                 return unitAllocation.getTaskExecutor().getFuture().get();
             }
         });
