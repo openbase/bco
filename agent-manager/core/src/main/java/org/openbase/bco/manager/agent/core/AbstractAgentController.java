@@ -21,14 +21,26 @@ package org.openbase.bco.manager.agent.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.AbstractExecutableBaseUnitController;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.manager.agent.core.TriggerDAL.AgentTriggerPool;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.calendar.DateTimeType;
+import rst.communicationpatterns.ResourceAllocationType;
+import rst.domotic.action.ActionAuthorityType;
+import rst.domotic.action.ActionDescriptionType;
+import rst.domotic.action.MultiResourceAllocationStrategyType;
+import rst.domotic.service.ServiceStateDescriptionType;
+import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.agent.AgentDataType;
 import rst.domotic.unit.agent.AgentDataType.AgentData;
 
@@ -53,5 +65,43 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
     @Override
     protected boolean isAutostartEnabled() throws CouldNotPerformException {
         return getConfig().getAgentConfig().getAutostart();
+    }
+
+    protected ActionDescriptionType.ActionDescription.Builder getNewActionDescription(ActionAuthorityType.ActionAuthority actionAuthority,
+            ResourceAllocationType.ResourceAllocation.Initiator initiator,
+            long executionTimePeriod,
+            ResourceAllocationType.ResourceAllocation.Policy policy,
+            ResourceAllocationType.ResourceAllocation.Priority priority,
+            UnitRemote unitRemote,
+            Object serviceAttribute,
+            UnitTemplateType.UnitTemplate.UnitType unitType,
+            ServiceTemplateType.ServiceTemplate.ServiceType serviceType,
+            MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy multiResourceAllocationStrategy) throws CouldNotPerformException {
+
+        ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.getActionDescription(actionAuthority, initiator);
+        actionDescriptionBuilder.setExecutionTimePeriod(executionTimePeriod);
+        if (executionTimePeriod != 0) {
+            DateTimeType.DateTime dateTime = DateTimeType.DateTime.newBuilder().setDateTimeType(DateTimeType.DateTime.Type.FLOATING).setMillisecondsSinceEpoch(System.currentTimeMillis() + executionTimePeriod).build();
+            actionDescriptionBuilder.setExecutionValidity(dateTime);
+        }
+        actionDescriptionBuilder.setMultiResourceAllocationStrategy(MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.newBuilder().setStrategy(multiResourceAllocationStrategy).build());
+
+        ResourceAllocationType.ResourceAllocation.Builder resourceAllocation = actionDescriptionBuilder.getResourceAllocationBuilder();
+        resourceAllocation.setPolicy(policy);
+        resourceAllocation.setPriority(priority);
+        resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(unitRemote.getScope()));
+
+        Service.upateActionDescription(actionDescriptionBuilder, serviceAttribute, serviceType);
+        ServiceStateDescriptionType.ServiceStateDescription.Builder serviceStateDescription = actionDescriptionBuilder.getServiceStateDescriptionBuilder();
+        serviceStateDescription.setUnitId(unitRemote.getId().toString());
+        serviceStateDescription.setUnitType(unitType);
+
+        actionDescriptionBuilder.setDescription(actionDescriptionBuilder.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel()));
+        actionDescriptionBuilder.setLabel(actionDescriptionBuilder.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel()));
+
+        ActionDescriptionProcessor.updateResourceAllocationSlot(actionDescriptionBuilder);
+        ActionDescriptionProcessor.updateResourceAllocationId(actionDescriptionBuilder);
+
+        return actionDescriptionBuilder;
     }
 }

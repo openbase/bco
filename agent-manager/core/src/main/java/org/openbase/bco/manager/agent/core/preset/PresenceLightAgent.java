@@ -21,9 +21,10 @@ package org.openbase.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.ExecutionException;
+import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
+import org.openbase.bco.manager.agent.core.AgentActionRescheduleHelper;
+import org.openbase.bco.manager.agent.core.AgentActionRescheduleHelper.RescheduleOption;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
@@ -35,7 +36,10 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
+import rst.domotic.action.ActionAuthorityType.ActionAuthority;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.PowerStateType.PowerState;
@@ -51,20 +55,20 @@ import rst.domotic.unit.location.LocationDataType.LocationData;
 public class PresenceLightAgent extends AbstractAgentController {
 
     private LocationRemote locationRemote;
-    private Future<ActionFuture> setPowerStateFuture;
     private final PresenceState.State triggerState = PresenceState.State.PRESENT;
     private final Observer<ActivationState> triggerHolderObserver;
+    private final AgentActionRescheduleHelper actionRescheduleHelper;
 
     public PresenceLightAgent() throws InstantiationException {
         super(PresenceLightAgent.class);
+
+        actionRescheduleHelper = new AgentActionRescheduleHelper(RescheduleOption.EXTEND, 30);
 
         triggerHolderObserver = (Observable<ActivationState> source, ActivationState data) -> {
             if (data.getValue().equals(ActivationState.State.ACTIVE)) {
                 switchlightsOn();
             } else {
-                if (setPowerStateFuture != null) {
-                    setPowerStateFuture.cancel(true);
-                }
+                actionRescheduleHelper.stopExecution();
             }
         };
     }
@@ -72,7 +76,6 @@ public class PresenceLightAgent extends AbstractAgentController {
     @Override
     public void init(final UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
-
         try {
             locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), true, Units.LOCATION);
         } catch (NotAvailableException ex) {
@@ -98,11 +101,13 @@ public class PresenceLightAgent extends AbstractAgentController {
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
         logger.info("Deactivating [" + getConfig().getLabel() + "]");
+        actionRescheduleHelper.stopExecution();
         agentTriggerHolder.deactivate();
     }
 
     @Override
     public void shutdown() {
+        actionRescheduleHelper.stopExecution();
         agentTriggerHolder.deregisterObserver(triggerHolderObserver);
         agentTriggerHolder.shutdown();
         super.shutdown();
@@ -110,11 +115,19 @@ public class PresenceLightAgent extends AbstractAgentController {
 
     private void switchlightsOn() {
         try {
-            setPowerStateFuture = locationRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build(), UnitType.LIGHT);
-            // TODO: Blocking setPowerState function that is trying to realloc all lights as long as jobs not cancelled. 
-            // TODO: Maybe also set Color and Brightness?
-        } catch (CouldNotPerformException ex) {
-            Logger.getLogger(PresenceLightAgent.class.getName()).log(Level.SEVERE, null, ex);
+            ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthority.getDefaultInstance(),
+                    ResourceAllocation.Initiator.SYSTEM,
+                    1000 * 30,
+                    ResourceAllocation.Policy.FIRST,
+                    ResourceAllocation.Priority.LOW,
+                    locationRemote,
+                    PowerState.newBuilder().setValue(PowerState.State.ON).build(),
+                    UnitType.LIGHT,
+                    ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
+                    MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+            logger.error("Could not switch on Lights.", ex);
         }
     }
 }
