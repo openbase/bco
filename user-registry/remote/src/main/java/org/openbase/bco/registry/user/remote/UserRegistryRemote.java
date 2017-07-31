@@ -146,13 +146,13 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
     }
 
     @Override
-    public UnitConfig getUserConfigByUserName(final String userName) throws CouldNotPerformException, NotAvailableException {
+    public String getUserIDByUserName(final String userName) throws CouldNotPerformException, NotAvailableException {
         validateData();
         List<UnitConfig> messages = userConfigRemoteRegistry.getMessages();
 
         for (UnitConfig message : messages) {
             if (message.getUserConfig().getUserName().equals(userName)) {
-                return message;
+                return message.getId();
             }
         }
 
