@@ -52,15 +52,11 @@ public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
     }
 
     @Override
-    public boolean verify(UnitConfig unitConfig) throws CouldNotPerformException {
-        try {
-            if (authorizationGroupRegistry != null) {
-                return AuthorizationHelper.canAccess(unitConfig, SessionManager.getInstance().getUserId(), authorizationGroupRegistry.getEntryMap());
-            } else {
-                return AuthorizationHelper.canAccess(unitConfig, SessionManager.getInstance().getUserId(), null);
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not verify unit[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "]", ex);
+    public boolean verify(UnitConfig unitConfig) {
+        if (authorizationGroupRegistry != null) {
+            return AuthorizationHelper.canAccess(unitConfig, SessionManager.getInstance().getUserId(), authorizationGroupRegistry.getEntryMap());
+        } else {
+            return AuthorizationHelper.canAccess(unitConfig, SessionManager.getInstance().getUserId(), null);
         }
     }
 }

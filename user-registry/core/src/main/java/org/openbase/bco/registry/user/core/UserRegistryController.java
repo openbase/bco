@@ -91,7 +91,6 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
             try {
                 try (ClosableDataBuilder<UserRegistryData.Builder> dataBuilder = getDataBuilder(this)) {
                     syncVirtualRegistryFields(dataBuilder.getInternalBuilder(), unitRegistryRemote.getData());
-                    logger.warn("Performed initial synchronisation of virtual registry fields ["+unitRegistryRemote.getData().getAuthorizationGroupUnitConfigCount()+", "+dataBuilder.getInternalBuilder().getAuthorizationGroupUnitConfigCount()+"]");
                 } catch (Exception ex) {
                     throw new CouldNotPerformException("Could not apply data change!", ex);
                 }
