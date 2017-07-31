@@ -70,13 +70,6 @@ public class RegistryFilteringTest {
         JPService.setupJUnitTestMode();
 
         try {
-            Registries.getUnitRegistry().addDataObserver(new Observer<UnitRegistryDataType.UnitRegistryData>() {
-                @Override
-                public void update(Observable<UnitRegistryDataType.UnitRegistryData> source, UnitRegistryDataType.UnitRegistryData data) throws Exception {
-                    LOGGER.warn("UnitRegisrty has published ["+data.getAuthorizationGroupUnitConfigCount()+"]");
-                }
-            });
-            
             mockRegistry = MockRegistryHolder.newMockRegistry();
 
             mockCredentialStore = new MockCredentialStore();
@@ -176,11 +169,12 @@ public class RegistryFilteringTest {
         SessionManager.getInstance().logout();
     }
 
-    @Test//(timeout = 10000)
+    @Test(timeout = 10000)
     public void testWaitForDataOnVirtualRegistryRemote() throws Exception {
         System.out.println("testWaitForDataOnVirtualRegistryRemote");
 
         Registries.getUserRegistry().waitForData(2, TimeUnit.SECONDS);
+        int userCount = Registries.getUserRegistry().getUserConfigs().size();
 
         UnitConfig.Builder userUnitConfig = Registries.getUserRegistry().getUserConfigs().get(0).toBuilder();
         PermissionConfig.Builder permissionConfig = userUnitConfig.getPermissionConfigBuilder();
@@ -189,6 +183,9 @@ public class RegistryFilteringTest {
 
         Registries.getUserRegistry().updateUserConfig(userUnitConfig.build()).get();
 
+        assertTrue("No data available anymore", Registries.getUserRegistry().isDataAvailable());
+        assertTrue("User has not been removed", !Registries.getUserRegistry().containsUserConfigById(userUnitConfig.getId()));
+        assertEquals("User count does not match", userCount - 1, Registries.getUserRegistry().getUserConfigs().size());
         try {
             Registries.getUserRegistry().waitForData(2, TimeUnit.SECONDS);
         } catch (TimeoutException ex) {

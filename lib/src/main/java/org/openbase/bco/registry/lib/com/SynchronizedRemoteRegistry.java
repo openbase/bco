@@ -198,4 +198,8 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
             return getClass().getSimpleName() + "[" + remoteService.toString() + "]" + fieldDescritorNames;
         }
     }
+
+    public AbstractFilter getFilter() {
+        return filter;
+    }
 }

@@ -44,17 +44,17 @@ import org.openbase.jul.storage.registry.RemoteRegistry;
  * @param <M>
  */
 public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> extends AbstractRegistryRemote<M> {
-
-    private final Map<RemoteRegistry, Descriptors.FieldDescriptor> remoteRegistryFieldDescriptorMap;
-    private final Map<RemoteRegistry, RegistryRemote<? extends GeneratedMessage>> remoteRegistrySyncMap;
+    
+    private final Map<SynchronizedRemoteRegistry, Descriptors.FieldDescriptor> remoteRegistryFieldDescriptorMap;
+    private final Map<SynchronizedRemoteRegistry, RegistryRemote<? extends GeneratedMessage>> remoteRegistrySyncMap;
     private final List<RegistryRemote<? extends GeneratedMessage>> registryRemotes;
-
+    
     private final SyncObject virtualRegistrySyncLock = new SyncObject("RegistryRemoteVirtualSyncLock");
     private final Observer snchronisationObserver;
-
+    
     public AbstractVirtualRegistryRemote(Class<? extends JPScope> jpScopePropery, Class<M> dataClass) {
         super(jpScopePropery, dataClass);
-
+        
         this.remoteRegistryFieldDescriptorMap = new HashMap<>();
         this.remoteRegistrySyncMap = new HashMap<>();
         this.registryRemotes = new ArrayList<>();
@@ -64,7 +64,7 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
             }
         };
     }
-
+    
     @Override
     protected void postInit() throws InitializationException, InterruptedException {
         super.postInit();
@@ -72,7 +72,7 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
         registerRegistryRemotes();
         bindRegistryRemoteToRemoteRegistries();
     }
-
+    
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
@@ -80,7 +80,7 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
             remoteRegistry.addObserver(snchronisationObserver);
         });
     }
-
+    
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         getRemoteRegistries().forEach((remoteRegistry) -> {
@@ -88,14 +88,14 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
         });
         super.deactivate();
     }
-
+    
     protected void registerRegistryRemote(RegistryRemote<? extends GeneratedMessage> registryRemote) {
         this.registryRemotes.add(registryRemote);
     }
-
+    
     protected abstract void registerRegistryRemotes() throws InitializationException, InterruptedException;
-
-    protected void bindRegistryRemoteToRemoteRegistry(RemoteRegistry remoteRegistry, RegistryRemote<? extends GeneratedMessage> registryRemote, Integer fieldNumber) throws CouldNotPerformException {
+    
+    protected void bindRegistryRemoteToRemoteRegistry(SynchronizedRemoteRegistry remoteRegistry, RegistryRemote<? extends GeneratedMessage> registryRemote, Integer fieldNumber) throws CouldNotPerformException {
         try {
             Descriptors.FieldDescriptor fieldDescriptor = null;
             try {
@@ -103,20 +103,20 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Invalid field descriptor for [" + registryRemote.getDataClass().getSimpleName() + "]", ex);
             }
-
+            
             if (!registryRemotes.contains(registryRemote)) {
                 throw new CouldNotPerformException("Trying to bind to unregistered registryRemote");
             }
-
+            
             remoteRegistryFieldDescriptorMap.put(remoteRegistry, fieldDescriptor);
             remoteRegistrySyncMap.put(remoteRegistry, registryRemote);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not bind fieldNumber[" + fieldNumber + "] of [" + registryRemote.getDataClass().getSimpleName() + "] to remoteRegistry[" + remoteRegistry + "]", ex);
         }
     }
-
+    
     protected abstract void bindRegistryRemoteToRemoteRegistries();
-
+    
     @Override
     public void waitForData() throws CouldNotPerformException, InterruptedException {
         for (RegistryRemote registryRemote : registryRemotes) {
@@ -125,12 +125,12 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
         super.waitForData();
         waitForVirtualRegistrySync();
     }
-
+    
     @Override
     public Boolean isReady() throws InterruptedException {
         return isDataAvailable() && super.isReady();
     }
-
+    
     @Override
     public boolean isDataAvailable() {
         for (RegistryRemote registryRemote : registryRemotes) {
@@ -138,10 +138,10 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
                 return false;
             }
         }
-
+        
         return super.isDataAvailable() && equalMessageCounts();
     }
-
+    
     private void waitForVirtualRegistrySync() throws CouldNotPerformException, InterruptedException {
         synchronized (virtualRegistrySyncLock) {
             while (!equalMessageCounts()) {
@@ -149,11 +149,14 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
             }
         }
     }
-
+    
     private boolean equalMessageCounts() {
-        for (RemoteRegistry remoteRegistry : remoteRegistrySyncMap.keySet()) {
+        for (SynchronizedRemoteRegistry remoteRegistry : remoteRegistrySyncMap.keySet()) {
             try {
-                if (remoteRegistrySyncMap.get(remoteRegistry).getData().getRepeatedFieldCount(remoteRegistryFieldDescriptorMap.get(remoteRegistry)) != remoteRegistry.getMessages().size()) {
+                List messageList = new ArrayList((List) remoteRegistrySyncMap.get(remoteRegistry).getData().getField(remoteRegistryFieldDescriptorMap.get(remoteRegistry)));
+                int registryRemoteMessageCount = remoteRegistry.getFilter().filter(messageList).size();
+                int remoteRegistryMessageCount = remoteRegistry.getMessages().size();
+                if (registryRemoteMessageCount != remoteRegistryMessageCount) {
                     return false;
                 }
             } catch (CouldNotPerformException ex) {
