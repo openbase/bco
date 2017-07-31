@@ -33,11 +33,11 @@ import org.openbase.jul.exception.InitializationException;
  */
 public class MockClientStore extends CredentialStore {
 
-    public static final String USER_ID = "admin";
+    public static final String USER_ID = "user";
     public static final String USER_PASSWORD = "password";
     public static final byte[] USER_PASSWORD_HASH = EncryptionHelper.hash(USER_PASSWORD);
 
-    public static final String ADMIN_ID = "user";
+    public static final String ADMIN_ID = "admin";
     public static final String ADMIN_PASSWORD = "password";
     public static final byte[] ADMIN_PASSWORD_HASH = EncryptionHelper.hash(USER_PASSWORD);
 
