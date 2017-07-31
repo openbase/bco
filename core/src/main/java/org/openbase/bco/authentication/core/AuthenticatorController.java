@@ -451,6 +451,13 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         });
     }
 
+    @Override
+    public Future<Boolean> isAdmin(String userId) throws NotAvailableException {
+        return GlobalCachedExecutorService.submit(() -> {
+            return store.isAdmin(userId);
+        });
+    }
+
     private class InitialPasswordPrinterRunnable implements Runnable {
 
         private String message;

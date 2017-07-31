@@ -177,5 +177,17 @@ public interface AuthenticationService {
      * @return an authenticated value containing the updated client server ticket an the encrypted service server secret key
      * @throws CouldNotPerformException if the validation of the client server ticket fails or the logged in client is not the service server
      */
+    @RPCMethod
     public Future<AuthenticatedValue> requestServiceServerSecretKey(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException;
+
+    /**
+     * Returns whether a given user has admin rights or not.
+     *
+     * @param userId ID of the user to check for.
+     * @return True, if the user is admin, false if not.
+     * @throws NotAvailableException If the user could not be found.
+     * @throws CouldNotPerformException
+     */
+    @RPCMethod
+    public Future<Boolean> isAdmin(String userId) throws NotAvailableException, CouldNotPerformException;
 }
