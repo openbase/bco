@@ -222,7 +222,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 }
                 return AuthenticationServerHandler.handleKDCRequest(_id, key, isUser, "", ticketGrantingServiceSecretKey);
             } catch (NotAvailableException ex) {
-                throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
+                throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.WARN);
             } catch (InterruptedException | CouldNotPerformException | IOException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
                 throw new CouldNotPerformException("Internal server error. Please try again.");
