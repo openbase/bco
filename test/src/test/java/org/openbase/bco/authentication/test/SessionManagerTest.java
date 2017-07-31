@@ -95,6 +95,10 @@ public class SessionManagerTest {
         
         // register client
         manager.registerUser("test_user2", "test_password", true);
+
+        manager.logout();
+
+        manager.login("test_user2", "test_password");
     }
 
     /**
@@ -174,36 +178,41 @@ public class SessionManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000, expected = CouldNotPerformException.class)
+    @Test(timeout = 5000)
     public void registerClientAndLogin() throws Exception {
         System.out.println("registerClientAndLogin");
+        SessionManager manager = new SessionManager(clientStore);
+        manager.initStore();
+
+        // login admin
+        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+
+        // register client
+        manager.registerClient(MockClientStore.CLIENT_ID);
+
+        // logout admin
+        manager.logout();
+
+        // login client
+        boolean result = manager.login(MockClientStore.CLIENT_ID);
+        assertEquals(true, result);
+
+        // logout client
+        manager.logout();
+
+        // login admin
+        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+
+        // register same client should result in Exception
+        ExceptionPrinter.setBeQuit(Boolean.TRUE);
+
         try {
-            ExceptionPrinter.setBeQuit(Boolean.TRUE);
-            SessionManager manager = new SessionManager(clientStore);
-            manager.initStore();
-
-            // login admin
-            manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
-
-            // register client
-            manager.registerClient(MockClientStore.CLIENT_ID);
-
-            // logout admin
-            manager.logout();
-
-            // login client
-            boolean result = manager.login(MockClientStore.CLIENT_ID);
-            assertEquals(true, result);
-
-            // logout client
-            manager.logout();
-
-            // login admin
-            manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
-
-            // register same client should result in Exception
             manager.registerClient(MockClientStore.ADMIN_ID);
-        } finally {
+            fail("You should not be able to register the same client twice.");
+        } 
+        catch (CouldNotPerformException ex){
+        }
+        finally {
             ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }
     }
