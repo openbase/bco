@@ -63,8 +63,11 @@ public class SessionManager {
 
     private CredentialStore store;
 
-    // remember id of client during session
+    // remember id of client that is currently logged in
     private String clientId;
+    
+    // remember id of client during session
+    private String previousClientId;
 
     // remember user id during session
     private String userId;
@@ -138,15 +141,14 @@ public class SessionManager {
      * @param userPassword Password of the user
      * @return Returns Returns an TicketAuthenticatorWrapperWrapper containing
      * both the ClientServerTicket and Authenticator
-     * @throws StreamCorruptedException If the password was wrong.
      * @throws NotAvailableException If the entered clientId could not be found.
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
-    public boolean login(String userId, String userPassword) throws StreamCorruptedException, CouldNotPerformException, NotAvailableException {
+    public boolean login(String userId, String userPassword) throws CouldNotPerformException, NotAvailableException {
         return this.login(userId, userPassword, false);
     }
     
-    public boolean login(String userId, String userPassword, boolean rememberPassword) throws StreamCorruptedException, CouldNotPerformException, NotAvailableException {
+    public boolean login(String userId, String userPassword, boolean rememberPassword) throws CouldNotPerformException, NotAvailableException {
         byte[] clientPasswordHash = EncryptionHelper.hash(userPassword);
         if (rememberPassword)
             this.userPassword = userPassword;
@@ -159,11 +161,10 @@ public class SessionManager {
      * @param clientId Identifier of the user
      * @return Returns Returns an TicketAuthenticatorWrapperWrapper containing
      * both the ClientServerTicket and Authenticator
-     * @throws StreamCorruptedException If the password was wrong.
      * @throws NotAvailableException If the entered clientId could not be found.
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
-    public boolean login(String clientId) throws StreamCorruptedException, CouldNotPerformException, NotAvailableException {
+    public boolean login(String clientId) throws CouldNotPerformException, NotAvailableException {
         if (this.store == null) {
             try {
                 this.initStore();
@@ -179,11 +180,10 @@ public class SessionManager {
      * Perform a relog for the client registered in the store.
      *
      * @return Returns true if relog successful, appropriate exception otherwise
-     * @throws StreamCorruptedException If the password was wrong.
      * @throws NotAvailableException If the entered clientId could not be found. Or if the clientId was not set in the beginning.
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
-    public boolean relog() throws CouldNotPerformException, StreamCorruptedException, NotAvailableException {
+    public boolean relog() throws CouldNotPerformException, NotAvailableException {
         this.ticketAuthenticatorWrapper = null;
         this.sessionKey = null;
                 
@@ -193,7 +193,7 @@ public class SessionManager {
         
         // if user is not logged in and the client can login again
         if (this.canClientLoginAgain())
-            return this.login(this.clientId);
+            return this.login(this.previousClientId);
         
         // if neither user or client can login again
         this.logout();
@@ -207,11 +207,10 @@ public class SessionManager {
      * @param id Identifier of the user or client
      * @param key Password or private key of the user or client
      * @return Returns true if login successful
-     * @throws StreamCorruptedException If the password was wrong.
      * @throws NotAvailableException If the entered clientId could not be found.
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
-    private boolean internalLogin(String id, byte[] key, boolean isUser) throws StreamCorruptedException, CouldNotPerformException, NotAvailableException {
+    private boolean internalLogin(String id, byte[] key, boolean isUser) throws CouldNotPerformException, NotAvailableException {
         
         // temporary wrapper and session key. Incase a new user/client wants to login but failed then
         // reset these in order to reset the session to previous user/client
@@ -239,12 +238,14 @@ public class SessionManager {
         
         if (isUser)
             this.userId = id;
-        else
+        else {
             this.clientId = id;
+            this.previousClientId = id;
+        }
 
         try {
             // prepend clientId to userId for TicketGranteningTicket request
-            String userIdAtClientId = "@" + this.clientId;
+            String userIdAtClientId = "@" + this.previousClientId;
             if (isUser) {
                 userIdAtClientId = id + userIdAtClientId;
             }
@@ -318,10 +319,24 @@ public class SessionManager {
      * Logs a user out by setting CST and session key to null
      */
     public void logout() {
+        // if a user was logged in, login client, if a client was already logged in
+        if (this.userId != null) {
+            this.userId = null;
+            this.userPassword = null;
+            if (this.previousClientId != null) {
+                try {
+                    this.login(this.previousClientId);
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+                }
+                return;
+            }
+        }
+        if (this.clientId != null) {
+            this.clientId = null;
+        }
         this.ticketAuthenticatorWrapper = null;
         this.sessionKey = null;
-        this.userId = null;
-        this.userPassword = null;
         try {
             loginObervable.notifyObservers(false);
         } catch (CouldNotPerformException ex) {
@@ -377,7 +392,7 @@ public class SessionManager {
      * @return true if so, false otherwise
      */
     public boolean canClientLoginAgain() {
-        return this.clientId != null && this.store != null && this.store.hasEntry(this.clientId);
+        return this.previousClientId != null && this.store != null && this.store.hasEntry(this.previousClientId);
     }
 
     /**

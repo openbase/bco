@@ -25,6 +25,8 @@ import java.io.File;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.attribute.PosixFilePermission;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.ArrayList;
 import java.util.Base64;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -153,6 +155,7 @@ public class CredentialStore {
     /**
      * --------------------- MANIPULATIVE METHODS ------------------------------
      */
+    
     /**
      * Determines if there is an entry with given id.
      *
@@ -162,6 +165,21 @@ public class CredentialStore {
     public boolean hasEntry(String id) {
         return this.credentials.containsKey(id);
     }
+    
+    /**
+     * Get an entry by the specified index.
+     * Usage only makes sense when there is only one entry in the store.
+     * Else an arbitrary entry would be returned.
+     * 
+     * @return Returns null if the index would result in a NullPointerException.
+     */
+    public SimpleEntry<String, LoginCredentials> getFirstEntry() {
+        if (!this.credentials.isEmpty()) {
+            String firstKey = (String) new ArrayList(this.credentials.keySet()).get(0);
+            return new SimpleEntry(firstKey, this.credentials.get(firstKey));
+        }
+        return null;
+    } 
 
     /**
      * Removes entry from store given id.

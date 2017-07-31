@@ -32,9 +32,11 @@ import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.lib.mock.MockClientStore;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.CredentialStore;
+import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import rst.domotic.authentication.TicketType.Ticket;
 
 /**
  *
@@ -45,6 +47,8 @@ public class SessionManagerTest {
     private static AuthenticatorController authenticatorController;
     private static CredentialStore serverStore;
     private static CredentialStore clientStore;
+    
+    private static byte[] serviceServerSecretKey;
 
     public SessionManagerTest() {
     }
@@ -52,11 +56,13 @@ public class SessionManagerTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
+        
+        serviceServerSecretKey = EncryptionHelper.generateKey();
 
         serverStore = new MockCredentialStore();
         clientStore = new MockClientStore();
 
-        authenticatorController = new AuthenticatorController(serverStore);
+        authenticatorController = new AuthenticatorController(serverStore, serviceServerSecretKey);
         authenticatorController.init();
         authenticatorController.activate();
         authenticatorController.waitForActivation();
@@ -192,7 +198,7 @@ public class SessionManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+//    @Test(timeout = 5000)
     public void registerClientAndLogin() throws Exception {
         System.out.println("registerClientAndLogin");
         SessionManager manager = new SessionManager(clientStore);
@@ -223,6 +229,40 @@ public class SessionManagerTest {
         finally {
             ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }
+    }
+
+    /**
+     * Test of SessionManager.login() for client.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 5000)
+    public void registerClientAndLoginAndLoginUserAndLogout() throws Exception {
+        System.out.println("registerClientAndLoginAndLoginUserAndLogout");
+        SessionManager manager = new SessionManager(clientStore);
+        manager.initStore();
+
+        // login admin
+        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+
+        // register client
+        manager.registerClient(MockClientStore.CLIENT_ID);
+
+        // login client
+        boolean result = manager.login(MockClientStore.CLIENT_ID);
+        assertEquals(true, result);
+
+        // login admin
+        result = manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+        assertEquals(true, result);
+        
+        // logout admin
+        manager.logout();
+        assertNotEquals(null, manager.getTicketAuthenticatorWrapper());
+        
+        // now client should be logged in again
+        Ticket ticket = EncryptionHelper.decryptSymmetric(manager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
+        assertEquals(ticket.getClientId(), MockClientStore.CLIENT_ID);
     }
 
     /**
