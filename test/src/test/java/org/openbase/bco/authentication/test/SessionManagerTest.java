@@ -77,12 +77,10 @@ public class SessionManagerTest {
 
     @Before
     public void setUp() throws Exception {
-        authenticatorController.init();
     }
 
     @After
     public void tearDown() throws Exception {
-
     }
 
     /**
@@ -301,6 +299,9 @@ public class SessionManagerTest {
 
         // remove himself
         manager.removeUser(MockClientStore.USER_ID);
+        
+        // add for test consistency
+        manager.registerUser(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD, false);
     }
 
     /**
