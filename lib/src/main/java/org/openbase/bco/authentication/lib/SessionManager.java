@@ -68,7 +68,7 @@ public class SessionManager {
 
     // remember user id during session
     private String userId;
-    private String userPassword;
+    private String userPassword;  
 
     /**
      * Observable on which it will be notified if login or logout is triggered.
@@ -148,7 +148,6 @@ public class SessionManager {
     
     public boolean login(String userId, String userPassword, boolean rememberPassword) throws StreamCorruptedException, CouldNotPerformException, NotAvailableException {
         byte[] clientPasswordHash = EncryptionHelper.hash(userPassword);
-        this.userId = userId;
         if (rememberPassword)
             this.userPassword = userPassword;
         return this.internalLogin(userId, clientPasswordHash, true);
@@ -172,9 +171,6 @@ public class SessionManager {
                 throw new NotAvailableException(e);
             }
         }
-
-        // TODO: replace both of this with some kind of retrievel from a store
-        this.clientId = clientId;
         byte[] key = this.store.getCredentials(clientId);
         return this.internalLogin(clientId, key, false);
     }
@@ -210,16 +206,41 @@ public class SessionManager {
      *
      * @param id Identifier of the user or client
      * @param key Password or private key of the user or client
-     * @return Returns Returns an TicketAuthenticatorWrapperWrapper containing
-     * both the ClientServerTicket and Authenticator
+     * @return Returns true if login successful
      * @throws StreamCorruptedException If the password was wrong.
      * @throws NotAvailableException If the entered clientId could not be found.
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
     private boolean internalLogin(String id, byte[] key, boolean isUser) throws StreamCorruptedException, CouldNotPerformException, NotAvailableException {
+        
+        // temporary wrapper and session key. Incase a new user/client wants to login but failed then
+        // reset these in order to reset the session to previous user/client
+        TicketAuthenticatorWrapper tmpTicketAuthenticatorWrapper = null;
+        byte[] tmpSessionKey = null;
+        String tmpUserId = null;
+        String tmpUserPassword = null;
+        
+        // becomes true if login was successful
+        boolean result = false;
+    
         if (this.isLoggedIn()) {
-            throw new CouldNotPerformException("You are already logged in.");
+            // if same user or client is already looged in
+            if (id == this.userId || id == this.clientId)
+                throw new CouldNotPerformException("You are already logged in.");
+            // if other user or client wants to login
+            // then logout user or client 
+            // and log them in again in case of login failure
+            tmpTicketAuthenticatorWrapper = this.ticketAuthenticatorWrapper;
+            tmpSessionKey = this.sessionKey;
+            tmpUserId = this.userId;
+            tmpUserPassword = this.userPassword;
+            this.logout();
         }
+        
+        if (isUser)
+            this.userId = id;
+        else
+            this.clientId = id;
 
         try {
             // prepend clientId to userId for TicketGranteningTicket request
@@ -250,8 +271,9 @@ public class SessionManager {
                 LOGGER.warn("Could not notify logout to observer", ex);
             }
             
-            return true;
-        } catch (BadPaddingException ex) {
+            result = true;
+            return result;
+        } catch (BadPaddingException ex) {            
             throw new CouldNotPerformException("The password you have entered was wrong. Please try again!");
         } catch (ExecutionException ex) {
             Throwable cause = ex.getCause();
@@ -276,6 +298,19 @@ public class SessionManager {
             throw new CouldNotPerformException("Internal server error.", cause);
         } catch (CouldNotPerformException | IOException | InterruptedException ex) {
             throw new CouldNotPerformException("Login failed! Please try again.", ex);
+        } finally {
+            if (result) {
+                // set tmp variables to null in case login was successful
+                tmpTicketAuthenticatorWrapper = null;
+                tmpSessionKey = null;
+                tmpUserId = tmpUserPassword = null;
+            } else {
+                // reset incase of login failure
+                this.ticketAuthenticatorWrapper = tmpTicketAuthenticatorWrapper;
+                this.sessionKey = tmpSessionKey;
+                this.userId = tmpUserId;
+                this.userPassword = tmpUserPassword;
+            }
         }
     }
 

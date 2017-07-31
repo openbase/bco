@@ -96,8 +96,6 @@ public class SessionManagerTest {
         // register client
         manager.registerUser("test_user2", "test_password", true);
 
-        manager.logout();
-
         manager.login("test_user2", "test_password");
     }
 
@@ -113,6 +111,22 @@ public class SessionManagerTest {
         manager.initStore();
         boolean result = manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
 
+        assertEquals(true, result);
+    }
+
+    /**
+     * Test of SessionManager.login() for user.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 5000)
+    public void loginUserThenOtherUser() throws Exception {
+        System.out.println("loginUserThenOtherUser");
+        SessionManager manager = new SessionManager(clientStore);
+        manager.initStore();
+        boolean result = manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+        assertEquals(true, result);
+        result = manager.login(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD);
         assertEquals(true, result);
     }
 
@@ -190,15 +204,9 @@ public class SessionManagerTest {
         // register client
         manager.registerClient(MockClientStore.CLIENT_ID);
 
-        // logout admin
-        manager.logout();
-
         // login client
         boolean result = manager.login(MockClientStore.CLIENT_ID);
         assertEquals(true, result);
-
-        // logout client
-        manager.logout();
 
         // login admin
         manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
