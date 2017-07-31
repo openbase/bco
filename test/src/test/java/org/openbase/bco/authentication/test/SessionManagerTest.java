@@ -88,7 +88,7 @@ public class SessionManagerTest {
     public void registerUser() throws Exception {
         System.out.println("registerUser");
         SessionManager manager = new SessionManager(clientStore);
-        manager.init();
+        manager.initStore();
         
         // login admin
         manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
@@ -106,7 +106,7 @@ public class SessionManagerTest {
     public void loginUser() throws Exception {
         System.out.println("loginUser");
         SessionManager manager = new SessionManager(clientStore);
-        manager.init();
+        manager.initStore();
         boolean result = manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
 
         assertEquals(true, result);
@@ -121,7 +121,7 @@ public class SessionManagerTest {
     public void isLoggedIn() throws Exception {
         System.out.println("isLoggedIn");
         SessionManager manager = new SessionManager(clientStore);
-        manager.init();
+        manager.initStore();
         boolean result = manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
 
         // should result true
@@ -140,7 +140,7 @@ public class SessionManagerTest {
     public void isAuthenticated() throws Exception {
         System.out.println("isAuthenticated");
         SessionManager manager = new SessionManager(clientStore);
-        manager.init();
+        manager.initStore();
         boolean result = manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
 
         // should result in true
@@ -159,7 +159,7 @@ public class SessionManagerTest {
     public void logout() throws Exception {
         System.out.println("logout");
         SessionManager manager = new SessionManager(clientStore);
-        manager.init();
+        manager.initStore();
         boolean result = manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
 
         assertEquals(true, result);
@@ -180,7 +180,7 @@ public class SessionManagerTest {
         try {
             ExceptionPrinter.setBeQuit(Boolean.TRUE);
             SessionManager manager = new SessionManager(clientStore);
-            manager.init();
+            manager.initStore();
 
             // login admin
             manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
@@ -219,7 +219,7 @@ public class SessionManagerTest {
         try {
             ExceptionPrinter.setBeQuit(Boolean.TRUE);
             SessionManager manager = new SessionManager(clientStore);
-            manager.init();
+            manager.initStore();
 
             // login admin
             manager.login(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD);
@@ -240,7 +240,7 @@ public class SessionManagerTest {
     public void setAdmin() throws Exception {
         System.out.println("setAdmin");
         SessionManager manager = new SessionManager(clientStore);
-        manager.init();
+        manager.initStore();
         
         // login admin
         manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
@@ -262,7 +262,7 @@ public class SessionManagerTest {
         try {
             ExceptionPrinter.setBeQuit(Boolean.TRUE);
             SessionManager manager = new SessionManager(clientStore);
-            manager.init();
+            manager.initStore();
 
             // login admin
             manager.login(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD);

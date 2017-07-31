@@ -61,7 +61,7 @@ public class SessionManager {
     private TicketAuthenticatorWrapper ticketAuthenticatorWrapper;
     private byte[] sessionKey;
 
-    private final CredentialStore store;
+    private CredentialStore store;
 
     // remember id of client during session
     private String clientId;
@@ -75,21 +75,16 @@ public class SessionManager {
      */
     private final ObservableImpl<Boolean> loginObervable;
 
-    public static synchronized SessionManager getInstance() throws NotAvailableException {
-        try {
-            if (instance == null) {
-                instance = new SessionManager();
-                instance.init();
-            }
-
-            return instance;
-        } catch (InitializationException ex) {
-            throw new NotAvailableException("SessionManager", ex);
+    public static synchronized SessionManager getInstance() {
+        if (instance == null) {
+            instance = new SessionManager();
         }
+
+        return instance;
     }
 
     public SessionManager() {
-        this(new CredentialStore(STORE_FILENAME));
+        this(null);
     }
 
     public SessionManager(CredentialStore userStore) {
@@ -108,7 +103,10 @@ public class SessionManager {
         }
     }
 
-    public void init() throws InitializationException {
+    public void initStore() throws InitializationException {
+        if (this.store == null) {
+            this.store = new CredentialStore(STORE_FILENAME);
+        }
         this.store.init();
     }
 
@@ -167,6 +165,14 @@ public class SessionManager {
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
     public boolean login(String clientId) throws StreamCorruptedException, CouldNotPerformException, NotAvailableException {
+        if (this.store == null) {
+            try {
+                this.initStore();
+            } catch (InitializationException e) {
+                throw new NotAvailableException(e);
+            }
+        }
+
         // TODO: replace both of this with some kind of retrievel from a store
         this.clientId = clientId;
         byte[] key = this.store.getCredentials(clientId);
@@ -317,7 +323,7 @@ public class SessionManager {
      * @return true if so, false otherwise
      */
     public boolean canClientLoginAgain() {
-        return this.clientId != null && this.store.hasEntry(this.clientId);
+        return this.clientId != null && this.store != null && this.store.hasEntry(this.clientId);
     }
 
     /**
@@ -425,6 +431,14 @@ public class SessionManager {
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
     public void registerClient(String clientId) throws CouldNotPerformException {
+        if (this.store == null) {
+            try {
+                this.initStore();
+            } catch (InitializationException e) {
+                throw new NotAvailableException(e);
+            }
+        }
+
         KeyPair keyPair = EncryptionHelper.generateKeyPair();
         this.internalRegister(clientId, keyPair.getPublic().getEncoded(), false);
         this.store.setCredentials(clientId, keyPair.getPrivate().getEncoded());
