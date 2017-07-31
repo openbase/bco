@@ -283,4 +283,19 @@ public class SessionManagerTest {
         }
     }
 
+    /**
+     * Test of method isAdmin
+     * @throws Exception
+     */
+    @Test(timeout = 5000)
+    public void isAdmin() throws Exception {
+        System.out.println("isAdmin");
+        SessionManager manager = new SessionManager(clientStore);
+        manager.initStore();
+
+        // login admin
+        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+
+        assertEquals(manager.isAdmin(), true);
+    }
 }

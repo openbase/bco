@@ -303,6 +303,25 @@ public class SessionManager {
     public boolean isLoggedIn() {
         return this.ticketAuthenticatorWrapper != null && this.sessionKey != null;
     }
+
+    /**
+     * Determines whether the currently logged in user is an admin.
+     *
+     * @return True if the user is an admin, false if not.
+     */
+    public boolean isAdmin() {
+        if (!this.isLoggedIn()) {
+            return false;
+        }
+
+        try {
+            return CachedAuthenticationRemote.getRemote().isAdmin(userId).get();
+        } catch (InterruptedException | CouldNotPerformException | ExecutionException ex) {
+            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+        }
+
+        return false;
+    }
     
     /**
      * determines if a user can login again.
