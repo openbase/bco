@@ -142,7 +142,7 @@ public interface AuthenticationService {
     /**
      * Removes a user or client.
      *
-     * @param id Id of the user or client to remove
+     * @param loginCredentialsChange change of credentials (id of user to remove)
      * @return TicketAuthenticatorWrapper which contains an updated validity period in
      * the ClientServerTicket and an updated timestamp in the authenticator
      * which has to be verified by the client to make sure that its the correct
