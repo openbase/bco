@@ -140,6 +140,22 @@ public interface AuthenticationService {
     public Future<TicketAuthenticatorWrapper> register(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, StreamCorruptedException, IOException, PermissionDeniedException;
 
     /**
+     * Removes a user or client.
+     *
+     * @param id Id of the user or client to remove
+     * @return TicketAuthenticatorWrapper which contains an updated validity period in
+     * the ClientServerTicket and an updated timestamp in the authenticator
+     * which has to be verified by the client to make sure that its the correct
+     * server answering the request.
+     * @throws RejectedException If the password change fails (invalid ticket, user has no permission, old password doesn't match).
+     * @throws StreamCorruptedException If any decryption fails.
+     * @throws IOException If de- or encryption fail because of a general I/O error.
+     * @throws PermissionDeniedException If the user has no permission to change this password.
+     */
+    @RPCMethod
+    public Future<TicketAuthenticatorWrapper> removeUser(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, StreamCorruptedException, IOException, PermissionDeniedException;
+
+    /**
      * Appoints a normal user to an administrator.
      *
      * @param loginCredentialsChange Wrapper containing the user's ID, password or public key, isAdmin flag,

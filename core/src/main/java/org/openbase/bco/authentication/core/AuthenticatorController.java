@@ -250,6 +250,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 return AuthenticationServerHandler.handleSSRequest(serviceServerSecretKey, ticketAuthenticatorWrapper);
+                // TODO: Validate that user/clientId exists in store. Otherwise somebody could still be logged in after being removed from store
             } catch (RejectedException | BadPaddingException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
                 throw ex;
@@ -349,6 +350,54 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
                 // register
                 store.addCredentials(newId, key, loginCredentialsChange.getAdmin());
+
+                return response;
+            } catch (RejectedException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
+                throw new RejectedException(ex.getMessage());
+            } catch (StreamCorruptedException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
+                throw new StreamCorruptedException(ex.getMessage());
+            } catch (IOException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+                throw new CouldNotPerformException("Internal server error. Please try again.");
+            }
+        });
+    }
+
+    @Override
+    public Future<TicketAuthenticatorWrapper> removeUser(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, StreamCorruptedException, IOException, PermissionDeniedException {
+        return GlobalCachedExecutorService.submit(() -> {
+            try {
+                // validate the given authenticator and ticket.
+                TicketAuthenticatorWrapper wrapper = loginCredentialsChange.getTicketAuthenticatorWrapper();
+                TicketAuthenticatorWrapper response = AuthenticationServerHandler.handleSSRequest(serviceServerSecretKey, wrapper);
+
+                // decrypt ticket and authenticator
+                Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerSecretKey, Ticket.class);
+                byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
+
+                Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);
+                String authenticatorUserId = authenticator.getClientId().split("@", 2)[0];
+                String idToRemove = loginCredentialsChange.getId();
+
+                // check if performing user is admin
+                if (!this.store.isAdmin(authenticatorUserId)) {
+                    throw new PermissionDeniedException("You are not permitted to perform this action.");
+                }
+
+                // don't allow administrators to remove themselves
+                if (idToRemove.equals(authenticatorUserId)) {
+                    throw new CouldNotPerformException("You cannot remove yourself.");
+                }
+
+                // don't allow administrators to remove nonexistent entry
+                if (!this.store.hasEntry(idToRemove)) {
+                    throw new CouldNotPerformException("Given user does not exist.");
+                }
+
+                // remove
+                this.store.removeEntry(idToRemove);
 
                 return response;
             } catch (RejectedException ex) {

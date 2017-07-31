@@ -578,6 +578,45 @@ public class SessionManager {
             throw new CouldNotPerformException("Internal server error.", cause);
         }
     }
+    
+    public void removeUser(String id) throws CouldNotPerformException {
+        if (!this.isAdmin())
+            throw new CouldNotPerformException("You have to be an admin to perform this action");
+        
+        try {
+            ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(this.sessionKey, this.ticketAuthenticatorWrapper);
+
+            LoginCredentialsChange loginCredentialsChange = LoginCredentialsChange.newBuilder()
+                    .setId(id)
+                    .setTicketAuthenticatorWrapper(this.ticketAuthenticatorWrapper)
+                    .build();
+
+            TicketAuthenticatorWrapper wrapper = CachedAuthenticationRemote.getRemote().removeUser(loginCredentialsChange).get();
+            ticketAuthenticatorWrapper = AuthenticationClientHandler.handleServiceServerResponse(this.sessionKey, this.ticketAuthenticatorWrapper, wrapper);
+        } catch (IOException | BadPaddingException ex) {
+            this.logout();
+            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+            throw new CouldNotPerformException("Decryption failed. You have been logged out for security reasons. Please log in again.");
+        } catch (RejectedException | NotAvailableException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
+        } catch (InterruptedException ex) {
+            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+            throw new CouldNotPerformException("Action was interrupted.", ex);
+        } catch (ExecutionException ex) {
+            Throwable cause = ex.getCause();
+
+            if (cause instanceof RejectedException) {
+                throw ExceptionPrinter.printHistoryAndReturnThrowable((RejectedException) cause, LOGGER, LogLevel.ERROR);
+            }
+
+            if (cause instanceof PermissionDeniedException) {
+                throw ExceptionPrinter.printHistoryAndReturnThrowable((PermissionDeniedException) cause, LOGGER, LogLevel.ERROR);
+            }
+
+            ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
+            throw new CouldNotPerformException("Internal server error.", cause);
+        }
+    }
 
     public void setAdministrator(String id, boolean isAdmin) throws CouldNotPerformException {
         if (!this.isLoggedIn()) {

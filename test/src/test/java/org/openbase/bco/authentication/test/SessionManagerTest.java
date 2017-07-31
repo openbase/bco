@@ -77,7 +77,7 @@ public class SessionManagerTest {
 
     @Before
     public void setUp() throws Exception {
-
+        authenticatorController.init();
     }
 
     @After
@@ -263,6 +263,44 @@ public class SessionManagerTest {
         // now client should be logged in again
         Ticket ticket = EncryptionHelper.decryptSymmetric(manager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
         assertEquals(ticket.getClientId(), MockClientStore.CLIENT_ID);
+    }
+
+    /**
+     * Test if admin can remove himself.
+     * Should fail with CouldNotPerformException
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 5000, expected = CouldNotPerformException.class)
+    public void removeAdminHimself() throws Exception {
+        System.out.println("removeAdminHimself");
+        SessionManager manager = new SessionManager(clientStore);
+        manager.initStore();
+
+        // login admin
+        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+
+        // remove himself
+        manager.removeUser(MockClientStore.ADMIN_ID);
+    }
+
+    /**
+     * Test if admin can remove himself.
+     * Should fail with CouldNotPerformException
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 5000)
+    public void removeAdminOther() throws Exception {
+        System.out.println("removeAdminHimself");
+        SessionManager manager = new SessionManager(clientStore);
+        manager.initStore();
+
+        // login admin
+        manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+
+        // remove himself
+        manager.removeUser(MockClientStore.USER_ID);
     }
 
     /**
