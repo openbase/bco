@@ -21,9 +21,10 @@ package org.openbase.bco.registry.unit.test;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
+import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
@@ -38,11 +39,15 @@ import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.TimeoutException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
 import rst.domotic.authentication.PermissionType.Permission;
+import rst.domotic.registry.UnitRegistryDataType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
@@ -53,10 +58,10 @@ import rst.domotic.unit.user.UserConfigType.UserConfig;
  */
 public class RegistryFilteringTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(DeviceRegistryTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(RegistryFilteringTest.class);
 
     private static MockRegistry mockRegistry;
-    
+
     private static AuthenticatorController authenticatorController;
     private static MockCredentialStore mockCredentialStore;
 
@@ -65,6 +70,13 @@ public class RegistryFilteringTest {
         JPService.setupJUnitTestMode();
 
         try {
+            Registries.getUnitRegistry().addDataObserver(new Observer<UnitRegistryDataType.UnitRegistryData>() {
+                @Override
+                public void update(Observable<UnitRegistryDataType.UnitRegistryData> source, UnitRegistryDataType.UnitRegistryData data) throws Exception {
+                    LOGGER.warn("UnitRegisrty has published ["+data.getAuthorizationGroupUnitConfigCount()+"]");
+                }
+            });
+            
             mockRegistry = MockRegistryHolder.newMockRegistry();
 
             mockCredentialStore = new MockCredentialStore();
@@ -124,22 +136,22 @@ public class RegistryFilteringTest {
         assertEquals("Size has not been reduced as a consequence", size - 1, Registries.getUnitRegistry().getDalUnitConfigs().size());
         assertTrue("UnitConfig can still be found in unitRegistry even though the access permission for other has been removed", !Registries.getUnitRegistry().getUnitConfigRemoteRegistry().contains(unitConfig.getId()));
     }
-    
+
     @Test(timeout = 10000)
     public void testPermissionsOnLogin() throws Exception {
         System.out.println("testPermissionsOnLogin");
-        
+
         // Register a user
         UnitConfig.Builder userUnitConfig = UnitConfig.newBuilder();
         UserConfig.Builder userConfig = userUnitConfig.getUserConfigBuilder();
         userUnitConfig.setType(UnitType.USER);
         userConfig.setFirstName("Gubrush").setLastName("Threepwood").setUserName("Mighty Pirate");
         userUnitConfig = Registries.getUserRegistry().registerUserConfig(userUnitConfig.build()).get().toBuilder();
-        
+
         // register user in credentials store
         String password = "Elaine";
         mockCredentialStore.addCredentials(userUnitConfig.getId(), EncryptionHelper.hash(password), true);
-        
+
         // get unitConfig, remove other permission and add user permission
         UnitConfig.Builder unitConfig = Registries.getUnitRegistry().getDalUnitConfigs().get(0).toBuilder();
         PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();
@@ -150,17 +162,37 @@ public class RegistryFilteringTest {
         ownerPermission.setAccess(true);
         permissionConfig.setOwnerId(userUnitConfig.getId());
         Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
-        
+
         // unitConfig should be removed with missing all rights and nobody logged in
         assertTrue("UnitConfig has not been removed event though other permissions have been removed", !Registries.getUnitRegistry().containsUnitConfigById(unitConfig.getId()));
-        
+
         // logint
         SessionManager.getInstance().login(userUnitConfig.getId(), password);
-        
+
         // unitConfig should be available again
         assertTrue("UnitConfig is not visible even though owner is now loggen in", Registries.getUnitRegistry().containsUnitConfigById(unitConfig.getId()));
-        
+
         // logout to dont interfere with other tests
         SessionManager.getInstance().logout();
+    }
+
+    @Test//(timeout = 10000)
+    public void testWaitForDataOnVirtualRegistryRemote() throws Exception {
+        System.out.println("testWaitForDataOnVirtualRegistryRemote");
+
+        Registries.getUserRegistry().waitForData(2, TimeUnit.SECONDS);
+
+        UnitConfig.Builder userUnitConfig = Registries.getUserRegistry().getUserConfigs().get(0).toBuilder();
+        PermissionConfig.Builder permissionConfig = userUnitConfig.getPermissionConfigBuilder();
+        Permission.Builder otherPermission = permissionConfig.getOtherPermissionBuilder();
+        otherPermission.setAccess(false);
+
+        Registries.getUserRegistry().updateUserConfig(userUnitConfig.build()).get();
+
+        try {
+            Registries.getUserRegistry().waitForData(2, TimeUnit.SECONDS);
+        } catch (TimeoutException ex) {
+            Assert.fail("WaitForData did not return in time!");
+        }
     }
 }
