@@ -34,7 +34,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
-import org.openbase.bco.authentication.lib.AuthenticationFuture;
+import org.openbase.bco.authentication.lib.future.AuthenticatedActionFuture;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -519,7 +519,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
      */
     @Override
     public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException, RejectedException {
-        return new AuthenticationFuture(RPCHelper.callRemoteMethod(initializeRequest(actionDescription), this, ActionFuture.class), this.sessionManager);
+        return new AuthenticatedActionFuture(RPCHelper.callRemoteMethod(initializeRequest(actionDescription), this, ActionFuture.class), this.sessionManager);
     }
 
     private ActionDescription initializeRequest(final ActionDescription actionDescription) throws CouldNotPerformException {
