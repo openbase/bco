@@ -532,7 +532,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
             } catch (CouldNotPerformException ex) {
                 try {
                     this.sessionManager.relog();
-                } catch (StreamCorruptedException | CouldNotPerformException ex2) {
+                } catch (CouldNotPerformException ex2) {
                     // Logout and return CouldNotPerformException, if anything went wrong
                     this.sessionManager.logout();
                     ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
