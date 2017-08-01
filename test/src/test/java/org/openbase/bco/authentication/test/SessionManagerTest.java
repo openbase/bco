@@ -21,7 +21,7 @@ package org.openbase.bco.authentication.test;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.authentication.core.mock.MockCredentialStore;
+import org.openbase.bco.authentication.lib.mock.MockCredentialStore;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;

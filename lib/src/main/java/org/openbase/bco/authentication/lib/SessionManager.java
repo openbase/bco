@@ -42,6 +42,7 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.slf4j.LoggerFactory;
+import rst.domotic.authentication.AuthenticatorType.Authenticator;
 import rst.domotic.authentication.LoginCredentialsChangeType;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
@@ -408,13 +409,10 @@ public class SessionManager {
         }
 
         try {
-            this.ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(this.sessionKey, this.ticketAuthenticatorWrapper);
-            TicketAuthenticatorWrapper wrapper = CachedAuthenticationRemote.getRemote().validateClientServerTicket(this.ticketAuthenticatorWrapper).get();
-            wrapper = AuthenticationClientHandler.handleServiceServerResponse(
-                    this.sessionKey,
-                    this.ticketAuthenticatorWrapper,
-                    wrapper);
-            this.ticketAuthenticatorWrapper = wrapper;
+            TicketAuthenticatorWrapper request = AuthenticationClientHandler.initServiceServerRequest(this.sessionKey, this.ticketAuthenticatorWrapper);
+            TicketAuthenticatorWrapper response = CachedAuthenticationRemote.getRemote().validateClientServerTicket(request).get();
+            response = AuthenticationClientHandler.handleServiceServerResponse(this.sessionKey, request, response);
+            this.ticketAuthenticatorWrapper = response;
             return true;
         } catch (IOException | BadPaddingException ex) {
             this.logout();
@@ -423,7 +421,6 @@ public class SessionManager {
         } catch (InterruptedException ex) {
             // keep the interruption
             Thread.currentThread().interrupt();
-            ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
             throw new CouldNotPerformException("Action was interrupted.", ex);
         } catch (ExecutionException ex) {
             Throwable cause = ex.getCause();

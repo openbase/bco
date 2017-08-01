@@ -21,7 +21,6 @@ package org.openbase.bco.authentication.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -31,6 +30,7 @@ import java.util.concurrent.ExecutionException;
 import javax.crypto.BadPaddingException;
 import static org.openbase.bco.authentication.lib.AuthenticationServerHandler.getValidityInterval;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
+import org.openbase.bco.authentication.lib.mock.MockCredentialStore;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -52,12 +52,13 @@ import rst.domotic.authentication.TicketType.Ticket;
  * @author <a href="mailto:cromankiewicz@techfak.uni-bielefeld.de">Constantin Romankiewicz</a>
  */
 public class ServiceServerManager {
+
     public static final String SERVICE_SERVER_PRIVATE_KEY_FILENAME = "service_server_private_key";
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ServiceServerManager.class);
-    private byte [] serviceServerSecretKey;
+    private byte[] serviceServerSecretKey;
     private static ServiceServerManager instance;
     private TicketAuthenticatorWrapper ticketAuthenticatorWrapper;
-    private byte [] sessionKey;
+    private byte[] sessionKey;
 
     private ServiceServerManager() throws CouldNotPerformException, InterruptedException {
         this.login();
@@ -81,7 +82,7 @@ public class ServiceServerManager {
      * @throws IOException For I/O errors during the decryption.
      * @throws RejectedException If the ticket is not valid.
      */
-    public String evaluateClientServerTicket(TicketAuthenticatorWrapper wrapper) throws IOException, RejectedException {
+    public TicketEvaluationWrapper evaluateClientServerTicket(final TicketAuthenticatorWrapper wrapper) throws IOException, RejectedException {
         try {
             // decrypt ticket and authenticator
             Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerSecretKey, Ticket.class);
@@ -95,11 +96,10 @@ public class ServiceServerManager {
             cstb.setValidityPeriod(getValidityInterval());
 
             // update TicketAuthenticatorWrapper
-            TicketAuthenticatorWrapper.Builder newWrapper = wrapper.toBuilder();
-            newWrapper.setTicket(EncryptionHelper.encryptSymmetric(clientServerTicket, serviceServerSecretKey));
+            TicketAuthenticatorWrapper.Builder response = wrapper.toBuilder();
+            response.setTicket(EncryptionHelper.encryptSymmetric(clientServerTicket, serviceServerSecretKey));
 
-            wrapper = newWrapper.build();
-            return authenticator.getClientId();
+            return new TicketEvaluationWrapper(authenticator.getClientId(), clientServerTicket.getSessionKeyBytes().toByteArray(), response.build());
         } catch (IOException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
         } catch (BadPaddingException ex) {
@@ -118,15 +118,19 @@ public class ServiceServerManager {
     private void login() throws CouldNotPerformException {
         try {
             // Load private key from file.
-            File privateKeyFile = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), SERVICE_SERVER_PRIVATE_KEY_FILENAME);
             byte[] key;
-            try (FileInputStream inputStream = new FileInputStream(privateKeyFile)) {
-                key = new byte[(int)privateKeyFile.length()];
-                inputStream.read(key);
+            if (JPService.testMode()) {
+                key = MockCredentialStore.SERVICE_SERVER_KEY_PAIR.getPrivate().getEncoded();
+            } else {
+                File privateKeyFile = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), SERVICE_SERVER_PRIVATE_KEY_FILENAME);
+                try (FileInputStream inputStream = new FileInputStream(privateKeyFile)) {
+                    key = new byte[(int) privateKeyFile.length()];
+                    inputStream.read(key);
+                }
             }
 
             // request TGT
-            TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(CredentialStore.SERVICE_SERVER_ID).get();
+            TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket("@" + CredentialStore.SERVICE_SERVER_ID).get();
 
             // handle KDC response on client side
             List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(CredentialStore.SERVICE_SERVER_ID, key, false, ticketSessionKeyWrapper);
@@ -177,6 +181,7 @@ public class ServiceServerManager {
      */
     private void requestServiceServerSecretKey() throws CouldNotPerformException, InterruptedException {
         try {
+            ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(sessionKey    , ticketAuthenticatorWrapper);
             AuthenticatedValue value = CachedAuthenticationRemote.getRemote().requestServiceServerSecretKey(ticketAuthenticatorWrapper).get();
             ticketAuthenticatorWrapper = AuthenticationClientHandler.handleServiceServerResponse(sessionKey, ticketAuthenticatorWrapper, value.getTicketAuthenticatorWrapper());
 
@@ -184,6 +189,31 @@ public class ServiceServerManager {
         } catch (ExecutionException | RejectedException | IOException | BadPaddingException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
             throw new CouldNotPerformException("Could not get the service server secret key.", ex);
+        }
+    }
+
+    public class TicketEvaluationWrapper {
+
+        private final String id;
+        private final byte[] sessionKey;
+        private final TicketAuthenticatorWrapper ticketAuthenticatorWrapper;
+
+        public TicketEvaluationWrapper(final String id, final byte[] sessionKey, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
+            this.id = id;
+            this.sessionKey = sessionKey;
+            this.ticketAuthenticatorWrapper = ticketAuthenticatorWrapper;
+        }
+
+        public String getId() {
+            return id;
+        }
+
+        public byte[] getSessionKey() {
+            return sessionKey;
+        }
+
+        public TicketAuthenticatorWrapper getTicketAuthenticatorWrapper() {
+            return ticketAuthenticatorWrapper;
         }
     }
 }

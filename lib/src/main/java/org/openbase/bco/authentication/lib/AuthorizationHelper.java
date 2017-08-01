@@ -23,19 +23,15 @@ package org.openbase.bco.authentication.lib;
  */
 
 import com.google.protobuf.ProtocolStringList;
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig.MapFieldEntry;
 import rst.domotic.authentication.PermissionType.Permission;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
 
 /**
- * Helper class to determine the permissions for a given user on a given unit.
+ * Helper class to determine the permissions for a given user on a given permission configuration.
  * All methods return the highest permission, i.e. if the permission is true for any level
  * applying to the user, it can't be revoked at any other level and true will be returned.
  *
@@ -49,89 +45,69 @@ public class AuthorizationHelper {
     }
 
     /**
-     * Checks whether a user has the permission to read from a unit,
-     * for example to query information about the unit's state.
+     * Checks whether a user has the permission to read from a permissionConfig,
+     * for example to query information about the unit's state who has this permissionConfig.
      *
-     * @param unitConfig The unit the user wants to read.
+     * @param permissionConfig The permissionConfig the user wants to read.
      * @param userId ID of the user whose permissions should be checked.
      * @param groups All available groups in the system, indexed by their group ID.
      * @return True if the user can read from the unit, false if not.
      */
-    public static boolean canRead(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups) {
-        return canDo(unitConfig, userId, groups, Type.READ);
+    public static boolean canRead(PermissionConfig permissionConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups) {
+        return canDo(permissionConfig, userId, groups, Type.READ);
     }
 
     /**
-     * Checks whether a user has the permission to write to a unit,
+     * Checks whether a user has the permission to write to a something with the given permissionConfig,
      * for example to run any action on a unit.
      *
-     * @param unitConfig The unit the user wants to write to.
+     * @param permissionConfig The permissionConfig of the unit the user wants to write to.
      * @param userId ID of the user whose permissions should be checked.
      * @param groups All available groups in the system, indexed by their group ID.
      * @return True if the user can write to the unit, false if not.
      */
-    public static boolean canWrite(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups) {
-        return canDo(unitConfig, userId, groups, Type.WRITE);
+    public static boolean canWrite(PermissionConfig permissionConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups) {
+        return canDo(permissionConfig, userId, groups, Type.WRITE);
     }
 
     /**
-     * Checks whether a user has the permission to access a unit.
+     * Checks whether a user has the permission to access a unit with the given permissionConfig.
      *
-     * @param unitConfig The unit the user wants to access.
+     * @param permissionConfig The permissionConfig of the unit the user wants to access.
      * @param userId ID of the user whose permissions should be checked.
      * @param groups All available groups in the system, indexed by their group ID.
      * @return True if the user can access the unit, false if not.
      */
-    public static boolean canAccess(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups) {
-        return canDo(unitConfig, userId, groups, Type.ACCESS);
+    public static boolean canAccess(PermissionConfig permissionConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups) {
+        return canDo(permissionConfig, userId, groups, Type.ACCESS);
     }
 
     /**
      * Checks all permissions for a user.
      *
-     * @param unitConfig The unit for which the permissions apply.
+     * @param permissionConfig The permissionConfig of the unit for which the permissions apply.
      * @param userId ID of the user whose permissions should be checked.
      * @param groups All available groups in the system, indexed by their group ID.
      * @return Permission object representing the maximum permissions for the given user on the given unit.
      */
-    public static Permission getPermission(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups) {
+    public static Permission getPermission(PermissionConfig permissionConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups) {
         return Permission.newBuilder()
-          .setAccess(canAccess(unitConfig, userId, groups))
-          .setRead(canRead(unitConfig, userId, groups))
-          .setWrite(canWrite(unitConfig, userId, groups))
+          .setAccess(canAccess(permissionConfig, userId, groups))
+          .setRead(canRead(permissionConfig, userId, groups))
+          .setWrite(canWrite(permissionConfig, userId, groups))
           .build();
-    }
-
-    /**
-     * Builds a HashMap of AuthorizationGroupConfigs from a list of UnitConfigs,
-     * like they are given from the AuthorizationGroupRegistry.
-     *
-     * @param entries Entries containing UnitConfigs which contain AuthorizationGroupConfigs.
-     * @return HashMap of AuthorizationGroupConfigs, indexed by their IDs.
-     * @throws NotAvailableException
-     */
-    public static HashMap<String, AuthorizationGroupConfig> authorizationGroupsMap(List<IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> entries) throws NotAvailableException {
-        HashMap<String, AuthorizationGroupConfig> map = new HashMap<>();
-
-        for (IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry : entries) {
-            map.put(entry.getId(), entry.getMessage().getAuthorizationGroupConfig());
-        }
-
-        return map;
     }
 
     /**
      * Internal helper method to check one of the permissions on a unit.
      *
-     * @param unitConfig The unit for which the permissions apply.
+     * @param permissionConfig The unit for which the permissions apply.
      * @param userId ID of the user whose permissions should be checked.
      * @param groups All available groups in the system, indexed by their group ID.
      * @param type The permission type to check.
      * @return True if the user has the given permission, false if not.
      */
-    private static boolean canDo(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Type type) {
-        PermissionConfig permissionConfig = unitConfig.getPermissionConfig();
-
+    private static boolean canDo(PermissionConfig permissionConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Type type) {
         // Other
         if (permitted(permissionConfig.getOtherPermission(), type)) {
             return true;

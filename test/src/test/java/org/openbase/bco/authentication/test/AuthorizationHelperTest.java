@@ -56,7 +56,7 @@ public class AuthorizationHelperTest {
     public AuthorizationHelperTest() throws Exception {
         groups = new HashMap<>();
         AuthorizationGroupConfig group1 = AuthorizationGroupConfig.newBuilder().addMemberId(USER_1).addMemberId(USER_2).build();
-        AuthorizationGroupConfig group2 = AuthorizationGroupConfig.newBuilder() .addMemberId(USER_1).addMemberId(USER_3).build();
+        AuthorizationGroupConfig group2 = AuthorizationGroupConfig.newBuilder().addMemberId(USER_1).addMemberId(USER_3).build();
         UnitConfig unitConfig1 = UnitConfig.newBuilder().setLabel(GROUP_1).setId(GROUP_1).setType(UnitType.AUTHORIZATION_GROUP).setAuthorizationGroupConfig(group1).build();
         UnitConfig unitConfig2 = UnitConfig.newBuilder().setLabel(GROUP_2).setId(GROUP_2).setType(UnitType.AUTHORIZATION_GROUP).setAuthorizationGroupConfig(group2).build();
         groups.put(GROUP_1, new IdentifiableMessage<>(unitConfig1));
@@ -89,31 +89,29 @@ public class AuthorizationHelperTest {
         PermissionConfig.Builder configBuilder = PermissionConfig.newBuilder()
                 .setOwnerId(USER_1)
                 .setOtherPermission(NONE);
-        Permission.Builder permissionBuilder = Permission.newBuilder();
+        Permission.Builder ownerPermissionBuilder = configBuilder.getOwnerPermissionBuilder();
 
         boolean[] bools = {true, false};
 
         for (boolean read : bools) {
-            permissionBuilder.setRead(read);
+            ownerPermissionBuilder.setRead(read);
 
             for (boolean write : bools) {
-                permissionBuilder.setWrite(write);
+                ownerPermissionBuilder.setWrite(write);
 
                 for (boolean access : bools) {
-                    permissionBuilder.setAccess(access);
-                    UnitConfig unitConfig = UnitConfig.newBuilder()
-                            .setPermissionConfig(configBuilder.setOwnerPermission(permissionBuilder))
-                            .build();
+                    ownerPermissionBuilder.setAccess(access);
+                    PermissionConfig config = configBuilder.build();
 
                     // Test the "owner" permissions.
-                    assertEquals(AuthorizationHelper.canRead(unitConfig, USER_1, groups), read);
-                    assertEquals(AuthorizationHelper.canWrite(unitConfig, USER_1, groups), write);
-                    assertEquals(AuthorizationHelper.canAccess(unitConfig, USER_1, groups), access);
+                    assertEquals(AuthorizationHelper.canRead(config, USER_1, groups), read);
+                    assertEquals(AuthorizationHelper.canWrite(config, USER_1, groups), write);
+                    assertEquals(AuthorizationHelper.canAccess(config, USER_1, groups), access);
 
                     // Make sure that a different user didn't gain any permissions.
-                    assertEquals(AuthorizationHelper.canRead(unitConfig, USER_2, groups), false);
-                    assertEquals(AuthorizationHelper.canWrite(unitConfig, USER_2, groups), false);
-                    assertEquals(AuthorizationHelper.canAccess(unitConfig, USER_2, groups), false);
+                    assertEquals(AuthorizationHelper.canRead(config, USER_2, groups), false);
+                    assertEquals(AuthorizationHelper.canWrite(config, USER_2, groups), false);
+                    assertEquals(AuthorizationHelper.canAccess(config, USER_2, groups), false);
                 }
             }
         }
@@ -155,25 +153,23 @@ public class AuthorizationHelperTest {
                     // Change the permission for our group.
                     groupsBuilder.setPermission(permissionBuilder);
 
-                    UnitConfig unitConfig = UnitConfig.newBuilder()
-                            // Change the entry of our group.
-                            .setPermissionConfig(configBuilder.setGroupPermission(1, groupsBuilder))
-                            .build();
+                    // Change the entry of our group.
+                    PermissionConfig config = configBuilder.setGroupPermission(1, groupsBuilder).build();
 
                     // Test if group permissions match for the group member.
-                    assertEquals(AuthorizationHelper.canRead(unitConfig, USER_2, groups), read);
-                    assertEquals(AuthorizationHelper.canWrite(unitConfig, USER_2, groups), write);
-                    assertEquals(AuthorizationHelper.canAccess(unitConfig, USER_2, groups), access);
+                    assertEquals(AuthorizationHelper.canRead(config, USER_2, groups), read);
+                    assertEquals(AuthorizationHelper.canWrite(config, USER_2, groups), write);
+                    assertEquals(AuthorizationHelper.canAccess(config, USER_2, groups), access);
 
                     // Make sure that the owner didn't lose any permissions.
-                    assertEquals(AuthorizationHelper.canRead(unitConfig, USER_1, groups), true);
-                    assertEquals(AuthorizationHelper.canWrite(unitConfig, USER_1, groups), true);
-                    assertEquals(AuthorizationHelper.canAccess(unitConfig, USER_1, groups), true);
+                    assertEquals(AuthorizationHelper.canRead(config, USER_1, groups), true);
+                    assertEquals(AuthorizationHelper.canWrite(config, USER_1, groups), true);
+                    assertEquals(AuthorizationHelper.canAccess(config, USER_1, groups), true);
 
                     // Make sure that a different user didn't gain any permissions.
-                    assertEquals(AuthorizationHelper.canRead(unitConfig, USER_3, groups), false);
-                    assertEquals(AuthorizationHelper.canWrite(unitConfig, USER_3, groups), false);
-                    assertEquals(AuthorizationHelper.canAccess(unitConfig, USER_3, groups), false);
+                    assertEquals(AuthorizationHelper.canRead(config, USER_3, groups), false);
+                    assertEquals(AuthorizationHelper.canWrite(config, USER_3, groups), false);
+                    assertEquals(AuthorizationHelper.canAccess(config, USER_3, groups), false);
                 }
             }
         }
@@ -201,19 +197,17 @@ public class AuthorizationHelperTest {
 
                 for (boolean access : bools) {
                     permissionBuilder.setAccess(access);
-                    UnitConfig unitConfig = UnitConfig.newBuilder()
-                            .setPermissionConfig(configBuilder.setOtherPermission(permissionBuilder))
-                            .build();
+                    PermissionConfig config = configBuilder.setOtherPermission(permissionBuilder).build();
 
                     // Test if "other" permissions match.
-                    assertEquals(AuthorizationHelper.canRead(unitConfig, USER_2, groups), read);
-                    assertEquals(AuthorizationHelper.canWrite(unitConfig, USER_2, groups), write);
-                    assertEquals(AuthorizationHelper.canAccess(unitConfig, USER_2, groups), access);
+                    assertEquals(AuthorizationHelper.canRead(config, USER_2, groups), read);
+                    assertEquals(AuthorizationHelper.canWrite(config, USER_2, groups), write);
+                    assertEquals(AuthorizationHelper.canAccess(config, USER_2, groups), access);
 
                     // Make sure that the owner didn't lose any permissions.
-                    assertEquals(AuthorizationHelper.canRead(unitConfig, USER_1, groups), true);
-                    assertEquals(AuthorizationHelper.canWrite(unitConfig, USER_1, groups), true);
-                    assertEquals(AuthorizationHelper.canAccess(unitConfig, USER_1, groups), true);
+                    assertEquals(AuthorizationHelper.canRead(config, USER_1, groups), true);
+                    assertEquals(AuthorizationHelper.canWrite(config, USER_1, groups), true);
+                    assertEquals(AuthorizationHelper.canAccess(config, USER_1, groups), true);
                 }
             }
         }

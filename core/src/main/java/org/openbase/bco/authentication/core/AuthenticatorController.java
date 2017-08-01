@@ -34,7 +34,7 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.RandomStringUtils;
-import org.openbase.bco.authentication.core.mock.MockCredentialStore;
+import org.openbase.bco.authentication.lib.mock.MockCredentialStore;
 import javax.crypto.BadPaddingException;
 import org.openbase.bco.authentication.lib.AuthenticationServerHandler;
 import org.openbase.bco.authentication.lib.EncryptionHelper;

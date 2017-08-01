@@ -128,15 +128,14 @@ public class AuthenticationClientHandler {
      */
     public static TicketAuthenticatorWrapper initServiceServerRequest(byte[] serviceServerSessionKey, TicketAuthenticatorWrapper wrapper) throws IOException, BadPaddingException {
         // decrypt authenticator
-        Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), serviceServerSessionKey, Authenticator.class);
+        Authenticator.Builder authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), serviceServerSessionKey, Authenticator.class).toBuilder();
 
-        // create Authenticator
-        Authenticator.Builder ab = authenticator.toBuilder();
-        ab.setTimestamp(TimestampProcessor.getCurrentTimestamp());
+        // update timestamp
+        authenticator.setTimestamp(TimestampProcessor.getCurrentTimestamp());
 
-        // create TicketAuthenticatorWrapper
+        // update ticket authenticatorWrapper
         TicketAuthenticatorWrapper.Builder ticketAuthenticatorWrapper = wrapper.toBuilder();
-        ticketAuthenticatorWrapper.setAuthenticator(EncryptionHelper.encryptSymmetric(ab.build(), serviceServerSessionKey));
+        ticketAuthenticatorWrapper.setAuthenticator(EncryptionHelper.encryptSymmetric(authenticator.build(), serviceServerSessionKey));
 
         return ticketAuthenticatorWrapper.build();
     }
