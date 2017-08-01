@@ -126,7 +126,6 @@ public interface ServiceRemoteFactory extends Factory<AbstractServiceRemote, Ser
      * @param unitConfigs The collection of units which are controlled by the new service remote instance.
      * @return the new created service remote.
      * @throws CouldNotPerformException is thrown if any error occurs during the creation.
-     * @throws InterruptedException is thrown if the current thread is externally interrupted.
      */
     @Deprecated
     public default AbstractServiceRemote createAndInitServiceRemote(final ServiceType serviceType, final Collection<UnitConfig> unitConfigs) throws CouldNotPerformException {
