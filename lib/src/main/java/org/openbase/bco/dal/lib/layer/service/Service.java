@@ -55,14 +55,15 @@ public interface Service {
     public static final Package SERVICE_STATE_PACKAGE = ContactStateType.class.getPackage();
     public static final String SERVICE_LABEL = Service.class.getSimpleName();
 
+    // release todo: move to unit interface and service remote interface (or service provider interface?)
     @RPCMethod
-    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException;
+    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException; 
 
-    default public void addServiceStateObserver(ServiceType serviceType, Observer observer) {
-    }
+    // release todo: move to unit interface and service remote interface (or service provider interface?)
+    public void addServiceStateObserver(final ServiceType serviceType, final Observer observer);
 
-    default public void removeServiceStateObserver(ServiceType serviceType, Observer observer) {
-    }
+    // release todo: move to unit interface and service remote interface (or service provider interface?)
+    public void removeServiceStateObserver(final ServiceType serviceType, final Observer observer);
 
     /**
      * This method returns the service base name of the given service type.

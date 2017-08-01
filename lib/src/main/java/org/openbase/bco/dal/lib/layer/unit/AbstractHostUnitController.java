@@ -35,6 +35,7 @@ import java.util.Map;
 import java.util.Set;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactoryProvider;
 import org.openbase.bco.dal.lib.transform.UnitConfigToUnitClassTransformer;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
@@ -67,7 +68,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
         this.hostedUnitDiff = new ProtobufListDiff<>();
     }
 
-    protected abstract List<UnitConfig> getHostedUnits() throws NotAvailableException;
+    protected abstract List<UnitConfig> getHostedUnits() throws NotAvailableException, InterruptedException;
 
     protected <U extends AbstractUnitController<?, ?>> void registerUnit(final U unit) throws CouldNotPerformException {
         try {
@@ -118,7 +119,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
     @Override
     public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
         UnitConfig unitConfig = super.applyConfigUpdate(config);
-        unitRegistry.waitForData();
+        Registries.getUnitRegistry().waitForData();
 
         hostedUnitDiff.diff(getHostedUnits());
 
@@ -208,7 +209,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
 
         for (String unitId : unitIds) {
             try {
-                registerUnit(unitRegistry.getUnitConfigById(unitId));
+                registerUnit(Registries.getUnitRegistry(true).getUnitConfigById(unitId));
             } catch (CouldNotPerformException ex) {
                 exceptionStack = MultiException.push(this, ex, exceptionStack);
             }

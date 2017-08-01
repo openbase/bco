@@ -31,8 +31,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
-import java.util.logging.Logger;
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3d;
 import javax.vecmath.Quat4d;
@@ -85,9 +83,9 @@ import rst.rsb.ScopeType;
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- * @param <M>
+ * @param <D> The unit data type.
  */
-public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends AbstractConfigurableRemote<M, UnitConfig> implements UnitRemote<M> {
+public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends AbstractConfigurableRemote<D, UnitConfig> implements UnitRemote<D> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionFuture.getDefaultInstance()));
@@ -96,13 +94,27 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
     }
 
     private UnitTemplate template;
+    private boolean initialized = false;
 
+    private final Observer<UnitRegistryData> unitRegistryObserver;
     private final Map<ServiceType, MessageObservable> serviceStateObservableMap;
 
-    public AbstractUnitRemote(final Class<M> dataClass) {
+    public AbstractUnitRemote(final Class<D> dataClass) {
         super(dataClass, UnitConfig.class);
-
-        serviceStateObservableMap = new HashMap<>();
+        this.serviceStateObservableMap = new HashMap<>();
+        this.unitRegistryObserver = new Observer<UnitRegistryData>() {
+            @Override
+            public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
+                try {
+                    final UnitConfig newUnitConfig = Registries.getUnitRegistry(true).getUnitConfigById(getId());
+                    if (!newUnitConfig.equals(getConfig())) {
+                        applyConfigUpdate(newUnitConfig);
+                    }
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not update unit config of " + this, ex, logger);
+                }
+            }
+        };
     }
 
     protected UnitRegistry getUnitRegistry() throws InterruptedException, CouldNotPerformException {
@@ -217,48 +229,33 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         super.postInit();
         try {
             this.setMessageProcessor(new GenericMessageProcessor<>(getDataClass()));
-            getUnitRegistry().addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
-                try {
-                    final UnitConfig newUnitConfig = getUnitRegistry().getUnitConfigById(getId());
-                    if (!newUnitConfig.equals(getConfig())) {
-                        applyConfigUpdate(newUnitConfig);
-                    }
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory("Could not update unit config of " + this, ex, logger);
-                }
-            });
 
-            // TODO: move to applyConfigUpdate
-            try {
-                for (ServiceDescription serviceDescription : getTemplate().getServiceDescriptionList()) {
-                    if (!serviceStateObservableMap.containsKey(serviceDescription.getType())) {
-                        serviceStateObservableMap.put(serviceDescription.getType(), new MessageObservable(this));
-                    }
-                }
-            } catch (NotAvailableException ex) {
-
+            if (!initialized) {
+                Registries.getUnitRegistry().addDataObserver(unitRegistryObserver);
+                initialized = true;
             }
-            this.addDataObserver(new Observer<M>() {
-
-                @Override
-                public void update(Observable<M> source, M data) throws Exception {
-                    Set<ServiceType> serviceTypeSet = new HashSet<>();
-                    for (ServiceDescription serviceDescription : getTemplate().getServiceDescriptionList()) {
-                        if (!serviceTypeSet.contains(serviceDescription.getType())) {
-                            serviceTypeSet.add(serviceDescription.getType());
-                            try {
-                                Object serviceData = Service.invokeProviderServiceMethod(serviceDescription.getType(), data);
-                                serviceStateObservableMap.get(serviceDescription.getType()).notifyObservers(serviceData);
-                            } catch (CouldNotPerformException ex) {
-//                            System.out.println("update error, no service getter for type [" + serviceTemplate.getType() + "]");
-                                logger.debug("Could not notify state update for service[" + serviceDescription.getType() + "] because this service is not supported by this controller");
-                            }
-                        }
-                    }
-                }
-            });
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
+        }
+    }
+
+    @Override
+    protected void notifyDataUpdate(final D data) throws CouldNotPerformException {
+        super.notifyDataUpdate(data);
+
+        final Set<ServiceType> serviceTypeSet = new HashSet<>();
+        for (final ServiceDescription serviceDescription : getTemplate().getServiceDescriptionList()) {
+
+            // check if already handled
+            if (!serviceTypeSet.contains(serviceDescription.getType())) {
+                serviceTypeSet.add(serviceDescription.getType());
+                try {
+                    Object serviceData = Service.invokeProviderServiceMethod(serviceDescription.getType(), data);
+                    serviceStateObservableMap.get(serviceDescription.getType()).notifyObservers(serviceData);
+                } catch (CouldNotPerformException ex) {
+                    logger.debug("Could not notify state update for service[" + serviceDescription.getType() + "] because this service is not supported by this remote controller.", ex);
+                }
+            }
         }
     }
 
@@ -286,15 +283,44 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
             throw new NotAvailableException("UnitConfig");
         }
 
+        // non change filter
         try {
             if (getConfig().equals(config)) {
                 logger.debug("Skip config update because no config change detected!");
                 return config;
             }
         } catch (NotAvailableException ex) {
-            // change check failed.
+            logger.warn("Unit config change check failed.");
         }
+
+        // update unit template
         template = getUnitRegistry().getUnitTemplateByType(config.getType());
+
+        // register service observable which are not handled yet.
+        for (final ServiceDescription serviceDescription : template.getServiceDescriptionList()) {
+
+            // create observable if new
+            if (!serviceStateObservableMap.containsKey(serviceDescription.getType())) {
+                serviceStateObservableMap.put(serviceDescription.getType(), new MessageObservable(this));
+            }
+        }
+
+        // cleanup service observable related to new unit template
+        outer:
+        for (final ServiceType serviceType : serviceStateObservableMap.keySet()) {
+            for (final ServiceDescription serviceDescription : template.getServiceDescriptionList()) {
+
+                // verify if service type is still valid.
+                if (serviceType == serviceDescription.getType()) {
+                    // continue because service type is still valid
+                    continue outer;
+                }
+            }
+
+            // remove and shutdown service observable because its not valid
+            serviceStateObservableMap.remove(serviceType).shutdown();
+        }
+
         return super.applyConfigUpdate(config);
     }
 
@@ -397,7 +423,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
     /**
      * Method returns the transformation between the root location and this unit.
-     * 
+     *
      * @return a transformation future
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      */
@@ -555,52 +581,52 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
 
         return Service.upateActionDescription(actionDescription, serviceAttribute);
     }
-    
+
     /**
      * Gets the position of the unit relative to its parent location.
-     * 
+     *
      * @return relative position
      * @throws NotAvailableException is thrown if the config is not available.
      */
-    public Translation getLocalPosition() throws NotAvailableException{
+    public Translation getLocalPosition() throws NotAvailableException {
         return getConfig().getPlacementConfig().getPosition().getTranslation();
     }
-    
+
     /**
      * Gets the rotation of the unit relative to its parent location.
-     * 
+     *
      * @return relative rotation
      * @throws NotAvailableException is thrown if the config is not available.
      */
-    public Rotation getLocalRotation() throws NotAvailableException{
+    public Rotation getLocalRotation() throws NotAvailableException {
         return getConfig().getPlacementConfig().getPosition().getRotation();
     }
-    
+
     /**
-     * Gets the Transform3D of the transformation from root to unit coordinate system. 
-     * 
+     * Gets the Transform3D of the transformation from root to unit coordinate system.
+     *
      * @return transform relative to root location
      * @throws NotAvailableException is thrown if the transformation is not available.
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      */
-    public Transform3D getTransform3D() throws NotAvailableException, InterruptedException{
+    public Transform3D getTransform3D() throws NotAvailableException, InterruptedException {
         try {
             return getTransformation().get(1000, TimeUnit.MILLISECONDS).getTransform();
         } catch (ExecutionException | TimeoutException ex) {
             throw new NotAvailableException("Transform3D", ex);
         }
     }
-    
+
     /**
-     * Gets the inverse Transform3D to getTransform3D(). 
-     * This is basically rotation and translation of the object in the root coordinate system 
+     * Gets the inverse Transform3D to getTransform3D().
+     * This is basically rotation and translation of the object in the root coordinate system
      * and thereby the inverse transformation to the one returned by getTransform3D().
-     * 
+     *
      * @return transform relative to root location
      * @throws NotAvailableException is thrown if the transformation is not available.
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      */
-    public Transform3D getTransform3DInverse() throws NotAvailableException, InterruptedException{
+    public Transform3D getTransform3DInverse() throws NotAvailableException, InterruptedException {
         try {
             Transform3D transform = getTransform3D();
             transform.invert();
@@ -609,15 +635,15 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
             throw new NotAvailableException("Transform3Dinverse", ex);
         }
     }
-    
+
     /**
      * Gets the position of the unit relative to the root location as a Point3d object.
-     * 
+     *
      * @return position relative to the root location
      * @throws NotAvailableException is thrown if the transformation is not available.
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      */
-    public Point3d getGlobalPositionPoint3d() throws NotAvailableException, InterruptedException{
+    public Point3d getGlobalPositionPoint3d() throws NotAvailableException, InterruptedException {
         try {
             Transform3D transformation = getTransform3DInverse();
             Vector3d pos = new Vector3d();
@@ -627,11 +653,10 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
             throw new NotAvailableException("GlobalPositionVector", ex);
         }
     }
-    
-    
+
     /**
      * Gets the position of the unit relative to the root location as a Translation object.
-     * 
+     *
      * @return position relative to the root location
      * @throws NotAvailableException is thrown if the transformation is not available.
      * @throws InterruptedException is thrown if the thread was externally interrupted.
@@ -644,10 +669,10 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
             throw new NotAvailableException("GlobalPosition", ex);
         }
     }
-    
+
     /**
      * Gets the rotation of the unit relative to the root location as a Quat4d object.
-     * 
+     *
      * @return rotation relative to the root location
      * @throws NotAvailableException is thrown if the transformation is not available.
      * @throws InterruptedException is thrown if the thread was externally interrupted.
@@ -662,10 +687,10 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
             throw new NotAvailableException("GlobalRotationQuat", ex);
         }
     }
-    
+
     /**
      * Gets the rotation of the unit relative to the root location as a Rotation object.
-     * 
+     *
      * @return rotation relative to the root location
      * @throws NotAvailableException is thrown if the transformation is not available.
      * @throws InterruptedException is thrown if the thread was externally interrupted.
@@ -678,10 +703,10 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
             throw new NotAvailableException("GlobalRotation", ex);
         }
     }
-    
+
     /**
      * Gets the center coordinates of the unit's BoundingBox in the unit coordinate system as a Point3d object.
-     * 
+     *
      * @return center coordinates of the unit's BoundingBox relative to unit
      * @throws NotAvailableException is thrown if the center can not be calculate.
      */
@@ -689,7 +714,7 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
         try {
             AxisAlignedBoundingBox3DFloat bb = getConfig().getPlacementConfig().getShape().getBoundingBox();
             Translation lfc = bb.getLeftFrontBottom();
-            
+
             Point3d center = new Point3d(bb.getWidth(), bb.getDepth(), bb.getHeight());
             center.scale(0.5);
             center.add(new Point3d(lfc.getX(), lfc.getY(), lfc.getZ()));
@@ -698,10 +723,10 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
             throw new NotAvailableException("LocalBoundingBoxCenter", ex);
         }
     }
-    
+
     /**
      * Gets the center coordinates of the unit's BoundingBox in the coordinate system of the root location as a Point3d object.
-     * 
+     *
      * @return center coordinates of the unit's BoundingBox relative to root location
      * @throws NotAvailableException is thrown if the center can not be calculate.
      */
@@ -713,6 +738,23 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
             return center;
         } catch (NotAvailableException ex) {
             throw new NotAvailableException("GlobalBoundingBoxCenter", ex);
+        }
+    }
+
+    @Override
+    public void shutdown() {
+        super.shutdown();
+
+        try {
+            // shutdown registry observer
+            Registries.getUnitRegistry().removeDataObserver(unitRegistryObserver);
+        } catch (final Exception ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not remove unit registry observer.", ex), logger);
+        }
+
+        // shutdown service observer
+        for (final MessageObservable serviceObservable : serviceStateObservableMap.values()) {
+            serviceObservable.shutdown();
         }
     }
 }

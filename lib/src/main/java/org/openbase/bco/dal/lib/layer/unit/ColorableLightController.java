@@ -117,7 +117,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
             }
 
             // add meta config of device
-            UnitConfig deviceUnitConfig = unitRegistry.getUnitConfigById(config.getUnitHostId());
+            UnitConfig deviceUnitConfig = Registries.getUnitRegistry(true).getUnitConfigById(config.getUnitHostId());
             configPool.register(new MetaConfigVariableProvider("DeviceUnitConfig", deviceUnitConfig.getMetaConfig()));
 
             // add meta config of device class

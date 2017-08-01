@@ -179,6 +179,30 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     }
 
     @Override
+    public void addServiceStateObserver(final ServiceType serviceType, final Observer observer) {
+        try {
+            if (serviceType != getServiceType()) {
+                throw new VerificationFailedException("ServiceType[" + serviceType.name() + "] is not compatible with " + this);
+            }
+            addDataObserver(observer);
+        } catch (final CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not add service state observer!", ex), logger);
+        }
+    }
+
+    @Override
+    public void removeServiceStateObserver(final ServiceType serviceType, final Observer observer) {
+        try {
+            if (serviceType != getServiceType()) {
+                throw new VerificationFailedException("ServiceType[" + serviceType.name() + "] is not compatible with " + this);
+            }
+            addDataObserver(observer);
+        } catch (final CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not remove service state observer!", ex), logger, LogLevel.WARN);
+        }
+    }
+
+    @Override
     public Class<ST> getDataClass() {
         return serviceDataClass;
     }
@@ -448,17 +472,17 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                     actionReference.setAuthority(actionDescription.getActionAuthority());
                     actionReference.setServiceStateDescription(actionDescription.getServiceStateDescription());
                     unitActionDescription.addActionChain(actionReference);
-                    
+
                     ServiceStateDescription.Builder serviceStateDescription = unitActionDescription.getServiceStateDescriptionBuilder();
                     serviceStateDescription.setUnitId((String) unitRemote.getId());
-                    
+
                     actionFutureList.add(unitRemote.applyAction(unitActionDescription.build()));
                 }
             }
-            
+
             // todo: setup action future.
             final ActionFuture actionFuture = ActionFuture.getDefaultInstance();
-            
+
             return GlobalCachedExecutorService.allOf(actionFuture, actionFutureList);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
@@ -597,6 +621,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         }
     }
 
+    @Deprecated
     public void setInfrastructureFilter(final boolean enabled) {
         // TODO: just a hack, remove me later
     }
