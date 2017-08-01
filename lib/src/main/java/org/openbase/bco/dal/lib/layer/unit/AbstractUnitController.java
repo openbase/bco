@@ -432,12 +432,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      * @param actionAuthority the authority verified
      * @return an updated TicketAuthenticationWrapper of null if no one is logged in
      * @throws VerificationFailedException if someone is logged in but the verification with the authenticator fails
+     * @throws org.openbase.jul.exception.PermissionDeniedException
      */
     public TicketAuthenticatorWrapper verifyAuthority(final ActionAuthority actionAuthority) throws VerificationFailedException, PermissionDeniedException {
         // If there is no TicketAuthenticationWrapper, check permissions without userId and groups.
         if(!actionAuthority.hasTicketAuthenticatorWrapper()) {
             try {
-                if (!AuthorizationHelper.canWrite(getConfig(), null, null)) {
+                if (!AuthorizationHelper.canWrite(getConfig().getPermissionConfig(), null, null)) {
                     throw new PermissionDeniedException("You have no permission to execute this action.");
                 }
 
@@ -449,9 +450,9 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
         try {
             TicketAuthenticatorWrapper wrapper = actionAuthority.getTicketAuthenticatorWrapper();
-            String clientId = ServiceServerManager.getInstance().evaluateClientServerTicket(wrapper);
+            String clientId = ServiceServerManager.getInstance().evaluateClientServerTicket(wrapper).getId();
 
-            if (!AuthorizationHelper.canWrite(getConfig(), clientId, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap())) {
+            if (!AuthorizationHelper.canWrite(getConfig().getPermissionConfig(), clientId, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap())) {
                 throw new PermissionDeniedException("You have no permission to execute this action.");
             }
 

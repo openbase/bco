@@ -519,7 +519,8 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
      */
     @Override
     public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException, RejectedException {
-        return new AuthenticatedActionFuture(RPCHelper.callRemoteMethod(initializeRequest(actionDescription), this, ActionFuture.class), this.sessionManager);
+        ActionDescription initialized = initializeRequest(actionDescription);
+        return new AuthenticatedActionFuture(RPCHelper.callRemoteMethod(initialized, this, ActionFuture.class), initialized.getActionAuthority().getTicketAuthenticatorWrapper(), this.sessionManager);
     }
 
     private ActionDescription initializeRequest(final ActionDescription actionDescription) throws CouldNotPerformException {
