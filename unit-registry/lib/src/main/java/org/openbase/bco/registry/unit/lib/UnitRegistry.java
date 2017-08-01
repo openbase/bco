@@ -35,6 +35,7 @@ import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.pattern.provider.DataProvider;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
@@ -47,14 +48,20 @@ import rst.rsb.ScopeType.Scope;
 
 public interface UnitRegistry extends DataProvider<UnitRegistryData>, Shutdownable {
 
-    @RPCMethod
     public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
-
+    
     @RPCMethod
+    public Future<AuthenticatedValue> registerUnitConfig(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+
     public Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
-
+    
     @RPCMethod
+    public Future<AuthenticatedValue> updateUnitConfig(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+
     public Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
+    
+    @RPCMethod
+    public Future<AuthenticatedValue> removeUnitConfig(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
 
     @RPCMethod
     public Boolean containsUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;

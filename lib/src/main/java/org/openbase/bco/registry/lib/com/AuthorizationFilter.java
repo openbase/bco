@@ -54,9 +54,9 @@ public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
     @Override
     public boolean verify(UnitConfig unitConfig) {
         if (authorizationGroupRegistry != null) {
-            return AuthorizationHelper.canAccess(unitConfig, SessionManager.getInstance().getUserId(), authorizationGroupRegistry.getEntryMap());
+            return AuthorizationHelper.canAccess(unitConfig.getPermissionConfig(), SessionManager.getInstance().getUserId(), authorizationGroupRegistry.getEntryMap());
         } else {
-            return AuthorizationHelper.canAccess(unitConfig, SessionManager.getInstance().getUserId(), null);
+            return AuthorizationHelper.canAccess(unitConfig.getPermissionConfig(), SessionManager.getInstance().getUserId(), null);
         }
     }
 }

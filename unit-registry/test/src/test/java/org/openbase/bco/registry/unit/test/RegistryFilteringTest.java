@@ -21,6 +21,7 @@ package org.openbase.bco.registry.unit.test;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -31,7 +32,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.authentication.core.AuthenticatorController;
-import org.openbase.bco.authentication.core.mock.MockCredentialStore;
+import org.openbase.bco.authentication.lib.mock.MockCredentialStore;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.mock.MockRegistry;
@@ -41,13 +42,10 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.TimeoutException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
 import rst.domotic.authentication.PermissionType.Permission;
-import rst.domotic.registry.UnitRegistryDataType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
@@ -72,6 +70,7 @@ public class RegistryFilteringTest {
         try {
             mockRegistry = MockRegistryHolder.newMockRegistry();
 
+            System.out.println("Starting AuthenticatorControll");
             mockCredentialStore = new MockCredentialStore();
             authenticatorController = new AuthenticatorController(mockCredentialStore);
             authenticatorController.init();
@@ -190,6 +189,26 @@ public class RegistryFilteringTest {
             Registries.getUserRegistry().waitForData(2, TimeUnit.SECONDS);
         } catch (TimeoutException ex) {
             Assert.fail("WaitForData did not return in time!");
+        }
+    }
+
+    @Test(timeout = 10000)
+    public void testRegisteringWhileLoggedIn() throws Exception {
+        System.out.println("testRegisteringWhileLoggedIn");
+
+        UnitConfig.Builder userUnitConfig = UnitConfig.newBuilder();
+        UserConfig.Builder userConfig = userUnitConfig.getUserConfigBuilder();
+        userUnitConfig.setType(UnitType.USER);
+        userConfig.setFirstName("Admin");
+        userConfig.setLastName("Istrator");
+        userConfig.setUserName("Admin");
+
+        SessionManager.getInstance().login(MockCredentialStore.ADMIN_ID, MockCredentialStore.ADMIN_PASSWORD);
+
+        try {
+            UnitConfig result = Registries.getUnitRegistry().registerUnitConfig(userUnitConfig.build()).get();
+        } catch (InterruptedException | ExecutionException | CouldNotPerformException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
     }
 }

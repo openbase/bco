@@ -25,7 +25,8 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
-import org.apache.commons.io.filefilter.AbstractFileFilter;
+import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
 import org.openbase.bco.registry.lib.com.AuthorizationFilter;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
@@ -44,6 +45,7 @@ import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -89,7 +91,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         try {
             this.unitTemplateRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.UNIT_TEMPLATE_FIELD_NUMBER);
             this.serviceTemplateRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UnitRegistryData.SERVICE_TEMPLATE_FIELD_NUMBER);
-            
+
             this.authorizationFilter = new AuthorizationFilter();
             this.dalUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry(this, authorizationFilter, UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER);
             this.userUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
@@ -124,7 +126,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                     UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER
             );
-            
+
             authorizationFilter.setAuthorizationGroupRegistry(authorizationGroupUnitConfigRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
@@ -229,8 +231,13 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      */
     @Override
     public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(unitConfig, UnitConfig.class, SessionManager.getInstance(), this::registerUnitConfig);
+    }
+
+    @Override
+    public Future<AuthenticatedValue> registerUnitConfig(AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(unitConfig, this, UnitConfig.class);
+            return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register unit config!", ex);
         }
@@ -264,8 +271,13 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
 
     @Override
     public Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(unitConfig, UnitConfig.class, SessionManager.getInstance(), this::updateUnitConfig);
+    }
+    
+    @Override
+    public Future<AuthenticatedValue> updateUnitConfig(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(unitConfig, this, UnitConfig.class);
+            return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update unit config!", ex);
         }
@@ -273,8 +285,13 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
 
     @Override
     public Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(unitConfig, UnitConfig.class, SessionManager.getInstance(), this::removeUnitConfig);
+    }
+    
+     @Override
+    public Future<AuthenticatedValue> removeUnitConfig(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(unitConfig, this, UnitConfig.class);
+            return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove unit config!", ex);
         }

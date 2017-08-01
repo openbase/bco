@@ -63,9 +63,7 @@ public class AuthorizationGroupCreationPlugin extends FileRegistryPluginAdapter<
             for (String label : this.labelSet) {
                 if (!containsAuthorizationGroupByLabel(label)) {
                     authorizationGoupUnitConfig.setLabel(label);
-                    System.out.println("Register group [" + label + "]");
                     this.authorizationGroupRegistry.register(authorizationGoupUnitConfig.build());
-                    System.out.println("Group [" + label + "] succesfully registered");
                 }
             }
         } catch (CouldNotPerformException ex) {

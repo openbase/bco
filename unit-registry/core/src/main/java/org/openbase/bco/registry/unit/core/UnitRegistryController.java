@@ -21,10 +21,16 @@ package org.openbase.bco.registry.unit.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
+import javax.crypto.BadPaddingException;
+import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
+import org.openbase.bco.authentication.lib.AuthorizationHelper;
+import org.openbase.bco.authentication.lib.EncryptionHelper;
+import org.openbase.bco.authentication.lib.ServiceServerManager;
 import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
 import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
 import org.openbase.bco.registry.app.remote.AppRegistryRemote;
@@ -124,9 +130,12 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.PermissionDeniedException;
+import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
@@ -135,6 +144,9 @@ import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
+import rst.domotic.authentication.PermissionType.Permission;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -473,6 +485,26 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         RPCHelper.registerInterface(UnitRegistry.class, this, server);
     }
 
+    @Override
+    protected void postInit() throws InitializationException, InterruptedException {
+        super.postInit();
+        try (ClosableDataBuilder<UnitRegistryData.Builder> dataBuilder = getDataBuilder(this, false)) {
+            PermissionConfig.Builder permissionConfig = dataBuilder.getInternalBuilder().getPermissionConfigBuilder();
+            Permission allPermission = Permission.newBuilder().setRead(true).setWrite(true).setAccess(true).build();
+//            if (JPService.testMode()) {
+                permissionConfig.setOtherPermission(allPermission);
+//            }
+            
+            String adminGroupId = getUnitConfigsByLabelAndUnitType(AuthorizationGroupCreationPlugin.ADMIN_GROUP_LABEL, UnitType.AUTHORIZATION_GROUP).get(0).getId();
+            String registryGroupdId = getUnitConfigsByLabelAndUnitType(AuthorizationGroupCreationPlugin.REGISTRY_GROUP_LABEL, UnitType.AUTHORIZATION_GROUP).get(0).getId();
+
+            permissionConfig.addGroupPermission(PermissionConfig.MapFieldEntry.newBuilder().setGroupId(adminGroupId).setPermission(allPermission));
+            permissionConfig.addGroupPermission(PermissionConfig.MapFieldEntry.newBuilder().setGroupId(registryGroupdId).setPermission(allPermission));
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException(this, new CouldNotPerformException("Could not setup registry permissions", ex));
+        }
+    }
+
     private ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> getUnitConfigRegistry(final UnitType unitType) {
         switch (unitType) {
             case AUTHORIZATION_GROUP:
@@ -501,6 +533,13 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> getUnitConfigRegistry(unitConfig.getType()).register(unitConfig));
+    }
+
+    @Override
+    public Future<AuthenticatedValue> registerUnitConfig(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(() -> {
+            return AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, getData().getPermissionConfig(), getAuthorizationGroupUnitConfigRegistry().getEntryMap(), UnitConfig.class, (UnitConfig unitConfig) -> getUnitConfigRegistry(unitConfig.getType()).register(unitConfig));
+        });
     }
 
     @Override
@@ -536,10 +575,24 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     public Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> getUnitConfigRegistry(unitConfig.getType()).update(unitConfig));
     }
+    
+    @Override
+    public Future<AuthenticatedValue> updateUnitConfig(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(() -> {
+            return AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, getData().getPermissionConfig(), getAuthorizationGroupUnitConfigRegistry().getEntryMap(), UnitConfig.class, (UnitConfig unitConfig) -> getUnitConfigRegistry(unitConfig.getType()).update(unitConfig));
+        });
+    }
 
     @Override
     public Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> getUnitConfigRegistry(unitConfig.getType()).remove(unitConfig));
+    }
+    
+    @Override
+    public Future<AuthenticatedValue> removeUnitConfig(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(() -> {
+            return AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, getData().getPermissionConfig(), getAuthorizationGroupUnitConfigRegistry().getEntryMap(), UnitConfig.class, (UnitConfig unitConfig) -> getUnitConfigRegistry(unitConfig.getType()).remove(unitConfig));
+        });
     }
 
     @Override
