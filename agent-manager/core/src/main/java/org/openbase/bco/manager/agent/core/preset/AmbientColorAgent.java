@@ -26,6 +26,7 @@ import java.util.List;
 import java.util.Random;
 import org.openbase.bco.dal.remote.service.ColorStateServiceRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -155,7 +156,7 @@ public class AmbientColorAgent extends AbstractAgentController {
                 while (!(unitId = configVariableProvider.getValue(UNIT_KEY + "_" + i)).isEmpty()) {
                     logger.debug("Found unit id [" + unitId + "] with key [" + UNIT_KEY + "_" + i + "]");
                     ColorStateServiceRemote remote = new ColorStateServiceRemote();
-                    remote.init(unitRegistry.getUnitConfigById(unitId));
+                    remote.init(Registries.getUnitRegistry(true).getUnitConfigById(unitId));
                     colorRemotes.add(remote);
                     i++;
                 }
@@ -184,6 +185,7 @@ public class AmbientColorAgent extends AbstractAgentController {
 
             holdingTime = Long.parseLong(configVariableProvider.getValue(HOLDING_TIME_KEY));
             strategy = ColoringStrategy.valueOf(configVariableProvider.getValue(STRATEGY_KEY));
+            
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }

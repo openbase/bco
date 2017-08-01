@@ -21,7 +21,6 @@ package org.openbase.bco.manager.device.binding.openhab.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.bco.dal.lib.layer.service.operation.IntensityStateOperationService;
@@ -29,7 +28,13 @@ import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.NotSupportedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.pattern.Observer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.IntensityStateType.IntensityState;
 
 /**
@@ -39,6 +44,8 @@ import rst.domotic.state.IntensityStateType.IntensityState;
  */
 @Deprecated
 public class IntensityStateServiceImpl<UNIT extends IntensityStateOperationService & Unit<?>> extends OpenHABService<UNIT> implements IntensityStateOperationService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(IntensityStateServiceImpl.class);
 
     public IntensityStateServiceImpl(final UNIT unit) throws InstantiationException {
         super(unit);
@@ -52,5 +59,17 @@ public class IntensityStateServiceImpl<UNIT extends IntensityStateOperationServi
     @Override
     public IntensityState getIntensityState() throws NotAvailableException {
         return unit.getIntensityState();
+    }
+
+    // will be removed if service interface todos are implemented.
+    @Override
+    public void addServiceStateObserver(ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Observer observer) {
+        ExceptionPrinter.printHistory(new NotSupportedException("service observation", this), LOGGER);
+    }
+
+    // will be removed if service interface todos are implemented.
+    @Override
+    public void removeServiceStateObserver(ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Observer observer) {
+        ExceptionPrinter.printHistory(new NotSupportedException("service observation", this), LOGGER);
     }
 }

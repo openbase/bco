@@ -28,7 +28,13 @@ import org.openbase.bco.manager.device.binding.openhab.execution.OpenHABCommandF
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.NotSupportedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.pattern.Observer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.BlindStateType.BlindState;
 
 /**
@@ -37,6 +43,8 @@ import rst.domotic.state.BlindStateType.BlindState;
  * @param <ST> Related service type.
  */
 public class BlindStateServiceImpl<ST extends BlindStateOperationService & Unit<?>> extends OpenHABService<ST> implements BlindStateOperationService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BlindStateServiceImpl.class);
 
     public BlindStateServiceImpl(final ST unit) throws InstantiationException {
         super(unit);
@@ -59,6 +67,18 @@ public class BlindStateServiceImpl<ST extends BlindStateOperationService & Unit<
     @Override
     public BlindState getBlindState() throws NotAvailableException {
         return unit.getBlindState();
+    }
+
+    // will be removed if service interface todos are implemented.
+    @Override
+    public void addServiceStateObserver(ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Observer observer) {
+        ExceptionPrinter.printHistory(new NotSupportedException("service observation", this), LOGGER);
+    }
+
+    // will be removed if service interface todos are implemented.
+    @Override
+    public void removeServiceStateObserver(ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Observer observer) {
+        ExceptionPrinter.printHistory(new NotSupportedException("service observation", this), LOGGER);
     }
 
 }
