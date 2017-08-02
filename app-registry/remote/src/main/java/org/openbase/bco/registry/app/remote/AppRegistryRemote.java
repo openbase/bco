@@ -117,6 +117,8 @@ public class AppRegistryRemote extends AbstractVirtualRegistryRemote<AppRegistry
 
     @Override
     protected void notifyDataUpdate(final AppRegistryData data) throws CouldNotPerformException {
+        // todo: why are these methods only implemented for app and agent registry?
+        super.notifyDataUpdate(data);
         appUnitConfigRemoteRegistry.notifyRegistryUpdate(data.getAppUnitConfigList());
         appClassRemoteRegistry.notifyRegistryUpdate(data.getAppClassList());
     }
