@@ -71,11 +71,11 @@ public class BoundingBoxCleanerConsistencyHandler extends AbstractProtoBufRegist
 
     private AxisAlignedBoundingBox3DFloat updateBoundingBox(final Shape shape) {
 
-        double maxX = 0.0;
+        double maxX = Double.MIN_VALUE;
         double minX = Double.MAX_VALUE;
-        double maxY = 0.0;
+        double maxY = Double.MIN_VALUE;
         double minY = Double.MAX_VALUE;
-        double maxZ = 0.0;
+        double maxZ = Double.MIN_VALUE;
         double minZ = Double.MAX_VALUE;
 
         // Get the shape of the room
