@@ -52,10 +52,6 @@ public class TemperatureControllerRemote extends AbstractUnitRemote<TemperatureC
     }
 
     @Override
-    public void notifyDataUpdate(TemperatureControllerData data) throws CouldNotPerformException {
-    }
-
-    @Override
     public TemperatureState getTemperatureState() throws NotAvailableException {
         try {
             return getData().getTemperatureState();

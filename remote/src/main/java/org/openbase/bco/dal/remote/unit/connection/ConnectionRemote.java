@@ -51,10 +51,6 @@ public class ConnectionRemote extends AbstractUnitRemote<ConnectionData> impleme
     }
 
     @Override
-    public void notifyDataUpdate(final ConnectionData data) throws CouldNotPerformException {
-    }
-
-    @Override
     public String getLabel() throws NotAvailableException {
         return getConfig().getLabel();
     }

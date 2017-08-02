@@ -45,10 +45,6 @@ public class ButtonRemote extends AbstractUnitRemote<ButtonData> implements Butt
     }
 
     @Override
-    public void notifyDataUpdate(ButtonData data) {
-    }
-
-    @Override
     public ButtonState getButtonState() throws NotAvailableException {
         try {
             return getData().getButtonState();
