@@ -290,7 +290,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
                 return config;
             }
         } catch (NotAvailableException ex) {
-            logger.warn("Unit config change check failed.");
+            logger.trace("Unit config change check failed because config is not available yet.");
         }
 
         // update unit template

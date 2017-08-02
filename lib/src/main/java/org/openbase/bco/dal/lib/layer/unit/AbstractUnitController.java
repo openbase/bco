@@ -246,7 +246,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 return config;
             }
         } catch (NotAvailableException ex) {
-            logger.warn("Unit config change check failed.");
+            logger.trace("Unit config change check failed because config is not available yet.");
         }
 
         template = Registries.getUnitRegistry(true).getUnitTemplateByType(config.getType());
