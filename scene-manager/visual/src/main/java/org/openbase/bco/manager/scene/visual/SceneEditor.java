@@ -33,6 +33,7 @@ import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.visual.service.AbstractServicePanel;
 import org.openbase.bco.dal.visual.unit.GenericUnitPanel;
 import org.openbase.bco.dal.visual.unit.RemovableGenericUnitPanel;
+import org.openbase.bco.dal.visual.util.SelectorPanel;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jps.core.JPService;
@@ -68,8 +69,8 @@ public class SceneEditor extends javax.swing.JFrame {
 
     public SceneEditor init() throws InitializationException, InterruptedException {
         try {
-        sceneSelectorPanel.addObserver((final Observable<SceneSelectorPanel.UnitConfigServiceTypeHolder> source, SceneSelectorPanel.UnitConfigServiceTypeHolder data) -> {
-            genericUnitCollectionPanel.add(data.getConfig(), data.getServiceType(), true);
+        sceneSelectorPanel.addObserver((final Observable<SelectorPanel.ServiceTypeHolder> source, SelectorPanel.ServiceTypeHolder data) -> {
+            genericUnitCollectionPanel.add(data.getUnitConfig(), data.getServiceType(), true);
         });
         sceneCreationPanel.addObserver((final Observable<SceneConfig> source, SceneConfig data) -> {
             genericUnitCollectionPanel.clearUnitPanel();

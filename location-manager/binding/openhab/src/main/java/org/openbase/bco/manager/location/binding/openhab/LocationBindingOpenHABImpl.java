@@ -24,7 +24,7 @@ package org.openbase.bco.manager.location.binding.openhab;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -45,7 +45,6 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
     //TODO: Should be declared in the openhab config generator and used from there
     public static final String LOCATION_MANAGER_ITEM_FILTER = "bco.manager.location";
 
-    private final LocationRegistryRemote locationRegistryRemote;
     private final LocationRemoteFactoryImpl locationRemoteFactory;
     private final ConnectionRemoteFactoryImpl connectionRemoteFactory;
     private final ActivatableEntryRegistrySynchronizer<String, LocationRemote, UnitConfig, UnitConfig.Builder> locationRegistrySynchronizer;
@@ -57,34 +56,37 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
 
     public LocationBindingOpenHABImpl() throws InstantiationException, JPNotAvailableException, InterruptedException {
         super();
-        hardwareSimulationMode = JPService.getProperty(JPHardwareSimulationMode.class).getValue();
-        locationRegistryRemote = new LocationRegistryRemote();
-        locationRegistry = new RemoteControllerRegistryImpl<>();
-        connectionRegistry = new RemoteControllerRegistryImpl<>();
-        locationRemoteFactory = new LocationRemoteFactoryImpl();
-        connectionRemoteFactory = new ConnectionRemoteFactoryImpl();
-        this.locationRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, LocationRemote, UnitConfig, UnitConfig.Builder>(locationRegistry, locationRegistryRemote.getLocationConfigRemoteRegistry(), locationRemoteFactory) {
+        try {
+            hardwareSimulationMode = JPService.getProperty(JPHardwareSimulationMode.class).getValue();
+            locationRegistry = new RemoteControllerRegistryImpl<>();
+            connectionRegistry = new RemoteControllerRegistryImpl<>();
+            locationRemoteFactory = new LocationRemoteFactoryImpl();
+            connectionRemoteFactory = new ConnectionRemoteFactoryImpl();
+            this.locationRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, LocationRemote, UnitConfig, UnitConfig.Builder>(locationRegistry, Registries.getLocationRegistry().getLocationConfigRemoteRegistry(), locationRemoteFactory) {
 
-            @Override
-            public boolean activationCondition(UnitConfig config) {
-                return true;
-            }
-        };
-        this.connectionRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, ConnectionRemote, UnitConfig, UnitConfig.Builder>(connectionRegistry, locationRegistryRemote.getConnectionConfigRemoteRegistry(), connectionRemoteFactory) {
+                @Override
+                public boolean activationCondition(UnitConfig config) {
+                    return true;
+                }
+            };
+            this.connectionRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, ConnectionRemote, UnitConfig, UnitConfig.Builder>(connectionRegistry, Registries.getLocationRegistry().getConnectionConfigRemoteRegistry(), connectionRemoteFactory) {
 
-            @Override
-            public boolean activationCondition(UnitConfig config) {
-                return true;
-            }
-        };
+                @Override
+                public boolean activationCondition(UnitConfig config) {
+                    return true;
+                }
+            };
+        } catch (final CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
     }
 
     @Override
     public void init() throws InitializationException, InterruptedException {
         super.init(LOCATION_MANAGER_ITEM_FILTER, new LocationBindingOpenHABRemote(hardwareSimulationMode, locationRegistry, connectionRegistry));
         try {
+            Registries.getLocationRegistry().waitForData();
             locationRemoteFactory.init(openHABRemote);
-            locationRegistryRemote.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -93,7 +95,6 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         active = true;
-        locationRegistryRemote.activate();
         locationRegistrySynchronizer.activate();
         connectionRegistrySynchronizer.activate();
     }
@@ -101,7 +102,6 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         active = false;
-        locationRegistryRemote.deactivate();
         locationRegistrySynchronizer.deactivate();
         connectionRegistrySynchronizer.deactivate();
     }
