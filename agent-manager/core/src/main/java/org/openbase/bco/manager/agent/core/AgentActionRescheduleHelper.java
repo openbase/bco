@@ -158,7 +158,7 @@ public class AgentActionRescheduleHelper {
                     @Override
                     public void run() {
                         for (AllocatableResource allocatableResource : allocationMap.values()) {
-                            if (allocatableResource.getRemote().getRemainingTime() < (periodSecs * 1000 * 1000)) {
+                            if (allocatableResource.getRemote().getRemainingTime() < (periodSecs / 2 * 1000 * 1000)) {
                                 try {
                                     allocatableResource.getRemote().extend(periodSecs, TimeUnit.SECONDS);
                                 } catch (RSBException ex) {
