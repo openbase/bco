@@ -22,11 +22,13 @@ package org.openbase.bco.manager.agent.core.preset;
  * #L%
  */
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.remote.unit.UnitGroupRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
+import org.openbase.bco.manager.agent.core.AgentActionRescheduleHelper;
 import org.openbase.bco.manager.agent.core.TriggerDAL.AgentTriggerPool;
 import org.openbase.bco.manager.agent.core.TriggerJUL.GenericTrigger;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -35,7 +37,11 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import rst.communicationpatterns.ResourceAllocationType;
+import rst.domotic.action.ActionAuthorityType;
+import rst.domotic.action.ActionDescriptionType;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.MultiResourceAllocationStrategyType;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.ActivationStateType;
 import rst.domotic.state.ActivationStateType.ActivationState;
@@ -57,21 +63,19 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
     private Future<ActionFuture> setMultimediaPowerStateFuture;
     private final PresenceState.State triggerState = PresenceState.State.ABSENT;
     private final Observer<ActivationState> triggerHolderObserver;
+    private final AgentActionRescheduleHelper actionRescheduleHelper;
 
     public AbsenceEnergySavingAgent() throws InstantiationException {
         super(AbsenceEnergySavingAgent.class);
 
+        actionRescheduleHelper = new AgentActionRescheduleHelper(AgentActionRescheduleHelper.RescheduleOption.EXTEND, 30);
+
         triggerHolderObserver = (Observable<ActivationStateType.ActivationState> source, ActivationStateType.ActivationState data) -> {
             if (data.getValue().equals(ActivationStateType.ActivationState.State.ACTIVE)) {
                 switchlightsOff();
-                switchMultimediaOff();
+                //switchMultimediaOff();
             } else {
-                if (setLightPowerStateFuture != null && !setLightPowerStateFuture.isDone()) {
-                    setLightPowerStateFuture.cancel(true);
-                }
-                if (setMultimediaPowerStateFuture != null && !setMultimediaPowerStateFuture.isDone()) {
-                    setMultimediaPowerStateFuture.cancel(true);
-                }
+                actionRescheduleHelper.stopExecution();
             }
         };
     }
@@ -105,11 +109,13 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
         logger.info("Deactivating [" + getConfig().getLabel() + "]");
+        actionRescheduleHelper.stopExecution();
         agentTriggerHolder.deactivate();
     }
 
     @Override
     public void shutdown() {
+        actionRescheduleHelper.stopExecution();
         agentTriggerHolder.deregisterObserver(triggerHolderObserver);
         agentTriggerHolder.shutdown();
         super.shutdown();
@@ -118,11 +124,21 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
     private void switchlightsOff() {
         System.out.println("Switch lights off");
         try {
+            ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+                    1000 * 30,
+                    ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+                    ResourceAllocationType.ResourceAllocation.Priority.LOW,
+                    locationRemote,
+                    PowerState.newBuilder().setValue(PowerState.State.OFF).build(),
+                    UnitType.COLORABLE_LIGHT,
+                    ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
+                    MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
             setLightPowerStateFuture = locationRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build(), UnitType.LIGHT);
             // TODO: Blocking setPowerState function that is trying to realloc all lights as long as jobs not cancelled. 
-        } catch (CouldNotPerformException ex) {
-            logger.error("Could not set Powerstate of Lights.");
-            // TODO: Propper Ex handling
+        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+            logger.error("Could not switch on Lights.", ex);
         }
     }
 

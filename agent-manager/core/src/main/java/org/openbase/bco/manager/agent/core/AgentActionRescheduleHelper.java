@@ -55,10 +55,11 @@ import rst.domotic.action.MultiResourceAllocationStrategyType.MultiResourceAlloc
  */
 public class AgentActionRescheduleHelper {
     //Might be moved somewhere as a general ActionRescheduleHelper
-    
+
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AgentActionRescheduleHelper.class);
 
     public static enum RescheduleOption {
+
         EXPIRE, EXTEND
     }
 
@@ -90,7 +91,7 @@ public class AgentActionRescheduleHelper {
                     try {
                         AllocatableResource allocatableResource = new AllocatableResource(actionDescription.getResourceAllocation());
                         allocatableResource.startup();
-                        System.out.println("Check resource ["+actionDescription.getResourceAllocation().getResourceIds(0)+"]");
+                        System.out.println("Check resource [" + actionDescription.getResourceAllocation().getResourceIds(0) + "]");
                         allocatableResource.getRemote().addSchedulerListener((allocation) -> {
                             switch (allocation.getState()) {
                                 case REJECTED:
@@ -135,10 +136,10 @@ public class AgentActionRescheduleHelper {
     }
 
     private void reApplyAction(ActionDescription.Builder actionDescription, ResourceAllocationType.ResourceAllocation allocation) {
-        if(!started) {
+        if (!started) {
             return;
-        }        
-        
+        }
+
         allocationMap.remove(allocation.getId());
         if (rescheduleOption == RescheduleOption.EXTEND) {
             long anHourFromNow = System.currentTimeMillis() + 60 * 60 * 1000;
@@ -163,9 +164,9 @@ public class AgentActionRescheduleHelper {
                     Thread.currentThread().interrupt();
                 }
                 reApplyAction(actionDescription, allocation);
-            } catch(InterruptedException ex) {
+            } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
-            } catch(TimeoutException ex) {
+            } catch (TimeoutException ex) {
             }
         }
     }
@@ -173,21 +174,24 @@ public class AgentActionRescheduleHelper {
     private void startExtending() {
         if (rescheduleOption == RescheduleOption.EXTEND) {
             try {
-                rescheduleFuture = GlobalScheduledExecutorService.scheduleAtFixedRate(() -> {
-                    System.out.println("GlobalScheduledExecutorService - checking allocations");
-                    for (AllocatableResource allocatableResource : allocationMap.values()) {
-                        if (allocatableResource.getRemote().getRemainingTime() < (periodSecs * 1000 * 1000)) {
-                            try {
-                                allocatableResource.getRemote().extend(periodSecs, TimeUnit.SECONDS);
-                            } catch (RSBException ex) {
-                                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not extend resource allocation", ex), LOGGER);
+                rescheduleFuture = GlobalScheduledExecutorService.scheduleAtFixedRate(new Runnable() {
+                    @Override
+                    public void run() {
+                        for (AllocatableResource allocatableResource : allocationMap.values()) {
+                            if (allocatableResource.getRemote().getRemainingTime() < (periodSecs / 2 * 1000 * 1000)) {
+                                try {
+                                    allocatableResource.getRemote().extend(periodSecs, TimeUnit.SECONDS);
+                                } catch (RSBException ex) {
+                                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not extend resource allocation", ex), LOGGER);
+                                    Logger.getLogger(AgentActionRescheduleHelper.class.getName()).log(Level.SEVERE, null, ex);
+                                }
                             }
                         }
                     }
                 }, 0, periodSecs / 3, TimeUnit.SECONDS);
             } catch (NotAvailableException | IllegalArgumentException ex) {
                 new FatalImplementationErrorException("Scheduling extension thread failed!", this, ex);
-            } catch(RejectedExecutionException ex) {
+            } catch (RejectedExecutionException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER);
             }
         }
