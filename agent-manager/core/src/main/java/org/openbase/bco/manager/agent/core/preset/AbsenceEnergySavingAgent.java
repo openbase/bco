@@ -41,7 +41,7 @@ import rst.communicationpatterns.ResourceAllocationType;
 import rst.domotic.action.ActionAuthorityType;
 import rst.domotic.action.ActionDescriptionType;
 import rst.domotic.action.ActionFutureType.ActionFuture;
-import rst.domotic.action.MultiResourceAllocationStrategyType;
+import rst.domotic.action.MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.ActivationStateType;
 import rst.domotic.state.ActivationStateType.ActivationState;
@@ -131,9 +131,9 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
                     ResourceAllocationType.ResourceAllocation.Priority.LOW,
                     locationRemote,
                     PowerState.newBuilder().setValue(PowerState.State.OFF).build(),
-                    UnitType.COLORABLE_LIGHT,
+                    UnitType.LIGHT,
                     ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
-                    MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+                    MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
             actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
             setLightPowerStateFuture = locationRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build(), UnitType.LIGHT);
             // TODO: Blocking setPowerState function that is trying to realloc all lights as long as jobs not cancelled. 
