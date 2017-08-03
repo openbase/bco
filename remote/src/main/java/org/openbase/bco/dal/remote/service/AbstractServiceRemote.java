@@ -503,7 +503,8 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                         actionFutureList.add(unitRemote.applyAction(unitActionDescription));
                     }
 
-                    return GlobalCachedExecutorService.atLeastOne(actionFuture.build(), actionFutureList);
+                    logger.info("Waiting ["+actionDescription.getExecutionTimePeriod() / actionFutureList.size()+"]ms per future");
+                    return GlobalCachedExecutorService.atLeastOne(actionFuture.build(), actionFutureList, actionDescription.getExecutionTimePeriod() / actionFutureList.size(), TimeUnit.MILLISECONDS);
                 case ALL_OR_NOTHING:
                     logger.info("ALL_OR_NOTHING!");
                     if (scopeUnitMap.isEmpty()) {
