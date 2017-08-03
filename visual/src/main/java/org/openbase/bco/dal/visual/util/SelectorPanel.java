@@ -28,13 +28,14 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import javax.swing.DefaultComboBoxModel;
-import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
-import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
+import javax.swing.SwingUtilities;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.MultiException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
@@ -47,7 +48,7 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.registry.UnitRegistryDataType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -63,14 +64,9 @@ public class SelectorPanel extends javax.swing.JPanel {
 
     protected static final Logger logger = LoggerFactory.getLogger(SelectorPanel.class);
 
-    private final UnitRegistryRemote unitRegistryRemote;
-    private final LocationRegistryRemote locationRegistryRemote;
-
-    private UnitRemoteView remoteView;
-
     private StatusPanel statusPanel;
 
-    private LocationConfigHolder selectedLocationConfigHolder;
+    private LocationUnitConfigHolder selectedLocationConfigHolder;
     private UnitConfigHolder selectedUnitConfigHolder;
 
     private ObservableImpl<UnitConfig> unitConfigObservable;
@@ -87,17 +83,11 @@ public class SelectorPanel extends javax.swing.JPanel {
      * @throws org.openbase.jul.exception.InstantiationException
      */
     public SelectorPanel() throws InstantiationException {
-        try {
-            this.unitConfigObservable = new ObservableImpl<>();
-            this.initComponents();
-            this.setEnable(false);
-            this.initDynamicComponents();
-            this.unitRegistryRemote = new UnitRegistryRemote();
-            this.locationRegistryRemote = new LocationRegistryRemote();
-            this.updateComponentLock = new ReentrantReadWriteLock();
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(this, ex);
-        }
+        this.unitConfigObservable = new ObservableImpl<>();
+        this.updateComponentLock = new ReentrantReadWriteLock();
+        this.initComponents();
+        this.setEnable(false);
+        this.initDynamicComponents();
     }
 
     private void setEnable(final boolean value) {
@@ -116,29 +106,24 @@ public class SelectorPanel extends javax.swing.JPanel {
 
     public void init() throws InitializationException, InterruptedException, CouldNotPerformException {
         statusPanel = StatusPanel.getInstance();
-        statusPanel.setStatus("Init unit registry connection...", StatusPanel.StatusType.INFO, true);
-        unitRegistryRemote.init();
-        statusPanel.setStatus("Init location registry connection...", StatusPanel.StatusType.INFO, true);
-        locationRegistryRemote.init();
 
-        statusPanel.setStatus("Connecting to unit registry...", StatusPanel.StatusType.INFO, true);
-        unitRegistryRemote.activate();
-        statusPanel.setStatus("Connecting to location registry...", StatusPanel.StatusType.INFO, true);
-        locationRegistryRemote.activate();
-
-        statusPanel.setStatus("Wait for unit registry data...", StatusPanel.StatusType.INFO, true);
-        unitRegistryRemote.waitForData();
-        statusPanel.setStatus("Wait for location registry data...", StatusPanel.StatusType.INFO, true);
-        locationRegistryRemote.waitForData();
+        statusPanel.setStatus("Wait for unit registry...", StatusPanel.StatusType.INFO, true);
+        Registries.getUnitRegistry().waitForData();
+        statusPanel.setStatus("Wait for location registry...", StatusPanel.StatusType.INFO, true);
+        Registries.getLocationRegistry().waitForData();
         statusPanel.setStatus("Connection established.", StatusPanel.StatusType.INFO, 3);
 
         // register change observer
-        unitRegistryRemote.addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
-            updateDynamicComponents();
+        Registries.getUnitRegistry().addDataObserver((Observable<UnitRegistryDataType.UnitRegistryData> source, UnitRegistryDataType.UnitRegistryData data) -> {
+            SwingUtilities.invokeLater(() -> {
+                updateDynamicComponents();
+            });
         });
 
-        locationRegistryRemote.addDataObserver((Observable<LocationRegistryData> source, LocationRegistryData data) -> {
-            updateDynamicComponents();
+        Registries.getLocationRegistry().addDataObserver((Observable<LocationRegistryData> source, LocationRegistryData data) -> {
+            SwingUtilities.invokeLater(() -> {
+                updateDynamicComponents();
+            });
         });
 
         init = true;
@@ -154,7 +139,9 @@ public class SelectorPanel extends javax.swing.JPanel {
             unitTypeHolderList.add(new UnitTypeHolder(type));
         }
         Collections.sort(unitTypeHolderList);
-        unitTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(unitTypeHolderList.toArray()));
+        SwingUtilities.invokeLater(() -> {
+            unitTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(unitTypeHolderList.toArray()));
+        });
 
         // init service types
         ArrayList<ServiceTypeHolder> serviceTypeHolderList = new ArrayList<>();
@@ -162,7 +149,9 @@ public class SelectorPanel extends javax.swing.JPanel {
             serviceTypeHolderList.add(new ServiceTypeHolder(type));
         }
         Collections.sort(unitTypeHolderList);
-        serviceTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(serviceTypeHolderList.toArray()));
+        SwingUtilities.invokeLater(() -> {
+            serviceTypeComboBox.setModel(new javax.swing.DefaultComboBoxModel(serviceTypeHolderList.toArray()));
+        });
     }
 
     private synchronized void updateDynamicComponents() {
@@ -173,9 +162,9 @@ public class SelectorPanel extends javax.swing.JPanel {
             if (!init) {
                 return;
             }
-
+            logger.debug("Update selectorPanel!");
             try {
-                selectedLocationConfigHolder = (LocationConfigHolder) locationComboBox.getSelectedItem();
+                selectedLocationConfigHolder = (LocationUnitConfigHolder) locationComboBox.getSelectedItem();
                 if (selectedLocationConfigHolder == null) {
                     selectedLocationConfigHolder = ALL_LOCATION;
                 }
@@ -192,10 +181,10 @@ public class SelectorPanel extends javax.swing.JPanel {
             }
 
             try {
-                ArrayList<LocationConfigHolder> locationConfigHolderList = new ArrayList<>();
+                ArrayList<LocationUnitConfigHolder> locationConfigHolderList = new ArrayList<>();
                 locationConfigHolderList.add(ALL_LOCATION);
-                for (UnitConfig locationUnitConfig : locationRegistryRemote.getLocationConfigs()) {
-                    locationConfigHolderList.add(new LocationConfigHolder(locationUnitConfig));
+                for (UnitConfig locationUnitConfig : Registries.getLocationRegistry().getLocationConfigs()) {
+                    locationConfigHolderList.add(new LocationUnitConfigHolder(locationUnitConfig));
                 }
                 Collections.sort(locationConfigHolderList);
                 locationComboBox.setModel(new DefaultComboBoxModel(locationConfigHolderList.toArray()));
@@ -216,15 +205,15 @@ public class SelectorPanel extends javax.swing.JPanel {
                 UnitType selectedUnitType = ((UnitTypeHolder) unitTypeComboBox.getSelectedItem()).getType();
                 if (selectedUnitType == UnitType.UNKNOWN) {
                     if (selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
-                        for (final UnitConfig config : locationRegistryRemote.getUnitConfigsByLocation(selectedLocationConfigHolder.getConfig().getId())) {
+                        for (final UnitConfig config : Registries.getLocationRegistry().getUnitConfigsByLocation(selectedLocationConfigHolder.getConfig().getId())) {
                             try {
-                                unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
+                                unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getLocationRegistry().getLocationConfigById(config.getPlacementConfig().getLocationId())));
                             } catch (CouldNotPerformException ex) {
                                 exceptionStack = MultiException.push(this, ex, exceptionStack);
                             }
                         }
                     } else {
-                        for (UnitConfig config : unitRegistryRemote.getUnitConfigs()) {
+                        for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigs()) {
                             try {
                                 // ignore disabled units
                                 if (config.getEnablingState().getValue() != EnablingState.State.ENABLED) {
@@ -233,28 +222,28 @@ public class SelectorPanel extends javax.swing.JPanel {
                                 if (config.getPlacementConfig().getLocationId().isEmpty()) {
                                     throw new InvalidStateException("Could not load location unit of " + config.getLabel() + " because its not configured!");
                                 }
-                                unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
+                                unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getLocationRegistry().getLocationConfigById(config.getPlacementConfig().getLocationId())));
                             } catch (CouldNotPerformException ex) {
                                 exceptionStack = MultiException.push(this, ex, exceptionStack);
                             }
                         }
                     }
                 } else if (selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
-                    for (UnitConfig config : locationRegistryRemote.getUnitConfigsByLocation(selectedUnitType, selectedLocationConfigHolder.getConfig().getId())) {
+                    for (UnitConfig config : Registries.getLocationRegistry().getUnitConfigsByLocation(selectedUnitType, selectedLocationConfigHolder.getConfig().getId())) {
                         try {
-                            unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
+                            unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getLocationRegistry().getLocationConfigById(config.getPlacementConfig().getLocationId())));
                         } catch (CouldNotPerformException ex) {
                             exceptionStack = MultiException.push(this, ex, exceptionStack);
                         }
                     }
                 } else {
-                    for (UnitConfig config : unitRegistryRemote.getUnitConfigs(selectedUnitType)) {
+                    for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigs(selectedUnitType)) {
                         try {
                             // ignore disabled units
                             if (config.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                                 continue;
                             }
-                            unitConfigHolderList.add(new UnitConfigHolder(config, locationRegistryRemote.getLocationConfigById(config.getPlacementConfig().getLocationId())));
+                            unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getLocationRegistry().getLocationConfigById(config.getPlacementConfig().getLocationId())));
                         } catch (CouldNotPerformException ex) {
                             exceptionStack = MultiException.push(this, ex, exceptionStack);
                         }
@@ -277,6 +266,9 @@ public class SelectorPanel extends javax.swing.JPanel {
             MultiException.checkAndThrow("Could not acquire all informations!", exceptionStack);
         } catch (CouldNotPerformException | NullPointerException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update all dynamic components!", ex), logger);
+        } catch (InterruptedException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Component update interrupted.", ex), logger, LogLevel.WARN);
+            Thread.currentThread().interrupt();
         } finally {
             updateComponentLock.writeLock().unlock();
         }
@@ -635,7 +627,7 @@ public class SelectorPanel extends javax.swing.JPanel {
                     try {
                         scopeTextField.setForeground(Color.BLACK);
                         Scope scope = ScopeTransformer.transform(new rsb.Scope(scopeTextField.getText().toLowerCase()));
-                        unitConfigObservable.notifyObservers(unitRegistryRemote.getUnitConfigByScope(scope));
+                        unitConfigObservable.notifyObservers(Registries.getUnitRegistry().getUnitConfigByScope(scope));
                         scopeTextField.setText(ScopeGenerator.generateStringRep(unitConfigObservable.getValue().getScope()));
                     } catch (CouldNotPerformException ex) {
                         scopeTextField.setForeground(Color.RED);
@@ -645,7 +637,6 @@ public class SelectorPanel extends javax.swing.JPanel {
                 }
             }));
             updateButtonStates();
-
         } catch (CouldNotPerformException | NullPointerException ex) {
             statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not load new remote!", ex), logger));
         }
@@ -686,10 +677,13 @@ public class SelectorPanel extends javax.swing.JPanel {
 
         try {
             Scope scope = ScopeTransformer.transform(new rsb.Scope(text));
-            unitRegistryRemote.getUnitConfigByScope(scope);
+            Registries.getUnitRegistry().getUnitConfigByScope(scope);
             validScope = true;
         } catch (CouldNotPerformException | IllegalArgumentException | NullPointerException ex) {
             validScope = false;
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return;
         }
 
         try {
@@ -731,14 +725,15 @@ public class SelectorPanel extends javax.swing.JPanel {
     private javax.swing.JComboBox unitTypeComboBox;
     // End of variables declaration//GEN-END:variables
 
-    private final static LocationConfigHolder ALL_LOCATION = new LocationConfigHolder(null);
-    private final static UnitConfigHolder ALL_UNIT = new UnitConfigHolder(null, null);
+    public final static LocationUnitConfigHolder ALL_LOCATION = new LocationUnitConfigHolder(null);
+    public final static UnitConfigHolder ALL_UNIT = new UnitConfigHolder(null, null);
+    public final static ServiceTypeHolder ALL_Service = new ServiceTypeHolder(ServiceType.UNKNOWN);
 
-    private static class LocationConfigHolder implements Comparable<LocationConfigHolder> {
+    public static class LocationUnitConfigHolder implements Comparable<LocationUnitConfigHolder> {
 
         private final UnitConfig locationUnitConfig;
 
-        public LocationConfigHolder(UnitConfig locationUnitConfig) {
+        public LocationUnitConfigHolder(UnitConfig locationUnitConfig) {
             this.locationUnitConfig = locationUnitConfig;
         }
 
@@ -759,7 +754,7 @@ public class SelectorPanel extends javax.swing.JPanel {
         }
 
         @Override
-        public int compareTo(LocationConfigHolder o) {
+        public int compareTo(LocationUnitConfigHolder o) {
             if (o == null) {
                 return -1;
             }
@@ -775,11 +770,11 @@ public class SelectorPanel extends javax.swing.JPanel {
         }
     }
 
-    private static class UnitTypeHolder implements Comparable<UnitTypeHolder> {
+    public static class UnitTypeHolder implements Comparable<UnitTypeHolder> {
 
         private final UnitType type;
 
-        public UnitTypeHolder(UnitType type) {
+        public UnitTypeHolder(final UnitType type) {
             this.type = type;
         }
 
@@ -800,7 +795,7 @@ public class SelectorPanel extends javax.swing.JPanel {
         }
 
         @Override
-        public int compareTo(UnitTypeHolder o) {
+        public int compareTo(final UnitTypeHolder o) {
             if (o == null) {
                 return -1;
             }
@@ -816,12 +811,19 @@ public class SelectorPanel extends javax.swing.JPanel {
         }
     }
 
-    private static class ServiceTypeHolder implements Comparable<ServiceTypeHolder> {
+    public static class ServiceTypeHolder implements Comparable<ServiceTypeHolder> {
 
         private final ServiceType type;
+        private final UnitConfig unitConfig;
 
-        public ServiceTypeHolder(ServiceType type) {
+        public ServiceTypeHolder(final ServiceType type, final UnitConfig unitConfig) {
             this.type = type;
+            this.unitConfig = unitConfig;
+        }
+
+        public ServiceTypeHolder(final ServiceType type) {
+            this.type = type;
+            this.unitConfig = null;
         }
 
         @Override
@@ -836,12 +838,19 @@ public class SelectorPanel extends javax.swing.JPanel {
             return type.equals(ServiceType.UNKNOWN);
         }
 
-        public ServiceType getType() {
+        public ServiceType getServiceType() {
             return type;
         }
 
+        public UnitConfig getUnitConfig() throws NotAvailableException {
+            if (unitConfig == null) {
+                throw new NotAvailableException("UnitConfig");
+            }
+            return unitConfig;
+        }
+
         @Override
-        public int compareTo(ServiceTypeHolder o) {
+        public int compareTo(final ServiceTypeHolder o) {
             if (o == null) {
                 return -1;
             }
@@ -849,7 +858,7 @@ public class SelectorPanel extends javax.swing.JPanel {
             // make sure "all" is on top.
             if (type.equals(ServiceType.UNKNOWN)) {
                 return -1;
-            } else if (o.getType().equals(ServiceType.UNKNOWN)) {
+            } else if (o.getServiceType().equals(ServiceType.UNKNOWN)) {
                 return +1;
             }
 
@@ -857,14 +866,14 @@ public class SelectorPanel extends javax.swing.JPanel {
         }
     }
 
-    private static class UnitConfigHolder implements Comparable<UnitConfigHolder> {
+    public static class UnitConfigHolder implements Comparable<UnitConfigHolder> {
 
         private final UnitConfig config;
         private final UnitConfig locationUnitConfig;
 
-        public UnitConfigHolder(final UnitConfig config, final UnitConfig unitConfig) {
-            this.config = config;
-            this.locationUnitConfig = unitConfig;
+        public UnitConfigHolder(final UnitConfig unitConfig, final UnitConfig locationUnitConfig) {
+            this.config = unitConfig;
+            this.locationUnitConfig = locationUnitConfig;
         }
 
         @Override
@@ -875,7 +884,7 @@ public class SelectorPanel extends javax.swing.JPanel {
             return StringProcessor.transformUpperCaseToCamelCase(config.getType().name())
                     + " = " + config.getLabel() + ""
                     + " @ " + locationUnitConfig.getLabel()
-                    + (config.getDescription().isEmpty() ? "" : " (" + config.getDescription()+ ")");
+                    + (config.getDescription().isEmpty() ? "" : " (" + config.getDescription() + ")");
         }
 
         public boolean isNotSpecified() {
@@ -887,11 +896,12 @@ public class SelectorPanel extends javax.swing.JPanel {
         }
 
         @Override
-        public int compareTo(UnitConfigHolder o) {
+        public int compareTo(final UnitConfigHolder o) {
             if (o == null) {
                 return -1;
             }
             return toString().compareTo(o.toString());
         }
+
     }
 }

@@ -478,6 +478,8 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         try {
             // shutdown registry observer
             Registries.getUnitRegistry().removeDataObserver(unitRegistryObserver);
+        } catch (final NotAvailableException ex) {
+            // if the registry is not any longer available (in case of registry shutdown) than the observer is already cleared. 
         } catch (final Exception ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not remove unit registry observer.", ex), logger);
         }

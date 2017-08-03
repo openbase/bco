@@ -40,7 +40,7 @@ import rst.domotic.service.ServiceConfigType.ServiceConfig;
 public class Consumer implements Manageable<ServiceConfig> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(Consumer.class);
-    
+
     private boolean active;
     private ServiceRemote boundedProviderService;
     private final UnitController boundedUnitController;
@@ -52,7 +52,9 @@ public class Consumer implements Manageable<ServiceConfig> {
         this.serviceStateObserver = new Observer() {
             @Override
             public void update(Observable source, Object data) throws Exception {
-                boundedUnitController.applyDataUpdate(boundedProviderService.getServiceType(), data);
+                if (boundedProviderService != null) {
+                    boundedUnitController.applyDataUpdate(boundedProviderService.getServiceType(), data);
+                }
             }
         };
     }
@@ -101,6 +103,7 @@ public class Consumer implements Manageable<ServiceConfig> {
      */
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
+        boundedUnitController.removeServiceStateObserver(boundedProviderService.getServiceType(), serviceStateObserver);
         active = false;
     }
 

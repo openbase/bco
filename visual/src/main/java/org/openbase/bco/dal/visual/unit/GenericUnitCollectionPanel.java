@@ -29,7 +29,7 @@ import java.util.List;
 import java.util.Map;
 import javax.swing.JComponent;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
-import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.MultiException;
@@ -52,7 +52,6 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(GenericUnitCollectionPanel.class);
 
-    private DeviceRegistryRemote deviceRegistryRemote;
     private final Map<String, GenericUnitPanel<RS>> unitPanelMap;
     private final SyncObject unitPanelMapLock = new SyncObject("UnitPanelMapLock");
     private final Observer<String> removedObserver;
@@ -74,7 +73,7 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
     }
 
     /**
-     * Initialize internal device registry remote. Method should be called after
+     * Initialize the registry connection. Method should be called after
      * construction and before adding any units.
      *
      * @throws InitializationException
@@ -82,9 +81,7 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
      */
     public void init() throws InitializationException, InterruptedException {
         try {
-            deviceRegistryRemote = new DeviceRegistryRemote();
-            deviceRegistryRemote.init();
-            deviceRegistryRemote.activate();
+            Registries.getUnitRegistry().waitForData();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -115,7 +112,7 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
     public Collection<GenericUnitPanel<RS>> add(final String unitLabel) throws CouldNotPerformException, InterruptedException {
         try {
             final List<GenericUnitPanel<RS>> unitPanelList = new ArrayList<>();
-            List<UnitConfig> unitConfigsByLabel = deviceRegistryRemote.getUnitConfigsByLabel(unitLabel);
+            List<UnitConfig> unitConfigsByLabel = Registries.getUnitRegistry(true).getUnitConfigsByLabel(unitLabel);
 
             MultiException.ExceptionStack exceptionStack = null;
 
@@ -191,7 +188,7 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
     }
 
     public GenericUnitPanel add(final String unitId, final ServiceType serviceType, final Object serviceAttribute, final boolean removable) throws CouldNotPerformException, InterruptedException {
-        UnitConfig unitConfig = deviceRegistryRemote.getUnitConfigById(unitId);
+        UnitConfig unitConfig = Registries.getUnitRegistry(true).getUnitConfigById(unitId);
         return add(unitConfig, serviceType, serviceAttribute, removable);
     }
 
@@ -219,10 +216,6 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
     public void clearUnitPanel() {
         unitPanelMap.clear();
         updateDynamicComponents();
-    }
-
-    public DeviceRegistryRemote getDeviceRegistryRemote() {
-        return deviceRegistryRemote;
     }
 
     public Map<String, GenericUnitPanel<RS>> getUnitPanelMap() {
