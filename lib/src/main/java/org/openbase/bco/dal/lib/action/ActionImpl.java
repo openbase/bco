@@ -21,15 +21,19 @@ package org.openbase.bco.dal.lib.action;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.logging.Level;
+import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.unit.AbstractUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitAllocation;
 import org.openbase.bco.dal.lib.layer.unit.UnitAllocator;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
@@ -39,6 +43,7 @@ import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -115,7 +120,15 @@ public class ActionImpl implements Action {
 
     @Override
     public Future<ActionFuture> execute() throws CouldNotPerformException {
-        return internalExecute().getTaskExecutor().getFuture();
+        try {
+            if (JPService.getProperty(JPResourceAllocation.class).getValue()) {
+                return internalExecute().getTaskExecutor().getFuture();
+            } else {
+                return internalExecuteWithoutResourceAllocation();
+            }
+        } catch (JPNotAvailableException ex) {
+            throw new CouldNotPerformException("Cold not execute action", ex);
+        }
     }
 
     protected UnitAllocation internalExecute() throws CouldNotPerformException {
@@ -182,6 +195,58 @@ public class ActionImpl implements Action {
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not execute action!", ex);
         }
+    }
+
+    protected Future<ActionFuture> internalExecuteWithoutResourceAllocation() throws CouldNotPerformException {
+        return GlobalCachedExecutorService.submit(() -> {
+            try {
+                synchronized (executionSync) {
+                    
+                    if (actionDescriptionBuilder == null) {
+                        throw new NotInitializedException("Action");
+                    }
+                    
+                    // Initiate
+                    updateActionState(ActionState.State.INITIATING);
+                    
+                    try {
+                        // Verify authority
+                        unit.verifyAuthority(actionDescriptionBuilder.getActionAuthority());
+                        
+                        // Resource Allocation
+                        try {
+                            ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
+                            actionFuture.addActionDescription(actionDescriptionBuilder);
+                            
+                            // Execute
+                            updateActionState(ActionState.State.EXECUTING);
+                            
+                            try {
+                                Service.invokeServiceMethod(serviceDescription, unit, serviceAttribute);
+                            } catch (CouldNotPerformException ex) {
+                                if (ex.getCause() instanceof InterruptedException) {
+                                    updateActionState(ActionState.State.ABORTED);
+                                } else {
+                                    updateActionState(ActionState.State.EXECUTION_FAILED);
+                                }
+                                throw new ExecutionException(ex);
+                            }
+                            updateActionState(ActionState.State.FINISHING);
+                            return actionFuture.build();
+                        } catch (final CancellationException ex) {
+                            updateActionState(ActionState.State.ABORTED);
+                            throw ex;
+                        }
+                        
+                    } catch (CouldNotPerformException ex) {
+                        updateActionState(ActionState.State.REJECTED);
+                        throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+                    }
+                }
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not execute action!", ex);
+            }
+        });
     }
 
     /**
