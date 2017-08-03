@@ -30,14 +30,18 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.RejectedExecutionException;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
+import org.slf4j.LoggerFactory;
 import rsb.RSBException;
 import rst.calendar.DateTimeType;
 import rst.communicationpatterns.ResourceAllocationType;
@@ -51,6 +55,8 @@ import rst.domotic.action.MultiResourceAllocationStrategyType.MultiResourceAlloc
  */
 public class AgentActionRescheduleHelper {
     //Might be moved somewhere as a general ActionRescheduleHelper
+    
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AgentActionRescheduleHelper.class);
 
     public static enum RescheduleOption {
         EXPIRE, EXTEND
@@ -60,18 +66,21 @@ public class AgentActionRescheduleHelper {
     private final Map<String, AllocatableResource> allocationMap;
     private final RescheduleOption rescheduleOption;
     private ScheduledFuture<?> rescheduleFuture;
+    private boolean started;
 
     public AgentActionRescheduleHelper(RescheduleOption rescheduleOption, long periodSecs) {
         this.allocationMap = new HashMap();
         this.rescheduleOption = rescheduleOption;
         this.periodSecs = periodSecs;
+        this.started = false;
     }
 
     public void startActionRescheduleing(ActionFuture.Builder actionFuture) {
+        this.started = true;
+        addRescheduleAction(actionFuture);
         if (rescheduleFuture == null && rescheduleOption == RescheduleOption.EXTEND) {
             startExtending();
         }
-        addRescheduleAction(actionFuture);
     }
 
     public void addRescheduleAction(ActionFuture.Builder actionFuture) {
@@ -81,6 +90,7 @@ public class AgentActionRescheduleHelper {
                     try {
                         AllocatableResource allocatableResource = new AllocatableResource(actionDescription.getResourceAllocation());
                         allocatableResource.startup();
+                        System.out.println("Check resource ["+actionDescription.getResourceAllocation().getResourceIds(0)+"]");
                         allocatableResource.getRemote().addSchedulerListener((allocation) -> {
                             switch (allocation.getState()) {
                                 case REJECTED:
@@ -89,7 +99,7 @@ public class AgentActionRescheduleHelper {
                                         // TODO: is it possible to get information about the allocaiton that currently blocks this
                                         Thread.sleep(1000);
                                     } catch (InterruptedException ex) {
-//                                        Logger.getLogger(PresenceLightAgent.class.getName()).log(Level.SEVERE, null, ex);
+                                        Thread.currentThread().interrupt();
                                     }
                                 case ABORTED:
                                 case RELEASED:
@@ -110,11 +120,12 @@ public class AgentActionRescheduleHelper {
                                 reApplyAction(actionDescription, actionDescription.getResourceAllocation());
                                 break;
                             default:
+                                System.out.println("Action added to reschedule list: " + actionDescription.getResourceAllocation().getId());
                                 allocationMap.put(actionDescription.getResourceAllocation().getId(), allocatableResource);
                                 break;
                         }
                     } catch (RSBException ex) {
-                        Logger.getLogger(AgentActionRescheduleHelper.class.getName()).log(Level.SEVERE, null, ex);
+                        ExceptionPrinter.printHistory(ex, LOGGER);
                     }
                 }
             } else {
@@ -124,6 +135,10 @@ public class AgentActionRescheduleHelper {
     }
 
     private void reApplyAction(ActionDescription.Builder actionDescription, ResourceAllocationType.ResourceAllocation allocation) {
+        if(!started) {
+            return;
+        }        
+        
         allocationMap.remove(allocation.getId());
         if (rescheduleOption == RescheduleOption.EXTEND) {
             long anHourFromNow = System.currentTimeMillis() + 60 * 60 * 1000;
@@ -137,16 +152,20 @@ public class AgentActionRescheduleHelper {
             ActionDescriptionProcessor.updateResourceAllocationSlot(actionDescription);
             try {
                 UnitRemote<? extends GeneratedMessage> unit = Units.getUnit(actionDescription.getServiceStateDescription().getUnitId(), true);
-                addRescheduleAction(unit.applyAction(actionDescription.build()).get().toBuilder());
+                addRescheduleAction(unit.applyAction(actionDescription.build()).get(actionDescription.getExecutionTimePeriod(), TimeUnit.SECONDS).toBuilder());
                 //TODO What to do in case of Exception? Just call reApplyAction again?
             } catch (NotAvailableException ex) {
-                Logger.getLogger(AgentActionRescheduleHelper.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (InterruptedException | CouldNotPerformException | ExecutionException | CancellationException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER);
+            } catch (CouldNotPerformException | ExecutionException | CancellationException ex) {
                 try {
                     Thread.sleep(500);
                 } catch (InterruptedException e) {
+                    Thread.currentThread().interrupt();
                 }
                 reApplyAction(actionDescription, allocation);
+            } catch(InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            } catch(TimeoutException ex) {
             }
         }
     }
@@ -154,41 +173,39 @@ public class AgentActionRescheduleHelper {
     private void startExtending() {
         if (rescheduleOption == RescheduleOption.EXTEND) {
             try {
-                rescheduleFuture = GlobalScheduledExecutorService.scheduleAtFixedRate(new Runnable() {
-                    @Override
-                    public void run() {
-                        for (AllocatableResource allocatableResource : allocationMap.values()) {
-                            if (allocatableResource.getRemote().getRemainingTime() < (periodSecs * 1000 * 1000)) {
-                                try {
-                                    allocatableResource.getRemote().extend(periodSecs, TimeUnit.SECONDS);
-                                } catch (RSBException ex) {
-                                    Logger.getLogger(AgentActionRescheduleHelper.class.getName()).log(Level.SEVERE, null, ex);
-                                }
+                rescheduleFuture = GlobalScheduledExecutorService.scheduleAtFixedRate(() -> {
+                    System.out.println("GlobalScheduledExecutorService - checking allocations");
+                    for (AllocatableResource allocatableResource : allocationMap.values()) {
+                        if (allocatableResource.getRemote().getRemainingTime() < (periodSecs * 1000 * 1000)) {
+                            try {
+                                allocatableResource.getRemote().extend(periodSecs, TimeUnit.SECONDS);
+                            } catch (RSBException ex) {
+                                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not extend resource allocation", ex), LOGGER);
                             }
                         }
                     }
                 }, 0, periodSecs / 3, TimeUnit.SECONDS);
-            } catch (NotAvailableException ex) {
-                Logger.getLogger(AgentActionRescheduleHelper.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (IllegalArgumentException ex) {
-                Logger.getLogger(AgentActionRescheduleHelper.class.getName()).log(Level.SEVERE, null, ex);
-            } catch (RejectedExecutionException ex) {
-                Logger.getLogger(AgentActionRescheduleHelper.class.getName()).log(Level.SEVERE, null, ex);
+            } catch (NotAvailableException | IllegalArgumentException ex) {
+                new FatalImplementationErrorException("Scheduling extension thread failed!", this, ex);
+            } catch(RejectedExecutionException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER);
             }
         }
     }
 
     public void stopExecution() {
+        started = false;
         if (rescheduleFuture != null) {
             rescheduleFuture.cancel(true);
             rescheduleFuture = null;
         }
+        System.out.println("stopExecution");
         for (AllocatableResource allocatableResource : allocationMap.values()) {
             allocatableResource.getRemote().removeAllSchedulerListeners();
             try {
                 allocatableResource.shutdown();
             } catch (RSBException ex) {
-                Logger.getLogger(AgentActionRescheduleHelper.class.getName()).log(Level.SEVERE, null, ex);
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not shutdown allocatableResource", ex), LOGGER);
             }
         }
         allocationMap.clear();

@@ -65,9 +65,11 @@ public class PresenceLightAgent extends AbstractAgentController {
         actionRescheduleHelper = new AgentActionRescheduleHelper(RescheduleOption.EXTEND, 30);
 
         triggerHolderObserver = (Observable<ActivationState> source, ActivationState data) -> {
+            logger.warn("New trigger state: " + data.getValue());
             if (data.getValue().equals(ActivationState.State.ACTIVE)) {
                 switchlightsOn();
             } else {
+                logger.warn("Stop execution");
                 actionRescheduleHelper.stopExecution();
             }
         };
@@ -114,6 +116,7 @@ public class PresenceLightAgent extends AbstractAgentController {
     }
 
     private void switchlightsOn() {
+        logger.info("SwitchLightsOn");
         try {
             ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthority.getDefaultInstance(),
                     ResourceAllocation.Initiator.SYSTEM,
@@ -125,7 +128,9 @@ public class PresenceLightAgent extends AbstractAgentController {
                     UnitType.LIGHT,
                     ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
                     MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+            logger.info("Apply action");
             actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+            logger.info("Aded to actionResceduleHelper");
         } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
             logger.error("Could not switch on Lights.", ex);
         }
