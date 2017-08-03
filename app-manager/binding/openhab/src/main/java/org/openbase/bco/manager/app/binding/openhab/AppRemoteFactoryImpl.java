@@ -21,6 +21,7 @@ package org.openbase.bco.manager.app.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.app.AppRemote;
 import org.openbase.bco.manager.app.binding.openhab.execution.OpenHABCommandFactory;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -51,17 +52,14 @@ public class AppRemoteFactoryImpl implements Factory<AppRemote, UnitConfig> {
 
     @Override
     public AppRemote newInstance(final UnitConfig config) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        AppRemote appRemote = new AppRemote();
         try {
+            AppRemote appRemote = Units.getUnit(config, false, Units.APP);
             appRemote.addDataObserver((final Observable<AppData> source, AppData data) -> {
                 openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(generateItemId(config)).build());
             });
-            appRemote.init(config);
-            appRemote.activate();
-
             return appRemote;
         } catch (CouldNotPerformException ex) {
-            throw new org.openbase.jul.exception.InstantiationException(appRemote, ex);
+            throw new org.openbase.jul.exception.InstantiationException(AppRemote.class, ex);
         }
     }
 

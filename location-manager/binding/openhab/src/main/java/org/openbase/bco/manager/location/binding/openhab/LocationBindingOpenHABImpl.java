@@ -87,6 +87,7 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
         try {
             Registries.getLocationRegistry().waitForData();
             locationRemoteFactory.init(openHABRemote);
+            connectionRemoteFactory.init(openHABRemote);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
