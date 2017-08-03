@@ -36,6 +36,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
@@ -66,12 +67,15 @@ public class PresenceLightAgent extends AbstractAgentController {
 
         triggerHolderObserver = (Observable<ActivationState> source, ActivationState data) -> {
             logger.warn("New trigger state: " + data.getValue());
-            if (data.getValue().equals(ActivationState.State.ACTIVE)) {
-                switchlightsOn();
-            } else {
-                logger.warn("Stop execution");
-                actionRescheduleHelper.stopExecution();
-            }
+            GlobalCachedExecutorService.submit(() -> {
+                if (data.getValue().equals(ActivationState.State.ACTIVE)) {
+                    switchlightsOn();
+                } else {
+                    logger.warn("Stop execution");
+                    actionRescheduleHelper.stopExecution();
+                }
+                return null;
+            });
         };
     }
 

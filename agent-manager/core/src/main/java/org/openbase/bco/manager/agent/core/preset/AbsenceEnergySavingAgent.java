@@ -22,6 +22,7 @@ package org.openbase.bco.manager.agent.core.preset;
  * #L%
  */
 import java.util.List;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.remote.unit.UnitGroupRemote;
@@ -37,6 +38,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.communicationpatterns.ResourceAllocationType;
 import rst.domotic.action.ActionAuthorityType;
 import rst.domotic.action.ActionDescriptionType;
@@ -71,12 +73,14 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
         actionRescheduleHelper = new AgentActionRescheduleHelper(AgentActionRescheduleHelper.RescheduleOption.EXTEND, 30);
 
         triggerHolderObserver = (Observable<ActivationStateType.ActivationState> source, ActivationStateType.ActivationState data) -> {
-            if (data.getValue().equals(ActivationStateType.ActivationState.State.ACTIVE)) {
-                switchlightsOff();
-                //switchMultimediaOff();
-            } else {
-                actionRescheduleHelper.stopExecution();
-            }
+            GlobalCachedExecutorService.submit(() -> {
+                if (data.getValue().equals(ActivationStateType.ActivationState.State.ACTIVE)) {
+                    switchlightsOff();
+                } else {
+                    actionRescheduleHelper.stopExecution();
+                }
+                return null;
+            });
         };
     }
 
