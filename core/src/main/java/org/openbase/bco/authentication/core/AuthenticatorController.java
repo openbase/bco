@@ -279,8 +279,8 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 String[] split = authenticator.getClientId().split("@", 2);
                 String authenticatorUserId = split[0];
 
-                // Allow users to change their own password.
-                if (!userId.equals(authenticatorUserId)) {
+                // Allow users to change their own password and admins to change passwords for other users.
+                if (!userId.equals(authenticatorUserId) && !store.isAdmin(authenticatorUserId)) {
                     throw new PermissionDeniedException("You are not permitted to perform this action.");
                 }
 

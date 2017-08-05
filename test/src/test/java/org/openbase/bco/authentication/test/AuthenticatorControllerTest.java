@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 import javax.crypto.BadPaddingException;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -37,6 +38,7 @@ import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.jp.JPInitializeCredentials;
 import org.openbase.jps.core.JPService;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
@@ -187,6 +189,88 @@ public class AuthenticatorControllerTest {
 
         LoginCredentialsChange loginCredentialsChange = LoginCredentialsChange.newBuilder()
                 .setId(MockClientStore.USER_ID)
+                .setOldCredentials(EncryptionHelper.encryptSymmetric(userPasswordHash, clientSSSessionKey))
+                .setNewCredentials(EncryptionHelper.encryptSymmetric(newPasswordHash, clientSSSessionKey))
+                .setTicketAuthenticatorWrapper(clientTicketAuthenticatorWrapper)
+                .build();
+
+        CachedAuthenticationRemote.getRemote().changeCredentials(loginCredentialsChange).get();
+    }
+
+    /**
+     * Tests the feature of changing passwords for other users.
+     * Only admins should be allowed to do this.
+     * @throws Exception
+     */
+    @Test(timeout = 5000)
+    public void testChangeOthersCredentials() throws Exception {
+        System.out.println("testChangeOthersCredentials");
+
+        // Trying to change the admin's password with a normal user. This should not work.
+        String userId = MockCredentialStore.USER_ID;
+        String adminId = MockCredentialStore.ADMIN_ID;
+        byte[] userPasswordHash = MockCredentialStore.USER_PASSWORD_HASH;
+        byte[] adminPasswordHash = MockCredentialStore.ADMIN_PASSWORD_HASH;
+        byte[] newPasswordHash = MockCredentialStore.USER_PASSWORD_HASH;
+
+        // handle KDC request on server side
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userId + "@").get();
+
+        // handle KDC response on client side
+        List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(userId, userPasswordHash, true, ticketSessionKeyWrapper);
+        TicketAuthenticatorWrapper clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
+        byte[] clientTGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
+
+        // handle TGS request on server side
+        ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestClientServerTicket(clientTicketAuthenticatorWrapper).get();
+
+        // handle TGS response on client side
+        list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(userId, clientTGSSessionKey, ticketSessionKeyWrapper);
+        clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
+        byte[] clientSSSessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
+
+        // init SS request on client side
+        clientTicketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(clientSSSessionKey, clientTicketAuthenticatorWrapper);
+
+        LoginCredentialsChange loginCredentialsChange = LoginCredentialsChange.newBuilder()
+                .setId(adminId)
+                .setOldCredentials(EncryptionHelper.encryptSymmetric(adminPasswordHash, clientSSSessionKey))
+                .setNewCredentials(EncryptionHelper.encryptSymmetric(newPasswordHash, clientSSSessionKey))
+                .setTicketAuthenticatorWrapper(clientTicketAuthenticatorWrapper)
+                .build();
+
+        try {
+            ExceptionPrinter.setBeQuit(Boolean.TRUE);
+            CachedAuthenticationRemote.getRemote().changeCredentials(loginCredentialsChange).get();
+            fail("A user should not be able to change the password of another user.");
+        } catch (CouldNotPerformException | ExecutionException e) {
+        } finally {
+            ExceptionPrinter.setBeQuit(Boolean.FALSE);
+        }
+
+        // Trying to change the user's password with an admin account. This should work.
+
+        // handle KDC request on server side
+        ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(adminId + "@").get();
+
+        // handle KDC response on client side
+        list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(adminId, adminPasswordHash, true, ticketSessionKeyWrapper);
+        clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
+        clientTGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
+
+        // handle TGS request on server side
+        ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestClientServerTicket(clientTicketAuthenticatorWrapper).get();
+
+        // handle TGS response on client side
+        list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(adminId, clientTGSSessionKey, ticketSessionKeyWrapper);
+        clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
+        clientSSSessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
+
+        // init SS request on client side
+        clientTicketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(clientSSSessionKey, clientTicketAuthenticatorWrapper);
+
+        loginCredentialsChange = LoginCredentialsChange.newBuilder()
+                .setId(userId)
                 .setOldCredentials(EncryptionHelper.encryptSymmetric(userPasswordHash, clientSSSessionKey))
                 .setNewCredentials(EncryptionHelper.encryptSymmetric(newPasswordHash, clientSSSessionKey))
                 .setTicketAuthenticatorWrapper(clientTicketAuthenticatorWrapper)
