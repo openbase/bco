@@ -41,6 +41,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFileProcessor;
+import org.openbase.jul.iface.Shutdownable;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.LoginCredentialsCollectionType.LoginCredentialsCollection;
 import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
@@ -79,6 +80,8 @@ public class CredentialStore {
             this.file = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), filename);
             this.loadStore();
             this.setStorePermissions();
+
+            Shutdownable.registerShutdownHook(CredentialStore.this::saveStore);
         } catch (JPNotAvailableException | CouldNotPerformException | IOException ex) {
             throw new InitializationException(CredentialStore.class, ex);
         }
@@ -112,8 +115,8 @@ public class CredentialStore {
     protected void saveStore() {
         try {
             LoginCredentialsCollection collection = LoginCredentialsCollection.newBuilder()
-              .addAllElement(credentials.values())
-              .build();
+                    .addAllElement(credentials.values())
+                    .build();
 
             fileProcessor.serialize(collection, file);
         } catch (CouldNotPerformException ex) {
@@ -155,7 +158,6 @@ public class CredentialStore {
     /**
      * --------------------- MANIPULATIVE METHODS ------------------------------
      */
-    
     /**
      * Determines if there is an entry with given id.
      *
@@ -165,12 +167,12 @@ public class CredentialStore {
     public boolean hasEntry(String id) {
         return this.credentials.containsKey(id);
     }
-    
+
     /**
      * Get an entry by the specified index.
      * Usage only makes sense when there is only one entry in the store.
      * Else an arbitrary entry would be returned.
-     * 
+     *
      * @return Returns null if the index would result in a NullPointerException.
      */
     public SimpleEntry<String, LoginCredentials> getFirstEntry() {
@@ -179,7 +181,7 @@ public class CredentialStore {
             return new SimpleEntry(firstKey, this.credentials.get(firstKey));
         }
         return null;
-    } 
+    }
 
     /**
      * Removes entry from store given id.
@@ -253,7 +255,7 @@ public class CredentialStore {
      */
     public boolean isAdmin(String userId) throws NotAvailableException {
         if (!credentials.containsKey(userId)) {
-            throw new NotAvailableException(userId);
+            return false;
         }
 
         return credentials.get(userId).getAdmin();

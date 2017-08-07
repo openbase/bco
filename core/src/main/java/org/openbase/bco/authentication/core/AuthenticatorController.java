@@ -96,8 +96,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
     private final CredentialStore store;
 
-    private String initialPassword;
-    private Future initialPasswordPrinterFuture;
+    private static String initialPassword;
     
     public AuthenticatorController() {
         this(new CredentialStore(STORE_FILENAME), EncryptionHelper.generateKey());
@@ -173,8 +172,6 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         if (store.hasOnlyServiceServer()) {
             // Generate initial password.
             initialPassword = RandomStringUtils.randomAlphanumeric(15);
-            InitialPasswordPrinterRunnable initialPasswordPrinterCallback = new InitialPasswordPrinterRunnable(initialPassword);
-            initialPasswordPrinterFuture = GlobalScheduledExecutorService.scheduleAtFixedRate(initialPasswordPrinterCallback, 5, 30, TimeUnit.SECONDS);
         }
         
         serverWatchDog.activate();
@@ -307,7 +304,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     public Future<TicketAuthenticatorWrapper> register(LoginCredentialsChange loginCredentialsChange) throws RejectedException, StreamCorruptedException, IOException {
         return GlobalCachedExecutorService.submit(() -> {
             try {
-                if (store.isEmpty() || store.hasOnlyServiceServer()) {
+                if (initialPassword != null && store.hasOnlyServiceServer()) {
                     if (!loginCredentialsChange.hasId() || !loginCredentialsChange.hasNewCredentials()) {
                         throw new RejectedException("Cannot register first user, id and/or new credentials empty");
                     }
@@ -317,8 +314,6 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                     this.store.addCredentials(loginCredentialsChange.getId(), decryptedCredentials, true);
 
                     initialPassword = null;
-                    initialPasswordPrinterFuture.cancel(true);
-
                     return null;
                 }
 
@@ -507,23 +502,6 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         });
     }
 
-    private class InitialPasswordPrinterRunnable implements Runnable {
-
-        private String message;
-
-        public InitialPasswordPrinterRunnable(final String password) {
-            this.message = "\nUSE THE FOLLOWING PASSWORD TO REGISTER THE FIRST USER";
-            this.message += "\n===================================================";
-            this.message += "\n================ " + password + " ==================";
-            this.message += "\n===================================================";
-        }
-
-        @Override
-        public void run() {
-            LOGGER.info(message);
-        }
-    }
-
     /**
      * Get the initial password which is randomly generated on startup with an empty
      * store. Else it is null and will also be reset to null after registration of the
@@ -531,7 +509,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
      *
      * @return the password required for the registration of the initial user
      */
-    public String getInitialPassword() {
+    public static String getInitialPassword() {
         return initialPassword;
     }
 }
