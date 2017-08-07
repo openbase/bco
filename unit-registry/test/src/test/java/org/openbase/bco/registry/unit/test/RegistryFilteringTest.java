@@ -156,7 +156,7 @@ public class RegistryFilteringTest {
         Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
 
         // unitConfig should be removed with missing all rights and nobody logged in
-        assertTrue("UnitConfig has not been removed event though other permissions have been removed", !Registries.getUnitRegistry().containsUnitConfigById(unitConfig.getId()));
+        assertTrue("UnitConfig has not been removed even though other permissions have been removed", !Registries.getUnitRegistry().containsUnitConfigById(unitConfig.getId()));
 
         // logint
         SessionManager.getInstance().login(userUnitConfig.getId(), password);
