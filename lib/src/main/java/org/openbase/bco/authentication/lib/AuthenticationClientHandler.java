@@ -166,14 +166,15 @@ public class AuthenticationClientHandler {
     }
 
     /**
-     * Validate if the timestamps are equal
+     * Validate if the timestamps are equal.
+     * Compares now + 1 == then, because server adds +1 to authenticator's timestamp.
      *
      * @param now the first timestamp
      * @param then the second timestamp
      * @throws RejectedException thrown if the timestamps have a different time
      */
     public static void validateTimestamp(Timestamp now, Timestamp then) throws RejectedException {
-        if (now.getTime() != then.getTime()) {
+        if (now.getTime() + 1 != then.getTime()) {
             throw new RejectedException("Timestamps do not match");
         }
     }
