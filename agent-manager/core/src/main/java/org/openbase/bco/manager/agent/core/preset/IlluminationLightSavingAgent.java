@@ -27,8 +27,8 @@ import org.openbase.bco.dal.remote.unit.UnitGroupRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
-import org.openbase.bco.manager.agent.core.TriggerDAL.AgentTriggerPool;
 import org.openbase.bco.manager.agent.core.TriggerDAL.IlluminanceDualBoundaryTrigger;
+import org.openbase.bco.manager.agent.core.TriggerJUL.TriggerPool;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -121,7 +121,7 @@ public class IlluminationLightSavingAgent extends AbstractAgentController {
 
         try {
             IlluminanceDualBoundaryTrigger<LocationRemote, LocationDataType.LocationData> agentTrigger = new IlluminanceDualBoundaryTrigger(locationRemote, MAXIMUM_WANTED_ILLUMINATION, MINIMUM_NEEDED_ILLUMINATION, IlluminanceDualBoundaryTrigger.TriggerOperation.HIGH_ACTIVE);
-            agentTriggerHolder.addTrigger(agentTrigger, AgentTriggerPool.TriggerOperation.OR);
+            agentTriggerHolder.addTrigger(agentTrigger, TriggerPool.TriggerOperation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not add agent to agentpool", ex);
         }

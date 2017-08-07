@@ -27,8 +27,8 @@ import java.util.logging.Logger;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
-import org.openbase.bco.manager.agent.core.TriggerDAL.AgentTriggerPool;
 import org.openbase.bco.manager.agent.core.TriggerJUL.GenericTrigger;
+import org.openbase.bco.manager.agent.core.TriggerJUL.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -86,9 +86,9 @@ public class FireAlarmAgent extends AbstractAgentController {
 
         try {
             GenericTrigger<LocationRemote, LocationData, AlarmState.State> agentTrigger = new GenericTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.SMOKE_ALARM_STATE_SERVICE);
-            agentTriggerHolder.addTrigger(agentTrigger, AgentTriggerPool.TriggerOperation.OR);
+            agentTriggerHolder.addTrigger(agentTrigger, TriggerPool.TriggerOperation.OR);
             GenericTrigger<LocationRemote, LocationData, AlarmState.State> agentFireTrigger = new GenericTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.FIRE_ALARM_STATE_SERVICE);
-            agentTriggerHolder.addTrigger(agentFireTrigger, AgentTriggerPool.TriggerOperation.OR);
+            agentTriggerHolder.addTrigger(agentFireTrigger, TriggerPool.TriggerOperation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not add agent to agentpool", ex);
         }

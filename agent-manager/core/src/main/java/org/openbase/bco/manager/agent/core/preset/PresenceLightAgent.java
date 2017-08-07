@@ -28,7 +28,7 @@ import org.openbase.bco.manager.agent.core.AgentActionRescheduleHelper.Reschedul
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
-import org.openbase.bco.manager.agent.core.TriggerDAL.AgentTriggerPool;
+import org.openbase.bco.manager.agent.core.TriggerJUL.TriggerPool;
 import org.openbase.bco.manager.agent.core.TriggerJUL.GenericTrigger;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
