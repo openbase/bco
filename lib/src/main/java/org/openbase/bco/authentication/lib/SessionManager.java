@@ -42,6 +42,7 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.slf4j.LoggerFactory;
+import rst.domotic.authentication.AuthenticatorType;
 import rst.domotic.authentication.AuthenticatorType.Authenticator;
 import rst.domotic.authentication.LoginCredentialsChangeType;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
@@ -88,10 +89,18 @@ public class SessionManager {
     }
 
     public SessionManager() {
-        this(null);
+        this(null, null);
     }
 
+    public SessionManager(byte[] sessionKey) {
+        this(null, sessionKey);
+    }
+    
     public SessionManager(CredentialStore userStore) {
+        this(userStore, null);
+    }
+
+    public SessionManager(CredentialStore userStore, byte[] sessionKey) {
         // load registry
         this.loginObervable = new ObservableImpl<>();
         boolean simulation = false;
@@ -105,6 +114,7 @@ public class SessionManager {
         } else {
             this.store = userStore;
         }
+        if (sessionKey != null) this.sessionKey = sessionKey;
     }
 
     public void initStore() throws InitializationException {
@@ -118,8 +128,17 @@ public class SessionManager {
         return ticketAuthenticatorWrapper;
     }
 
-    public void setTicketAuthenticatorWrapper(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
-        this.ticketAuthenticatorWrapper = ticketAuthenticatorWrapper;
+    public void setTicketAuthenticatorWrapper(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws IOException, BadPaddingException {
+        if (this.ticketAuthenticatorWrapper == null)
+            this.ticketAuthenticatorWrapper = ticketAuthenticatorWrapper;
+        else {
+            AuthenticatorType.Authenticator lastAuthenticator = EncryptionHelper.decryptSymmetric(
+                    this.ticketAuthenticatorWrapper.getAuthenticator(), this.getSessionKey(), AuthenticatorType.Authenticator.class);
+            AuthenticatorType.Authenticator currentAuthenticator = EncryptionHelper.decryptSymmetric(
+                    ticketAuthenticatorWrapper.getAuthenticator(), this.getSessionKey(), AuthenticatorType.Authenticator.class);            
+            if (currentAuthenticator.getTimestamp().getTime() > lastAuthenticator.getTimestamp().getTime())
+                this.ticketAuthenticatorWrapper = ticketAuthenticatorWrapper;
+        }
     }
 
     public byte[] getSessionKey() {
