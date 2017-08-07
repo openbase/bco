@@ -115,5 +115,5 @@ public interface UserRegistry extends DataProvider<UserRegistryData>, Shutdownab
      * @throws NotAvailableException If no user with the given user name could be found.
      */
     @RPCMethod
-    public String getUserIDByUserName(final String userName) throws CouldNotPerformException, NotAvailableException;
+    public String getUserIdByUserName(final String userName) throws CouldNotPerformException, NotAvailableException;
 }
