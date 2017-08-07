@@ -33,6 +33,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import javax.crypto.BadPaddingException;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.future.AuthenticatedActionFuture;
 import org.openbase.bco.authentication.lib.SessionManager;
@@ -541,12 +542,16 @@ public abstract class AbstractUnitRemote<M extends GeneratedMessage> extends Abs
                 }
             }
         }
-        
+
         // then, after relog or incase unit was already or never authenticated
         if (this.isAuthenticated()) {
-            sessionManager.initializeServiceServerRequest();
-            ActionAuthority.Builder actionAuthorityBuilder = actionDescriptionBuilder.getActionAuthorityBuilder();
-            actionAuthorityBuilder.setTicketAuthenticatorWrapper(sessionManager.getTicketAuthenticatorWrapper());
+            try {
+                TicketAuthenticatorWrapper wrapper = AuthenticationClientHandler.initServiceServerRequest(this.sessionManager.getSessionKey(), this.sessionManager.getTicketAuthenticatorWrapper());
+                ActionAuthority.Builder actionAuthorityBuilder = actionDescriptionBuilder.getActionAuthorityBuilder();
+                actionAuthorityBuilder.setTicketAuthenticatorWrapper(wrapper);
+            } catch (IOException | BadPaddingException ex) {
+                throw new CouldNotPerformException("Could not initialize client server ticket for request", ex);
+            }
         } else {
             // if still not authenticated and cannot login again all rights are used
             // to make this clear to the receiving controller clear the actionAuthority
