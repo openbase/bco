@@ -125,8 +125,9 @@ public class AuthenticationServerHandler {
     }
 
     /**
-     * Handles a service method (Remote) request to Service Server (SS) (Manager)
-     * Updates given CST's validity period and encrypt again by SS private key
+     * Handles a service method (Remote) request to Service Server (SS) (Manager).
+     * Updates given CST's validity period and encrypt again by SS private key.
+     * Adds 1 to the authenticator's timestamp to ensure the client that this server responded.
      *
      * @param serviceServerSecretKey SS secret key only known to SS
      * @param wrapper TicketAuthenticatorWrapper wrapper that contains both encrypted Authenticator and TGT
@@ -144,14 +145,19 @@ public class AuthenticationServerHandler {
 
         // compare clientIDs and timestamp to period
         AuthenticationServerHandler.validateTicket(clientServerTicket, authenticator);
-
+        
         // update period and session key
         Ticket.Builder cstb = clientServerTicket.toBuilder();
         cstb.setValidityPeriod(getValidityInterval());
+        
+        // add 1 to authenticator's timestamp
+        Authenticator.Builder ab = authenticator.toBuilder();
+        ab.setTimestamp(ab.getTimestamp().toBuilder().setTime(ab.getTimestamp().getTime() + 1));
 
         // update TicketAuthenticatorWrapper
         TicketAuthenticatorWrapper.Builder ticketAuthenticatorWrapper = wrapper.toBuilder();
-        ticketAuthenticatorWrapper.setTicket(EncryptionHelper.encryptSymmetric(clientServerTicket, serviceServerSecretKey));
+        ticketAuthenticatorWrapper.setTicket(EncryptionHelper.encryptSymmetric(cstb.build(), serviceServerSecretKey));
+        ticketAuthenticatorWrapper.setAuthenticator(EncryptionHelper.encryptSymmetric(ab.build(), clientServerTicket.getSessionKeyBytes().toByteArray()));
 
         return ticketAuthenticatorWrapper.build();
     }
