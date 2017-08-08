@@ -169,7 +169,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
             }
             MultiException.checkAndThrow("Could not update unitHostController!", exceptionStack);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not applyConfigUpdate for UnitHost[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "]");
+            throw new CouldNotPerformException("Could not applyConfigUpdate for UnitHost[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "]", ex);
         }
 
         return unitConfig;
