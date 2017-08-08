@@ -352,7 +352,6 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             remote.addDataObserver(dataObserver);
         });
         updateServiceState();
-        if (this instanceof PowerStateServiceRemote) {
     }
 
     /**
