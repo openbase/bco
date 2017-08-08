@@ -42,6 +42,7 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.slf4j.LoggerFactory;
+import rst.domotic.authentication.AuthenticatorType;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
@@ -64,13 +65,13 @@ public class SessionManager {
 
     // remember id of client that is currently logged in
     private String clientId;
-    
+
     // remember id of client during session
     private String previousClientId;
 
     // remember user id during session
     private String userId;
-    private String userPassword;  
+    private String userPassword;
 
     /**
      * Observable on which it will be notified if login or logout is triggered.
@@ -86,10 +87,18 @@ public class SessionManager {
     }
 
     public SessionManager() {
-        this(null);
+        this(null, null);
     }
 
+    public SessionManager(byte[] sessionKey) {
+        this(null, sessionKey);
+    }
+    
     public SessionManager(CredentialStore userStore) {
+        this(userStore, null);
+    }
+
+    public SessionManager(CredentialStore userStore, byte[] sessionKey) {
         // load registry
         this.loginObervable = new ObservableImpl<>();
         boolean simulation = false;
@@ -103,6 +112,7 @@ public class SessionManager {
         } else {
             this.store = userStore;
         }
+        if (sessionKey != null) this.sessionKey = sessionKey;
     }
 
     public void initStore() throws InitializationException {
@@ -116,8 +126,17 @@ public class SessionManager {
         return ticketAuthenticatorWrapper;
     }
 
-    public void setTicketAuthenticatorWrapper(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
-        this.ticketAuthenticatorWrapper = ticketAuthenticatorWrapper;
+    public void setTicketAuthenticatorWrapper(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws IOException, BadPaddingException {
+        if (this.ticketAuthenticatorWrapper == null)
+            this.ticketAuthenticatorWrapper = ticketAuthenticatorWrapper;
+        else {
+            AuthenticatorType.Authenticator lastAuthenticator = EncryptionHelper.decryptSymmetric(
+                    this.ticketAuthenticatorWrapper.getAuthenticator(), this.getSessionKey(), AuthenticatorType.Authenticator.class);
+            AuthenticatorType.Authenticator currentAuthenticator = EncryptionHelper.decryptSymmetric(
+                    ticketAuthenticatorWrapper.getAuthenticator(), this.getSessionKey(), AuthenticatorType.Authenticator.class);            
+            if (currentAuthenticator.getTimestamp().getTime() > lastAuthenticator.getTimestamp().getTime())
+                this.ticketAuthenticatorWrapper = ticketAuthenticatorWrapper;
+        }
     }
 
     public byte[] getSessionKey() {
@@ -146,11 +165,12 @@ public class SessionManager {
     public boolean login(String userId, String userPassword) throws CouldNotPerformException, NotAvailableException {
         return this.login(userId, userPassword, false);
     }
-    
+
     public boolean login(String userId, String userPassword, boolean rememberPassword) throws CouldNotPerformException, NotAvailableException {
         byte[] clientPasswordHash = EncryptionHelper.hash(userPassword);
-        if (rememberPassword)
+        if (rememberPassword) {
             this.userPassword = userPassword;
+        }
         return this.internalLogin(userId, clientPasswordHash, true);
     }
 
@@ -167,7 +187,7 @@ public class SessionManager {
         byte[] key = getCredentials(clientId);
         return this.internalLogin(clientId, key, false);
     }
-    
+
     /**
      * Perform a relog for the client registered in the store.
      *
@@ -178,20 +198,21 @@ public class SessionManager {
     public boolean relog() throws CouldNotPerformException, NotAvailableException {
         this.ticketAuthenticatorWrapper = null;
         this.sessionKey = null;
-                
+
         // if user is logged in and can login again
-        if (this.canUserLoginAgain())
+        if (this.canUserLoginAgain()) {
             return this.login(this.userId, this.userPassword, true);
-        
+        }
+
         // if user is not logged in and the client can login again
-        if (this.canClientLoginAgain())
+        if (this.canClientLoginAgain()) {
             return this.login(this.previousClientId);
-        
+        }
+
         // if neither user or client can login again
         this.logout();
         throw new CouldNotPerformException("Your session has expired. You have been logged out for security reasons. Please log in again.");
     }
-
 
     /**
      * Perform a login for a given userId and password.
@@ -203,21 +224,22 @@ public class SessionManager {
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
     private boolean internalLogin(String id, byte[] key, boolean isUser) throws CouldNotPerformException, NotAvailableException {
-        
+
         // temporary wrapper and session key. Incase a new user/client wants to login but failed then
         // reset these in order to reset the session to previous user/client
         TicketAuthenticatorWrapper tmpTicketAuthenticatorWrapper = null;
         byte[] tmpSessionKey = null;
         String tmpUserId = null;
         String tmpUserPassword = null;
-        
+
         // becomes true if login was successful
         boolean result = false;
-    
+
         if (this.isLoggedIn()) {
             // if same user or client is already looged in
-            if (id == this.userId || id == this.clientId)
+            if (id.equals(this.userId) || id.equals(this.clientId)) {
                 throw new CouldNotPerformException("You are already logged in.");
+            }
             // if other user or client wants to login
             // then logout user or client 
             // and log them in again in case of login failure
@@ -227,10 +249,10 @@ public class SessionManager {
             tmpUserPassword = this.userPassword;
             this.logout();
         }
-        
-        if (isUser)
+
+        if (isUser) {
             this.userId = id;
-        else {
+        } else {
             this.clientId = id;
             this.previousClientId = id;
         }
@@ -275,10 +297,10 @@ public class SessionManager {
             } catch (CouldNotPerformException ex) {
                 LOGGER.warn("Could not notify logout to observer", ex);
             }
-            
+
             result = true;
             return result;
-        } catch (BadPaddingException ex) {            
+        } catch (BadPaddingException ex) {
             throw new CouldNotPerformException("The password you have entered was wrong. Please try again!");
         } catch (ExecutionException ex) {
             Throwable cause = ex.getCause();
@@ -376,23 +398,22 @@ public class SessionManager {
 
         return false;
     }
-    
+
     /**
      * determines if a user can login again.
-     * 
+     *
      * @return true if so, false otherwise
      */
     public boolean canUserLoginAgain() {
         if (this.userId != null) {
-            if (this.userPassword != null) return true;
-            else return false;
+            return this.userPassword != null;
         }
         return false;
     }
-    
+
     /**
      * determines if a client can login again.
-     * 
+     *
      * @return true if so, false otherwise
      */
     public boolean canClientLoginAgain() {
@@ -578,11 +599,12 @@ public class SessionManager {
             throw new CouldNotPerformException("Internal server error.", cause);
         }
     }
-    
+
     public void removeUser(String id) throws CouldNotPerformException {
-        if (!this.isAdmin())
+        if (!this.isAdmin()) {
             throw new CouldNotPerformException("You have to be an admin to perform this action");
-        
+        }
+
         try {
             ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(this.sessionKey, this.ticketAuthenticatorWrapper);
 
@@ -661,7 +683,7 @@ public class SessionManager {
 
     /**
      * Method used to register the first user.
-     * 
+     *
      * @param initialPassword the initial password as printed by the authenticationController
      * @param userId the id of the first user to be registered
      * @param userPassword the password chosen by the first user

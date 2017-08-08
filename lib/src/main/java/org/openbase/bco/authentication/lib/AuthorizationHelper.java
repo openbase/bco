@@ -25,6 +25,7 @@ package org.openbase.bco.authentication.lib;
 import com.google.protobuf.ProtocolStringList;
 import java.util.Map;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig.MapFieldEntry;
 import rst.domotic.authentication.PermissionType.Permission;
@@ -38,6 +39,9 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  * @author <a href="mailto:cromankiewicz@techfak.uni-bielefeld.de">Constantin Romankiewicz</a>
  */
 public class AuthorizationHelper {
+    
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthorizationHelper.class);
+    
     private enum Type {
         READ,
         WRITE,
@@ -129,8 +133,11 @@ public class AuthorizationHelper {
         }
 
         ProtocolStringList groupMembers;
-
         for (MapFieldEntry entry : permissionConfig.getGroupPermissionList()) {
+            if(groups.get(entry.getGroupId()) == null) {
+                LOGGER.warn("No Group for id["+entry.getGroupId()+"] available");
+                continue;
+            }
             groupMembers = groups.get(entry.getGroupId()).getMessage().getAuthorizationGroupConfig().getMemberIdList();
 
             // Check if the user belongs to the group.

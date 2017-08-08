@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 import javax.crypto.BadPaddingException;
 import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Assert;
 import static org.junit.Assert.fail;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -36,11 +37,13 @@ import org.openbase.bco.authentication.lib.mock.MockClientStore;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.jp.JPInitializeCredentials;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
+import rst.domotic.authentication.AuthenticatorType;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
@@ -277,5 +280,75 @@ public class AuthenticatorControllerTest {
                 .build();
 
         CachedAuthenticationRemote.getRemote().changeCredentials(loginCredentialsChange).get();
+    }
+
+    /**
+     * Test of async communication between ClientRemote and AuthenticatorController.
+     * After login two requests will be sent asynchronously. 
+     * The first request will return later than the second request. 
+     * This should work and only the newest ticket should then be used for further requests.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 5000)
+    public void testAsyncCommunication() throws Exception {
+        System.out.println("testAsyncCommunication");
+
+        String userId = MockCredentialStore.USER_ID;
+        byte[] userPasswordHash = MockCredentialStore.USER_PASSWORD_HASH;
+
+        // handle KDC request on server side
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userId + "@").get();
+
+        // handle KDC response on client side
+        List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(userId, userPasswordHash, true, ticketSessionKeyWrapper);
+        TicketAuthenticatorWrapper clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
+        byte[] clientTGSSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
+
+        // handle TGS request on server side
+        ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestClientServerTicket(clientTicketAuthenticatorWrapper).get();
+
+        // handle TGS response on client side
+        list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(userId, clientTGSSessionKey, ticketSessionKeyWrapper);
+        clientTicketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
+        byte[] clientSSSessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
+
+        // init SS request on client side
+        TicketAuthenticatorWrapper request1 = AuthenticationClientHandler.initServiceServerRequest(clientSSSessionKey, clientTicketAuthenticatorWrapper);
+        
+        Thread.sleep(100);
+        
+        // init SS request on client side
+        TicketAuthenticatorWrapper request2 = AuthenticationClientHandler.initServiceServerRequest(clientSSSessionKey, clientTicketAuthenticatorWrapper);
+        
+        AuthenticatorType.Authenticator request2auth = EncryptionHelper.decryptSymmetric(request2.getAuthenticator(), clientSSSessionKey, AuthenticatorType.Authenticator.class);
+        AuthenticatorType.Authenticator request1auth = EncryptionHelper.decryptSymmetric(request1.getAuthenticator(), clientSSSessionKey, AuthenticatorType.Authenticator.class);
+        
+        System.err.println(request2auth.getTimestamp().getTime());
+        System.err.println(request1auth.getTimestamp().getTime());  
+
+        // handle SS request on server side
+        TicketAuthenticatorWrapper response2 = CachedAuthenticationRemote.getRemote().validateClientServerTicket(request2).get();
+
+        // handle SS response on client side
+        AuthenticationClientHandler.handleServiceServerResponse(clientSSSessionKey, request2, response2);
+
+        // handle SS request on server side
+        TicketAuthenticatorWrapper response1 = CachedAuthenticationRemote.getRemote().validateClientServerTicket(request1).get();
+
+        // handle SS response on client side
+        AuthenticationClientHandler.handleServiceServerResponse(clientSSSessionKey, request1, response1);
+        
+        SessionManager manager = new SessionManager(clientSSSessionKey);
+        manager.setTicketAuthenticatorWrapper(response2);
+        manager.setTicketAuthenticatorWrapper(response1);
+        
+        AuthenticatorType.Authenticator response2auth = EncryptionHelper.decryptSymmetric(response2.getAuthenticator(), clientSSSessionKey, AuthenticatorType.Authenticator.class);
+        AuthenticatorType.Authenticator sessionManagerAuth = EncryptionHelper.decryptSymmetric(manager.getTicketAuthenticatorWrapper().getAuthenticator(), clientSSSessionKey, AuthenticatorType.Authenticator.class);
+        
+        System.err.println(response2auth.getTimestamp().getTime());
+        System.err.println(sessionManagerAuth.getTimestamp().getTime());  
+        
+        Assert.assertTrue(response2auth.getTimestamp().getTime() == sessionManagerAuth.getTimestamp().getTime());
     }
 }

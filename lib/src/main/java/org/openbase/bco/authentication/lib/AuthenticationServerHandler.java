@@ -23,8 +23,6 @@ package org.openbase.bco.authentication.lib;
  */
 import com.google.protobuf.ByteString;
 import java.io.IOException;
-import java.io.StreamCorruptedException;
-import java.util.Map;
 import javax.crypto.BadPaddingException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
