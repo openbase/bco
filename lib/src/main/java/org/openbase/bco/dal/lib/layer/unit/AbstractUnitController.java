@@ -450,13 +450,14 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
         try {
             TicketAuthenticatorWrapper wrapper = actionAuthority.getTicketAuthenticatorWrapper();
-            String clientId = ServiceServerManager.getInstance().evaluateClientServerTicket(wrapper).getId();
+            ServiceServerManager.TicketEvaluationWrapper validatedTicketWrapper = ServiceServerManager.getInstance().evaluateClientServerTicket(wrapper);
+            String clientId = validatedTicketWrapper.getId();
 
             if (!AuthorizationHelper.canWrite(getConfig().getPermissionConfig(), clientId, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap())) {
                 throw new PermissionDeniedException("You have no permission to execute this action.");
             }
 
-            return wrapper;
+            return validatedTicketWrapper.getTicketAuthenticatorWrapper();
         } catch (IOException | CouldNotPerformException ex) {
             throw new VerificationFailedException("Verifying authority failed", ex);
         } catch (InterruptedException ex) {
