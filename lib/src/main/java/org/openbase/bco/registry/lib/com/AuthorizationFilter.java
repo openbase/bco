@@ -24,7 +24,6 @@ package org.openbase.bco.registry.lib.com;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
