@@ -210,7 +210,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 byte[] userKey   = null;
                 byte[] clientKey = null;
                 boolean isUser   = split[0].length() > 0;
-                boolean isClient = split[1].length() > 0;
+                boolean isClient = split.length > 1 && split[1].length() > 0;
 
                 if (isUser) {
                     userKey   = store.getCredentials(split[0].trim());

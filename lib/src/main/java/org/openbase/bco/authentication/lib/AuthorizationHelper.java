@@ -122,6 +122,13 @@ public class AuthorizationHelper {
             return false;
         }
 
+        // If the given ID has the form user@client, we check both.
+        String[] split = userId.split("@", 2);
+
+        if (split.length > 1) {
+            return canDo(permissionConfig, split[0], groups, type) || canDo(permissionConfig, split[1], groups, type);
+        }
+
         // Owner
         if (permissionConfig.getOwnerId().equals(userId) && permitted(permissionConfig.getOwnerPermission(), type)) {
             return true;
