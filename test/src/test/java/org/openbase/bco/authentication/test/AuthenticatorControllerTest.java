@@ -294,11 +294,11 @@ public class AuthenticatorControllerTest {
     public void testAsyncCommunication() throws Exception {
         System.out.println("testAsyncCommunication");
 
-        String userId = MockCredentialStore.USER_ID;
+        String userId = MockCredentialStore.USER_ID + "@";
         byte[] userPasswordHash = MockCredentialStore.USER_PASSWORD_HASH;
 
         // handle KDC request on server side
-        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userId + "@").get();
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userId).get();
 
         // handle KDC response on client side
         List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(userId, userPasswordHash, true, ticketSessionKeyWrapper);
