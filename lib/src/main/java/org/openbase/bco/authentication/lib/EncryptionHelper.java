@@ -133,7 +133,7 @@ public class EncryptionHelper {
      * encryption.
      */
     public static ByteString encryptSymmetric(final Serializable object, final byte[] key) throws IOException {
-        return encrypt(object, key, true);
+        return ByteString.copyFrom(encrypt(object, key, true));
     }
 
     /**
@@ -146,7 +146,7 @@ public class EncryptionHelper {
      * encryption.
      */
     public static ByteString encryptAsymmetric(final Serializable object, final byte[] key) throws IOException {
-        return encrypt(object, key, false);
+        return ByteString.copyFrom(encrypt(object, key, false));
     }
 
     /**
@@ -159,7 +159,7 @@ public class EncryptionHelper {
      * @throws IOException Any IO error occurring during the serialization and
      * encryption.
      */
-    public static ByteString encrypt(final Serializable object, final byte[] key, final boolean symmetric) throws IOException {
+    public static byte[] encrypt(final Serializable object, final byte[] key, final boolean symmetric) throws IOException {
         try {
             Key keyType;
             Cipher cipher;
@@ -178,7 +178,7 @@ public class EncryptionHelper {
                 try (ObjectOutputStream objectOutputStream = new ObjectOutputStream(byteArrayOutputStream)) {
                     objectOutputStream.writeObject(object);
                     objectOutputStream.flush();
-                    return ByteString.copyFrom(cipher.doFinal(byteArrayOutputStream.toByteArray()));
+                    return cipher.doFinal(byteArrayOutputStream.toByteArray());
                 }
             }
         } catch (NoSuchAlgorithmException | NoSuchPaddingException | IllegalBlockSizeException | InvalidKeyException | BadPaddingException | InvalidKeySpecException ex) {
@@ -228,11 +228,29 @@ public class EncryptionHelper {
      * @param encryptedClass the class to which the decrypted object is cast
      * @param symmetric if the key is symmetric or asymmetric
      * @return Returns decrypted object as Object
-     * @throws javax.crypto.BadPaddingException if a wrong key is used
+     * @throws BadPaddingException if a wrong key is used
      * @throws IOException if corrupted data
      * @throws ClassCastException if the encrypted object can not be cast to T
      */
     public static <T> T decrypt(final ByteString encryptedObject, final byte[] key, final Class<T> encryptedClass, final boolean symmetric) throws IOException, BadPaddingException, ClassCastException {
+        return decrypt(encryptedObject.toByteArray(), key, encryptedClass, symmetric);
+    }
+
+
+    /**
+     * Decrypts a ByteArray into an Object of type T.
+     *
+     * @param <T> the type to which the encrypted object is casted
+     * @param encryptedObject ByteString to be decrypted
+     * @param key byte[] to decrypt the encrypted object with
+     * @param encryptedClass the class to which the decrypted object is cast
+     * @param symmetric if the key is symmetric or asymmetric
+     * @return Returns decrypted object as Object
+     * @throws BadPaddingException if a wrong key is used
+     * @throws IOException if corrupted data
+     * @throws ClassCastException if the encrypted object can not be cast to T
+     */
+    public static <T> T decrypt(final byte[] encryptedObject, final byte[] key, final Class<T> encryptedClass, final boolean symmetric) throws IOException, BadPaddingException, ClassCastException {
         try {
             Key keyType;
             Cipher cipher;
@@ -245,7 +263,7 @@ public class EncryptionHelper {
                 cipher = Cipher.getInstance(ASYMMETRIC_TRANSFORMATION);
             }
             cipher.init(Cipher.DECRYPT_MODE, keyType);
-            byte[] decrypted = cipher.doFinal(encryptedObject.toByteArray());
+            byte[] decrypted = cipher.doFinal(encryptedObject);
 
             // decipher
             try (ByteArrayInputStream byteArrayInputStream = new ByteArrayInputStream(decrypted)) {

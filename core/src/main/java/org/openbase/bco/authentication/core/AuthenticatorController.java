@@ -210,17 +210,19 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             try {
                 String[] split = id.split("@", 2);
                 String _id;
-                byte[] key;
-                boolean isUser = false;
-                if (split[0].length() > 0) {
-                    isUser = true;
-                    _id = split[0].trim();
-                    key = store.getCredentials(_id);
-                } else {
-                    _id = split[1].trim();
-                    key = store.getCredentials(_id);
+                byte[] userKey   = null;
+                byte[] clientKey = null;
+                boolean isUser   = split[0].length() > 0;
+                boolean isClient = split[1].length() > 0;
+
+                if (isUser) {
+                    userKey   = store.getCredentials(split[0].trim());
                 }
-                return AuthenticationServerHandler.handleKDCRequest(_id, key, isUser, "", ticketGrantingServiceSecretKey);
+                if (isClient) {
+                    clientKey = store.getCredentials(split[1].trim());
+                }
+
+                return AuthenticationServerHandler.handleKDCRequest(id, userKey, clientKey, "", ticketGrantingServiceSecretKey);
             } catch (NotAvailableException ex) {
                 throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.WARN);
             } catch (InterruptedException | CouldNotPerformException | IOException ex) {

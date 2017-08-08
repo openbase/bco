@@ -55,10 +55,16 @@ public class AuthenticationClientHandler {
      * @throws javax.crypto.BadPaddingException If the decryption of the session key fails, probably because the entered key was wrong.
      * @throws IOException If de- or encryption fail because of a general I/O error.
      */
-    public static List<Object> handleKeyDistributionCenterResponse(String id, byte[] key, boolean isUser, TicketSessionKeyWrapper wrapper) throws IOException, BadPaddingException {
+    public static List<Object> handleKeyDistributionCenterResponse(String id, byte[] userKey, byte[] clientKey, TicketSessionKeyWrapper wrapper) throws IOException, BadPaddingException {
+        byte[] ticketGrantingServiceSessionKey = wrapper.getSessionKey().toByteArray();
+
         // decrypt TGS session key
-        // isUser directly corresponds to using a symmetric decriyption
-        byte[] ticketGrantingServiceSessionKey = EncryptionHelper.decrypt(wrapper.getSessionKey(), key, byte[].class, isUser);
+        if (clientKey != null) {
+            ticketGrantingServiceSessionKey = EncryptionHelper.decrypt(ticketGrantingServiceSessionKey, clientKey, byte[].class, false);
+        }
+        if (userKey != null) {
+            ticketGrantingServiceSessionKey = EncryptionHelper.decrypt(ticketGrantingServiceSessionKey, userKey, byte[].class, true);
+        }
 
         // create Authenticator with empty timestamp
         // set timestamp in initTGSRequest()
@@ -77,6 +83,14 @@ public class AuthenticationClientHandler {
         list.add(ticketGrantingServiceSessionKey);
 
         return list;
+    }
+
+    public static List<Object> handleKeyDistributionCenterResponse(String id, byte[] key, boolean isUser, TicketSessionKeyWrapper wrapper) throws IOException, BadPaddingException {
+        if (isUser) {
+            return handleKeyDistributionCenterResponse(id, key, null, wrapper);
+        }
+
+        return handleKeyDistributionCenterResponse(id, null, key, wrapper);
     }
 
     /**

@@ -238,10 +238,13 @@ public class SessionManagerTest {
     public void registerClientAndLoginAndLoginUserAndLogout() throws Exception {
         System.out.println("registerClientAndLoginAndLoginUserAndLogout");
         SessionManager manager = new SessionManager(clientStore);
+        Ticket ticket;
         manager.initStore();
 
         // login admin
         manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
+        ticket = EncryptionHelper.decryptSymmetric(manager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
+        assertEquals(ticket.getClientId(), MockClientStore.ADMIN_ID + "@");
 
         // register client
         manager.registerClient(MockClientStore.CLIENT_ID);
@@ -249,18 +252,22 @@ public class SessionManagerTest {
         // login client
         boolean result = manager.login(MockClientStore.CLIENT_ID);
         assertEquals(true, result);
+        ticket = EncryptionHelper.decryptSymmetric(manager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
+        assertEquals(ticket.getClientId(), "@" + MockClientStore.CLIENT_ID);
 
-        // login admin
+        // login admin (on the client)
         result = manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
         assertEquals(true, result);
+        ticket = EncryptionHelper.decryptSymmetric(manager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
+        assertEquals(ticket.getClientId(), MockClientStore.ADMIN_ID + "@" + MockClientStore.CLIENT_ID);
         
         // logout admin
         manager.logout();
         assertNotEquals(null, manager.getTicketAuthenticatorWrapper());
         
         // now client should be logged in again
-        Ticket ticket = EncryptionHelper.decryptSymmetric(manager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
-        assertEquals(ticket.getClientId(), MockClientStore.CLIENT_ID);
+        ticket = EncryptionHelper.decryptSymmetric(manager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
+        assertEquals(ticket.getClientId(), "@" + MockClientStore.CLIENT_ID);
     }
 
     /**
@@ -278,8 +285,14 @@ public class SessionManagerTest {
         // login admin
         manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
 
-        // remove himself
-        manager.removeUser(MockClientStore.ADMIN_ID);
+        try {
+            ExceptionPrinter.setBeQuit(Boolean.TRUE);
+
+            // remove himself
+            manager.removeUser(MockClientStore.ADMIN_ID);
+        } finally {
+            ExceptionPrinter.setBeQuit(Boolean.FALSE);
+        }
     }
 
     /**

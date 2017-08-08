@@ -94,11 +94,11 @@ public class AuthenticatorControllerTest {
     public void testCommunication() throws Exception {
         System.out.println("testCommunication");
 
-        String userId = MockCredentialStore.USER_ID;
+        String userId = MockCredentialStore.USER_ID + "@";
         byte[] userPasswordHash = MockCredentialStore.USER_PASSWORD_HASH;
 
         // handle KDC request on server side
-        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userId + "@").get();
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userId).get();
 
         // handle KDC response on client side
         List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(userId, userPasswordHash, true, ticketSessionKeyWrapper);
@@ -152,11 +152,11 @@ public class AuthenticatorControllerTest {
     public void testAuthenticationWithIncorrectPassword() throws Exception {
         System.out.println("testAuthenticationWithIncorrectPassword");
 
-        String userId = MockCredentialStore.USER_ID;
+        String userId = MockCredentialStore.USER_ID + "@";
         String password = "wrongpassword";
         byte[] passwordHash = EncryptionHelper.hash(password);
 
-        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userId + "@").get();
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userId).get();
         AuthenticationClientHandler.handleKeyDistributionCenterResponse(userId, passwordHash, true, ticketSessionKeyWrapper);
     }
 
@@ -164,12 +164,12 @@ public class AuthenticatorControllerTest {
     public void testChangeCredentials() throws Exception {
         System.out.println("testChangeCredentials");
 
-        String userId = MockCredentialStore.USER_ID;
+        String userId = MockCredentialStore.USER_ID + "@";
         byte[] userPasswordHash = MockCredentialStore.USER_PASSWORD_HASH;
         byte[] newPasswordHash = MockCredentialStore.USER_PASSWORD_HASH;
 
         // handle KDC request on server side
-        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userId + "@").get();
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userId).get();
 
         // handle KDC response on client side
         List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(userId, userPasswordHash, true, ticketSessionKeyWrapper);
@@ -207,14 +207,13 @@ public class AuthenticatorControllerTest {
         System.out.println("testChangeOthersCredentials");
 
         // Trying to change the admin's password with a normal user. This should not work.
-        String userId = MockCredentialStore.USER_ID;
-        String adminId = MockCredentialStore.ADMIN_ID;
+        String userId = MockCredentialStore.USER_ID + "@";
         byte[] userPasswordHash = MockCredentialStore.USER_PASSWORD_HASH;
         byte[] adminPasswordHash = MockCredentialStore.ADMIN_PASSWORD_HASH;
         byte[] newPasswordHash = MockCredentialStore.USER_PASSWORD_HASH;
 
         // handle KDC request on server side
-        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userId + "@").get();
+        TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userId).get();
 
         // handle KDC response on client side
         List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(userId, userPasswordHash, true, ticketSessionKeyWrapper);
@@ -233,7 +232,7 @@ public class AuthenticatorControllerTest {
         clientTicketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(clientSSSessionKey, clientTicketAuthenticatorWrapper);
 
         LoginCredentialsChange loginCredentialsChange = LoginCredentialsChange.newBuilder()
-                .setId(adminId)
+                .setId(MockClientStore.ADMIN_ID)
                 .setOldCredentials(EncryptionHelper.encryptSymmetric(adminPasswordHash, clientSSSessionKey))
                 .setNewCredentials(EncryptionHelper.encryptSymmetric(newPasswordHash, clientSSSessionKey))
                 .setTicketAuthenticatorWrapper(clientTicketAuthenticatorWrapper)
@@ -249,9 +248,10 @@ public class AuthenticatorControllerTest {
         }
 
         // Trying to change the user's password with an admin account. This should work.
+        String adminId = MockCredentialStore.ADMIN_ID + "@";
 
         // handle KDC request on server side
-        ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(adminId + "@").get();
+        ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(adminId).get();
 
         // handle KDC response on client side
         list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(adminId, adminPasswordHash, true, ticketSessionKeyWrapper);
@@ -270,7 +270,7 @@ public class AuthenticatorControllerTest {
         clientTicketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(clientSSSessionKey, clientTicketAuthenticatorWrapper);
 
         loginCredentialsChange = LoginCredentialsChange.newBuilder()
-                .setId(userId)
+                .setId(MockClientStore.USER_ID)
                 .setOldCredentials(EncryptionHelper.encryptSymmetric(userPasswordHash, clientSSSessionKey))
                 .setNewCredentials(EncryptionHelper.encryptSymmetric(newPasswordHash, clientSSSessionKey))
                 .setTicketAuthenticatorWrapper(clientTicketAuthenticatorWrapper)

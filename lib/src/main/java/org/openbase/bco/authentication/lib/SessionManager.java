@@ -42,11 +42,9 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.slf4j.LoggerFactory;
-import rst.domotic.authentication.AuthenticatorType.Authenticator;
-import rst.domotic.authentication.LoginCredentialsChangeType;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
-import rst.domotic.authentication.TicketSessionKeyWrapperType;
+import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 
 /**
  *
@@ -166,14 +164,7 @@ public class SessionManager {
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
     public boolean login(String clientId) throws CouldNotPerformException, NotAvailableException {
-        if (this.store == null) {
-            try {
-                this.initStore();
-            } catch (InitializationException e) {
-                throw new NotAvailableException(e);
-            }
-        }
-        byte[] key = this.store.getCredentials(clientId);
+        byte[] key = getCredentials(clientId);
         return this.internalLogin(clientId, key, false);
     }
     
@@ -246,16 +237,28 @@ public class SessionManager {
 
         try {
             // prepend clientId to userId for TicketGranteningTicket request
-            String userIdAtClientId = "@" + this.previousClientId;
+            String userIdAtClientId = "@";
+            byte[] userKey   = null;
+            byte[] clientKey = null;
+
+            if (this.previousClientId != null) {
+                userIdAtClientId = userIdAtClientId + this.previousClientId;
+                clientKey = getCredentials(this.previousClientId);
+            }
+
             if (isUser) {
                 userIdAtClientId = id + userIdAtClientId;
+                userKey = key;
+            }
+            else {
+                clientKey = key;
             }
 
             // request TGT
-            TicketSessionKeyWrapperType.TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userIdAtClientId).get();
+            TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(userIdAtClientId).get();
 
             // handle KDC response on client side
-            List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(id, key, isUser, ticketSessionKeyWrapper);
+            List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(userIdAtClientId, userKey, clientKey, ticketSessionKeyWrapper);
             TicketAuthenticatorWrapper taw = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
             byte[] ticketGrantingServiceSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
 
@@ -263,7 +266,7 @@ public class SessionManager {
             ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestClientServerTicket(taw).get();
 
             // handle TGS response on client side
-            list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(id, ticketGrantingServiceSessionKey, ticketSessionKeyWrapper);
+            list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(userIdAtClientId, ticketGrantingServiceSessionKey, ticketSessionKeyWrapper);
             this.ticketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
             this.sessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
 
@@ -456,7 +459,7 @@ public class SessionManager {
             byte[] oldHash = EncryptionHelper.hash(oldCredentials);
             byte[] newHash = EncryptionHelper.hash(newCredentials);
 
-            LoginCredentialsChangeType.LoginCredentialsChange loginCredentialsChange = LoginCredentialsChangeType.LoginCredentialsChange.newBuilder()
+            LoginCredentialsChange loginCredentialsChange = LoginCredentialsChange.newBuilder()
                     .setId(clientId)
                     .setOldCredentials(EncryptionHelper.encryptSymmetric(oldHash, sessionKey))
                     .setNewCredentials(EncryptionHelper.encryptSymmetric(newHash, sessionKey))
@@ -670,7 +673,7 @@ public class SessionManager {
             byte[] passwordHash = EncryptionHelper.hash(userPassword);
 
             LoginCredentialsChange.Builder loginCredentialsChange = LoginCredentialsChange.newBuilder();
-            loginCredentialsChange.setNewCredentials(EncryptionHelper.encrypt(passwordHash, EncryptionHelper.hash(initialPassword), true));
+            loginCredentialsChange.setNewCredentials(EncryptionHelper.encryptSymmetric(passwordHash, EncryptionHelper.hash(initialPassword)));
             loginCredentialsChange.setId(userId);
             CachedAuthenticationRemote.getRemote().register(loginCredentialsChange.build()).get();
         } catch (IOException ex) {
@@ -678,6 +681,25 @@ public class SessionManager {
         } catch (ExecutionException | CouldNotPerformException ex) {
             throw new CouldNotPerformException("Initial registration failed", ex);
         }
+    }
+
+    /**
+     * Retrieves the credentials for a given client ID from the local store.
+     *
+     * @param clientId
+     * @return Credentials, if they could be found.
+     * @throws NotAvailableException
+     */
+    private byte[] getCredentials(String clientId) throws NotAvailableException {
+        if (this.store == null) {
+            try {
+                this.initStore();
+            } catch (InitializationException e) {
+                throw new NotAvailableException(e);
+            }
+        }
+        byte[] key = this.store.getCredentials(clientId);
+        return key;
     }
 
     public String getUserId() {
