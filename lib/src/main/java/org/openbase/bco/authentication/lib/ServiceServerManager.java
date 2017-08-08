@@ -129,11 +129,13 @@ public class ServiceServerManager {
                 }
             }
 
+            String id = "@" + CredentialStore.SERVICE_SERVER_ID;
+
             // request TGT
-            TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket("@" + CredentialStore.SERVICE_SERVER_ID).get();
+            TicketSessionKeyWrapper ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestTicketGrantingTicket(id).get();
 
             // handle KDC response on client side
-            List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(CredentialStore.SERVICE_SERVER_ID, key, false, ticketSessionKeyWrapper);
+            List<Object> list = AuthenticationClientHandler.handleKeyDistributionCenterResponse(id, key, false, ticketSessionKeyWrapper);
             TicketAuthenticatorWrapper taw = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
             byte[] ticketGrantingServiceSessionKey = (byte[]) list.get(1); // save TGS session key somewhere on client side
 
@@ -141,7 +143,7 @@ public class ServiceServerManager {
             ticketSessionKeyWrapper = CachedAuthenticationRemote.getRemote().requestClientServerTicket(taw).get();
 
             // handle TGS response on client side
-            list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(CredentialStore.SERVICE_SERVER_ID, ticketGrantingServiceSessionKey, ticketSessionKeyWrapper);
+            list = AuthenticationClientHandler.handleTicketGrantingServiceResponse(id, ticketGrantingServiceSessionKey, ticketSessionKeyWrapper);
             this.ticketAuthenticatorWrapper = (TicketAuthenticatorWrapper) list.get(0); // save at somewhere temporarily
             this.sessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
         } catch (BadPaddingException ex) {

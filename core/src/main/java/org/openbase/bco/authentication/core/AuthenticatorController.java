@@ -478,7 +478,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
                 Authenticator authenticator = EncryptionHelper.decryptSymmetric(ticketAuthenticatorWrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);
 
-                if (!authenticator.getClientId().equals(CredentialStore.SERVICE_SERVER_ID)) {
+                if (!authenticator.getClientId().equals("@" + CredentialStore.SERVICE_SERVER_ID)) {
                     throw new RejectedException("Client[" + authenticator.getClientId() + "] is not authorized to request the ServiceServerSecretKey");
                 }
 
