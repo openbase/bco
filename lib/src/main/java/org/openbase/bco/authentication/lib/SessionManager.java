@@ -143,9 +143,9 @@ public class SessionManager {
         return sessionKey;
     }
 
-    public void initializeServiceServerRequest() throws RejectedException {
+    public TicketAuthenticatorWrapper initializeServiceServerRequest() throws RejectedException {
         try {
-            this.ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(this.getSessionKey(), this.getTicketAuthenticatorWrapper());
+            return AuthenticationClientHandler.initServiceServerRequest(this.getSessionKey(), this.getTicketAuthenticatorWrapper());
         } catch (IOException | BadPaddingException ex) {
             throw new RejectedException("Initializing request rejected", ex);
         }
@@ -166,7 +166,7 @@ public class SessionManager {
         return this.login(userId, userPassword, false);
     }
 
-    public boolean login(String userId, String userPassword, boolean rememberPassword) throws CouldNotPerformException, NotAvailableException {
+        public boolean login(String userId, String userPassword, boolean rememberPassword) throws CouldNotPerformException, NotAvailableException {
         byte[] clientPasswordHash = EncryptionHelper.hash(userPassword);
         if (rememberPassword) {
             this.userPassword = userPassword;

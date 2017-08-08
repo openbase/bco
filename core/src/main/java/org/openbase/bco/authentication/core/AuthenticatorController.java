@@ -97,19 +97,19 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
     private final CredentialStore store;
 
     private static String initialPassword;
-    
+
     public AuthenticatorController() {
         this(new CredentialStore(STORE_FILENAME), EncryptionHelper.generateKey());
     }
-    
+
     public AuthenticatorController(CredentialStore store) {
         this(store, EncryptionHelper.generateKey());
     }
-    
+
     public AuthenticatorController(byte[] serviceServerPrivateKey) {
         this(new CredentialStore(STORE_FILENAME), serviceServerPrivateKey);
     }
-    
+
     public AuthenticatorController(CredentialStore store, byte[] serviceServerPrivateKey) {
         this.server = new NotInitializedRSBLocalServer();
 
@@ -168,12 +168,12 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 throw new CouldNotPerformException("Could not write private key.", ex);
             }
         }
-        
+
         if (store.hasOnlyServiceServer()) {
             // Generate initial password.
             initialPassword = RandomStringUtils.randomAlphanumeric(15);
         }
-        
+
         serverWatchDog.activate();
     }
 
@@ -206,14 +206,13 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 String[] split = id.split("@", 2);
-                String _id;
-                byte[] userKey   = null;
+                byte[] userKey = null;
                 byte[] clientKey = null;
-                boolean isUser   = split[0].length() > 0;
+                boolean isUser = split[0].length() > 0;
                 boolean isClient = split.length > 1 && split[1].length() > 0;
 
                 if (isUser) {
-                    userKey   = store.getCredentials(split[0].trim());
+                    userKey = store.getCredentials(split[0].trim());
                 }
                 if (isClient) {
                     clientKey = store.getCredentials(split[1].trim());

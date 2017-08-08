@@ -28,8 +28,10 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import javax.crypto.BadPaddingException;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
+import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.CouldNotPerformException;
+import rst.domotic.authentication.AuthenticatorType.Authenticator;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
 /**

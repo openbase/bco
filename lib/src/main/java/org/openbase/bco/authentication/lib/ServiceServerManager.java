@@ -92,12 +92,14 @@ public class ServiceServerManager {
             AuthenticationServerHandler.validateTicket(clientServerTicket, authenticator);
 
             // update period and session key
-            Ticket.Builder cstb = clientServerTicket.toBuilder();
-            cstb.setValidityPeriod(getValidityInterval());
-
+            clientServerTicket = clientServerTicket.toBuilder().setValidityPeriod(getValidityInterval()).build();
+            Authenticator.Builder authenticatorBuilder = authenticator.toBuilder();
+            authenticatorBuilder.setTimestamp(authenticator.getTimestamp().toBuilder().setTime(authenticator.getTimestamp().getTime() + 1));
+            
             // update TicketAuthenticatorWrapper
             TicketAuthenticatorWrapper.Builder response = wrapper.toBuilder();
             response.setTicket(EncryptionHelper.encryptSymmetric(clientServerTicket, serviceServerSecretKey));
+            response.setAuthenticator(EncryptionHelper.encryptSymmetric(authenticatorBuilder.build(), clientServerTicket.getSessionKeyBytes().toByteArray()));
 
             return new TicketEvaluationWrapper(authenticator.getClientId(), clientServerTicket.getSessionKeyBytes().toByteArray(), response.build());
         } catch (IOException ex) {

@@ -21,7 +21,6 @@ package org.openbase.bco.authentication.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import com.google.protobuf.ByteString;
 import com.google.protobuf.GeneratedMessage;
 import java.io.IOException;
@@ -49,9 +48,8 @@ public abstract class AuthenticatedServiceProcessor {
         try {
             AuthenticatedValue.Builder response = AuthenticatedValue.newBuilder();
             if (authenticatedValue.hasTicketAuthenticatorWrapper()) {
-                response.setTicketAuthenticatorWrapper(authenticatedValue.getTicketAuthenticatorWrapper());
                 try {
-                    ServiceServerManager.TicketEvaluationWrapper ticketEvaluationWrapper = ServiceServerManager.getInstance().evaluateClientServerTicket(response.getTicketAuthenticatorWrapper());
+                    ServiceServerManager.TicketEvaluationWrapper ticketEvaluationWrapper = ServiceServerManager.getInstance().evaluateClientServerTicket(authenticatedValue.getTicketAuthenticatorWrapper());
 
                     if (!AuthorizationHelper.canWrite(permissionConfig, ticketEvaluationWrapper.getId(), authorizationGroupMap)) {
                         throw new PermissionDeniedException("User[" + ticketEvaluationWrapper.getId() + "] has not rights to register a unitConfig");
@@ -59,6 +57,7 @@ public abstract class AuthenticatedServiceProcessor {
                     M decrypted = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), ticketEvaluationWrapper.getSessionKey(), internalClass);
                     M result = executable.process(decrypted);
                     response.setValue(EncryptionHelper.encryptSymmetric(result, ticketEvaluationWrapper.getSessionKey()));
+                    response.setTicketAuthenticatorWrapper(ticketEvaluationWrapper.getTicketAuthenticatorWrapper());
                 } catch (IOException | BadPaddingException ex) {
                     throw new CouldNotPerformException("Encryption/Decryption of internal value has failed", ex);
                 }
@@ -84,21 +83,23 @@ public abstract class AuthenticatedServiceProcessor {
     public static <M extends GeneratedMessage> Future<M> requestAuthenticatedAction(final M message, final Class<M> messageClass, final SessionManager sessionManager, final InternalRequestable internalRequestable) throws CouldNotPerformException {
         if (sessionManager.isLoggedIn()) {
             try {
-                sessionManager.initializeServiceServerRequest();
-                TicketAuthenticatorWrapper ticketAuthenticatorWrapper = sessionManager.getTicketAuthenticatorWrapper();
-
-                AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
-                authenticatedValue.setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
                 try {
-                    authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(message, sessionManager.getSessionKey()));
-                } catch (IOException ex) {
-                    throw new CouldNotPerformException("Could not encrypt userConfig", ex);
-                }
+                    TicketAuthenticatorWrapper ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(sessionManager.getSessionKey(), sessionManager.getTicketAuthenticatorWrapper());
+                    AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
+                    authenticatedValue.setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
 
-                Future<AuthenticatedValue> future = internalRequestable.request(authenticatedValue.build());
-                return new AuthenticatedValueFuture<>(future, messageClass, ticketAuthenticatorWrapper, sessionManager);
+                    try {
+                        authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(message, sessionManager.getSessionKey()));
+                    } catch (IOException ex) {
+                        throw new CouldNotPerformException("Could not encrypt userConfig", ex);
+                    }
+                    Future<AuthenticatedValue> future = internalRequestable.request(authenticatedValue.build());
+                    return new AuthenticatedValueFuture<>(future, messageClass, ticketAuthenticatorWrapper, sessionManager);
+                } catch (IOException | BadPaddingException ex) {
+                    throw new CouldNotPerformException("Could not initialize service server request", ex);
+                }
             } catch (CouldNotPerformException ex) {
-                throw new CouldNotPerformException("Could not register unit config!", ex);
+                throw new CouldNotPerformException("Could not request authenticated Action!", ex);
             }
         } else {
             AuthenticatedValue.Builder authenticateValue = AuthenticatedValue.newBuilder();
