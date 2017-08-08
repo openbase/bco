@@ -131,6 +131,12 @@ public class OpenHABItemConfigGenerator {
                     rootEntry = groupEntry;
                 }
             }
+            
+            if(rootEntry == null) {
+                logger.warn("Group entries could not be generated because the root location is still missing! Register at least one location if the group items should be generated.");
+                return;
+            }
+            
             Collections.sort(groupEntryList, (GroupEntry o1, GroupEntry o2) -> o1.getLabel().compareTo(o2.getLabel()));
             generateOverviewGroupEntries(rootEntry);
         } catch (Exception ex) {
