@@ -616,6 +616,9 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
             throw new NotAvailableException("Transform3D", ex);
         }
     }
+    
+    //todo release: maybe rename transformation methods
+    // getTransform3DInverse -> getTransformIntoRoot 
 
     /**
      * Gets the inverse Transform3D to getTransform3D().

@@ -439,7 +439,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     @Override
     public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         try {
-            logger.debug("applyAction: " + actionDescription.getLabel());
+            logger.info("applyAction: " + actionDescription.getDescription());
             final ActionImpl action = new ActionImpl(this);
             action.init(actionDescription);
             return action.execute();
