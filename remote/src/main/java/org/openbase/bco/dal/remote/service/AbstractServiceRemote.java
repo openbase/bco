@@ -71,9 +71,9 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  * @param <ST> the corresponding state for the service type of this remote.
  */
 public abstract class AbstractServiceRemote<S extends Service, ST extends GeneratedMessage> implements ServiceRemote<S, ST> {
-
+    
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-
+    
     private boolean active;
     private final ServiceType serviceType;
     private final Class<ST> serviceDataClass;
@@ -177,7 +177,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     public void removeDataObserver(final Observer<ST> observer) {
         serviceStateObservable.removeObserver(observer);
     }
-
+    
     @Override
     public void addServiceStateObserver(final ServiceType serviceType, final Observer observer) {
         try {
@@ -189,7 +189,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not add service state observer!", ex), logger);
         }
     }
-
+    
     @Override
     public void removeServiceStateObserver(final ServiceType serviceType, final Observer observer) {
         try {
@@ -201,7 +201,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not remove service state observer!", ex), logger, LogLevel.WARN);
         }
     }
-
+    
     @Override
     public Class<ST> getDataClass() {
         return serviceDataClass;
@@ -214,46 +214,44 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * @return the recalculated server state data based on the newly requested data.
      * @throws CouldNotPerformException is thrown if non of the request was successful. In case the failOnError is set to true any request error throws an CouldNotPerformException.
      */
+    @Override
     public CompletableFuture<ST> requestData(final boolean failOnError) throws CouldNotPerformException {
         final CompletableFuture<ST> requestDataFuture = new CompletableFuture<>();
-        GlobalCachedExecutorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final List<Future> taskList = new ArrayList<>();
-                    MultiException.ExceptionStack exceptionStack = null;
-                    for (final Remote remote : getInternalUnits()) {
-                        try {
-                            taskList.add(remote.requestData());
-                        } catch (CouldNotPerformException ex) {
-                            MultiException.push(remote, ex, exceptionStack);
-                        }
-                    }
-                    boolean noResponse = true;
-                    for (final Future task : taskList) {
-                        try {
-                            task.get();
-                            noResponse = false;
-                        } catch (ExecutionException ex) {
-                            MultiException.push(task, ex, exceptionStack);
-                        }
-                    }
-
+        GlobalCachedExecutorService.submit(() -> {
+            try {
+                final List<Future> taskList = new ArrayList<>();
+                MultiException.ExceptionStack exceptionStack = null;
+                for (final Remote remote : getInternalUnits()) {
                     try {
-                        MultiException.checkAndThrow("Could not request status of all internal remotes!", exceptionStack);
-                    } catch (MultiException ex) {
-                        if (failOnError || noResponse) {
-                            throw ex;
-                        }
-                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not request data of all internal unit remotes!", ex), logger, LogLevel.WARN);
+                        taskList.add(remote.requestData());
+                    } catch (CouldNotPerformException ex) {
+                        MultiException.push(remote, ex, exceptionStack);
                     }
-                    requestDataFuture.complete(getData());
-                } catch (InterruptedException | CouldNotPerformException ex) {
-                    requestDataFuture.completeExceptionally(ex);
                 }
+                boolean noResponse = true;
+                for (final Future task : taskList) {
+                    try {
+                        task.get();
+                        noResponse = false;
+                    } catch (ExecutionException ex) {
+                        MultiException.push(task, ex, exceptionStack);
+                    }
+                }
+                
+                try {
+                    MultiException.checkAndThrow("Could not request status of all internal remotes!", exceptionStack);
+                } catch (MultiException ex) {
+                    if (failOnError || noResponse) {
+                        throw ex;
+                    }
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not request data of all internal unit remotes!", ex), logger, LogLevel.WARN);
+                }
+                requestDataFuture.complete(getData());
+            } catch (InterruptedException | CouldNotPerformException ex) {
+                requestDataFuture.completeExceptionally(ex);
             }
         });
-
+        
         return requestDataFuture;
     }
 
@@ -271,9 +269,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             if (!verifyServiceCompatibility(config, serviceType)) {
                 throw new NotSupportedException("UnitTemplate[" + serviceType.name() + "]", config.getLabel());
             }
-
+            
             UnitRemote remote = Units.getUnit(config, false);
-
+            
             if (!unitRemoteTypeMap.containsKey(remote.getType())) {
                 unitRemoteTypeMap.put(remote.getType(), new ArrayList());
                 for (UnitType superType : Registries.getUnitRegistry().getSuperUnitTypes(remote.getType())) {
@@ -282,7 +280,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                     }
                 }
             }
-
+            
             try {
                 serviceMap.put(config.getId(), (S) remote);
                 unitRemoteTypeMap.get(remote.getType()).add((S) remote);
@@ -292,9 +290,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             } catch (ClassCastException ex) {
                 throw new NotSupportedException("ServiceInterface[" + serviceType.name() + "]", remote, "Remote does not implement the service interface!", ex);
             }
-
+            
             unitRemoteMap.put(config.getId(), remote);
-
+            
             if (active) {
                 if (!remote.isEnabled()) {
                     logger.warn("Using a disabled " + remote + " in " + this + " is not recommended and should be avoided!");
@@ -354,6 +352,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             remote.addDataObserver(dataObserver);
         });
         updateServiceState();
+        if (this instanceof PowerStateServiceRemote) {
     }
 
     /**
@@ -393,7 +392,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     public boolean isActive() {
         return active;
     }
-
+    
     @Override
     public void removeUnit(UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         unitRemoteMap.get(unitConfig.getId()).removeDataObserver(dataObserver);
@@ -409,7 +408,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     public Collection<org.openbase.bco.dal.lib.layer.unit.UnitRemote> getInternalUnits() {
         return Collections.unmodifiableCollection(unitRemoteMap.values());
     }
-
+    
     @Override
     public boolean hasInternalRemotes() {
         return !unitRemoteMap.isEmpty();
@@ -436,11 +435,11 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         if (unitType == UnitType.UNKNOWN) {
             return Collections.unmodifiableCollection(serviceMap.values());
         }
-
+        
         if (!unitRemoteTypeMap.containsKey(unitType)) {
             return new ArrayList<>();
         }
-
+        
         return Collections.unmodifiableCollection(unitRemoteTypeMap.get(unitType));
     }
 
@@ -453,14 +452,14 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     public ServiceType getServiceType() {
         return serviceType;
     }
-
+    
     @Override
     public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         try {
             if (!actionDescription.getServiceStateDescription().getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
-
+            
             List<Future> actionFutureList = new ArrayList<>();
             for (final UnitRemote unitRemote : getInternalUnits()) {
                 if (actionDescription.getServiceStateDescription().getUnitType() == UnitType.UNKNOWN
@@ -472,17 +471,17 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                     actionReference.setAuthority(actionDescription.getActionAuthority());
                     actionReference.setServiceStateDescription(actionDescription.getServiceStateDescription());
                     unitActionDescription.addActionChain(actionReference);
-
+                    
                     ServiceStateDescription.Builder serviceStateDescription = unitActionDescription.getServiceStateDescriptionBuilder();
                     serviceStateDescription.setUnitId((String) unitRemote.getId());
-
+                    
                     actionFutureList.add(unitRemote.applyAction(unitActionDescription.build()));
                 }
             }
 
             // todo: setup action future.
             final ActionFuture actionFuture = ActionFuture.getDefaultInstance();
-
+            
             return GlobalCachedExecutorService.allOf(actionFuture, actionFutureList);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not apply action!", ex);
@@ -502,7 +501,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         if (unitRemoteMap.isEmpty()) {
             return;
         }
-
+        
         for (UnitRemote remote : unitRemoteMap.values()) {
             remote.waitForData();
         }
@@ -559,7 +558,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         }
         return serviceStateObservable.isValueAvailable();
     }
-
+    
     public static boolean verifyServiceCompatibility(final UnitConfig unitConfig, final ServiceType serviceType) {
         return unitConfig.getServiceConfigList().stream().anyMatch((serviceConfig) -> (serviceConfig.getServiceDescription().getType() == serviceType));
     }
@@ -620,7 +619,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             this.maintainer = null;
         }
     }
-
+    
     @Deprecated
     public void setInfrastructureFilter(final boolean enabled) {
         // TODO: just a hack, remove me later
