@@ -34,10 +34,7 @@ import rst.geometry.TranslationType.Translation;
 import rst.math.Vec3DDoubleType;
 import rst.spatial.ShapeType.Shape;
 
-/**
- *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
- */
+
 public class BoundingBoxCleanerConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     @Override
@@ -51,15 +48,10 @@ public class BoundingBoxCleanerConsistencyHandler extends AbstractProtoBufRegist
 
         Shape shape = unitConfig.getPlacementConfig().getShape();
 
-        if (!shape.hasBoundingBox()) {
-            return;
-        }
-        //TODO clean out empty bounding boxes?   
-
         AxisAlignedBoundingBox3DFloat newBoundingBox = updateBoundingBox(shape);
 
         //detect changes
-   //     if(!shape.getBoundingBox().equals(newBoundingBox)) {
+   //     if(!shape.getBoundingBox().equals(newBoundingBox)) { // todo test, didn't seem to work
         if (shape.getBoundingBox().getDepth() != newBoundingBox.getDepth()
             || shape.getBoundingBox().getHeight() != newBoundingBox.getHeight()
             || shape.getBoundingBox().getWidth() != newBoundingBox.getWidth()) {
