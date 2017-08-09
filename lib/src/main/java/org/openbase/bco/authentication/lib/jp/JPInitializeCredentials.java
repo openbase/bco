@@ -21,18 +21,18 @@ package org.openbase.bco.authentication.lib.jp;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jps.preset.AbstractJPBoolean;
+import org.openbase.jps.preset.JPInitialize;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class JPInitializeCredentials extends AbstractJPBoolean {
-    
-    public final static String[] COMMAND_IDENTIFIERS = {"--init"};
+
+    public final static String[] COMMAND_IDENTIFIERS = {"--init-credentials"};
 
     public JPInitializeCredentials() {
         super(COMMAND_IDENTIFIERS);
@@ -44,7 +44,7 @@ public class JPInitializeCredentials extends AbstractJPBoolean {
     @Override
     protected Boolean getPropertyDefaultValue() {
         try {
-            return JPService.testMode() || JPService.getProperty(JPResetCredentials.class).getValue();
+            return JPService.getProperty(JPInitialize.class).getValue() || JPService.getProperty(JPResetCredentials.class).getValue();
         } catch (JPNotAvailableException ex) {
             JPService.printError("Could not load default value!", ex);
             return false;
@@ -53,6 +53,6 @@ public class JPInitializeCredentials extends AbstractJPBoolean {
 
     @Override
     public String getDescription() {
-        return "Initialize a new instance of the credential database.";
+        return "Initialize a new instance of the credential store.";
     }
 }

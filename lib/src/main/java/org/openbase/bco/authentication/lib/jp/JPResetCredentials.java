@@ -21,15 +21,14 @@ package org.openbase.bco.authentication.lib.jp;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import java.io.IOException;
-import java.util.List;
 import org.openbase.jps.core.AbstractJavaProperty;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPBadArgumentException;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.exception.JPValidationException;
 import org.openbase.jps.preset.AbstractJPBoolean;
+import org.openbase.jps.preset.JPReset;
 import org.openbase.jps.preset.JPTestMode;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -39,8 +38,8 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class JPResetCredentials extends AbstractJPBoolean {
-    
-    public final static String[] COMMAND_IDENTIFIERS = {"--reset"};
+
+    public final static String[] COMMAND_IDENTIFIERS = {"--reset-credentials"};
 
     public JPResetCredentials() {
         super(COMMAND_IDENTIFIERS);
@@ -48,7 +47,12 @@ public class JPResetCredentials extends AbstractJPBoolean {
 
     @Override
     protected Boolean getPropertyDefaultValue() {
-        return false;
+        try {
+            return JPService.getProperty(JPReset.class).getValue();
+        } catch (JPNotAvailableException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access JPReset property", ex), logger);
+            return false;
+        }
     }
 
     @Override
@@ -73,11 +77,6 @@ public class JPResetCredentials extends AbstractJPBoolean {
                 throw new JPValidationException("Validation failed because of invalid input state!", ex);
             }
         }
-    }
-
-    @Override
-    protected Boolean parse(List<String> arguments) throws JPBadArgumentException {
-        return super.parse(arguments);
     }
 
     @Override
