@@ -105,26 +105,39 @@ public class CreateInitialAdministratorPlugin extends FileRegistryPluginAdapter<
         String initialRegistrationPassword = AuthenticatorController.getInitialPassword();
 
         if (initialRegistrationPassword == null) {
-            if(JPService.testMode()) {
+            if (JPService.testMode()) {
                 return;
             }
             LOGGER.error("No administator is yet registered and the initial registartion password of the authenticator is not available. Please use the bco launcher for the initial start.");
             System.exit(1);
         }
 
-        UnitConfig.Builder unitConfig = UnitConfig.newBuilder();
-        unitConfig.setType(UnitType.USER);
+        // check if a user with the default username does not already exist in the database
+        String userId = "";
+        boolean defaultAdminAlreadyInRegistry = false;
+        for (UnitConfig unitConfig : userUnitConfigRegistry.getMessages()) {
+            if (unitConfig.getUserConfig().getUserName().equals(DEFAULT_ADMIN_USERNAME_AND_PASSWORD)) {
+                defaultAdminAlreadyInRegistry = true;
+                userId = unitConfig.toBuilder().getId();
+            }
+        }
 
-        UserConfig.Builder userConfig = unitConfig.getUserConfigBuilder();
-        userConfig.setFirstName("Initial");
-        userConfig.setLastName("Admin");
-        userConfig.setUserName(DEFAULT_ADMIN_USERNAME_AND_PASSWORD);
+        // if not register one
+        if (!defaultAdminAlreadyInRegistry) {
+            UnitConfig.Builder unitConfig = UnitConfig.newBuilder();
+            unitConfig.setType(UnitType.USER);
 
-        String userId = userUnitConfigRegistry.register(unitConfig.build()).getId();
+            UserConfig.Builder userConfig = unitConfig.getUserConfigBuilder();
+            userConfig.setFirstName("Initial");
+            userConfig.setLastName("Admin");
+            userConfig.setUserName(DEFAULT_ADMIN_USERNAME_AND_PASSWORD);
 
+            userId = userUnitConfigRegistry.register(unitConfig.build()).getId();
+        }
+
+        // publish his credentials to the authenticator
         LoginCredentialsChange.Builder loginCredentials = LoginCredentialsChange.newBuilder();
         loginCredentials.setId(userId);
-
         try {
             loginCredentials.setNewCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(DEFAULT_ADMIN_USERNAME_AND_PASSWORD), EncryptionHelper.hash(initialRegistrationPassword)));
         } catch (IOException ex) {
@@ -138,9 +151,11 @@ public class CreateInitialAdministratorPlugin extends FileRegistryPluginAdapter<
             Thread.currentThread().interrupt();
         }
 
+        // add him to the admin group if he is not already in it
         AuthorizationGroupConfig.Builder authorizationGroup = adminGroupConfig.getAuthorizationGroupConfigBuilder();
-        authorizationGroup.addMemberId(userId);
-
-        authorizationGroupConfigRegistry.update(adminGroupConfig.build());
+        if (!authorizationGroup.getMemberIdList().contains(userId)) {
+            authorizationGroup.addMemberId(userId);
+            authorizationGroupConfigRegistry.update(adminGroupConfig.build());
+        }
     }
 }
