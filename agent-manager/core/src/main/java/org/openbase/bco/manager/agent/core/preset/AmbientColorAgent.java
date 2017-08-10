@@ -185,7 +185,7 @@ public class AmbientColorAgent extends AbstractAgentController {
 
             holdingTime = Long.parseLong(configVariableProvider.getValue(HOLDING_TIME_KEY));
             strategy = ColoringStrategy.valueOf(configVariableProvider.getValue(STRATEGY_KEY));
-            
+
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -206,10 +206,12 @@ public class AmbientColorAgent extends AbstractAgentController {
         for (ColorStateServiceRemote colorRemote : colorRemotes) {
             colorRemote.deactivate();
         }
-        thread.interrupt();
-        thread.join(10000);
-        if (thread.isAlive()) {
-            throw new CouldNotPerformException("Fatal error: Could not stop " + this + "!");
+        if (thread != null) {
+            thread.interrupt();
+            thread.join(10000);
+            if (thread.isAlive()) {
+                throw new CouldNotPerformException("Could not stop " + this + "!");
+            }
         }
     }
 

@@ -96,11 +96,21 @@ public class SoundScapeApp extends AbstractAppController {
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
         try {
-            agentBathAmbientColorBeachCeiling.setActivationState(deactive);
-            agentBathAmbientColorForest.setActivationState(deactive);
-            agentBathAmbientColorNight.setActivationState(deactive);
-            agentBathAmbientColorZen.setActivationState(deactive);
-            listenerWatchDog.deactivate();
+            if (agentBathAmbientColorBeachCeiling != null) {
+                agentBathAmbientColorBeachCeiling.setActivationState(deactive);
+            }
+            if (agentBathAmbientColorForest != null) {
+                agentBathAmbientColorForest.setActivationState(deactive);
+            }
+            if (agentBathAmbientColorNight != null) {
+                agentBathAmbientColorNight.setActivationState(deactive);
+            }
+            if (agentBathAmbientColorZen != null) {
+                agentBathAmbientColorZen.setActivationState(deactive);
+            }
+            if (listenerWatchDog != null) {
+                listenerWatchDog.deactivate();
+            }
         } catch (InterruptedException | CouldNotPerformException ex) {
             logger.error("Could not deactivate SoundScopeAgent");
         }

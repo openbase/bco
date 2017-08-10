@@ -98,9 +98,11 @@ public class StandbyAgent extends AbstractAgentController {
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
-        locationRemote.removeDataObserver(locationDataObserver);
+        if (locationRemote != null) {
+            locationRemote.removeDataObserver(locationDataObserver);
+            locationRemote = null;
+        }
         timeout.cancel();
-        locationRemote = null;
     }
 
     public void triggerPresenceChange(LocationDataType.LocationData data) throws InterruptedException {
@@ -153,7 +155,7 @@ public class StandbyAgent extends AbstractAgentController {
                     ExceptionPrinter.printHistory("Could not create snapshot!", ex, logger);
                 }
                 standby = true;
-                logger.info("Switch off all devices in the "+locationRemote.getLabel());
+                logger.info("Switch off all devices in the " + locationRemote.getLabel());
                 locationRemote.setPowerState(PowerStateType.PowerState.State.OFF);
                 logger.info(locationRemote.getLabel() + " is now standby.");
             } catch (CouldNotPerformException ex) {
