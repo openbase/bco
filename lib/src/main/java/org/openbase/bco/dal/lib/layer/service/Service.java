@@ -57,7 +57,7 @@ public interface Service {
 
     // release todo: move to unit interface and service remote interface (or service provider interface?)
     @RPCMethod
-    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException; 
+    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException;
 
     // release todo: move to unit interface and service remote interface (or service provider interface?)
     public void addServiceStateObserver(final ServiceType serviceType, final Observer observer);
@@ -268,12 +268,16 @@ public interface Service {
         String description = actionDescription.getDescription();
         description = description.replace(ActionDescriptionProcessor.SERVICE_TYPE_KEY, serviceType.name());
 
+        // update authority if available
+        if (actionDescription.hasActionAuthority() && actionDescription.getActionAuthority().hasAuthority()) {
+            description = description.replace(ActionDescriptionProcessor.AUTHORITY_KEY, StringProcessor.transformToCamelCase(actionDescription.getActionAuthority().getAuthority().name()));
+        }
+
         // TODO: also replace SERVICE_ATTRIBUTE_KEY in description with a nice serviceAttribute representation
-        String serviceAttributeRepresentation = serviceAttribue.toString();
+        String serviceAttributeRepresentation = StringProcessor.formatHumanReadable(serviceAttribue.toString());
         description = description.replace(ActionDescriptionProcessor.SERVICE_ATTIBUTE_KEY, serviceAttributeRepresentation);
         actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.SERVICE_ATTIBUTE_KEY, serviceAttributeRepresentation));
-
-        return actionDescription.setDescription(description);
+        return actionDescription.setDescription(StringProcessor.removeDoubleWhiteSpaces(description));
     }
 
     public static ActionDescription.Builder upateActionDescription(final ActionDescription.Builder actionDescription, final Object serviceAttribue) throws CouldNotPerformException {

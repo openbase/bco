@@ -439,7 +439,15 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     @Override
     public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         try {
-            logger.info("applyAction: " + actionDescription.getDescription());
+            if (!actionDescription.hasDescription() && actionDescription.getDescription().isEmpty()) {
+                // Fallback print in case the description is not available. 
+                // Please make sure all action descriptions provide a description.
+                logger.info("Apply action on " + this);
+            } else {
+                logger.info(actionDescription.getDescription());
+            }
+            logger.info("================");
+
             final ActionImpl action = new ActionImpl(this);
             action.init(actionDescription);
             return action.execute();
@@ -470,7 +478,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             return getClass().getSimpleName() + "[?]";
         }
     }
-    
+
     @Override
     public void shutdown() {
         super.shutdown();

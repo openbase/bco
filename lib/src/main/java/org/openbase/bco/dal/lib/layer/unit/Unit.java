@@ -124,7 +124,7 @@ public interface Unit<D> extends Service, LabelProvider, ScopeProvider, Identifi
 
                 // load operation service attribute by related provider service
                 Object serviceAttribute = Service.invokeServiceMethod(serviceDescription.getType(), ServiceTemplate.ServicePattern.PROVIDER, this);
-                System.out.println("load[" + serviceAttribute + "] type: " + serviceAttribute.getClass().getSimpleName());
+                //System.out.println("load[" + serviceAttribute + "] type: " + serviceAttribute.getClass().getSimpleName());
 
                 // verify operation service state (e.g. ignore UNKNOWN service states)
                 verifyOperationServiceState(serviceAttribute);
