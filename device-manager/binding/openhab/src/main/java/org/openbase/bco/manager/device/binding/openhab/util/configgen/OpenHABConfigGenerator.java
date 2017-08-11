@@ -95,7 +95,12 @@ public class OpenHABConfigGenerator implements Launchable<Void>, VoidInitializab
                 @Override
                 public void onFileDelete(File file) {
                     logger.warn("Detect config file deletion!");
-                    generate();
+
+                    try {
+                        generate();
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistory("Coult not regenerate config file after deletion!", ex, logger);
+                    }
                 }
             });
 
@@ -138,7 +143,7 @@ public class OpenHABConfigGenerator implements Launchable<Void>, VoidInitializab
         }
     }
 
-    public void generate() {
+    public void generate() throws CouldNotPerformException {
         recurrenceGenerationFilter.trigger();
     }
 

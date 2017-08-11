@@ -118,7 +118,11 @@ public class StandbyAgent extends AbstractAgentController {
                 }
             } else if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.ABSENT)) {
                 if (!timeout.isActive()) {
-                    timeout.start();
+                    try {
+                        timeout.start();
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not schedule presence timeout!", ex), logger);
+                    }
                 }
             }
         }
