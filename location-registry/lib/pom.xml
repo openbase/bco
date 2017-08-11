@@ -69,7 +69,7 @@
         <dependency>
             <groupId>org.openbase</groupId>
             <artifactId>jul.extension.rct</artifactId>
-            <version>${project.version}</version>
+            <version>${dependency.jul.version}</version>
         </dependency>
     </dependencies>
 
