@@ -35,6 +35,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.action.ActionImpl;
+import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
@@ -76,7 +78,6 @@ import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
-import org.openbase.bco.dal.lib.layer.service.Services;
 
 /**
  *
@@ -95,7 +96,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     private final Observer<UnitRegistryData> unitRegistryObserver;
     private final Map<ServiceType, MessageObservable> serviceStateObservableMap;
-    private final List<Services> serviceList;
+    private final List<Service> serviceList;
 
     private UnitTemplate template;
     private boolean initialized = false;
@@ -327,11 +328,11 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         return template;
     }
 
-    public Collection<Services> getServices() {
+    public Collection<Service> getServices() {
         return Collections.unmodifiableList(serviceList);
     }
 
-    public void registerService(final Services service) {
+    public void registerService(final Service service) {
         serviceList.add(service);
     }
 
@@ -347,7 +348,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                     + StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getPattern().name()), serviceDescription);
         }
 
-        Class<? extends Services> serviceInterfaceClass = null;
+        Class<? extends Service> serviceInterfaceClass = null;
         Package servicePackage = null;
         for (Entry<String, ServiceDescription> serviceInterfaceMapEntry : serviceInterfaceMap.entrySet()) {
             try {
@@ -373,7 +374,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 String servicePatternName = StringProcessor.transformUpperCaseToCamelCase(serviceInterfaceMapEntry.getValue().getPattern().name());
                 String serviceClassName = servicePackage.getName() + "." + serviceDataTypeName + servicePatternName + "Service";
                 try {
-                    serviceInterfaceClass = (Class<? extends Services>) Class.forName(serviceClassName);
+                    serviceInterfaceClass = (Class<? extends Service>) Class.forName(serviceClassName);
                     if (serviceInterfaceClass == null) {
                         throw new NotAvailableException(serviceInterfaceMapEntry.getKey());
                     }
