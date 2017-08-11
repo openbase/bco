@@ -22,7 +22,6 @@ package org.openbase.bco.manager.agent.core.preset;
  * #L%
  */
 import java.util.concurrent.ExecutionException;
-import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.manager.agent.core.AgentActionRescheduleHelper;
 import org.openbase.bco.manager.agent.core.AgentActionRescheduleHelper.RescheduleOption;
 import org.openbase.bco.dal.remote.unit.Units;
@@ -90,7 +89,7 @@ public class PresenceLightAgent extends AbstractAgentController {
 
         try {
             GenericTrigger<LocationRemote, LocationData, PresenceState.State> agentTrigger = new GenericTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE);
-            agentTriggerHolder.addTrigger(agentTrigger, AgentTriggerPool.TriggerOperation.OR);
+            agentTriggerHolder.addTrigger(agentTrigger, TriggerPool.TriggerOperation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not add agent to agentpool", ex);
         }

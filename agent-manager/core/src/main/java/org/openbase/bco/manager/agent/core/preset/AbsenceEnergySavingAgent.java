@@ -30,6 +30,7 @@ import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.bco.manager.agent.core.AgentActionRescheduleHelper;
 import org.openbase.bco.manager.agent.core.TriggerJUL.GenericTrigger;
+import org.openbase.bco.manager.agent.core.TriggerJUL.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -94,7 +95,7 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
 
         try {
             GenericTrigger<LocationRemote, LocationDataType.LocationData, PresenceState.State> agentTrigger = new GenericTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE);
-            agentTriggerHolder.addTrigger(agentTrigger, AgentTriggerPool.TriggerOperation.OR);
+            agentTriggerHolder.addTrigger(agentTrigger, TriggerPool.TriggerOperation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not add agent to agentpool", ex);
         }
