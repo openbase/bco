@@ -64,14 +64,14 @@ import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
-import org.slf4j.LoggerFactory;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.SnapshotType;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -83,6 +83,7 @@ import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
+import org.openbase.bco.dal.lib.layer.service.Services;
 
 /**
  *
@@ -96,25 +97,33 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionFuture.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SnapshotType.Snapshot.getDefaultInstance()));
     }
 
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AbstractUnitController.class);
-
-    public static long initTime = 0;
-    public static long constructorTime = 0;
-
-    protected UnitRegistryRemote unitRegistry;
-
-    private final List<Service> serviceList;
+    private final Observer<UnitRegistryData> unitRegistryObserver;
+    private final Map<ServiceType, MessageObservable> serviceStateObservableMap;
+    private final List<Services> serviceList;
 
     private UnitTemplate template;
-    private final Map<ServiceType, MessageObservable> serviceStateObservableMap;
+    private boolean initialized = false;
 
     public AbstractUnitController(final Class unitClass, final DB builder) throws InstantiationException {
         super(builder);
         this.serviceList = new ArrayList<>();
         this.serviceStateObservableMap = new HashMap<>();
-//        this.resourceAllocator = new UnitResourceAllocator<>(this);
+        this.unitRegistryObserver = new Observer<UnitRegistryData>() {
+            @Override
+            public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
+                try {
+                    final UnitConfig newUnitConfig = Registries.getUnitRegistry(true).getUnitConfigById(getId());
+                    if (!newUnitConfig.equals(getConfig())) {
+                        applyConfigUpdate(newUnitConfig);
+                    }
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not update unit config of " + this, ex, logger);
+                }
+            }
+        };
     }
 
     @Override
@@ -129,9 +138,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     @Override
     public void init(ScopeType.Scope scope) throws InitializationException, InterruptedException {
         try {
-            this.unitRegistry = Registries.getUnitRegistry();
-            this.unitRegistry.waitForData();
-            super.init(CachedUnitRegistryRemote.getRegistry().getUnitConfigByScope(scope));
+            super.init(Registries.getUnitRegistry(true).getUnitConfigByScope(scope));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -139,7 +146,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     public void init(final String label, final ScopeProvider location) throws InitializationException, InterruptedException {
         try {
-            this.unitRegistry = Registries.getUnitRegistry();
             init(ScopeGenerator.generateScope(label, getClass().getSimpleName(), location.getScope()));
         } catch (CouldNotPerformException | NullPointerException ex) {
             throw new InitializationException(this, ex);
@@ -169,7 +175,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 throw new NotAvailableException("Field config.label is emty!");
             }
 
-            this.unitRegistry = Registries.getUnitRegistry();
             super.init(config);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
@@ -180,58 +185,33 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     protected void postInit() throws InitializationException, InterruptedException {
         try {
             super.postInit();
-            this.unitRegistry.addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
-                try {
-                    final UnitConfig newUnitConfig = CachedUnitRegistryRemote.getRegistry().getUnitConfigById(getId());
-                    if (!newUnitConfig.equals(getConfig())) {
-                        applyConfigUpdate(newUnitConfig);
-                    }
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory("Could not update unit config of " + this, ex, logger);
-                }
-            });
-
-            // TODO: move to applyConfigUpdate
-            try {
-                for (ServiceDescription serviceDescription : getTemplate().getServiceDescriptionList()) {
-                    if (!serviceStateObservableMap.containsKey(serviceDescription.getType())) {
-                        serviceStateObservableMap.put(serviceDescription.getType(), new MessageObservable(this));
-                    }
-                }
-            } catch (NotAvailableException ex) {
-
+            if (!initialized) {
+                Registries.getUnitRegistry().addDataObserver(unitRegistryObserver);
+                initialized = true;
             }
-            this.addDataObserver(new Observer<D>() {
-
-                @Override
-                public void update(Observable<D> source, D data) throws Exception {
-                    final Set<ServiceType> serviceTypeMap = new HashSet<>();
-                    for (ServiceDescription serviceDescription : getTemplate().getServiceDescriptionList()) {
-                        if (!serviceTypeMap.contains(serviceDescription.getType())) {
-                            serviceTypeMap.add(serviceDescription.getType());
-                            try {
-                                Object serviceData = Service.invokeProviderServiceMethod(serviceDescription.getType(), data);
-                                serviceStateObservableMap.get(serviceDescription.getType()).notifyObservers(serviceData);
-                            } catch (CouldNotPerformException ex) {
-                                logger.info("Could not notify state update for service[" + serviceDescription.getType() + "]", ex);
-                            }
-                        }
-                    }
-                }
-            });
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
     @Override
-    public void addServiceStateObserver(ServiceType serviceType, Observer observer) {
-        serviceStateObservableMap.get(serviceType).addObserver(observer);
-    }
+    protected void notifyDataUpdate(final D data) throws CouldNotPerformException {
+        super.notifyDataUpdate(data);
 
-    @Override
-    public void removeServiceStateObserver(ServiceType serviceType, Observer observer) {
-        serviceStateObservableMap.get(serviceType).removeObserver(observer);
+        final Set<ServiceType> serviceTypeSet = new HashSet<>();
+        for (final ServiceDescription serviceDescription : getTemplate().getServiceDescriptionList()) {
+
+            // check if already handled
+            if (!serviceTypeSet.contains(serviceDescription.getType())) {
+                serviceTypeSet.add(serviceDescription.getType());
+                try {
+                    Object serviceData = Services.invokeProviderServiceMethod(serviceDescription.getType(), data);
+                    serviceStateObservableMap.get(serviceDescription.getType()).notifyObservers(serviceData);
+                } catch (CouldNotPerformException ex) {
+                    logger.debug("Could not notify state update for service[" + serviceDescription.getType() + "] because this service is not supported by this controller.", ex);
+                }
+            }
+        }
     }
 
     public boolean isEnabled() {
@@ -243,15 +223,66 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         return false;
     }
 
+    /**
+     *
+     * @return
+     * @deprecated please use Registries.getUnitRegistry(true) instead;
+     */
+    @Deprecated
     public UnitRegistryRemote getUnitRegistry() {
-        return unitRegistry;
+        try {
+            return Registries.getUnitRegistry(true);
+        } catch (Exception ex) {
+            ExceptionPrinter.printHistory(ex, logger);
+            return null;
+        }
     }
 
     @Override
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        assert config != null;
-        unitRegistry.waitForData();
-        template = unitRegistry.getUnitTemplateByType(config.getType());
+
+        if (config == null) {
+            assert config != null;
+            throw new NotAvailableException("UnitConfig");
+        }
+
+        // non change filter
+        try {
+            if (getConfig().equals(config)) {
+                logger.debug("Skip config update because no config change detected!");
+                return config;
+            }
+        } catch (NotAvailableException ex) {
+            logger.trace("Unit config change check failed because config is not available yet.");
+        }
+
+        template = Registries.getUnitRegistry(true).getUnitTemplateByType(config.getType());
+
+        // register service observable which are not handled yet.
+        for (final ServiceDescription serviceDescription : template.getServiceDescriptionList()) {
+
+            // create observable if new
+            if (!serviceStateObservableMap.containsKey(serviceDescription.getType())) {
+                serviceStateObservableMap.put(serviceDescription.getType(), new MessageObservable(this));
+            }
+        }
+
+        // cleanup service observable related to new unit template
+        outer:
+        for (final ServiceType serviceType : serviceStateObservableMap.keySet()) {
+            for (final ServiceDescription serviceDescription : template.getServiceDescriptionList()) {
+
+                // verify if service type is still valid.
+                if (serviceType == serviceDescription.getType()) {
+                    // continue because service type is still valid
+                    continue outer;
+                }
+            }
+
+            // remove and shutdown service observable because its not valid
+            serviceStateObservableMap.remove(serviceType).shutdown();
+        }
+
         return super.applyConfigUpdate(config);
     }
 
@@ -415,7 +446,14 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     @Override
     public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         try {
-            logger.debug("applyAction: " + actionDescription.getLabel());
+            if (!actionDescription.hasDescription() && actionDescription.getDescription().isEmpty()) {
+                // Fallback print in case the description is not available. 
+                // Please make sure all action descriptions provide a description.
+                logger.info("Apply action on " + this);
+            } else {
+                logger.info(actionDescription.getDescription());
+            }
+            logger.info("================");
 
             final ActionImpl action = new ActionImpl(this);
             action.init(actionDescription);
@@ -467,11 +505,40 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     @Override
+    public void addServiceStateObserver(ServiceType serviceType, Observer observer) {
+        serviceStateObservableMap.get(serviceType).addObserver(observer);
+    }
+
+    @Override
+    public void removeServiceStateObserver(ServiceType serviceType, Observer observer) {
+        serviceStateObservableMap.get(serviceType).removeObserver(observer);
+    }
+
+    @Override
     public String toString() {
         try {
             return getClass().getSimpleName() + "[" + getConfig().getType() + "[" + getLabel() + "]]";
         } catch (NotAvailableException | NullPointerException e) {
             return getClass().getSimpleName() + "[?]";
+        }
+    }
+
+    @Override
+    public void shutdown() {
+        super.shutdown();
+
+        try {
+            // shutdown registry observer
+            Registries.getUnitRegistry().removeDataObserver(unitRegistryObserver);
+        } catch (final NotAvailableException ex) {
+            // if the registry is not any longer available (in case of registry shutdown) than the observer is already cleared. 
+        } catch (final Exception ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not remove unit registry observer.", ex), logger);
+        }
+
+        // shutdown service observer
+        for (final MessageObservable serviceObservable : serviceStateObservableMap.values()) {
+            serviceObservable.shutdown();
         }
     }
 }

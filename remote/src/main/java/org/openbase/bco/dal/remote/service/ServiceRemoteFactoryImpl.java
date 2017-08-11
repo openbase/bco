@@ -21,7 +21,9 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.ArrayList;
 import java.util.Collection;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -59,6 +61,22 @@ public class ServiceRemoteFactoryImpl implements ServiceRemoteFactory {
         serviceRemote.init(unitConfig);
         return serviceRemote;
     }
+    
+    @Override
+    public AbstractServiceRemote newInitializedInstanceByIds(final ServiceType serviceType, final Collection<String> unitIDs) throws CouldNotPerformException, InterruptedException {
+        Registries.getUnitRegistry().waitForData();
+        final Collection<UnitConfig> unitRemotes = new ArrayList<>();
+        for(String unitId : unitIDs) {
+            unitRemotes.add(Registries.getUnitRegistry().getUnitConfigById(unitId));
+        }
+        return newInitializedInstance(serviceType, unitRemotes);
+    }
+
+    @Override
+    public AbstractServiceRemote newInitializedInstanceById(final ServiceType serviceType, final String unitID) throws CouldNotPerformException, InterruptedException {
+        Registries.getUnitRegistry().waitForData();
+        return newInitializedInstance(serviceType, Registries.getUnitRegistry().getUnitConfigById(unitID));
+    }
 
     @Override
     public AbstractServiceRemote newInstance(final ServiceType serviceType) throws org.openbase.jul.exception.InstantiationException {
@@ -85,20 +103,5 @@ public class ServiceRemoteFactoryImpl implements ServiceRemoteFactory {
         } catch (InstantiationException | IllegalAccessException ex) {
             throw new org.openbase.jul.exception.InstantiationException(serviceRemoteClass, ex);
         }
-    }
-
-    @Override
-    public AbstractServiceRemote createAndInitServiceRemote(final ServiceType serviceType, final Collection<UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException {
-        return newInitializedInstance(serviceType, unitConfigs);
-    }
-
-    @Override
-    public AbstractServiceRemote createAndInitServiceRemote(final ServiceType serviceType, final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
-        return newInitializedInstance(serviceType, unitConfig);
-    }
-
-    @Override
-    public AbstractServiceRemote createServiceRemote(final ServiceType serviceType) throws CouldNotPerformException {
-        return newInstance(serviceType);
     }
 }

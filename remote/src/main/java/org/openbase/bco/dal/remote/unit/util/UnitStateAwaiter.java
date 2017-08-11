@@ -28,6 +28,8 @@ import org.openbase.jul.exception.TimeoutException;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 /**
  *
@@ -36,6 +38,8 @@ import org.openbase.jul.schedule.SyncObject;
  * @param <UR>
  */
 public class UnitStateAwaiter<D extends GeneratedMessage, UR extends UnitRemote<D>> {
+
+    protected final Logger logger = LoggerFactory.getLogger(UnitStateAwaiter.class);
 
     private final SyncObject stateMonitor = new SyncObject("StateMonitor");
     private final Observer<D> dataObserver;
@@ -67,16 +71,16 @@ public class UnitStateAwaiter<D extends GeneratedMessage, UR extends UnitRemote<
                     if (stateComparator.equalState(unitRemote.getData())) {
                         return;
                     }
-                    System.out.println("State not yet reached. Waiting...");
+                    logger.info("State not yet reached. Waiting...");
                 } catch (NotAvailableException ex) {
-                    System.out.println("Waiting because unit data not available!");
+                    logger.info("Waiting because unit data not available!");
                 }
 
                 // wait till timeout
                 long currentTime = System.currentTimeMillis();
                 stateMonitor.wait(timeout);
                 timeWaited += System.currentTimeMillis() - currentTime;
-                System.out.println("Woke up! Time waited " + timeWaited + "ms");
+                logger.info("Woke up! Time waited " + timeWaited + "ms");
                 if (timeout != 0 && timeWaited > timeout) {
                     throw new TimeoutException("Timeout expired!");
                 }

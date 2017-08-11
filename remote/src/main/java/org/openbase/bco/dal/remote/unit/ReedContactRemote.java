@@ -45,10 +45,6 @@ public class ReedContactRemote extends AbstractUnitRemote<ReedContactData> imple
     }
 
     @Override
-    public void notifyDataUpdate(ReedContactData data) {
-    }
-
-    @Override
     public ContactState getContactState() throws NotAvailableException {
         try {
             return getData().getContactState();

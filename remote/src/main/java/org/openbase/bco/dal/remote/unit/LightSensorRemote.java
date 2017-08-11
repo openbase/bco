@@ -51,10 +51,6 @@ public class LightSensorRemote extends AbstractUnitRemote<LightSensorData> imple
     }
 
     @Override
-    public void notifyDataUpdate(LightSensorData data) {
-    }
-
-    @Override
     public IlluminanceState getIlluminanceState() throws NotAvailableException {
         try {
             return getData().getIlluminanceState();

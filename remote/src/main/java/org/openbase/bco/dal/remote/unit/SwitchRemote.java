@@ -45,10 +45,6 @@ public class SwitchRemote extends AbstractUnitRemote<SwitchData> implements Swit
     }
 
     @Override
-    public void notifyDataUpdate(SwitchData data) {
-    }
-
-    @Override
     public SwitchState getSwitchState() throws NotAvailableException {
         try {
             return getData().getSwitchState();

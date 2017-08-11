@@ -45,35 +45,7 @@ public interface ServiceRemoteFactory extends Factory<AbstractServiceRemote, Ser
      * @throws CouldNotPerformException is thrown if any error occurs during the creation.
      * @throws InterruptedException is thrown if the current thread is externally interrupted.
      */
-    @Deprecated
-    public AbstractServiceRemote createAndInitServiceRemote(final ServiceType serviceType, final Collection<UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException;
-
-    /**
-     * Creates and initializes a service remote out of the given service type
-     * and a collection of unitConfigs.
-     *
-     * newInitializedInstance
-     *
-     * @param serviceType The remote service type.
-     * @param unitConfigs The collection of units which are controlled by the new service remote instance.
-     * @return the new created service remote.
-     * @throws CouldNotPerformException is thrown if any error occurs during the creation.
-     * @throws InterruptedException is thrown if the current thread is externally interrupted.
-     */
     public AbstractServiceRemote newInitializedInstance(final ServiceType serviceType, final Collection<UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException;
-
-    /**
-     * Creates and initializes a service remote out of the given service type
-     * and unitConfig.
-     *
-     * @param serviceType The remote service type.
-     * @param unitConfig The unit which is controlled by the new service remote instance.
-     * @return the new created service remote.
-     * @throws CouldNotPerformException is thrown if any error occurs during the creation.
-     * @throws InterruptedException is thrown if the current thread is externally interrupted.
-     */
-    @Deprecated
-    public AbstractServiceRemote createAndInitServiceRemote(final ServiceType serviceType, final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException;
 
     /**
      * Creates and initializes a service remote out of the given service type
@@ -88,6 +60,47 @@ public interface ServiceRemoteFactory extends Factory<AbstractServiceRemote, Ser
     public AbstractServiceRemote newInitializedInstance(final ServiceType serviceType, final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException;
 
     /**
+     * Creates and initializes a service remote out of the given service type
+     * and a collection of unitConfigs.
+     *
+     * newInitializedInstance
+     *
+     * @param serviceType The remote service type.
+     * @param unitIds The collection of units which are controlled by the new service remote instance.
+     * @return the new created service remote.
+     * @throws CouldNotPerformException is thrown if any error occurs during the creation.
+     * @throws InterruptedException is thrown if the current thread is externally interrupted.
+     */
+    public AbstractServiceRemote newInitializedInstanceByIds(final ServiceType serviceType, final Collection<String> unitIds) throws CouldNotPerformException, InterruptedException;
+
+    /**
+     * Creates and initializes a service remote out of the given service type
+     * and unitID.
+     *
+     * @param serviceType The remote service type.
+     * @param unitId The unit id of the unit which should be controlled by the new service remote instance.
+     * @return the new created service remote.
+     * @throws CouldNotPerformException is thrown if any error occurs during the creation.
+     * @throws InterruptedException is thrown if the current thread is externally interrupted.
+     */
+    public AbstractServiceRemote newInitializedInstanceById(final ServiceType serviceType, final String unitId) throws CouldNotPerformException, InterruptedException;
+
+    /**
+     * Creates and initializes a service remote out of the given service type
+     * and unitConfig.
+     *
+     * @param serviceType The remote service type.
+     * @param unitConfig The unit which is controlled by the new service remote instance.
+     * @return the new created service remote.
+     * @throws CouldNotPerformException is thrown if any error occurs during the creation.
+     * @throws InterruptedException is thrown if the current thread is externally interrupted.
+     */
+    @Deprecated
+    public default AbstractServiceRemote createAndInitServiceRemote(final ServiceType serviceType, final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
+        return newInitializedInstance(serviceType, unitConfig);
+    }
+
+    /**
      * Creates a service remote out of the given service type.
      *
      * @param serviceType The remote service type.
@@ -95,5 +108,31 @@ public interface ServiceRemoteFactory extends Factory<AbstractServiceRemote, Ser
      * @throws CouldNotPerformException is thrown if any error occurs during the creation.
      */
     @Deprecated
-    public AbstractServiceRemote createServiceRemote(final ServiceType serviceType) throws CouldNotPerformException;
+    public default AbstractServiceRemote createServiceRemote(final ServiceType serviceType) throws CouldNotPerformException {
+        try {
+            return newInstance(serviceType);
+        } catch (InterruptedException ex) {
+            throw new CouldNotPerformException("Current thread was interrupted!", ex);
+        }
+    }
+
+    /**
+     * Creates and initializes a service remote out of the given service type
+     * and a collection of unitConfigs.
+     *
+     * newInitializedInstance
+     *
+     * @param serviceType The remote service type.
+     * @param unitConfigs The collection of units which are controlled by the new service remote instance.
+     * @return the new created service remote.
+     * @throws CouldNotPerformException is thrown if any error occurs during the creation.
+     */
+    @Deprecated
+    public default AbstractServiceRemote createAndInitServiceRemote(final ServiceType serviceType, final Collection<UnitConfig> unitConfigs) throws CouldNotPerformException {
+        try {
+            return newInitializedInstance(serviceType, unitConfigs);
+        } catch (InterruptedException ex) {
+            throw new CouldNotPerformException("Current thread was interrupted!", ex);
+        }
+    }
 }

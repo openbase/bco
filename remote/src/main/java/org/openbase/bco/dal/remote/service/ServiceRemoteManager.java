@@ -33,7 +33,6 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
@@ -62,6 +61,7 @@ import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
+import org.openbase.bco.dal.lib.layer.service.Services;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -211,7 +211,7 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
                         continue;
                     }
 
-                    serviceState = Service.invokeProviderServiceMethod(serviceType, serviceRemote);
+                    serviceState = Services.invokeProviderServiceMethod(serviceType, serviceRemote);
                 } catch (NotAvailableException ex) {
                     ExceptionPrinter.printHistory("No service data for type[" + serviceType + "] on location available!", ex, LOGGER);
                     continue;
@@ -224,7 +224,7 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
                 }
 
                 try {
-                    Service.invokeOperationServiceMethod(serviceType, builder, serviceState);
+                    Services.invokeOperationServiceMethod(serviceType, builder, serviceState);
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(new NotSupportedException("Field[" + serviceType.name().toLowerCase().replace("_service", "") + "] is missing in protobuf type " + dataClass + "!", this, ex), LOGGER);
                 }

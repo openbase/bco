@@ -51,10 +51,6 @@ public class LightRemote extends AbstractUnitRemote<LightData> implements Light 
     }
 
     @Override
-    protected void notifyDataUpdate(LightData data) throws CouldNotPerformException {
-    }
-
-    @Override
     public Future<ActionFuture> setPowerState(PowerState powerState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {

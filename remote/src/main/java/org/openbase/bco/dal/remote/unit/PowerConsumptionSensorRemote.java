@@ -45,10 +45,6 @@ public class PowerConsumptionSensorRemote extends AbstractUnitRemote<PowerConsum
     }
 
     @Override
-    public void notifyDataUpdate(PowerConsumptionSensorData data) {
-    }
-
-    @Override
     public PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {
         try {
             return getData().getPowerConsumptionState();
