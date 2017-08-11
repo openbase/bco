@@ -23,13 +23,11 @@ package org.openbase.bco.dal.remote.unit;
  */
 import com.google.protobuf.GeneratedMessage;
 import java.io.IOException;
-import java.io.StreamCorruptedException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -37,7 +35,6 @@ import javax.crypto.BadPaddingException;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.future.AuthenticatedActionFuture;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.dal.lib.layer.service.Service;
 import java.util.concurrent.TimeoutException;
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3d;
@@ -67,7 +64,6 @@ import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.FutureProcessor;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.LoggerFactory;
 import rct.Transform;
 import rsb.Scope;
@@ -79,7 +75,6 @@ import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
-import rst.domotic.registry.LocationRegistryDataType;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -565,7 +560,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
                 } catch (CouldNotPerformException ex2) {
                     // Logout and return CouldNotPerformException, if anything went wrong
                     this.sessionManager.logout();
-                    ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
+                    ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
                     throw new CouldNotPerformException("Your session has expired. You have been logged out for security reasons. Please log in again.");
                 }
             }
@@ -688,10 +683,9 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
             throw new NotAvailableException("Transform3D", ex);
         }
     }
-    
+
     //todo release: maybe rename transformation methods
     // getTransform3DInverse -> getTransformIntoRoot 
-
     /**
      * Gets the inverse Transform3D to getTransform3D().
      * This is basically rotation and translation of the object in the root coordinate system

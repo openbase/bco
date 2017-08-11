@@ -26,16 +26,12 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
-import org.openbase.jul.iface.annotations.RPCMethod;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.mode.OperationModeType;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -50,21 +46,11 @@ import rst.domotic.state.ContactStateType;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @author <a href="mailto:agatting@techfak.uni-bielefeld.de">Andreas Gatting</a>
  */
-// release todo: Split into  Service interface and Services service class.
 public interface Service {
 
     public static final Package SERVICE_STATE_PACKAGE = ContactStateType.class.getPackage();
     public static final Package SERVICE_MODE_PACKAGE = OperationModeType.OperationMode.class.getPackage();
     public static final String SERVICE_LABEL = Service.class.getSimpleName();
-
-    @RPCMethod
-    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException;
-
-    default public void addServiceStateObserver(ServiceType serviceType, Observer observer) {
-    }
-
-    default public void removeServiceStateObserver(ServiceType serviceType, Observer observer) {
-    }
 
     /**
      * This method returns the service base name of the given service type.
