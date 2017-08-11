@@ -2,6 +2,8 @@ org.openbase.bco.manager.agent.binding.openhab
 org.openbase.bco.manager.agent.binding.openhab.execution
 org.openbase.bco.manager.agent.binding.openhab.transform
 org.openbase.bco.manager.agent.core
+org.openbase.bco.manager.agent.core.TriggerDAL
+org.openbase.bco.manager.agent.core.TriggerJUL
 org.openbase.bco.manager.agent.core.preset
 org.openbase.bco.manager.agent.lib
 org.openbase.bco.manager.agent.lib.jp
