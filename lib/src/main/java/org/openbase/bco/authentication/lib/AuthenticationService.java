@@ -1,7 +1,5 @@
 package org.openbase.bco.authentication.lib;
 
-import java.io.IOException;
-import java.io.StreamCorruptedException;
 import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -80,13 +78,13 @@ public interface AuthenticationService {
      * TicketGrantingTicket
      * @return a wrapper containing a ClientServerTicket and a session key as
      * described above
-     * @throws RejectedException If timestamp in Authenticator does not fit to time period in TGT
-     * or, if clientID in Authenticator does not match clientID in TGT
-     * @throws StreamCorruptedException If the decryption of the Authenticator or TGT fails, probably because the wrong keys were used.
+     * @throws RejectedException If timestamp in Authenticator does not fit to time period in TGT,
+     * if clientID in Authenticator does not match clientID in TGT or, if the decryption of the
+     * Authenticator or TGT fails, probably because the wrong keys were used.
      * @throws CouldNotPerformException In the case of an internal server error or if the remote call fails.
      */
     @RPCMethod
-    public Future<TicketSessionKeyWrapper> requestClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws RejectedException, StreamCorruptedException, CouldNotPerformException;
+    public Future<TicketSessionKeyWrapper> requestClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws RejectedException, CouldNotPerformException;
 
     /**
      * Validate a ClientServierTicket. If validation is successful the reply is
@@ -98,13 +96,13 @@ public interface AuthenticationService {
      * @param ticketAuthenticatorWrapper a wrapper containing the authenticator
      * encrypted with the session key and the unchanged ClientServerTicket
      * @return a TicketAuthenticatorWrapper as described above
-     * @throws RejectedException If timestamp in Authenticator does not fit to time period in TGT
-     * or, if clientID in Authenticator does not match clientID in TGT
-     * @throws StreamCorruptedException If the decryption of the Authenticator or CST fails, probably because the wrong keys were used.
+     * @throws RejectedException If timestamp in Authenticator does not fit to time period in TGT,
+     * if clientID in Authenticator does not match clientID in TGT or, if the decryption of the
+     * Authenticator or CST fails, probably because the wrong keys were used.
      * @throws CouldNotPerformException In the case of an internal server error or if the remote call fails.
      */
     @RPCMethod
-    public Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws RejectedException, StreamCorruptedException, CouldNotPerformException;
+    public Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws RejectedException, CouldNotPerformException;
 
     /**
      * Changes the credentials for a given user.
@@ -116,11 +114,10 @@ public interface AuthenticationService {
      * which has to be verified by the client to make sure that its the correct
      * server answering the request.
      * @throws RejectedException If the password change fails (invalid ticket, user has no permission, old password doesn't match).
-     * @throws IOException If de- or encryption fail because of a general I/O error.
      * @throws PermissionDeniedException If the user has no permission to change this password.
      */
     @RPCMethod
-    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, IOException, PermissionDeniedException;
+    public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, PermissionDeniedException;
 
     /**
      * Registers a client or user.
@@ -131,13 +128,12 @@ public interface AuthenticationService {
      * the ClientServerTicket and an updated timestamp in the authenticator
      * which has to be verified by the client to make sure that its the correct
      * server answering the request.
-     * @throws RejectedException If the password change fails (invalid ticket, user has no permission, old password doesn't match).
-     * @throws StreamCorruptedException If any decryption fails.
-     * @throws IOException If de- or encryption fail because of a general I/O error.
+     * @throws RejectedException If the password change fails (invalid ticket, user has no permission, old password doesn't match)
+     * or if the decryption fails, because the wrong keys were used.
      * @throws PermissionDeniedException If the user has no permission to change this password.
      */
     @RPCMethod
-    public Future<TicketAuthenticatorWrapper> register(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, StreamCorruptedException, IOException, PermissionDeniedException;
+    public Future<TicketAuthenticatorWrapper> register(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, PermissionDeniedException;
 
     /**
      * Removes a user or client.
@@ -147,13 +143,12 @@ public interface AuthenticationService {
      * the ClientServerTicket and an updated timestamp in the authenticator
      * which has to be verified by the client to make sure that its the correct
      * server answering the request.
-     * @throws RejectedException If the password change fails (invalid ticket, user has no permission, old password doesn't match).
-     * @throws StreamCorruptedException If any decryption fails.
-     * @throws IOException If de- or encryption fail because of a general I/O error.
+     * @throws RejectedException If the password change fails (invalid ticket, user has no permission, old password doesn't match)
+     * or if the decryption fails, because the wrong keys were used.
      * @throws PermissionDeniedException If the user has no permission to change this password.
      */
     @RPCMethod
-    public Future<TicketAuthenticatorWrapper> removeUser(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, StreamCorruptedException, IOException, PermissionDeniedException;
+    public Future<TicketAuthenticatorWrapper> removeUser(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, PermissionDeniedException;
 
     /**
      * Appoints a normal user to an administrator.
@@ -164,13 +159,12 @@ public interface AuthenticationService {
      * the ClientServerTicket and an updated timestamp in the authenticator
      * which has to be verified by the client to make sure that its the correct
      * server answering the request.
-     * @throws RejectedException If the password change fails (invalid ticket, user has no permission, old password doesn't match).
-     * @throws StreamCorruptedException If any decryption fails.
-     * @throws IOException If de- or encryption fail because of a general I/O error.
+     * @throws RejectedException If the password change fails (invalid ticket, user has no permission)
+     * or if the decryption fails, because the wrong keys were used.
      * @throws PermissionDeniedException If the user has no permission to change this password.
      */
     @RPCMethod
-    public Future<TicketAuthenticatorWrapper> setAdministrator(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, StreamCorruptedException, IOException, PermissionDeniedException;
+    public Future<TicketAuthenticatorWrapper> setAdministrator(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, PermissionDeniedException;
 
     /**
      * Register a new client in the authentication registry. This is only allowed if the authenticator is in registration mode.
