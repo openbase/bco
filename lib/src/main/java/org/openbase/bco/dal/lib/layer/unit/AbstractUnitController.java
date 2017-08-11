@@ -22,7 +22,6 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
-import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -39,6 +38,7 @@ import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.ServiceServerManager;
 import org.openbase.bco.dal.lib.action.ActionImpl;
 import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
@@ -83,7 +83,6 @@ import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
-import org.openbase.bco.dal.lib.layer.service.Services;
 
 /**
  *
@@ -102,7 +101,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     private final Observer<UnitRegistryData> unitRegistryObserver;
     private final Map<ServiceType, MessageObservable> serviceStateObservableMap;
-    private final List<Services> serviceList;
+    private final List<Service> serviceList;
 
     private UnitTemplate template;
     private boolean initialized = false;
