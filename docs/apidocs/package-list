@@ -1,3 +1,5 @@
 org.openbase.bco.authentication.core
 org.openbase.bco.authentication.lib
+org.openbase.bco.authentication.lib.future
 org.openbase.bco.authentication.lib.jp
+org.openbase.bco.authentication.lib.mock
