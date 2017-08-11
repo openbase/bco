@@ -26,6 +26,7 @@ import java.util.List;
 import org.openbase.bco.dal.lib.layer.unit.AbstractHostUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.manager.device.lib.DeviceController;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -70,11 +71,11 @@ public abstract class AbstractDeviceController extends AbstractHostUnitControlle
     }
 
     @Override
-    protected List<UnitConfig> getHostedUnits() throws NotAvailableException {
+    protected List<UnitConfig> getHostedUnits() throws NotAvailableException, InterruptedException {
         List<UnitConfig> unitConfigs = new ArrayList<>();
         try {
             for (String unitId : getConfig().getDeviceConfig().getUnitIdList()) {
-                unitConfigs.add(unitRegistry.getUnitConfigById(unitId));
+                unitConfigs.add(Registries.getUnitRegistry(true).getUnitConfigById(unitId));
             }
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Hosted units description of Device", this, ex);

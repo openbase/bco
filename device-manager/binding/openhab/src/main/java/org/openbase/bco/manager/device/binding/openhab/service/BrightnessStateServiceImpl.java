@@ -21,7 +21,6 @@ package org.openbase.bco.manager.device.binding.openhab.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.concurrent.Future;
 import org.openbase.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
@@ -29,16 +28,20 @@ import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 
 /**
  *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <UNIT> Related unit.
  */
 public class BrightnessStateServiceImpl<UNIT extends BrightnessStateOperationService & Unit<?>> extends OpenHABService<UNIT> implements BrightnessStateOperationService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(BrightnessStateServiceImpl.class);
+    
     public BrightnessStateServiceImpl(final UNIT unit) throws InstantiationException {
         super(unit);
     }
@@ -53,4 +56,3 @@ public class BrightnessStateServiceImpl<UNIT extends BrightnessStateOperationSer
         return executeCommand(OpenHABCommandFactory.newPercentCommand(brightnessState.getBrightness()));
     }
 }
-

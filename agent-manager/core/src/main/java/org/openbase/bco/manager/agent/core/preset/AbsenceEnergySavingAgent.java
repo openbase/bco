@@ -116,7 +116,7 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
     }
 
     private void switchlightsOff() {
-        System.out.println("Switch lights off");
+        logger.info("Switch lights off");
         try {
             setLightPowerStateFuture = locationRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build(), UnitType.LIGHT);
             // TODO: Blocking setPowerState function that is trying to realloc all lights as long as jobs not cancelled. 

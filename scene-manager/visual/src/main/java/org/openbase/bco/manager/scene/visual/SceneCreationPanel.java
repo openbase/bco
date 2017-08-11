@@ -31,8 +31,8 @@ import javax.swing.JOptionPane;
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.openbase.bco.dal.remote.unit.scene.SceneRemote;
+import org.openbase.bco.dal.visual.util.SelectorPanel.LocationUnitConfigHolder;
 import org.openbase.bco.dal.visual.util.StatusPanel;
-import org.openbase.bco.manager.scene.visual.LocationSelectorPanel.LocationUnitConfigHolder;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -75,7 +75,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         sceneRegistryRemote = Registries.getSceneRegistry();
         StatusPanel.getInstance().setStatus("Wait for scene registry data...", StatusPanel.StatusType.INFO, sceneRegistryRemote.getDataFuture());
         sceneRegistryRemote.waitForData();
-        StatusPanel.getInstance().setStatus("Scene registry loaded.", StatusPanel.StatusType.INFO, sceneRegistryRemote.getDataFuture());
+        StatusPanel.getInstance().setStatus("Scene registry loaded.", StatusPanel.StatusType.INFO, 3);
         initDynamicComponents();
         updateDynamicComponents();
     }
@@ -84,7 +84,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         sceneRegistryRemote.addDataObserver((final Observable<SceneRegistryData> source, SceneRegistryData data) -> {
             updateDynamicComponents();
         });
-        locationSelectorPanel.addObserver((final Observable<LocationSelectorPanel.LocationUnitConfigHolder> source, LocationSelectorPanel.LocationUnitConfigHolder data) -> {
+        locationSelectorPanel.addObserver((final Observable<LocationUnitConfigHolder> source, LocationUnitConfigHolder data) -> {
             location = data;
             logger.info("location update:" + location);
         });
