@@ -21,7 +21,6 @@ package org.openbase.bco.dal.lib.action;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Callable;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
@@ -52,7 +51,6 @@ import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.state.ActionStateType.ActionState;
-import org.openbase.bco.dal.lib.layer.service.Services;
 
 /**
  *
@@ -63,11 +61,12 @@ public class ActionImpl implements Action {
     private static final Logger LOGGER = LoggerFactory.getLogger(ActionImpl.class);
 
     private final SyncObject executionSync = new SyncObject(ActionImpl.class);
-    private final AbstractUnitController unit;
     private final ServiceJSonProcessor serviceJSonProcessor;
-    private ActionDescription.Builder actionDescriptionBuilder;
     private Object serviceAttribute;
     private ServiceDescription serviceDescription;
+
+    protected final AbstractUnitController unit;
+    protected ActionDescription.Builder actionDescriptionBuilder;
 
     public ActionImpl(final AbstractUnitController unit) {
         this.unit = unit;
@@ -202,26 +201,26 @@ public class ActionImpl implements Action {
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 synchronized (executionSync) {
-                    
+
                     if (actionDescriptionBuilder == null) {
                         throw new NotInitializedException("Action");
                     }
-                    
+
                     // Initiate
                     updateActionState(ActionState.State.INITIATING);
-                    
+
                     try {
                         // Verify authority
                         unit.verifyAuthority(actionDescriptionBuilder.getActionAuthority());
-                        
+
                         // Resource Allocation
                         try {
                             ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
                             actionFuture.addActionDescription(actionDescriptionBuilder);
-                            
+
                             // Execute
                             updateActionState(ActionState.State.EXECUTING);
-                            
+
                             try {
                                 Service.invokeServiceMethod(serviceDescription, unit, serviceAttribute);
                             } catch (CouldNotPerformException ex) {
@@ -238,7 +237,7 @@ public class ActionImpl implements Action {
                             updateActionState(ActionState.State.ABORTED);
                             throw ex;
                         }
-                        
+
                     } catch (CouldNotPerformException ex) {
                         updateActionState(ActionState.State.REJECTED);
                         throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);

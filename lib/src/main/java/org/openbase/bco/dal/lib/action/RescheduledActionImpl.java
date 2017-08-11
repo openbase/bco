@@ -30,6 +30,8 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 
 /**
@@ -38,6 +40,8 @@ import rst.domotic.action.ActionFutureType.ActionFuture;
  */
 public class RescheduledActionImpl extends ActionImpl {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(RescheduledActionImpl.class);
+    
     public RescheduledActionImpl(AbstractUnitController unit) {
         super(unit);
     }
@@ -51,7 +55,7 @@ public class RescheduledActionImpl extends ActionImpl {
                 try {
                     unitAllocation.getTaskExecutor().getFuture().get();
                 } catch (CancellationException ex) {
-                    System.out.println("Canceled! Scope: " + ScopeGenerator.generateStringRep(unit.getScope()));
+                    LOGGER.info("Canceled! Scope: " + ScopeGenerator.generateStringRep(unit.getScope()));
                     // do nothing because cancellation only occurs if resource state is one which is handled below
                 }
 
@@ -64,14 +68,14 @@ public class RescheduledActionImpl extends ActionImpl {
                     case ABORTED:
                     case CANCELLED:
                         if (actionDescriptionBuilder.getExecutionTimePeriod() != 0 && actionDescriptionBuilder.getExecutionValidity().getMillisecondsSinceEpoch() > System.currentTimeMillis()) {
-                            System.out.println("Inside boundaries");
+                            LOGGER.info("Inside boundaries");
                             ActionDescriptionProcessor.updateResourceAllocationId(actionDescriptionBuilder);
                             ActionDescriptionProcessor.updateResourceAllocationSlot(actionDescriptionBuilder);
                             return call();
                         }
 
                 }
-                System.out.println("Execution finished");
+                LOGGER.info("Execution finished.");
                 if (unitAllocation.getTaskExecutor().getFuture().isCancelled()) {
                     return null;
                 }
