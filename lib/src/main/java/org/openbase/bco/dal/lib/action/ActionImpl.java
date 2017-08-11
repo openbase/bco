@@ -52,6 +52,7 @@ import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.state.ActionStateType.ActionState;
+import org.openbase.bco.dal.lib.layer.service.Services;
 
 /**
  *
@@ -62,9 +63,9 @@ public class ActionImpl implements Action {
     private static final Logger LOGGER = LoggerFactory.getLogger(ActionImpl.class);
 
     private final SyncObject executionSync = new SyncObject(ActionImpl.class);
-    protected final AbstractUnitController unit;
+    private final AbstractUnitController unit;
     private final ServiceJSonProcessor serviceJSonProcessor;
-    protected ActionDescription.Builder actionDescriptionBuilder;
+    private ActionDescription.Builder actionDescriptionBuilder;
     private Object serviceAttribute;
     private ServiceDescription serviceDescription;
 
@@ -262,7 +263,7 @@ public class ActionImpl implements Action {
 
     private void updateActionState(ActionState.State state) {
         actionDescriptionBuilder.setActionState(ActionState.newBuilder().setValue(state));
-        LOGGER.info("StateUpdate[" + state.name() + "] of " + this);
+        LOGGER.debug("StateUpdate[" + state.name() + "] of " + this);
     }
 
     @Override

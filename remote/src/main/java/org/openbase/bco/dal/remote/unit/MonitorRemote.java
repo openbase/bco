@@ -53,10 +53,6 @@ public class MonitorRemote extends AbstractUnitRemote<MonitorData> implements Mo
     }
 
     @Override
-    public void notifyDataUpdate(MonitorData data) {
-    }
-
-    @Override
     public PowerState getPowerState() throws NotAvailableException {
         try {
             return getData().getPowerState();

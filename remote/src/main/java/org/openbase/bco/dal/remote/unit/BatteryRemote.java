@@ -45,10 +45,6 @@ public class BatteryRemote extends AbstractUnitRemote<BatteryData> implements Ba
     }
 
     @Override
-    public void notifyDataUpdate(BatteryData data) {
-    }
-
-    @Override
     public BatteryState getBatteryState() throws NotAvailableException {
         try {
             return getData().getBatteryState();

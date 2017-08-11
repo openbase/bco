@@ -45,10 +45,6 @@ public class TamperDetectorRemote extends AbstractUnitRemote<TamperDetectorData>
     }
 
     @Override
-    public void notifyDataUpdate(TamperDetectorData data) {
-    }
-
-    @Override
     public TamperState getTamperState() throws NotAvailableException {
         try {
             return getData().getTamperState();

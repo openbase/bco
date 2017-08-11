@@ -64,6 +64,7 @@ import org.slf4j.LoggerFactory;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionReferenceType.ActionReference;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActionStateType.ActionState;
@@ -184,7 +185,31 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     public void removeDataObserver(final Observer<ST> observer) {
         serviceStateObservable.removeObserver(observer);
     }
-
+    
+    @Override
+    public void addServiceStateObserver(final ServiceType serviceType, final Observer observer) {
+        try {
+            if (serviceType != getServiceType()) {
+                throw new VerificationFailedException("ServiceType[" + serviceType.name() + "] is not compatible with " + this);
+            }
+            addDataObserver(observer);
+        } catch (final CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not add service state observer!", ex), logger);
+        }
+    }
+    
+    @Override
+    public void removeServiceStateObserver(final ServiceType serviceType, final Observer observer) {
+        try {
+            if (serviceType != getServiceType()) {
+                throw new VerificationFailedException("ServiceType[" + serviceType.name() + "] is not compatible with " + this);
+            }
+            addDataObserver(observer);
+        } catch (final CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not remove service state observer!", ex), logger, LogLevel.WARN);
+        }
+    }
+    
     @Override
     public Class<ST> getDataClass() {
         return serviceDataClass;
@@ -197,43 +222,41 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * @return the recalculated server state data based on the newly requested data.
      * @throws CouldNotPerformException is thrown if non of the request was successful. In case the failOnError is set to true any request error throws an CouldNotPerformException.
      */
+    @Override
     public CompletableFuture<ST> requestData(final boolean failOnError) throws CouldNotPerformException {
         final CompletableFuture<ST> requestDataFuture = new CompletableFuture<>();
-        GlobalCachedExecutorService.submit(new Runnable() {
-            @Override
-            public void run() {
-                try {
-                    final List<Future> taskList = new ArrayList<>();
-                    MultiException.ExceptionStack exceptionStack = null;
-                    for (final Remote remote : getInternalUnits()) {
-                        try {
-                            taskList.add(remote.requestData());
-                        } catch (CouldNotPerformException ex) {
-                            MultiException.push(remote, ex, exceptionStack);
-                        }
-                    }
-                    boolean noResponse = true;
-                    for (final Future task : taskList) {
-                        try {
-                            task.get();
-                            noResponse = false;
-                        } catch (ExecutionException ex) {
-                            MultiException.push(task, ex, exceptionStack);
-                        }
-                    }
-
+        GlobalCachedExecutorService.submit(() -> {
+            try {
+                final List<Future> taskList = new ArrayList<>();
+                MultiException.ExceptionStack exceptionStack = null;
+                for (final Remote remote : getInternalUnits()) {
                     try {
-                        MultiException.checkAndThrow("Could not request status of all internal remotes!", exceptionStack);
-                    } catch (MultiException ex) {
-                        if (failOnError || noResponse) {
-                            throw ex;
-                        }
-                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not request data of all internal unit remotes!", ex), logger, LogLevel.WARN);
+                        taskList.add(remote.requestData());
+                    } catch (CouldNotPerformException ex) {
+                        MultiException.push(remote, ex, exceptionStack);
                     }
-                    requestDataFuture.complete(getData());
-                } catch (InterruptedException | CouldNotPerformException ex) {
-                    requestDataFuture.completeExceptionally(ex);
                 }
+                boolean noResponse = true;
+                for (final Future task : taskList) {
+                    try {
+                        task.get();
+                        noResponse = false;
+                    } catch (ExecutionException ex) {
+                        MultiException.push(task, ex, exceptionStack);
+                    }
+                }
+                
+                try {
+                    MultiException.checkAndThrow("Could not request status of all internal remotes!", exceptionStack);
+                } catch (MultiException ex) {
+                    if (failOnError || noResponse) {
+                        throw ex;
+                    }
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not request data of all internal unit remotes!", ex), logger, LogLevel.WARN);
+                }
+                requestDataFuture.complete(getData());
+            } catch (InterruptedException | CouldNotPerformException ex) {
+                requestDataFuture.completeExceptionally(ex);
             }
         });
 
@@ -454,7 +477,6 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     @Override
     public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         try {
-            logger.info("applyAction");
             if (!actionDescription.getServiceStateDescription().getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
@@ -685,7 +707,8 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             this.maintainer = null;
         }
     }
-
+    
+    @Deprecated
     public void setInfrastructureFilter(final boolean enabled) {
         // TODO: just a hack, remove me later
     }

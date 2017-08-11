@@ -69,10 +69,10 @@ public class ServiceTest {
     public void testDetectServiceDataClass() throws Exception {
         System.out.println("detectServiceDataClass");
         try {
-            assertEquals("wrong service class detected!", Service.getServiceStateClass(ServiceType.BATTERY_STATE_SERVICE), BatteryStateType.BatteryState.class);
-            assertEquals("wrong service class detected!", Service.getServiceStateClass(ServiceType.COLOR_STATE_SERVICE), ColorStateType.ColorState.class);
-            assertEquals("wrong service class detected!", Service.getServiceStateClass(ServiceType.SMOKE_STATE_SERVICE), SmokeStateType.SmokeState.class);
-            assertEquals("wrong service class detected!", Service.getServiceStateClass(ServiceType.MOTION_STATE_SERVICE), MotionStateType.MotionState.class);
+            assertEquals("wrong service class detected!", Services.getServiceStateClass(ServiceType.BATTERY_STATE_SERVICE), BatteryStateType.BatteryState.class);
+            assertEquals("wrong service class detected!", Services.getServiceStateClass(ServiceType.COLOR_STATE_SERVICE), ColorStateType.ColorState.class);
+            assertEquals("wrong service class detected!", Services.getServiceStateClass(ServiceType.SMOKE_STATE_SERVICE), SmokeStateType.SmokeState.class);
+            assertEquals("wrong service class detected!", Services.getServiceStateClass(ServiceType.MOTION_STATE_SERVICE), MotionStateType.MotionState.class);
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, System.out);
         }
@@ -85,7 +85,7 @@ public class ServiceTest {
     public void testGetServiceStateValues() throws Exception {
         System.out.println("getServiceStateValues");
         try {
-        Collection<? extends Enum> values = Service.getServiceStateValues(ServiceType.POWER_STATE_SERVICE);
+        Collection<? extends Enum> values = Services.getServiceStateValues(ServiceType.POWER_STATE_SERVICE);
         for (PowerState.State state : PowerState.State.values()) {
             Assert.assertTrue("Detected values does not contain " + state.name(), values.contains(state));
         }

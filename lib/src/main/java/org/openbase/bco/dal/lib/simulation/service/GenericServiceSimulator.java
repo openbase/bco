@@ -22,12 +22,12 @@ package org.openbase.bco.dal.lib.simulation.service;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
-import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.MultiException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.bco.dal.lib.layer.service.Services;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -61,7 +61,7 @@ public class GenericServiceSimulator extends AbstractRandomServiceSimulator<Gene
     private void detectAndRegisterServiceStates(final ServiceType serviceType) throws CouldNotPerformException {
         try {
             final MultiException.ExceptionStack exceptionStack = new MultiException.ExceptionStack();
-            Service.getServiceStateValues(serviceType).forEach((stateValue) -> {
+            Services.getServiceStateValues(serviceType).forEach((stateValue) -> {
                 try {
                     // filter unknown state values
                     if (stateValue.name().equals("UNKNOWN")) {
@@ -69,7 +69,7 @@ public class GenericServiceSimulator extends AbstractRandomServiceSimulator<Gene
                     }
 
                     // add built service state
-                    registerServiceState(Service.buildServiceState(serviceType, stateValue));
+                    registerServiceState(Services.buildServiceState(serviceType, stateValue));
                 } catch (final Exception ex) {
                     MultiException.push(this, ex, exceptionStack);
                 }

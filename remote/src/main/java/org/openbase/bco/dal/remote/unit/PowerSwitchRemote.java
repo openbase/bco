@@ -51,10 +51,6 @@ public class PowerSwitchRemote extends AbstractUnitRemote<PowerSwitchData> imple
     }
 
     @Override
-    public void notifyDataUpdate(PowerSwitchData data) {
-    }
-
-    @Override
     public Future<ActionFuture> setPowerState(final PowerState powerState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {

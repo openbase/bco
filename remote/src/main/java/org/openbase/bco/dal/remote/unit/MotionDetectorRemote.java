@@ -45,10 +45,6 @@ public class MotionDetectorRemote extends AbstractUnitRemote<MotionDetectorData>
     }
 
     @Override
-    public void notifyDataUpdate(MotionDetectorData data) {
-    }
-
-    @Override
     public MotionState getMotionState() throws NotAvailableException {
         try {
             return getData().getMotionState();

@@ -81,7 +81,11 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
                         GlobalCachedExecutorService.submit(new Runnable() {
                             @Override
                             public void run() {
-                                presenceTimeout.restart();
+                                try {
+                                    presenceTimeout.restart();
+                                } catch (final CouldNotPerformException ex) {
+                                    ExceptionPrinter.printHistory("Could not setup presence timeout!", ex, logger);
+                                }
                             }
                         });
                         return;

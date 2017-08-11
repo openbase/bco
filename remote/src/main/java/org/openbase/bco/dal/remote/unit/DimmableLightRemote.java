@@ -53,10 +53,6 @@ public class DimmableLightRemote extends AbstractUnitRemote<DimmableLightData> i
     }
 
     @Override
-    protected void notifyDataUpdate(DimmableLightData data) throws CouldNotPerformException {
-    }
-
-    @Override
     public Future<ActionFuture> setPowerState(final PowerState powerState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {

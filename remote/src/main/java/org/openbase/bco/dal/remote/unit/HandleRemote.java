@@ -45,10 +45,6 @@ public class HandleRemote extends AbstractUnitRemote<HandleData> implements Hand
     }
 
     @Override
-    public void notifyDataUpdate(HandleData data) {
-    }
-
-    @Override
     public HandleState getHandleState() throws NotAvailableException {
         try {
             return getData().getHandleState();

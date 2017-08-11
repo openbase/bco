@@ -49,10 +49,6 @@ public class BrightnessSensorRemote extends AbstractUnitRemote<BrightnessSensorD
     }
 
     @Override
-    public void notifyDataUpdate(BrightnessSensorData data) {
-    }
-
-    @Override
     @Deprecated
     public BrightnessState getBrightnessState() throws NotAvailableException {
         try {
