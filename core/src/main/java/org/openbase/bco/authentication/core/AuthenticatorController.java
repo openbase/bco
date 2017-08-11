@@ -32,7 +32,6 @@ import java.util.Arrays;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 import org.apache.commons.lang.RandomStringUtils;
 import org.openbase.bco.authentication.lib.mock.MockCredentialStore;
 import javax.crypto.BadPaddingException;
@@ -56,6 +55,7 @@ import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthentic
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 import org.openbase.bco.authentication.lib.AuthenticationService;
 import org.openbase.bco.authentication.lib.CredentialStore;
+import org.openbase.bco.authentication.lib.ExceptionReporter;
 import org.openbase.bco.authentication.lib.ServiceServerManager;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationSimulationMode;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
@@ -64,7 +64,6 @@ import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -220,6 +219,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
                 return AuthenticationServerHandler.handleKDCRequest(id, userKey, clientKey, "", ticketGrantingServiceSecretKey);
             } catch (NotAvailableException ex) {
+                ExceptionReporter.getInstance().report(ex);
                 throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.WARN);
             } catch (InterruptedException | CouldNotPerformException | IOException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
@@ -235,7 +235,8 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 return AuthenticationServerHandler.handleTGSRequest(ticketGrantingServiceSecretKey, serviceServerSecretKey, ticketAuthenticatorWrapper);
             } catch (RejectedException | BadPaddingException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
-                throw ex;
+                ExceptionReporter.getInstance().report(ex);
+                throw new RejectedException(ex.getMessage());
             } catch (IOException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
                 throw new CouldNotPerformException("Internal server error. Please try again.");
