@@ -28,13 +28,9 @@ import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.NotSupportedException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionFutureType.ActionFuture;
-import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 
 /**
@@ -58,17 +54,5 @@ public class TargetTemperatureStateServiceImpl<ST extends TargetTemperatureState
     @Override
     public TemperatureState getTargetTemperatureState() throws NotAvailableException {
         return unit.getTargetTemperatureState();
-    }
-
-    // will be removed if service interface todos are implemented.
-    @Override
-    public void addServiceStateObserver(ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Observer observer) {
-        ExceptionPrinter.printHistory(new NotSupportedException("service observation", this), LOGGER);
-    }
-
-    // will be removed if service interface todos are implemented.
-    @Override
-    public void removeServiceStateObserver(ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Observer observer) {
-        ExceptionPrinter.printHistory(new NotSupportedException("service observation", this), LOGGER);
     }
 }

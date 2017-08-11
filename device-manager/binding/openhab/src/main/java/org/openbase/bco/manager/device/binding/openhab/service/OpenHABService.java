@@ -31,7 +31,6 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -106,10 +105,5 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
 
         logger.debug("Execute command: Setting item [" + this.itemName + "] to [" + command.getType().toString() + "]");
         return openHABRemote.postCommand(command.setItem(itemName).build());
-    }
-
-    @Override
-    public void addServiceStateObserver(ServiceTemplate.ServiceType serviceType, Observer observer) {
-        unit.addServiceStateObserver(serviceType, observer);
     }
 }

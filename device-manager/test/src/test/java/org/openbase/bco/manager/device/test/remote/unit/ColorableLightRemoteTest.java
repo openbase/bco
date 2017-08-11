@@ -37,6 +37,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.PowerStateType.PowerState;
@@ -261,7 +262,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
             colorableLightRemote.setPowerState(PowerState.State.ON).get();
         }
 
-        colorableLightRemote.addPowerStateObserver(new Observer<PowerState>() {
+        colorableLightRemote.addServiceStateObserver(ServiceType.POWER_STATE_SERVICE, new Observer<PowerState>() {
 
             int updateNumber = 0;
 

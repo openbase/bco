@@ -28,13 +28,9 @@ import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.NotSupportedException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionFutureType.ActionFuture;
-import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.IntensityStateType.IntensityState;
 
 /**
@@ -59,17 +55,5 @@ public class IntensityStateServiceImpl<UNIT extends IntensityStateOperationServi
     @Override
     public IntensityState getIntensityState() throws NotAvailableException {
         return unit.getIntensityState();
-    }
-
-    // will be removed if service interface todos are implemented.
-    @Override
-    public void addServiceStateObserver(ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Observer observer) {
-        ExceptionPrinter.printHistory(new NotSupportedException("service observation", this), LOGGER);
-    }
-
-    // will be removed if service interface todos are implemented.
-    @Override
-    public void removeServiceStateObserver(ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Observer observer) {
-        ExceptionPrinter.printHistory(new NotSupportedException("service observation", this), LOGGER);
     }
 }
