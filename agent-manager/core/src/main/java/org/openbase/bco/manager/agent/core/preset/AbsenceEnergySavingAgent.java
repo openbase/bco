@@ -124,7 +124,7 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
     }
 
     private void switchlightsOff() {
-        System.out.println("Switch lights off");
+        logger.info("Switch lights off");
         try {
             ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
                     ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,

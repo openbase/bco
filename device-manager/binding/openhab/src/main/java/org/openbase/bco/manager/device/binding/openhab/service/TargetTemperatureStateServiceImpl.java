@@ -28,6 +28,8 @@ import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 
@@ -38,6 +40,8 @@ import rst.domotic.state.TemperatureStateType.TemperatureState;
  */
 public class TargetTemperatureStateServiceImpl<ST extends TargetTemperatureStateOperationService & Unit<?>> extends OpenHABService<ST> implements TargetTemperatureStateOperationService {
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(TargetTemperatureStateServiceImpl.class);
+    
     public TargetTemperatureStateServiceImpl(final ST unit) throws InstantiationException {
         super(unit);
     }
@@ -51,5 +55,4 @@ public class TargetTemperatureStateServiceImpl<ST extends TargetTemperatureState
     public TemperatureState getTargetTemperatureState() throws NotAvailableException {
         return unit.getTargetTemperatureState();
     }
-
 }

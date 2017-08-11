@@ -22,7 +22,7 @@ package org.openbase.bco.manager.agent.core;
  * #L%
  */
 import org.openbase.bco.manager.agent.lib.jp.JPAgentId;
-import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPVerbose;
@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  */
 public class AgentTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AgentManagerController.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(AgentTest.class);
 
     /**
      * @param args the command line arguments
@@ -56,11 +56,7 @@ public class AgentTest {
         /* Start main app */
         LOGGER.info("Start " + JPService.getApplicationName() + "...");
         try {
-            AgentRegistryRemote agentRegistryRemote = new AgentRegistryRemote();
-            agentRegistryRemote.init();
-            agentRegistryRemote.activate();
-            AgentFactoryImpl.getInstance().newInstance(agentRegistryRemote.getAgentConfigById(JPService.getProperty(JPAgentId.class).getValue())).enable();
-            agentRegistryRemote.deactivate();
+            AgentFactoryImpl.getInstance().newInstance(Registries.getAgentRegistry(true).getAgentConfigById(JPService.getProperty(JPAgentId.class).getValue())).enable();
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
         }

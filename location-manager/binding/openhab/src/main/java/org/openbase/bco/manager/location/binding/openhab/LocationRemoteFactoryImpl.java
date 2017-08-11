@@ -21,6 +21,7 @@ package org.openbase.bco.manager.location.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.location.binding.openhab.execution.OpenHABCommandFactory;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -31,6 +32,7 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Factory;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.processing.StringProcessor;
+import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.location.LocationDataType.LocationData;
@@ -52,19 +54,25 @@ public class LocationRemoteFactoryImpl implements Factory<LocationRemote, UnitCo
 
     @Override
     public LocationRemote newInstance(final UnitConfig locationUnitConfig) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        LocationRemote locationRemote = new LocationRemote();
         try {
+            LocationRemote locationRemote = Units.getUnit(locationUnitConfig, false, Units.LOCATION);
             locationRemote.addDataObserver((final Observable<LocationData> source, LocationData data) -> {
-                openHABRemote.postUpdate(OpenHABCommandFactory.newHSBCommand(data.getColorState().getColor().getHsbColor()).setItem(generateItemId(locationUnitConfig, ServiceType.COLOR_STATE_SERVICE)).build());
-                openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getPowerState().getValue()).setItem(generateItemId(locationUnitConfig, ServiceType.POWER_STATE_SERVICE)).build());
-                openHABRemote.postUpdate(OpenHABCommandFactory.newDecimalCommand(data.getPowerConsumptionState().getConsumption()).setItem(generateItemId(locationUnitConfig, ServiceType.POWER_CONSUMPTION_STATE_SERVICE)).build());
-            });
-            locationRemote.init(locationUnitConfig);
-            locationRemote.activate();
+                // some locations do not have units for a given state so this state will not be set in LocationData and should not be updated in openhab
+                if (data.hasColorState()) {
+                    openHABRemote.postUpdate(OpenHABCommandFactory.newHSBCommand(data.getColorState().getColor().getHsbColor()).setItem(generateItemId(locationUnitConfig, ServiceType.COLOR_STATE_SERVICE)).build());
+                }
 
+                if (data.hasPowerState()) {
+                    openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getPowerState().getValue()).setItem(generateItemId(locationUnitConfig, ServiceType.POWER_STATE_SERVICE)).build());
+                }
+
+                if (data.hasPowerConsumptionState()) {
+                    openHABRemote.postUpdate(OpenHABCommandFactory.newDecimalCommand(data.getPowerConsumptionState().getConsumption()).setItem(generateItemId(locationUnitConfig, ServiceType.POWER_CONSUMPTION_STATE_SERVICE)).build());
+                }
+            });
             return locationRemote;
         } catch (CouldNotPerformException ex) {
-            throw new org.openbase.jul.exception.InstantiationException(locationRemote, ex);
+            throw new org.openbase.jul.exception.InstantiationException(LocationRemote.class, ex);
         }
     }
 

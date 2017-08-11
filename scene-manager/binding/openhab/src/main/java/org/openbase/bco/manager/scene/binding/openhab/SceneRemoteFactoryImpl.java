@@ -21,6 +21,7 @@ package org.openbase.bco.manager.scene.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.scene.SceneRemote;
 import org.openbase.bco.manager.scene.binding.openhab.execution.OpenHABCommandFactory;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -50,18 +51,15 @@ public class SceneRemoteFactoryImpl implements Factory<SceneRemote, UnitConfig> 
     }
 
     @Override
-    public SceneRemote newInstance(UnitConfig config) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        SceneRemote sceneRemote = new SceneRemote();
+    public SceneRemote newInstance(final UnitConfig config) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
+            SceneRemote sceneRemote = Units.getUnit(config, false, Units.SCENE);
             sceneRemote.addDataObserver((final Observable<SceneData> source, SceneData data) -> {
                 openHABRemote.postUpdate(OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(generateItemId(config)).build());
             });
-            sceneRemote.init(config);
-            sceneRemote.activate();
-
             return sceneRemote;
         } catch (CouldNotPerformException ex) {
-            throw new org.openbase.jul.exception.InstantiationException(sceneRemote, ex);
+            throw new org.openbase.jul.exception.InstantiationException(SceneRemote.class, ex);
         }
     }
 

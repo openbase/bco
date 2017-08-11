@@ -28,6 +28,8 @@ import org.openbase.bco.manager.device.binding.openhab.execution.OpenHABCommandF
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.BlindStateType.BlindState;
 
@@ -37,6 +39,8 @@ import rst.domotic.state.BlindStateType.BlindState;
  * @param <ST> Related service type.
  */
 public class BlindStateServiceImpl<ST extends BlindStateOperationService & Unit<?>> extends OpenHABService<ST> implements BlindStateOperationService {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(BlindStateServiceImpl.class);
 
     public BlindStateServiceImpl(final ST unit) throws InstantiationException {
         super(unit);
@@ -60,5 +64,4 @@ public class BlindStateServiceImpl<ST extends BlindStateOperationService & Unit<
     public BlindState getBlindState() throws NotAvailableException {
         return unit.getBlindState();
     }
-
 }

@@ -24,10 +24,13 @@ package org.openbase.bco.manager.scene.visual;
 import java.util.ArrayList;
 import java.util.Collections;
 import javax.swing.DefaultComboBoxModel;
+import static org.openbase.bco.dal.visual.util.SelectorPanel.ALL_LOCATION;
+import org.openbase.bco.dal.visual.util.SelectorPanel.LocationUnitConfigHolder;
 import org.openbase.bco.dal.visual.util.StatusPanel;
-import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
@@ -48,7 +51,6 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
 
     private final ObservableImpl<LocationUnitConfigHolder> locationConfigHolderObservable;
     private boolean enableAllLocation;
-    private LocationRegistryRemote locationRegistryRemote;
     private LocationUnitConfigHolder selectedLocationConfigHolder;
     private StatusPanel statusPanel;
     private boolean init = false;
@@ -64,20 +66,13 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
     }
 
     public void init(boolean enableAllLocation) throws InitializationException, InterruptedException, CouldNotPerformException {
-        this.locationRegistryRemote = new LocationRegistryRemote();
         this.enableAllLocation = enableAllLocation;
 
         statusPanel = StatusPanel.getInstance();
-        statusPanel.setStatus("Init location registry connection...", StatusPanel.StatusType.INFO, true);
-        locationRegistryRemote.init();
 
-        statusPanel.setStatus("Connecting to location registry...", StatusPanel.StatusType.INFO, true);
-        locationRegistryRemote.activate();
-        statusPanel.setStatus("Connection established.", StatusPanel.StatusType.INFO, 3);
-
-        statusPanel.setStatus("Wait for location registry data...", StatusPanel.StatusType.INFO, true);
-        locationRegistryRemote.waitForData();
-        statusPanel.setStatus("Data received.", StatusPanel.StatusType.INFO, 3);
+        statusPanel.setStatus("Wait for location registry...", StatusPanel.StatusType.INFO, true);
+        Registries.getLocationRegistry().waitForData();
+        statusPanel.setStatus("Successfully connected to location registry .", StatusPanel.StatusType.INFO, 3);
 
         init = true;
 
@@ -90,14 +85,14 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
         locationComboBox.setEnabled(value);
     }
 
-    private void initDynamicComponents() {
-        locationRegistryRemote.addDataObserver((final Observable<LocationRegistryData> source, LocationRegistryData data) -> {
+    private void initDynamicComponents() throws InterruptedException, NotAvailableException {
+        Registries.getLocationRegistry().addDataObserver((final Observable<LocationRegistryData> source, LocationRegistryData data) -> {
             updateDynamicComponents();
         });
         updateDynamicComponents();
     }
 
-    private void updateDynamicComponents() {
+    private void updateDynamicComponents() throws InterruptedException {
         if (!init) {
             return;
         }
@@ -124,7 +119,7 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
             if (enableAllLocation) {
                 locationConfigHolderList.add(ALL_LOCATION);
             }
-            for (UnitConfig config : locationRegistryRemote.getLocationConfigs()) {
+            for (UnitConfig config : Registries.getLocationRegistry().getLocationConfigs()) {
                 locationConfigHolderList.add(new LocationUnitConfigHolder(config));
             }
             Collections.sort(locationConfigHolderList);
@@ -226,37 +221,5 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
             return;
         }
         locationComboBox.setSelectedItem(select);
-    }
-
-    public static final LocationUnitConfigHolder ALL_LOCATION = new LocationUnitConfigHolder(null);
-
-    public static class LocationUnitConfigHolder implements Comparable<LocationUnitConfigHolder> {
-
-        private final UnitConfig config;
-
-        public LocationUnitConfigHolder(final UnitConfig config) {
-            this.config = config;
-        }
-
-        @Override
-        public String toString() {
-            if (isNotSpecified()) {
-                return "All";
-            }
-            return config.getLabel();
-        }
-
-        public boolean isNotSpecified() {
-            return config == null;
-        }
-
-        public UnitConfig getConfig() {
-            return config;
-        }
-
-        @Override
-        public int compareTo(final LocationUnitConfigHolder o) {
-            return toString().compareTo(o.toString());
-        }
     }
 }

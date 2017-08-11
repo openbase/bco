@@ -22,6 +22,7 @@ package org.openbase.bco.manager.agent.binding.openhab;
  * #L%
  */
 import java.util.concurrent.ExecutionException;
+import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.manager.agent.binding.openhab.execution.OpenHABCommandFactory;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -57,8 +58,8 @@ public class AgentRemoteFactoryImpl implements Factory<AgentRemote, UnitConfig> 
 
     @Override
     public AgentRemote newInstance(UnitConfig config) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        AgentRemote agentRemote = new AgentRemote();
         try {
+            AgentRemote agentRemote = Units.getUnit(config, false, Units.AGENT);
             agentRemote.addDataObserver((final Observable<AgentData> source, AgentData data) -> {
                 OpenhabCommandType.OpenhabCommand build = OpenHABCommandFactory.newOnOffCommand(data.getActivationState()).setItem(generateItemId(config)).build();
                 try {
@@ -67,12 +68,9 @@ public class AgentRemoteFactoryImpl implements Factory<AgentRemote, UnitConfig> 
                     logger.error("ERROR during openHABRemote postUpdate!", ex);
                 }
             });
-            agentRemote.init(config);
-            agentRemote.activate();
-
             return agentRemote;
         } catch (CouldNotPerformException ex) {
-            throw new org.openbase.jul.exception.InstantiationException(agentRemote, ex);
+            throw new org.openbase.jul.exception.InstantiationException(AgentRemote.class, ex);
         }
     }
 

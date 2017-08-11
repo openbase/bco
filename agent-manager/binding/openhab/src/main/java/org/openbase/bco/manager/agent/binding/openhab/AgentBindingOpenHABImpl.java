@@ -23,7 +23,7 @@ package org.openbase.bco.manager.agent.binding.openhab;
  */
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
-import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -46,7 +46,6 @@ public class AgentBindingOpenHABImpl extends AbstractOpenHABBinding {
     //TODO: Should be declared in the openhab config generator and used from there
     public static final String AGENT_MANAGER_ITEM_FILTER = "bco.manager.agent";
 
-    private final AgentRegistryRemote agentRegistryRemote;
     private final AgentRemoteFactoryImpl factory;
     private final RegistrySynchronizer<String, AgentRemote, UnitConfig, UnitConfig.Builder> registrySynchronizer;
     private final RemoteControllerRegistryImpl<String, AgentRemote> registry;
@@ -55,26 +54,29 @@ public class AgentBindingOpenHABImpl extends AbstractOpenHABBinding {
 
     public AgentBindingOpenHABImpl() throws InstantiationException, JPNotAvailableException, InterruptedException {
         super();
-        agentRegistryRemote = new AgentRegistryRemote();
-        registry = new RemoteControllerRegistryImpl<>();
-        factory = new AgentRemoteFactoryImpl();
-        hardwareSimulationMode = JPService.getProperty(JPHardwareSimulationMode.class).getValue();
+        try {
+            registry = new RemoteControllerRegistryImpl<>();
+            factory = new AgentRemoteFactoryImpl();
+            hardwareSimulationMode = JPService.getProperty(JPHardwareSimulationMode.class).getValue();
 
-        this.registrySynchronizer = new RegistrySynchronizer<String, AgentRemote, UnitConfig, UnitConfig.Builder>(registry, agentRegistryRemote.getAgentConfigRemoteRegistry(), factory) {
+            this.registrySynchronizer = new RegistrySynchronizer<String, AgentRemote, UnitConfig, UnitConfig.Builder>(registry, Registries.getAgentRegistry().getAgentConfigRemoteRegistry(), factory) {
 
-            @Override
-            public boolean verifyConfig(final UnitConfig config) throws VerificationFailedException {
-                return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
-            }
-        };
+                @Override
+                public boolean verifyConfig(final UnitConfig config) throws VerificationFailedException {
+                    return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
+                }
+            };
+        } catch (final CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
     }
 
     @Override
     public void init() throws InitializationException, InterruptedException {
         super.init(AGENT_MANAGER_ITEM_FILTER, new AgentBindingOpenHABRemote(hardwareSimulationMode, registry));
         try {
+            Registries.getAgentRegistry().waitForData();
             factory.init(openHABRemote);
-            agentRegistryRemote.init();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -83,14 +85,12 @@ public class AgentBindingOpenHABImpl extends AbstractOpenHABBinding {
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         active = true;
-        agentRegistryRemote.activate();
         registrySynchronizer.activate();
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         active = false;
-        agentRegistryRemote.deactivate();
         registrySynchronizer.deactivate();
     }
 

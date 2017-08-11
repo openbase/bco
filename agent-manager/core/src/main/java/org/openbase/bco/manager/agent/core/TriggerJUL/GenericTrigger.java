@@ -24,7 +24,6 @@ package org.openbase.bco.manager.agent.core.TriggerJUL;
 import com.google.protobuf.GeneratedMessage;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -36,6 +35,7 @@ import org.openbase.jul.pattern.Remote.ConnectionState;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.bco.dal.lib.layer.service.Services;
 
 /**
  *
@@ -70,7 +70,7 @@ public class GenericTrigger<UR extends AbstractUnitRemote, DT extends GeneratedM
 
     private void verifyCondition(DT data) {
         try {
-            Object serviceState = Service.invokeProviderServiceMethod(serviceType, data);
+            Object serviceState = Services.invokeProviderServiceMethod(serviceType, data);
 
             Method method = serviceState.getClass().getMethod("getValue");
             if (method.invoke(serviceState).equals(targetState)) {
