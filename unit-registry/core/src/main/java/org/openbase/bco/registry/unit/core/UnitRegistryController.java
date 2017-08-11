@@ -338,6 +338,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
         // add consistency handler for all unitConfig registries        
        
+        registerConsistencyHandler(new BoundingBoxCleanerConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new ServiceConfigUnitIdConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new UnitConfigUnitTemplateConsistencyHandler(unitTemplateRegistry), UnitConfig.class);
         registerConsistencyHandler(new UnitEnablingStateConsistencyHandler(), UnitConfig.class);
@@ -350,7 +351,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         } catch (JPNotAvailableException ex) {
             // do nothing if not available.
         }
-        registerConsistencyHandler(new BoundingBoxCleanerConsistencyHandler(), UnitConfig.class);
     }
 
     /**

@@ -41,22 +41,16 @@ public class BoundingBoxCleanerConsistencyHandler extends AbstractProtoBufRegist
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
 
-        //todo boundingbox included in all types?
-        if (!unitConfig.hasPlacementConfig() || !unitConfig.getPlacementConfig().hasShape()) {
+        if (!unitConfig.hasPlacementConfig() || !unitConfig.getPlacementConfig().hasShape()
+            || unitConfig.getPlacementConfig().getShape().getFloorList().isEmpty()) {
             return;
         }
-
         Shape shape = unitConfig.getPlacementConfig().getShape();
-
         AxisAlignedBoundingBox3DFloat newBoundingBox = updateBoundingBox(shape);
 
         //detect changes
-   //     if(!shape.getBoundingBox().equals(newBoundingBox)) { // todo test, didn't seem to work
-        if (shape.getBoundingBox().getDepth() != newBoundingBox.getDepth()
-            || shape.getBoundingBox().getHeight() != newBoundingBox.getHeight()
-            || shape.getBoundingBox().getWidth() != newBoundingBox.getWidth()) {
-
-            unitConfig.getPlacementConfigBuilder().getShapeBuilder().setBoundingBox(newBoundingBox);
+        if(!shape.getBoundingBox().equals(newBoundingBox)) { 
+                unitConfig.getPlacementConfigBuilder().getShapeBuilder().setBoundingBox(newBoundingBox);
             throw new EntryModification(entry.setMessage(unitConfig), this);
         }
     }
@@ -70,11 +64,8 @@ public class BoundingBoxCleanerConsistencyHandler extends AbstractProtoBufRegist
         double maxZ = Double.MIN_VALUE;
         double minZ = Double.MAX_VALUE;
 
-        // Get the shape of the room
-        final List<Vec3DDoubleType.Vec3DDouble> roomShape = shape.getFloorList();
-
-        // Iterate over all vertices
-        for (final Vec3DDoubleType.Vec3DDouble rstVertex : roomShape) {
+        // Iterate over all vertices, find biggest values in all dimensions
+        for (final Vec3DDoubleType.Vec3DDouble rstVertex : shape.getFloorList()) {
             
             minX = Math.min(rstVertex.getX(), minX);
             maxX = Math.max(rstVertex.getX(), maxX);
@@ -83,18 +74,15 @@ public class BoundingBoxCleanerConsistencyHandler extends AbstractProtoBufRegist
             maxY = Math.max(rstVertex.getY(), maxY);
             
             minZ = Math.min(rstVertex.getZ(), minZ);
-            maxZ = Math.max(rstVertex.getZ(), maxZ);
-            
+            maxZ = Math.max(rstVertex.getZ(), maxZ);            
         }
+        
         AxisAlignedBoundingBox3DFloat.Builder builder = AxisAlignedBoundingBox3DFloat.newBuilder();
         builder.setDepth((float) (maxY - minY));
         builder.setHeight((float) (maxZ - minZ));
         builder.setWidth((float) (maxX - minX));
-        Translation.Builder translationBuilder = Translation.newBuilder().setX(0).setY(0).setZ(0);
+        Translation.Builder translationBuilder = Translation.newBuilder().setX(minX).setY(minY).setZ(minZ);
         builder.setLeftFrontBottom(translationBuilder);
-
-        AxisAlignedBoundingBox3DFloat newBB = builder.build();
-
-        return newBB;
+        return builder.build();
     }
 }
