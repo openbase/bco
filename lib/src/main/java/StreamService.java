@@ -20,12 +20,7 @@
  * #L%
  */
 
-import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotSupportedException;
-import rst.domotic.action.ActionDescriptionType;
-import rst.domotic.action.ActionFutureType;
 
 
 /**
@@ -33,8 +28,4 @@ import rst.domotic.action.ActionFutureType;
  */
 public interface StreamService extends Service {
 
-    @Override
-    public default Future<ActionFutureType.ActionFuture> applyAction(ActionDescriptionType.ActionDescription actionConfig) throws CouldNotPerformException, InterruptedException {
-        throw new NotSupportedException("actions", StreamService.class);
-    }
 }

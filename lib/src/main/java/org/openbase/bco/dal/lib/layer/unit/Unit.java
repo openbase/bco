@@ -29,6 +29,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
+import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.MultiException;
@@ -52,13 +53,14 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import org.openbase.bco.dal.lib.layer.service.Services;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  * @param <D> the data type of this unit used for the state synchronization.
  */
-public interface Unit<D> extends Service, LabelProvider, ScopeProvider, Identifiable<String>, Configurable<String, UnitConfig>, DataProvider<D>, Snapshotable<Snapshot> {
+public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<String>, Configurable<String, UnitConfig>, DataProvider<D>, ServiceProvider, Service, Snapshotable<Snapshot> {
 
     /**
      * Returns the unit type.
@@ -123,7 +125,7 @@ public interface Unit<D> extends Service, LabelProvider, ScopeProvider, Identifi
                 }
 
                 // load operation service attribute by related provider service
-                Object serviceAttribute = Service.invokeServiceMethod(serviceDescription.getType(), ServiceTemplate.ServicePattern.PROVIDER, this);
+                Object serviceAttribute = Services.invokeServiceMethod(serviceDescription.getType(), ServiceTemplate.ServicePattern.PROVIDER, this);
                 //System.out.println("load[" + serviceAttribute + "] type: " + serviceAttribute.getClass().getSimpleName());
 
                 // verify operation service state (e.g. ignore UNKNOWN service states)

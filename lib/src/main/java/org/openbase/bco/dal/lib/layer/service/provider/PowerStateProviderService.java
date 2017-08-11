@@ -23,8 +23,6 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  */
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.annotations.RPCMethod;
-import org.openbase.jul.pattern.Observer;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType.PowerState;
 
 /**
@@ -36,12 +34,12 @@ public interface PowerStateProviderService extends ProviderService {
     @RPCMethod
     public PowerState getPowerState() throws NotAvailableException;
 
-    default public void addPowerStateObserver(Observer<PowerState> observer) {
-        addServiceStateObserver(ServiceType.POWER_STATE_SERVICE, observer);
-    }
-
-    default public void removePowerStateObserver(Observer<PowerState> observer) {
-        removeServiceStateObserver(ServiceType.POWER_STATE_SERVICE, observer);
-    }
+//    default public void addPowerStateObserver(Observer<PowerState> observer) {
+//        addServiceStateObserver(ServiceType.POWER_STATE_SERVICE, observer);
+//    }
+//
+//    default public void removePowerStateObserver(Observer<PowerState> observer) {
+//        removeServiceStateObserver(ServiceType.POWER_STATE_SERVICE, observer);
+//    }
 
 }

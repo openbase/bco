@@ -35,13 +35,9 @@ import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.NotSupportedException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import org.openbase.jul.pattern.Observer;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionFutureType.ActionFuture;
-import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType.ColorState;
@@ -76,18 +72,6 @@ public class ServiceFactoryMock implements ServiceFactory {
             public Future<ActionFuture> setBrightnessState(BrightnessState state) throws CouldNotPerformException {
                 return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
             }
-
-            // will be removed if service interface todos are implemented.
-            @Override
-            public void addServiceStateObserver(ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Observer observer) {
-                ExceptionPrinter.printHistory(new NotSupportedException("service observation", this), logger);
-            }
-
-            // will be removed if service interface todos are implemented.
-            @Override
-            public void removeServiceStateObserver(ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Observer observer) {
-                ExceptionPrinter.printHistory(new NotSupportedException("service observation", this), logger);
-            }
         };
     }
 
@@ -103,18 +87,6 @@ public class ServiceFactoryMock implements ServiceFactory {
             @Override
             public Future<ActionFuture> setColorState(ColorState state) throws CouldNotPerformException {
                 return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
-            }
-
-            // will be removed if service interface todos are implemented.
-            @Override
-            public void addServiceStateObserver(ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Observer observer) {
-                ExceptionPrinter.printHistory(new NotSupportedException("service observation", this), logger);
-            }
-
-            // will be removed if service interface todos are implemented.
-            @Override
-            public void removeServiceStateObserver(ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Observer observer) {
-                ExceptionPrinter.printHistory(new NotSupportedException("service observation", this), logger);
             }
         };
     }
@@ -132,18 +104,6 @@ public class ServiceFactoryMock implements ServiceFactory {
             public Future<ActionFuture> setPowerState(PowerState state) throws CouldNotPerformException {
                 return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
             }
-
-            // will be removed if service interface todos are implemented.
-            @Override
-            public void addServiceStateObserver(ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Observer observer) {
-                ExceptionPrinter.printHistory(new NotSupportedException("service observation", this), logger);
-            }
-
-            // will be removed if service interface todos are implemented.
-            @Override
-            public void removeServiceStateObserver(ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Observer observer) {
-                ExceptionPrinter.printHistory(new NotSupportedException("service observation", this), logger);
-            }
         };
     }
 
@@ -159,18 +119,6 @@ public class ServiceFactoryMock implements ServiceFactory {
             @Override
             public Future<ActionFuture> setBlindState(BlindState state) throws CouldNotPerformException {
                 return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
-            }
-
-            // will be removed if service interface todos are implemented.
-            @Override
-            public void addServiceStateObserver(ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Observer observer) {
-                ExceptionPrinter.printHistory(new NotSupportedException("service observation", this), logger);
-            }
-
-            // will be removed if service interface todos are implemented.
-            @Override
-            public void removeServiceStateObserver(ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Observer observer) {
-                ExceptionPrinter.printHistory(new NotSupportedException("service observation", this), logger);
             }
         };
     }
@@ -188,18 +136,6 @@ public class ServiceFactoryMock implements ServiceFactory {
             public Future<ActionFuture> setStandbyState(StandbyStateType.StandbyState state) throws CouldNotPerformException {
                 return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
             }
-
-            // will be removed if service interface todos are implemented.
-            @Override
-            public void addServiceStateObserver(ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Observer observer) {
-                ExceptionPrinter.printHistory(new NotSupportedException("service observation", this), logger);
-            }
-
-            // will be removed if service interface todos are implemented.
-            @Override
-            public void removeServiceStateObserver(ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Observer observer) {
-                ExceptionPrinter.printHistory(new NotSupportedException("service observation", this), logger);
-            }
         };
     }
 
@@ -215,18 +151,6 @@ public class ServiceFactoryMock implements ServiceFactory {
             @Override
             public Future<ActionFuture> setTargetTemperatureState(TemperatureState state) throws CouldNotPerformException {
                 return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
-            }
-
-            // will be removed if service interface todos are implemented.
-            @Override
-            public void addServiceStateObserver(ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Observer observer) {
-                ExceptionPrinter.printHistory(new NotSupportedException("service observation", this), logger);
-            }
-
-            // will be removed if service interface todos are implemented.
-            @Override
-            public void removeServiceStateObserver(ServiceTemplateType.ServiceTemplate.ServiceType serviceType, Observer observer) {
-                ExceptionPrinter.printHistory(new NotSupportedException("service observation", this), logger);
             }
         };
     }

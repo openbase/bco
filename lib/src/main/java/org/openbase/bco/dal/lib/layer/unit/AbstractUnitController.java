@@ -35,7 +35,6 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.action.ActionImpl;
-import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
@@ -77,6 +76,7 @@ import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
+import org.openbase.bco.dal.lib.layer.service.Services;
 
 /**
  *
@@ -95,7 +95,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     private final Observer<UnitRegistryData> unitRegistryObserver;
     private final Map<ServiceType, MessageObservable> serviceStateObservableMap;
-    private final List<Service> serviceList;
+    private final List<Services> serviceList;
 
     private UnitTemplate template;
     private boolean initialized = false;
@@ -198,7 +198,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             if (!serviceTypeSet.contains(serviceDescription.getType())) {
                 serviceTypeSet.add(serviceDescription.getType());
                 try {
-                    Object serviceData = Service.invokeProviderServiceMethod(serviceDescription.getType(), data);
+                    Object serviceData = Services.invokeProviderServiceMethod(serviceDescription.getType(), data);
                     serviceStateObservableMap.get(serviceDescription.getType()).notifyObservers(serviceData);
                 } catch (CouldNotPerformException ex) {
                     logger.debug("Could not notify state update for service[" + serviceDescription.getType() + "] because this service is not supported by this controller.", ex);
@@ -327,11 +327,11 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         return template;
     }
 
-    public Collection<Service> getServices() {
+    public Collection<Services> getServices() {
         return Collections.unmodifiableList(serviceList);
     }
 
-    public void registerService(final Service service) {
+    public void registerService(final Services service) {
         serviceList.add(service);
     }
 
@@ -347,7 +347,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                     + StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getPattern().name()), serviceDescription);
         }
 
-        Class<? extends Service> serviceInterfaceClass = null;
+        Class<? extends Services> serviceInterfaceClass = null;
         Package servicePackage = null;
         for (Entry<String, ServiceDescription> serviceInterfaceMapEntry : serviceInterfaceMap.entrySet()) {
             try {
@@ -373,7 +373,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 String servicePatternName = StringProcessor.transformUpperCaseToCamelCase(serviceInterfaceMapEntry.getValue().getPattern().name());
                 String serviceClassName = servicePackage.getName() + "." + serviceDataTypeName + servicePatternName + "Service";
                 try {
-                    serviceInterfaceClass = (Class<? extends Service>) Class.forName(serviceClassName);
+                    serviceInterfaceClass = (Class<? extends Services>) Class.forName(serviceClassName);
                     if (serviceInterfaceClass == null) {
                         throw new NotAvailableException(serviceInterfaceMapEntry.getKey());
                     }

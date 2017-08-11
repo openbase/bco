@@ -22,7 +22,6 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
-import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.pattern.ConfigurableRemote;
 import rsb.Scope;
@@ -34,7 +33,7 @@ import rst.rsb.ScopeType;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <M> Message
  */
-public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, Service, ConfigurableRemote<String, M, UnitConfig> {
+public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, ConfigurableRemote<String, M, UnitConfig> {
 
     /**
      * Method initializes this unit remote instance via it's remote controller scope.

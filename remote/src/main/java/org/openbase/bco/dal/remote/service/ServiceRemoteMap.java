@@ -22,9 +22,9 @@ package org.openbase.bco.dal.remote.service;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.jul.extension.rsb.com.AbstractIdentifiableRemote;
 import java.util.HashMap;
+import org.openbase.bco.dal.lib.layer.service.Service;
 
 /**
  *

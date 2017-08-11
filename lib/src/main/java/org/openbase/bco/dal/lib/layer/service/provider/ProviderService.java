@@ -21,13 +21,9 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.NotSupportedException;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType;
+import org.openbase.bco.dal.lib.layer.service.Services;
 
 /**
  *
@@ -49,11 +45,6 @@ public interface ProviderService extends Service {
      * @return the name of the update method.
      */
     public static String getUpdateMethodName(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) {
-        return UPDATE_METHOD_PREFIX + Service.getServiceBaseName(serviceType) + "Provider";
-    }
-
-    @Override
-    public default Future<ActionFuture> applyAction(ActionDescription actionConfig) throws CouldNotPerformException, InterruptedException {
-        throw new NotSupportedException("actions", ProviderService.class);
+        return UPDATE_METHOD_PREFIX + Services.getServiceBaseName(serviceType) + "Provider";
     }
 }

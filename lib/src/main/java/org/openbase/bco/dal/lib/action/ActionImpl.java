@@ -22,7 +22,6 @@ package org.openbase.bco.dal.lib.action;
  * #L%
  */
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.unit.AbstractUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitAllocation;
@@ -43,6 +42,7 @@ import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.state.ActionStateType.ActionState;
+import org.openbase.bco.dal.lib.layer.service.Services;
 
 /**
  *
@@ -157,7 +157,7 @@ public class ActionImpl implements Action {
 //                    
 //                    return unitAllocation.getTaskExecutor().getFuture();
                     return GlobalCachedExecutorService.submit(() -> {
-                        Service.invokeServiceMethod(serviceDescription, unit, serviceAttribute);
+                        Services.invokeServiceMethod(serviceDescription, unit, serviceAttribute);
                         return null;
                     });
                 } catch (CouldNotPerformException ex) {

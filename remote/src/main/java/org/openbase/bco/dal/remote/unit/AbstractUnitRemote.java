@@ -35,7 +35,6 @@ import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3d;
 import javax.vecmath.Quat4d;
 import javax.vecmath.Vector3d;
-import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.registry.remote.Registries;
@@ -79,6 +78,7 @@ import rst.geometry.AxisAlignedBoundingBox3DFloatType.AxisAlignedBoundingBox3DFl
 import rst.geometry.RotationType.Rotation;
 import rst.geometry.TranslationType.Translation;
 import rst.rsb.ScopeType;
+import org.openbase.bco.dal.lib.layer.service.Services;
 
 /**
  *
@@ -250,7 +250,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
             if (!serviceTypeSet.contains(serviceDescription.getType())) {
                 serviceTypeSet.add(serviceDescription.getType());
                 try {
-                    Object serviceData = Service.invokeProviderServiceMethod(serviceDescription.getType(), data);
+                    Object serviceData = Services.invokeProviderServiceMethod(serviceDescription.getType(), data);
                     serviceStateObservableMap.get(serviceDescription.getType()).notifyObservers(serviceData);
                 } catch (CouldNotPerformException ex) {
                     logger.debug("Could not notify state update for service[" + serviceDescription.getType() + "] because this service is not supported by this remote controller.", ex);
@@ -557,7 +557,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         //TODO: update USER key with authentification
         actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
 
-        return Service.upateActionDescription(actionDescription, serviceAttribute, serviceType);
+        return Services.upateActionDescription(actionDescription, serviceAttribute, serviceType);
     }
 
     /**
@@ -579,7 +579,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         //TODO: update USER key with authentification
         actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
 
-        return Service.upateActionDescription(actionDescription, serviceAttribute);
+        return Services.upateActionDescription(actionDescription, serviceAttribute);
     }
 
     /**

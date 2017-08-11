@@ -41,7 +41,7 @@ import rst.domotic.unit.UnitTemplateType;
  * @param <S>
  * @param <ST>
  */
-public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> extends Manageable<UnitConfigType.UnitConfig>, Service, Remote<ST> {
+public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> extends Manageable<UnitConfigType.UnitConfig>, Service, Remote<ST>, ServiceProvider {
 
     /**
      * Add an observer to get notifications when the service state changes.
