@@ -25,7 +25,6 @@ org.openbase.bco.registry.lib
 org.openbase.bco.registry.lib.com
 org.openbase.bco.registry.lib.generator
 org.openbase.bco.registry.lib.launch
-org.openbase.bco.registry.lib.launch.jp
 org.openbase.bco.registry.lib.util
 org.openbase.bco.registry.location.core
 org.openbase.bco.registry.location.lib

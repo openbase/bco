@@ -41,7 +41,7 @@ import org.openbase.jul.exception.NotAvailableException;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class Registries{ 
+public class Registries {
 
     /**
      * Returns an initialized and activated remote registry.
@@ -121,6 +121,111 @@ public class Registries{
     }
 
     /**
+     * Returns an initialized and activated remote registry.
+     *
+     * @param waitForData defines if this call should block until the registry data is available.
+     * @return the remote registry instance.
+     * @throws NotAvailableException
+     * @throws InterruptedException is thrown if thread is externally interrupted.
+     */
+    public static UnitRegistryRemote getUnitRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
+        if (waitForData) {
+            CachedUnitRegistryRemote.getRegistry().waitForData();
+        }
+        return CachedUnitRegistryRemote.getRegistry();
+    }
+
+    /**
+     * Returns an initialized and activated remote registry.
+     *
+     * @param waitForData defines if this call should block until the registry data is available.
+     * @return the remote registry instance.
+     * @throws NotAvailableException
+     * @throws InterruptedException is thrown if thread is externally interrupted.
+     */
+    public static AgentRegistryRemote getAgentRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
+        if (waitForData) {
+            CachedAgentRegistryRemote.getRegistry().waitForData();
+        }
+        return CachedAgentRegistryRemote.getRegistry();
+    }
+
+    /**
+     * Returns an initialized and activated remote registry.
+     *
+     * @param waitForData defines if this call should block until the registry data is available.
+     * @return the remote registry instance.
+     * @throws NotAvailableException
+     * @throws InterruptedException is thrown if thread is externally interrupted.
+     */
+    public static AppRegistryRemote getAppRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
+        if (waitForData) {
+            CachedAppRegistryRemote.getRegistry().waitForData();
+        }
+        return CachedAppRegistryRemote.getRegistry();
+    }
+
+    /**
+     * Returns an initialized and activated remote registry.
+     *
+     * @param waitForData defines if this call should block until the registry data is available.
+     * @return the remote registry instance.
+     * @throws NotAvailableException
+     * @throws InterruptedException is thrown if thread is externally interrupted.
+     */
+    public static DeviceRegistryRemote getDeviceRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
+        if (waitForData) {
+            CachedDeviceRegistryRemote.getRegistry().waitForData();
+        }
+        return CachedDeviceRegistryRemote.getRegistry();
+    }
+
+    /**
+     * Returns an initialized and activated remote registry.
+     *
+     * @param waitForData defines if this call should block until the registry data is available.
+     * @return the remote registry instance.
+     * @throws NotAvailableException
+     * @throws InterruptedException is thrown if thread is externally interrupted.
+     */
+    public static LocationRegistryRemote getLocationRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
+        if (waitForData) {
+            CachedLocationRegistryRemote.getRegistry().waitForData();
+        }
+        return CachedLocationRegistryRemote.getRegistry();
+    }
+
+    /**
+     * Returns an initialized and activated remote registry.
+     *
+     * @param waitForData defines if this call should block until the registry data is available.
+     * @return the remote registry instance.
+     * @throws NotAvailableException
+     * @throws InterruptedException is thrown if thread is externally interrupted.
+     */
+    public static SceneRegistryRemote getSceneRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
+        if (waitForData) {
+            CachedSceneRegistryRemote.getRegistry().waitForData();
+        }
+        return CachedSceneRegistryRemote.getRegistry();
+    }
+
+    /**
+     * Returns an initialized and activated remote registry.
+     *
+     * @param waitForData defines if this call should block until the registry data is available.
+     * @return the remote registry instance.
+     * @throws NotAvailableException
+     * @throws InterruptedException is thrown if thread is externally interrupted.
+     */
+    public static UserRegistryRemote getUserRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
+        if (waitForData) {
+            CachedUserRegistryRemote.getRegistry().waitForData();
+        }
+        return CachedUserRegistryRemote.getRegistry();
+    }
+
+    /**
      * Method shutdown all registry instances.
      *
      * Please use method with care!
@@ -189,7 +294,7 @@ public class Registries{
 
     /**
      * Method blocks until all registries are not handling any tasks and are all consistent.
-     * 
+     *
      * Note: If you have just modified the registry this method can maybe return immediately if the task is not yet received by the registry controller. So you should prefer the futures of the modification methods for synchronization tasks.
      *
      * @throws InterruptedException is thrown in case the thread was externally interrupted.
