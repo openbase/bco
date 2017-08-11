@@ -36,6 +36,7 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.mode.OperationModeType;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType;
