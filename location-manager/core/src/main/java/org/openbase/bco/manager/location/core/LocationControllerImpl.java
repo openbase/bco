@@ -117,7 +117,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
             @Override
             public void update(Observable<PresenceState> source, PresenceState data) throws Exception {
                 try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
-                    System.out.println("Set location presence to [" + data.getValue() + "]");
+                    LOGGER.debug("Set " + this + " presence to [" + data.getValue() + "]");
                     dataBuilder.getInternalBuilder().setPresenceState(data);
                 } catch (CouldNotPerformException ex) {
                     throw new CouldNotPerformException("Could not apply presense state change!", ex);
