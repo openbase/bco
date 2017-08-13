@@ -30,8 +30,8 @@ import nu.xom.Element;
  */
 public class MissingAttributeException extends XMLParsingException {
 
-	public MissingAttributeException(String attributeName, Element sourceElement, Exception e) {
-		super("Missing attribute["+attributeName+"] for element["+sourceElement.getQualifiedName()+"].", e);
+	public MissingAttributeException(String attributeName, Element sourceElement, Exception ex) {
+		super("Missing attribute["+attributeName+"] for element["+sourceElement.getQualifiedName()+"].", ex);
 	}
 
 	public MissingAttributeException(String attributeName, Element sourceElement) {

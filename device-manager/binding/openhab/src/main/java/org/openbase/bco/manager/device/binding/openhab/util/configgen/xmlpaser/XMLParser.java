@@ -55,10 +55,10 @@ public class XMLParser {
         Document doc = null;
         try {
             doc = new Builder().build(new File(fileName));
-        } catch (ParsingException e) {
-            throw new XMLParsingException("Can not parse file " + fileName, e);
-        } catch (IOException e) {
-            throw new IOException("Can not access file " + fileName, e);
+        } catch (ParsingException ex) {
+            throw new XMLParsingException("Can not parse file " + fileName, ex);
+        } catch (IOException ex) {
+            throw new IOException("Can not access file " + fileName, ex);
         }
         return doc;
     }
@@ -74,10 +74,10 @@ public class XMLParser {
         Document doc = null;
         try {
             doc = new Builder().build(file);
-        } catch (ParsingException e) {
-            throw new XMLParsingException("Can not parse file " + file.getAbsolutePath(), e);
-        } catch (IOException e) {
-            throw new IOException("Can not access file " + file.getAbsolutePath(), e);
+        } catch (ParsingException ex) {
+            throw new XMLParsingException("Can not parse file " + file.getAbsolutePath(), ex);
+        } catch (IOException ex) {
+            throw new IOException("Can not access file " + file.getAbsolutePath(), ex);
         }
         return doc;
     }
@@ -91,8 +91,8 @@ public class XMLParser {
     public static Document createDocumentFromString(String xmlDoc) throws XMLParsingException {
         try {
             return new Builder().build(xmlDoc.trim(), "");
-        } catch (ParsingException | IOException e) {
-            throw new XMLParsingException("Can not parse string " + xmlDoc, e);
+        } catch (ParsingException | IOException ex) {
+            throw new XMLParsingException("Can not parse string " + xmlDoc, ex);
         }
     }
 
@@ -105,8 +105,8 @@ public class XMLParser {
     public static Element createElementFromString(String xmlDoc) throws XMLParsingException {
         try {
             return new Builder().build(xmlDoc.trim(), "").getRootElement();
-        } catch (ParsingException | IOException e) {
-            throw new XMLParsingException("Can not parse string " + xmlDoc, e);
+        } catch (ParsingException | IOException ex) {
+            throw new XMLParsingException("Can not parse string " + xmlDoc, ex);
         }
     }
 
@@ -453,8 +453,8 @@ public class XMLParser {
         for (int i = 0; i < regNodes.size(); i++) {
             try {
                 elements.add((Element) regNodes.get(i));
-            } catch (ClassCastException e) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Invalide data from XPath[" + xPath + "]!", e), logger);
+            } catch (ClassCastException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Invalide data from XPath[" + xPath + "]!", ex), logger);
             }
         }
         return elements.iterator();
@@ -497,8 +497,8 @@ public class XMLParser {
     public static int parseIntegerAttributeValue(String attributeName, Element sourceElement) throws MissingAttributeException, XMLParsingException {
         try {
             return Integer.parseInt(parseAttributeValue(attributeName, sourceElement));
-        } catch (NumberFormatException e) {
-            throw new XMLParsingException("Could not parse integer attribute[" + attributeName + "] for element[" + sourceElement.getQualifiedName() + "].", e);
+        } catch (NumberFormatException ex) {
+            throw new XMLParsingException("Could not parse integer attribute[" + attributeName + "] for element[" + sourceElement.getQualifiedName() + "].", ex);
         }
     }
 
@@ -506,8 +506,8 @@ public class XMLParser {
         String attributeValue = parseAttributeValue(attributeName, sourceElement);
         try {
             return Enum.valueOf(enumType, attributeValue);
-        } catch (java.lang.IllegalArgumentException e) {
-            throw new XMLParsingException("Could not resolve enum value[" + attributeValue + "] out of attribute[" + attributeName + "] for element[" + sourceElement.getQualifiedName() + "].", e);
+        } catch (java.lang.IllegalArgumentException ex) {
+            throw new XMLParsingException("Could not resolve enum value[" + attributeValue + "] out of attribute[" + attributeName + "] for element[" + sourceElement.getQualifiedName() + "].", ex);
         }
     }
 

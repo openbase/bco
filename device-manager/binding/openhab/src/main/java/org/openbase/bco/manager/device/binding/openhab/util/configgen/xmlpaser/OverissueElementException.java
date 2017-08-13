@@ -30,8 +30,8 @@ import nu.xom.Elements;
  @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class OverissueElementException extends XMLParsingException {
-	public OverissueElementException(String elementName, Elements childElements, Element parent, Exception e) {
-		super("Expected one Element["+elementName+"] but found " + childElements.size() + " childs of parent Element["+parent.getLocalName()+"].", e);
+	public OverissueElementException(String elementName, Elements childElements, Element parent, Exception ex) {
+		super("Expected one Element["+elementName+"] but found " + childElements.size() + " childs of parent Element["+parent.getLocalName()+"].", ex);
 	}
 
 	public OverissueElementException(String elementName, Elements childElements, Element parent) {

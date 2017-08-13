@@ -32,8 +32,8 @@ import nu.xom.Element;
 public class MissingElementException extends XMLParsingException {
 	
 
-	public MissingElementException(String elementName, Element parent, Exception e) {
-		super("Missing child element["+elementName+"] for Element["+parent.getLocalName()+"].", e);
+	public MissingElementException(String elementName, Element parent, Exception ex) {
+		super("Missing child element["+elementName+"] for Element["+parent.getLocalName()+"].", ex);
 	}
 
 	public MissingElementException(String elementName, Element parent) {
