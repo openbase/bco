@@ -476,6 +476,10 @@ public class SessionManager {
         if (!this.isLoggedIn()) {
             throw new CouldNotPerformException("Please log in first!");
         }
+        
+        if (clientId == null) {
+            clientId = userId;
+        }
 
         try {
             ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(sessionKey, ticketAuthenticatorWrapper);
