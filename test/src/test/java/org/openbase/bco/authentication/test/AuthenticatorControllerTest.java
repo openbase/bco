@@ -245,7 +245,7 @@ public class AuthenticatorControllerTest {
             ExceptionPrinter.setBeQuit(Boolean.TRUE);
             CachedAuthenticationRemote.getRemote().changeCredentials(loginCredentialsChange).get();
             fail("A user should not be able to change the password of another user.");
-        } catch (CouldNotPerformException | ExecutionException e) {
+        } catch (CouldNotPerformException | ExecutionException ex) {
         } finally {
             ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }

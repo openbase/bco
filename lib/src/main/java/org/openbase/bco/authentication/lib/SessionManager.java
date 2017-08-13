@@ -538,8 +538,8 @@ public class SessionManager {
         if (this.store == null) {
             try {
                 this.initStore();
-            } catch (InitializationException e) {
-                throw new NotAvailableException(e);
+            } catch (InitializationException ex) {
+                throw new NotAvailableException(ex);
             }
         }
 
@@ -754,8 +754,8 @@ public class SessionManager {
         if (this.store == null) {
             try {
                 this.initStore();
-            } catch (InitializationException e) {
-                throw new NotAvailableException(e);
+            } catch (InitializationException ex) {
+                throw new NotAvailableException(ex);
             }
         }
         byte[] key = this.store.getCredentials(clientId);
