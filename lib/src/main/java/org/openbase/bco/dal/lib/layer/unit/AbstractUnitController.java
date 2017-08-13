@@ -475,7 +475,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     public String toString() {
         try {
             return getClass().getSimpleName() + "[" + getConfig().getType() + "[" + getLabel() + "]]";
-        } catch (NotAvailableException | NullPointerException e) {
+        } catch (NotAvailableException | NullPointerException ex) {
             return getClass().getSimpleName() + "[?]";
         }
     }
