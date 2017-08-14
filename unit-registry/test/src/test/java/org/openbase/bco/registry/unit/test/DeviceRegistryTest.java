@@ -23,6 +23,7 @@ package org.openbase.bco.registry.unit.test;
  */
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import static junit.framework.TestCase.assertEquals;
@@ -67,11 +68,15 @@ import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
+import rst.geometry.AxisAlignedBoundingBox3DFloatType;
 import rst.geometry.PoseType;
 import rst.geometry.RotationType;
 import rst.geometry.TranslationType;
+import rst.math.Vec3DDoubleType;
+import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.rsb.ScopeType;
 import rst.spatial.PlacementConfigType.PlacementConfig;
+import rst.spatial.ShapeType;
 
 /**
  *
@@ -348,6 +353,34 @@ public class DeviceRegistryTest {
             assertTrue("DalUnit [" + dalUnitConfig.getLabel() + "] still registered even though its device has been removed!", !unitRegistry.containsUnitConfig(dalUnitConfig));
         }
 
+    }
+    
+    @Test(timeout = 5000)
+    public void testBoundingBoxConsistencyHandler() throws Exception {
+        // how to get a test unit?
+        UnitConfig testUnit = UnitConfig.newBuilder().setType(UnitTemplate.UnitType.COLORABLE_LIGHT).build();
+        
+       // UnitConfig testUnit = deviceRegistry.getDeviceConfigById("PH_Hue_E27_Device");
+        TranslationType.Translation.Builder translationBuilder = TranslationType.Translation.newBuilder().setX(0).setY(0).setZ(0);
+        Vec3DDoubleType.Vec3DDouble vector1 = Vec3DDoubleType.Vec3DDouble.newBuilder().setX(0.1).setY(4.2).setZ(0.0).build();
+        Vec3DDoubleType.Vec3DDouble vector2 = Vec3DDoubleType.Vec3DDouble.newBuilder().setX(3.6).setY(0.0).setZ(0.0).build();
+        Vec3DDoubleType.Vec3DDouble vector3 = Vec3DDoubleType.Vec3DDouble.newBuilder().setX(5.1).setY(2.9).setZ(0.0).build();
+        Vec3DDoubleType.Vec3DDouble vector4 = Vec3DDoubleType.Vec3DDouble.newBuilder().setX(2.7).setY(2.1).setZ(0.0).build();
+        ArrayList<Vec3DDouble> values = new ArrayList<>(Arrays.asList(vector1, vector2, vector3, vector4)); 
+        ShapeType.Shape shapeBuilder =  ShapeType.Shape.newBuilder().addAllFloor(values).build();
+        testUnit.toBuilder().getPlacementConfigBuilder().setShape(shapeBuilder);
+        
+        //deviceRegistry.updateDeviceConfig(testUnit).get(); 
+        
+        ShapeType.Shape shape = testUnit.getPlacementConfig().getShape();
+        
+        AxisAlignedBoundingBox3DFloatType.AxisAlignedBoundingBox3DFloat.Builder builder = AxisAlignedBoundingBox3DFloatType.AxisAlignedBoundingBox3DFloat.newBuilder();
+        builder.setDepth((float) (4.2));
+        builder.setHeight((float) (0.0));
+        builder.setWidth((float) (5.0));
+        TranslationType.Translation.Builder lfbBuilder = TranslationType.Translation.newBuilder().setX(0.1).setY(0.0).setZ(0.0);
+        builder.setLeftFrontBottom(translationBuilder);
+        //assertTrue(shape.getBoundingBox().equals(builder.build()));
     }
 
     @Test(timeout = 5000)
