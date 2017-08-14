@@ -97,6 +97,7 @@ public class RegistryFilteringTest {
 
     @After
     public void tearDown() throws CouldNotPerformException {
+        SessionManager.getInstance().logout();
     }
 
     /**

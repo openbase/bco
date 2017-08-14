@@ -68,6 +68,10 @@ public class UserCreationPlugin extends FileRegistryPluginAdapter<String, Identi
     @Override
     public void init(Registry<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> registry) throws InitializationException, InterruptedException {
         super.init(registry);
+        
+        if(JPService.testMode()) {
+            return;
+        }
 
         try {
             UnitConfig.Builder adminGroupConfig = null;

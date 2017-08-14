@@ -94,10 +94,7 @@ public class RemoteRegistrySynchronizer<M extends GeneratedMessage> implements O
                     entryList.add((M) data.getRepeatedField(fieldDescriptor, i));
                 }
             }
-            List<M> filtered = filter.filter(entryList);
-            if (filtered.size() > entryCount) {
-                LOGGER.warn("Filtered list[" + filtered.size() + "] became larger than orignial [" + entryCount + "]");
-            }
+            List<M> filtered = filter.filter(new ArrayList<>(entryList));
             remoteRegistry.notifyRegistryUpdate(filtered);
         } catch (CouldNotPerformException | IndexOutOfBoundsException | ClassCastException | NullPointerException ex) {
             ExceptionPrinter.printHistory("Registry synchronization failed!", ex, LOGGER);
