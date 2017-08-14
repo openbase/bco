@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
  * @param <MB>
  */
 public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB extends M.Builder<MB>> extends RemoteRegistry<KEY, M, MB> implements Activatable {
-
+    
     protected static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SynchronizedRemoteRegistry.class);
 
     /**
@@ -62,7 +62,7 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
      * The internal data synchronizer which synchronizes the remote registry via the remote service.
      */
     private final RemoteRegistrySynchronizer<M> remoteRegistrySynchronizer;
-
+    
     private boolean active;
     
     private AbstractFilter filter;
@@ -82,7 +82,7 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
             throw new InstantiationException(this, ex);
         }
     }
-    
+
     /**
      *
      * @param remoteService The remote service to get informed about data updates.
@@ -144,7 +144,7 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
     public RSBRemoteService<M> getRemoteService() {
         return remoteService;
     }
-
+    
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         if (active) {
@@ -163,26 +163,28 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
         }
         //TODO: this is a little bit hacked
         // if filter by authorization also update when something in the login changes
-        if(filter != null && filter instanceof AuthorizationFilter) {
+        if (filter != null && filter instanceof AuthorizationFilter) {
             SessionManager.getInstance().getLoginObervable().addObserver((Observable<Boolean> source1, Boolean data) -> {
-                remoteRegistrySynchronizer.update(null, remoteService.getData());
+                if (remoteService.isDataAvailable()) {
+                    remoteRegistrySynchronizer.update(null, remoteService.getData());
+                }
             });
         }
-
+        
         active = true;
     }
-
+    
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         remoteService.removeDataObserver(remoteRegistrySynchronizer);
         active = false;
     }
-
+    
     @Override
     public boolean isActive() {
         return active;
     }
-
+    
     @Override
     public String getName() {
         if (fieldDescriptors == null || fieldDescriptors.length == 0) {
@@ -194,11 +196,11 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
                 fieldDescritorNames += ", " + fieldDescriptors[i].getName();
             }
             fieldDescritorNames += "]";
-
+            
             return getClass().getSimpleName() + "[" + remoteService.toString() + "]" + fieldDescritorNames;
         }
     }
-
+    
     public AbstractFilter getFilter() {
         return filter;
     }

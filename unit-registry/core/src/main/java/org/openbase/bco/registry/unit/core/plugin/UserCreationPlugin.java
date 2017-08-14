@@ -28,6 +28,7 @@ import java.util.concurrent.TimeoutException;
 import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -48,16 +49,17 @@ import rst.domotic.unit.user.UserConfigType.UserConfig;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class CreateInitialAdministratorPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> {
+public class UserCreationPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> {
 
     public static final String DEFAULT_ADMIN_USERNAME_AND_PASSWORD = "admin";
+    public static final String BCO_USERNAME = "BCO";
 
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CreateInitialAdministratorPlugin.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(UserCreationPlugin.class);
 
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> userUnitConfigRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupConfigRegistry;
 
-    public CreateInitialAdministratorPlugin(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> userUnitConfigRegistry,
+    public UserCreationPlugin(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> userUnitConfigRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupConfigRegistry) {
         this.userUnitConfigRegistry = userUnitConfigRegistry;
         this.authorizationGroupConfigRegistry = authorizationGroupConfigRegistry;
@@ -69,33 +71,46 @@ public class CreateInitialAdministratorPlugin extends FileRegistryPluginAdapter<
 
         try {
             UnitConfig.Builder adminGroupConfig = null;
+            UnitConfig.Builder bcoGroupConfig = null;
             for (UnitConfig authorizationGroup : authorizationGroupConfigRegistry.getMessages()) {
                 if (authorizationGroup.getLabel().equals(AuthorizationGroupCreationPlugin.ADMIN_GROUP_LABEL)) {
                     adminGroupConfig = authorizationGroup.toBuilder();
-                    break;
+                } else if (authorizationGroup.getLabel().equals(AuthorizationGroupCreationPlugin.BCO_GROUP_LABEL)) {
+                    bcoGroupConfig = authorizationGroup.toBuilder();
                 }
             }
             if (adminGroupConfig == null) {
-                throw new InitializationException(this, new NotAvailableException("admin group"));
+                throw new InitializationException(this, new NotAvailableException("Admin AuthorizationGroupUnitConfigConfig"));
+            }
+            if (bcoGroupConfig == null) {
+                throw new InitializationException(this, new NotAvailableException("BCO AuthorizationGroupUnitConfigConfig"));
             }
 
+            boolean adminExists = false;
+            boolean bcoExists = false;
             for (UnitConfig userUnitConfig : userUnitConfigRegistry.getMessages()) {
                 if (CachedAuthenticationRemote.getRemote().isAdmin(userUnitConfig.getId()).get(1, TimeUnit.SECONDS)) {
-                    if (adminGroupConfig.getAuthorizationGroupConfig().getMemberIdList().contains(userUnitConfig.getId())) {
-                        // if there is at least one admin registered at the authenticator and in the admin group everything is fine
-                        return;
-                    } else {
+                    adminExists = true;
+                    if (!adminGroupConfig.getAuthorizationGroupConfig().getMemberIdList().contains(userUnitConfig.getId())) {
                         // user is admin but not in group, so add him
                         AuthorizationGroupConfig.Builder authorizationGroup = adminGroupConfig.getAuthorizationGroupConfigBuilder();
                         authorizationGroup.addMemberId(userUnitConfig.getId());
                         authorizationGroupConfigRegistry.update(adminGroupConfig.build());
-                        return;
                     }
+                }
+                if (userUnitConfig.getUserConfig().getUserName().equals(BCO_USERNAME)) {
+                    bcoExists = true;
                 }
             }
 
-            LOGGER.info("No administrator found so try to register a new default one");
-            registerDefaultAdmin(adminGroupConfig);
+            if (!adminExists) {
+                LOGGER.info("No administrator found so try to register a new default one");
+                registerDefaultAdmin(adminGroupConfig);
+            }
+            if (!bcoExists) {
+                LOGGER.info("BCO user not in registry so register him");
+                registerBCOUser(bcoGroupConfig);
+            }
         } catch (CouldNotPerformException | ExecutionException | TimeoutException ex) {
             throw new InitializationException(this, new CouldNotPerformException("Could not check for existing or register administrator account", ex));
         }
@@ -157,5 +172,63 @@ public class CreateInitialAdministratorPlugin extends FileRegistryPluginAdapter<
             authorizationGroup.addMemberId(userId);
             authorizationGroupConfigRegistry.update(adminGroupConfig.build());
         }
+    }
+
+    public void registerBCOUser(UnitConfig.Builder bcoGroupConfig) throws CouldNotPerformException {
+        try {
+            String adminId = null;
+            for (UnitConfig config : userUnitConfigRegistry.getMessages()) {
+                if (config.getUserConfig().getUserName().equals(DEFAULT_ADMIN_USERNAME_AND_PASSWORD)) {
+                    adminId = config.getId();
+                }
+            }
+            if(adminId == null) {
+                throw new NotAvailableException("adminId");
+            }
+            LOGGER.info("Login with session manager");
+            if (!SessionManager.getInstance().login(adminId, DEFAULT_ADMIN_USERNAME_AND_PASSWORD)) {
+                throw new CouldNotPerformException("Login as default admin failed");
+            }
+        } catch (CouldNotPerformException ex) {
+            LOGGER.error("Could not log in as the default admin user to create a bco user");
+            throw ex;
+        }
+
+        // check if a user with the default username does not already exist in the database
+        String userId = "";
+        boolean bcoUserAlreadyInRegistry = false;
+        for (UnitConfig unitConfig : userUnitConfigRegistry.getMessages()) {
+            if (unitConfig.getUserConfig().getUserName().equals(BCO_USERNAME)) {
+                bcoUserAlreadyInRegistry = true;
+                userId = unitConfig.toBuilder().getId();
+            }
+        }
+
+        // if not register one
+        if (!bcoUserAlreadyInRegistry) {
+            LOGGER.info("Register BCO User");
+            UnitConfig.Builder unitConfig = UnitConfig.newBuilder();
+            unitConfig.setType(UnitType.USER);
+
+            UserConfig.Builder userConfig = unitConfig.getUserConfigBuilder();
+            userConfig.setFirstName("System");
+            userConfig.setLastName("User");
+            userConfig.setUserName(BCO_USERNAME);
+
+            userId = userUnitConfigRegistry.register(unitConfig.build()).getId();
+        }
+
+        // register the bco user as a client at the authenticator
+        SessionManager.getInstance().registerClient(userId);
+
+        // add him to the bco group if he is not already in it
+        AuthorizationGroupConfig.Builder authorizationGroup = bcoGroupConfig.getAuthorizationGroupConfigBuilder();
+        if (!authorizationGroup.getMemberIdList().contains(userId)) {
+            LOGGER.info("Add bco user to bco group");
+            authorizationGroup.addMemberId(userId);
+            authorizationGroupConfigRegistry.update(bcoGroupConfig.build());
+        }
+        LOGGER.info("Finished registering bco user");
+        SessionManager.getInstance().logout();
     }
 }

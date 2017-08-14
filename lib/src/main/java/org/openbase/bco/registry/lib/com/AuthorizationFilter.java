@@ -22,8 +22,11 @@ package org.openbase.bco.registry.lib.com;
  * #L%
  */
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
+import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
+import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
@@ -31,6 +34,8 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
+
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthorizationFilter.class);
 
     private SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> authorizationGroupRegistry;
 
@@ -44,18 +49,28 @@ public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
     @Override
     public void beforeFilter() throws CouldNotPerformException {
         try {
+            CachedAuthenticationRemote.getRemote();
             SessionManager.getInstance().isAuthenticated();
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Authentication failed", ex);
+            if (ex.getCause() instanceof InvalidStateException) {
+                System.out.println("Could not check authenticated because in shutdown");
+            } else {
+                throw new CouldNotPerformException("Authentication failed", ex);
+            }
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
         }
     }
 
     @Override
     public boolean verify(UnitConfig unitConfig) {
         if (authorizationGroupRegistry != null) {
-            return AuthorizationHelper.canAccess(unitConfig.getPermissionConfig(), SessionManager.getInstance().getUserId(), authorizationGroupRegistry.getEntryMap());
+            boolean user = AuthorizationHelper.canAccess(unitConfig.getPermissionConfig(), SessionManager.getInstance().getUserId(), authorizationGroupRegistry.getEntryMap());
+            boolean client = AuthorizationHelper.canAccess(unitConfig.getPermissionConfig(), SessionManager.getInstance().getClientId(), authorizationGroupRegistry.getEntryMap());
+            return user || client;
         } else {
-            return AuthorizationHelper.canAccess(unitConfig.getPermissionConfig(), SessionManager.getInstance().getUserId(), null);
+            return AuthorizationHelper.canAccess(unitConfig.getPermissionConfig(), SessionManager.getInstance().getUserId(), null)
+                    || AuthorizationHelper.canAccess(unitConfig.getPermissionConfig(), SessionManager.getInstance().getClientId(), null);
         }
     }
 }

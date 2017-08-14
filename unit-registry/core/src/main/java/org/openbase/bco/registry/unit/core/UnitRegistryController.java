@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
 import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
 import org.openbase.bco.registry.app.remote.AppRegistryRemote;
@@ -35,6 +36,7 @@ import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
 import org.openbase.bco.registry.unit.core.consistency.DeviceInventoryStateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.ExecutableUnitAutostartConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.GroupPermissionConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.OtherPermissionConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.ServiceConfigServiceTemplateIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.ServiceConfigUnitIdConsistencyHandler;
@@ -97,7 +99,7 @@ import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigLabe
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigUserNameConsistencyHandler;
 import org.openbase.bco.registry.unit.core.plugin.AuthorizationGroupCreationPlugin;
-import org.openbase.bco.registry.unit.core.plugin.CreateInitialAdministratorPlugin;
+import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.bco.registry.unit.core.plugin.DeviceConfigDeviceClassUnitConsistencyPlugin;
 import org.openbase.bco.registry.unit.core.plugin.PublishConnectionTransformationRegistryPlugin;
 import org.openbase.bco.registry.unit.core.plugin.PublishDalUnitTransformationRegistryPlugin;
@@ -290,7 +292,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorizationGroupConfigLabelConsistencyHandler());
         authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorizationGroupConfigScopeConsistencyHandler());
         authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorziationGroupDuplicateMemberConsistencyHandler());
-        
+
         connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionLabelConsistencyHandler());
         connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionTilesConsistencyHandler(locationUnitConfigRegistry));
         connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionLocationConsistencyHandler(locationUnitConfigRegistry));
@@ -354,6 +356,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         registerConsistencyHandler(new ServiceConfigServiceTemplateIdConsistencyHandler(serviceTemplateRegistry), UnitConfig.class);
         registerConsistencyHandler(new UnitTransformationFrameConsistencyHandler(locationUnitConfigRegistry), UnitConfig.class);
         registerConsistencyHandler(new OtherPermissionConsistencyHandler(), UnitConfig.class);
+        registerConsistencyHandler(new GroupPermissionConsistencyHandler(authorizationGroupUnitConfigRegistry), UnitConfig.class);
         try {
             if (JPService.getProperty(JPClearUnitPosition.class).getValue()) {
                 registerConsistencyHandler(new UnitPositionCleanerConsistencyHandler(), UnitConfig.class);
@@ -376,8 +379,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         unitTemplateRegistry.registerPlugin(new UnitTemplateCreatorRegistryPlugin(unitTemplateRegistry));
 
         authorizationGroupUnitConfigRegistry.registerPlugin(new AuthorizationGroupCreationPlugin(authorizationGroupUnitConfigRegistry));
-        userUnitConfigRegistry.registerPlugin(new CreateInitialAdministratorPlugin(userUnitConfigRegistry, authorizationGroupUnitConfigRegistry));
-        
+        userUnitConfigRegistry.registerPlugin(new UserCreationPlugin(userUnitConfigRegistry, authorizationGroupUnitConfigRegistry));
+
         deviceUnitConfigRegistry.registerPlugin(new DeviceConfigDeviceClassUnitConsistencyPlugin(deviceRegistryRemote.getDeviceClassRemoteRegistry(), dalUnitConfigRegistry, deviceUnitConfigRegistry));
 
         locationUnitConfigRegistry.registerPlugin(new PublishLocationTransformationRegistryPlugin());
@@ -492,9 +495,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             PermissionConfig.Builder permissionConfig = dataBuilder.getInternalBuilder().getPermissionConfigBuilder();
             Permission allPermission = Permission.newBuilder().setRead(true).setWrite(true).setAccess(true).build();
 //            if (JPService.testMode()) {
-                permissionConfig.setOtherPermission(allPermission);
+            permissionConfig.setOtherPermission(allPermission);
 //            }
-            
+
             String adminGroupId = getUnitConfigsByLabelAndUnitType(AuthorizationGroupCreationPlugin.ADMIN_GROUP_LABEL, UnitType.AUTHORIZATION_GROUP).get(0).getId();
             String registryGroupdId = getUnitConfigsByLabelAndUnitType(AuthorizationGroupCreationPlugin.REGISTRY_GROUP_LABEL, UnitType.AUTHORIZATION_GROUP).get(0).getId();
 
@@ -575,7 +578,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     public Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> getUnitConfigRegistry(unitConfig.getType()).update(unitConfig));
     }
-    
+
     @Override
     public Future<AuthenticatedValue> updateUnitConfig(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
@@ -587,7 +590,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     public Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> getUnitConfigRegistry(unitConfig.getType()).remove(unitConfig));
     }
-    
+
     @Override
     public Future<AuthenticatedValue> removeUnitConfig(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {

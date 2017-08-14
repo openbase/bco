@@ -41,6 +41,7 @@ public class AuthorizationGroupCreationPlugin extends FileRegistryPluginAdapter<
 
     public static final String ADMIN_GROUP_LABEL = "Admin";
     public static final String REGISTRY_GROUP_LABEL = "Registry";
+    public static final String BCO_GROUP_LABEL = "BCO";
 
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupRegistry;
     private final Set<String> labelSet;
@@ -51,6 +52,7 @@ public class AuthorizationGroupCreationPlugin extends FileRegistryPluginAdapter<
         this.labelSet = new HashSet<>();
         this.labelSet.add(ADMIN_GROUP_LABEL);
         this.labelSet.add(REGISTRY_GROUP_LABEL);
+        this.labelSet.add(BCO_GROUP_LABEL);
     }
 
     @Override
