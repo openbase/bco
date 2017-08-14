@@ -127,23 +127,23 @@ bcomfy
 
 ## Libraries from openBase
 
-* JPS https://github.com/openbase/jps
+* JPS [https://github.com/openbase/jps](url)
     * A command-line argument parser and application property management framework.
-* JUL https://github.com/openbase/jul
+* JUL [https://github.com/openbase/jul](url)
     * A java utility library.
 
 ## Libraries from Citec (University of Bielefeld)
 
-* RSB http://docs.cor-lab.de//rsb-manual/0.15/html/examples.html
+* RSB [http://docs.cor-lab.de//rsb-manual/0.15/html/examples.html](url)
     * The middleware used for platform independent network communication.
-* RST http://docs.cor-lab.de//rst-manual/0.15/html/data-types.html
+* RST [http://docs.cor-lab.de//rst-manual/0.15/html/data-types.html](url)
     * The data type library based on google protocol-buffers.
         * https://developers.google.com/protocol-buffers/
     * Repositories
         * Stable & Sandbox
-            * https://code.cor-lab.de/git/rst.git.proto
+            * [https://code.cor-lab.de/git/rst.git.proto](url)
         * Experimental (Only reachable from the university of bielefeld network)
-            * http://projects.cit-ec.uni-bielefeld.de/git/rst-experimental.proto.git 
+            * [http://projects.cit-ec.uni-bielefeld.de/git/rst-experimental.proto.git](url)
                 * BCO Types are placed in ```proto/experimental/rst/domotic```
          
 
@@ -152,8 +152,8 @@ bcomfy
 ## Reqirements
 
 * Java JDK 8 (Oracle JDK recommented)
-    * Debian: http://www.webupd8.org/2014/03/how-to-install-oracle-java-8-in-debian.html
-    * Ubuntu: https://wiki.ubuntuusers.de/Java/Installation/Oracle_Java/Java_8/
+    * Debian: [http://www.webupd8.org/2014/03/how-to-install-oracle-java-8-in-debian.html](url)
+    * Ubuntu: [https://wiki.ubuntuusers.de/Java/Installation/Oracle_Java/Java_8/](url)
 * Maven
     * ```sudo apt-get install maven```
 * Git
@@ -231,7 +231,7 @@ This repository provides a collection of precompiled libs and tools for rsb. Thi
 * Installation via Cor-Lab Debian Repository
     * ```sudo apt-get install spread librsbspread0.15```
 * Official Installation Guide
-    * [http://www.spread.org/download.html]
+    * [http://www.spread.org/download.html](url)
     
 ## RSB Libs and Tools (Optional)
 
