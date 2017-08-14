@@ -43,6 +43,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
+import org.openbase.jul.pattern.Observer;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.AuthenticatorType;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
@@ -95,7 +96,7 @@ public class SessionManager {
     public SessionManager(byte[] sessionKey) {
         this(null, sessionKey);
     }
-    
+
     public SessionManager(CredentialStore userStore) {
         this(userStore, null);
     }
@@ -114,7 +115,9 @@ public class SessionManager {
         } else {
             this.store = userStore;
         }
-        if (sessionKey != null) this.sessionKey = sessionKey;
+        if (sessionKey != null) {
+            this.sessionKey = sessionKey;
+        }
     }
 
     public void initStore() throws InitializationException {
@@ -128,16 +131,17 @@ public class SessionManager {
         return ticketAuthenticatorWrapper;
     }
 
-    public void setTicketAuthenticatorWrapper(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws IOException, BadPaddingException {
-        if (this.ticketAuthenticatorWrapper == null)
+    public synchronized void setTicketAuthenticatorWrapper(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws IOException, BadPaddingException {
+        if (this.ticketAuthenticatorWrapper == null) {
             this.ticketAuthenticatorWrapper = ticketAuthenticatorWrapper;
-        else {
+        } else {
             AuthenticatorType.Authenticator lastAuthenticator = EncryptionHelper.decryptSymmetric(
                     this.ticketAuthenticatorWrapper.getAuthenticator(), this.getSessionKey(), AuthenticatorType.Authenticator.class);
             AuthenticatorType.Authenticator currentAuthenticator = EncryptionHelper.decryptSymmetric(
-                    ticketAuthenticatorWrapper.getAuthenticator(), this.getSessionKey(), AuthenticatorType.Authenticator.class);            
-            if (currentAuthenticator.getTimestamp().getTime() > lastAuthenticator.getTimestamp().getTime())
+                    ticketAuthenticatorWrapper.getAuthenticator(), this.getSessionKey(), AuthenticatorType.Authenticator.class);
+            if (currentAuthenticator.getTimestamp().getTime() > lastAuthenticator.getTimestamp().getTime()) {
                 this.ticketAuthenticatorWrapper = ticketAuthenticatorWrapper;
+            }
         }
     }
 
@@ -164,11 +168,11 @@ public class SessionManager {
      * @throws NotAvailableException If the entered clientId could not be found.
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
-    public boolean login(String userId, String userPassword) throws CouldNotPerformException, NotAvailableException {
+    public synchronized boolean login(String userId, String userPassword) throws CouldNotPerformException, NotAvailableException {
         return this.login(userId, userPassword, false);
     }
 
-        public boolean login(String userId, String userPassword, boolean rememberPassword) throws CouldNotPerformException, NotAvailableException {
+    public synchronized boolean login(String userId, String userPassword, boolean rememberPassword) throws CouldNotPerformException, NotAvailableException {
         byte[] clientPasswordHash = EncryptionHelper.hash(userPassword);
         if (rememberPassword) {
             this.userPassword = userPassword;
@@ -185,7 +189,7 @@ public class SessionManager {
      * @throws NotAvailableException If the entered clientId could not be found.
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
-    public boolean login(String clientId) throws CouldNotPerformException, NotAvailableException {
+    public synchronized boolean login(String clientId) throws CouldNotPerformException, NotAvailableException {
         byte[] key = getCredentials(clientId);
         return this.internalLogin(clientId, key, false);
     }
@@ -197,7 +201,7 @@ public class SessionManager {
      * @throws NotAvailableException If the entered clientId could not be found. Or if the clientId was not set in the beginning.
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
-    public boolean relog() throws CouldNotPerformException, NotAvailableException {
+    public synchronized boolean relog() throws CouldNotPerformException, NotAvailableException {
         this.ticketAuthenticatorWrapper = null;
         this.sessionKey = null;
 
@@ -239,7 +243,7 @@ public class SessionManager {
         if (this.isLoggedIn()) {
             // if same user or client is already looged in
             if (id.equals(this.userId) || id.equals(this.clientId)) {
-                throw new CouldNotPerformException("You are already logged in.");
+                return true;
             }
             // if other user or client wants to login
             // then logout user or client 
@@ -261,7 +265,7 @@ public class SessionManager {
         try {
             // prepend clientId to userId for TicketGrantingTicket request
             String userIdAtClientId = "@";
-            byte[] userKey   = null;
+            byte[] userKey = null;
             byte[] clientKey = null;
 
             if (this.previousClientId != null) {
@@ -272,8 +276,7 @@ public class SessionManager {
             if (isUser) {
                 userIdAtClientId = id + userIdAtClientId;
                 userKey = key;
-            }
-            else {
+            } else {
                 clientKey = key;
             }
 
@@ -296,7 +299,7 @@ public class SessionManager {
             try {
                 loginObervable.notifyObservers(true);
             } catch (CouldNotPerformException ex) {
-                LOGGER.warn("Could not notify logout to observer", ex);
+                LOGGER.warn("Could not notify login to observer", ex);
             }
 
             result = true;
@@ -320,12 +323,7 @@ public class SessionManager {
         } catch (CouldNotPerformException | IOException | InterruptedException ex) {
             throw new CouldNotPerformException("Login failed! Please try again.", ex);
         } finally {
-            if (result) {
-                // set tmp variables to null in case login was successful
-                tmpTicketAuthenticatorWrapper = null;
-                tmpSessionKey = null;
-                tmpUserId = tmpUserPassword = null;
-            } else {
+            if (!result) {
                 // reset incase of login failure
                 this.ticketAuthenticatorWrapper = tmpTicketAuthenticatorWrapper;
                 this.sessionKey = tmpSessionKey;
@@ -338,7 +336,7 @@ public class SessionManager {
     /**
      * Logs a user out by setting CST and session key to null
      */
-    public void logout() {
+    public synchronized void logout() {
         // if a user was logged in, login client, if a client was already logged in
         if (this.userId != null) {
             this.userId = null;
@@ -379,7 +377,7 @@ public class SessionManager {
      *
      * @return True if the user is an admin, false if not.
      */
-    public boolean isAdmin() {
+    public synchronized boolean isAdmin() {
         if (!this.isLoggedIn()) {
             return false;
         }
@@ -421,16 +419,28 @@ public class SessionManager {
      * @return Returns true if authenticated otherwise appropriate exception
      * @throws org.openbase.jul.exception.CouldNotPerformException In case of a communication error between client and server.
      */
-    public boolean isAuthenticated() throws CouldNotPerformException {
+    public synchronized boolean isAuthenticated() throws CouldNotPerformException {
         if (!this.isLoggedIn()) {
             return false;
         }
 
         try {
+            Observer<Boolean> observer = (Observable<Boolean> source, Boolean data) -> {
+                LOGGER.warn("Login state change while in isAuthenticated to [" + data + "]" + sessionKey);
+            };
+            this.loginObervable.addObserver(observer);
+            byte[] before = this.sessionKey;
             TicketAuthenticatorWrapper request = AuthenticationClientHandler.initServiceServerRequest(this.sessionKey, this.ticketAuthenticatorWrapper);
+            byte[] init = this.sessionKey;
             TicketAuthenticatorWrapper response = CachedAuthenticationRemote.getRemote().validateClientServerTicket(request).get();
+            byte[] after = this.sessionKey;
+            if (this.sessionKey == null) {
+                this.loginObervable.removeObserver(observer);
+                throw new CouldNotPerformException("Why is this happening?[" + before + ", " + init + ", " + after + "]");
+            }
             response = AuthenticationClientHandler.handleServiceServerResponse(this.sessionKey, request, response);
             this.ticketAuthenticatorWrapper = response;
+            this.loginObervable.removeObserver(observer);
             return true;
         } catch (IOException | BadPaddingException ex) {
             this.logout();
@@ -472,11 +482,11 @@ public class SessionManager {
      * @param newCredentials New credentials to be set.
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
-    public void changeCredentials(String clientId, String oldCredentials, String newCredentials) throws CouldNotPerformException {
+    public synchronized void changeCredentials(String clientId, String oldCredentials, String newCredentials) throws CouldNotPerformException {
         if (!this.isLoggedIn()) {
             throw new CouldNotPerformException("Please log in first!");
         }
-        
+
         if (clientId == null) {
             clientId = userId;
         }
@@ -534,7 +544,7 @@ public class SessionManager {
      * @param clientId the id of the client
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
-    public void registerClient(String clientId) throws CouldNotPerformException {
+    public synchronized void registerClient(String clientId) throws CouldNotPerformException {
         if (this.store == null) {
             try {
                 this.initStore();
@@ -556,7 +566,7 @@ public class SessionManager {
      * @param isAdmin flag if user should be an administrator
      * @throws org.openbase.jul.exception.CouldNotPerformException
      */
-    public void registerUser(String userId, String password, boolean isAdmin) throws CouldNotPerformException {
+    public synchronized void registerUser(String userId, String password, boolean isAdmin) throws CouldNotPerformException {
         byte[] key = EncryptionHelper.hash(password);
         this.internalRegister(userId, key, isAdmin);
     }
@@ -622,7 +632,7 @@ public class SessionManager {
         }
     }
 
-    public void removeUser(String id) throws CouldNotPerformException {
+    public synchronized void removeUser(String id) throws CouldNotPerformException {
         if (!this.isAdmin()) {
             throw new CouldNotPerformException("You have to be an admin to perform this action");
         }
@@ -670,7 +680,7 @@ public class SessionManager {
         }
     }
 
-    public void setAdministrator(String id, boolean isAdmin) throws CouldNotPerformException {
+    public synchronized void setAdministrator(String id, boolean isAdmin) throws CouldNotPerformException {
         if (!this.isLoggedIn()) {
             throw new CouldNotPerformException("Please log in first!");
         }
@@ -720,30 +730,6 @@ public class SessionManager {
     }
 
     /**
-     * Method used to register the first user.
-     *
-     * @param initialPassword the initial password as printed by the authenticationController
-     * @param userId the id of the first user to be registered
-     * @param userPassword the password chosen by the first user
-     * @throws CouldNotPerformException if the registration fails, e.g. used for a second user or wrong initialPassword
-     * @throws InterruptedException if the task is interrupted
-     */
-    public void initialRegistration(String initialPassword, String userId, String userPassword) throws CouldNotPerformException, InterruptedException {
-        try {
-            byte[] passwordHash = EncryptionHelper.hash(userPassword);
-
-            LoginCredentialsChange.Builder loginCredentialsChange = LoginCredentialsChange.newBuilder();
-            loginCredentialsChange.setNewCredentials(EncryptionHelper.encryptSymmetric(passwordHash, EncryptionHelper.hash(initialPassword)));
-            loginCredentialsChange.setId(userId);
-            CachedAuthenticationRemote.getRemote().register(loginCredentialsChange.build()).get();
-        } catch (IOException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Encryption failed", ex), LOGGER, LogLevel.ERROR);
-        } catch (ExecutionException | CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Initial registration failed", ex);
-        }
-    }
-
-    /**
      * Retrieves the credentials for a given client ID from the local store.
      *
      * @param clientId
@@ -768,5 +754,9 @@ public class SessionManager {
 
     public Observable<Boolean> getLoginObervable() {
         return loginObervable;
+    }
+    
+    public String getClientId() {
+        return clientId;
     }
 }
