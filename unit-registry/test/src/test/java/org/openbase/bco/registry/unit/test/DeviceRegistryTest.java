@@ -359,6 +359,8 @@ public class DeviceRegistryTest {
     public void testBoundingBoxConsistencyHandler() throws Exception {
         // how to get a test unit?
         UnitConfig testUnit = UnitConfig.newBuilder().setType(UnitTemplate.UnitType.COLORABLE_LIGHT).build();
+        
+       // UnitConfig testUnit = deviceRegistry.getDeviceConfigById("PH_Hue_E27_Device");
         TranslationType.Translation.Builder translationBuilder = TranslationType.Translation.newBuilder().setX(0).setY(0).setZ(0);
         Vec3DDoubleType.Vec3DDouble vector1 = Vec3DDoubleType.Vec3DDouble.newBuilder().setX(0.1).setY(4.2).setZ(0.0).build();
         Vec3DDoubleType.Vec3DDouble vector2 = Vec3DDoubleType.Vec3DDouble.newBuilder().setX(3.6).setY(0.0).setZ(0.0).build();
@@ -368,7 +370,7 @@ public class DeviceRegistryTest {
         ShapeType.Shape shapeBuilder =  ShapeType.Shape.newBuilder().addAllFloor(values).build();
         testUnit.toBuilder().getPlacementConfigBuilder().setShape(shapeBuilder);
         
-        //unitRegistry.registerUnitConfig(testDevice).get();
+        //deviceRegistry.updateDeviceConfig(testUnit).get(); 
         
         ShapeType.Shape shape = testUnit.getPlacementConfig().getShape();
         
