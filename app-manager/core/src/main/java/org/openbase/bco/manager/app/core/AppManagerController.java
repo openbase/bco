@@ -21,10 +21,12 @@ package org.openbase.bco.manager.app.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.manager.app.lib.AppController;
 import org.openbase.bco.manager.app.lib.AppFactory;
 import org.openbase.bco.manager.app.lib.AppManager;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.iface.Launchable;
@@ -74,6 +76,8 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
     public void activate() throws CouldNotPerformException, InterruptedException {
         //TODO: why is this necessary
         Registries.waitForData();
+        
+        SessionManager.getInstance().login(Registries.getUserRegistry().getUserIdByUserName(UserCreationPlugin.BCO_USERNAME));
 
         appRegistrySynchronizer.activate();
     }

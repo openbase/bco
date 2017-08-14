@@ -21,12 +21,14 @@ package org.openbase.bco.manager.location.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.manager.location.lib.ConnectionController;
 import org.openbase.bco.manager.location.lib.ConnectionFactory;
 import org.openbase.bco.manager.location.lib.LocationController;
 import org.openbase.bco.manager.location.lib.LocationFactory;
 import org.openbase.bco.manager.location.lib.LocationManager;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.iface.Launchable;
@@ -90,6 +92,8 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
 //        System.out.println("Locations: "+CachedLocationRegistryRemote.getRegistry().getLocationConfigs().size());
 //        System.out.println("Connection: "+CachedLocationRegistryRemote.getRegistry().getConnectionConfigs().size());
 //        System.out.println("Loc: "+locationRegistryRemote.getLocationConfigs().size());
+        SessionManager.getInstance().login(Registries.getUserRegistry().getUserIdByUserName(UserCreationPlugin.BCO_USERNAME));
+
         locationRegistrySynchronizer.activate();
         connectionRegistrySynchronizer.activate();
     }
