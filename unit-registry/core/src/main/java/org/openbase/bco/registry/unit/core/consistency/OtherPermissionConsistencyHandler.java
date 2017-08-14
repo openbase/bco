@@ -21,7 +21,6 @@ package org.openbase.bco.registry.unit.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -38,18 +37,18 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class OtherPermissionConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
-
+    
     private static final Permission DEFAULT_OTHER_PERMISSION = JPService.testMode() ? Permission.newBuilder().setAccess(true).setRead(true).setWrite(true).build() : Permission.newBuilder().setAccess(true).setRead(true).setWrite(false).build();
-
+    
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
         PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();
         
-        if(!permissionConfig.hasOtherPermission() ) {
+        if (!permissionConfig.hasOtherPermission() || !permissionConfig.getOtherPermission().equals(DEFAULT_OTHER_PERMISSION)) {
             permissionConfig.setOtherPermission(DEFAULT_OTHER_PERMISSION);
             throw new EntryModification(entry.setMessage(unitConfig), this);
         }
     }
-
+    
 }
