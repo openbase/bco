@@ -621,7 +621,24 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(getScope()));
 
         actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
-        //TODO: update USER key with authentification
+        try {
+            String username = "";
+            if (sessionManager.getUserId() != null) {
+                username += Registries.getUnitRegistry().getUnitConfigById(sessionManager.getUserId()).getUserConfig().getUserName();
+            }
+            if (sessionManager.getClientId() != null) {
+                if(!username.isEmpty()) {
+                    username += "@";
+                }
+                username += Registries.getUnitRegistry().getUnitConfigById(sessionManager.getClientId()).getUserConfig().getUserName();
+            }
+            if (username.isEmpty()) {
+                username = "Other";
+            }
+            actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.AUTHORITY_KEY, username));
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
         actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
 
         return Services.upateActionDescription(actionDescription, serviceAttribute, serviceType);
@@ -643,7 +660,24 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(getScope()));
 
         actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
-        //TODO: update USER key with authentification
+        try {
+            String username = "";
+            if (sessionManager.getUserId() != null) {
+                username += Registries.getUnitRegistry().getUnitConfigById(sessionManager.getUserId()).getUserConfig().getUserName();
+            }
+            if (sessionManager.getClientId() != null) {
+                if(!username.isEmpty()) {
+                    username += "@";
+                }
+                username += Registries.getUnitRegistry().getUnitConfigById(sessionManager.getClientId()).getUserConfig().getUserName();
+            }
+            if (username.isEmpty()) {
+                username = "Other";
+            }
+            actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.AUTHORITY_KEY, username));
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
         actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
 
         return Services.upateActionDescription(actionDescription, serviceAttribute);
