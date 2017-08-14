@@ -39,18 +39,19 @@ public class BoundingBoxCleanerConsistencyHandler extends AbstractProtoBufRegist
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
-
-        if (!unitConfig.hasPlacementConfig() || !unitConfig.getPlacementConfig().hasShape()
-            || unitConfig.getPlacementConfig().getShape().getFloorList().isEmpty()) {
+        final UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
+        
+        // filter if config does not contain placement or shape
+        if (!unitConfig.hasPlacementConfig() || !unitConfig.getPlacementConfig().hasShape() || unitConfig.getPlacementConfig().getShape().getFloorList().isEmpty()) {
             return;
         }
-        Shape shape = unitConfig.getPlacementConfig().getShape();
-        AxisAlignedBoundingBox3DFloat newBoundingBox = updateBoundingBox(shape);
+        
+        final Shape shape = unitConfig.getPlacementConfig().getShape();
+        final AxisAlignedBoundingBox3DFloat newBoundingBox = updateBoundingBox(shape);
 
         //detect changes
         if(!shape.getBoundingBox().equals(newBoundingBox)) { 
-                unitConfig.getPlacementConfigBuilder().getShapeBuilder().setBoundingBox(newBoundingBox);
+            unitConfig.getPlacementConfigBuilder().getShapeBuilder().setBoundingBox(newBoundingBox);
             throw new EntryModification(entry.setMessage(unitConfig), this);
         }
     }
@@ -77,12 +78,11 @@ public class BoundingBoxCleanerConsistencyHandler extends AbstractProtoBufRegist
             maxZ = Math.max(rstVertex.getZ(), maxZ);            
         }
         
-        AxisAlignedBoundingBox3DFloat.Builder builder = AxisAlignedBoundingBox3DFloat.newBuilder();
+        final AxisAlignedBoundingBox3DFloat.Builder builder = AxisAlignedBoundingBox3DFloat.newBuilder();
         builder.setDepth((float) (maxY - minY));
         builder.setHeight((float) (maxZ - minZ));
         builder.setWidth((float) (maxX - minX));
-        Translation.Builder translationBuilder = Translation.newBuilder().setX(minX).setY(minY).setZ(minZ);
-        builder.setLeftFrontBottom(translationBuilder);
+        builder.setLeftFrontBottom(Translation.newBuilder().setX(minX).setY(minY).setZ(minZ));
         return builder.build();
     }
 }
