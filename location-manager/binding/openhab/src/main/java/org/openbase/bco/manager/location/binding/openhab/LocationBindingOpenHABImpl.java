@@ -30,9 +30,11 @@ import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.openhab.binding.AbstractOpenHABBinding;
-import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
+import org.openbase.jul.storage.registry.RegistrySynchronizer;
 import org.openbase.jul.storage.registry.RemoteControllerRegistryImpl;
+import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
@@ -47,8 +49,8 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
 
     private final LocationRemoteFactoryImpl locationRemoteFactory;
     private final ConnectionRemoteFactoryImpl connectionRemoteFactory;
-    private final ActivatableEntryRegistrySynchronizer<String, LocationRemote, UnitConfig, UnitConfig.Builder> locationRegistrySynchronizer;
-    private final ActivatableEntryRegistrySynchronizer<String, ConnectionRemote, UnitConfig, UnitConfig.Builder> connectionRegistrySynchronizer;
+    private final RegistrySynchronizer<String, LocationRemote, UnitConfig, UnitConfig.Builder> locationRegistrySynchronizer;
+    private final RegistrySynchronizer<String, ConnectionRemote, UnitConfig, UnitConfig.Builder> connectionRegistrySynchronizer;
     private final RemoteControllerRegistryImpl<String, LocationRemote> locationRegistry;
     private final RemoteControllerRegistryImpl<String, ConnectionRemote> connectionRegistry;
     private final boolean hardwareSimulationMode;
@@ -62,18 +64,18 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
             connectionRegistry = new RemoteControllerRegistryImpl<>();
             locationRemoteFactory = new LocationRemoteFactoryImpl();
             connectionRemoteFactory = new ConnectionRemoteFactoryImpl();
-            this.locationRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, LocationRemote, UnitConfig, UnitConfig.Builder>(locationRegistry, Registries.getLocationRegistry().getLocationConfigRemoteRegistry(), locationRemoteFactory) {
+            locationRegistrySynchronizer = new RegistrySynchronizer<String, LocationRemote, UnitConfig, UnitConfig.Builder>(locationRegistry, Registries.getLocationRegistry().getLocationConfigRemoteRegistry(), locationRemoteFactory) {
 
                 @Override
-                public boolean activationCondition(UnitConfig config) {
-                    return true;
+                public boolean verifyConfig(UnitConfig config) throws VerificationFailedException {
+                    return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
                 }
             };
-            this.connectionRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, ConnectionRemote, UnitConfig, UnitConfig.Builder>(connectionRegistry, Registries.getLocationRegistry().getConnectionConfigRemoteRegistry(), connectionRemoteFactory) {
+            this.connectionRegistrySynchronizer = new RegistrySynchronizer<String, ConnectionRemote, UnitConfig, UnitConfig.Builder>(connectionRegistry, Registries.getLocationRegistry().getConnectionConfigRemoteRegistry(), connectionRemoteFactory) {
 
                 @Override
-                public boolean activationCondition(UnitConfig config) {
-                    return true;
+                public boolean verifyConfig(UnitConfig config) throws VerificationFailedException {
+                    return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
                 }
             };
         } catch (final CouldNotPerformException ex) {

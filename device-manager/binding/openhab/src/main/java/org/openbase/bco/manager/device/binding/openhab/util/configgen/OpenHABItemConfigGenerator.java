@@ -251,6 +251,11 @@ public class OpenHABItemConfigGenerator {
                                 continue;
                             }
                         }
+                        
+                        // TODO: fix that this has to be skipped, issue: https://github.com/openbase/bco.manager/issues/43
+                        if(serviceConfig.getServiceDescription().getType() == ServiceType.TEMPERATURE_ALARM_STATE_SERVICE ){
+                            continue;
+                        }
 
                         serviceTypeSet.add(serviceConfig.getServiceDescription().getType());
                         try {
