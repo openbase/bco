@@ -78,7 +78,7 @@
         <dependency>
             <groupId>org.openbase</groupId>
             <artifactId>jul.exception</artifactId>
-            <version>${project.version}</version>
+            <version>${dependency.jul.version}</version>
             <scope>test</scope>
             <type>jar</type>
         </dependency>
