@@ -748,6 +748,27 @@ public class SessionManager {
         return key;
     }
 
+    /**
+     * If a user and/or client is logged in, this returns the concatenation of both IDs.
+     *
+     * @return userId@clientId
+     */
+    public String getUserAtClientId() {
+        String userAtClient = "";
+
+        if (userId != null) {
+            userAtClient += userId;
+        }
+
+        userAtClient += "@";
+
+        if (clientId != null) {
+            userAtClient += clientId;
+        }
+
+        return userAtClient;
+    }
+
     public String getUserId() {
         return userId;
     }
