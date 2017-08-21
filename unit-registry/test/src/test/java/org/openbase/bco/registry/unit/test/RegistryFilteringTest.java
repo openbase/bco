@@ -31,9 +31,8 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.authentication.core.AuthenticatorController;
-import org.openbase.bco.authentication.lib.mock.MockCredentialStore;
-import org.openbase.bco.authentication.lib.EncryptionHelper;
+import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
+import org.openbase.bco.authentication.lib.ServiceServerManager;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
@@ -46,6 +45,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
 import rst.domotic.authentication.PermissionType.Permission;
+import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
@@ -60,22 +60,12 @@ public class RegistryFilteringTest {
 
     private static MockRegistry mockRegistry;
 
-    private static AuthenticatorController authenticatorController;
-    private static MockCredentialStore mockCredentialStore;
-
     @BeforeClass
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
 
         try {
             mockRegistry = MockRegistryHolder.newMockRegistry();
-
-            System.out.println("Starting AuthenticatorControll");
-            mockCredentialStore = new MockCredentialStore();
-            authenticatorController = new AuthenticatorController(mockCredentialStore);
-            authenticatorController.init();
-            authenticatorController.activate();
-            authenticatorController.waitForActivation();
         } catch (org.openbase.jul.exception.InstantiationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
@@ -133,6 +123,7 @@ public class RegistryFilteringTest {
     @Test(timeout = 10000)
     public void testPermissionsOnLogin() throws Exception {
         System.out.println("testPermissionsOnLogin");
+        SessionManager.getInstance().login(MockRegistry.admin.getId(), MockRegistry.adminPassword);
 
         // Register a user
         UnitConfig.Builder userUnitConfig = UnitConfig.newBuilder();
@@ -143,7 +134,9 @@ public class RegistryFilteringTest {
 
         // register user in credentials store
         String password = "Elaine";
-        mockCredentialStore.addCredentials(userUnitConfig.getId(), EncryptionHelper.hash(password), true);
+        SessionManager.getInstance().registerUser(userUnitConfig.getId(), password, false);
+        // log admin out because else the following test will not be performed with other permissions
+        SessionManager.getInstance().logout();
 
         // get unitConfig, remove other permission and add user permission
         UnitConfig.Builder unitConfig = Registries.getUnitRegistry().getDalUnitConfigs().get(0).toBuilder();
@@ -154,12 +147,13 @@ public class RegistryFilteringTest {
         Permission.Builder ownerPermission = permissionConfig.getOwnerPermissionBuilder();
         ownerPermission.setAccess(true);
         permissionConfig.setOwnerId(userUnitConfig.getId());
-        Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
+        UnitConfig config = Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
 
         // unitConfig should be removed with missing all rights and nobody logged in
         assertTrue("UnitConfig has not been removed even though other permissions have been removed", !Registries.getUnitRegistry().containsUnitConfigById(unitConfig.getId()));
 
-        // logint
+        // login
+        SessionManager.getInstance().logout();
         SessionManager.getInstance().login(userUnitConfig.getId(), password);
 
         // unitConfig should be available again
@@ -204,12 +198,21 @@ public class RegistryFilteringTest {
         userConfig.setLastName("Istrator");
         userConfig.setUserName("Admin");
 
-        SessionManager.getInstance().login(MockCredentialStore.ADMIN_ID, MockCredentialStore.ADMIN_PASSWORD);
+        SessionManager.getInstance().login(MockRegistry.admin.getId(), MockRegistry.adminPassword);
 
         try {
             UnitConfig result = Registries.getUnitRegistry().registerUnitConfig(userUnitConfig.build()).get();
         } catch (InterruptedException | ExecutionException | CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
+    }
+    
+    @Test
+    public void testingTest() throws Exception {
+        SessionManager.getInstance().login(MockRegistry.admin.getId(), MockRegistry.adminPassword);
+        TicketAuthenticatorWrapper request = SessionManager.getInstance().initializeServiceServerRequest();
+        
+        ServiceServerManager.TicketEvaluationWrapper evaluateClientServerTicket = ServiceServerManager.getInstance().evaluateClientServerTicket(request);
+        AuthenticationClientHandler.handleServiceServerResponse(SessionManager.getInstance().getSessionKey(), request, evaluateClientServerTicket.getTicketAuthenticatorWrapper());
     }
 }

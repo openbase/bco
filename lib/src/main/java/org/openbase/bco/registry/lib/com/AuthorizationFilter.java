@@ -34,18 +34,18 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
-
+    
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthorizationFilter.class);
-
+    
     private SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> authorizationGroupRegistry;
-
+    
     public AuthorizationFilter() {
     }
-
+    
     public void setAuthorizationGroupRegistry(final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> authorizationGroupRegistry) {
         this.authorizationGroupRegistry = authorizationGroupRegistry;
     }
-
+    
     @Override
     public void beforeFilter() throws CouldNotPerformException {
         try {
@@ -61,16 +61,13 @@ public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
             Thread.currentThread().interrupt();
         }
     }
-
+    
     @Override
     public boolean verify(UnitConfig unitConfig) {
         if (authorizationGroupRegistry != null) {
-            boolean user = AuthorizationHelper.canAccess(unitConfig.getPermissionConfig(), SessionManager.getInstance().getUserId(), authorizationGroupRegistry.getEntryMap());
-            boolean client = AuthorizationHelper.canAccess(unitConfig.getPermissionConfig(), SessionManager.getInstance().getClientId(), authorizationGroupRegistry.getEntryMap());
-            return user || client;
+            return AuthorizationHelper.canAccess(unitConfig.getPermissionConfig(), SessionManager.getInstance().getUserAtClientId(), authorizationGroupRegistry.getEntryMap());
         } else {
-            return AuthorizationHelper.canAccess(unitConfig.getPermissionConfig(), SessionManager.getInstance().getUserId(), null)
-                    || AuthorizationHelper.canAccess(unitConfig.getPermissionConfig(), SessionManager.getInstance().getClientId(), null);
+            return AuthorizationHelper.canAccess(unitConfig.getPermissionConfig(), SessionManager.getInstance().getUserAtClientId(), null);
         }
     }
 }

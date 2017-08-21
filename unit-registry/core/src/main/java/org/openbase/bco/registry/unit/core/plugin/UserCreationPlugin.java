@@ -29,7 +29,6 @@ import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -68,10 +67,6 @@ public class UserCreationPlugin extends FileRegistryPluginAdapter<String, Identi
     @Override
     public void init(Registry<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> registry) throws InitializationException, InterruptedException {
         super.init(registry);
-        
-        if(JPService.testMode()) {
-            return;
-        }
 
         try {
             UnitConfig.Builder adminGroupConfig = null;
@@ -108,15 +103,13 @@ public class UserCreationPlugin extends FileRegistryPluginAdapter<String, Identi
             }
 
             if (!adminExists) {
-                LOGGER.info("No administrator found so try to register a new default one");
                 registerDefaultAdmin(adminGroupConfig);
             }
             if (!bcoExists) {
-                LOGGER.info("BCO user not in registry so register him");
                 registerBCOUser(bcoGroupConfig);
             }
         } catch (CouldNotPerformException | ExecutionException | TimeoutException ex) {
-            throw new InitializationException(this, new CouldNotPerformException("Could not check for existing or register administrator account", ex));
+            throw new InitializationException(this, new CouldNotPerformException("Could not check for register initial user accounts", ex));
         }
     }
 
@@ -124,9 +117,6 @@ public class UserCreationPlugin extends FileRegistryPluginAdapter<String, Identi
         String initialRegistrationPassword = AuthenticatorController.getInitialPassword();
 
         if (initialRegistrationPassword == null) {
-            if (JPService.testMode()) {
-                return;
-            }
             LOGGER.error("No administator is yet registered and the initial registartion password of the authenticator is not available. Please use the bco launcher for the initial start.");
             System.exit(1);
         }
@@ -186,10 +176,9 @@ public class UserCreationPlugin extends FileRegistryPluginAdapter<String, Identi
                     adminId = config.getId();
                 }
             }
-            if(adminId == null) {
+            if (adminId == null) {
                 throw new NotAvailableException("adminId");
             }
-            LOGGER.info("Login with session manager");
             if (!SessionManager.getInstance().login(adminId, DEFAULT_ADMIN_USERNAME_AND_PASSWORD)) {
                 throw new CouldNotPerformException("Login as default admin failed");
             }
@@ -210,7 +199,6 @@ public class UserCreationPlugin extends FileRegistryPluginAdapter<String, Identi
 
         // if not register one
         if (!bcoUserAlreadyInRegistry) {
-            LOGGER.info("Register BCO User");
             UnitConfig.Builder unitConfig = UnitConfig.newBuilder();
             unitConfig.setType(UnitType.USER);
 
@@ -228,11 +216,9 @@ public class UserCreationPlugin extends FileRegistryPluginAdapter<String, Identi
         // add him to the bco group if he is not already in it
         AuthorizationGroupConfig.Builder authorizationGroup = bcoGroupConfig.getAuthorizationGroupConfigBuilder();
         if (!authorizationGroup.getMemberIdList().contains(userId)) {
-            LOGGER.info("Add bco user to bco group");
             authorizationGroup.addMemberId(userId);
             authorizationGroupConfigRegistry.update(bcoGroupConfig.build());
         }
-        LOGGER.info("Finished registering bco user");
         SessionManager.getInstance().logout();
     }
 }

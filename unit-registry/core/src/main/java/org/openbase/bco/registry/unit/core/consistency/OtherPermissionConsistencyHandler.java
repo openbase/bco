@@ -45,7 +45,7 @@ public class OtherPermissionConsistencyHandler extends AbstractProtoBufRegistryC
         UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
         PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();
         
-        if (!permissionConfig.hasOtherPermission() || !permissionConfig.getOtherPermission().equals(DEFAULT_OTHER_PERMISSION)) {
+        if (!permissionConfig.hasOtherPermission()) {
             permissionConfig.setOtherPermission(DEFAULT_OTHER_PERMISSION);
             throw new EntryModification(entry.setMessage(unitConfig), this);
         }
