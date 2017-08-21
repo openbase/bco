@@ -132,11 +132,6 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
     }
 
     @Override
-    public Future<Void> registerClient(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException {
-        return RPCHelper.callRemoteServerMethod(loginCredentialsChange, remoteServer, Void.class);
-    }
-
-    @Override
     public Future<AuthenticatedValue> requestServiceServerSecretKey(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
         return RPCHelper.callRemoteServerMethod(ticketAuthenticatorWrapper, remoteServer, AuthenticatedValue.class);
     }

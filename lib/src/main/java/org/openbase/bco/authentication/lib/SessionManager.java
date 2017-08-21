@@ -22,7 +22,6 @@ package org.openbase.bco.authentication.lib;
  * #L%
  */
 import java.io.IOException;
-import java.io.StreamCorruptedException;
 import java.security.KeyPair;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
@@ -34,7 +33,6 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import javax.crypto.BadPaddingException;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.PermissionDeniedException;
@@ -359,6 +357,25 @@ public class SessionManager {
             loginObervable.notifyObservers(false);
         } catch (CouldNotPerformException ex) {
             LOGGER.warn("Could not notify logout to observer", ex);
+        }
+    }
+    
+    /**
+     * This method performs a complete logout by also clearing the previous client id.
+     * If the normal logout is used and a new user logs in he will be logged in at the last
+     * client every time. This method is mostly necessary for unit tests. 
+     */
+    public synchronized void completeLogout() {
+        this.userId = null;
+        this.userPassword = null;
+        this.previousClientId = null;
+        this.clientId = null;
+        this.sessionKey = null;
+        this.ticketAuthenticatorWrapper = null;
+        try {
+            loginObervable.notifyObservers(false);
+        } catch (CouldNotPerformException ex) {
+            LOGGER.warn("Could not notify complete logout to observer", ex);
         }
     }
 

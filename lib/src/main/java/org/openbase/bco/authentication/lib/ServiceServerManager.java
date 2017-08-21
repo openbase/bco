@@ -29,7 +29,6 @@ import java.util.concurrent.ExecutionException;
 import javax.crypto.BadPaddingException;
 import static org.openbase.bco.authentication.lib.AuthenticationServerHandler.getValidityInterval;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
-import org.openbase.bco.authentication.lib.mock.MockCredentialStore;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -69,6 +68,10 @@ public class ServiceServerManager {
 
         return instance;
     }
+    
+    public static synchronized void shutdown() {
+        instance = null;
+    }
 
     /**
      * Validates the ticket from a given TicketAuthenticatorWrapper and returns the client ID,
@@ -92,7 +95,7 @@ public class ServiceServerManager {
             clientServerTicket = clientServerTicket.toBuilder().setValidityPeriod(getValidityInterval()).build();
             Authenticator.Builder authenticatorBuilder = authenticator.toBuilder();
             authenticatorBuilder.setTimestamp(authenticator.getTimestamp().toBuilder().setTime(authenticator.getTimestamp().getTime() + 1));
-            
+
             // update TicketAuthenticatorWrapper
             TicketAuthenticatorWrapper.Builder response = wrapper.toBuilder();
             response.setTicket(EncryptionHelper.encryptSymmetric(clientServerTicket, serviceServerSecretKey));
@@ -118,14 +121,10 @@ public class ServiceServerManager {
         try {
             // Load private key from file.
             byte[] key;
-            if (JPService.testMode()) {
-                key = MockCredentialStore.SERVICE_SERVER_KEY_PAIR.getPrivate().getEncoded();
-            } else {
-                File privateKeyFile = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), SERVICE_SERVER_PRIVATE_KEY_FILENAME);
-                try (FileInputStream inputStream = new FileInputStream(privateKeyFile)) {
-                    key = new byte[(int) privateKeyFile.length()];
-                    inputStream.read(key);
-                }
+            File privateKeyFile = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), SERVICE_SERVER_PRIVATE_KEY_FILENAME);
+            try (FileInputStream inputStream = new FileInputStream(privateKeyFile)) {
+                key = new byte[(int) privateKeyFile.length()];
+                inputStream.read(key);
             }
 
             String id = "@" + CredentialStore.SERVICE_SERVER_ID;
@@ -161,7 +160,7 @@ public class ServiceServerManager {
      */
     private void requestServiceServerSecretKey() throws CouldNotPerformException, InterruptedException {
         try {
-            ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(sessionKey    , ticketAuthenticatorWrapper);
+            ticketAuthenticatorWrapper = AuthenticationClientHandler.initServiceServerRequest(sessionKey, ticketAuthenticatorWrapper);
             AuthenticatedValue value = CachedAuthenticationRemote.getRemote().requestServiceServerSecretKey(ticketAuthenticatorWrapper).get();
             ticketAuthenticatorWrapper = AuthenticationClientHandler.handleServiceServerResponse(sessionKey, ticketAuthenticatorWrapper, value.getTicketAuthenticatorWrapper());
 
@@ -170,6 +169,10 @@ public class ServiceServerManager {
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
             throw new CouldNotPerformException("Could not get the service server secret key.", ex);
         }
+    }
+
+    public byte[] getServiceServerSecretKey() {
+        return serviceServerSecretKey;
     }
 
     public class TicketEvaluationWrapper {

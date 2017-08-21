@@ -108,5 +108,8 @@ public class CredentialStoreTest {
             return;
         }
         fail("NotAvailableException not thrown even though there is no user[" + clientId + "]");
+        
+        registry.shutdown();
+        loadingRegistry.shutdown();
     }
 }

@@ -24,18 +24,20 @@ package org.openbase.bco.authentication.test;
 
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
+import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.ServiceServerManager;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.jp.JPInitializeCredentials;
-import org.openbase.bco.authentication.lib.mock.MockCredentialStore;
 import org.openbase.jps.core.JPService;
 import org.slf4j.LoggerFactory;
+import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
 /**
@@ -56,7 +58,7 @@ public class ServiceServerManagerTest {
         JPService.setupJUnitTestMode();
         JPService.registerProperty(JPInitializeCredentials.class);
 
-        authenticatorController = new AuthenticatorController(new MockCredentialStore());
+        authenticatorController = new AuthenticatorController();
         authenticatorController.init();
         authenticatorController.activate();
         authenticatorController.waitForActivation();
@@ -87,14 +89,20 @@ public class ServiceServerManagerTest {
     public void testServiceServerManagerValidation() throws Exception {
         System.out.println("testServiceServerManagerValidation");
 
-        SessionManager sessionManager = new SessionManager();
-        sessionManager.login(MockCredentialStore.USER_ID, MockCredentialStore.USER_PASSWORD);
+        assertTrue("Initial password has not been generated despite an empty registry", AuthenticatorController.getInitialPassword() != null);
+        
+        // register a user from which a ticket can be validated
+        String userId = "ServiceServerManagerUser";
+        String password = "Security";
+        LoginCredentialsChange.Builder loginCredentials = LoginCredentialsChange.newBuilder();
+        loginCredentials.setId(userId);
+        loginCredentials.setNewCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(password), EncryptionHelper.hash(AuthenticatorController.getInitialPassword())));
+        CachedAuthenticationRemote.getRemote().register(loginCredentials.build()).get();
+        SessionManager.getInstance().login(userId, password);
+        
+        TicketAuthenticatorWrapper request = SessionManager.getInstance().initializeServiceServerRequest();
+        TicketAuthenticatorWrapper response = ServiceServerManager.getInstance().evaluateClientServerTicket(request).getTicketAuthenticatorWrapper();
 
-        TicketAuthenticatorWrapper request = sessionManager.initializeServiceServerRequest();
-
-        ServiceServerManager serviceServerManager = ServiceServerManager.getInstance();
-        TicketAuthenticatorWrapper response = serviceServerManager.evaluateClientServerTicket(request).getTicketAuthenticatorWrapper();
-
-        AuthenticationClientHandler.handleServiceServerResponse(sessionManager.getSessionKey(), request, response);
+        AuthenticationClientHandler.handleServiceServerResponse(SessionManager.getInstance().getSessionKey(), request, response);
     }
 }

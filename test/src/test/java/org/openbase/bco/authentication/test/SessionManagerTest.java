@@ -21,6 +21,8 @@ package org.openbase.bco.authentication.test;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.io.IOException;
+import java.util.concurrent.ExecutionException;
 import org.openbase.bco.authentication.lib.mock.MockCredentialStore;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -29,6 +31,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.openbase.bco.authentication.core.AuthenticatorController;
+import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.mock.MockClientStore;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.CredentialStore;
@@ -36,6 +39,8 @@ import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.slf4j.LoggerFactory;
+import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketType.Ticket;
 
 /**
@@ -43,11 +48,13 @@ import rst.domotic.authentication.TicketType.Ticket;
  * @author Sebastian Fast <sfast@techfak.uni-bielefeld.de>
  */
 public class SessionManagerTest {
+    
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SessionManagerTest.class);
 
     private static AuthenticatorController authenticatorController;
     private static CredentialStore serverStore;
     private static CredentialStore clientStore;
-    
+
     private static byte[] serviceServerSecretKey;
 
     public SessionManagerTest() {
@@ -56,7 +63,7 @@ public class SessionManagerTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
-        
+
         serviceServerSecretKey = EncryptionHelper.generateKey();
 
         serverStore = new MockCredentialStore();
@@ -66,6 +73,16 @@ public class SessionManagerTest {
         authenticatorController.init();
         authenticatorController.activate();
         authenticatorController.waitForActivation();
+
+        // register an initial user for the authenticator
+        try {
+            LoginCredentialsChange.Builder loginCredentials = LoginCredentialsChange.newBuilder();
+            loginCredentials.setId("InitialUserId");
+            loginCredentials.setNewCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash("InitialUserPwd"), EncryptionHelper.hash(AuthenticatorController.getInitialPassword())));
+            CachedAuthenticationRemote.getRemote().register(loginCredentials.build()).get();
+        } catch (IOException | InterruptedException | ExecutionException | CouldNotPerformException ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not register initial user!"), LOGGER);
+        }
     }
 
     @AfterClass
@@ -93,10 +110,10 @@ public class SessionManagerTest {
         System.out.println("registerUser");
         SessionManager manager = new SessionManager(clientStore);
         manager.initStore();
-        
+
         // login admin
         manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
-        
+
         // register client
         manager.registerUser("test_user2", "test_password", true);
 
@@ -221,10 +238,8 @@ public class SessionManagerTest {
         try {
             manager.registerClient(MockClientStore.ADMIN_ID);
             fail("You should not be able to register the same client twice.");
-        } 
-        catch (CouldNotPerformException ex){
-        }
-        finally {
+        } catch (CouldNotPerformException ex) {
+        } finally {
             ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }
     }
@@ -234,7 +249,7 @@ public class SessionManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+    @Test//(timeout = 5000)
     public void registerClientAndLoginAndLoginUserAndLogout() throws Exception {
         System.out.println("registerClientAndLoginAndLoginUserAndLogout");
         SessionManager manager = new SessionManager(clientStore);
@@ -259,12 +274,12 @@ public class SessionManagerTest {
         result = manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
         assertEquals(true, result);
         ticket = EncryptionHelper.decryptSymmetric(manager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
-        assertEquals(ticket.getClientId(), MockClientStore.ADMIN_ID + "@" + MockClientStore.CLIENT_ID);
-        
+        assertEquals(MockClientStore.ADMIN_ID + "@" + MockClientStore.CLIENT_ID, ticket.getClientId());
+
         // logout admin
         manager.logout();
         assertNotEquals(null, manager.getTicketAuthenticatorWrapper());
-        
+
         // now client should be logged in again
         ticket = EncryptionHelper.decryptSymmetric(manager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
         assertEquals(ticket.getClientId(), "@" + MockClientStore.CLIENT_ID);
@@ -312,7 +327,7 @@ public class SessionManagerTest {
 
         // remove himself
         manager.removeUser(MockClientStore.USER_ID);
-        
+
         // add for test consistency
         manager.registerUser(MockClientStore.USER_ID, MockClientStore.USER_PASSWORD, false);
     }
@@ -350,10 +365,10 @@ public class SessionManagerTest {
         System.out.println("setAdmin");
         SessionManager manager = new SessionManager(clientStore);
         manager.initStore();
-        
+
         // login admin
         manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
-        
+
         // register client
         manager.registerUser("test_user", "test_password", false);
         manager.setAdministrator("test_user", true);
@@ -385,6 +400,7 @@ public class SessionManagerTest {
 
     /**
      * Test of method isAdmin
+     *
      * @throws Exception
      */
     @Test(timeout = 5000)

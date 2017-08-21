@@ -80,8 +80,6 @@ public class CredentialStore {
             this.file = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), filename);
             this.loadStore();
             this.setStorePermissions();
-
-            Shutdownable.registerShutdownHook(CredentialStore.this::saveStore);
         } catch (JPNotAvailableException | CouldNotPerformException | IOException ex) {
             throw new InitializationException(CredentialStore.class, ex);
         }
@@ -277,5 +275,13 @@ public class CredentialStore {
                 .build();
         this.credentials.put(userId, loginCredentials);
         this.saveStore();
+    }
+    
+    public void shutdown() {
+        if(JPService.testMode()) {
+            credentials.clear();
+        } 
+        
+        saveStore();
     }
 }

@@ -76,44 +76,44 @@ import rst.domotic.authentication.TicketType.Ticket;
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class AuthenticatorController implements AuthenticationService, Launchable<Void>, VoidInitializable {
-
+    
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketSessionKeyWrapper.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TicketAuthenticatorWrapper.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LoginCredentialsChange.getDefaultInstance()));
     }
-
+    
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatorController.class);
     private static final String STORE_FILENAME = "server_credential_store.json";
-
+    
     private RSBLocalServer server;
     private WatchDog serverWatchDog;
-
+    
     private final byte[] ticketGrantingServiceSecretKey;
     private final byte[] serviceServerSecretKey;
-
+    
     private final CredentialStore store;
-
+    
     private static String initialPassword;
-
+    
     public AuthenticatorController() {
         this(new CredentialStore(STORE_FILENAME), EncryptionHelper.generateKey());
     }
-
+    
     public AuthenticatorController(CredentialStore store) {
         this(store, EncryptionHelper.generateKey());
     }
-
+    
     public AuthenticatorController(byte[] serviceServerPrivateKey) {
         this(new CredentialStore(STORE_FILENAME), serviceServerPrivateKey);
     }
-
+    
     public AuthenticatorController(CredentialStore store, byte[] serviceServerPrivateKey) {
         this.server = new NotInitializedRSBLocalServer();
-
+        
         this.ticketGrantingServiceSecretKey = EncryptionHelper.generateKey();
         this.serviceServerSecretKey = serviceServerPrivateKey;
-
+        
         boolean simulation = false;
         try {
             simulation = JPService.getProperty(JPAuthenticationSimulationMode.class).getValue();
@@ -126,7 +126,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             this.store = store;
         }
     }
-
+    
     @Override
     public void init() throws InitializationException, InterruptedException {
         try {
@@ -134,15 +134,15 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
             // register rpc methods.
             RPCHelper.registerInterface(AuthenticationService.class, this, server);
-
+            
             serverWatchDog = new WatchDog(server, "AuthenticatorWatchDog");
         } catch (JPNotAvailableException | CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
-
+        
         store.init();
     }
-
+    
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         if (store.isEmpty()) {
@@ -158,7 +158,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 Set<PosixFilePermission> perms = new HashSet<>();
                 perms.add(PosixFilePermission.OWNER_READ);
                 perms.add(PosixFilePermission.OWNER_WRITE);
-
+                
                 Files.setPosixFilePermissions(privateKeyFile.toPath(), perms);
             } catch (JPNotAvailableException ex) {
                 throw new CouldNotPerformException("Could not load property.", ex);
@@ -166,22 +166,24 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 throw new CouldNotPerformException("Could not write private key.", ex);
             }
         }
-
-        if (store.hasOnlyServiceServer()) {
+        
+        if (store.hasOnlyServiceServer() || JPService.testMode()) {
             // Generate initial password.
             initialPassword = RandomStringUtils.randomAlphanumeric(15);
         }
-
+        
         serverWatchDog.activate();
     }
-
+    
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         if (serverWatchDog != null) {
             serverWatchDog.deactivate();
         }
+        
+        store.shutdown();
     }
-
+    
     @Override
     public boolean isActive() {
         if (serverWatchDog != null) {
@@ -190,7 +192,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             return false;
         }
     }
-
+    
     public void waitForActivation() throws CouldNotPerformException, InterruptedException {
         try {
             serverWatchDog.waitForServiceActivation();
@@ -198,7 +200,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             throw new CouldNotPerformException("Could not wait for activation!", ex);
         }
     }
-
+    
     @Override
     public Future<TicketSessionKeyWrapper> requestTicketGrantingTicket(String id) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
@@ -208,14 +210,14 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 byte[] clientKey = null;
                 boolean isUser = split[0].length() > 0;
                 boolean isClient = split.length > 1 && split[1].length() > 0;
-
+                
                 if (isUser) {
                     userKey = store.getCredentials(split[0].trim());
                 }
                 if (isClient) {
                     clientKey = store.getCredentials(split[1].trim());
                 }
-
+                
                 return AuthenticationServerHandler.handleKDCRequest(id, userKey, clientKey, "", ticketGrantingServiceSecretKey);
             } catch (NotAvailableException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
@@ -227,7 +229,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             }
         });
     }
-
+    
     @Override
     public Future<TicketSessionKeyWrapper> requestClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
@@ -243,7 +245,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             }
         });
     }
-
+    
     @Override
     public Future<TicketAuthenticatorWrapper> validateClientServerTicket(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
@@ -260,7 +262,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             }
         });
     }
-
+    
     @Override
     public Future<TicketAuthenticatorWrapper> changeCredentials(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, PermissionDeniedException {
         return GlobalCachedExecutorService.submit(() -> {
@@ -291,7 +293,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
                 // Update credentials.
                 store.setCredentials(userId, newCredentials);
-
+                
                 return response;
             } catch (RejectedException | BadPaddingException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
@@ -303,20 +305,20 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             }
         });
     }
-
+    
     @Override
     public Future<TicketAuthenticatorWrapper> register(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, PermissionDeniedException {
         return GlobalCachedExecutorService.submit(() -> {
             try {
-                if (initialPassword != null && store.hasOnlyServiceServer()) {
+                if (initialPassword != null && (store.hasOnlyServiceServer() || JPService.testMode())) {
                     if (!loginCredentialsChange.hasId() || !loginCredentialsChange.hasNewCredentials()) {
                         throw new RejectedException("Cannot register first user, id and/or new credentials empty");
                     }
-
+                    
                     byte[] decryptedCredentials = EncryptionHelper.decryptSymmetric(loginCredentialsChange.getNewCredentials(), EncryptionHelper.hash(initialPassword), byte[].class);
-
+                    
                     this.store.addCredentials(loginCredentialsChange.getId(), decryptedCredentials, true);
-
+                    
                     initialPassword = null;
                     return null;
                 }
@@ -328,7 +330,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 // decrypt ticket and authenticator
                 Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerSecretKey, Ticket.class);
                 byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
-
+                
                 Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);
                 String authenticatorUserId = authenticator.getClientId().split("@", 2)[0];
                 String newId = loginCredentialsChange.getId();
@@ -349,7 +351,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
                 // register
                 store.addCredentials(newId, key, loginCredentialsChange.getAdmin());
-
+                
                 return response;
             } catch (RejectedException | BadPaddingException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
@@ -361,7 +363,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             }
         });
     }
-
+    
     @Override
     public Future<TicketAuthenticatorWrapper> removeUser(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, PermissionDeniedException {
         return GlobalCachedExecutorService.submit(() -> {
@@ -373,7 +375,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 // decrypt ticket and authenticator
                 Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerSecretKey, Ticket.class);
                 byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
-
+                
                 Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);
                 String authenticatorUserId = authenticator.getClientId().split("@", 2)[0];
                 String idToRemove = loginCredentialsChange.getId();
@@ -395,7 +397,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
                 // remove
                 this.store.removeEntry(idToRemove);
-
+                
                 return response;
             } catch (RejectedException | BadPaddingException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
@@ -407,7 +409,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             }
         });
     }
-
+    
     @Override
     public Future<TicketAuthenticatorWrapper> setAdministrator(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, PermissionDeniedException {
         return GlobalCachedExecutorService.submit(() -> {
@@ -419,7 +421,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 // decrypt ticket and authenticator
                 Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(wrapper.getTicket(), serviceServerSecretKey, Ticket.class);
                 byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
-
+                
                 Authenticator authenticator = EncryptionHelper.decryptSymmetric(wrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);
                 String authenticatorUserId = authenticator.getClientId().split("@", 2)[0];
                 String newId = loginCredentialsChange.getId();
@@ -441,7 +443,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
                 // register
                 this.store.setAdmin(newId, loginCredentialsChange.getAdmin());
-
+                
                 return response;
             } catch (RejectedException | BadPaddingException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
@@ -453,15 +455,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             }
         });
     }
-
-    @Override
-    public Future<Void> registerClient(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.submit(() -> {
-            store.setCredentials(loginCredentialsChange.getId(), loginCredentialsChange.getNewCredentials().toByteArray());
-            return null;
-        });
-    }
-
+    
     @Override
     public Future<AuthenticatedValue> requestServiceServerSecretKey(TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
@@ -473,15 +467,15 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                 Ticket clientServerTicket = EncryptionHelper.decryptSymmetric(ticketAuthenticatorWrapper.getTicket(), serviceServerSecretKey, Ticket.class);
                 byte[] clientServerSessionKey = clientServerTicket.getSessionKeyBytes().toByteArray();
                 Authenticator authenticator = EncryptionHelper.decryptSymmetric(ticketAuthenticatorWrapper.getAuthenticator(), clientServerSessionKey, Authenticator.class);
-
+                
                 if (!authenticator.getClientId().equals("@" + CredentialStore.SERVICE_SERVER_ID)) {
                     throw new RejectedException("Client[" + authenticator.getClientId() + "] is not authorized to request the ServiceServerSecretKey");
                 }
-
+                
                 AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
                 authenticatedValue.setTicketAuthenticatorWrapper(response);
                 authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(this.serviceServerSecretKey, clientServerSessionKey));
-
+                
                 return authenticatedValue.build();
             } catch (RejectedException | BadPaddingException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
@@ -493,7 +487,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             }
         });
     }
-
+    
     @Override
     public Future<Boolean> isAdmin(String userId) throws NotAvailableException {
         return GlobalCachedExecutorService.submit(() -> {

@@ -165,18 +165,6 @@ public interface AuthenticationService {
      */
     @RPCMethod
     public Future<TicketAuthenticatorWrapper> setAdministrator(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException, RejectedException, PermissionDeniedException;
-
-    /**
-     * Register a new client in the authentication registry. This is only allowed if the authenticator is in registration mode.
-     * The LoginCredentialsChange type contains more fields than needed because its also used to update an existing user.
-     * To use it for registration only the id field containing the client id and the new password field which contains the passwords are needed.
-     *
-     * @param loginCredentialsChange the login credentials containing the information as described above
-     * @return a future of the action of registering the client
-     * @throws CouldNotPerformException if the authenticator is not in registration mode
-     */
-    @RPCMethod
-    public Future<Void> registerClient(LoginCredentialsChange loginCredentialsChange) throws CouldNotPerformException;
     
     /**
      * Validates the client server ticket and returns the service server secret key encrypted
