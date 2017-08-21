@@ -55,7 +55,7 @@ import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWr
 public class SessionManager {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SessionManager.class);
-    private static final String STORE_FILENAME = "client_crediential_store.json";
+    private static final String STORE_FILENAME = "client_credential_store.json";
 
     private static SessionManager instance;
 
@@ -763,6 +763,27 @@ public class SessionManager {
         }
         byte[] key = this.store.getCredentials(clientId);
         return key;
+    }
+
+    /**
+     * If a user and/or client is logged in, this returns the concatenation of both IDs.
+     *
+     * @return userId@clientId
+     */
+    public String getUserAtClientId() {
+        String userAtClient = "";
+
+        if (userId != null) {
+            userAtClient += userId;
+        }
+
+        userAtClient += "@";
+
+        if (clientId != null) {
+            userAtClient += clientId;
+        }
+
+        return userAtClient;
     }
 
     public String getUserId() {
