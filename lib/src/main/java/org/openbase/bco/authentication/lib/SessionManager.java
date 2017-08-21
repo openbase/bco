@@ -57,7 +57,7 @@ import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWr
 public class SessionManager {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SessionManager.class);
-    private static final String STORE_FILENAME = "client_crediential_store.json";
+    private static final String STORE_FILENAME = "client_credential_store.json";
 
     private static SessionManager instance;
 
