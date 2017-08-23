@@ -1,7 +1,7 @@
 ---
 title: "{}"
-layout: default
 permalink: basecubeone.org
+layout: default
 ---
 
 # Software Architecture
