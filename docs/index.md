@@ -1,6 +1,7 @@
 ---
 title: "{}"
 layout: default
+permalink: basecubeone.org
 ---
 
 # Software Architecture
