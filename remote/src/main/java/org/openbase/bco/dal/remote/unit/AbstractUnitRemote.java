@@ -210,6 +210,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         }
     }
 
+    @Deprecated
     public void init(final String label, final ScopeProvider location) throws InitializationException, InterruptedException {
         try {
             init(ScopeGenerator.generateScope(label, getDataClass().getSimpleName(), location.getScope()));
