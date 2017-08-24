@@ -1,6 +1,5 @@
 ---
 title: "{}"
-permalink: basecubeone.org
 layout: default
 ---
 
