@@ -46,7 +46,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class PublishDalUnitTransformationRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> {
+public class PublishUnitTransformationRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -55,7 +55,7 @@ public class PublishDalUnitTransformationRegistryPlugin extends FileRegistryPlug
     private TransformerFactory transformerFactory;
     private TransformPublisher transformPublisher;
 
-    public PublishDalUnitTransformationRegistryPlugin(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry) throws org.openbase.jul.exception.InstantiationException {
+    public PublishUnitTransformationRegistryPlugin(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry) throws org.openbase.jul.exception.InstantiationException {
         try {
             this.locationRegistry = locationRegistry;
             this.transformerFactory = TransformerFactory.getInstance();
@@ -97,12 +97,11 @@ public class PublishDalUnitTransformationRegistryPlugin extends FileRegistryPlug
                 throw new NotAvailableException("unitconfig.placementconfig.locationid");
             }
 
-            if (unitConfig.getPlacementConfig().hasPosition()) {
-                logger.info("Publish " + locationRegistry.get(unitConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId() + " to " + unitConfig.getPlacementConfig().getTransformationFrameId());
-                Transform transformation = PoseTransformer.transform(unitConfig.getPlacementConfig().getPosition(), locationRegistry.getMessage(unitConfig.getPlacementConfig().getLocationId()).getPlacementConfig().getTransformationFrameId(), unitConfig.getPlacementConfig().getTransformationFrameId());
-                transformation.setAuthority(getRegistry().getName());
-                transformPublisher.sendTransform(transformation, TransformType.STATIC);
-            }
+            logger.info("Publish " + locationRegistry.get(unitConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId() + " to " + unitConfig.getPlacementConfig().getTransformationFrameId());
+            Transform transformation = PoseTransformer.transform(unitConfig.getPlacementConfig().getPosition(), locationRegistry.getMessage(unitConfig.getPlacementConfig().getLocationId()).getPlacementConfig().getTransformationFrameId(), unitConfig.getPlacementConfig().getTransformationFrameId());
+            transformation.setAuthority(getRegistry().getName());
+            transformPublisher.sendTransform(transformation, TransformType.STATIC);
+            
         } catch (NotAvailableException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.DEBUG);
         } catch (CouldNotPerformException | TransformerException | ConcurrentModificationException | NullPointerException ex) {

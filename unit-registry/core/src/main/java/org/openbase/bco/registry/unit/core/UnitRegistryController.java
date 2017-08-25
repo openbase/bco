@@ -72,7 +72,7 @@ import org.openbase.bco.registry.unit.core.consistency.deviceconfig.DeviceScopeC
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.ChildWithSameLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationChildConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationHierarchyConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationIdConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.UnitLocationIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationLoopConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationParentConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationPlacementConfigConsistencyHandler;
@@ -95,9 +95,7 @@ import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigLabe
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigUserNameConsistencyHandler;
 import org.openbase.bco.registry.unit.core.plugin.DeviceConfigDeviceClassUnitConsistencyPlugin;
-import org.openbase.bco.registry.unit.core.plugin.PublishConnectionTransformationRegistryPlugin;
-import org.openbase.bco.registry.unit.core.plugin.PublishDalUnitTransformationRegistryPlugin;
-import org.openbase.bco.registry.unit.core.plugin.PublishDeviceTransformationRegistryPlugin;
+import org.openbase.bco.registry.unit.core.plugin.PublishUnitTransformationRegistryPlugin;
 import org.openbase.bco.registry.unit.core.plugin.PublishLocationTransformationRegistryPlugin;
 import org.openbase.bco.registry.unit.core.plugin.ServiceTemplateCreatorRegistryPlugin;
 import org.openbase.bco.registry.unit.core.plugin.UnitTemplateCreatorRegistryPlugin;
@@ -284,7 +282,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionTilesConsistencyHandler(locationUnitConfigRegistry));
         connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionLocationConsistencyHandler(locationUnitConfigRegistry));
         connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionScopeConsistencyHandler(locationUnitConfigRegistry));
-//        connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionTransformationFrameConsistencyHandler(locationUnitConfigRegistry));
 
         dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitEnablingStateConsistencyHandler(deviceUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitHostIdConsistencyHandler(deviceUnitConfigRegistry));
@@ -294,7 +291,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         dalUnitConfigRegistry.registerConsistencyHandler(new SyncBindingConfigDeviceClassUnitConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry(), deviceUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry(), locationUnitConfigRegistry, deviceUnitConfigRegistry));
         dalUnitConfigRegistry.registerConsistencyHandler(new UnitBoundToHostConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry(), deviceUnitConfigRegistry));
-//        dalUnitConfigRegistry.registerConsistencyHandler(new UnitTransformationFrameConsistencyHandler(locationUnitConfigRegistry));
 
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceBoundToHostConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry()));
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassIdConsistencyHandler(deviceRegistryRemote.getDeviceClassRemoteRegistry()));
@@ -305,7 +301,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceLocationIdConsistencyHandler(locationUnitConfigRegistry));
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceOwnerConsistencyHandler(userUnitConfigRegistry));
         deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceScopeConsistencyHandler(locationUnitConfigRegistry));
-//        deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceTransformationFrameConsistencyHandler(locationUnitConfigRegistry));
 
         userUnitConfigRegistry.registerConsistencyHandler(new UserConfigScopeConsistencyHandler());
         userUnitConfigRegistry.registerConsistencyHandler(new UserConfigUserNameConsistencyHandler());
@@ -322,14 +317,12 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationPositionConsistencyHandler());
         locationUnitConfigRegistry.registerConsistencyHandler(new RootConsistencyHandler());
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationChildConsistencyHandler());
-        locationUnitConfigRegistry.registerConsistencyHandler(new LocationIdConsistencyHandler());
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationParentConsistencyHandler());
         locationUnitConfigRegistry.registerConsistencyHandler(new RootLocationExistencConsistencyHandler());
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationLoopConsistencyHandler());
         locationUnitConfigRegistry.registerConsistencyHandler(new ChildWithSameLabelConsistencyHandler());
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationScopeConsistencyHandler());
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationUnitIdConsistencyHandler(agentUnitConfigRegistry, appUnitConfigRegistry, authorizationGroupUnitConfigRegistry, connectionUnitConfigRegistry, dalUnitConfigRegistry, deviceUnitConfigRegistry, sceneUnitConfigRegistry, unitGroupUnitConfigRegistry, userUnitConfigRegistry));
-//        locationUnitConfigRegistry.registerConsistencyHandler(new LocationTransformationFrameConsistencyHandler(locationUnitConfigRegistry));
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationTypeConsistencyHandler());
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationHierarchyConsistencyHandler());
 
@@ -338,6 +331,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
         // add consistency handler for all unitConfig registries        
         
+        registerConsistencyHandler(new UnitLocationIdConsistencyHandler(locationUnitConfigRegistry), UnitConfig.class);
         registerConsistencyHandler(new ServiceConfigUnitIdConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new UnitConfigUnitTemplateConsistencyHandler(unitTemplateRegistry), UnitConfig.class);
         registerConsistencyHandler(new UnitEnablingStateConsistencyHandler(), UnitConfig.class);
@@ -368,9 +362,14 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         deviceUnitConfigRegistry.registerPlugin(new DeviceConfigDeviceClassUnitConsistencyPlugin(deviceRegistryRemote.getDeviceClassRemoteRegistry(), dalUnitConfigRegistry, deviceUnitConfigRegistry));
 
         locationUnitConfigRegistry.registerPlugin(new PublishLocationTransformationRegistryPlugin());
-        connectionUnitConfigRegistry.registerPlugin(new PublishConnectionTransformationRegistryPlugin(locationUnitConfigRegistry));
-        dalUnitConfigRegistry.registerPlugin(new PublishDalUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
-        deviceUnitConfigRegistry.registerPlugin(new PublishDeviceTransformationRegistryPlugin(locationUnitConfigRegistry));
+        connectionUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
+        dalUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
+        deviceUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
+        
+        userUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
+        sceneUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
+        appUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
+        agentUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
     }
 
     /**
