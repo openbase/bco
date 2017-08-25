@@ -94,7 +94,8 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
             Registries.getUnitRegistry().waitUntilReady();
 
             // sleep to wait for rct sync
-            Thread.sleep(200);
+            // todo: sleep is actiually to long!
+            Thread.sleep(500);
 
             Assert.assertEquals("Positions are not synchronized!", lightUnitConfig.getPlacementConfig().getPosition(), hostUnitConfig.getPlacementConfig().getPosition());
             Assert.assertNotEquals("TransformationFrameId are not unique!", lightUnitConfig.getPlacementConfig().getTransformationFrameId(), hostUnitConfig.getPlacementConfig().getTransformationFrameId());
