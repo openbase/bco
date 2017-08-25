@@ -91,6 +91,11 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
             // verify child unit positions are updated and published
             lightUnitConfig = Registries.getUnitRegistry().getUnitConfigById(lightUnitConfig.getId());
             System.out.println(lightUnitConfig);
+            Registries.getUnitRegistry().waitUntilReady();
+
+            // sleep to wait for rct sync
+            Thread.sleep(200);
+
             Assert.assertEquals("Positions are not synchronized!", lightUnitConfig.getPlacementConfig().getPosition(), hostUnitConfig.getPlacementConfig().getPosition());
             Assert.assertNotEquals("TransformationFrameId are not unique!", lightUnitConfig.getPlacementConfig().getTransformationFrameId(), hostUnitConfig.getPlacementConfig().getTransformationFrameId());
             Assert.assertEquals("Transformations are not synchronized!", Units.getUnitTransformation(lightUnitConfig).get(5, TimeUnit.SECONDS).getTransform(), Units.getUnitTransformation(hostUnitConfig).get(5, TimeUnit.SECONDS).getTransform());
