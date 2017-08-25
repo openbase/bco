@@ -261,7 +261,7 @@ public class OpenHABItemConfigGenerator {
                         try {
                             itemEntryList.add(new ServiceItemEntry(deviceClass, deviceUnitConfig.getMetaConfig(), unitConfig, serviceConfig, locationRegistryRemote));
                         } catch (Exception ex) {
-                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not generate item for Service[" + serviceConfig.getServiceDescription().getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex), logger, LogLevel.ERROR);
+                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not generate item for Service[" + serviceConfig.getServiceDescription().getType().name() + "] of Unit[" + unitConfig.getLabel()+ "]", ex), logger, LogLevel.WARN);
                         }
                     }
                 }
