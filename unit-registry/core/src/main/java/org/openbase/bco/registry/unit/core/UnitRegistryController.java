@@ -370,6 +370,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         sceneUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
         appUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
         agentUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
+        authorizationGroupUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
+        unitGroupUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
     }
 
     /**
