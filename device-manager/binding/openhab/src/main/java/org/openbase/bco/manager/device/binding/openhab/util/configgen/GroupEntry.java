@@ -27,20 +27,15 @@ import static org.openbase.bco.manager.device.binding.openhab.util.configgen.ite
 import static org.openbase.bco.manager.device.binding.openhab.util.configgen.OpenHABItemConfigGenerator.TAB_SIZE;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.processing.VariableProvider;
-import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.ItemIdGenerator;
 import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.rsb.ScopeType.Scope;
-import rst.domotic.unit.location.LocationConfigType.LocationConfig;
-import rst.spatial.PlacementConfigType.PlacementConfig;
 
 /**
  *
@@ -63,10 +58,10 @@ public class GroupEntry {
     private static int maxIconSize = 0;
     private static int maxParentLocationsSize = 0;
 
-    public GroupEntry(final UnitConfig locationUnitConfig, final LocationRegistryRemote locationRegistryRemote) throws CouldNotPerformException {
-        this(generateGroupID(locationUnitConfig), locationUnitConfig.getLabel(), detectIcon(new MetaConfigVariableProvider("LocationConfig", locationUnitConfig.getMetaConfig())), new ArrayList<>());
+    public GroupEntry(final UnitConfig locationUnitConfig) throws CouldNotPerformException, InterruptedException {
+        this(ItemIdGenerator.generateUnitGroupID(locationUnitConfig), locationUnitConfig.getLabel(), detectIcon(new MetaConfigVariableProvider("LocationConfig", locationUnitConfig.getMetaConfig())), new ArrayList<>());
         if (!locationUnitConfig.getLocationConfig().getRoot()) {
-            this.parentLocations.add(generateParentGroupID(locationUnitConfig, locationRegistryRemote));
+            this.parentLocations.add(ItemIdGenerator.generateParentGroupID(locationUnitConfig));
         }
         calculateGaps();
     }
@@ -176,60 +171,5 @@ public class GroupEntry {
         maxLabelSize = 0;
         maxIconSize = 0;
         maxParentLocationsSize = 0;
-    }
-
-    public static String generateParentGroupID(final UnitConfig childLocationConfig, final LocationRegistryRemote locationRegistryRemote) throws CouldNotPerformException {
-
-        try {
-            return generateGroupID(childLocationConfig.getPlacementConfig().getLocationId(), locationRegistryRemote);
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could location parent id via placement config. Outdated registry entry!", ex), logger);
-            return generateGroupID(childLocationConfig.getPlacementConfig().getLocationId(), locationRegistryRemote);
-        }
-    }
-
-    public static String generateGroupID(final PlacementConfig placementConfig, final LocationRegistryRemote locationRegistryRemote) throws CouldNotPerformException {
-        String locationID;
-        try {
-            if (!placementConfig.hasLocationId()) {
-                throw new NotAvailableException("placementconfig.locationid");
-            }
-            locationID = placementConfig.getLocationId();
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not generate group id!", ex);
-        }
-        return generateGroupID(locationID, locationRegistryRemote);
-    }
-
-    public static String generateGroupID(final String locationId, final LocationRegistryRemote locationRegistryRemote) throws CouldNotPerformException {
-        UnitConfig locationUnitConfig;
-        try {
-            locationUnitConfig = locationRegistryRemote.getLocationConfigById(locationId);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not generate group id for LocationId[" + locationId + "]!", ex);
-        }
-        return generateGroupID(locationUnitConfig);
-    }
-
-    public static String generateGroupID(final UnitConfig config) throws CouldNotPerformException {
-        try {
-            if (!config.hasScope()) {
-                throw new NotAvailableException("locationconfig.scope");
-            }
-            return generateGroupID(config.getScope());
-        } catch (NotAvailableException ex) {
-            throw new CouldNotPerformException("Could not generate group id out of LocationConfig[" + config.getId() + "] !", ex);
-        }
-    }
-
-    public static String generateGroupID(final Scope scope) throws CouldNotPerformException {
-        try {
-            if (scope == null) {
-                throw new NotAvailableException("locationconfig.scope");
-            }
-            return ScopeGenerator.generateStringRepWithDelimiter(scope, OPENHAB_ID_DELIMITER);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not generate group id out of Scope[" + scope + "]!", ex);
-        }
     }
 }
