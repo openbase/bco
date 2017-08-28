@@ -94,7 +94,7 @@ public class UnitShapeConsistencyHandler extends AbstractProtoBufRegistryConsist
         final Shape shape = unitConfig.getPlacementConfig().getShape();
         Shape newShape = updateCeilingAndLinks(shape, unitTransformation);
         if(!shape.equals(newShape)) {
-            unitConfig.getPlacementConfigBuilder().setShape(shape);
+            unitConfig.getPlacementConfigBuilder().setShape(newShape);
             throw new EntryModification(entry.setMessage(unitConfig), this);
         }
     }
