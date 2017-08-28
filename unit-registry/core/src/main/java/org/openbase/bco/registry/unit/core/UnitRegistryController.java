@@ -73,6 +73,7 @@ import org.openbase.bco.registry.unit.core.consistency.locationconfig.ChildWithS
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationChildConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationHierarchyConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitLocationIdConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.UnitShapeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationLoopConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationParentConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationPlacementConfigConsistencyHandler;
@@ -337,6 +338,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         registerConsistencyHandler(new UnitEnablingStateConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new ServiceConfigServiceTemplateIdConsistencyHandler(serviceTemplateRegistry), UnitConfig.class);
         registerConsistencyHandler(new BoundingBoxCleanerConsistencyHandler(), UnitConfig.class);
+        registerConsistencyHandler(new UnitShapeConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new UnitTransformationFrameConsistencyHandler(locationUnitConfigRegistry), UnitConfig.class);
         try {
             if (JPService.getProperty(JPClearUnitPosition.class).getValue()) {

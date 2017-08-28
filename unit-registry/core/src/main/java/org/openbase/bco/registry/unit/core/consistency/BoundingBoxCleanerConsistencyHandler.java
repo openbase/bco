@@ -21,6 +21,7 @@ package org.openbase.bco.registry.unit.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.Arrays;
 import java.util.List;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -31,7 +32,7 @@ import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.geometry.AxisAlignedBoundingBox3DFloatType.AxisAlignedBoundingBox3DFloat;
 import rst.geometry.TranslationType.Translation;
-import rst.math.Vec3DDoubleType;
+import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.spatial.ShapeType.Shape;
 
 
@@ -42,7 +43,8 @@ public class BoundingBoxCleanerConsistencyHandler extends AbstractProtoBufRegist
         final UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
         
         // filter if config does not contain placement or shape
-        if (!unitConfig.hasPlacementConfig() || !unitConfig.getPlacementConfig().hasShape() || unitConfig.getPlacementConfig().getShape().getFloorList().isEmpty()) {
+        if (!unitConfig.hasPlacementConfig() || !unitConfig.getPlacementConfig().hasShape() || 
+                unitConfig.getPlacementConfig().getShape().getFloorList().isEmpty() || unitConfig.getPlacementConfig().getShape().getCeilingList().isEmpty()) {
             return;
         }
         
@@ -66,16 +68,18 @@ public class BoundingBoxCleanerConsistencyHandler extends AbstractProtoBufRegist
         double minZ = Double.MAX_VALUE;
 
         // Iterate over all vertices, find biggest values in all dimensions
-        for (final Vec3DDoubleType.Vec3DDouble rstVertex : shape.getFloorList()) {
-            
-            minX = Math.min(rstVertex.getX(), minX);
-            maxX = Math.max(rstVertex.getX(), maxX);
-            
-            minY = Math.min(rstVertex.getY(), minY);
-            maxY = Math.max(rstVertex.getY(), maxY);
-            
-            minZ = Math.min(rstVertex.getZ(), minZ);
-            maxZ = Math.max(rstVertex.getZ(), maxZ);            
+        for (List<Vec3DDouble> vecList : Arrays.asList(shape.getFloorList(), shape.getCeilingList())) {
+            for (final Vec3DDouble rstVertex : vecList) {
+
+                minX = Math.min(rstVertex.getX(), minX);
+                maxX = Math.max(rstVertex.getX(), maxX);
+
+                minY = Math.min(rstVertex.getY(), minY);
+                maxY = Math.max(rstVertex.getY(), maxY);
+
+                minZ = Math.min(rstVertex.getZ(), minZ);
+                maxZ = Math.max(rstVertex.getZ(), maxZ);
+            }
         }
         
         final AxisAlignedBoundingBox3DFloat.Builder builder = AxisAlignedBoundingBox3DFloat.newBuilder();
