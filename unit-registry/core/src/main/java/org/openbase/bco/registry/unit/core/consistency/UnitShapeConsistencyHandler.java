@@ -41,12 +41,24 @@ import rst.spatial.ShapeType.Shape;
 
 
 /**
- *
+ * This consistency handler adds missing ceiling coordinates and links between floor and ceiling positions to the shape data.
+ * 
  * @author <a href="mailto:thuppke@techfak.uni-bielefeld.de">Thoren Huppke</a>
  */
 public class UnitShapeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
+    /** Default height which is used to create non-existant ceiling coordinates. */
     private static final double DEFAULT_HEIGHT = 2.79;
 
+    /**
+     * {@inheritDoc}
+     * 
+     * @param id {@inheritDoc}
+     * @param entry {@inheritDoc}
+     * @param entryMap {@inheritDoc}
+     * @param registry {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws EntryModification {@inheritDoc}
+     */
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         
@@ -87,6 +99,13 @@ public class UnitShapeConsistencyHandler extends AbstractProtoBufRegistryConsist
         }
     }
     
+    /**
+     * Uses a the default height to create the ceiling positions and links between floor and ceiling positions.
+     * 
+     * @param shape The original shape.
+     * @param unitTransform Transform from root to unit coordinates.
+     * @return The shape with updated information.
+     */
     private Shape updateCeilingAndLinks(final Shape shape, final Transform3D unitTransform) {
         Transform3D inverseTransform = new Transform3D(unitTransform);
         inverseTransform.invert();
@@ -101,6 +120,14 @@ public class UnitShapeConsistencyHandler extends AbstractProtoBufRegistryConsist
         return newBuilder.build();
     }
     
+    /**
+     * Sets the height of the vector to the default height in root coordinates, then transforms it back to unit coordinates.
+     * 
+     * @param vector original vector in unit coordinates.
+     * @param transform transform from root to unit coordinates.
+     * @param inverseTransform transform from unit to root coordinates.
+     * @return Transformed original vector in unit coordinates.
+     */
     private Vec3DDouble addHeight(final Vec3DDouble vector, final Transform3D transform, final Transform3D inverseTransform) {
         Vector3d vector3d = new Vector3d(vector.getX(), vector.getY(), vector.getZ());
         inverseTransform.transform(vector3d);
