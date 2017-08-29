@@ -50,7 +50,7 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
     private final List<RegistryRemote<? extends GeneratedMessage>> registryRemotes;
 
     private final SyncObject virtualRegistrySyncLock = new SyncObject("RegistryRemoteVirtualSyncLock");
-    private final Observer snchronisationObserver;
+    private final Observer synchronisationObserver;
 
     public AbstractVirtualRegistryRemote(Class<? extends JPScope> jpScopePropery, Class<M> dataClass) {
         super(jpScopePropery, dataClass);
@@ -58,7 +58,7 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
         this.remoteRegistryFieldDescriptorMap = new HashMap<>();
         this.remoteRegistrySyncMap = new HashMap<>();
         this.registryRemotes = new ArrayList<>();
-        this.snchronisationObserver = (Observer) (Observable source, Object data1) -> {
+        this.synchronisationObserver = (Observer) (Observable source, Object data1) -> {
             synchronized (virtualRegistrySyncLock) {
                 virtualRegistrySyncLock.notifyAll();
             }
@@ -77,14 +77,19 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
     public void activate() throws InterruptedException, CouldNotPerformException {
         super.activate();
         getRemoteRegistries().forEach((remoteRegistry) -> {
-            remoteRegistry.addObserver(snchronisationObserver);
+            remoteRegistry.addObserver(synchronisationObserver);
         });
+        
+        // initial check
+        synchronized (virtualRegistrySyncLock) {
+            virtualRegistrySyncLock.notifyAll();
+        }
     }
 
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         getRemoteRegistries().forEach((remoteRegistry) -> {
-            remoteRegistry.removeObserver(snchronisationObserver);
+            remoteRegistry.removeObserver(synchronisationObserver);
         });
         super.deactivate();
     }
