@@ -81,35 +81,29 @@ public class UnitShapeConsistencyHandler extends AbstractProtoBufRegistryConsist
             return;
         }
         
-        logger.info("in processData of UnitShapeConsistencyHandler for unit " + unitConfig.getLabel());
-        
         String rootLocationId;
 
         try {
             // resolvement via more frequently updated entryMap via consistency checks if this entryMap contains the locations.
             rootLocationId = LocationUtils.getRootLocation(entryMap).getId();
-            logger.info("type 1");
         } catch (CouldNotPerformException ex) {
             try {
-//                logger.info("type 2");
                 // resolvement via the location registry.
                 rootLocationId = LocationUtils.getRootLocation(locationRegistry.getMessages()).getId();
             } catch (CouldNotPerformException exx) {
-                logger.info("type 3");
                 // if the root location could not be detected this consistency check is not needed.
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not get rootLocationId.", ex), logger);
                 return;
             }
         }
         
-        logger.info("after root id");
         Transform3D unitTransformation;
         try {
             Future<Transform> requestTransform = GlobalTransformReceiver.getInstance().requestTransform(
                     unitConfig.getPlacementConfig().getTransformationFrameId(),
-                    registry.get(rootLocationId).getMessage().getPlacementConfig().getTransformationFrameId(),
+                    locationRegistry.get(rootLocationId).getMessage().getPlacementConfig().getTransformationFrameId(),
                     System.currentTimeMillis());
             unitTransformation = requestTransform.get().getTransform();
-            logger.info("getUnitTransformation success");
         } catch(CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("could not get requestTransform", ex), logger);
             return;
@@ -118,19 +112,14 @@ public class UnitShapeConsistencyHandler extends AbstractProtoBufRegistryConsist
             Thread.currentThread().interrupt();
             throw new FatalImplementationErrorException(this, ex);
         } catch (ExecutionException ex) {
-            logger.warn("Could not get unitTransformation for unit " + unitConfig.getLabel());
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not get unitTransformation for unit "+unitConfig.getLabel()+" with id: "+unitConfig.getId(), ex), logger);
             return;
         }
-        logger.info("after unitTransformation");
 
         final Shape shape = unitConfig.getPlacementConfig().getShape();
-        logger.info("Shape before, ceiling points: " + shape.getCeilingCount() + " connections: " + shape.getFloorCeilingEdgeCount());
         Shape newShape = updateCeilingAndLinks(shape, unitTransformation);
-        logger.info("new shape, ceiling points: " + newShape.getCeilingCount() + " connections: " + newShape.getFloorCeilingEdgeCount());
         if (!shape.equals(newShape)) {
-            logger.info("New shape difference should throw entry modification!");
             unitConfig.getPlacementConfigBuilder().setShape(newShape);
-            logger.info("new shape, ceiling points: " + unitConfig.getPlacementConfig().getShape().getCeilingCount() + " connections: " + unitConfig.getPlacementConfig().getShape().getFloorCeilingEdgeCount());
             throw new EntryModification(entry.setMessage(unitConfig), this);
         }
     }
