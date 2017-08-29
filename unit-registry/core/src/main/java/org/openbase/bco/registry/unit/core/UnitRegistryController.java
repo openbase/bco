@@ -73,7 +73,7 @@ import org.openbase.bco.registry.unit.core.consistency.locationconfig.ChildWithS
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationChildConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationHierarchyConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitLocationIdConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.UnitShapeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.LocationShapeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationLoopConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationParentConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationPlacementConfigConsistencyHandler;
@@ -326,6 +326,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationUnitIdConsistencyHandler(agentUnitConfigRegistry, appUnitConfigRegistry, authorizationGroupUnitConfigRegistry, connectionUnitConfigRegistry, dalUnitConfigRegistry, deviceUnitConfigRegistry, sceneUnitConfigRegistry, unitGroupUnitConfigRegistry, userUnitConfigRegistry));
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationTypeConsistencyHandler());
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationHierarchyConsistencyHandler());
+        locationUnitConfigRegistry.registerConsistencyHandler(new LocationShapeConsistencyHandler());
 
         sceneUnitConfigRegistry.registerConsistencyHandler(new SceneLabelConsistencyHandler());
         sceneUnitConfigRegistry.registerConsistencyHandler(new SceneScopeConsistencyHandler(locationUnitConfigRegistry));
@@ -338,7 +339,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         registerConsistencyHandler(new UnitEnablingStateConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new ServiceConfigServiceTemplateIdConsistencyHandler(serviceTemplateRegistry), UnitConfig.class);
         registerConsistencyHandler(new BoundingBoxCleanerConsistencyHandler(), UnitConfig.class);
-        registerConsistencyHandler(new UnitShapeConsistencyHandler(locationUnitConfigRegistry), UnitConfig.class);
         registerConsistencyHandler(new UnitTransformationFrameConsistencyHandler(locationUnitConfigRegistry), UnitConfig.class);
         try {
             if (JPService.getProperty(JPClearUnitPosition.class).getValue()) {

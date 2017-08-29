@@ -47,18 +47,12 @@ import rst.spatial.ShapeType.Shape;
  *
  * @author <a href="mailto:thuppke@techfak.uni-bielefeld.de">Thoren Huppke</a>
  */
-public class UnitShapeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
+public class LocationShapeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     /**
      * Default height which is used to create non-existant ceiling coordinates.
      */
     private static final double DEFAULT_HEIGHT = 2.79;
-    
-    private final ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> locationRegistry;
-
-    public UnitShapeConsistencyHandler(final ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> locationRegistry) {
-        this.locationRegistry = locationRegistry;
-    }
 
     /**
      * {@inheritDoc}
@@ -89,7 +83,7 @@ public class UnitShapeConsistencyHandler extends AbstractProtoBufRegistryConsist
         } catch (CouldNotPerformException ex) {
             try {
                 // resolvement via the location registry.
-                rootLocationId = LocationUtils.getRootLocation(locationRegistry.getMessages()).getId();
+                rootLocationId = LocationUtils.getRootLocation(registry.getMessages()).getId();
             } catch (CouldNotPerformException exx) {
                 // if the root location could not be detected this consistency check is not needed.
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not get rootLocationId.", ex), logger);
@@ -101,7 +95,7 @@ public class UnitShapeConsistencyHandler extends AbstractProtoBufRegistryConsist
         try {
             Future<Transform> requestTransform = GlobalTransformReceiver.getInstance().requestTransform(
                     unitConfig.getPlacementConfig().getTransformationFrameId(),
-                    locationRegistry.get(rootLocationId).getMessage().getPlacementConfig().getTransformationFrameId(),
+                    registry.get(rootLocationId).getMessage().getPlacementConfig().getTransformationFrameId(),
                     System.currentTimeMillis());
             unitTransformation = requestTransform.get().getTransform();
         } catch(CouldNotPerformException ex) {
