@@ -22,6 +22,7 @@ package org.openbase.bco.registry.unit.core.plugin;
  * #L%
  */
 import java.util.ConcurrentModificationException;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -97,11 +98,13 @@ public class PublishUnitTransformationRegistryPlugin extends FileRegistryPluginA
                 throw new NotAvailableException("unitconfig.placementconfig.locationid");
             }
 
-            logger.info("Publish " + locationRegistry.get(unitConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId() + " to " + unitConfig.getPlacementConfig().getTransformationFrameId());
             Transform transformation = PoseTransformer.transform(unitConfig.getPlacementConfig().getPosition(), locationRegistry.getMessage(unitConfig.getPlacementConfig().getLocationId()).getPlacementConfig().getTransformationFrameId(), unitConfig.getPlacementConfig().getTransformationFrameId());
-            transformation.setAuthority(getRegistry().getName());
+            transformation.setAuthority(getRegistry().getName(  ));
+
+            if (!JPService.testMode() && JPService.verboseMode()) {
+                logger.info("Publish " + locationRegistry.get(unitConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId() + " to " + unitConfig.getPlacementConfig().getTransformationFrameId());
+            }
             transformPublisher.sendTransform(transformation, TransformType.STATIC);
-            
         } catch (NotAvailableException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.DEBUG);
         } catch (CouldNotPerformException | TransformerException | ConcurrentModificationException | NullPointerException ex) {

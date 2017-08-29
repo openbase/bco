@@ -22,6 +22,7 @@ package org.openbase.bco.registry.unit.core.plugin;
  * #L%
  */
 import java.util.ConcurrentModificationException;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -40,16 +41,17 @@ import rct.TransformerException;
 import rct.TransformerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
+@Deprecated
 public class PublishConnectionTransformationRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> {
-    
+
     protected final Logger logger = LoggerFactory.getLogger(getClass());
-    
+
     private Registry<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> registry;
     final Registry<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locationRegistry;
-    
+
     private TransformerFactory transformerFactory;
     private TransformPublisher transformPublisher;
-    
+
     public PublishConnectionTransformationRegistryPlugin(final Registry<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locationRegistry) throws org.openbase.jul.exception.InstantiationException {
         try {
             this.locationRegistry = locationRegistry;
@@ -59,7 +61,7 @@ public class PublishConnectionTransformationRegistryPlugin extends FileRegistryP
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
     }
-    
+
     @Override
     public void init(Registry<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> registry) throws InitializationException, InterruptedException {
         try {
@@ -72,34 +74,36 @@ public class PublishConnectionTransformationRegistryPlugin extends FileRegistryP
             throw new InitializationException(this, ex);
         }
     }
-    
+
     public void publishTransformation(IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry) {
         try {
             UnitConfig connectionConfig = entry.getMessage();
-            
+
             if (connectionConfig.hasPlacementConfig() && connectionConfig.getPlacementConfig().hasPosition()) {
-                
+
                 if (!connectionConfig.hasId()) {
                     throw new NotAvailableException("connectionconfig.id");
                 }
-                
+
                 if (!connectionConfig.hasPlacementConfig()) {
                     throw new NotAvailableException("connectionconfig.placement");
                 }
-                
+
                 if (!connectionConfig.getPlacementConfig().hasPosition()) {
                     throw new NotAvailableException("connectionconfig.placement.position");
                 }
-                
+
                 if (!connectionConfig.getPlacementConfig().hasTransformationFrameId() || connectionConfig.getPlacementConfig().getTransformationFrameId().isEmpty()) {
                     throw new NotAvailableException("connectionconfig.placement.transformationframeid");
                 }
-                
+
                 if (!connectionConfig.getPlacementConfig().hasLocationId() || connectionConfig.getPlacementConfig().getLocationId().isEmpty()) {
                     throw new NotAvailableException("connectionconfig.placement.locationid");
                 }
-                
-                logger.info("Publish " + locationRegistry.get(connectionConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId() + " to " + connectionConfig.getPlacementConfig().getTransformationFrameId());
+
+                if (!JPService.testMode() && JPService.verboseMode()) {
+                    logger.info("Publish " + locationRegistry.get(connectionConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId() + " to " + connectionConfig.getPlacementConfig().getTransformationFrameId());
+                }
 
                 // Create the rct transform object with source and target frames
                 Transform transformation = PoseTransformer.transform(connectionConfig.getPlacementConfig().getPosition(), locationRegistry.get(connectionConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId(), connectionConfig.getPlacementConfig().getTransformationFrameId());
@@ -114,17 +118,17 @@ public class PublishConnectionTransformationRegistryPlugin extends FileRegistryP
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.WARN);
         }
     }
-    
+
     @Override
     public void afterRegister(IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry) {
         publishTransformation(entry);
     }
-    
+
     @Override
     public void afterUpdate(IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry) throws CouldNotPerformException {
         publishTransformation(entry);
     }
-    
+
     @Override
     public void shutdown() {
         if (transformPublisher != null) {

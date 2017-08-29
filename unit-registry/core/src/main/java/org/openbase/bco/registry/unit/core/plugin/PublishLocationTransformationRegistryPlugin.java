@@ -22,6 +22,7 @@ package org.openbase.bco.registry.unit.core.plugin;
  * #L%
  */
 import java.util.ConcurrentModificationException;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -109,7 +110,9 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
                 throw new NotAvailableException("locationconfig.placementconfig.locationid");
             }
 
-            logger.info("Publish " + getRegistry().get(locationConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId() + " to " + locationConfig.getPlacementConfig().getTransformationFrameId());
+            if (!JPService.testMode() && JPService.verboseMode()) {
+                logger.info("Publish " + getRegistry().get(locationConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId() + " to " + locationConfig.getPlacementConfig().getTransformationFrameId());
+            }
 
             // Create the rct transform object with source and target frames
             Transform transformation = PoseTransformer.transform(locationConfig.getPlacementConfig().getPosition(), getRegistry().get(locationConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId(), locationConfig.getPlacementConfig().getTransformationFrameId());
