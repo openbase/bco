@@ -338,7 +338,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         registerConsistencyHandler(new UnitEnablingStateConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new ServiceConfigServiceTemplateIdConsistencyHandler(serviceTemplateRegistry), UnitConfig.class);
         registerConsistencyHandler(new BoundingBoxCleanerConsistencyHandler(), UnitConfig.class);
-        registerConsistencyHandler(new UnitShapeConsistencyHandler(), UnitConfig.class);
+        registerConsistencyHandler(new UnitShapeConsistencyHandler(locationUnitConfigRegistry), UnitConfig.class);
         registerConsistencyHandler(new UnitTransformationFrameConsistencyHandler(locationUnitConfigRegistry), UnitConfig.class);
         try {
             if (JPService.getProperty(JPClearUnitPosition.class).getValue()) {
