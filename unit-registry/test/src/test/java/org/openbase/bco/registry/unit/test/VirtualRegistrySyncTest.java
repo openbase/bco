@@ -207,6 +207,8 @@ public class VirtualRegistrySyncTest {
             }
             
             Registries.shutdown();
+
+            authenticatorController.shutdown();
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
