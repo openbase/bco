@@ -21,11 +21,13 @@ package org.openbase.bco.registry.lib.com;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.authentication.lib.AuthorizationHelper;
+import java.util.Map;
+import org.openbase.bco.registry.lib.authorization.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -38,12 +40,17 @@ public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthorizationFilter.class);
     
     private SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> authorizationGroupRegistry;
+    private SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> locationRegistry;
     
     public AuthorizationFilter() {
     }
-    
+
     public void setAuthorizationGroupRegistry(final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> authorizationGroupRegistry) {
         this.authorizationGroupRegistry = authorizationGroupRegistry;
+    }
+
+    public void setLocationRegistry(final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> locationRegistry) {
+        this.locationRegistry = locationRegistry;
     }
     
     @Override
@@ -63,11 +70,20 @@ public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
     }
     
     @Override
-    public boolean verify(UnitConfig unitConfig) {
+    public boolean verify(UnitConfig unitConfig) throws CouldNotPerformException {
+        Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> authorizationGroups = null;
         if (authorizationGroupRegistry != null) {
-            return AuthorizationHelper.canAccess(unitConfig.getPermissionConfig(), SessionManager.getInstance().getUserAtClientId(), authorizationGroupRegistry.getEntryMap());
-        } else {
-            return AuthorizationHelper.canAccess(unitConfig.getPermissionConfig(), SessionManager.getInstance().getUserAtClientId(), null);
+            authorizationGroups = authorizationGroupRegistry.getEntryMap();
+        }
+        Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations = null;
+        if (locationRegistry != null) {
+            locations = locationRegistry.getEntryMap();
+        }
+        
+        try {
+            return AuthorizationHelper.canAccess(unitConfig, SessionManager.getInstance().getUserAtClientId(), authorizationGroups, locations);
+        } catch (InterruptedException ex) {
+            throw new CouldNotPerformException(ex);
         }
     }
 }

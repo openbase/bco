@@ -110,6 +110,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
             logger.warn("You are using a "+getClass().getSimpleName()+" which is not maintained by the global registry singelton! This is extremely inefficient! Please use \"Registries.get"+getClass().getSimpleName().replace("Remote", "")+"()\" instead creating your own instances!");
         }
         authorizationFilter.setAuthorizationGroupRegistry(unitRegistry.getAuthorizationGroupUnitConfigRemoteRegistry());
+        authorizationFilter.setLocationRegistry(locationUnitConfigRemoteRegistry);
         super.activate();
     }
 

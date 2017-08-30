@@ -25,7 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
-import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
+import org.openbase.bco.registry.lib.authorization.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
 import org.openbase.bco.registry.lib.com.AuthorizationFilter;
@@ -129,6 +129,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
             );
 
             authorizationFilter.setAuthorizationGroupRegistry(authorizationGroupUnitConfigRemoteRegistry);
+            authorizationFilter.setLocationRegistry(locationUnitConfigRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
