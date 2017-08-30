@@ -32,8 +32,8 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.Factory;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.processing.StringProcessor;
-import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.MotionStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.location.LocationDataType.LocationData;
 
@@ -68,6 +68,16 @@ public class LocationRemoteFactoryImpl implements Factory<LocationRemote, UnitCo
 
                 if (data.hasPowerConsumptionState()) {
                     openHABRemote.postUpdate(OpenHABCommandFactory.newDecimalCommand(data.getPowerConsumptionState().getConsumption()).setItem(generateItemId(locationUnitConfig, ServiceType.POWER_CONSUMPTION_STATE_SERVICE)).build());
+                }
+
+                if (data.hasMotionState()) {
+                    // post a 1 for motion and a 0 for no motion
+                    double number = data.getMotionState().getValue() == MotionStateType.MotionState.State.MOTION ? 1.0 : 0.0;
+                    openHABRemote.postUpdate(OpenHABCommandFactory.newDecimalCommand(number).setItem(generateItemId(locationUnitConfig, ServiceType.MOTION_STATE_SERVICE)).build());
+                }
+
+                if (data.hasTemperatureState()) {
+                    openHABRemote.postUpdate(OpenHABCommandFactory.newDecimalCommand(data.getTemperatureState().getTemperature()).setItem(generateItemId(locationUnitConfig, ServiceType.TEMPERATURE_STATE_SERVICE)).build());
                 }
             });
             return locationRemote;

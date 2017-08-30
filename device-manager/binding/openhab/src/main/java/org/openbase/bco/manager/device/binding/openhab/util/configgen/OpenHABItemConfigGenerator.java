@@ -163,7 +163,9 @@ public class OpenHABItemConfigGenerator {
                 for (ServiceDescription serviceDescription : serviceDescriptionsOnLocation.values()) {
                     if (serviceDescription.getType() == ServiceType.COLOR_STATE_SERVICE
                             || serviceDescription.getType() == ServiceType.POWER_STATE_SERVICE
-                            || serviceDescription.getType() == ServiceType.POWER_CONSUMPTION_STATE_SERVICE) {
+                            || serviceDescription.getType() == ServiceType.POWER_CONSUMPTION_STATE_SERVICE
+                            || serviceDescription.getType() == ServiceType.TEMPERATURE_STATE_SERVICE
+                            || serviceDescription.getType() == ServiceType.MOTION_STATE_SERVICE) {
                         LocationItemEntry entry = new LocationItemEntry(locationUnitConfig, serviceDescription);
                         itemEntryList.add(entry);
                         logger.debug("Added location entry [" + entry.buildStringRep() + "]");
