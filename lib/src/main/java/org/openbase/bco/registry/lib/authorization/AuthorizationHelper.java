@@ -114,12 +114,11 @@ public class AuthorizationHelper {
     }
 
     private static boolean canDo(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations, Type type) throws InterruptedException, CouldNotPerformException {
-        System.out.println(unitConfig);
-        boolean isRoot = unitConfig.getType() == UnitType.LOCATION && unitConfig.getLocationConfig().hasRoot() && unitConfig.getLocationConfig().getRoot();
+        UnitConfig locationUnitConfig = getLocationUnitConfig(unitConfig.getPlacementConfig().getLocationId(), locations);
 
-        if (!isRoot) {
-            UnitConfig locationUnitConfig = getLocationUnitConfig(unitConfig.getPlacementConfig().getLocationId(), locations);
+        boolean isRoot = unitConfig.getType() == UnitType.LOCATION && unitConfig.getLocationConfig().getRoot();
 
+        if (locationUnitConfig != null && !isRoot) {
             if (!canRead(locationUnitConfig, userId, groups, locations)) {
                 return false;
             }
@@ -213,8 +212,6 @@ public class AuthorizationHelper {
             return locations.get(locationId).getMessage();
         }
 
-        new NotAvailableException("").printStackTrace();
-
-        throw new NotAvailableException("Location [" + locationId + "]");
+        return null;
     }
 }

@@ -26,7 +26,6 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.authorization.AuthenticatedServiceProcessor;
-import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
 import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
 import org.openbase.bco.registry.app.remote.AppRegistryRemote;
@@ -133,6 +132,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
@@ -140,6 +140,7 @@ import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
+import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
@@ -188,6 +189,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     public final static UnitConfigIdGenerator UNIT_ID_GENERATOR = new UnitConfigIdGenerator();
+
+    private final static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(UnitRegistryController.class);
 
     private final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> unitTemplateRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, ServiceTemplate, ServiceTemplate.Builder, UnitRegistryData.Builder> serviceTemplateRegistry;
@@ -541,7 +544,22 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public Future<AuthenticatedValue> registerUnitConfig(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
-            return AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, null, getAuthorizationGroupUnitConfigRegistry().getEntryMap(), getLocationUnitConfigRegistry().getEntryMap(), UnitConfig.class, (UnitConfig unitConfig) -> getUnitConfigRegistry(unitConfig.getType()).register(unitConfig));
+            return AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, getAuthorizationGroupUnitConfigRegistry().getEntryMap(), getLocationUnitConfigRegistry().getEntryMap(), UnitConfig.class,
+                (UnitConfig unitConfig) -> getUnitConfigRegistry(unitConfig.getType()).register(unitConfig),
+                (UnitConfig unitConfig) -> {
+                    // If the unit has a location, use the location's UnitConfig for the permissions.
+                    if (unitConfig.hasPlacementConfig() && unitConfig.getPlacementConfig().hasLocationId()) {
+                        try {
+                            return getLocationUnitConfigRegistry().getMessage(unitConfig.getPlacementConfig().getLocationId());
+                        } catch (CouldNotPerformException ex) {
+                            ExceptionPrinter.printHistory(ex, LOGGER);
+                        }
+                    }
+
+                    // Else, use the permissions of the UnitRegistryData type.
+                    return UnitConfig.newBuilder().setPermissionConfig(getData().getPermissionConfig()).build();
+                }
+            );
         });
     }
 
@@ -582,7 +600,10 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public Future<AuthenticatedValue> updateUnitConfig(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
-            return AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, getData(), getAuthorizationGroupUnitConfigRegistry().getEntryMap(), getLocationUnitConfigRegistry().getEntryMap(), UnitConfig.class, (UnitConfig unitConfig) -> getUnitConfigRegistry(unitConfig.getType()).update(unitConfig));
+            return AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, getAuthorizationGroupUnitConfigRegistry().getEntryMap(), getLocationUnitConfigRegistry().getEntryMap(), UnitConfig.class,
+              (UnitConfig unitConfig) -> getUnitConfigRegistry(unitConfig.getType()).update(unitConfig),
+              (UnitConfig unitConfig) -> unitConfig
+            );
         });
     }
 
@@ -594,7 +615,10 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public Future<AuthenticatedValue> removeUnitConfig(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
-            return AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, getData().getPermissionConfig(), getAuthorizationGroupUnitConfigRegistry().getEntryMap(), getLocationUnitConfigRegistry().getEntryMap(), UnitConfig.class, (UnitConfig unitConfig) -> getUnitConfigRegistry(unitConfig.getType()).remove(unitConfig));
+            return AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, getAuthorizationGroupUnitConfigRegistry().getEntryMap(), getLocationUnitConfigRegistry().getEntryMap(), UnitConfig.class, 
+              (UnitConfig unitConfig) -> getUnitConfigRegistry(unitConfig.getType()).remove(unitConfig),
+              (UnitConfig unitConfig) -> unitConfig
+            );
         });
     }
 

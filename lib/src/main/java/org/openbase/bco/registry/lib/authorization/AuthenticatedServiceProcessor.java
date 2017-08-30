@@ -38,7 +38,6 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -48,17 +47,20 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public abstract class AuthenticatedServiceProcessor {
 
-    public static <M extends GeneratedMessage> AuthenticatedValue authenticatedAction(final AuthenticatedValue authenticatedValue, final UnitConfig unitConfig, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> authorizationGroupMap, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locationMap, final Class<M> internalClass, final InternalProcessable<M> executable) throws CouldNotPerformException, InterruptedException {
+    public static <M extends GeneratedMessage> AuthenticatedValue authenticatedAction(final AuthenticatedValue authenticatedValue, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> authorizationGroupMap, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locationMap, final Class<M> internalClass, final InternalProcessable<M> executable, final ConfigRetrieval<M> configRetrieval) throws CouldNotPerformException, InterruptedException {
         try {
             AuthenticatedValue.Builder response = AuthenticatedValue.newBuilder();
             if (authenticatedValue.hasTicketAuthenticatorWrapper()) {
                 try {
                     ServiceServerManager.TicketEvaluationWrapper ticketEvaluationWrapper = ServiceServerManager.getInstance().evaluateClientServerTicket(authenticatedValue.getTicketAuthenticatorWrapper());
 
+                    M decrypted = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), ticketEvaluationWrapper.getSessionKey(), internalClass);
+                    UnitConfig unitConfig = configRetrieval.retrieve(decrypted);
+
                     if (!AuthorizationHelper.canWrite(unitConfig, ticketEvaluationWrapper.getId(), authorizationGroupMap, locationMap)) {
                         throw new PermissionDeniedException("User[" + ticketEvaluationWrapper.getId() + "] has not rights to register a unitConfig");
                     }
-                    M decrypted = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), ticketEvaluationWrapper.getSessionKey(), internalClass);
+
                     M result = executable.process(decrypted);
                     response.setValue(EncryptionHelper.encryptSymmetric(result, ticketEvaluationWrapper.getSessionKey()));
                     response.setTicketAuthenticatorWrapper(ticketEvaluationWrapper.getTicketAuthenticatorWrapper());
@@ -66,13 +68,16 @@ public abstract class AuthenticatedServiceProcessor {
                     throw new CouldNotPerformException("Encryption/Decryption of internal value has failed", ex);
                 }
             } else {
-                if (!AuthorizationHelper.canWrite(unitConfig, null, null, locationMap)) {
-                    throw new PermissionDeniedException("Other has not rights to register a unitConfig");
-                }
                 try {
                     Method parseFrom = internalClass.getMethod("parseFrom", ByteString.class);
                     M message = (M) parseFrom.invoke(null, authenticatedValue.getValue());
+
+                    UnitConfig unitConfig = configRetrieval.retrieve(message);
+
                     M result = executable.process(message);
+                    if (!AuthorizationHelper.canWrite(unitConfig, null, null, locationMap)) {
+                        throw new PermissionDeniedException("Other has not rights to register a unitConfig");
+                    }
                     response.setValue(result.toByteString());
                 } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                     throw new CouldNotPerformException("Could not invoke parseFrom method on [" + internalClass.getSimpleName() + "]", ex);
@@ -121,5 +126,16 @@ public abstract class AuthenticatedServiceProcessor {
     public interface InternalRequestable {
 
         public Future<AuthenticatedValue> request(AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+    }
+
+    public interface ConfigRetrieval<M extends GeneratedMessage> {
+        /**
+         * Provides a UnitConfig, using the decrypted value from the AuthenticatedValue.
+         *
+         * @param message Decrypted object that might lead to the UnitConfig.
+         * @return UnitConfig that allows to decide whether the user has the permission to perform an action.
+         * @throws CouldNotPerformException
+         */
+        public UnitConfig retrieve(final M message) throws CouldNotPerformException;
     }
 }
