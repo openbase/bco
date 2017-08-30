@@ -35,7 +35,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Future;
-import org.openbase.bco.authentication.lib.AuthorizationHelper;
+import org.openbase.bco.registry.lib.authorization.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.ServiceServerManager;
 import org.openbase.bco.dal.lib.action.ActionImpl;
 import org.openbase.bco.dal.lib.layer.service.Service;
@@ -54,6 +54,7 @@ import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -471,11 +472,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      * @throws VerificationFailedException if someone is logged in but the verification with the authenticator fails
      * @throws org.openbase.jul.exception.PermissionDeniedException
      */
-    public TicketAuthenticatorWrapper verifyAuthority(final ActionAuthority actionAuthority) throws VerificationFailedException, PermissionDeniedException {
+    public TicketAuthenticatorWrapper verifyAuthority(final ActionAuthority actionAuthority) throws VerificationFailedException, PermissionDeniedException, InterruptedException, CouldNotPerformException {
         // If there is no TicketAuthenticationWrapper, check permissions without userId and groups.
         if(!actionAuthority.hasTicketAuthenticatorWrapper()) {
             try {
-                if (!AuthorizationHelper.canWrite(getConfig().getPermissionConfig(), null, null)) {
+                Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations = Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap();
+
+                if (!AuthorizationHelper.canWrite(getConfig(), null, null, locations)) {
                     throw new PermissionDeniedException("You have no permission to execute this action.");
                 }
 
@@ -489,8 +492,10 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             TicketAuthenticatorWrapper wrapper = actionAuthority.getTicketAuthenticatorWrapper();
             ServiceServerManager.TicketEvaluationWrapper validatedTicketWrapper = ServiceServerManager.getInstance().evaluateClientServerTicket(wrapper);
             String clientId = validatedTicketWrapper.getId();
+            Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups = Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap();
+            Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations = Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap();
 
-            if (!AuthorizationHelper.canWrite(getConfig().getPermissionConfig(), clientId, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap())) {
+            if (!AuthorizationHelper.canWrite(getConfig(), clientId, groups, locations)) {
                 throw new PermissionDeniedException("You have no permission to execute this action.");
             }
 
