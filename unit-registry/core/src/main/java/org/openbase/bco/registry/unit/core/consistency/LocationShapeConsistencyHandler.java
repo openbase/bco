@@ -21,7 +21,6 @@ package org.openbase.bco.registry.unit.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Vector3d;
@@ -29,6 +28,7 @@ import org.openbase.bco.registry.lib.util.LocationUtils;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.extension.rct.GlobalTransformReceiver;
@@ -105,8 +105,8 @@ public class LocationShapeConsistencyHandler extends AbstractProtoBufRegistryCon
             logger.error("Getting unitTransformation fails.");
             Thread.currentThread().interrupt();
             throw new FatalImplementationErrorException(this, ex);
-        } catch (ExecutionException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not get unitTransformation for unit "+unitConfig.getLabel()+" with id: "+unitConfig.getId(), ex), logger);
+        } catch (Exception ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not get unitTransformation for unit "+unitConfig.getLabel()+" with id: "+unitConfig.getId(), ex), logger, LogLevel.WARN);
             return;
         }
 
