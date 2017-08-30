@@ -21,12 +21,10 @@ package org.openbase.bco.registry.unit.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Vector3d;
 import org.openbase.bco.registry.lib.util.LocationUtils;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -35,7 +33,6 @@ import org.openbase.jul.extension.rct.GlobalTransformReceiver;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rct.Transform;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.spatial.FloorCeilingEdgeIndicesType.FloorCeilingEdgeIndices;
@@ -106,19 +103,13 @@ public class LocationShapeConsistencyHandler extends AbstractProtoBufRegistryCon
             }
 
             // lookup global transformation
-            Future<Transform> requestTransform = GlobalTransformReceiver.getInstance().requestTransform(
+            unitTransformation = GlobalTransformReceiver.getInstance().lookupTransform(
                     unitConfig.getPlacementConfig().getTransformationFrameId(),
                     rootUnitConfig.getPlacementConfig().getTransformationFrameId(),
-                    System.currentTimeMillis()
-            );
-            unitTransformation = requestTransform.get().getTransform();
+                    System.currentTimeMillis()).getTransform();
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("could not get requestTransform", ex), logger);
             return;
-        } catch (InterruptedException ex) {
-            logger.error("Getting unitTransformation fails.");
-            Thread.currentThread().interrupt();
-            throw new FatalImplementationErrorException(this, ex);
         } catch (Exception ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not get unitTransformation for unit " + unitConfig.getLabel() + " with id: " + unitConfig.getId(), ex), logger, LogLevel.WARN);
             return;
