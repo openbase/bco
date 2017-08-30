@@ -70,11 +70,15 @@ public class LocationShapeConsistencyHandler extends AbstractProtoBufRegistryCon
         final UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
 
         // filter if config does not contain placement or shape
-        if (!unitConfig.hasPlacementConfig() || !unitConfig.getPlacementConfig().hasShape() || unitConfig.getPlacementConfig().getShape().getFloorList().isEmpty()
-                || !unitConfig.getPlacementConfig().getShape().getCeilingList().isEmpty()) {
+        if (!unitConfig.hasPlacementConfig()
+                || !unitConfig.getPlacementConfig().hasShape()
+                || unitConfig.getPlacementConfig().getShape().getFloorList().isEmpty()
+                || !unitConfig.getPlacementConfig().getShape().getCeilingList().isEmpty()
+                || !unitConfig.getPlacementConfig().hasTransformationFrameId()
+                || unitConfig.getPlacementConfig().getTransformationFrameId().isEmpty()) {
             return;
         }
-        
+
         String rootLocationId;
 
         try {
@@ -90,15 +94,25 @@ public class LocationShapeConsistencyHandler extends AbstractProtoBufRegistryCon
                 return;
             }
         }
-        
+
         Transform3D unitTransformation;
         try {
+
+            // skip if root location is not ready
+            final UnitConfig rootUnitConfig = registry.get(rootLocationId).getMessage();
+            if (!rootUnitConfig.getPlacementConfig().hasTransformationFrameId()
+                    || rootUnitConfig.getPlacementConfig().getTransformationFrameId().isEmpty()) {
+                return;
+            }
+
+            // lookup global transformation
             Future<Transform> requestTransform = GlobalTransformReceiver.getInstance().requestTransform(
                     unitConfig.getPlacementConfig().getTransformationFrameId(),
-                    registry.get(rootLocationId).getMessage().getPlacementConfig().getTransformationFrameId(),
-                    System.currentTimeMillis());
+                    rootUnitConfig.getPlacementConfig().getTransformationFrameId(),
+                    System.currentTimeMillis()
+            );
             unitTransformation = requestTransform.get().getTransform();
-        } catch(CouldNotPerformException ex) {
+        } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("could not get requestTransform", ex), logger);
             return;
         } catch (InterruptedException ex) {
@@ -106,10 +120,11 @@ public class LocationShapeConsistencyHandler extends AbstractProtoBufRegistryCon
             Thread.currentThread().interrupt();
             throw new FatalImplementationErrorException(this, ex);
         } catch (Exception ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not get unitTransformation for unit "+unitConfig.getLabel()+" with id: "+unitConfig.getId(), ex), logger, LogLevel.WARN);
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not get unitTransformation for unit " + unitConfig.getLabel() + " with id: " + unitConfig.getId(), ex), logger, LogLevel.WARN);
             return;
         }
 
+        // update shape
         final Shape shape = unitConfig.getPlacementConfig().getShape();
         Shape newShape = updateCeilingAndLinks(shape, unitTransformation);
         if (!shape.equals(newShape)) {
@@ -133,7 +148,7 @@ public class LocationShapeConsistencyHandler extends AbstractProtoBufRegistryCon
         Shape.Builder newBuilder = shape.toBuilder();
         newBuilder.clearCeiling();
         newBuilder.clearFloorCeilingEdge();
-        
+
         for (int i = 0; i < shape.getFloorCount(); i++) {
             newBuilder.addCeiling(addHeight(shape.getFloor(i), unitTransform, inverseTransform));
             newBuilder.addFloorCeilingEdge(FloorCeilingEdgeIndices.newBuilder().setFloorIndex(i).setCeilingIndex(i));
