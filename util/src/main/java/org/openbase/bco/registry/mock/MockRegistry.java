@@ -249,7 +249,8 @@ public class MockRegistry {
         CONNECTION(UnitType.CONNECTION),
         SCENE(UnitType.SCENE, ACTIVATION_SPS, ACTIVATION_SOS),
         AGENT(UnitType.AGENT, ACTIVATION_SPS, ACTIVATION_SOS),
-        APP(UnitType.APP, ACTIVATION_SPS, ACTIVATION_SOS);
+        APP(UnitType.APP, ACTIVATION_SPS, ACTIVATION_SOS),
+        UNIT_GROUP(UnitType.UNIT_GROUP, COLOR_SPS, COLOR_SOS, POWER_SPS, POWER_SOS);
 
         private final UnitTemplate template;
 
