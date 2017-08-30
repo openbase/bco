@@ -158,7 +158,7 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
         LOGGER.info("Add " + unitConfig.getLabel() + " with " + serviceType.name() + " " + serviceAttribute + "to unit panel.");
         synchronized (unitPanelMapLock) {
             GenericUnitPanel genericUnitPanel;
-            try {
+            try {   
                 String mapKey = unitConfig.getId() + serviceType.toString();
                 genericUnitPanel = new GenericUnitPanel<>();
                 if (removable) {
