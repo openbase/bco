@@ -23,9 +23,9 @@ package org.openbase.bco.manager.agent.core.preset;
  */
 import java.util.List;
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.remote.unit.UnitGroupRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
+import org.openbase.bco.dal.remote.unit.unitgroup.UnitGroupRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.bco.manager.agent.core.TriggerDAL.AgentTriggerPool;
 import org.openbase.bco.manager.agent.core.TriggerDAL.IlluminanceDualBoundaryTrigger;
