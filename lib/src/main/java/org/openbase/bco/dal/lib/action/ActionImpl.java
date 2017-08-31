@@ -174,6 +174,9 @@ public class ActionImpl implements Action {
                 } catch (CouldNotPerformException ex) {
                     updateActionState(ActionState.State.REJECTED);
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    return null;
                 }
             }
         } catch (CouldNotPerformException ex) {
