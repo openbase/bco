@@ -549,11 +549,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
                 (UnitConfig unitConfig) -> {
                     // If the unit has a location, use the location's UnitConfig for the permissions.
                     if (unitConfig.hasPlacementConfig() && unitConfig.getPlacementConfig().hasLocationId()) {
-                        try {
-                            return getLocationUnitConfigRegistry().getMessage(unitConfig.getPlacementConfig().getLocationId());
-                        } catch (CouldNotPerformException ex) {
-                            ExceptionPrinter.printHistory(ex, LOGGER);
-                        }
+                        return getLocationUnitConfigRegistry().getMessage(unitConfig.getPlacementConfig().getLocationId());
                     }
 
                     // Else, use the permissions of the UnitRegistryData type.

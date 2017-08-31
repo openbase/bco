@@ -200,11 +200,15 @@ public class AuthorizationHelper {
             return unitConfig.getPermissionConfig();
         }
         // If the unit has a parent location (i.e. is not the root location), we use the PermissionConfig of the parent(s).
-        else if (unitConfig.getType() != UnitType.LOCATION || !unitConfig.getLocationConfig().hasRoot() || !unitConfig.getLocationConfig().getRoot()) {
-            return getPermissionConfig(getLocationUnitConfig(unitConfig.getPlacementConfig().getLocationId(), locations), locations);
+        else {
+            UnitConfig locationUnitConfig = getLocationUnitConfig(unitConfig.getPlacementConfig().getLocationId(), locations);
+
+            if (locationUnitConfig != null && (unitConfig.getType() != UnitType.LOCATION || !unitConfig.getLocationConfig().hasRoot() || !unitConfig.getLocationConfig().getRoot())) {
+                return getPermissionConfig(locationUnitConfig, locations);
+            }
         }
 
-        return PermissionConfig.getDefaultInstance();
+        throw new NotAvailableException("PermissionConfig of unit " + unitConfig.getId());
     }
 
     private static UnitConfig getLocationUnitConfig(String locationId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) throws NotAvailableException {
