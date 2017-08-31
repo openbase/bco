@@ -22,6 +22,7 @@ package org.openbase.bco.registry.lib.authorization;
  * #L%
  */
 
+import com.google.protobuf.Descriptors;
 import com.google.protobuf.ProtocolStringList;
 import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -196,17 +197,22 @@ public class AuthorizationHelper {
     }
 
     private static PermissionConfig getPermissionConfig(UnitConfig unitConfig, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) throws InterruptedException, CouldNotPerformException {
+        PermissionConfig unitPermissionConfig = null;
+        PermissionConfig locationPermissionConfig = null;
+
         // If the unit itself has a PermissionConfig, we use this one.
         if (unitConfig.hasPermissionConfig()) {
-            return unitConfig.getPermissionConfig();
+            unitPermissionConfig = unitConfig.getPermissionConfig();
         }
         // If the unit has a parent location (i.e. is not the root location), we use the PermissionConfig of the parent(s).
-        else {
-            UnitConfig locationUnitConfig = getLocationUnitConfig(unitConfig.getPlacementConfig().getLocationId(), locations);
+        UnitConfig locationUnitConfig = getLocationUnitConfig(unitConfig.getPlacementConfig().getLocationId(), locations);
 
-            if (locationUnitConfig != null && (unitConfig.getType() != UnitType.LOCATION || !unitConfig.getLocationConfig().hasRoot() || !unitConfig.getLocationConfig().getRoot())) {
-                return getPermissionConfig(locationUnitConfig, locations);
-            }
+        if (locationUnitConfig != null && (unitConfig.getType() != UnitType.LOCATION || !unitConfig.getLocationConfig().hasRoot() || !unitConfig.getLocationConfig().getRoot())) {
+            locationPermissionConfig = getPermissionConfig(locationUnitConfig, locations);
+        }
+
+        if (unitPermissionConfig != null || locationPermissionConfig != null) {
+            return mergePermissionConfigs(unitPermissionConfig, locationPermissionConfig);
         }
 
         throw new NotAvailableException("PermissionConfig of unit " + ScopeGenerator.generateStringRep(unitConfig.getScope()));
@@ -218,5 +224,43 @@ public class AuthorizationHelper {
         }
 
         return null;
+    }
+
+    private static PermissionConfig mergePermissionConfigs(PermissionConfig unitPermissionConfig, PermissionConfig locationPermissionConfig) {
+        if (unitPermissionConfig == null) {
+            return locationPermissionConfig;
+        }
+
+        if (locationPermissionConfig == null) {
+            return unitPermissionConfig;
+        }
+
+        PermissionConfig.Builder builder = PermissionConfig.newBuilder(unitPermissionConfig);
+
+        if (!unitPermissionConfig.hasOtherPermission() || !unitPermissionConfig.getOtherPermission().hasAccess() || !unitPermissionConfig.getOtherPermission().hasRead() || !unitPermissionConfig.getOtherPermission().hasWrite()) {
+            builder.setOtherPermission(locationPermissionConfig.getOtherPermission());
+        }
+
+        if (!unitPermissionConfig.hasOwnerPermission() || !unitPermissionConfig.getOwnerPermission().hasAccess() || !unitPermissionConfig.getOwnerPermission().hasRead() || !unitPermissionConfig.getOwnerPermission().hasWrite()) {
+            builder.setOwnerPermission(locationPermissionConfig.getOwnerPermission());
+        }
+
+        boolean found = false;
+
+        for (MapFieldEntry locationEntry : locationPermissionConfig.getGroupPermissionList()) {
+            for (MapFieldEntry unitEntry : unitPermissionConfig.getGroupPermissionList()) {
+                if (locationEntry.getGroupId().equals(unitEntry.getGroupId())) {
+                    found = true;
+                }
+            }
+
+            if (!found) {
+                builder.addGroupPermission(locationEntry);
+            }
+
+            found = false;
+        }
+
+        return builder.build();
     }
 }
