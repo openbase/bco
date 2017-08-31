@@ -74,10 +74,11 @@ public abstract class AuthenticatedServiceProcessor {
 
                     UnitConfig unitConfig = configRetrieval.retrieve(message);
 
-                    M result = executable.process(message);
                     if (!AuthorizationHelper.canWrite(unitConfig, null, null, locationMap)) {
                         throw new PermissionDeniedException("Other has not rights to register a unitConfig");
                     }
+
+                    M result = executable.process(message);
                     response.setValue(result.toByteString());
                 } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                     throw new CouldNotPerformException("Could not invoke parseFrom method on [" + internalClass.getSimpleName() + "]", ex);
