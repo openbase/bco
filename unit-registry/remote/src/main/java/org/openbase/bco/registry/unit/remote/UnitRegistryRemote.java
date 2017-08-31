@@ -29,6 +29,7 @@ import org.openbase.bco.registry.lib.authorization.AuthenticatedServiceProcessor
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
 import org.openbase.bco.registry.lib.com.AuthorizationFilter;
+import org.openbase.bco.registry.lib.com.DefaultMessageFilter;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.jp.JPUnitRegistryScope;
@@ -96,10 +97,10 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
             this.authorizationFilter = new AuthorizationFilter();
             this.dalUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry(this, authorizationFilter, UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER);
             this.userUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
-            this.authorizationGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
+            this.authorizationGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, new DefaultMessageFilter(), UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
             this.deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER);
             this.unitGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, UnitRegistryData.UNIT_GROUP_UNIT_CONFIG_FIELD_NUMBER);
-            this.locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, UnitRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER);
+            this.locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, new DefaultMessageFilter(), UnitRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER);
             this.connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, UnitRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER);
             this.agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER);
             this.sceneUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER);
@@ -143,6 +144,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
          * on one of these remote registries and tries to get values from other remote registries
          * which are registered later than these are not synced yet
          */
+        registerRemoteRegistry(locationUnitConfigRemoteRegistry);
         registerRemoteRegistry(authorizationGroupUnitConfigRemoteRegistry);
         registerRemoteRegistry(unitConfigRemoteRegistry);
         registerRemoteRegistry(unitTemplateRemoteRegistry);
@@ -151,7 +153,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         registerRemoteRegistry(userUnitConfigRemoteRegistry);
         registerRemoteRegistry(deviceUnitConfigRemoteRegistry);
         registerRemoteRegistry(unitGroupUnitConfigRemoteRegistry);
-        registerRemoteRegistry(locationUnitConfigRemoteRegistry);
         registerRemoteRegistry(connectionUnitConfigRemoteRegistry);
         registerRemoteRegistry(agentUnitConfigRemoteRegistry);
         registerRemoteRegistry(sceneUnitConfigRemoteRegistry);

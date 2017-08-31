@@ -27,6 +27,7 @@ import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig.MapFieldEntry;
@@ -208,7 +209,7 @@ public class AuthorizationHelper {
             }
         }
 
-        throw new NotAvailableException("PermissionConfig of unit " + unitConfig.getId());
+        throw new NotAvailableException("PermissionConfig of unit " + ScopeGenerator.generateStringRep(unitConfig.getScope()));
     }
 
     private static UnitConfig getLocationUnitConfig(String locationId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) throws NotAvailableException {
