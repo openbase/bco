@@ -43,6 +43,14 @@ public class OtherPermissionConsistencyHandler extends AbstractProtoBufRegistryC
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
+
+        // Set permissions only for the root location and for units without a location.
+        if ((!unitConfig.hasLocationConfig() || !unitConfig.getLocationConfig().getRoot())
+            && unitConfig.hasPlacementConfig() && unitConfig.getPlacementConfig().hasLocationId()
+        ) {
+            return;
+        }
+
         PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();
         
         if (!permissionConfig.hasOtherPermission()) {
