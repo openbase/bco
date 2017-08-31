@@ -127,9 +127,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                     UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER
             );
-
-            authorizationFilter.setAuthorizationGroupRegistry(authorizationGroupUnitConfigRemoteRegistry);
-            authorizationFilter.setLocationRegistry(locationUnitConfigRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -160,6 +157,14 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         registerRemoteRegistry(sceneUnitConfigRemoteRegistry);
         registerRemoteRegistry(appUnitConfigRemoteRegistry);
         registerRemoteRegistry(baseUnitConfigRemoteRegistry);
+    }
+
+    @Override
+    public void activate() throws InterruptedException, CouldNotPerformException {
+        super.activate();
+
+        authorizationFilter.setAuthorizationGroupRegistry(authorizationGroupUnitConfigRemoteRegistry);
+        authorizationFilter.setLocationRegistry(locationUnitConfigRemoteRegistry);
     }
 
     // todo: sync unitConfigRemoteRegistry
