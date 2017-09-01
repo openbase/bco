@@ -22,7 +22,6 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen;
  * #L%
  */
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABItemConfig;
-import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -30,16 +29,11 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
-import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import java.io.File;
 import org.apache.commons.io.monitor.FileAlterationListenerAdaptor;
 import org.apache.commons.io.monitor.FileAlterationMonitor;
 import org.apache.commons.io.monitor.FileAlterationObserver;
-import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
-import org.openbase.bco.registry.app.remote.AppRegistryRemote;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
-import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.pattern.Observable;
@@ -60,25 +54,13 @@ public class OpenHABConfigGenerator implements Launchable<Void>, VoidInitializab
     public static final long TIMEOUT = 15000;
 
     private final OpenHABItemConfigGenerator itemConfigGenerator;
-    private final DeviceRegistryRemote deviceRegistryRemote;
-    private final UnitRegistryRemote unitRegistryRemote;
-    private final LocationRegistryRemote locationRegistryRemote;
-    private final SceneRegistryRemote sceneRegistryRemote;
-    private final AgentRegistryRemote agentRegistryRemote;
-    private final AppRegistryRemote appRegistryRemote;
     private final RecurrenceEventFilter recurrenceGenerationFilter;
     private boolean active;
 
     public OpenHABConfigGenerator() throws InstantiationException, InterruptedException {
         try {
             Registries.waitForData();
-            this.deviceRegistryRemote = Registries.getDeviceRegistry();
-            this.locationRegistryRemote = Registries.getLocationRegistry();
-            this.sceneRegistryRemote = Registries.getSceneRegistry();
-            this.agentRegistryRemote = Registries.getAgentRegistry();
-            this.appRegistryRemote = Registries.getAppRegistry();
-            this.unitRegistryRemote = Registries.getUnitRegistry();
-            this.itemConfigGenerator = new OpenHABItemConfigGenerator(deviceRegistryRemote, unitRegistryRemote, locationRegistryRemote, sceneRegistryRemote, agentRegistryRemote, appRegistryRemote);
+            this.itemConfigGenerator = new OpenHABItemConfigGenerator();
             this.recurrenceGenerationFilter = new RecurrenceEventFilter(TIMEOUT) {
 
                 @Override

@@ -64,7 +64,7 @@ package org.openbase.bco.manager.agent.core.preset;
 //            @Override
 //            public void onCacheUpdated(List cacheNotificationsList, PHBridge bridge) {
 //             // Here you receive notifications that the BridgeResource Cache was updated. Use the PHMessageType to   
-//                // check which cache was updated, e.g.
+//                // check which cache was updated, ex.g.
 //                if (cacheNotificationsList.contains(PHMessageType.LIGHTS_CACHE_UPDATED)) {
 //                    System.out.println("Lights Cache Updated ");
 //                }

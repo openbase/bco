@@ -1,6 +1,6 @@
 package org.openbase.bco.manager.device.binding.openhab.util.configgen.items;
 
-/*
+/*-
  * #%L
  * BCO Manager Device Binding OpenHAB
  * %%
@@ -21,45 +21,50 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen.items;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import static org.openbase.bco.manager.device.binding.openhab.util.configgen.items.AbstractItemEntry.ITEM_SEGMENT_DELIMITER;
 import static org.openbase.bco.manager.device.binding.openhab.util.configgen.items.AbstractItemEntry.ITEM_SUBSEGMENT_DELIMITER;
-import static org.openbase.bco.manager.device.binding.openhab.util.configgen.items.LocationItemEntry.LOCATION_RSB_BINDING_CONFIG;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public class ConnectionItemEntry extends AbstractItemEntry {
+public class UnitGroupItemEntry extends AbstractItemEntry {
 
-    public ConnectionItemEntry(final UnitConfig connectionUnitConfig, final ServiceDescription serviceDescription) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        super(connectionUnitConfig, null);
+    public static String LOCATION_RSB_BINDING_CONFIG = "bco.manager.location";
+
+    public UnitGroupItemEntry(final UnitConfigType.UnitConfig unitGroupUnitConfig, final ServiceDescription serviceDescription) throws org.openbase.jul.exception.InstantiationException {
+        super(unitGroupUnitConfig, null);
         try {
-            this.itemId = generateItemId(connectionUnitConfig, serviceDescription.getType());
+            this.itemId = generateItemId(unitGroupUnitConfig, serviceDescription.getType());
             this.icon = "";
             this.commandType = getDefaultCommand(serviceDescription.getType());
-            this.label = connectionUnitConfig.getLabel();
-            this.itemHardwareConfig = "rsb=\"" + LOCATION_RSB_BINDING_CONFIG + ":" + connectionUnitConfig.getId() + "\"";
-            
-            groups.add(ItemIdGenerator.generateUnitGroupID(UnitType.CONNECTION));
-            groups.add(ItemIdGenerator.generateUnitGroupID(connectionUnitConfig.getPlacementConfig().getLocationId()));
+            this.label = unitGroupUnitConfig.getLabel() + "_" + StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getType().name());
+            if ("Number".equals(commandType)) {
+                label += " [%.0f]";
+            }
+            this.itemHardwareConfig = "rsb=\"" + LOCATION_RSB_BINDING_CONFIG + ":" + unitGroupUnitConfig.getId() + "\"";
+            groups.add(ItemIdGenerator.generateUnitGroupID(UnitType.UNIT_GROUP));
+            groups.add(ItemIdGenerator.generateUnitGroupID(unitGroupUnitConfig));
             calculateGaps();
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
     }
 
-    private String generateItemId(final UnitConfig connectionUnitConfig, ServiceType serviceType) throws CouldNotPerformException {
-        return StringProcessor.transformToIdString("Connection")
+    private String generateItemId(final UnitConfigType.UnitConfig locationConfig, ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException {
+        return StringProcessor.transformToIdString("UnitGroup")
                 + ITEM_SEGMENT_DELIMITER
                 + StringProcessor.transformUpperCaseToCamelCase(serviceType.name())
                 + ITEM_SEGMENT_DELIMITER
-                + ScopeGenerator.generateStringRepWithDelimiter(connectionUnitConfig.getScope(), ITEM_SUBSEGMENT_DELIMITER);
+                + ScopeGenerator.generateStringRepWithDelimiter(locationConfig.getScope(), ITEM_SUBSEGMENT_DELIMITER);
     }
+    
 }

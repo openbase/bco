@@ -31,8 +31,8 @@ import nu.xom.Nodes;
  */
 public class OverissueNodeException extends XMLParsingException {
 
-	public OverissueNodeException(String nodeName, Nodes childNodes, Node parent, Exception e) {
-		super("Expected one Node[" + nodeName + "] but found " + childNodes.size() + " childs of parent Element[" + parent.getBaseURI() + "].", parent.getBaseURI(), e);
+	public OverissueNodeException(String nodeName, Nodes childNodes, Node parent, Exception ex) {
+		super("Expected one Node[" + nodeName + "] but found " + childNodes.size() + " childs of parent Element[" + parent.getBaseURI() + "].", parent.getBaseURI(), ex);
 	}
 
 	public OverissueNodeException(String nodeName, Nodes childElements, Node parent) {

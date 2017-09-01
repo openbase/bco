@@ -54,7 +54,7 @@ import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class SceneEditor extends javax.swing.JFrame {
-
+    
     protected static final org.slf4j.Logger logger = LoggerFactory.getLogger(SceneEditor.class);
     private final ServiceJSonProcessor serviceJSonProcessor;
 
@@ -66,36 +66,38 @@ public class SceneEditor extends javax.swing.JFrame {
         this.serviceJSonProcessor = new ServiceJSonProcessor();
         initComponents();
     }
-
+    
     public SceneEditor init() throws InitializationException, InterruptedException {
         try {
-        sceneSelectorPanel.addObserver((final Observable<SelectorPanel.ServiceTypeHolder> source, SelectorPanel.ServiceTypeHolder data) -> {
-            genericUnitCollectionPanel.add(data.getUnitConfig(), data.getServiceType(), true);
-        });
-        sceneCreationPanel.addObserver((final Observable<SceneConfig> source, SceneConfig data) -> {
-            genericUnitCollectionPanel.clearUnitPanel();
-            for (ServiceStateDescription serviceStateDescription : data.getRequiredServiceStateDescriptionList()) {
-                logger.info("Adding new unit panel for action [" + serviceStateDescription.getServiceAttributeType() + "][" + serviceStateDescription.getServiceAttribute() + "]");
-                Object value = serviceJSonProcessor.deserialize(serviceStateDescription.getServiceAttribute(), serviceStateDescription.getServiceAttributeType());
-                genericUnitCollectionPanel.add(serviceStateDescription.getUnitId(), serviceStateDescription.getServiceType(), value, true);
-            }
-        });
-
-        CachedLocationRegistryRemote.waitForData();
-        CachedUnitRegistryRemote.waitForData();
-        
-        GlobalCachedExecutorService.submit(() -> {
-            try {
-                genericUnitCollectionPanel.init();
-                sceneSelectorPanel.init();
-                sceneCreationPanel.init();
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }
-        });
-        return this;
+            sceneSelectorPanel.addObserver((final Observable<SelectorPanel.ServiceTypeHolder> source, SelectorPanel.ServiceTypeHolder data) -> {
+                genericUnitCollectionPanel.add(data.getUnitConfig(), data.getServiceType(), true);
+            });
+            sceneCreationPanel.addObserver((final Observable<SceneConfig> source, SceneConfig data) -> {
+                genericUnitCollectionPanel.clearUnitPanel();
+                for (ServiceStateDescription serviceStateDescription : data.getRequiredServiceStateDescriptionList()) {
+                    logger.info("Adding new unit panel for action [" + serviceStateDescription.getServiceAttributeType() + "][" + serviceStateDescription.getServiceAttribute() + "]");
+                    Object value = serviceJSonProcessor.deserialize(serviceStateDescription.getServiceAttribute(), serviceStateDescription.getServiceAttributeType());
+                    genericUnitCollectionPanel.add(serviceStateDescription.getUnitId(), serviceStateDescription.getServiceType(), value, true);
+                    RemovableGenericUnitPanel removableUnitPanel = (RemovableGenericUnitPanel) genericUnitCollectionPanel.getUnitPanelMap().get(serviceStateDescription.getUnitId() + serviceStateDescription.getServiceType().toString());
+                    removableUnitPanel.selectType(serviceStateDescription.getUnitType());
+                }
+            });
+            
+            CachedLocationRegistryRemote.waitForData();
+            CachedUnitRegistryRemote.waitForData();
+            
+            GlobalCachedExecutorService.submit(() -> {
+                try {
+                    genericUnitCollectionPanel.init();
+                    sceneSelectorPanel.init();
+                    sceneCreationPanel.init();
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                }
+            });
+            return this;
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -185,7 +187,8 @@ public class SceneEditor extends javax.swing.JFrame {
         List<ServiceStateDescription> actionConfigs = new ArrayList<>();
         // Generic unit panel means removable generic unit panel in this case
         for (GenericUnitPanel genericUnitPanel : unitPanelList) {
-            GenericUnitPanel unitPanel = ((RemovableGenericUnitPanel) genericUnitPanel).getGenericUnitPanel();
+            RemovableGenericUnitPanel removableUnitPanel = (RemovableGenericUnitPanel) genericUnitPanel;
+            GenericUnitPanel unitPanel = removableUnitPanel.getGenericUnitPanel();
             List<JComponent> componentList = unitPanel.getComponentList();
             for (JComponent component : componentList) {
                 AbstractServicePanel panel = null;
@@ -203,6 +206,7 @@ public class SceneEditor extends javax.swing.JFrame {
                     Object value = getServiceValue(panel.getOperationService(), panel.getServiceType());
                     actionConfig.setServiceAttribute(serviceJSonProcessor.serialize(value));
                     actionConfig.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(value));
+                    actionConfig.setUnitType(removableUnitPanel.getSelectedUnitType());
                     actionConfigs.add(actionConfig.build());
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
@@ -215,7 +219,7 @@ public class SceneEditor extends javax.swing.JFrame {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
         }
     }//GEN-LAST:event_saveButtonActionPerformed
-
+    
     public Object getServiceValue(Service service, ServiceType serviceType) throws CouldNotPerformException {
         Object value = null;
         try {

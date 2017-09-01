@@ -22,8 +22,7 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen.items;
  * #L%
  */
 import java.util.List;
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.GroupEntry;
-import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -58,10 +57,10 @@ public class ServiceItemEntry extends AbstractItemEntry {
 
     private final MetaConfigPool configPool;
 
-    public ServiceItemEntry(final DeviceClass deviceClass, final MetaConfig unitHostMetaConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig, final LocationRegistryRemote locationRegistryRemote) throws InstantiationException {
+    public ServiceItemEntry(final DeviceClass deviceClass, final MetaConfig unitHostMetaConfig, final UnitConfig unitConfig, final ServiceConfig serviceConfig) throws InstantiationException {
         super(unitConfig, serviceConfig);
         try {
-            UnitConfig locationUnitConfig = locationRegistryRemote.getLocationConfigById(unitConfig.getPlacementConfig().getLocationId());
+            UnitConfig locationUnitConfig = Registries.getUnitRegistry(true).getUnitConfigById(unitConfig.getPlacementConfig().getLocationId());
 
             configPool = new MetaConfigPool();
             configPool.register(new MetaConfigVariableProvider("BindingServiceConfig", serviceConfig.getBindingConfig().getMetaConfig()));
@@ -78,7 +77,7 @@ public class ServiceItemEntry extends AbstractItemEntry {
             try {
                 configPool.register(new MetaConfigVariableProvider("ServiceTemplateMetaConfig", lookupServiceTemplate(deviceClass, unitConfig, serviceConfig).getMetaConfig()));
             } catch (final NotAvailableException ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service template meta config for Service[" + serviceConfig.getServiceDescription().getType().name() + "] of Unit[" + unitConfig.getId() + "]", ex), logger, LogLevel.ERROR);
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service template meta config for Service[" + serviceConfig.getServiceDescription().getType().name() + "] of Unit[" + unitConfig.getLabel() + "]", ex), logger, LogLevel.ERROR);
             }
 
             try {
@@ -105,17 +104,21 @@ public class ServiceItemEntry extends AbstractItemEntry {
                 this.icon = "";
             }
 
-            this.groups.add("bco_"+unitConfig.getType().name().toLowerCase());
-            this.groups.add("bco_"+serviceConfig.getServiceDescription().getType().name().toLowerCase());
+            this.groups.add(ItemIdGenerator.generateUnitGroupID(unitConfig.getType()));
+            for (final UnitType unitType : Registries.getUnitRegistry(true).getSuperUnitTypes(unitConfig.getType())) {
+                this.groups.add(ItemIdGenerator.generateUnitGroupID(unitType));
+            }
+
+            this.groups.add(ItemIdGenerator.generateServiceGroupID(serviceConfig.getServiceDescription().getType()));
 
             try {
                 // just add location group if unit is visible.
                 if (Boolean.parseBoolean(configPool.getValue(UNIT_VISIBLE_IN_GUI)) && !checkAlreadyAvailableThrougOtherComponents(unitConfig, serviceConfig)) {
-                    this.groups.add(GroupEntry.generateGroupID(unitConfig.getPlacementConfig(), locationRegistryRemote));
+                    this.groups.add(ItemIdGenerator.generateUnitGroupID(unitConfig.getPlacementConfig()));
                 }
             } catch (Exception ex) {
                 if (!checkAlreadyAvailableThrougOtherComponents(unitConfig, serviceConfig)) {
-                    this.groups.add(GroupEntry.generateGroupID(unitConfig.getPlacementConfig(), locationRegistryRemote));
+                    this.groups.add(ItemIdGenerator.generateUnitGroupID(unitConfig.getPlacementConfig()));
                 }
             }
 

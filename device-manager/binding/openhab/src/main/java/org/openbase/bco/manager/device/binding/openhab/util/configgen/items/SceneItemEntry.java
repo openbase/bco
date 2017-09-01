@@ -21,12 +21,11 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen.items;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.GroupEntry;
-import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -34,9 +33,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public class SceneItemEntry extends AbstractItemEntry {
 
-    public static String SCENE_GROUP_LABEL = "Scenes";
-
-    public SceneItemEntry(final UnitConfig sceneUnitConfig, final LocationRegistryRemote locationRegistryRemote) throws org.openbase.jul.exception.InstantiationException {
+    public SceneItemEntry(final UnitConfig sceneUnitConfig) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         super(sceneUnitConfig, null);
         try {
             this.itemId = generateItemId(sceneUnitConfig);
@@ -44,8 +41,8 @@ public class SceneItemEntry extends AbstractItemEntry {
             this.commandType = "Switch";
             this.label = sceneUnitConfig.getLabel();
             this.itemHardwareConfig = "rsb=\"bco.manager.scene:" + sceneUnitConfig.getId() + "\"";
-            groups.add(SCENE_GROUP_LABEL);
-            groups.add(GroupEntry.generateGroupID(sceneUnitConfig.getPlacementConfig().getLocationId(), locationRegistryRemote));
+            groups.add(ItemIdGenerator.generateUnitGroupID(UnitType.SCENE));
+            groups.add(ItemIdGenerator.generateUnitGroupID(sceneUnitConfig.getPlacementConfig().getLocationId()));
             calculateGaps();
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);

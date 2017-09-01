@@ -30,8 +30,8 @@ import nu.xom.Node;
  */
 public class MissingNodeException extends XMLParsingException {
 
-	public MissingNodeException(String nodeName, Node parent, Exception e) {
-		super("Missing child node["+nodeName+"] for Element["+parent.getBaseURI()+"].", e);
+	public MissingNodeException(String nodeName, Node parent, Exception ex) {
+		super("Missing child node["+nodeName+"] for Element["+parent.getBaseURI()+"].", ex);
 	}
 
 	public MissingNodeException(String nodeName, Node parent) {

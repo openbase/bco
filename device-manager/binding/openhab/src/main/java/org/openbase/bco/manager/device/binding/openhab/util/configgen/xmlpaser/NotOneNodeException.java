@@ -30,8 +30,8 @@ import nu.xom.Nodes;
  @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class NotOneNodeException extends XMLParsingException {
-	public NotOneNodeException(String nodeName, Nodes nodes, Node parent, Exception e) {
-		super("Found "+nodes.size()+" instead of one node["+nodeName+"] in Element["+parent.getBaseURI()+"].", parent.getBaseURI(), e);
+	public NotOneNodeException(String nodeName, Nodes nodes, Node parent, Exception ex) {
+		super("Found "+nodes.size()+" instead of one node["+nodeName+"] in Element["+parent.getBaseURI()+"].", parent.getBaseURI(), ex);
 	}
 
 	public NotOneNodeException(String nodeName, Nodes nodes, Node parent) {
