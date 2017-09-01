@@ -104,7 +104,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         this.serviceStateObservableMap = new HashMap<>();
         this.unitRegistryObserver = new Observer<UnitRegistryData>() {
             @Override
-            public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
+            public void update(final Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
                 try {
                     final UnitConfig newUnitConfig = Registries.getUnitRegistry(true).getUnitConfigById(getId());
                     if (!newUnitConfig.equals(getConfig())) {
@@ -170,7 +170,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * @throws java.lang.InterruptedException
      */
     @Override
-    public void init(ScopeType.Scope scope) throws InitializationException, InterruptedException {
+    public void init(final ScopeType.Scope scope) throws InitializationException, InterruptedException {
         try {
             init(getUnitRegistry().getUnitConfigByScope(scope));
         } catch (CouldNotPerformException ex) {
@@ -186,7 +186,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * @throws java.lang.InterruptedException
      */
     @Override
-    public void init(Scope scope) throws InitializationException, InterruptedException {
+    public void init(final Scope scope) throws InitializationException, InterruptedException {
         try {
             this.init(ScopeTransformer.transform(scope));
         } catch (CouldNotPerformException ex) {
@@ -202,7 +202,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * @throws java.lang.InterruptedException
      */
     @Override
-    public void init(String scope) throws InitializationException, InterruptedException {
+    public void init(final String scope) throws InitializationException, InterruptedException {
         try {
             this.init(ScopeGenerator.generateScope(scope));
         } catch (CouldNotPerformException ex) {
@@ -210,6 +210,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         }
     }
 
+    @Deprecated
     public void init(final String label, final ScopeProvider location) throws InitializationException, InterruptedException {
         try {
             init(ScopeGenerator.generateScope(label, getDataClass().getSimpleName(), location.getScope()));
@@ -260,12 +261,12 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     }
 
     @Override
-    public void addServiceStateObserver(ServiceType serviceType, Observer observer) {
+    public void addServiceStateObserver(final ServiceType serviceType, final Observer observer) {
         serviceStateObservableMap.get(serviceType).addObserver(observer);
     }
 
     @Override
-    public void removeServiceStateObserver(ServiceType serviceType, Observer observer) {
+    public void removeServiceStateObserver(final ServiceType serviceType, final Observer observer) {
         serviceStateObservableMap.get(serviceType).removeObserver(observer);
     }
 
@@ -289,7 +290,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
                 logger.debug("Skip config update because no config change detected!");
                 return config;
             }
-        } catch (NotAvailableException ex) {
+        } catch (final NotAvailableException ex) {
             logger.trace("Unit config change check failed because config is not available yet.");
         }
 
@@ -362,7 +363,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
-    public void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+    public void waitForData(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
         verifyEnablingState();
         super.waitForData(timeout, timeUnit);
     }
@@ -521,7 +522,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
-    public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         return RPCHelper.callRemoteMethod(actionDescription, this, ActionFuture.class);
     }
 

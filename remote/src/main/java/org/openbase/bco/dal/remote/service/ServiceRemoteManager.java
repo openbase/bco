@@ -176,6 +176,21 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
         }
     }
 
+    /**
+     * Method checks if the given {@code ServiceType} is currently available by this {@code ServiceRemoteManager}
+     *
+     * @param serviceType the {@code ServiceType} to check.
+     * @return returns true if the {@code ServiceType} is available, otherwise false.
+     */
+    public boolean isServiceAvailable(final ServiceType serviceType) {
+        try {
+            return getServiceRemote(serviceType).hasInternalRemotes();
+        } catch (NotAvailableException ex) {
+            // no service enty means the service is not available.
+            return false;
+        }
+    }
+
     public AbstractServiceRemote getServiceRemote(final ServiceType serviceType) throws NotAvailableException {
         synchronized (serviceRemoteMapLock) {
             AbstractServiceRemote serviceRemote = serviceRemoteMap.get(serviceType);
