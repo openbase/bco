@@ -53,10 +53,10 @@ import rst.domotic.action.MultiResourceAllocationStrategyType.MultiResourceAlloc
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class AgentActionRescheduleHelper {
-    //Might be moved somewhere as a general ActionRescheduleHelper
+public class ActionRescheduleHelper {
+    //Might be moved somewhere
 
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AgentActionRescheduleHelper.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ActionRescheduleHelper.class);
 
     public static enum RescheduleOption {
 
@@ -69,7 +69,7 @@ public class AgentActionRescheduleHelper {
     private ScheduledFuture<?> rescheduleFuture;
     private boolean started;
 
-    public AgentActionRescheduleHelper(RescheduleOption rescheduleOption, long periodSecs) {
+    public ActionRescheduleHelper(RescheduleOption rescheduleOption, long periodSecs) {
         this.allocationMap = new HashMap();
         this.rescheduleOption = rescheduleOption;
         this.periodSecs = periodSecs;
@@ -183,7 +183,7 @@ public class AgentActionRescheduleHelper {
                                     allocatableResource.getRemote().extend(periodSecs, TimeUnit.SECONDS);
                                 } catch (RSBException ex) {
                                     ExceptionPrinter.printHistory(new CouldNotPerformException("Could not extend resource allocation", ex), LOGGER);
-                                    Logger.getLogger(AgentActionRescheduleHelper.class.getName()).log(Level.SEVERE, null, ex);
+                                    Logger.getLogger(ActionRescheduleHelper.class.getName()).log(Level.SEVERE, null, ex);
                                 }
                             }
                         }

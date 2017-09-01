@@ -22,8 +22,8 @@ package org.openbase.bco.manager.agent.core.preset;
  * #L%
  */
 import java.util.concurrent.ExecutionException;
-import org.openbase.bco.manager.agent.core.AgentActionRescheduleHelper;
-import org.openbase.bco.manager.agent.core.AgentActionRescheduleHelper.RescheduleOption;
+import org.openbase.bco.manager.agent.core.ActionRescheduleHelper;
+import org.openbase.bco.manager.agent.core.ActionRescheduleHelper.RescheduleOption;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
@@ -57,12 +57,12 @@ public class PresenceLightAgent extends AbstractAgentController {
     private LocationRemote locationRemote;
     private final PresenceState.State triggerState = PresenceState.State.PRESENT;
     private final Observer<ActivationState> triggerHolderObserver;
-    private final AgentActionRescheduleHelper actionRescheduleHelper;
+    private final ActionRescheduleHelper actionRescheduleHelper;
 
     public PresenceLightAgent() throws InstantiationException {
         super(PresenceLightAgent.class);
 
-        actionRescheduleHelper = new AgentActionRescheduleHelper(RescheduleOption.EXTEND, 30);
+        actionRescheduleHelper = new ActionRescheduleHelper(RescheduleOption.EXTEND, 30);
 
         triggerHolderObserver = (Observable<ActivationState> source, ActivationState data) -> {
             logger.warn("New trigger state: " + data.getValue());
@@ -119,21 +119,18 @@ public class PresenceLightAgent extends AbstractAgentController {
     }
 
     private void switchlightsOn() {
-        logger.info("SwitchLightsOn");
         try {
             ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthority.getDefaultInstance(),
                     ResourceAllocation.Initiator.SYSTEM,
                     1000 * 30,
                     ResourceAllocation.Policy.FIRST,
-                    ResourceAllocation.Priority.LOW,
+                    ResourceAllocation.Priority.NORMAL,
                     locationRemote,
                     PowerState.newBuilder().setValue(PowerState.State.ON).build(),
                     UnitType.LIGHT,
                     ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
                     MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
-            logger.info("Apply action");
             actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
-            logger.info("Aded to actionResceduleHelper");
         } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
             logger.error("Could not switch on Lights.", ex);
         }

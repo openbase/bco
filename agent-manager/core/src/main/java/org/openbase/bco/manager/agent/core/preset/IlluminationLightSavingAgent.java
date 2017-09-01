@@ -22,11 +22,12 @@ package org.openbase.bco.manager.agent.core.preset;
  * #L%
  */
 import java.util.List;
-import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.unit.unitgroup.UnitGroupRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
+import org.openbase.bco.manager.agent.core.ActionRescheduleHelper;
 import org.openbase.bco.manager.agent.core.TriggerDAL.IlluminanceDualBoundaryTrigger;
 import org.openbase.bco.manager.agent.core.TriggerJUL.TriggerPool;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
@@ -37,7 +38,11 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.communicationpatterns.ResourceAllocationType;
+import rst.domotic.action.ActionAuthorityType;
+import rst.domotic.action.ActionDescriptionType;
+import rst.domotic.action.MultiResourceAllocationStrategyType;
+import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType;
@@ -57,29 +62,19 @@ public class IlluminationLightSavingAgent extends AbstractAgentController {
     private static double MAXIMUM_WANTED_ILLUMINATION = 4000;
 
     private LocationRemote locationRemote;
-    private Future<ActionFuture> setPowerStateFutureAmbient;
-    private Future<ActionFuture> setPowerStateFuture;
     private final Observer<ActivationState> triggerHolderObserver;
+    private final ActionRescheduleHelper actionRescheduleHelper;
 
     public IlluminationLightSavingAgent() throws InstantiationException {
         super(IlluminationLightSavingAgent.class);
 
+        actionRescheduleHelper = new ActionRescheduleHelper(ActionRescheduleHelper.RescheduleOption.EXTEND, 30);
+
         triggerHolderObserver = (Observable<ActivationState> source, ActivationState data) -> {
-            switch (data.getValue()) {
-                case ACTIVE:
-                    regulateLightIntensity();
-                    break;
-                case DEACTIVE:
-                    deallocateResourceIteratively();
-                    break;
-                case UNKNOWN:
-                    if (setPowerStateFuture != null && !setPowerStateFuture.isDone()) {
-                        setPowerStateFuture.cancel(true);
-                    }
-                    if (setPowerStateFutureAmbient != null && !setPowerStateFutureAmbient.isDone()) {
-                        setPowerStateFutureAmbient.cancel(true);
-                    }
-                    break;
+            if (data.getValue().equals(ActivationState.State.ACTIVE)) {
+                regulateLightIntensity();
+            } else {
+                actionRescheduleHelper.stopExecution();
             }
         };
     }
@@ -138,17 +133,16 @@ public class IlluminationLightSavingAgent extends AbstractAgentController {
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
         logger.info("Deactivating [" + getConfig().getLabel() + "]");
+        actionRescheduleHelper.stopExecution();
         agentTriggerHolder.deactivate();
-        logger.info("Deactivated [" + getConfig().getLabel() + "]");
     }
 
     @Override
     public void shutdown() {
-        logger.info("shutdown [Illumination_Light_Saving_Agent_Unit_Test]");
+        actionRescheduleHelper.stopExecution();
         agentTriggerHolder.deregisterObserver(triggerHolderObserver);
         agentTriggerHolder.shutdown();
         super.shutdown();
-        logger.info("Finished shutdown [Illumination_Light_Saving_Agent_Unit_Test]");
     }
 
     private void regulateLightIntensity() throws CouldNotPerformException {
@@ -156,31 +150,39 @@ public class IlluminationLightSavingAgent extends AbstractAgentController {
             List<? extends UnitGroupRemote> unitsByLabel = Units.getUnitsByLabel(locationRemote.getLabel().concat("AmbientLightGroup"), true, Units.UNITGROUP);
             if (!unitsByLabel.isEmpty()) {
                 UnitGroupRemote ambientLightGroup = unitsByLabel.get(0);
-                setPowerStateFutureAmbient = ambientLightGroup.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build()); // Blocking and trying to realloc all lights
+
+                ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+                        ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+                        1000 * 30,
+                        ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+                        ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
+                        ambientLightGroup,
+                        PowerState.newBuilder().setValue(PowerState.State.OFF).build(),
+                        UnitType.LIGHT,
+                        ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
+                        MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+                actionRescheduleHelper.startActionRescheduleing(ambientLightGroup.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+
                 Thread.sleep(SLEEP_MILLI);
             }
-        } catch (CouldNotPerformException | InterruptedException ex) {
-        }
 
-        if (locationRemote.getIlluminanceState().getIlluminance() > MAXIMUM_WANTED_ILLUMINATION) {
-            setPowerStateFuture = locationRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build(), UnitType.LIGHT);
-        }
-    }
+            if (locationRemote.getIlluminanceState().getIlluminance() > MAXIMUM_WANTED_ILLUMINATION) {
+                actionRescheduleHelper.stopExecution(); // Workaround: Otherwise the defined Lights of the AmbientGroup would be allocated again -> conflict.
+                ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+                        ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+                        1000 * 30,
+                        ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+                        ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
+                        locationRemote,
+                        PowerState.newBuilder().setValue(PowerState.State.OFF).build(),
+                        UnitType.LIGHT,
+                        ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
+                        MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+                actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
 
-    private void deallocateResourceIteratively() throws CouldNotPerformException {
-        if (setPowerStateFuture != null && !setPowerStateFuture.isDone()) {
-            setPowerStateFuture.cancel(true);
-        }
-
-        try {
-            Thread.sleep(SLEEP_MILLI);
-        } catch (InterruptedException ex) {
-        }
-
-        if (locationRemote.getIlluminanceState().getIlluminance() < MINIMUM_NEEDED_ILLUMINATION) {
-            if (setPowerStateFutureAmbient != null && !setPowerStateFutureAmbient.isDone()) {
-                setPowerStateFutureAmbient.cancel(true);
             }
+        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+            logger.error("Could not set light intensity.", ex);
         }
     }
 }

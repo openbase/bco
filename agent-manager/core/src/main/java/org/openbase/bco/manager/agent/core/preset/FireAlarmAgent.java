@@ -21,12 +21,11 @@ package org.openbase.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.ExecutionException;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
+import org.openbase.bco.manager.agent.core.ActionRescheduleHelper;
 import org.openbase.bco.manager.agent.core.TriggerJUL.GenericTrigger;
 import org.openbase.bco.manager.agent.core.TriggerJUL.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -35,7 +34,10 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.communicationpatterns.ResourceAllocationType;
+import rst.domotic.action.ActionAuthorityType;
+import rst.domotic.action.ActionDescriptionType;
+import rst.domotic.action.MultiResourceAllocationStrategyType;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.AlarmStateType.AlarmState;
@@ -52,24 +54,20 @@ import rst.domotic.unit.location.LocationDataType.LocationData;
 public class FireAlarmAgent extends AbstractAgentController {
 
     private LocationRemote locationRemote;
-    private Future<ActionFuture> setLightFuture;
-    private Future<ActionFuture> setBlindFuture;
     private final AlarmState.State triggerState = AlarmState.State.ALARM;
     private final Observer<ActivationState> triggerHolderObserver;
+    private final ActionRescheduleHelper actionRescheduleHelper;
 
     public FireAlarmAgent() throws InstantiationException {
         super(FireAlarmAgent.class);
+
+        actionRescheduleHelper = new ActionRescheduleHelper(ActionRescheduleHelper.RescheduleOption.EXTEND, 30);
 
         triggerHolderObserver = (Observable<ActivationState> source, ActivationState data) -> {
             if (data.getValue().equals(ActivationState.State.ACTIVE)) {
                 alarmRoutine();
             } else {
-                if (setLightFuture != null) {
-                    setLightFuture.cancel(true);
-                }
-                if (setBlindFuture != null) {
-                    setBlindFuture.cancel(true);
-                }
+                actionRescheduleHelper.stopExecution();
             }
         };
     }
@@ -105,11 +103,13 @@ public class FireAlarmAgent extends AbstractAgentController {
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
         logger.info("Deactivating [" + getConfig().getLabel() + "]");
+        actionRescheduleHelper.stopExecution();
         agentTriggerHolder.deactivate();
     }
 
     @Override
     public void shutdown() {
+        actionRescheduleHelper.stopExecution();
         agentTriggerHolder.deregisterObserver(triggerHolderObserver);
         agentTriggerHolder.shutdown();
         super.shutdown();
@@ -117,13 +117,33 @@ public class FireAlarmAgent extends AbstractAgentController {
 
     private void alarmRoutine() {
         try {
-            setLightFuture = locationRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build(), UnitType.LIGHT);
-            setBlindFuture = locationRemote.setBlindState(BlindStateType.BlindState.newBuilder().setOpeningRatio(100.0).build());
+            ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+                    1000 * 30,
+                    ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+                    ResourceAllocationType.ResourceAllocation.Priority.EMERGENCY,
+                    locationRemote,
+                    PowerState.newBuilder().setValue(PowerState.State.ON).build(),
+                    UnitType.LIGHT,
+                    ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
+                    MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
 
-            // TODO: Blocking setPowerState function that is trying to realloc all lights as long as jobs not cancelled. 
+            actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+                    1000 * 30,
+                    ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+                    ResourceAllocationType.ResourceAllocation.Priority.EMERGENCY,
+                    locationRemote,
+                    BlindStateType.BlindState.newBuilder().setOpeningRatio(100.0).build(),
+                    UnitType.UNKNOWN,
+                    ServiceTemplateType.ServiceTemplate.ServiceType.BLIND_STATE_SERVICE,
+                    MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+            actionRescheduleHelper.addRescheduleAction(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+
             // TODO: Maybe also set Color and Brightness?
-        } catch (CouldNotPerformException ex) {
-            Logger.getLogger(PresenceLightAgent.class.getName()).log(Level.SEVERE, null, ex);
+        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+            logger.error("Could not execute alarm routine.", ex);
         }
     }
 }

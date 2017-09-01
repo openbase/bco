@@ -23,12 +23,13 @@ package org.openbase.bco.manager.agent.core.preset;
  */
 import java.util.HashMap;
 import java.util.Map;
-import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 import org.openbase.bco.dal.remote.unit.TemperatureControllerRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
+import org.openbase.bco.manager.agent.core.ActionRescheduleHelper;
 import org.openbase.bco.manager.agent.core.TriggerJUL.GenericTrigger;
 import org.openbase.bco.manager.agent.core.TriggerJUL.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -38,7 +39,11 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.communicationpatterns.ResourceAllocationType;
+import rst.domotic.action.ActionAuthorityType;
+import rst.domotic.action.ActionDescriptionType;
+import rst.domotic.action.MultiResourceAllocationStrategyType;
+import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
@@ -55,21 +60,23 @@ import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
 public class HeaterEnergySavingAgent extends AbstractAgentController {
 
     private LocationRemote locationRemote;
-    private Future<ActionFuture> setTemperatureFuture;
     private final Map<TemperatureControllerRemote, TemperatureState> previousTemperatureState;
     private final Observer<ActivationState> triggerHolderObserver;
     private final WindowState.State triggerState = WindowState.State.OPEN;
+    private final ActionRescheduleHelper actionRescheduleHelper;
 
     public HeaterEnergySavingAgent() throws InstantiationException {
         super(HeaterEnergySavingAgent.class);
 
         previousTemperatureState = new HashMap();
 
+        actionRescheduleHelper = new ActionRescheduleHelper(ActionRescheduleHelper.RescheduleOption.EXTEND, 30);
+
         triggerHolderObserver = (Observable<ActivationState> source, ActivationState data) -> {
             if (data.getValue().equals(ActivationState.State.ACTIVE)) {
                 regulateHeater();
-            } else if (setTemperatureFuture != null) {
-                setTemperatureFuture.cancel(true);
+            } else {
+                actionRescheduleHelper.stopExecution();
                 restoreTemperatureState();
             }
         };
@@ -112,11 +119,13 @@ public class HeaterEnergySavingAgent extends AbstractAgentController {
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
         logger.info("Deactivating [" + getConfig().getLabel() + "]");
+        actionRescheduleHelper.stopExecution();
         agentTriggerHolder.deactivate();
     }
 
     @Override
     public void shutdown() {
+        actionRescheduleHelper.stopExecution();
         agentTriggerHolder.deregisterObserver(triggerHolderObserver);
         agentTriggerHolder.shutdown();
         super.shutdown();
@@ -127,34 +136,47 @@ public class HeaterEnergySavingAgent extends AbstractAgentController {
         try {
             for (TemperatureControllerRemote remote : locationRemote.getUnits(UnitType.TEMPERATURE_CONTROLLER, true, Units.TEMPERATURE_CONTROLLER)) {
                 previousTemperatureState.put(remote, remote.getTargetTemperatureState());
-
             }
         } catch (CouldNotPerformException | InterruptedException ex) {
             logger.error("Could not get all TemperatureControllerRemotes.", ex);
         }
 
-        TemperatureState temperatureState;
         try {
-            temperatureState = TimestampProcessor.updateTimestampWithCurrentTime(TemperatureState.newBuilder().setTemperature(13.0).build());
-            setTemperatureFuture = locationRemote.setTargetTemperatureState(temperatureState, UnitType.TEMPERATURE_CONTROLLER);
-        } catch (CouldNotPerformException ex) {
+            ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+                    1000 * 30,
+                    ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+                    ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
+                    locationRemote,
+                    TimestampProcessor.updateTimestampWithCurrentTime(TemperatureState.newBuilder().setTemperature(13.0).build()),
+                    UnitType.TEMPERATURE_CONTROLLER,
+                    ServiceTemplateType.ServiceTemplate.ServiceType.TARGET_TEMPERATURE_STATE_SERVICE,
+                    MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
             logger.error("Could not set targetTemperatureState.", ex);
         }
     }
 
     private void restoreTemperatureState() {
-        if (setTemperatureFuture != null && !setTemperatureFuture.isDone()) {
-            setTemperatureFuture.cancel(true);
-        }
-
         if (previousTemperatureState == null | previousTemperatureState.isEmpty()) {
             return;
         }
 
         previousTemperatureState.forEach((remote, temperatureState) -> {
             try {
-                remote.setTargetTemperatureState(TimestampProcessor.updateTimestampWithCurrentTime(temperatureState));
-            } catch (CouldNotPerformException ex) {
+                ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+                        ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+                        1000 * 30,
+                        ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+                        ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
+                        remote,
+                        TimestampProcessor.updateTimestampWithCurrentTime(temperatureState),
+                        UnitType.TEMPERATURE_CONTROLLER,
+                        ServiceTemplateType.ServiceTemplate.ServiceType.TARGET_TEMPERATURE_STATE_SERVICE,
+                        MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+                remote.applyAction(actionDescriptionBuilder.build()).get().toBuilder();
+            } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
                 logger.error("Could not restore targetTemperatureState.", ex);
             }
         });

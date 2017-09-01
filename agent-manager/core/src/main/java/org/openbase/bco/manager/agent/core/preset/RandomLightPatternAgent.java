@@ -23,20 +23,33 @@ package org.openbase.bco.manager.agent.core.preset;
  */
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import java.util.concurrent.ThreadLocalRandom;
 import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
+import org.openbase.bco.manager.agent.core.ActionRescheduleHelper;
+import org.openbase.bco.manager.agent.core.TriggerJUL.GenericTrigger;
+import org.openbase.bco.manager.agent.core.TriggerJUL.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import rst.communicationpatterns.ResourceAllocationType;
+import rst.domotic.action.ActionAuthorityType;
+import rst.domotic.action.ActionDescriptionType;
+import rst.domotic.action.MultiResourceAllocationStrategyType;
+import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.state.ActivationStateType;
+import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.PresenceStateType;
+import rst.domotic.state.PresenceStateType.PresenceState;
+import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationDataType;
 
@@ -47,55 +60,79 @@ import rst.domotic.unit.location.LocationDataType;
 public class RandomLightPatternAgent extends AbstractAgentController {
 
     private LocationRemote locationRemote;
-    private boolean present = false;
     private Thread thread;
-    private final Observer<LocationDataType.LocationData> locationObserver;
+    private final PresenceState.State triggerState = PresenceState.State.ABSENT;
+    private final Observer<ActivationState> triggerHolderObserver;
+    private final ActionRescheduleHelper actionRescheduleHelper;
 
     public RandomLightPatternAgent() throws InstantiationException {
         super(RandomLightPatternAgent.class);
 
-        locationObserver = (final Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
-            if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT) && !present) {
-                stopRandomLightPattern();
-                present = true;
-            } else if (!(data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT)) && present) {
-                present = false;
-                makeRandomLightPattern();
-            }
+        actionRescheduleHelper = new ActionRescheduleHelper(ActionRescheduleHelper.RescheduleOption.EXTEND, 30);
+
+        triggerHolderObserver = (Observable<ActivationStateType.ActivationState> source, ActivationStateType.ActivationState data) -> {
+            GlobalCachedExecutorService.submit(() -> {
+                if (data.getValue().equals(ActivationStateType.ActivationState.State.ACTIVE)) {
+                    makeRandomLightPattern();
+                } else {
+                    stopRandomLightPattern();
+                }
+                return null;
+            });
         };
+    }
+
+    @Override
+    public void init(final UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
+        super.init(config);
+
+        try {
+            locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), true, Units.LOCATION);
+        } catch (NotAvailableException ex) {
+            throw new InitializationException("LocationRemote not available.", ex);
+        }
+
+        try {
+            GenericTrigger<LocationRemote, LocationDataType.LocationData, PresenceStateType.PresenceState.State> agentTrigger = new GenericTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE);
+            agentTriggerHolder.addTrigger(agentTrigger, TriggerPool.TriggerOperation.OR);
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException("Could not add agent to agentpool", ex);
+        }
+
+        agentTriggerHolder.registerObserver(triggerHolderObserver);
     }
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
         logger.info("Activating [" + getConfig().getLabel() + "]");
-        locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), true, Units.LOCATION);
-
-        locationRemote.addDataObserver(locationObserver);
-        locationRemote.waitForData();
+        agentTriggerHolder.activate();
     }
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getClass().getSimpleName() + "]");
-        if (thread != null) {
-            thread.interrupt();
-        }
-        locationRemote.removeDataObserver(locationObserver);
+        logger.info("Deactivating [" + getConfig().getLabel() + "]");
+        stopRandomLightPattern();
+        agentTriggerHolder.deactivate();
     }
 
-    private void makeRandomLightPattern() throws CouldNotPerformException {
+    @Override
+    public void shutdown() {
+        stopRandomLightPattern();
+        agentTriggerHolder.deregisterObserver(triggerHolderObserver);
+        agentTriggerHolder.shutdown();
+        super.shutdown();
+    }
+
+    private void makeRandomLightPattern() {
         thread = new PersonSimulator();
         thread.start();
     }
 
-    private void stopRandomLightPattern() throws CouldNotPerformException {
+    private void stopRandomLightPattern() {
         thread.interrupt();
     }
 
     private class PersonSimulator extends Thread {
-
-        private Future<ActionFuture> setPowerStateOn;
-        private Future<ActionFuture> setPowerStateOff;
 
         @Override
         public void run() {
@@ -104,11 +141,32 @@ public class RandomLightPatternAgent extends AbstractAgentController {
                 LocationRemote currentLocation = childLocationList.get(ThreadLocalRandom.current().nextInt(childLocationList.size()));
 
                 while (true) {
-                    setPowerStateOn = currentLocation.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build(), UnitType.LIGHT);
-                    setPowerStateOn.get();
-                    // Todo: Assign time interval how long lights should be switched on.
-                    setPowerStateOff = currentLocation.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build(), UnitType.LIGHT);
-                    setPowerStateOff.get();
+                    ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+                            ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+                            1000 * 30,
+                            ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+                            ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
+                            currentLocation,
+                            PowerState.newBuilder().setValue(PowerState.State.ON).build(),
+                            UnitType.LIGHT,
+                            ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
+                            MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+                    actionRescheduleHelper.startActionRescheduleing(currentLocation.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+
+                    //TODO: waiting time 
+                    Thread.sleep(600000);
+                    actionRescheduleHelper.stopExecution();
+                    actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+                            ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+                            1000 * 30,
+                            ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+                            ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
+                            currentLocation,
+                            PowerState.newBuilder().setValue(PowerState.State.OFF).build(),
+                            UnitType.LIGHT,
+                            ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
+                            MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+                    currentLocation.applyAction(actionDescriptionBuilder.build()).get().toBuilder();
 
                     List<LocationRemote> neighborLocationList = currentLocation.getNeighborLocationList(true);
                     currentLocation = neighborLocationList.get(ThreadLocalRandom.current().nextInt(neighborLocationList.size()));
@@ -121,8 +179,7 @@ public class RandomLightPatternAgent extends AbstractAgentController {
 
         @Override
         public void interrupt() {
-            setPowerStateOn.cancel(true);
-            setPowerStateOff.cancel(true);
+            actionRescheduleHelper.stopExecution();
 
             super.interrupt();
         }

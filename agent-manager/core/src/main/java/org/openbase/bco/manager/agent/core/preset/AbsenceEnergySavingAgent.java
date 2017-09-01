@@ -23,12 +23,11 @@ package org.openbase.bco.manager.agent.core.preset;
  */
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.unit.unitgroup.UnitGroupRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
-import org.openbase.bco.manager.agent.core.AgentActionRescheduleHelper;
+import org.openbase.bco.manager.agent.core.ActionRescheduleHelper;
 import org.openbase.bco.manager.agent.core.TriggerJUL.GenericTrigger;
 import org.openbase.bco.manager.agent.core.TriggerJUL.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -41,7 +40,6 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.communicationpatterns.ResourceAllocationType;
 import rst.domotic.action.ActionAuthorityType;
 import rst.domotic.action.ActionDescriptionType;
-import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.ActivationStateType;
@@ -60,21 +58,20 @@ import rst.domotic.unit.location.LocationDataType;
 public class AbsenceEnergySavingAgent extends AbstractAgentController {
 
     private LocationRemote locationRemote;
-    private Future<ActionFuture> setLightPowerStateFuture;
-    private Future<ActionFuture> setMultimediaPowerStateFuture;
     private final PresenceState.State triggerState = PresenceState.State.ABSENT;
     private final Observer<ActivationState> triggerHolderObserver;
-    private final AgentActionRescheduleHelper actionRescheduleHelper;
+    private final ActionRescheduleHelper actionRescheduleHelper;
 
     public AbsenceEnergySavingAgent() throws InstantiationException {
         super(AbsenceEnergySavingAgent.class);
 
-        actionRescheduleHelper = new AgentActionRescheduleHelper(AgentActionRescheduleHelper.RescheduleOption.EXTEND, 30);
+        actionRescheduleHelper = new ActionRescheduleHelper(ActionRescheduleHelper.RescheduleOption.EXTEND, 30);
 
         triggerHolderObserver = (Observable<ActivationStateType.ActivationState> source, ActivationStateType.ActivationState data) -> {
             GlobalCachedExecutorService.submit(() -> {
                 if (data.getValue().equals(ActivationStateType.ActivationState.State.ACTIVE)) {
                     switchlightsOff();
+                    switchMultimediaOff();
                 } else {
                     actionRescheduleHelper.stopExecution();
                 }
@@ -125,21 +122,18 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
     }
 
     private void switchlightsOff() {
-        logger.info("Switch lights off");
         try {
             ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
                     ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
                     1000 * 30,
                     ResourceAllocationType.ResourceAllocation.Policy.FIRST,
-                    ResourceAllocationType.ResourceAllocation.Priority.LOW,
+                    ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
                     locationRemote,
                     PowerState.newBuilder().setValue(PowerState.State.OFF).build(),
                     UnitType.LIGHT,
                     ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
                     MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
             actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
-            setLightPowerStateFuture = locationRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build(), UnitType.LIGHT);
-            // TODO: Blocking setPowerState function that is trying to realloc all lights as long as jobs not cancelled. 
         } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
             logger.error("Could not switch on Lights.", ex);
         }
@@ -150,7 +144,17 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
             List<? extends UnitGroupRemote> unitsByLabel = Units.getUnitsByLabel(locationRemote.getLabel().concat("MultimediaGroup"), true, Units.UNITGROUP);
             if (!unitsByLabel.isEmpty()) {
                 UnitGroupRemote multimediaGroup = unitsByLabel.get(0);
-                setMultimediaPowerStateFuture = multimediaGroup.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build());
+                ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+                        ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+                        1000 * 30,
+                        ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+                        ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
+                        multimediaGroup,
+                        PowerState.newBuilder().setValue(PowerState.State.OFF).build(),
+                        UnitType.UNKNOWN,
+                        ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
+                        MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+                actionRescheduleHelper.addRescheduleAction(multimediaGroup.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
             }
         } catch (NotAvailableException ex) {
             logger.info("MultimediaGroup not available.");
@@ -158,6 +162,8 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
             logger.error("Could not get MultimediaGroup!");
         } catch (CouldNotPerformException ex) {
             logger.error("Could not set Powerstate of MultimediaGroup.");
+        } catch (ExecutionException ex) {
+            logger.error("Could not set Powerstate of MultimediaGroup!");
         }
     }
 }
