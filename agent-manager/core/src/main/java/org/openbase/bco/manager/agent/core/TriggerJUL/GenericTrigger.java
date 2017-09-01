@@ -64,7 +64,11 @@ public class GenericTrigger<UR extends AbstractUnitRemote, DT extends GeneratedM
         };
 
         connectionObserver = (Observable<ConnectionState> source, ConnectionState data) -> {
-            notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));
+            if (data.equals(ConnectionState.CONNECTED)) {
+                verifyCondition((DT) unitRemote.getData());
+            } else {
+                notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));
+            }
         };
     }
 

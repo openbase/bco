@@ -72,7 +72,11 @@ public class GenericValueBoundaryTrigger<UR extends AbstractUnitRemote, DT exten
         };
 
         connectionObserver = (Observable<Remote.ConnectionState> source, Remote.ConnectionState data) -> {
-            notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));
+            if (data.equals(Remote.ConnectionState.CONNECTED)) {
+                verifyCondition((DT) unitRemote.getData());
+            } else {
+                notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));
+            }
         };
     }
 
@@ -90,7 +94,7 @@ public class GenericValueBoundaryTrigger<UR extends AbstractUnitRemote, DT exten
                     notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()));
                 }
             } else {
-                if (value < boundary) {
+                if (value <= boundary) {
                     notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()));
                 } else {
                     notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()));

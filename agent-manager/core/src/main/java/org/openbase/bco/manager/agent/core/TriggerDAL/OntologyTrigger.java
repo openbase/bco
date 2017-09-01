@@ -25,11 +25,9 @@ import org.openbase.bco.manager.agent.core.TriggerJUL.AbstractTrigger;
 import org.openbase.bco.ontology.lib.trigger.Trigger;
 import org.openbase.bco.ontology.lib.trigger.TriggerFactory;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.slf4j.LoggerFactory;
@@ -40,26 +38,22 @@ import rst.domotic.state.ActivationStateType.ActivationState;
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class OntologyTrigger extends AbstractTrigger implements Manageable<TriggerConfig> {
+public class OntologyTrigger extends AbstractTrigger {
 
     private Trigger trigger;
     private final Observer<ActivationState.State> triggerObserver;
 
-    public OntologyTrigger() throws InstantiationException {
+    public OntologyTrigger(TriggerConfig config) throws InstantiationException {
         super();
         triggerObserver = (Observable<ActivationState.State> source, ActivationState.State data) -> {
             notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(data).build()));
         };
-    }
-
-    @Override
-    public void init(TriggerConfig config) throws InitializationException, InterruptedException {
         try {
             final TriggerFactory triggerFactory = new TriggerFactory();
             trigger = triggerFactory.newInstance(config);
             trigger.addObserver(triggerObserver);
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException("Could not initialize OntologyTrigger", ex);
+        } catch (CouldNotPerformException | InterruptedException ex) {
+            throw new InstantiationException("Could not instantiate OntologyTrigger", ex);
         }
     }
 
@@ -77,7 +71,7 @@ public class OntologyTrigger extends AbstractTrigger implements Manageable<Trigg
     public boolean isActive() {
         return trigger.isActive();
     }
-    
+
     @Override
     public void shutdown() {
         trigger.removeObserver(triggerObserver);

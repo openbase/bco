@@ -76,7 +76,11 @@ public class GenericValueDualBoundaryTrigger<UR extends AbstractUnitRemote, DT e
         };
 
         connectionObserver = (Observable<Remote.ConnectionState> source, Remote.ConnectionState data) -> {
-            notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));
+            if (data.equals(Remote.ConnectionState.CONNECTED)) {
+                verifyCondition((DT) unitRemote.getData());
+            } else {
+                notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));
+            }
         };
     }
 

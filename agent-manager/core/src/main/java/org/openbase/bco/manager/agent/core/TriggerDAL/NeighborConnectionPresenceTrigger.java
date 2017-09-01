@@ -59,7 +59,11 @@ public class NeighborConnectionPresenceTrigger extends AbstractTrigger {
         };
 
         connectionObserver = (Observable<Remote.ConnectionState> source, Remote.ConnectionState data) -> {
-            notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));
+            if (data.equals(Remote.ConnectionState.CONNECTED)) {
+                verifyCondition();
+            } else {
+                notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.UNKNOWN).build()));
+            }
         };
     }
 
