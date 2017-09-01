@@ -21,9 +21,11 @@ package org.openbase.bco.manager.location.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.manager.location.binding.openhab.unitgroup.UnitGroupRemoteFactoryImpl;
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
+import org.openbase.bco.dal.remote.unit.unitgroup.UnitGroupRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -55,6 +57,10 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
     private final RemoteControllerRegistryImpl<String, ConnectionRemote> connectionRegistry;
     private final boolean hardwareSimulationMode;
     private boolean active;
+    
+    private final UnitGroupRemoteFactoryImpl unitGroupRemoteFactory;
+    private final RegistrySynchronizer<String, UnitGroupRemote, UnitConfig, UnitConfig.Builder> unitGroupRegistrySynchronizer;
+    private final RemoteControllerRegistryImpl<String, UnitGroupRemote> unitGroupRegistry;
 
     public LocationBindingOpenHABImpl() throws InstantiationException, JPNotAvailableException, InterruptedException {
         super();
@@ -78,6 +84,16 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
                     return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
                 }
             };
+            
+            unitGroupRegistry = new RemoteControllerRegistryImpl<>();
+            unitGroupRemoteFactory = new UnitGroupRemoteFactoryImpl();
+            unitGroupRegistrySynchronizer = new RegistrySynchronizer<String, UnitGroupRemote, UnitConfig, UnitConfig.Builder>(unitGroupRegistry, Registries.getUnitRegistry().getUnitGroupUnitConfigRemoteRegistry(), unitGroupRemoteFactory) {
+
+                @Override
+                public boolean verifyConfig(UnitConfig config) throws VerificationFailedException {
+                    return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
+                }
+            };
         } catch (final CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -85,11 +101,12 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
 
     @Override
     public void init() throws InitializationException, InterruptedException {
-        super.init(LOCATION_MANAGER_ITEM_FILTER, new LocationBindingOpenHABRemote(hardwareSimulationMode, locationRegistry, connectionRegistry));
+        super.init(LOCATION_MANAGER_ITEM_FILTER, new LocationBindingOpenHABRemote(hardwareSimulationMode, locationRegistry, connectionRegistry, unitGroupRegistry));
         try {
             Registries.getLocationRegistry().waitForData();
             locationRemoteFactory.init(openHABRemote);
             connectionRemoteFactory.init(openHABRemote);
+            unitGroupRemoteFactory.init(openHABRemote);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -100,6 +117,7 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
         active = true;
         locationRegistrySynchronizer.activate();
         connectionRegistrySynchronizer.activate();
+        unitGroupRegistrySynchronizer.activate();
     }
 
     @Override
@@ -107,6 +125,7 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
         active = false;
         locationRegistrySynchronizer.deactivate();
         connectionRegistrySynchronizer.deactivate();
+        unitGroupRegistrySynchronizer.deactivate();
     }
 
     @Override

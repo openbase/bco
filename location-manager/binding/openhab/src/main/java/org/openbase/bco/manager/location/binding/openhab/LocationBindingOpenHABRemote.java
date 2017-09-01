@@ -33,6 +33,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
+import org.openbase.bco.dal.remote.unit.unitgroup.UnitGroupRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -44,8 +45,7 @@ import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.RemoteControllerRegistryImpl;
 import rst.domotic.binding.openhab.OpenhabCommandType;
-import rst.domotic.service.ServiceTemplateType;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
  *
@@ -55,12 +55,16 @@ public class LocationBindingOpenHABRemote extends AbstractOpenHABRemote {
 
     private final RemoteControllerRegistryImpl<String, LocationRemote> locationRegistry;
     private final RemoteControllerRegistryImpl<String, ConnectionRemote> connectionRegistry;
+    private final RemoteControllerRegistryImpl<String, UnitGroupRemote> unitGroupRegistry;
 
-    public LocationBindingOpenHABRemote(final boolean hardwareSimulationMode, final RemoteControllerRegistryImpl<String, LocationRemote> locationRegistry, final RemoteControllerRegistryImpl<String, ConnectionRemote> connectionRegistry) {
+    public LocationBindingOpenHABRemote(final boolean hardwareSimulationMode, final RemoteControllerRegistryImpl<String, LocationRemote> locationRegistry, 
+            final RemoteControllerRegistryImpl<String, ConnectionRemote> connectionRegistry,
+            final RemoteControllerRegistryImpl<String, UnitGroupRemote> unitGroupRegistry) {
         super(hardwareSimulationMode);
 
         this.locationRegistry = locationRegistry;
         this.connectionRegistry = connectionRegistry;
+        this.unitGroupRegistry = unitGroupRegistry;
     }
 
     @Override
@@ -79,6 +83,9 @@ public class LocationBindingOpenHABRemote extends AbstractOpenHABRemote {
             } else if (command.getItem().startsWith("Connection")) {
                 logger.debug("Received command for connection [" + command.getItem() + "] from openhab");
                 remote = connectionRegistry.get(getIdFromOpenHABCommand(command));
+            } else if (command.getItem().startsWith("UnitGroup")) {
+                logger.debug("Received command for unitgroup [" + command.getItem() + "] from openhab");
+                remote = unitGroupRegistry.get(getIdFromOpenHABCommand(command));
             }
 
             if (remote == null) {
@@ -86,7 +93,7 @@ public class LocationBindingOpenHABRemote extends AbstractOpenHABRemote {
             }
 
             Future returnValue;
-            ServiceTemplateType.ServiceTemplate.ServiceType serviceType = getServiceTypeForCommand(command);
+            ServiceType serviceType = getServiceTypeForCommand(command);
             String methodName = "set" + StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replaceAll("Provider", "").replaceAll("Service", "");
             Object serviceData = OpenhabCommandTransformer.getServiceData(command, serviceType);
             Method relatedMethod;
@@ -122,7 +129,7 @@ public class LocationBindingOpenHABRemote extends AbstractOpenHABRemote {
         return command.getItemBindingConfig().split(":")[1];
     }
 
-    private ServiceTemplate.ServiceType getServiceTypeForCommand(OpenhabCommandType.OpenhabCommand command) {
-        return ServiceTemplate.ServiceType.valueOf(StringProcessor.transformToUpperCase(command.getItem().split(ITEM_SEGMENT_DELIMITER)[1]));
+    private ServiceType getServiceTypeForCommand(OpenhabCommandType.OpenhabCommand command) {
+        return ServiceType.valueOf(StringProcessor.transformToUpperCase(command.getItem().split(ITEM_SEGMENT_DELIMITER)[1]));
     }
 }
