@@ -21,6 +21,8 @@ package org.openbase.bco.manager.agent.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.AbstractExecutableBaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -28,6 +30,8 @@ import org.openbase.bco.manager.agent.core.TriggerJUL.TriggerPool;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
@@ -36,10 +40,12 @@ import rst.calendar.DateTimeType;
 import rst.communicationpatterns.ResourceAllocationType;
 import rst.domotic.action.ActionAuthorityType;
 import rst.domotic.action.ActionDescriptionType;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.MultiResourceAllocationStrategyType;
 import rst.domotic.service.ServiceStateDescriptionType;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.state.EmphasisStateType.EmphasisState;
 import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.agent.AgentDataType;
 import rst.domotic.unit.agent.AgentDataType.AgentData;
@@ -65,6 +71,25 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
     @Override
     protected boolean isAutostartEnabled() throws CouldNotPerformException {
         return getConfig().getAgentConfig().getAutostart();
+    }
+
+    @Override
+    public Future<ActionFuture> setEmphasisState(EmphasisState emphasisState) throws CouldNotPerformException {
+        logger.debug("Apply emphasisState Update[" + emphasisState + "] for " + this + ".");
+
+        try (ClosableDataBuilder<AgentData.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().setEmphasisState(emphasisState);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply emphasisState Update[" + emphasisState + "] for " + this + "!", ex);
+        }
+        CompletableFuture<ActionFuture> completableFuture = new CompletableFuture<>();
+        completableFuture.complete(ActionFuture.getDefaultInstance());
+        return completableFuture;
+    }
+
+    @Override
+    public EmphasisState getEmphasisState() throws NotAvailableException {
+        return getData().getEmphasisState();
     }
 
     protected ActionDescriptionType.ActionDescription.Builder getNewActionDescription(ActionAuthorityType.ActionAuthority actionAuthority,
