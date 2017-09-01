@@ -1,6 +1,6 @@
-package org.openbase.bco.dal.lib.layer.unit.agent;
+package org.openbase.bco.dal.lib.layer.service.provider;
 
-/*
+/*-
  * #%L
  * BCO DAL Library
  * %%
@@ -21,15 +21,17 @@ package org.openbase.bco.dal.lib.layer.unit.agent;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.EmphasisStateOperationService;
-import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
-import rst.domotic.unit.agent.AgentDataType.AgentData;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.iface.annotations.RPCMethod;
+import rst.domotic.state.EmphasisStateType.EmphasisState;
 
 /**
  *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public interface Agent extends BaseUnit<AgentData>, ActivationStateOperationService, EmphasisStateOperationService {
+public interface EmphasisStateProviderService extends ProviderService {
+
+    @RPCMethod
+    public EmphasisState getEmphasisState() throws NotAvailableException;
 
 }
