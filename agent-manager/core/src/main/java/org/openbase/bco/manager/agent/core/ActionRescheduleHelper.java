@@ -91,7 +91,6 @@ public class ActionRescheduleHelper {
                     try {
                         AllocatableResource allocatableResource = new AllocatableResource(actionDescription.getResourceAllocation());
                         allocatableResource.startup();
-                        System.out.println("Check resource [" + actionDescription.getResourceAllocation().getResourceIds(0) + "]");
                         allocatableResource.getRemote().addSchedulerListener((allocation) -> {
                             switch (allocation.getState()) {
                                 case REJECTED:
@@ -105,7 +104,6 @@ public class ActionRescheduleHelper {
                                 case ABORTED:
                                 case RELEASED:
                                 case CANCELLED:
-                                    System.out.println("ActionDescription " + actionDescription.getDescription());
                                     reApplyAction(actionDescription, allocation);
                                     break;
                                 default:
@@ -121,7 +119,6 @@ public class ActionRescheduleHelper {
                                 reApplyAction(actionDescription, actionDescription.getResourceAllocation());
                                 break;
                             default:
-                                System.out.println("Action added to reschedule list: " + actionDescription.getResourceAllocation().getId());
                                 allocationMap.put(actionDescription.getResourceAllocation().getId(), allocatableResource);
                                 break;
                         }
@@ -146,9 +143,7 @@ public class ActionRescheduleHelper {
             DateTimeType.DateTime dateTime = DateTimeType.DateTime.newBuilder().setDateTimeType(DateTimeType.DateTime.Type.FLOATING).setMillisecondsSinceEpoch(anHourFromNow).build();
             actionDescription.setExecutionValidity(dateTime);
         }
-        System.out.println("Validity: " + actionDescription.getExecutionValidity().getMillisecondsSinceEpoch() + " current " + System.currentTimeMillis());
         if (actionDescription.getExecutionValidity().getMillisecondsSinceEpoch() > System.currentTimeMillis()) {
-            System.out.println("Inside boundaries");
             ActionDescriptionProcessor.updateResourceAllocationId(actionDescription);
             ActionDescriptionProcessor.updateResourceAllocationSlot(actionDescription);
             try {
@@ -203,7 +198,6 @@ public class ActionRescheduleHelper {
             rescheduleFuture.cancel(true);
             rescheduleFuture = null;
         }
-        System.out.println("stopExecution");
         for (AllocatableResource allocatableResource : allocationMap.values()) {
             allocatableResource.getRemote().removeAllSchedulerListeners();
             try {
