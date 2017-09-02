@@ -147,6 +147,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         }
 
         MultiException.ExceptionStack exceptionStack = null;
+        
         synchronized (actionListSync) {
             remoteActionList.clear();
             RemoteAction action;
@@ -170,6 +171,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
                 }
             }
         }
+        
         try {
             MultiException.checkAndThrow("Could not fully init units of " + this, exceptionStack);
         } catch (CouldNotPerformException ex) {
