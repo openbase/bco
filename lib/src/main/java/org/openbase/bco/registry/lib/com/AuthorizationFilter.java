@@ -27,9 +27,12 @@ import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType;
 
 /**
  *
@@ -81,9 +84,12 @@ public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
         }
         
         try {
-            return AuthorizationHelper.canAccess(unitConfig, SessionManager.getInstance().getUserAtClientId(), authorizationGroups, locations);
+            return AuthorizationHelper.canRead(unitConfig, SessionManager.getInstance().getUserAtClientId(), authorizationGroups, locations);
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException(ex);
+        } catch(NotAvailableException ex) {
+            LOGGER.debug("Permission for unit ["+ScopeGenerator.generateStringRep(unitConfig.getScope())+"] not available!");
+            return false;
         }
     }
 }

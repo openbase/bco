@@ -41,6 +41,7 @@ import org.openbase.bco.registry.unit.core.consistency.ServiceConfigServiceTempl
 import org.openbase.bco.registry.unit.core.consistency.ServiceConfigUnitIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitConfigUnitTemplateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitEnablingStateConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.UnitPermissionCleanerConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitPositionCleanerConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.agentconfig.AgentLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.agentconfig.AgentLocationConsistencyHandler;
@@ -113,6 +114,7 @@ import org.openbase.bco.registry.unit.lib.generator.UnitTemplateIdGenerator;
 import org.openbase.bco.registry.unit.lib.jp.JPAgentConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPAppConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPAuthorizationGroupConfigDatabaseDirectory;
+import org.openbase.bco.registry.unit.lib.jp.JPClearUnitPermission;
 import org.openbase.bco.registry.unit.lib.jp.JPClearUnitPosition;
 import org.openbase.bco.registry.unit.lib.jp.JPConnectionConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPDalUnitConfigDatabaseDirectory;
@@ -132,7 +134,6 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
@@ -229,11 +230,11 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             this.sceneUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPSceneConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.appUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPAppConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.unitConfigRegistryList.add(dalUnitConfigRegistry);
+            this.unitConfigRegistryList.add(locationUnitConfigRegistry);
             this.unitConfigRegistryList.add(authorizationGroupUnitConfigRegistry);
             this.unitConfigRegistryList.add(userUnitConfigRegistry);
             this.unitConfigRegistryList.add(deviceUnitConfigRegistry);
             this.unitConfigRegistryList.add(unitGroupUnitConfigRegistry);
-            this.unitConfigRegistryList.add(locationUnitConfigRegistry);
             this.unitConfigRegistryList.add(connectionUnitConfigRegistry);
             this.unitConfigRegistryList.add(sceneUnitConfigRegistry);
             this.unitConfigRegistryList.add(agentUnitConfigRegistry);
@@ -364,6 +365,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             if (JPService.getProperty(JPClearUnitPosition.class).getValue()) {
                 registerConsistencyHandler(new UnitPositionCleanerConsistencyHandler(), UnitConfig.class);
             }
+            if (JPService.getProperty(JPClearUnitPermission.class).getValue()) {
+                registerConsistencyHandler(new UnitPermissionCleanerConsistencyHandler(), UnitConfig.class);
+            }
         } catch (JPNotAvailableException ex) {
             // do nothing if not available.
         }
@@ -491,26 +495,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         RPCHelper.registerInterface(UnitRegistry.class, this, server);
     }
 
-    @Override
-    protected void postInit() throws InitializationException, InterruptedException {
-        super.postInit();
-        try (ClosableDataBuilder<UnitRegistryData.Builder> dataBuilder = getDataBuilder(this, false)) {
-            PermissionConfig.Builder permissionConfig = dataBuilder.getInternalBuilder().getPermissionConfigBuilder();
-            Permission allPermission = Permission.newBuilder().setRead(true).setWrite(true).setAccess(true).build();
-//            if (JPService.testMode()) {
-            permissionConfig.setOtherPermission(allPermission);
-//            }
-
-            String adminGroupId = getUnitConfigsByLabelAndUnitType(AuthorizationGroupCreationPlugin.ADMIN_GROUP_LABEL, UnitType.AUTHORIZATION_GROUP).get(0).getId();
-            String registryGroupdId = getUnitConfigsByLabelAndUnitType(AuthorizationGroupCreationPlugin.REGISTRY_GROUP_LABEL, UnitType.AUTHORIZATION_GROUP).get(0).getId();
-
-            permissionConfig.addGroupPermission(PermissionConfig.MapFieldEntry.newBuilder().setGroupId(adminGroupId).setPermission(allPermission));
-            permissionConfig.addGroupPermission(PermissionConfig.MapFieldEntry.newBuilder().setGroupId(registryGroupdId).setPermission(allPermission));
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, new CouldNotPerformException("Could not setup registry permissions", ex));
-        }
-    }
-
     private ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> getUnitConfigRegistry(final UnitType unitType) {
         switch (unitType) {
             case AUTHORIZATION_GROUP:
@@ -545,16 +529,29 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     public Future<AuthenticatedValue> registerUnitConfig(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
             return AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, getAuthorizationGroupUnitConfigRegistry().getEntryMap(), getLocationUnitConfigRegistry().getEntryMap(), UnitConfig.class,
-                (UnitConfig unitConfig) -> getUnitConfigRegistry(unitConfig.getType()).register(unitConfig),
-                (UnitConfig unitConfig) -> {
-                    // If the unit has a location, use the location's UnitConfig for the permissions.
-                    if (unitConfig.hasPlacementConfig() && unitConfig.getPlacementConfig().hasLocationId()) {
-                        return getLocationUnitConfigRegistry().getMessage(unitConfig.getPlacementConfig().getLocationId());
-                    }
+                    (UnitConfig unitConfig) -> getUnitConfigRegistry(unitConfig.getType()).register(unitConfig),
+                    (UnitConfig unitConfig) -> {
+                        // If the unit has a location, use the location's UnitConfig for the permissions.
+                        if (unitConfig.hasPlacementConfig() && unitConfig.getPlacementConfig().hasLocationId()) {
+                            return getLocationUnitConfigRegistry().getMessage(unitConfig.getPlacementConfig().getLocationId());
+                        }
 
-                    // Else, use the permissions of the UnitRegistryData type.
-                    return UnitConfig.newBuilder().setPermissionConfig(getData().getPermissionConfig()).build();
-                }
+                        // Else, user the permission for the root location
+                        UnitConfig rootLocation = null;
+                        for (UnitConfig locationUnitConfig : getLocationUnitConfigRegistry().getMessages()) {
+                            if (locationUnitConfig.getLocationConfig().getRoot()) {
+                                rootLocation = locationUnitConfig;
+                                break;
+                            }
+                        }
+                        if(rootLocation == null) {
+                            // no root location yet available so use all rights
+                            PermissionConfig.Builder permissionConfig = PermissionConfig.newBuilder();
+                            permissionConfig.setOtherPermission(Permission.newBuilder().setAccess(true).setRead(true).setWrite(true));
+                            rootLocation = UnitConfig.newBuilder().setPermissionConfig(permissionConfig).build();
+                        }
+                        return rootLocation;
+                    }
             );
         });
     }
@@ -597,8 +594,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     public Future<AuthenticatedValue> updateUnitConfig(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
             return AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, getAuthorizationGroupUnitConfigRegistry().getEntryMap(), getLocationUnitConfigRegistry().getEntryMap(), UnitConfig.class,
-              (UnitConfig unitConfig) -> getUnitConfigRegistry(unitConfig.getType()).update(unitConfig),
-              (UnitConfig unitConfig) -> unitConfig
+                    (UnitConfig unitConfig) -> getUnitConfigRegistry(unitConfig.getType()).update(unitConfig),
+                    (UnitConfig unitConfig) -> getUnitConfigById(unitConfig.getId())
             );
         });
     }
@@ -611,9 +608,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public Future<AuthenticatedValue> removeUnitConfig(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
-            return AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, getAuthorizationGroupUnitConfigRegistry().getEntryMap(), getLocationUnitConfigRegistry().getEntryMap(), UnitConfig.class, 
-              (UnitConfig unitConfig) -> getUnitConfigRegistry(unitConfig.getType()).remove(unitConfig),
-              (UnitConfig unitConfig) -> unitConfig
+            return AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, getAuthorizationGroupUnitConfigRegistry().getEntryMap(), getLocationUnitConfigRegistry().getEntryMap(), UnitConfig.class,
+                    (UnitConfig unitConfig) -> getUnitConfigRegistry(unitConfig.getType()).remove(unitConfig),
+                    (UnitConfig unitConfig) -> getUnitConfigById(unitConfig.getId())
             );
         });
     }

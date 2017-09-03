@@ -21,40 +21,29 @@ package org.openbase.bco.registry.unit.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.jps.core.JPService;
+
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
-import rst.domotic.authentication.PermissionType.Permission;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class OtherPermissionConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
-
-    private static final Permission DEFAULT_OTHER_PERMISSION = JPService.testMode() ? Permission.newBuilder().setAccess(true).setRead(true).setWrite(true).build() : Permission.newBuilder().setAccess(true).setRead(true).setWrite(false).build();
+public class UnitPermissionCleanerConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
 
-        // Set permissions only for the root location and for units without a location.
-        if ((!unitConfig.hasLocationConfig() || !unitConfig.getLocationConfig().getRoot())
-                && unitConfig.hasPlacementConfig() && unitConfig.getPlacementConfig().hasLocationId()) {
-            return;
-        }
-
-        PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();
-
-        if (!permissionConfig.hasOtherPermission()) {
-            permissionConfig.setOtherPermission(DEFAULT_OTHER_PERMISSION);
+        if (unitConfig.hasPermissionConfig() && !unitConfig.getPermissionConfig().hasOtherPermission() && !unitConfig.getPermissionConfig().hasOwnerPermission() && unitConfig.getPermissionConfig().getGroupPermissionList().isEmpty()) {
+            unitConfig.clearPermissionConfig();
             throw new EntryModification(entry.setMessage(unitConfig), this);
         }
     }
+
 }

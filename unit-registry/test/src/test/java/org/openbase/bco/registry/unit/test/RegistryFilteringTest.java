@@ -112,7 +112,7 @@ public class RegistryFilteringTest {
         }
         PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();
         Permission.Builder otherPermission = permissionConfig.getOtherPermissionBuilder();
-        otherPermission.setAccess(false);
+        otherPermission.setRead(false);
         Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
 
         // test if the unitConfig cannot be seen anymore
@@ -120,7 +120,7 @@ public class RegistryFilteringTest {
         assertTrue("UnitConfig can still be found in unitRegistry even though the access permission for other has been removed", !Registries.getUnitRegistry().getUnitConfigRemoteRegistry().contains(unitConfig.getId()));
     }
 
-    @Test(timeout = 10000)
+    @Test//(timeout = 10000)
     public void testPermissionsOnLogin() throws Exception {
         System.out.println("testPermissionsOnLogin");
         SessionManager.getInstance().login(MockRegistry.admin.getId(), MockRegistry.adminPassword);
@@ -142,10 +142,10 @@ public class RegistryFilteringTest {
         UnitConfig.Builder unitConfig = Registries.getUnitRegistry().getDalUnitConfigs().get(0).toBuilder();
         PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();
         Permission.Builder otherPermission = permissionConfig.getOtherPermissionBuilder();
-        otherPermission.setAccess(false);
+        otherPermission.setAccess(false).setRead(false).setWrite(true);
         Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
         Permission.Builder ownerPermission = permissionConfig.getOwnerPermissionBuilder();
-        ownerPermission.setAccess(true);
+        ownerPermission.setRead(true);
         permissionConfig.setOwnerId(userUnitConfig.getId());
         UnitConfig config = Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
 
@@ -173,7 +173,7 @@ public class RegistryFilteringTest {
         UnitConfig.Builder userUnitConfig = Registries.getUserRegistry().getUserConfigs().get(0).toBuilder();
         PermissionConfig.Builder permissionConfig = userUnitConfig.getPermissionConfigBuilder();
         Permission.Builder otherPermission = permissionConfig.getOtherPermissionBuilder();
-        otherPermission.setAccess(false);
+        otherPermission.setRead(false);
 
         Registries.getUserRegistry().updateUserConfig(userUnitConfig.build()).get();
 
