@@ -63,7 +63,7 @@ public class StandbyAgent extends AbstractAgentController {
     private final SyncObject standbySync = new SyncObject("StandbySync");
     private boolean standby;
     private final Observer<LocationData> locationDataObserver;
-
+    
     private Snapshot snapshot;
 
     public StandbyAgent() throws InstantiationException, CouldNotPerformException, InterruptedException {
@@ -173,7 +173,8 @@ public class StandbyAgent extends AbstractAgentController {
                         if (!serviceStateDescription.getServiceType().equals(ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE)
                                 && !serviceStateDescription.getServiceType().equals(ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE)
                                 && !serviceStateDescription.getServiceType().equals(ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE)) {
-
+                            logger.debug("ignore " + serviceStateDescription.getUnitId() + " because this type is not supported by " + this);
+                            continue;
                         }
 
                         serviceStateDescriptionList.add(serviceStateDescription);
