@@ -29,6 +29,7 @@ import java.util.concurrent.ExecutionException;
 import javax.crypto.BadPaddingException;
 import static org.openbase.bco.authentication.lib.AuthenticationServerHandler.getValidityInterval;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
+import org.openbase.bco.authentication.lib.jp.JPEnableAuthentication;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -47,28 +48,34 @@ import rst.domotic.authentication.TicketType.Ticket;
  *
  * @author <a href="mailto:cromankiewicz@techfak.uni-bielefeld.de">Constantin Romankiewicz</a>
  */
-public class ServiceServerManager {
+public class AuthenticatedServerManager {
 
     public static final String SERVICE_SERVER_PRIVATE_KEY_FILENAME = "service_server_private_key";
-    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ServiceServerManager.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatedServerManager.class);
     private byte[] serviceServerSecretKey;
-    private static ServiceServerManager instance;
+    private static AuthenticatedServerManager instance;
     private TicketAuthenticatorWrapper ticketAuthenticatorWrapper;
     private byte[] sessionKey;
 
-    private ServiceServerManager() throws CouldNotPerformException, InterruptedException {
-        this.login();
-        this.requestServiceServerSecretKey();
+    private AuthenticatedServerManager() throws CouldNotPerformException, InterruptedException {
+        try {
+            if (JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+                this.login();
+                this.requestServiceServerSecretKey();
+            }
+        } catch (JPNotAvailableException ex) {
+            throw new CouldNotPerformException("Could not check JPEnableAuthentication property", ex);
+        }
     }
 
-    public static synchronized ServiceServerManager getInstance() throws CouldNotPerformException, InterruptedException {
+    public static synchronized AuthenticatedServerManager getInstance() throws CouldNotPerformException, InterruptedException {
         if (instance == null) {
-            instance = new ServiceServerManager();
+            instance = new AuthenticatedServerManager();
         }
 
         return instance;
     }
-    
+
     public static synchronized void shutdown() {
         instance = null;
     }
@@ -78,7 +85,7 @@ public class ServiceServerManager {
      * if the ticket is valid.
      *
      * @param wrapper TicketAuthenticatorWrapper holding information about the ticket's validity and the client ID.
-     * @return Client ID.
+     * @return A wrapper containing the client id, the updated ticket for the response and the session key.
      * @throws IOException For I/O errors during the decryption.
      * @throws RejectedException If the ticket is not valid.
      */
@@ -171,24 +178,42 @@ public class ServiceServerManager {
         }
     }
 
+    /**
+     * Should only be used in tests and thus returns null when not in test mode.
+     *
+     * @return the internal service server secret key
+     */
     public byte[] getServiceServerSecretKey() {
-        return serviceServerSecretKey;
+        if (JPService.testMode()) {
+            return serviceServerSecretKey;
+        }
+        return null;
     }
 
+    /**
+     * Wrapper used to return all values which are needed by an authenticated server after verification.
+     */
     public class TicketEvaluationWrapper {
 
-        private final String id;
+        private final String userId;
         private final byte[] sessionKey;
         private final TicketAuthenticatorWrapper ticketAuthenticatorWrapper;
 
-        public TicketEvaluationWrapper(final String id, final byte[] sessionKey, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
-            this.id = id;
+        /**
+         * Create a new wrapper containing the updated ticket, the user id and the session key.
+         *
+         * @param userId The id of the user whose ticket was evaluated.
+         * @param sessionKey The session key of the session of the user whose ticket was evaluated.
+         * @param ticketAuthenticatorWrapper The updated ticket which should be send as a response to the client.
+         */
+        public TicketEvaluationWrapper(final String userId, final byte[] sessionKey, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
+            this.userId = userId;
             this.sessionKey = sessionKey;
             this.ticketAuthenticatorWrapper = ticketAuthenticatorWrapper;
         }
 
-        public String getId() {
-            return id;
+        public String getUserId() {
+            return userId;
         }
 
         public byte[] getSessionKey() {

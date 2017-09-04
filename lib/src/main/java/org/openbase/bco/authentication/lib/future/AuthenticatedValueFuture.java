@@ -35,25 +35,55 @@ import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
 /**
+ * An AuthenticatedFuture which has an internal Future with an authenticated value and returns a generated message.
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
- * @param <RETURN>
+ * @param <RETURN> The type of the generated message which is returned.
  */
 public class AuthenticatedValueFuture<RETURN extends GeneratedMessage> extends AuthenticatedFuture<RETURN, AuthenticatedValue> {
 
+    /**
+     * Create a new AuthenticatedValueFuture with the default session manager.
+     *
+     * @param internalFuture The internal future.
+     * @param returnValueClass Class of type RETURN.
+     * @param ticketAuthenticatorWrapper The ticket used for the request.
+     */
     public AuthenticatedValueFuture(final Future<AuthenticatedValue> internalFuture, final Class<RETURN> returnValueClass, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
         super(internalFuture, returnValueClass, ticketAuthenticatorWrapper);
     }
 
+    /**
+     * Create a new AuthenticatedValueFuture
+     *
+     * @param internalFuture The internal future.
+     * @param returnValueClass Class of type RETURN.
+     * @param ticketAuthenticatorWrapper The ticket used for the request.
+     * @param sessionManager Session manager that is used to verify the response.
+     */
     public AuthenticatedValueFuture(final Future<AuthenticatedValue> internalFuture, final Class<RETURN> returnValueClass, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper, final SessionManager sessionManager) {
         super(internalFuture, returnValueClass, ticketAuthenticatorWrapper, sessionManager);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param internalType {@inheritDoc}
+     * @return The ticket inside the authenticated value.
+     */
     @Override
-    protected TicketAuthenticatorWrapper getWrapperFromInternal(AuthenticatedValue internalType) {
+    protected TicketAuthenticatorWrapper getTicketFromInternal(AuthenticatedValue internalType) {
         return internalType.getTicketAuthenticatorWrapper();
     }
 
+    /**
+     * Decrypt the value inside the authenticated value or parse from byte string if no one is logged in.
+     * {@inheritDoc}
+     *
+     * @param authenticatedValue The result from the internal future.
+     * @return The encrypted or parsed value inside the authenticated value.
+     * @throws CouldNotPerformException If the decryption failed or the message cannot be parsed from a byte string.
+     */
     @Override
     protected RETURN convertFromInternal(AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         try {

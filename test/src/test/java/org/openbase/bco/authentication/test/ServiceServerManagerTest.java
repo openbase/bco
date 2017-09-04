@@ -32,7 +32,7 @@ import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
-import org.openbase.bco.authentication.lib.ServiceServerManager;
+import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.jp.JPInitializeCredentials;
 import org.openbase.jps.core.JPService;
@@ -101,7 +101,7 @@ public class ServiceServerManagerTest {
         SessionManager.getInstance().login(userId, password);
         
         TicketAuthenticatorWrapper request = SessionManager.getInstance().initializeServiceServerRequest();
-        TicketAuthenticatorWrapper response = ServiceServerManager.getInstance().evaluateClientServerTicket(request).getTicketAuthenticatorWrapper();
+        TicketAuthenticatorWrapper response = AuthenticatedServerManager.getInstance().evaluateClientServerTicket(request).getTicketAuthenticatorWrapper();
 
         AuthenticationClientHandler.handleServiceServerResponse(SessionManager.getInstance().getSessionKey(), request, response);
     }

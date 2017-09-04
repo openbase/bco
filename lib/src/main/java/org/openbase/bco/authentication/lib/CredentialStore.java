@@ -53,27 +53,27 @@ import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
  * Romankiewicz</a>
  */
 public class CredentialStore {
-
+    
     public static final String SERVICE_SERVER_ID = "serviceServer";
-
+    
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CredentialStore.class);
-
+    
     private final String filename;
-
+    
     protected HashMap<String, LoginCredentials> credentials;
-
+    
     private File file;
     private final Base64.Encoder encoder;
     private final Base64.Decoder decoder;
-
+    
     private ProtoBufFileProcessor<LoginCredentialsCollection, LoginCredentialsCollection, LoginCredentialsCollection.Builder> fileProcessor;
-
+    
     public CredentialStore(final String filename) {
         this.filename = filename;
         encoder = Base64.getEncoder();
         decoder = Base64.getDecoder();
     }
-
+    
     public void init() throws InitializationException {
         try {
             this.fileProcessor = new ProtoBufFileProcessor<>(LoginCredentialsCollection.newBuilder());
@@ -99,7 +99,7 @@ public class CredentialStore {
         } catch (JPNotAvailableException ex) {
             throw new CouldNotPerformException("Initialize credential property not available!", ex);
         }
-
+        
         credentials = new HashMap<>();
         LoginCredentialsCollection collection = fileProcessor.deserialize(file);
         collection.getElementList().forEach((entry) -> {
@@ -115,7 +115,7 @@ public class CredentialStore {
             LoginCredentialsCollection collection = LoginCredentialsCollection.newBuilder()
                     .addAllElement(credentials.values())
                     .build();
-
+            
             fileProcessor.serialize(collection, file);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
@@ -131,7 +131,7 @@ public class CredentialStore {
         Set<PosixFilePermission> perms = new HashSet<>();
         perms.add(PosixFilePermission.OWNER_READ);
         perms.add(PosixFilePermission.OWNER_WRITE);
-
+        
         Files.setPosixFilePermissions(file.toPath(), perms);
     }
 
@@ -237,7 +237,7 @@ public class CredentialStore {
                 .setCredentials(encoder.encodeToString(credentials))
                 .setAdmin(admin)
                 .build();
-
+        
         this.credentials.put(id, loginCredentials);
         this.saveStore();
     }
@@ -255,7 +255,7 @@ public class CredentialStore {
         if (!credentials.containsKey(userId)) {
             return false;
         }
-
+        
         return credentials.get(userId).getAdmin();
     }
 
@@ -278,9 +278,9 @@ public class CredentialStore {
     }
     
     public void shutdown() {
-        if(JPService.testMode()) {
+        if (JPService.testMode()) {
             credentials.clear();
-        } 
+        }        
         
         saveStore();
     }

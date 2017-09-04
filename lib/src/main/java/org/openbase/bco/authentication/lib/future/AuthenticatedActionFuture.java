@@ -28,24 +28,51 @@ import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
 /**
+ * AuthenticatedFuture which returns an ActionFuture and its internal Future also is of type ActionFuture.
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class AuthenticatedActionFuture extends AuthenticatedFuture<ActionFuture, ActionFuture> {
 
+    /**
+     * Create a new AuthenticatedActionFuture which uses the default session manager.
+     *
+     * @param applyActionFuture The internal future.
+     * @param ticketAuthenticatorWrapper The ticket which was used for the request.
+     */
     public AuthenticatedActionFuture(final Future<ActionFuture> applyActionFuture, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
         super(applyActionFuture, ActionFuture.class, ticketAuthenticatorWrapper);
     }
-    
+
+    /**
+     * Create a new AuthenticatedActionFuture.
+     *
+     * @param applyActionFuture The internal future.
+     * @param ticketAuthenticatorWrapper The ticket which was used for the request.
+     * @param sessionManager The session manager used to verify the response.
+     */
     public AuthenticatedActionFuture(final Future<ActionFuture> applyActionFuture, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper, final SessionManager sessionManager) {
         super(applyActionFuture, ActionFuture.class, ticketAuthenticatorWrapper, sessionManager);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param internalType {@inheritDoc}
+     * @return The ticket inside the action future.
+     */
     @Override
-    protected TicketAuthenticatorWrapper getWrapperFromInternal(ActionFuture internalType) {
+    protected TicketAuthenticatorWrapper getTicketFromInternal(ActionFuture internalType) {
         return internalType.getTicketAuthenticatorWrapper();
     }
 
+    /**
+     * {@inheritDoc}
+     * 
+     * @param internalType {@inheritDoc}
+     * @return The internal type.
+     * @throws CouldNotPerformException {@inheritDoc} 
+     */
     @Override
     protected ActionFuture convertFromInternal(ActionFuture internalType) throws CouldNotPerformException {
         return internalType;

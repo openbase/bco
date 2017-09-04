@@ -32,6 +32,7 @@ import org.openbase.bco.authentication.lib.jp.JPAuthenticationSimulationMode;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import javax.crypto.BadPaddingException;
+import org.openbase.bco.authentication.lib.jp.JPEnableAuthentication;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -228,6 +229,14 @@ public class SessionManager {
      * @throws CouldNotPerformException In case of a communication error between client and server.
      */
     private boolean internalLogin(String id, byte[] key, boolean isUser) throws CouldNotPerformException, NotAvailableException {
+        try {
+            if (!JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+                return false;
+            }
+        } catch (JPNotAvailableException ex) {
+            throw new CouldNotPerformException("Could not check JPEnableAuthenticationProperty", ex);
+        }
+
         // temporary wrapper and session key. Incase a new user/client wants to login but failed then
         // reset these in order to reset the session to previous user/client
         TicketAuthenticatorWrapper tmpTicketAuthenticatorWrapper = null;
@@ -359,11 +368,11 @@ public class SessionManager {
             LOGGER.warn("Could not notify logout to observer", ex);
         }
     }
-    
+
     /**
      * This method performs a complete logout by also clearing the previous client id.
      * If the normal logout is used and a new user logs in he will be logged in at the last
-     * client every time. This method is mostly necessary for unit tests. 
+     * client every time. This method is mostly necessary for unit tests.
      */
     public synchronized void completeLogout() {
         this.userId = null;
@@ -793,7 +802,7 @@ public class SessionManager {
     public Observable<Boolean> getLoginObervable() {
         return loginObervable;
     }
-    
+
     public String getClientId() {
         return clientId;
     }
