@@ -23,20 +23,29 @@ package org.openbase.bco.registry.lib.com;
  */
 
 import com.google.protobuf.GeneratedMessage;
-import org.openbase.jul.exception.CouldNotPerformException;
 
 /**
+ * Default filter which does not filter at all.
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
- * @param <M>
+ * @param <M> The type of message which is filtered.
  */
 public class DefaultMessageFilter<M extends GeneratedMessage> extends AbstractFilter<M>{
 
+    /**
+     * Has nothing to do before filtering.
+     */
     @Override
-    public void beforeFilter() throws CouldNotPerformException {
+    public void beforeFilter() {
         // do nothing
     }
 
+    /**
+     * Accept all message.
+     * 
+     * @param type The message which is verified.
+     * @return True for all messages.
+     */
     @Override
     public boolean verify(M type) {
         // every msg is fine

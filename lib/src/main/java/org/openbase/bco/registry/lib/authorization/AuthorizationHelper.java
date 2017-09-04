@@ -59,11 +59,11 @@ public class AuthorizationHelper {
      * @param unitConfig The unitConfig of the unit the user wants to read.
      * @param userId ID of the user whose permissions should be checked.
      * @param groups All available groups in the system, indexed by their group ID.
+     * @param locations All available locations in the system, indexed by their id.
      * @return True if the user can read from the unit, false if not.
-     * @throws InterruptedException
      * @throws CouldNotPerformException If the permissions could not be checked, probably because of invalid location information.
      */
-    public static boolean canRead(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) throws InterruptedException, CouldNotPerformException {
+    public static boolean canRead(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) throws CouldNotPerformException {
         return canDo(unitConfig, userId, groups, locations, Type.READ);
     }
 
@@ -74,11 +74,11 @@ public class AuthorizationHelper {
      * @param unitConfig The unitConfig of the unit the user wants to write to.
      * @param userId ID of the user whose permissions should be checked.
      * @param groups All available groups in the system, indexed by their group ID.
+     * @param locations All available locations in the system, indexed by their id.
      * @return True if the user can write to the unit, false if not.
-     * @throws InterruptedException
      * @throws CouldNotPerformException If the permissions could not be checked, probably because of invalid location information.
      */
-    public static boolean canWrite(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) throws InterruptedException, CouldNotPerformException {
+    public static boolean canWrite(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) throws CouldNotPerformException {
         return canDo(unitConfig, userId, groups, locations, Type.WRITE);
     }
 
@@ -88,11 +88,11 @@ public class AuthorizationHelper {
      * @param unitConfig The unitConfig of the unit the user wants to access.
      * @param userId ID of the user whose permissions should be checked.
      * @param groups All available groups in the system, indexed by their group ID.
+     * @param locations All available locations in the system, indexed by their id.
      * @return True if the user can access the unit, false if not.
-     * @throws InterruptedException
      * @throws CouldNotPerformException If the permissions could not be checked, probably because of invalid location information.
      */
-    public static boolean canAccess(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) throws InterruptedException, CouldNotPerformException {
+    public static boolean canAccess(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) throws CouldNotPerformException {
         return canDo(unitConfig, userId, groups, locations, Type.ACCESS);
     }
 
@@ -102,11 +102,11 @@ public class AuthorizationHelper {
      * @param unitConfig The unitConfig of the unit for which the permissions apply.
      * @param userId ID of the user whose permissions should be checked.
      * @param groups All available groups in the system, indexed by their group ID.
+     * @param locations All available locations in the system, indexed by their id.
      * @return Permission object representing the maximum permissions for the given user on the given unit.
-     * @throws InterruptedException
      * @throws CouldNotPerformException If the permissions could not be checked, probably because of invalid location information.
      */
-    public static Permission getPermission(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) throws InterruptedException, CouldNotPerformException {
+    public static Permission getPermission(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) throws CouldNotPerformException {
         return Permission.newBuilder()
           .setAccess(canAccess(unitConfig, userId, groups, locations))
           .setRead(canRead(unitConfig, userId, groups, locations))
@@ -114,7 +114,7 @@ public class AuthorizationHelper {
           .build();
     }
 
-    private static boolean canDo(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations, Type type) throws InterruptedException, CouldNotPerformException {
+    private static boolean canDo(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations, Type type) throws CouldNotPerformException {
         UnitConfig locationUnitConfig = getLocationUnitConfig(unitConfig.getPlacementConfig().getLocationId(), locations);
 
         boolean isRoot = unitConfig.getType() == UnitType.LOCATION && unitConfig.getLocationConfig().getRoot();
@@ -195,7 +195,7 @@ public class AuthorizationHelper {
         }
     }
 
-    private static PermissionConfig getPermissionConfig(UnitConfig unitConfig, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) throws InterruptedException, CouldNotPerformException {
+    private static PermissionConfig getPermissionConfig(UnitConfig unitConfig, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) throws CouldNotPerformException {
         // If the unit itself has a PermissionConfig, we use this one.
         if (unitConfig.hasPermissionConfig()) {
             return unitConfig.getPermissionConfig();
