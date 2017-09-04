@@ -22,11 +22,14 @@ package org.openbase.bco.manager.app.core;
  * #L%
  */
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.jp.JPEnableAuthentication;
 import org.openbase.bco.manager.app.lib.AppController;
 import org.openbase.bco.manager.app.lib.AppFactory;
 import org.openbase.bco.manager.app.lib.AppManager;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.iface.Launchable;
@@ -77,7 +80,13 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
         //TODO: why is this necessary
         Registries.waitForData();
         
-        SessionManager.getInstance().login(Registries.getUserRegistry().getUserIdByUserName(UserCreationPlugin.BCO_USERNAME));
+        try {
+            if (JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+                SessionManager.getInstance().login(Registries.getUserRegistry().getUserIdByUserName(UserCreationPlugin.BCO_USERNAME));
+            }
+        } catch (JPNotAvailableException ex) {
+            // do nothing
+        }
 
         appRegistrySynchronizer.activate();
     }

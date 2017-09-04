@@ -22,6 +22,7 @@ package org.openbase.bco.manager.location.core;
  * #L%
  */
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.jp.JPEnableAuthentication;
 import org.openbase.bco.manager.location.lib.ConnectionController;
 import org.openbase.bco.manager.location.lib.ConnectionFactory;
 import org.openbase.bco.manager.location.lib.LocationController;
@@ -29,6 +30,8 @@ import org.openbase.bco.manager.location.lib.LocationFactory;
 import org.openbase.bco.manager.location.lib.LocationManager;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.iface.Launchable;
@@ -92,7 +95,13 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
 //        System.out.println("Locations: "+CachedLocationRegistryRemote.getRegistry().getLocationConfigs().size());
 //        System.out.println("Connection: "+CachedLocationRegistryRemote.getRegistry().getConnectionConfigs().size());
 //        System.out.println("Loc: "+locationRegistryRemote.getLocationConfigs().size());
-        SessionManager.getInstance().login(Registries.getUserRegistry().getUserIdByUserName(UserCreationPlugin.BCO_USERNAME));
+        try {
+            if (JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+                SessionManager.getInstance().login(Registries.getUserRegistry().getUserIdByUserName(UserCreationPlugin.BCO_USERNAME));
+            }
+        } catch (JPNotAvailableException ex) {
+            // do nothing
+        }
 
         locationRegistrySynchronizer.activate();
         connectionRegistrySynchronizer.activate();

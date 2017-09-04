@@ -27,7 +27,7 @@ import org.junit.Before;
 import org.junit.Test;
 import static org.openbase.bco.authentication.lib.AuthenticationServerHandler.VALIDITY_PERIOD_IN_MILLIS;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
-import org.openbase.bco.authentication.lib.ServiceServerManager;
+import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.Units;
@@ -124,7 +124,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         assertEquals(true, result);
         
         // make ticket invalid
-        byte[] serviceServerSecretKey = ServiceServerManager.getInstance().getServiceServerSecretKey();
+        byte[] serviceServerSecretKey = AuthenticatedServerManager.getInstance().getServiceServerSecretKey();
         System.out.println("make ticket invalid");
         Ticket ticket = EncryptionHelper.decryptSymmetric(sessionManager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
         
@@ -159,7 +159,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
     public void testSetColorWithUserWithoutAuthentication() throws Exception {
         System.out.println("testSetColorWithClientWithoutAuthentication");
                         
-        byte[] serviceServerSecretKey = ServiceServerManager.getInstance().getServiceServerSecretKey();
+        byte[] serviceServerSecretKey = AuthenticatedServerManager.getInstance().getServiceServerSecretKey();
         // make ticket invalid
         System.out.println("make ticket invalid");
         Ticket ticket = EncryptionHelper.decryptSymmetric(sessionManager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
