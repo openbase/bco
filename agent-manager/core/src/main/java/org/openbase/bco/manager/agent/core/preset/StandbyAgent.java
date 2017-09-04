@@ -39,6 +39,7 @@ import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
+import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.PowerStateType;
 import rst.domotic.state.PresenceStateType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -149,23 +150,30 @@ public class StandbyAgent extends AbstractAgentController {
                             logger.debug("ignore " + serviceStateDescription.getUnitId() + " because unit is off.");
                             continue;
                         }
-                        
+
                         // filter neutral brightness states
                         if (serviceStateDescription.getServiceAttribute().toLowerCase().contains("brightness: 0.0")) {
                             logger.debug("ignore " + serviceStateDescription.getUnitId() + " because brightness is 0.");
                             continue;
                         }
-                        
+
                         // filter base units
                         if (UnitConfigProcessor.isBaseUnit(serviceStateDescription.getUnitType())) {
                             logger.debug("ignore " + serviceStateDescription.getUnitId() + " because is a base unit.");
                             continue;
                         }
-                        
+
                         // filter rollershutter
                         if (serviceStateDescription.getUnitType().equals(UnitType.ROLLER_SHUTTER)) {
                             logger.debug("ignore " + serviceStateDescription.getUnitId() + " because reconstructing roller shutter states are to dangerus.");
                             continue;
+                        }
+
+                        // let only Power + Brightness + Color States pass because these are the ones which are manipulated. 
+                        if (!serviceStateDescription.getServiceType().equals(ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE)
+                                && !serviceStateDescription.getServiceType().equals(ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE)
+                                && !serviceStateDescription.getServiceType().equals(ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE)) {
+
                         }
 
                         serviceStateDescriptionList.add(serviceStateDescription);
