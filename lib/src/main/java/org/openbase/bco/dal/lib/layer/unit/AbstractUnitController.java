@@ -36,7 +36,8 @@ import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.authorization.AuthorizationHelper;
-import org.openbase.bco.authentication.lib.ServiceServerManager;
+import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
+import org.openbase.bco.authentication.lib.jp.JPEnableAuthentication;
 import org.openbase.bco.dal.lib.action.ActionImpl;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -45,6 +46,8 @@ import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -344,7 +347,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     @Override
     public void registerMethods(RSBLocalServer server) throws CouldNotPerformException {
-
         RPCHelper.registerInterface(Unit.class, this, server);
 
         // collect and register service interface methods via unit templates
@@ -465,20 +467,29 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     /**
      * Verifies the authority by verifying its internal TicketAuthenticationWrapper with the authenticator.
-     * It the authenticator has no TicketAuthenticationWrapper null is returned because no one is logged in. 
-     * 
+     * It the authenticator has no TicketAuthenticationWrapper null is returned because no one is logged in.
+     *
      * @param actionAuthority the authority verified
      * @return an updated TicketAuthenticationWrapper of null if no one is logged in
      * @throws VerificationFailedException if someone is logged in but the verification with the authenticator fails
      * @throws org.openbase.jul.exception.PermissionDeniedException
+     * @throws java.lang.InterruptedException
      */
     public TicketAuthenticatorWrapper verifyAuthority(final ActionAuthority actionAuthority) throws VerificationFailedException, PermissionDeniedException, InterruptedException, CouldNotPerformException {
+        try {
+            if (!JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+                return null;
+            }
+        } catch (JPNotAvailableException ex) {
+            throw new CouldNotPerformException("Could not check JPEncableAuthentication property", ex);
+        }
+
         // If there is no TicketAuthenticationWrapper, check permissions without userId and groups.
-        if(!actionAuthority.hasTicketAuthenticatorWrapper()) {
+        if (!actionAuthority.hasTicketAuthenticatorWrapper()) {
             try {
                 Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations = Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap();
 
-                if (!AuthorizationHelper.canWrite(getConfig(), null, null, locations)) {
+                if (!AuthorizationHelper.canAccess(getConfig(), null, null, locations)) {
                     throw new PermissionDeniedException("You have no permission to execute this action.");
                 }
 
@@ -490,12 +501,12 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
         try {
             TicketAuthenticatorWrapper wrapper = actionAuthority.getTicketAuthenticatorWrapper();
-            ServiceServerManager.TicketEvaluationWrapper validatedTicketWrapper = ServiceServerManager.getInstance().evaluateClientServerTicket(wrapper);
-            String clientId = validatedTicketWrapper.getId();
+            AuthenticatedServerManager.TicketEvaluationWrapper validatedTicketWrapper = AuthenticatedServerManager.getInstance().evaluateClientServerTicket(wrapper);
+            String clientId = validatedTicketWrapper.getUserId();
             Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups = Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap();
             Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations = Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap();
 
-            if (!AuthorizationHelper.canWrite(getConfig(), clientId, groups, locations)) {
+            if (!AuthorizationHelper.canAccess(getConfig(), clientId, groups, locations)) {
                 throw new PermissionDeniedException("You have no permission to execute this action.");
             }
 
