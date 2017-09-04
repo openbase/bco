@@ -33,7 +33,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.core.AuthenticatorLauncher;
-import org.openbase.bco.authentication.lib.ServiceServerManager;
+import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.agent.core.AgentRegistryLauncher;
 import org.openbase.bco.registry.agent.lib.AgentRegistry;
@@ -513,7 +513,7 @@ public class MockRegistry {
         }
         
         SessionManager.getInstance().completeLogout();
-        ServiceServerManager.shutdown();
+        AuthenticatedServerManager.shutdown();
 
         CachedLocationRegistryRemote.shutdown();
         CachedSceneRegistryRemote.shutdown();

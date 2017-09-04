@@ -31,9 +31,12 @@ import java.util.concurrent.Future;
 import javax.crypto.BadPaddingException;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
-import org.openbase.bco.authentication.lib.ServiceServerManager;
+import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
+import org.openbase.bco.authentication.lib.jp.JPEnableAuthentication;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -50,10 +53,10 @@ public class AuthenticatedServiceProcessor {
 
     /**
      * Method used by the server which performs an authenticated action which needs write permissions.
-     * 
+     *
      * @param <RECEIVE> The type of value that the server receives to perform its action,
      * @param <RETURN> The type of value that the server responds with.
-     * @param authenticatedValue  The authenticatedValue which is send with the request.
+     * @param authenticatedValue The authenticatedValue which is send with the request.
      * @param authorizationGroupMap Map of authorization groups to verify if this action can be performed.
      * @param locationMap Map of locations to verify if this action can be performed.
      * @param internalClass Class of type RECEIVE needed to decrypt the received type.
@@ -61,17 +64,24 @@ public class AuthenticatedServiceProcessor {
      * @param configRetrieval Interface defining which unitConfig should be used to verify the execution of the action.
      * @return An AuthenticatedValue which should be send as a response.
      * @throws CouldNotPerformException If one step can not be done, e.g. ticket invalid or encryption failed.
-     * @throws InterruptedException  It interrupted while checking permissions.
+     * @throws InterruptedException It interrupted while checking permissions.
      */
     public static <RECEIVE extends GeneratedMessage, RETURN extends GeneratedMessage> AuthenticatedValue authenticatedAction(final AuthenticatedValue authenticatedValue, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> authorizationGroupMap, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locationMap, final Class<RECEIVE> internalClass, final InternalProcessable<RECEIVE, RETURN> executable, final ConfigRetrieval<RECEIVE> configRetrieval) throws CouldNotPerformException, InterruptedException {
         try {
             // start to build the reponse
             AuthenticatedValue.Builder response = AuthenticatedValue.newBuilder();
             if (authenticatedValue.hasTicketAuthenticatorWrapper()) {
+                try {
+                    if (!JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+                        throw new CouldNotPerformException("Cannot execute authenticated action because authentication is disabled");
+                    }
+                } catch (JPNotAvailableException ex) {
+                    throw new CouldNotPerformException("Could not check JPEnableAuthentication property", ex);
+                }
                 // ticket authenticator is available so a logged in user has requested this action
                 try {
                     // evaluate the users ticket
-                    ServiceServerManager.TicketEvaluationWrapper ticketEvaluationWrapper = ServiceServerManager.getInstance().evaluateClientServerTicket(authenticatedValue.getTicketAuthenticatorWrapper());
+                    AuthenticatedServerManager.TicketEvaluationWrapper ticketEvaluationWrapper = AuthenticatedServerManager.getInstance().evaluateClientServerTicket(authenticatedValue.getTicketAuthenticatorWrapper());
 
                     // decrypt the send type from the AuthenticatedValue
                     RECEIVE decrypted = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), ticketEvaluationWrapper.getSessionKey(), internalClass);
@@ -79,8 +89,8 @@ public class AuthenticatedServiceProcessor {
                     UnitConfig unitConfig = configRetrieval.retrieve(decrypted);
 
                     // check for write permissions
-                    if (!AuthorizationHelper.canWrite(unitConfig, ticketEvaluationWrapper.getId(), authorizationGroupMap, locationMap)) {
-                        throw new PermissionDeniedException("User[" + ticketEvaluationWrapper.getId() + "] has not rights to register a unitConfig");
+                    if (!AuthorizationHelper.canWrite(unitConfig, ticketEvaluationWrapper.getUserId(), authorizationGroupMap, locationMap)) {
+                        throw new PermissionDeniedException("User[" + ticketEvaluationWrapper.getUserId() + "] has not rights to register a unitConfig");
                     }
 
                     // execute the action of the server
@@ -125,7 +135,7 @@ public class AuthenticatedServiceProcessor {
 
     /**
      * Method used by the remote to request an authenticated action from a server.
-     * 
+     *
      * @param <SEND> The type which is send to server for this request.
      * @param <RESPONSE> The type with which the server should respond.
      * @param message The message which is encrypted and send to the server.
@@ -177,7 +187,7 @@ public class AuthenticatedServiceProcessor {
 
         /**
          * The process an authenticated value executes for a request.
-         * 
+         *
          * @param message the message which is received by the request.
          * @return A message which is the result of the process.
          * @throws CouldNotPerformException If the process cannot be executed.
@@ -189,7 +199,7 @@ public class AuthenticatedServiceProcessor {
 
         /**
          * Interface wrapping an authenticated request performed by a remote.
-         * 
+         *
          * @param authenticatedValue The authenticated value which is send with this request.
          * @return A future containing the authenticated value which is the response from the server.
          * @throws CouldNotPerformException If the request cannot be done.

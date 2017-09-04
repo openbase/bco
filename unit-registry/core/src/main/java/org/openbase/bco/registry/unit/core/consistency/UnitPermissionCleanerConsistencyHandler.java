@@ -21,13 +21,14 @@ package org.openbase.bco.registry.unit.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
+import rst.domotic.authentication.PermissionType.Permission;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
@@ -40,10 +41,17 @@ public class UnitPermissionCleanerConsistencyHandler extends AbstractProtoBufReg
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
 
-        if (unitConfig.hasPermissionConfig() && !unitConfig.getPermissionConfig().hasOtherPermission() && !unitConfig.getPermissionConfig().hasOwnerPermission() && unitConfig.getPermissionConfig().getGroupPermissionList().isEmpty()) {
-            unitConfig.clearPermissionConfig();
-            throw new EntryModification(entry.setMessage(unitConfig), this);
+        if (unitConfig.hasPermissionConfig()) {
+            PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();
+            if (permissionIsEmpty(permissionConfig.getOtherPermission()) && permissionIsEmpty(permissionConfig.getOwnerPermission())&& permissionConfig.getGroupPermissionList().isEmpty()) {
+                unitConfig.clearPermissionConfig();
+                throw new EntryModification(entry.setMessage(unitConfig), this);
+            }
         }
+    }
+
+    private boolean permissionIsEmpty(Permission permission) {
+        return !permission.hasAccess() && !permission.hasRead() && !permission.hasWrite();
     }
 
 }

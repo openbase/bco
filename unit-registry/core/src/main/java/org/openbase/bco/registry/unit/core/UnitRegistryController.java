@@ -25,6 +25,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
+import org.openbase.bco.authentication.lib.jp.JPEnableAuthentication;
 import org.openbase.bco.registry.lib.authorization.AuthenticatedServiceProcessor;
 import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
 import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
@@ -359,9 +360,11 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         registerConsistencyHandler(new UnitEnablingStateConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new ServiceConfigServiceTemplateIdConsistencyHandler(serviceTemplateRegistry), UnitConfig.class);
         registerConsistencyHandler(new UnitTransformationFrameConsistencyHandler(locationUnitConfigRegistry), UnitConfig.class);
-        registerConsistencyHandler(new OtherPermissionConsistencyHandler(), UnitConfig.class);
-        registerConsistencyHandler(new GroupPermissionConsistencyHandler(authorizationGroupUnitConfigRegistry), UnitConfig.class);
         try {
+            if (JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+                registerConsistencyHandler(new OtherPermissionConsistencyHandler(), UnitConfig.class);
+                registerConsistencyHandler(new GroupPermissionConsistencyHandler(authorizationGroupUnitConfigRegistry), UnitConfig.class);
+            }
             if (JPService.getProperty(JPClearUnitPosition.class).getValue()) {
                 registerConsistencyHandler(new UnitPositionCleanerConsistencyHandler(), UnitConfig.class);
             }
@@ -385,8 +388,14 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         serviceTemplateRegistry.registerPlugin(new ServiceTemplateCreatorRegistryPlugin(serviceTemplateRegistry));
         unitTemplateRegistry.registerPlugin(new UnitTemplateCreatorRegistryPlugin(unitTemplateRegistry));
 
-        authorizationGroupUnitConfigRegistry.registerPlugin(new AuthorizationGroupCreationPlugin(authorizationGroupUnitConfigRegistry));
-        userUnitConfigRegistry.registerPlugin(new UserCreationPlugin(userUnitConfigRegistry, authorizationGroupUnitConfigRegistry));
+        try {
+            if (JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+                authorizationGroupUnitConfigRegistry.registerPlugin(new AuthorizationGroupCreationPlugin(authorizationGroupUnitConfigRegistry));
+                userUnitConfigRegistry.registerPlugin(new UserCreationPlugin(userUnitConfigRegistry, authorizationGroupUnitConfigRegistry));
+            }
+        } catch (JPNotAvailableException ex) {
+            // do nothing if not available
+        }
 
         deviceUnitConfigRegistry.registerPlugin(new DeviceConfigDeviceClassUnitConsistencyPlugin(deviceRegistryRemote.getDeviceClassRemoteRegistry(), dalUnitConfigRegistry, deviceUnitConfigRegistry));
 
@@ -544,7 +553,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
                                 break;
                             }
                         }
-                        if(rootLocation == null) {
+                        if (rootLocation == null) {
                             // no root location yet available so use all rights
                             PermissionConfig.Builder permissionConfig = PermissionConfig.newBuilder();
                             permissionConfig.setOtherPermission(Permission.newBuilder().setAccess(true).setRead(true).setWrite(true));

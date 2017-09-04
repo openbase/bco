@@ -32,7 +32,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
-import org.openbase.bco.authentication.lib.ServiceServerManager;
+import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
@@ -212,7 +212,7 @@ public class RegistryFilteringTest {
         SessionManager.getInstance().login(MockRegistry.admin.getId(), MockRegistry.adminPassword);
         TicketAuthenticatorWrapper request = SessionManager.getInstance().initializeServiceServerRequest();
         
-        ServiceServerManager.TicketEvaluationWrapper evaluateClientServerTicket = ServiceServerManager.getInstance().evaluateClientServerTicket(request);
+        AuthenticatedServerManager.TicketEvaluationWrapper evaluateClientServerTicket = AuthenticatedServerManager.getInstance().evaluateClientServerTicket(request);
         AuthenticationClientHandler.handleServiceServerResponse(SessionManager.getInstance().getSessionKey(), request, evaluateClientServerTicket.getTicketAuthenticatorWrapper());
     }
 }

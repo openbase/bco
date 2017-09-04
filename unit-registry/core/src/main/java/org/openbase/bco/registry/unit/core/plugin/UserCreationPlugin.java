@@ -49,25 +49,25 @@ import rst.domotic.unit.user.UserConfigType.UserConfig;
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class UserCreationPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> {
-
+    
     public static final String DEFAULT_ADMIN_USERNAME_AND_PASSWORD = "admin";
     public static final String BCO_USERNAME = "BCO";
-
+    
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(UserCreationPlugin.class);
-
+    
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> userUnitConfigRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupConfigRegistry;
-
+    
     public UserCreationPlugin(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> userUnitConfigRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupConfigRegistry) {
         this.userUnitConfigRegistry = userUnitConfigRegistry;
         this.authorizationGroupConfigRegistry = authorizationGroupConfigRegistry;
     }
-
+    
     @Override
     public void init(Registry<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> registry) throws InitializationException, InterruptedException {
         super.init(registry);
-
+        
         try {
             UnitConfig.Builder adminGroupConfig = null;
             UnitConfig.Builder bcoGroupConfig = null;
@@ -84,11 +84,14 @@ public class UserCreationPlugin extends FileRegistryPluginAdapter<String, Identi
             if (bcoGroupConfig == null) {
                 throw new InitializationException(this, new NotAvailableException("BCO AuthorizationGroupUnitConfigConfig"));
             }
-
+            
             boolean adminExists = false;
             boolean bcoExists = false;
             for (UnitConfig userUnitConfig : userUnitConfigRegistry.getMessages()) {
+                LOGGER.info("Check user: [" + userUnitConfig.getUserConfig().getUserName() + "]["+userUnitConfig.getId()+"]");
+                LOGGER.info("Is admin answer from authenticator ["+CachedAuthenticationRemote.getRemote().isAdmin(userUnitConfig.getId()).get(1, TimeUnit.SECONDS)+"]");
                 if (CachedAuthenticationRemote.getRemote().isAdmin(userUnitConfig.getId()).get(1, TimeUnit.SECONDS)) {
+                    LOGGER.info("Is admin");
                     adminExists = true;
                     if (!adminGroupConfig.getAuthorizationGroupConfig().getMemberIdList().contains(userUnitConfig.getId())) {
                         // user is admin but not in group, so add him
@@ -101,7 +104,7 @@ public class UserCreationPlugin extends FileRegistryPluginAdapter<String, Identi
                     bcoExists = true;
                 }
             }
-
+            
             if (!adminExists) {
                 registerDefaultAdmin(adminGroupConfig);
             }
@@ -112,10 +115,10 @@ public class UserCreationPlugin extends FileRegistryPluginAdapter<String, Identi
             throw new InitializationException(this, new CouldNotPerformException("Could not check for register initial user accounts", ex));
         }
     }
-
+    
     public void registerDefaultAdmin(UnitConfig.Builder adminGroupConfig) throws CouldNotPerformException {
         String initialRegistrationPassword = AuthenticatorController.getInitialPassword();
-
+        
         if (initialRegistrationPassword == null) {
             LOGGER.error("No administator is yet registered and the initial registartion password of the authenticator is not available. Please use the bco launcher for the initial start.");
             System.exit(1);
@@ -135,12 +138,12 @@ public class UserCreationPlugin extends FileRegistryPluginAdapter<String, Identi
         if (!defaultAdminAlreadyInRegistry) {
             UnitConfig.Builder unitConfig = UnitConfig.newBuilder();
             unitConfig.setType(UnitType.USER);
-
+            
             UserConfig.Builder userConfig = unitConfig.getUserConfigBuilder();
             userConfig.setFirstName("Initial");
             userConfig.setLastName("Admin");
             userConfig.setUserName(DEFAULT_ADMIN_USERNAME_AND_PASSWORD);
-
+            
             userId = userUnitConfigRegistry.register(unitConfig.build()).getId();
         }
 
@@ -167,7 +170,7 @@ public class UserCreationPlugin extends FileRegistryPluginAdapter<String, Identi
             authorizationGroupConfigRegistry.update(adminGroupConfig.build());
         }
     }
-
+    
     public void registerBCOUser(UnitConfig.Builder bcoGroupConfig) throws CouldNotPerformException {
         try {
             String adminId = null;
@@ -201,12 +204,12 @@ public class UserCreationPlugin extends FileRegistryPluginAdapter<String, Identi
         if (!bcoUserAlreadyInRegistry) {
             UnitConfig.Builder unitConfig = UnitConfig.newBuilder();
             unitConfig.setType(UnitType.USER);
-
+            
             UserConfig.Builder userConfig = unitConfig.getUserConfigBuilder();
             userConfig.setFirstName("System");
             userConfig.setLastName("User");
             userConfig.setUserName(BCO_USERNAME);
-
+            
             userId = userUnitConfigRegistry.register(unitConfig.build()).getId();
         }
 

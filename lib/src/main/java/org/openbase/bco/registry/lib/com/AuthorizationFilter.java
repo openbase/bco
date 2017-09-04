@@ -25,6 +25,9 @@ import java.util.Map;
 import org.openbase.bco.registry.lib.authorization.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.jp.JPEnableAuthentication;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -49,7 +52,7 @@ public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
 
     /**
      * Set the authorization group registry which is used to compute the read permissions in this filter.
-     * 
+     *
      * @param authorizationGroupRegistry A registry of authorization groups indexed by their id.
      */
     public void setAuthorizationGroupRegistry(final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> authorizationGroupRegistry) {
@@ -58,7 +61,7 @@ public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
 
     /**
      * Set the location registry which is used to compute the read permissions in this filter.
-     * 
+     *
      * @param locationRegistry A registry of locations indexed by their id.
      */
     public void setLocationRegistry(final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> locationRegistry) {
@@ -67,11 +70,18 @@ public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
 
     /**
      * If somebody is logged in test if his ticket is still valid.
-     * 
+     *
      * @throws CouldNotPerformException If the ticket for the user has become invalid.
      */
     @Override
     public void beforeFilter() throws CouldNotPerformException {
+        try {
+            if (!JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+                return;
+            }
+        } catch (JPNotAvailableException ex) {
+            throw new CouldNotPerformException("Could not check JPEnableAuthenticationProperty", ex);
+        }
         try {
             CachedAuthenticationRemote.getRemote();
             SessionManager.getInstance().isAuthenticated();
@@ -95,6 +105,14 @@ public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
      */
     @Override
     public boolean verify(UnitConfig unitConfig) throws CouldNotPerformException {
+        try {
+            if (!JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+                return true;
+            }
+        } catch (JPNotAvailableException ex) {
+            return false;
+        }
+
         Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> authorizationGroups = null;
         if (authorizationGroupRegistry != null) {
             authorizationGroups = authorizationGroupRegistry.getEntryMap();
@@ -107,7 +125,7 @@ public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
         try {
             return AuthorizationHelper.canRead(unitConfig, SessionManager.getInstance().getUserAtClientId(), authorizationGroups, locations);
         } catch (NotAvailableException ex) {
-            LOGGER.debug("Permission for unit [" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "] not available!");
+            LOGGER.warn("Permission for unit [" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "] not available!");
             return false;
         }
     }
