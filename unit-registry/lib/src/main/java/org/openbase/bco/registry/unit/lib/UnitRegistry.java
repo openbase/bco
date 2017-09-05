@@ -32,6 +32,7 @@ import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.pattern.provider.DataProvider;
@@ -90,6 +91,11 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, Shutdownab
             }
         }
         return unitConfigs;
+    }
+
+    @RPCMethod
+    default public String getUnitScopeById(final String id) throws CouldNotPerformException {
+        return ScopeGenerator.generateStringRep(getUnitConfigById(id).getScope());
     }
 
     @RPCMethod
@@ -318,7 +324,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, Shutdownab
     public Boolean isSceneUnitRegistryConsistent() throws CouldNotPerformException;
 
     public void validateData() throws InvalidStateException;
-    
+
     @RPCMethod
     public Future<ServiceTemplate> updateServiceTemplate(final ServiceTemplate serviceTemplate) throws CouldNotPerformException;
 
