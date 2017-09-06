@@ -9,11 +9,9 @@ layout: default
 
 ![DALayer](images/DALayer.png)
 
-### Unit Layer
+### Unit Types
 
 ![UnitClassDiagramm](images/UnitClassDiagramm.png)
-
-### Service Layer
 
 ## Location Architecture
 
