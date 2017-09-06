@@ -96,15 +96,15 @@ bco-visual-remote
 
 ## Simulation Mode
 
-You can test and prove new component in a simulated environment.
+You can test and prove new components in a simulated environment.
 ```
 bco --simulate
 ```
 
 ## Benchmark Mode
 
-You can test new component via the benchmark mode to prove how your componentens act during massive bco system load. 
-During the benchmark, bco will bestarted in simulation mode and high frequenly unit state changes are generated.
+You can test new components via the benchmark mode to prove how your components act during massive bco system load. 
+During the benchmark, bco will start in simulation mode and high frequenly unit state changes are generated.
 
 Note: Please never start the benchmark mode if you are connected to any bco devices to avoid hardware damage.
 ```
@@ -117,33 +117,33 @@ bco --benchmark
 ```
 bcozy
 ```
-* [https://github.com/openbase/bco.bcozy/wiki](url)
+* [https://github.com/openbase/bco.bcozy/wiki](https://github.com/openbase/bco.bcozy/wiki)
 
 ### Android
 bcomfy
-* [https://github.com/openbase/bco.bcomfy/wiki](url)
+* [https://github.com/openbase/bco.bcomfy/wiki](https://github.com/openbase/bco.bcomfy/wiki)
 
 # Used Libaries
 
 ## Libraries from openBase
 
-* JPS [https://github.com/openbase/jps](url)
+* JPS [https://github.com/openbase/jps](https://github.com/openbase/jps)
     * A command-line argument parser and application property management framework.
-* JUL [https://github.com/openbase/jul](url)
+* JUL [https://github.com/openbase/jul](https://github.com/openbase/jul)
     * A java utility library.
 
 ## Libraries from Citec (University of Bielefeld)
 
-* RSB [http://docs.cor-lab.de//rsb-manual/0.15/html/examples.html](url)
+* RSB [http://docs.cor-lab.de//rsb-manual/0.15/html/examples.html](http://docs.cor-lab.de//rsb-manual/0.15/html/examples.html)
     * The middleware used for platform independent network communication.
-* RST [http://docs.cor-lab.de//rst-manual/0.15/html/data-types.html](url)
+* RST [http://docs.cor-lab.de//rst-manual/0.15/html/data-types.html](http://docs.cor-lab.de//rst-manual/0.15/html/data-types.html)
     * The data type library based on google protocol-buffers.
         * https://developers.google.com/protocol-buffers/
     * Repositories
         * Stable & Sandbox
-            * [https://code.cor-lab.de/git/rst.git.proto](url)
+            * [https://code.cor-lab.de/git/rst.git.proto](https://code.cor-lab.de/git/rst.git.proto)
         * Experimental (Only reachable from the university of bielefeld network)
-            * [http://projects.cit-ec.uni-bielefeld.de/git/rst-experimental.proto.git](url)
+            * [http://projects.cit-ec.uni-bielefeld.de/git/rst-experimental.proto.git](http://projects.cit-ec.uni-bielefeld.de/git/rst-experimental.proto.git)
                 * BCO Types are placed in ```proto/experimental/rst/domotic```
          
 
@@ -152,8 +152,8 @@ bcomfy
 ## Reqirements
 
 * Java JDK 8 (Oracle JDK recommented)
-    * Debian: [http://www.webupd8.org/2014/03/how-to-install-oracle-java-8-in-debian.html](url)
-    * Ubuntu: [https://wiki.ubuntuusers.de/Java/Installation/Oracle_Java/Java_8/](url)
+    * Debian: [http://www.webupd8.org/2014/03/how-to-install-oracle-java-8-in-debian.html](http://www.webupd8.org/2014/03/how-to-install-oracle-java-8-in-debian.html)
+    * Ubuntu: [https://wiki.ubuntuusers.de/Java/Installation/Oracle_Java/Java_8/](https://wiki.ubuntuusers.de/Java/Installation/Oracle_Java/Java_8/)
 * Maven
     * ```sudo apt-get install maven```
 * Git
@@ -231,7 +231,7 @@ This repository provides a collection of precompiled libs and tools for rsb. Thi
 * Installation via Cor-Lab Debian Repository
     * ```sudo apt-get install spread librsbspread0.15```
 * Official Installation Guide
-    * [http://www.spread.org/download.html](url)
+    * [http://www.spread.org/download.html]
     
 ## RSB Libs and Tools (Optional)
 
@@ -251,7 +251,7 @@ enabled = 0
 enabled = 1
 host    = localhost
 ``` 
-If your bco runtime is hosted on another maschine than your local one and there is already a spread deamon running, just refere to this host instead linking to your local host.
+If your bco runtime is hosted on another maschine than your local one and there is already a spread daemon running, just refere to this host instead linking to your local host.
 ```
 #host    = localhost
 host    = 192.168.x.x
