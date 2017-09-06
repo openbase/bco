@@ -44,7 +44,7 @@ layout: default
 </dependency>
 ```
 
-Repository: [https://github.com/openbase/bco.dal.git](https://github.com/openbase/bco.dal.git)
+Repository: <https://github.com/openbase/bco.dal.git>
 
 ### BCO Registry
 [![Build Status](https://travis-ci.org/openbase/bco.registry.svg?branch=master)](https://travis-ci.org/openbase/bco.registry?branch=master)
@@ -59,7 +59,7 @@ Repository: [https://github.com/openbase/bco.dal.git](https://github.com/openbas
 </dependency>
 ```
 
-Repository: [https://github.com/openbase/bco.registry.git](https://github.com/openbase/bco.registry.git)
+Repository: <https://github.com/openbase/bco.registry.git>
 
 ### BCO Manager
 [![Build Status](https://travis-ci.org/openbase/bco.manager.svg?branch=master)](https://travis-ci.org/openbase/bco.manager?branch=master)
@@ -74,7 +74,7 @@ Repository: [https://github.com/openbase/bco.registry.git](https://github.com/op
 </dependency>
 ```
 
-Repository:[https://github.com/openbase/bco.manager.git](https://github.com/openbase/bco.manager.git)
+Repository: <https://github.com/openbase/bco.manager.git>
 
 
 ## Developer Tools
@@ -106,7 +106,7 @@ bco --simulate
 You can test new components via the benchmark mode to prove how your components act during massive bco system load. 
 During the benchmark, bco will start in simulation mode and high frequenly unit state changes are generated.
 
-Note: Please never start the benchmark mode if you are connected to any bco devices to avoid hardware damage.
+Note: Please never start the benchmark mode if you are connected to any physical devices to avoid hardware damage.
 ```
 bco --benchmark
 ```
@@ -117,11 +117,11 @@ bco --benchmark
 ```
 bcozy
 ```
-* [https://github.com/openbase/bco.bcozy/wiki](https://github.com/openbase/bco.bcozy/wiki)
+* <https://github.com/openbase/bco.bcozy/wiki>
 
 ### Android
 bcomfy
-* [https://github.com/openbase/bco.bcomfy/wiki](https://github.com/openbase/bco.bcomfy/wiki)
+* <https://github.com/openbase/bco.bcomfy/wiki>
 
 # Used Libaries
 
@@ -134,16 +134,16 @@ bcomfy
 
 ## Libraries from Citec (University of Bielefeld)
 
-* RSB [http://docs.cor-lab.de//rsb-manual/0.15/html/examples.html](http://docs.cor-lab.de//rsb-manual/0.15/html/examples.html)
+* RSB <http://docs.cor-lab.de//rsb-manual/0.15/html/examples.html>
     * The middleware used for platform independent network communication.
-* RST [http://docs.cor-lab.de//rst-manual/0.15/html/data-types.html](http://docs.cor-lab.de//rst-manual/0.15/html/data-types.html)
+* RST <http://docs.cor-lab.de//rst-manual/0.15/html/data-types.html>
     * The data type library based on google protocol-buffers.
         * https://developers.google.com/protocol-buffers/
     * Repositories
         * Stable & Sandbox
-            * [https://code.cor-lab.de/git/rst.git.proto](https://code.cor-lab.de/git/rst.git.proto)
+            * <https://code.cor-lab.de/git/rst.git.proto>
         * Experimental (Only reachable from the university of bielefeld network)
-            * [http://projects.cit-ec.uni-bielefeld.de/git/rst-experimental.proto.git](http://projects.cit-ec.uni-bielefeld.de/git/rst-experimental.proto.git)
+            * <http://projects.cit-ec.uni-bielefeld.de/git/rst-experimental.proto.git>
                 * BCO Types are placed in ```proto/experimental/rst/domotic```
          
 
@@ -152,8 +152,8 @@ bcomfy
 ## Reqirements
 
 * Java JDK 8 (Oracle JDK recommented)
-    * Debian: [http://www.webupd8.org/2014/03/how-to-install-oracle-java-8-in-debian.html](http://www.webupd8.org/2014/03/how-to-install-oracle-java-8-in-debian.html)
-    * Ubuntu: [https://wiki.ubuntuusers.de/Java/Installation/Oracle_Java/Java_8/](https://wiki.ubuntuusers.de/Java/Installation/Oracle_Java/Java_8/)
+    * Debian: <http://www.webupd8.org/2014/03/how-to-install-oracle-java-8-in-debian.html>
+    * Ubuntu: <https://wiki.ubuntuusers.de/Java/Installation/Oracle_Java/Java_8/>
 * Maven
     * ```sudo apt-get install maven```
 * Git
@@ -259,7 +259,8 @@ host    = 192.168.x.x
 
 ## BCO Installation
 
-Before the installation you should checkout the latest-stable branch for the core components. Else you install a snapshot version and you need to configure your maven settings: [https://github.com/openbase/bco.bcozy/wiki/IDE-Setup](https://github.com/openbase/bco.bcozy/wiki/IDE-Setup).
+Before the installation you should checkout the latest-stable branch for the core components. Else you install a snapshot version and you need to configure your maven settings: <https://github.com/openbase/bco.bcozy/wiki/IDE-Setup>.
+
 Now, you should be able to start the installation. During this, all bco core components are installed to the previously defined ```$prefix```. To perform the installation (or update the components later on) execute the installation script in each downloaded repository.
 ```
 ./install.sh
@@ -284,11 +285,11 @@ cp -R $prefix/share/bco $prefix/var/
 
 ## How to start BCO
 
-### Provide a Spread Deamon
+### Provide a Spread Daemon
 
-First of all we need at least one running spread deamon in your network to provide the communication between all distributed bco components. You can choose to start your own spread deamon or to connect to an already running instance.
+First of all we need at least one running spread daemon in your network to provide the communication between all distributed bco components. You can choose to start your own spread daemon or to connect to an already running instance.
 
-* Start a new spread deamon on your localhost maschine
+* Start a new spread daemon on your localhost maschine
     * Make sure your local machine is properly defined as spread host in the rsb configuration 
         * ```~/.config/rsb.conf``` should contain ```host    = localhost```
     * just start ```spread```
@@ -325,7 +326,7 @@ For running any java examples you only need to include the dal remote dependency
 <dependency>
     <groupId>org.openbase.bco</groupId>
     <artifactId>dal.remote</artifactId>
-    <version>[1.3,1.4-SNAPSHOT)</version>
+    <version>[1.4,1.5-SNAPSHOT)</version>
 </dependency>
 ```
 
