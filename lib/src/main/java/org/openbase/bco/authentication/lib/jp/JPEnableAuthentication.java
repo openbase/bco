@@ -22,6 +22,8 @@ package org.openbase.bco.authentication.lib.jp;
  * #L%
  */
 
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jps.preset.AbstractJPBoolean;
 
 /**
@@ -34,6 +36,11 @@ public class JPEnableAuthentication extends AbstractJPBoolean {
 
     public JPEnableAuthentication() {
         super(COMMAND_IDENTIFIERS);
+    }
+
+    @Override
+    protected Boolean getPropertyDefaultValue() throws JPNotAvailableException {
+        return JPService.testMode();
     }
 
     @Override
