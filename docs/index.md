@@ -38,7 +38,7 @@ layout: default
 <dependency>
     <groupId>org.openbase.bco</groupId>
     <artifactId>dal.remote</artifactId>
-    <version>[1.3,1.4-SNAPSHOT)</version>
+    <version>[1.4,1.5-SNAPSHOT)</version>
 </dependency>
 ```
 
@@ -53,7 +53,7 @@ Repository: <https://github.com/openbase/bco.dal.git>
 <dependency>
     <groupId>org.openbase.bco</groupId>
     <artifactId>registry</artifactId>
-    <version>[1.3,1.4-SNAPSHOT)</version>
+    <version>[1.4,1.5-SNAPSHOT)</version>
 </dependency>
 ```
 
@@ -68,7 +68,7 @@ Repository: <https://github.com/openbase/bco.registry.git>
 <dependency>
     <groupId>org.openbase.bco</groupId>
     <artifactId>manager</artifactId>
-    <version>[1.3,1.4-SNAPSHOT)</version>
+    <version>[1.4,1.5-SNAPSHOT)</version>
 </dependency>
 ```
 
