@@ -231,7 +231,7 @@ This repository provides a collection of precompiled libs and tools for rsb. Thi
 * Installation via Cor-Lab Debian Repository
     * ```sudo apt-get install spread librsbspread0.15```
 * Official Installation Guide
-    * [http://www.spread.org/download.html]
+    * <http://www.spread.org/download.html>
     
 ## RSB Libs and Tools (Optional)
 
