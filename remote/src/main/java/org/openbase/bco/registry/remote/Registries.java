@@ -21,6 +21,8 @@ package org.openbase.bco.registry.remote;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import java.util.ArrayList;
+import java.util.List;
 import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
 import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
 import org.openbase.bco.registry.app.remote.AppRegistryRemote;
@@ -37,11 +39,31 @@ import org.openbase.bco.registry.user.remote.CachedUserRegistryRemote;
 import org.openbase.bco.registry.user.remote.UserRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.storage.registry.RegistryRemote;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class Registries {
+
+    /**
+     * Returns a list of all available bco registries.
+     *
+     * @return a list of remote registry instances.
+     * @throws CouldNotPerformException is throw if at least one registry is not available.
+     * @throws InterruptedException is thrown if thread is externally interrupted.
+     */
+    public static List<RegistryRemote> getRegistries(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
+        final List<RegistryRemote> registryList = new ArrayList<>();
+        registryList.add(getAgentRegistry(waitForData));
+        registryList.add(getAppRegistry(waitForData));
+        registryList.add(getDeviceRegistry(waitForData));
+        registryList.add(getLocationRegistry(waitForData));
+        registryList.add(getSceneRegistry(waitForData));
+        registryList.add(getUnitRegistry(waitForData));
+        registryList.add(getUserRegistry(waitForData));
+        return registryList;
+    }
 
     /**
      * Returns an initialized and activated remote registry.
