@@ -41,6 +41,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -158,12 +159,12 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
         LOGGER.info("Add " + unitConfig.getLabel() + " with " + serviceType.name() + " " + serviceAttribute + "to unit panel.");
         synchronized (unitPanelMapLock) {
             GenericUnitPanel genericUnitPanel;
-            try {
+            try {   
                 String mapKey = unitConfig.getId() + serviceType.toString();
                 genericUnitPanel = new GenericUnitPanel<>();
                 if (removable) {
                     RemovableGenericUnitPanel wrapperPanel = new RemovableGenericUnitPanel();
-                    wrapperPanel.init(mapKey);
+                    wrapperPanel.init(mapKey, (unitConfig.getType() == UnitType.LOCATION) || (unitConfig.getType() == UnitType.UNIT_GROUP));
                     wrapperPanel.addObserver(removedObserver);
                     genericUnitPanel = wrapperPanel;
                 }

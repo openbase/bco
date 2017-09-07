@@ -139,6 +139,10 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
                     // skip if serviceAttribute is empty.
                     continue;
                 }
+                serviceStateDescription.setUnitId(getId());
+                serviceStateDescription.setUnitType(getTemplate().getType());
+                serviceStateDescription.setServiceType(serviceDescription.getType());
+                serviceStateDescription.setServiceType(serviceDescription.getType());
                 serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
 
                 // add action config

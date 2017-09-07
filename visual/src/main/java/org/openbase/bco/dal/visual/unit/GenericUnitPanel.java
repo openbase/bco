@@ -23,6 +23,7 @@ package org.openbase.bco.dal.visual.unit;
  */
 import com.google.protobuf.GeneratedMessage;
 import java.awt.Color;
+import java.lang.reflect.InvocationTargetException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -63,7 +64,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  * @param <RS>
  */
 public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteView<RS> {
-
+    
     private final Observer<UnitConfig> unitConfigObserver;
     private final Observer<ConnectionState> connectionStateObserver;
     private boolean autoRemove;
@@ -96,22 +97,22 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
         autoRemove = true;
         componentList = new ArrayList<>();
     }
-
+    
     public void setAutoRemove(boolean autoRemove) {
         this.autoRemove = autoRemove;
     }
-
+    
     public Observer<UnitConfig> getUnitConfigObserver() {
         return unitConfigObserver;
     }
-
+    
     private void updateConnectionState(final ConnectionState connectionState) throws InterruptedException {
         try {
             // build unit label
             String remoteLabel;
             try {
                 final UnitConfig unitConfig = (UnitConfig) getRemoteService().getConfig();
-
+                
                 String unitHostLabel;
                 try {
                     if (unitConfig.hasUnitHostId() && !unitConfig.getUnitHostId().isEmpty()) {
@@ -122,14 +123,14 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
                 } catch (CouldNotPerformException ex) {
                     unitHostLabel = "?";
                 }
-
+                
                 String locationLabel;
                 try {
                     locationLabel = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel();
                 } catch (CouldNotPerformException ex) {
                     locationLabel = "?";
                 }
-
+                
                 remoteLabel = unitConfig.getLabel()
                         + " (" + StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name()) + ")"
                         + " @ " + locationLabel
@@ -138,10 +139,10 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
             } catch (CouldNotPerformException ex) {
                 remoteLabel = "";
             }
-
+            
             Color textColor = Color.BLACK;
             String textSuffix = "";
-
+            
             switch (connectionState) {
                 case CONNECTED:
                     textSuffix = "connected";
@@ -180,22 +181,22 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update connection state!", ex), logger);
         }
     }
-
+    
     public void updateUnitConfig(UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
         updateUnitConfig(unitConfig, ServiceType.UNKNOWN);
     }
-
+    
     public void updateUnitConfig(UnitConfig unitConfig, ServiceType serviceType) throws CouldNotPerformException, InterruptedException {
         try {
-
+            
             CachedLocationRegistryRemote.waitForData();
             try {
                 getRemoteService().removeConnectionStateObserver(connectionStateObserver);
-
+                
             } catch (NotAvailableException ex) {
                 // skip deregistration
             }
-
+            
             UnitRemote unitRemote = setUnitRemote(unitConfig);
             unitRemote.addConnectionStateObserver(connectionStateObserver);
             updateConnectionState(unitRemote.getConnectionState());
@@ -205,7 +206,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
             componentList = new ArrayList<>();
             JPanel servicePanel;
             HashMap<ServiceType, AbstractServicePanel> servicePanelMap = new HashMap<>();
-
+            
             for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                 try {
                     // filter by service type
@@ -256,7 +257,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
                     servicePanelMap.get(serviceConfig.getServiceDescription().getType()).initObserver();
                 }
             }
-
+            
             LayoutGenerator.generateHorizontalLayout(contextPanel, componentList);
             contextPanel.validate();
             contextPanel.revalidate();
@@ -268,14 +269,19 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update config for unit panel!", ex), logger);
         }
     }
-
+    
     public void updateUnitConfig(UnitConfig unitConfig, ServiceType serviceType, Object serviceAttribute) throws CouldNotPerformException, InterruptedException {
         updateUnitConfig(unitConfig, serviceType);
-        String methodName = "get" + StringProcessor.transformUpperCaseToCamelCase(serviceType.toString()).replaceAll("Service", "");
-        logger.info("Calling method [" + methodName + "] on remote [" + getRemoteService().getId() + "]");
-        getRemoteService().callMethod("set" + StringProcessor.transformUpperCaseToCamelCase(serviceType.toString()).replaceAll("Service", ""), serviceAttribute);
+        String methodName = "set" + StringProcessor.transformUpperCaseToCamelCase(serviceType.toString()).replaceAll("Service", "");
+        logger.info("Calling method [" + methodName + "] with parameter [" + serviceAttribute.getClass() + "] on remote [" + getRemoteService().getId() + "]");
+        
+        try {
+            getRemoteService().getClass().getMethod(methodName, serviceAttribute.getClass()).invoke(getRemoteService(), serviceAttribute);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
+            throw new CouldNotPerformException("Could not call method[" + methodName + "] on remote[" + getRemoteService() + "]");
+        }
     }
-
+    
     private Class<? extends AbstractServicePanel> loadServicePanelClass(final ServiceType serviceType) throws CouldNotPerformException {
         String remoteClassName = AbstractServicePanel.class.getPackage().getName() + "." + StringProcessor.transformUpperCaseToCamelCase(serviceType.name()) + SERVICE_PANEL_SUFFIX;
         try {
@@ -284,7 +290,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
             throw new CouldNotPerformException("Could not detect service panel class for ServiceType[" + serviceType.name() + "]", ex);
         }
     }
-
+    
     private AbstractServicePanel instantiatServicePanel(final ServiceConfig serviceConfig, Class<? extends AbstractServicePanel> servicePanelClass, AbstractUnitRemote unitRemote) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             AbstractServicePanel instance = servicePanelClass.newInstance();
@@ -294,7 +300,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
             throw new org.openbase.jul.exception.InstantiationException("Could not instantiate service panel out of ServicePanelClass[" + servicePanelClass.getSimpleName() + "]!", ex);
         }
     }
-
+    
     @Override
     protected void updateDynamicComponents(GeneratedMessage data) {
 
@@ -302,7 +308,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
 //        remoteView.setUnitConfig(unitConfig);
 //        remoteView.setEnabled(true);
     }
-
+    
     public List<JComponent> getComponentList() {
         return componentList;
     }
