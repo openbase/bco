@@ -26,6 +26,7 @@ import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
+import org.openbase.bco.registry.lib.com.RegistrySynchronizationFuture;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.jp.JPUnitRegistryScope;
@@ -81,7 +82,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> unitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> baseUnitConfigRemoteRegistry;
 
-    
     public UnitRegistryRemote() throws InstantiationException {
         super(JPUnitRegistryScope.class, UnitRegistryData.class);
         try {
@@ -219,7 +219,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     @Override
     public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(unitConfig, this, UnitConfig.class);
+            return new RegistrySynchronizationFuture<>(RPCHelper.callRemoteMethod(unitConfig, this, UnitConfig.class), this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register unit config!", ex);
         }
@@ -254,7 +254,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     @Override
     public Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(unitConfig, this, UnitConfig.class);
+            return new RegistrySynchronizationFuture<>(RPCHelper.callRemoteMethod(unitConfig, this, UnitConfig.class), this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update unit config!", ex);
         }
@@ -263,7 +263,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     @Override
     public Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(unitConfig, this, UnitConfig.class);
+            return new RegistrySynchronizationFuture<>(RPCHelper.callRemoteMethod(unitConfig, this, UnitConfig.class), this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove unit config!", ex);
         }
