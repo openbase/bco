@@ -110,6 +110,9 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
                     if (!newUnitConfig.equals(getConfig())) {
                         applyConfigUpdate(newUnitConfig);
                     }
+                } catch (NotAvailableException ex) {
+                    // unit config has been removed, probably because of deletion, Units will shutdown this remote
+                    logger.debug("Could not update unit remote", ex);
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory("Could not update unit config of " + this, ex, logger);
                 }
@@ -617,10 +620,9 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
             throw new NotAvailableException("Transform3D", ex);
         }
     }
-    
+
     //todo release: maybe rename transformation methods
     // getTransform3DInverse -> getTransformIntoRoot 
-
     /**
      * Gets the inverse Transform3D to getTransform3D().
      * This is basically rotation and translation of the object in the root coordinate system
