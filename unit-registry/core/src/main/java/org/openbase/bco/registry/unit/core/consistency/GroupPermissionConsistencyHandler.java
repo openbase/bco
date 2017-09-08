@@ -21,7 +21,6 @@ package org.openbase.bco.registry.unit.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import java.util.List;
 import org.openbase.bco.registry.unit.core.plugin.AuthorizationGroupCreationPlugin;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -58,8 +57,7 @@ public class GroupPermissionConsistencyHandler extends AbstractProtoBufRegistryC
 
         // Set permissions only for the root location and for units without a location.
         if ((!unitConfig.hasLocationConfig() || !unitConfig.getLocationConfig().getRoot())
-            && unitConfig.hasPlacementConfig() && unitConfig.getPlacementConfig().hasLocationId()
-        ) {
+                && unitConfig.hasPlacementConfig() && unitConfig.getPlacementConfig().hasLocationId()) {
             return;
         }
 
@@ -67,32 +65,32 @@ public class GroupPermissionConsistencyHandler extends AbstractProtoBufRegistryC
 
         if (adminGroupId == null || bcoGroupId == null) {
             for (UnitConfig authorizationGroupConfig : authorizationGroupConfigRegistry.getMessages()) {
-                if(authorizationGroupConfig.getLabel().equals(AuthorizationGroupCreationPlugin.ADMIN_GROUP_LABEL)) {
+                if (authorizationGroupConfig.getLabel().equals(AuthorizationGroupCreationPlugin.ADMIN_GROUP_LABEL)) {
                     adminGroupId = authorizationGroupConfig.getId();
-                } else if(authorizationGroupConfig.getLabel().equals(AuthorizationGroupCreationPlugin.BCO_GROUP_LABEL)) {
+                } else if (authorizationGroupConfig.getLabel().equals(AuthorizationGroupCreationPlugin.BCO_GROUP_LABEL)) {
                     bcoGroupId = authorizationGroupConfig.getId();
                 }
             }
         }
-        if(adminGroupId == null || bcoGroupId == null) {
+        if (adminGroupId == null || bcoGroupId == null) {
             return;
         }
-        
+
         boolean modification = false;
         boolean containsAdminGroup = false;
         boolean containsBCOGroup = false;
         List<PermissionConfig.MapFieldEntry> groupPermissionList = permissionConfig.getGroupPermissionList();
         permissionConfig.clearGroupPermission();
-        for(PermissionConfig.MapFieldEntry mapFieldEntry : groupPermissionList) {
-            if(mapFieldEntry.getGroupId().equals(adminGroupId)) {
+        for (PermissionConfig.MapFieldEntry mapFieldEntry : groupPermissionList) {
+            if (mapFieldEntry.getGroupId().equals(adminGroupId)) {
                 containsAdminGroup = true;
-                if(!mapFieldEntry.getPermission().equals(ALL_PERMISSION)) {
+                if (!mapFieldEntry.getPermission().equals(ALL_PERMISSION)) {
                     permissionConfig.addGroupPermission(mapFieldEntry.toBuilder().setPermission(ALL_PERMISSION));
                     modification = true;
                 }
-            } else if(mapFieldEntry.getGroupId().equals(bcoGroupId)) {
+            } else if (mapFieldEntry.getGroupId().equals(bcoGroupId)) {
                 containsBCOGroup = true;
-                if(!mapFieldEntry.getPermission().equals(ALL_PERMISSION)) {
+                if (!mapFieldEntry.getPermission().equals(ALL_PERMISSION)) {
                     permissionConfig.addGroupPermission(mapFieldEntry.toBuilder().setPermission(ALL_PERMISSION));
                     modification = true;
                 }
@@ -100,17 +98,17 @@ public class GroupPermissionConsistencyHandler extends AbstractProtoBufRegistryC
                 permissionConfig.addGroupPermission(mapFieldEntry);
             }
         }
-        
-        if(!containsAdminGroup) {
+
+        if (!containsAdminGroup) {
             permissionConfig.addGroupPermission(PermissionConfig.MapFieldEntry.newBuilder().setGroupId(adminGroupId).setPermission(ALL_PERMISSION));
             modification = true;
         }
-        if(!containsBCOGroup) {
+        if (!containsBCOGroup) {
             permissionConfig.addGroupPermission(PermissionConfig.MapFieldEntry.newBuilder().setGroupId(bcoGroupId).setPermission(ALL_PERMISSION));
             modification = true;
         }
-        
-        if(modification) {
+
+        if (modification) {
             throw new EntryModification(entry.setMessage(unitConfig), this);
         }
     }

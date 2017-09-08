@@ -24,6 +24,7 @@ package org.openbase.bco.registry.unit.remote;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.authorization.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.SessionManager;
@@ -40,8 +41,11 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
@@ -276,7 +280,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     public Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(unitConfig, UnitConfig.class, SessionManager.getInstance(), this::updateUnitConfig);
     }
-    
+
     @Override
     public Future<AuthenticatedValue> updateUnitConfig(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         try {
@@ -290,8 +294,8 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     public Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(unitConfig, UnitConfig.class, SessionManager.getInstance(), this::removeUnitConfig);
     }
-    
-     @Override
+
+    @Override
     public Future<AuthenticatedValue> removeUnitConfig(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         try {
             return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);

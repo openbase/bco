@@ -34,6 +34,7 @@ import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.rsb.com.RSBRemoteService;
 import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import org.slf4j.LoggerFactory;
 
@@ -45,7 +46,7 @@ import org.slf4j.LoggerFactory;
  * @param <MB>
  */
 public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB extends M.Builder<MB>> extends RemoteRegistry<KEY, M, MB> implements Activatable {
-    
+
     protected static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SynchronizedRemoteRegistry.class);
 
     /**
@@ -62,10 +63,11 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
      * The internal data synchronizer which synchronizes the remote registry via the remote service.
      */
     private final RemoteRegistrySynchronizer<M> remoteRegistrySynchronizer;
-    
+
     private boolean active;
-    
+
     private AbstractFilter filter;
+    private Observer<Boolean> loginObserver;
 
     /**
      *
@@ -144,7 +146,7 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
     public RSBRemoteService<M> getRemoteService() {
         return remoteService;
     }
-    
+
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         if (active) {
@@ -163,28 +165,32 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
         }
         //TODO: this is a little bit hacked
         // if filter by authorization also update when something in the login changes
+        loginObserver = (Observable<Boolean> source, Boolean data) -> {
+            if (remoteService.isDataAvailable()) {
+                remoteRegistrySynchronizer.update(null, remoteService.getData());
+            }
+        };
         if (filter != null && filter instanceof AuthorizationFilter) {
-            SessionManager.getInstance().getLoginObervable().addObserver((Observable<Boolean> source1, Boolean data) -> {
-                if (remoteService.isDataAvailable()) {
-                    remoteRegistrySynchronizer.update(null, remoteService.getData());
-                }
-            });
+            SessionManager.getInstance().getLoginObervable().addObserver(loginObserver);
         }
-        
+
         active = true;
     }
-    
+
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         remoteService.removeDataObserver(remoteRegistrySynchronizer);
+        if(loginObserver != null) {
+            SessionManager.getInstance().getLoginObervable().removeObserver(loginObserver);
+        }
         active = false;
     }
-    
+
     @Override
     public boolean isActive() {
         return active;
     }
-    
+
     @Override
     public String getName() {
         if (fieldDescriptors == null || fieldDescriptors.length == 0) {
@@ -196,11 +202,11 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
                 fieldDescritorNames += ", " + fieldDescriptors[i].getName();
             }
             fieldDescritorNames += "]";
-            
+
             return getClass().getSimpleName() + "[" + remoteService.toString() + "]" + fieldDescritorNames;
         }
     }
-    
+
     public AbstractFilter getFilter() {
         return filter;
     }

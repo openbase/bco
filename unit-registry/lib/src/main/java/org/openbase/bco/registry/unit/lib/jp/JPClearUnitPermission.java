@@ -1,6 +1,6 @@
 package org.openbase.bco.registry.unit.lib.jp;
 
-/*
+/*-
  * #%L
  * BCO Registry Unit Library
  * %%
@@ -21,22 +21,24 @@ package org.openbase.bco.registry.unit.lib.jp;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.jps.preset.AbstractJPBoolean;
 
 /**
  *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class JPClearUnitPosition extends AbstractJPBoolean {
+public class JPClearUnitPermission extends AbstractJPBoolean {
 
-    public final static String[] COMMAND_IDENTIFIERS = {"--clear-unit-positions"};
+    public final static String[] COMMAND_IDENTIFIERS = {"--clear-unit-permission"};
 
-    public JPClearUnitPosition() {
+    public JPClearUnitPermission() {
         super(COMMAND_IDENTIFIERS);
     }
 
     @Override
     public String getDescription() {
-        return "Flag can be used to wipe out all zero unit positions like [0,0,0]. Location units are not affected by this wipe.";
+        return "Flag can be used to wipe out all empty permission configs.";
     }
+    
 }
