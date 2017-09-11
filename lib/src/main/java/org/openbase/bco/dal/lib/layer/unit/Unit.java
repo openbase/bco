@@ -54,6 +54,8 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.registry.remote.Registries;
+import rst.spatial.ShapeType.Shape;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -62,6 +64,8 @@ import org.openbase.bco.dal.lib.layer.service.Services;
  */
 public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<String>, Configurable<String, UnitConfig>, DataProvider<D>, ServiceProvider, Service, Snapshotable<Snapshot> {
 
+    
+    // todo rename into getUnitType()
     /**
      * Returns the unit type.
      *
@@ -70,6 +74,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      */
     public UnitType getType() throws NotAvailableException;
 
+    // todo rename into getUnitTemplate()
     /**
      * Returns the related template for this unit.
      *
@@ -77,6 +82,23 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * @throws NotAvailableException in case the unit template is not available.
      */
     public UnitTemplate getTemplate() throws NotAvailableException;
+
+    /**
+     * Method returns the unit shape of this unit.
+     *
+     * If this unit configuration does not provide any shape information the shape of the unit host will be returned.
+     * In case the unit host even does not provide any shape information and the unit is a device than the shape of the device class will be used.
+     *
+     * @return the shape representing the unit.
+     * @throws CouldNotPerformException is thrown if the unit shape is not available or the resolution has been failed.
+     */
+    default public Shape getUnitShape() throws NotAvailableException, InterruptedException {
+        try {
+            return Registries.getLocationRegistry(true).getUnitShape(getConfig());
+        } catch (final CouldNotPerformException ex) {
+            throw new NotAvailableException("UnitShape", ex);
+        }
+    }
 
     public default void verifyOperationServiceState(final Object serviceState) throws VerificationFailedException {
 
