@@ -24,6 +24,10 @@ package org.openbase.bco.registry.location.lib;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import javax.media.j3d.Transform3D;
+import javax.vecmath.Point3d;
+import javax.vecmath.Quat4d;
+import javax.vecmath.Vector3d;
 import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -36,6 +40,7 @@ import rct.Transform;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.FutureProcessor;
+import rct.TransformerException;
 import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -44,6 +49,9 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitProbabilityCollectionType.UnitProbabilityCollection;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
+import rst.geometry.AxisAlignedBoundingBox3DFloatType;
+import rst.geometry.RotationType;
+import rst.geometry.TranslationType;
 import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.spatial.ShapeType;
 import rst.tracking.PointingRay3DFloatCollectionType.PointingRay3DFloatCollection;
@@ -472,10 +480,36 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      *
      * @param unitConfigTarget the unit where the transformation leads to.
      * @return a transformation future
+     * @deprecated please use {@code getRootToUnitTransformationFuture(...)} instead
      */
+    @Deprecated
     public default Future<Transform> getUnitTransformation(final UnitConfig unitConfigTarget) {
+        return getRootToUnitTransformationFuture(unitConfigTarget);
+    }
+
+    /**
+     * Method returns the transformation from the root location to the given unit.
+     *
+     * @param unitConfigTarget the unit where the transformation leads to.
+     * @return a transformation future
+     */
+    public default Future<Transform> getRootToUnitTransformationFuture(final UnitConfig unitConfigTarget) {
         try {
-            return getUnitTransformation(getRootLocationConfig(), unitConfigTarget);
+            return LocationRegistry.this.getUnitTransformationFuture(getRootLocationConfig(), unitConfigTarget);
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(new NotAvailableException("UnitTransformation", ex));
+        }
+    }
+    
+    /**
+     * Method returns the transformation from the root location to the given unit.
+     *
+     * @param unitConfigTarget the unit where the transformation leads to.
+     * @return a transformation future
+     */
+    public default Future<Transform> getUnitToRootTransformationFuture(final UnitConfig unitConfigTarget) {
+        try {
+            return LocationRegistry.this.getUnitTransformationFuture(unitConfigTarget, getRootLocationConfig());
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(new NotAvailableException("UnitTransformation", ex));
         }
@@ -487,8 +521,21 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * @param unitConfigSource the unit used as transformation base.
      * @param unitConfigTarget the unit where the transformation leads to.
      * @return a transformation future
+     * @deprecated please use {@code getRootToUnitTransformationFuture(...)} instead
      */
+    @Deprecated
     public default Future<Transform> getUnitTransformation(final UnitConfig unitConfigSource, final UnitConfig unitConfigTarget) {
+        return LocationRegistry.this.getUnitTransformationFuture(unitConfigSource, unitConfigTarget);
+    }
+
+    /**
+     * Method returns the transformation between the given unit A and the given unit B.
+     *
+     * @param unitConfigSource the unit used as transformation base.
+     * @param unitConfigTarget the unit where the transformation leads to.
+     * @return a transformation future
+     */
+    public default Future<Transform> getUnitTransformationFuture(final UnitConfig unitConfigSource, final UnitConfig unitConfigTarget) {
 
         if (unitConfigSource.getEnablingState().getValue() != State.ENABLED) {
             return FutureProcessor.canceledFuture(new InvalidStateException("Source Unit[" + unitConfigSource.getLabel() + ":" + unitConfigSource.getId() + "] is disbled and does not provide any transformation!"));
@@ -497,7 +544,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
         if (unitConfigTarget.getEnablingState().getValue() != State.ENABLED) {
             return FutureProcessor.canceledFuture(new InvalidStateException("Target Unit[" + unitConfigTarget.getLabel() + ":" + unitConfigTarget.getId() + "] is disbled and does not provide any transformation!"));
         }
-            
+
         if (!unitConfigSource.hasPlacementConfig() || !unitConfigSource.getPlacementConfig().hasPosition()) {
             return FutureProcessor.canceledFuture(new InvalidStateException("Source Unit[" + unitConfigSource.getLabel() + ":" + unitConfigSource.getId() + "] does not provide any position!"));
         }
@@ -505,7 +552,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
         if (!unitConfigTarget.hasPlacementConfig() || !unitConfigTarget.getPlacementConfig().hasPosition()) {
             return FutureProcessor.canceledFuture(new InvalidStateException("Target Unit[" + unitConfigTarget.getLabel() + ":" + unitConfigTarget.getId() + "] does not provide any position!"));
         }
-        
+
         if (!unitConfigSource.getPlacementConfig().hasTransformationFrameId() || unitConfigSource.getPlacementConfig().getTransformationFrameId().isEmpty()) {
             return FutureProcessor.canceledFuture(new InvalidStateException("Source Unit[" + unitConfigSource.getLabel() + ":" + unitConfigSource.getId() + "] does not provide yet a transformation frame id!"));
         }
@@ -513,12 +560,232 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
         if (!unitConfigTarget.getPlacementConfig().hasTransformationFrameId() || unitConfigTarget.getPlacementConfig().getTransformationFrameId().isEmpty()) {
             return FutureProcessor.canceledFuture(new InvalidStateException("Target Unit[" + unitConfigTarget.getLabel() + ":" + unitConfigTarget.getId() + "] does not provide yet a transformation frame id!"));
         }
-        
+
         Future<Transform> transformationFuture = GlobalTransformReceiver.getInstance().requestTransform(
                 unitConfigTarget.getPlacementConfig().getTransformationFrameId(),
                 unitConfigSource.getPlacementConfig().getTransformationFrameId(),
                 System.currentTimeMillis());
         return GlobalCachedExecutorService.allOfInclusiveResultFuture(transformationFuture, getDataFuture());
+    }
+    
+    // release todo: refactor into getRootToUnitTransformation(...)
+    /**
+     * Method returns the transformation from the root location to the given unit.
+     *
+     * @param unitConfigTarget the unit where the transformation leads to.
+     * @return a transformation future
+     * @throws org.openbase.jul.exception.NotAvailableException
+     * @deprecated do not use method because API changes will be applied in near future.
+     */
+    @Deprecated
+    public default Transform lookupRootToUnitTransformation(final UnitConfig unitConfigTarget) throws NotAvailableException {
+        try {
+            return lookupUnitTransformation(getRootLocationConfig(), unitConfigTarget);
+        } catch (final CouldNotPerformException ex) {
+            throw new NotAvailableException("UnitTransformation", ex);
+        }
+    }
+    
+    // release todo: refactor into getUnitToRootTransformation(...)
+    /**
+     * Method returns the transformation from the root location to the given unit.
+     *
+     * @param unitConfigTarget the unit where the transformation leads to.
+     * @return a transformation future
+     * @throws org.openbase.jul.exception.NotAvailableException 
+     * @deprecated do not use method because API changes will be applied in near future.
+     */
+    @Deprecated
+    public default Transform lookupUnitToRootTransformation(final UnitConfig unitConfigTarget) throws NotAvailableException {
+        try {
+            return lookupUnitTransformation(unitConfigTarget, getRootLocationConfig());
+        } catch (final CouldNotPerformException ex) {
+            throw new NotAvailableException("UnitTransformation", ex);
+        }
+    }
+
+    // release todo: refactor into getRootToUnitTransformation(...)
+    /**
+     * Method returns the transformation between the given unit A and the given unit B.
+     *
+     * @param unitConfigSource the unit used as transformation base.
+     * @param unitConfigTarget the unit where the transformation leads to.
+     * @return a transformation future
+     * @throws org.openbase.jul.exception.NotAvailableException
+     * @deprecated do not use method because API changes will be applied in near future.
+     */
+    @Deprecated
+    public default Transform lookupUnitTransformation(final UnitConfig unitConfigSource, final UnitConfig unitConfigTarget) throws NotAvailableException {
+
+        try {
+            if (unitConfigSource.getEnablingState().getValue() != State.ENABLED) {
+                throw new InvalidStateException("Source Unit[" + unitConfigSource.getLabel() + ":" + unitConfigSource.getId() + "] is disbled and does not provide any transformation!");
+            }
+
+            if (unitConfigTarget.getEnablingState().getValue() != State.ENABLED) {
+                throw new InvalidStateException("Target Unit[" + unitConfigTarget.getLabel() + ":" + unitConfigTarget.getId() + "] is disbled and does not provide any transformation!");
+            }
+
+            if (!unitConfigSource.hasPlacementConfig() || !unitConfigSource.getPlacementConfig().hasPosition()) {
+                throw new InvalidStateException("Source Unit[" + unitConfigSource.getLabel() + ":" + unitConfigSource.getId() + "] does not provide any position!");
+            }
+
+            if (!unitConfigTarget.hasPlacementConfig() || !unitConfigTarget.getPlacementConfig().hasPosition()) {
+                throw new InvalidStateException("Target Unit[" + unitConfigTarget.getLabel() + ":" + unitConfigTarget.getId() + "] does not provide any position!");
+            }
+
+            if (!unitConfigSource.getPlacementConfig().hasTransformationFrameId() || unitConfigSource.getPlacementConfig().getTransformationFrameId().isEmpty()) {
+                throw new InvalidStateException("Source Unit[" + unitConfigSource.getLabel() + ":" + unitConfigSource.getId() + "] does not provide yet a transformation frame id!");
+            }
+
+            if (!unitConfigTarget.getPlacementConfig().hasTransformationFrameId() || unitConfigTarget.getPlacementConfig().getTransformationFrameId().isEmpty()) {
+                throw new InvalidStateException("Target Unit[" + unitConfigTarget.getLabel() + ":" + unitConfigTarget.getId() + "] does not provide yet a transformation frame id!");
+            }
+
+            return GlobalTransformReceiver.getInstance().lookupTransform(
+                    unitConfigTarget.getPlacementConfig().getTransformationFrameId(),
+                    unitConfigSource.getPlacementConfig().getTransformationFrameId(),
+                    System.currentTimeMillis());
+        } catch (final CouldNotPerformException | TransformerException ex) {
+            throw new NotAvailableException("UnitTransformation", ex);
+        }
+    }
+
+    /**
+     * Gets the Transform3D of the transformation from root to unit coordinate system.
+     *
+     * @param unitConfig the unit config to refer the unit. 
+     * @return transform relative to root location
+     * @throws NotAvailableException is thrown if the transformation is not available.
+     */
+    default public Transform3D getRootToUnitTransform3D(final UnitConfig unitConfig) throws NotAvailableException {
+        try {
+            return lookupRootToUnitTransformation(unitConfig).getTransform();
+        } catch (final CouldNotPerformException ex) {
+            throw new NotAvailableException("Transform3D", ex);
+        }
+    }
+
+    //todo release: maybe rename transformation methods
+    // getTransform3DInverse -> getTransformIntoRoot 
+    /**
+     * Gets the inverse Transform3D to getTransform3D().
+     * This is basically rotation and translation of the object in the root coordinate system
+     * and thereby the inverse transformation to the one returned by getTransform3D().
+     *
+     * @param unitConfig the unit config to refer the unit. 
+     * @return transform relative to root location
+     * @throws NotAvailableException is thrown if the transformation is not available.
+     */
+    default public Transform3D getUnitToRootTransform3D(final UnitConfig unitConfig) throws NotAvailableException {
+        try {
+            return lookupUnitToRootTransformation(unitConfig).getTransform();
+        } catch (NotAvailableException ex) {
+            throw new NotAvailableException("Transform3Dinverse", ex);
+        }
+    }
+
+    /**
+     * Gets the position of the unit relative to the root location as a Point3d object.
+     *
+     * @param unitConfig the unit config to refer the unit. 
+     * @return position relative to the root location
+     * @throws NotAvailableException is thrown if the transformation is not available.
+     */
+    default public Point3d getUnitPositionGlobalPoint3d(final UnitConfig unitConfig) throws NotAvailableException {
+        try {
+            final Transform3D transformation = getUnitToRootTransform3D(unitConfig);
+            final Vector3d pos = new Vector3d();
+            transformation.get(pos);
+            return new Point3d(pos);
+        } catch (NotAvailableException ex) {
+            throw new NotAvailableException("GlobalPositionVector", ex);
+        }
+    }
+
+    /**
+     * Gets the position of the unit relative to the root location as a Translation object.
+     *
+     * @param unitConfig the unit config to refer the unit. 
+     * @return position relative to the root location
+     * @throws NotAvailableException is thrown if the transformation is not available.
+     */
+    default public TranslationType.Translation getUnitPositionGlobal(final UnitConfig unitConfig) throws NotAvailableException {
+        try {
+            final Point3d pos = getUnitPositionGlobalPoint3d(unitConfig);
+            return TranslationType.Translation.newBuilder().setX(pos.x).setY(pos.y).setZ(pos.z).build();
+        } catch (NotAvailableException ex) {
+            throw new NotAvailableException("GlobalPosition", ex);
+        }
+    }
+
+    /**
+     * Gets the rotation of the unit relative to the root location as a Quat4d object.
+     *
+     * @param unitConfig the unit config to refer the unit. 
+     * @return rotation relative to the root location
+     * @throws NotAvailableException is thrown if the transformation is not available.
+     */
+    default public Quat4d getUnitRotationGlobalQuat4d(final UnitConfig unitConfig) throws NotAvailableException {
+        try {
+            final Transform3D transformation = getUnitToRootTransform3D(unitConfig);
+            final Quat4d quat = new Quat4d();
+            transformation.get(quat);
+            return quat;
+        } catch (final NotAvailableException ex) {
+            throw new NotAvailableException("GlobalRotationQuat", ex);
+        }
+    }
+
+    /**
+     * Gets the rotation of the unit relative to the root location as a Rotation object.
+     *
+     * @param unitConfig the unit config to refer the unit. 
+     * @return rotation relative to the root location
+     * @throws NotAvailableException is thrown if the transformation is not available.
+     */
+    default public RotationType.Rotation getUnitRotationGlobal(final UnitConfig unitConfig) throws NotAvailableException {
+        try {
+            final Quat4d quat = getUnitRotationGlobalQuat4d(unitConfig);
+            return RotationType.Rotation.newBuilder().setQw(quat.w).setQx(quat.x).setQy(quat.y).setQz(quat.z).build();
+        } catch (final NotAvailableException ex) {
+            throw new NotAvailableException("GlobalRotation", ex);
+        }
+    }
+
+    /**
+     * Gets the center coordinates of the unit's BoundingBox in the unit coordinate system as a Point3d object.
+     *
+     * @param unitConfig the unit config to refer the unit. 
+     * @return center coordinates of the unit's BoundingBox relative to unit
+     * @throws NotAvailableException is thrown if the center can not be calculate.
+     */
+    default public Point3d getUnitBoundingBoxCenterLocalPoint3d(final UnitConfig unitConfig) throws NotAvailableException {
+        final AxisAlignedBoundingBox3DFloatType.AxisAlignedBoundingBox3DFloat bb = getUnitShape(unitConfig).getBoundingBox();
+        final TranslationType.Translation lfc = bb.getLeftFrontBottom();
+
+        final Point3d center = new Point3d(bb.getWidth(), bb.getDepth(), bb.getHeight());
+        center.scale(0.5);
+        center.add(new Point3d(lfc.getX(), lfc.getY(), lfc.getZ()));
+        return center;
+    }
+
+    /**
+     * Gets the center coordinates of the unit's BoundingBox in the coordinate system of the root location as a Point3d object.
+     *
+     * @param unitConfig the unit config to refer the unit. 
+     * @return center coordinates of the unit's BoundingBox relative to root location
+     * @throws NotAvailableException is thrown if the center can not be calculate.
+     */
+    default public Point3d getUnitBoundingBoxCenterGlobalPoint3d(final UnitConfig unitConfig) throws NotAvailableException {
+        try {
+            final Transform3D transformation = getUnitToRootTransform3D(unitConfig);
+            final Point3d center = getUnitBoundingBoxCenterLocalPoint3d(unitConfig);
+            transformation.transform(center);
+            return center;
+        } catch (NotAvailableException ex) {
+            throw new NotAvailableException("GlobalBoundingBoxCenter", ex);
+        }
     }
     
     /**
@@ -530,11 +797,16 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * @param unitId the id to resolve the unit shape.
      * @return the shape representing the unit.
      * @throws NotAvailableException is thrown if the unit shape is not available or the resolution has been failed.
-     * @throws java.lang.InterruptedException
      */
-    default public ShapeType.Shape getUnitShape(final String unitId) throws NotAvailableException, InterruptedException {
+    default public ShapeType.Shape getUnitShape(final String unitId) throws NotAvailableException {
         try {
-            return getUnitShape(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(unitId));
+            try {
+                return getUnitShape(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(unitId));
+            } catch (InterruptedException ex) {
+                // because registries should not throw interrupted exceptions in a future release this exception is already transformed into a NotAvailableException.
+                Thread.currentThread().interrupt();
+                throw new CouldNotPerformException("Shutdown in progress");
+            }
         } catch (final CouldNotPerformException ex) {
             throw new NotAvailableException("Shape", "of unit " + unitId, ex);
         }
@@ -550,7 +822,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * @return the shape representing the unit.
      * @throws NotAvailableException is thrown if the unit shape is not available or the resolution has been failed.
      */
-    default public ShapeType.Shape getUnitShape(final UnitConfig unitConfig) throws NotAvailableException, InterruptedException {
+    default public ShapeType.Shape getUnitShape(final UnitConfig unitConfig) throws NotAvailableException {
         try {
 
             // resolve shape via unit config
@@ -565,11 +837,18 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
 
             // resolve shape via device class
             if (unitConfig.getType().equals(UnitType.DEVICE)) {
-                return CachedDeviceRegistryRemote.getRegistry().getDeviceClassById(unitConfig.getDeviceConfig().getDeviceClassId()).getShape();
+                try {
+                    return CachedDeviceRegistryRemote.getRegistry().getDeviceClassById(unitConfig.getDeviceConfig().getDeviceClassId()).getShape();
+                } catch (InterruptedException ex) {
+                    // because registries should not throw interrupted exceptions in a future release this exception is already transformed into a NotAvailableException.
+                    Thread.currentThread().interrupt();
+                    throw new CouldNotPerformException("Shutdown in progress");
+                }
             }
 
-            // inform that resolution is not possible.
+            // inform that the resolution is not possible.
             throw new CouldNotPerformException("Could not be resolved shape by any source.");
+            
         } catch (final CouldNotPerformException ex) {
             throw new NotAvailableException("Shape", "of Unit [" + unitConfig.getLabel() + "]", ex);
         }
