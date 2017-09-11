@@ -333,7 +333,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         sceneUnitConfigRegistry.registerConsistencyHandler(new SceneScopeConsistencyHandler(locationUnitConfigRegistry));
 
         // add consistency handler for all unitConfig registries        
-        
         registerConsistencyHandler(new UnitLocationIdConsistencyHandler(locationUnitConfigRegistry), UnitConfig.class);
         registerConsistencyHandler(new ServiceConfigUnitIdConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new UnitConfigUnitTemplateConsistencyHandler(unitTemplateRegistry), UnitConfig.class);
@@ -1148,6 +1147,12 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     protected void registerRemoteRegistries() throws CouldNotPerformException {
     }
 
+    /**
+     * 
+     * @return
+     * @deprecated get your own instance via the registry pool.
+     */
+    @Deprecated
     public DeviceRegistryRemote getDeviceRegistryRemote() {
         return deviceRegistryRemote;
     }

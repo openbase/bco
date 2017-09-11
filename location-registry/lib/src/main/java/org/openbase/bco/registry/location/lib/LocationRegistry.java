@@ -24,6 +24,8 @@ package org.openbase.bco.registry.location.lib;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
+import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -43,6 +45,7 @@ import rst.domotic.unit.UnitProbabilityCollectionType.UnitProbabilityCollection;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
 import rst.math.Vec3DDoubleType.Vec3DDouble;
+import rst.spatial.ShapeType;
 import rst.tracking.PointingRay3DFloatCollectionType.PointingRay3DFloatCollection;
 import rst.tracking.PointingRay3DFloatType.PointingRay3DFloat;
 
@@ -516,5 +519,59 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
                 unitConfigSource.getPlacementConfig().getTransformationFrameId(),
                 System.currentTimeMillis());
         return GlobalCachedExecutorService.allOfInclusiveResultFuture(transformationFuture, getDataFuture());
+    }
+    
+    /**
+     * Method returns the unit shape of the given unit referred by the id.
+     *
+     * If this unit configuration does not provide any shape information the shape of the unit host will be returned.
+     * In case the unit host even does not provide any shape information and the unit is a device than the shape of the device class will be used.
+     *
+     * @param unitId the id to resolve the unit shape.
+     * @return the shape representing the unit.
+     * @throws NotAvailableException is thrown if the unit shape is not available or the resolution has been failed.
+     * @throws java.lang.InterruptedException
+     */
+    default public ShapeType.Shape getUnitShape(final String unitId) throws NotAvailableException, InterruptedException {
+        try {
+            return getUnitShape(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(unitId));
+        } catch (final CouldNotPerformException ex) {
+            throw new NotAvailableException("Shape", "of unit " + unitId, ex);
+        }
+    }
+
+    /**
+     * Method returns the unit shape of the given unit configuration.
+     *
+     * If this unit configuration does not provide any shape information the shape of the unit host will be returned.
+     * In case the unit host even does not provide any shape information and the unit is a device than the shape of the device class will be used.
+     *
+     * @param unitConfig the unit configuration to resolve the unit shape.
+     * @return the shape representing the unit.
+     * @throws NotAvailableException is thrown if the unit shape is not available or the resolution has been failed.
+     */
+    default public ShapeType.Shape getUnitShape(final UnitConfig unitConfig) throws NotAvailableException, InterruptedException {
+        try {
+
+            // resolve shape via unit config
+            if (unitConfig.hasPlacementConfig() && unitConfig.getPlacementConfig().hasShape()) {
+                return unitConfig.getPlacementConfig().getShape();
+            }
+
+            // resolve shape via unit host
+            if (unitConfig.hasUnitHostId()) {
+                return getUnitShape(unitConfig.getUnitHostId());
+            }
+
+            // resolve shape via device class
+            if (unitConfig.getType().equals(UnitType.DEVICE)) {
+                return CachedDeviceRegistryRemote.getRegistry().getDeviceClassById(unitConfig.getDeviceConfig().getDeviceClassId()).getShape();
+            }
+
+            // inform that resolution is not possible.
+            throw new CouldNotPerformException("Could not be resolved shape by any source.");
+        } catch (final CouldNotPerformException ex) {
+            throw new NotAvailableException("Shape", "of Unit [" + unitConfig.getLabel() + "]", ex);
+        }
     }
 }
