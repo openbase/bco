@@ -67,7 +67,7 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
     private boolean active;
 
     private AbstractFilter filter;
-    private Observer<Boolean> loginObserver;
+    private Observer<String> loginObserver;
 
     /**
      *
@@ -165,13 +165,13 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
         }
         //TODO: this is a little bit hacked
         // if filter by authorization also update when something in the login changes
-        loginObserver = (Observable<Boolean> source, Boolean data) -> {
+        loginObserver = (Observable<String> source, String data) -> {
             if (remoteService.isDataAvailable()) {
                 remoteRegistrySynchronizer.update(null, remoteService.getData());
             }
         };
         if (filter != null && filter instanceof AuthorizationFilter) {
-            SessionManager.getInstance().getLoginObervable().addObserver(loginObserver);
+            SessionManager.getInstance().addLoginObserver(loginObserver);
         }
 
         active = true;
@@ -181,7 +181,7 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         remoteService.removeDataObserver(remoteRegistrySynchronizer);
         if(loginObserver != null) {
-            SessionManager.getInstance().getLoginObervable().removeObserver(loginObserver);
+            SessionManager.getInstance().removeLoginObserver(loginObserver);
         }
         active = false;
     }

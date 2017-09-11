@@ -38,7 +38,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public class OtherPermissionConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
-    private static final Permission DEFAULT_OTHER_PERMISSION = JPService.testMode() ? Permission.newBuilder().setAccess(true).setRead(true).setWrite(true).build() : Permission.newBuilder().setAccess(false).setRead(true).setWrite(false).build();
+    private static final Permission DEFAULT_OTHER_PERMISSION = JPService.testMode() ? Permission.newBuilder().setAccess(true).setRead(true).setWrite(true).build() : Permission.newBuilder().setAccess(true).setRead(true).setWrite(false).build();
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {

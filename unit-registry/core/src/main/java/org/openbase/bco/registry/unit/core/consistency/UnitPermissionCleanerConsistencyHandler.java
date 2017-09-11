@@ -21,14 +21,17 @@ package org.openbase.bco.registry.unit.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.registry.lib.authorization.AuthorizationHelper;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
+import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
 import rst.domotic.authentication.PermissionType.Permission;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
@@ -37,14 +40,43 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public class UnitPermissionCleanerConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
+    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupConfigRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationConfigRegistry;
+
+    public UnitPermissionCleanerConsistencyHandler(
+            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupConfigRegistry,
+            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationConfigRegistry) {
+        this.authorizationGroupConfigRegistry = authorizationGroupConfigRegistry;
+        this.locationConfigRegistry = locationConfigRegistry;
+    }
+
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
 
         if (unitConfig.hasPermissionConfig()) {
             PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();
-            if (permissionIsEmpty(permissionConfig.getOtherPermission()) && permissionIsEmpty(permissionConfig.getOwnerPermission())&& permissionConfig.getGroupPermissionList().isEmpty()) {
+            boolean modification = false;
+
+            // fill other permission fields that are not set
+            if (!permissionIsEmpty(permissionConfig.getOtherPermission())) {
+                Permission otherPermission = AuthorizationHelper.getPermission(entry.getMessage(), null, authorizationGroupConfigRegistry.getEntryMap(), locationConfigRegistry.getEntryMap());
+                modification = fillEmptyPermissions(permissionConfig.getOtherPermissionBuilder(), otherPermission) || modification;
+            }
+
+            // fill owner permissions which are not set
+            if (!permissionIsEmpty(permissionConfig.getOwnerPermission())) {
+                Permission ownerPermission = AuthorizationHelper.getPermission(entry.getMessage(), permissionConfig.getOwnerId(), authorizationGroupConfigRegistry.getEntryMap(), locationConfigRegistry.getEntryMap());
+                modification = fillEmptyPermissions(permissionConfig.getOwnerPermissionBuilder(), ownerPermission) || modification;
+            }
+
+            // clean empty permission configs
+            if (permissionIsEmpty(permissionConfig.getOtherPermission()) && permissionIsEmpty(permissionConfig.getOwnerPermission()) && permissionConfig.getGroupPermissionList().isEmpty()) {
                 unitConfig.clearPermissionConfig();
+                modification = true;
+            }
+
+            if (modification) {
                 throw new EntryModification(entry.setMessage(unitConfig), this);
             }
         }
@@ -52,6 +84,23 @@ public class UnitPermissionCleanerConsistencyHandler extends AbstractProtoBufReg
 
     private boolean permissionIsEmpty(Permission permission) {
         return !permission.hasAccess() && !permission.hasRead() && !permission.hasWrite();
+    }
+
+    private boolean fillEmptyPermissions(Permission.Builder permissionBuilder, Permission permission) {
+        boolean modification = false;
+        if (!permissionBuilder.hasAccess()) {
+            permissionBuilder.setAccess(permission.getAccess());
+            modification = true;
+        }
+        if (!permissionBuilder.hasRead()) {
+            permissionBuilder.setRead(permission.getRead());
+            modification = true;
+        }
+        if (!permissionBuilder.hasWrite()) {
+            permissionBuilder.setWrite(permission.getWrite());
+            modification = true;
+        }
+        return modification;
     }
 
 }

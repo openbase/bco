@@ -115,7 +115,6 @@ import org.openbase.bco.registry.unit.lib.generator.UnitTemplateIdGenerator;
 import org.openbase.bco.registry.unit.lib.jp.JPAgentConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPAppConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPAuthorizationGroupConfigDatabaseDirectory;
-import org.openbase.bco.registry.unit.lib.jp.JPClearUnitPermission;
 import org.openbase.bco.registry.unit.lib.jp.JPClearUnitPosition;
 import org.openbase.bco.registry.unit.lib.jp.JPConnectionConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPDalUnitConfigDatabaseDirectory;
@@ -131,11 +130,9 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Manageable;
@@ -360,6 +357,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         registerConsistencyHandler(new UnitEnablingStateConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new ServiceConfigServiceTemplateIdConsistencyHandler(serviceTemplateRegistry), UnitConfig.class);
         registerConsistencyHandler(new UnitTransformationFrameConsistencyHandler(locationUnitConfigRegistry), UnitConfig.class);
+        registerConsistencyHandler(new UnitPermissionCleanerConsistencyHandler(authorizationGroupUnitConfigRegistry, locationUnitConfigRegistry), UnitConfig.class);
         try {
             if (JPService.getProperty(JPEnableAuthentication.class).getValue()) {
                 registerConsistencyHandler(new OtherPermissionConsistencyHandler(), UnitConfig.class);
@@ -367,9 +365,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             }
             if (JPService.getProperty(JPClearUnitPosition.class).getValue()) {
                 registerConsistencyHandler(new UnitPositionCleanerConsistencyHandler(), UnitConfig.class);
-            }
-            if (JPService.getProperty(JPClearUnitPermission.class).getValue()) {
-                registerConsistencyHandler(new UnitPermissionCleanerConsistencyHandler(), UnitConfig.class);
             }
         } catch (JPNotAvailableException ex) {
             // do nothing if not available.
