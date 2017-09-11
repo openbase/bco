@@ -113,9 +113,15 @@ public class AuthenticatedServiceProcessor {
                     // retrieve the unit config which is used to check for permissions 
                     UnitConfig unitConfig = configRetrieval.retrieve(message);
 
-                    // check for write permissions for other
-                    if (!AuthorizationHelper.canWrite(unitConfig, null, null, locationMap)) {
-                        throw new PermissionDeniedException("Other has not rights to perform this action");
+                    try {
+                        if (JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+                            // check for write permissions for other
+                            if (!AuthorizationHelper.canWrite(unitConfig, null, null, locationMap)) {
+                                throw new PermissionDeniedException("Other has not rights to perform this action");
+                            }
+                        }
+                    } catch (JPNotAvailableException ex) {
+                        throw new CouldNotPerformException("Could not check JPEnableAuthentication property", ex);
                     }
 
                     // execute the action of the server

@@ -24,6 +24,7 @@ package org.openbase.bco.registry.lib.com;
 
 import java.util.List;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.pattern.Observer;
 
 /**
  * Filter which decides for a list of objects which to keep and which to filter out.
@@ -66,5 +67,20 @@ public abstract class AbstractFilter<T> {
      * @throws CouldNotPerformException if the verification fails
      */
     public abstract boolean verify(T type) throws CouldNotPerformException;
+    
+    /**
+     * A filter can depend on some other processes. To be notified
+     * when the filter will change an observer can be registered.
+     * 
+     * @param observer An observer which is notified when the filter changes. 
+     */
+    public abstract void addObserver(Observer observer);
+    
+    /**
+     * Remove an observer which is added by addObserver.
+     * 
+     * @param observer The observer to be removed.
+     */
+    public abstract void removeObserver(Observer observer);
 
 }

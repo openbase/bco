@@ -23,6 +23,7 @@ package org.openbase.bco.registry.lib.com;
  */
 
 import com.google.protobuf.GeneratedMessage;
+import org.openbase.jul.pattern.Observer;
 
 /**
  * Default filter which does not filter at all.
@@ -52,4 +53,23 @@ public class DefaultMessageFilter<M extends GeneratedMessage> extends AbstractFi
         return true;
     }
 
+    /**
+     * This filter does nothing so no observer will be added.
+     * {@inheritDoc}
+     * 
+     * @param observer {@inheritDoc}
+     */
+    @Override
+    public void addObserver(Observer observer) {
+    }
+
+    /**
+     * No observer can be added so removal will also do nothing.
+     * {@inheritDoc}
+     * 
+     * @param observer {@inheritDoc}
+     */
+    @Override
+    public void removeObserver(Observer observer) {
+    }
 }

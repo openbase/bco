@@ -33,6 +33,7 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.pattern.Observer;
 import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -43,11 +44,26 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthorizationFilter.class);
+    
+    private final SessionManager sessionManager;
 
     private SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> authorizationGroupRegistry;
     private SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> locationRegistry;
 
+    /**
+     * Create a new authorization filter using the default session manager.
+     */
     public AuthorizationFilter() {
+        this(SessionManager.getInstance());
+    }
+    
+    /**
+     * Create an authorization filter using the given session manager.
+     * 
+     * @param sessionManager The session manager which is called to identify who is logged in.
+     */
+    public AuthorizationFilter(SessionManager sessionManager) {
+        this.sessionManager = sessionManager;
     }
 
     /**
@@ -84,7 +100,7 @@ public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
         }
         try {
             CachedAuthenticationRemote.getRemote();
-            SessionManager.getInstance().isAuthenticated();
+            sessionManager.isAuthenticated();
         } catch (CouldNotPerformException ex) {
             if (ex.getCause() instanceof InvalidStateException) {
                 System.out.println("Could not check authenticated because in shutdown");
@@ -123,10 +139,33 @@ public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
         }
 
         try {
-            return AuthorizationHelper.canRead(unitConfig, SessionManager.getInstance().getUserAtClientId(), authorizationGroups, locations);
+            return AuthorizationHelper.canRead(unitConfig, sessionManager.getUserAtClientId(), authorizationGroups, locations);
         } catch (NotAvailableException ex) {
             LOGGER.warn("Permission for unit [" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "] not available!");
             return false;
         }
+    }
+
+    /**
+     * Filtering will change when the login changes so this method will register
+     * the observer as a login observer on the session manager.
+     * {@inheritDoc}
+     * 
+     * @param observer {@inheritDoc}
+     */
+    @Override
+    public void addObserver(Observer observer) {
+        sessionManager.addLoginObserver(observer);
+    }
+
+    /**
+     * Remove an added observer from the session manager.
+     * {@inheritDoc}
+     * 
+     * @param observer {@inheritDoc}
+     */
+    @Override
+    public void removeObserver(Observer observer) {
+        sessionManager.removeLoginObserver(observer);
     }
 }

@@ -67,7 +67,7 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
     private boolean active;
 
     private AbstractFilter filter;
-    private Observer<String> loginObserver;
+    private Observer filterObserver;
 
     /**
      *
@@ -163,15 +163,15 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
                 ExceptionPrinter.printHistory("Initial synchronization of " + this + " failed!", ex, LOGGER);
             }
         }
-        //TODO: this is a little bit hacked
-        // if filter by authorization also update when something in the login changes
-        loginObserver = (Observable<String> source, String data) -> {
+        
+        // register an observer on the filter to update when the filtering changes
+        filterObserver = (Observable source, Object data) -> {
             if (remoteService.isDataAvailable()) {
                 remoteRegistrySynchronizer.update(null, remoteService.getData());
             }
         };
-        if (filter != null && filter instanceof AuthorizationFilter) {
-            SessionManager.getInstance().addLoginObserver(loginObserver);
+        if (filter != null) {
+            filter.addObserver(filterObserver);
         }
 
         active = true;
@@ -180,8 +180,8 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         remoteService.removeDataObserver(remoteRegistrySynchronizer);
-        if(loginObserver != null) {
-            SessionManager.getInstance().removeLoginObserver(loginObserver);
+        if (filter != null) {
+            filter.removeObserver(filterObserver);
         }
         active = false;
     }
