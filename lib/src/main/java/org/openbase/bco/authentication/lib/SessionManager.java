@@ -76,9 +76,10 @@ public class SessionManager {
     private String userPassword;
 
     /**
-     * Observable on which it will be notified if login or logout is triggered.
+     * Observable on which it is notified if login or logout is triggered.
+     * The user@client id is notified on login in null on logout.
      */
-    private final ObservableImpl<Boolean> loginObervable;
+    private final ObservableImpl<String> loginObervable;
 
     public static synchronized SessionManager getInstance() {
         if (instance == null) {
@@ -304,7 +305,7 @@ public class SessionManager {
             this.sessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
 
             try {
-                loginObervable.notifyObservers(true);
+                loginObervable.notifyObservers(getUserAtClientId());
             } catch (CouldNotPerformException ex) {
                 LOGGER.warn("Could not notify login to observer", ex);
             }
@@ -363,7 +364,7 @@ public class SessionManager {
         this.ticketAuthenticatorWrapper = null;
         this.sessionKey = null;
         try {
-            loginObervable.notifyObservers(false);
+            loginObervable.notifyObservers(null);
         } catch (CouldNotPerformException ex) {
             LOGGER.warn("Could not notify logout to observer", ex);
         }
@@ -382,7 +383,7 @@ public class SessionManager {
         this.sessionKey = null;
         this.ticketAuthenticatorWrapper = null;
         try {
-            loginObervable.notifyObservers(false);
+            loginObervable.notifyObservers(null);
         } catch (CouldNotPerformException ex) {
             LOGGER.warn("Could not notify complete logout to observer", ex);
         }
@@ -451,7 +452,7 @@ public class SessionManager {
         }
 
         try {
-            Observer<Boolean> observer = (Observable<Boolean> source, Boolean data) -> {
+            Observer<String> observer = (Observable<String> source, String data) -> {
                 LOGGER.warn("Login state change while in isAuthenticated to [" + data + "]" + sessionKey);
             };
             this.loginObervable.addObserver(observer);
@@ -798,9 +799,13 @@ public class SessionManager {
     public String getUserId() {
         return userId;
     }
-
-    public Observable<Boolean> getLoginObervable() {
-        return loginObervable;
+    
+    public void addLoginObserver(Observer<String> observer) {
+        loginObervable.addObserver(observer);
+    }
+    
+    public void removeLoginObserver(Observer<String> observer) {
+        loginObervable.removeObserver(observer);
     }
 
     public String getClientId() {
