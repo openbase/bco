@@ -113,6 +113,9 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                     if (!newUnitConfig.equals(getConfig())) {
                         applyConfigUpdate(newUnitConfig);
                     }
+                } catch (NotAvailableException ex) {
+                    // unit config has been removed, probably because of deletion and a higher controller will do the shutdown in this case
+                    logger.debug("Could not update unit controller", ex);
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory("Could not update unit config of " + this, ex, logger);
                 }

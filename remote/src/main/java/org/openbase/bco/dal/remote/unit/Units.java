@@ -56,10 +56,14 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.unitgroup.UnitGroupRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
+import org.openbase.jul.extension.protobuf.ProtobufListDiff;
+import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rct.Transform;
 import rst.domotic.registry.LocationRegistryDataType;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -193,6 +197,8 @@ public class Units {
 
     public static final SyncObject UNIT_POOL_LOCK = new SyncObject("UnitPoolLock");
 
+    private static final ProtobufListDiff<String, UnitConfig, UnitConfig.Builder> UNIT_DIFF = new ProtobufListDiff<>();
+
     static {
         try {
             unitRemoteRegistry = new RemoteControllerRegistry<>();
@@ -220,6 +226,30 @@ public class Units {
                     return "UnitRemotePool";
                 }
             });
+
+            try {
+                Registries.getUnitRegistry().addDataObserver(new Observer<UnitRegistryData>() {
+                    @Override
+                    public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
+                        UNIT_DIFF.diff(data.getDalUnitConfigList());
+
+                        for (String unitId : UNIT_DIFF.getRemovedMessageMap().keySet()) {
+                            if (unitRemoteRegistry.contains(unitId)) {
+                                UnitRemote unitRemote = unitRemoteRegistry.get(unitId);
+                                try {
+                                    unitRemoteRegistry.remove(unitId);
+                                    unitRemote.unlock(unitRemoteRegistry);
+                                    unitRemote.shutdown();
+                                } catch (CouldNotPerformException ex) {
+                                    ExceptionPrinter.printHistory("Could not properly shutdown " + unitRemote, ex, LOGGER);
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (InterruptedException ex) {
+                throw new CouldNotPerformException("Could not add observer to unit registry", ex);
+            }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new FatalImplementationErrorException(Units.class, new org.openbase.jul.exception.InstantiationException(Units.class, ex)), LOGGER);
         }
