@@ -1310,7 +1310,7 @@ public class Units {
         final Future<LocationRegistryDataType.LocationRegistryData> dataFuture;
         try {
             dataFuture = Registries.getLocationRegistry().getDataFuture();
-            return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getLocationRegistry().getUnitTransformation(unitConfig), dataFuture);
+            return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getLocationRegistry().getRootToUnitTransformationFuture(unitConfig), dataFuture);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
         }
@@ -1329,7 +1329,7 @@ public class Units {
         final Future<LocationRegistryDataType.LocationRegistryData> dataFuture;
         try {
             dataFuture = Registries.getLocationRegistry().getDataFuture();
-            return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getLocationRegistry().getUnitTransformation(unitConfigA, unitConfigB), dataFuture);
+            return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getLocationRegistry().getUnitTransformationFuture(unitConfigA, unitConfigB), dataFuture);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
         }

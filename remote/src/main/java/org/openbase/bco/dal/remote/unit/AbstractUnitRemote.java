@@ -634,7 +634,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      */
     public Transform3D getTransform3DInverse() throws NotAvailableException, InterruptedException {
         try {
-            Transform3D transform = getTransform3D();
+            final Transform3D transform = getTransform3D();
             transform.invert();
             return transform;
         } catch (NotAvailableException ex) {
@@ -651,8 +651,8 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      */
     public Point3d getGlobalPositionPoint3d() throws NotAvailableException, InterruptedException {
         try {
-            Transform3D transformation = getTransform3DInverse();
-            Vector3d pos = new Vector3d();
+            final Transform3D transformation = getTransform3DInverse();
+            final Vector3d pos = new Vector3d();
             transformation.get(pos);
             return new Point3d(pos);
         } catch (NotAvailableException ex) {
@@ -669,7 +669,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      */
     public Translation getGlobalPosition() throws NotAvailableException, InterruptedException {
         try {
-            Point3d pos = getGlobalPositionPoint3d();
+            final Point3d pos = getGlobalPositionPoint3d();
             return Translation.newBuilder().setX(pos.x).setY(pos.y).setZ(pos.z).build();
         } catch (NotAvailableException ex) {
             throw new NotAvailableException("GlobalPosition", ex);
@@ -685,11 +685,11 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      */
     public Quat4d getGlobalRotationQuat4d() throws NotAvailableException, InterruptedException {
         try {
-            Transform3D transformation = getTransform3DInverse();
-            Quat4d quat = new Quat4d();
+            final Transform3D transformation = getTransform3DInverse();
+            final Quat4d quat = new Quat4d();
             transformation.get(quat);
             return quat;
-        } catch (NotAvailableException ex) {
+        } catch (final NotAvailableException ex) {
             throw new NotAvailableException("GlobalRotationQuat", ex);
         }
     }
@@ -703,9 +703,9 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      */
     public Rotation getGlobalRotation() throws NotAvailableException, InterruptedException {
         try {
-            Quat4d quat = getGlobalRotationQuat4d();
+            final Quat4d quat = getGlobalRotationQuat4d();
             return Rotation.newBuilder().setQw(quat.w).setQx(quat.x).setQy(quat.y).setQz(quat.z).build();
-        } catch (NotAvailableException ex) {
+        } catch (final NotAvailableException ex) {
             throw new NotAvailableException("GlobalRotation", ex);
         }
     }
@@ -718,10 +718,10 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      */
     public Point3d getLocalBoundingBoxCenterPoint3d() throws NotAvailableException {
         try {
-            AxisAlignedBoundingBox3DFloat bb = getConfig().getPlacementConfig().getShape().getBoundingBox();
-            Translation lfc = bb.getLeftFrontBottom();
+            final AxisAlignedBoundingBox3DFloat bb = getConfig().getPlacementConfig().getShape().getBoundingBox();
+            final Translation lfc = bb.getLeftFrontBottom();
 
-            Point3d center = new Point3d(bb.getWidth(), bb.getDepth(), bb.getHeight());
+            final Point3d center = new Point3d(bb.getWidth(), bb.getDepth(), bb.getHeight());
             center.scale(0.5);
             center.add(new Point3d(lfc.getX(), lfc.getY(), lfc.getZ()));
             return center;
@@ -738,8 +738,8 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      */
     public Point3d getGlobalBoundingBoxCenterPoint3d() throws NotAvailableException, InterruptedException {
         try {
-            Transform3D transformation = getTransform3DInverse();
-            Point3d center = getLocalBoundingBoxCenterPoint3d();
+            final Transform3D transformation = getTransform3DInverse();
+            final Point3d center = getLocalBoundingBoxCenterPoint3d();
             transformation.transform(center);
             return center;
         } catch (NotAvailableException ex) {

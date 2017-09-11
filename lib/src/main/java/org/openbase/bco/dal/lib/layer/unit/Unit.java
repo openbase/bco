@@ -90,7 +90,8 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * In case the unit host even does not provide any shape information and the unit is a device than the shape of the device class will be used.
      *
      * @return the shape representing the unit.
-     * @throws CouldNotPerformException is thrown if the unit shape is not available or the resolution has been failed.
+     * @throws NotAvailableException is thrown if the unit shape is not available or the resolution has been failed.
+     * @throws java.lang.InterruptedException is thrown if the current thread was externally interrupted.
      */
     default public Shape getUnitShape() throws NotAvailableException, InterruptedException {
         try {
