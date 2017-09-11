@@ -166,10 +166,10 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
 
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
-        super.activate();
-
         authorizationFilter.setAuthorizationGroupRegistry(authorizationGroupUnitConfigRemoteRegistry);
         authorizationFilter.setLocationRegistry(locationUnitConfigRemoteRegistry);
+        
+        super.activate();
     }
 
     // todo: sync unitConfigRemoteRegistry

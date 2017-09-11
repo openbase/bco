@@ -88,10 +88,7 @@ public class UserCreationPlugin extends FileRegistryPluginAdapter<String, Identi
             boolean adminExists = false;
             boolean bcoExists = false;
             for (UnitConfig userUnitConfig : userUnitConfigRegistry.getMessages()) {
-                LOGGER.info("Check user: [" + userUnitConfig.getUserConfig().getUserName() + "]["+userUnitConfig.getId()+"]");
-                LOGGER.info("Is admin answer from authenticator ["+CachedAuthenticationRemote.getRemote().isAdmin(userUnitConfig.getId()).get(1, TimeUnit.SECONDS)+"]");
                 if (CachedAuthenticationRemote.getRemote().isAdmin(userUnitConfig.getId()).get(1, TimeUnit.SECONDS)) {
-                    LOGGER.info("Is admin");
                     adminExists = true;
                     if (!adminGroupConfig.getAuthorizationGroupConfig().getMemberIdList().contains(userUnitConfig.getId())) {
                         // user is admin but not in group, so add him
