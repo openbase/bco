@@ -23,6 +23,7 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen;
  */
 import java.io.File;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.util.List;
 import nu.xom.Document;
 import nu.xom.Element;
@@ -32,10 +33,6 @@ import static org.openbase.bco.manager.device.binding.openhab.util.configgen.ite
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABDistribution;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABItemConfig;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABminZwaveConfig;
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.xmlpaser.XMLParser;
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.xmlpaser.XMLParsingException;
-import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
-import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -46,6 +43,8 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
+import org.openbase.jul.extension.xml.exception.XMLParsingException;
+import org.openbase.jul.extension.xml.processing.XMLProcessor;
 import org.openbase.jul.processing.VariableProvider;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.InventoryStateType;
@@ -62,11 +61,6 @@ public class OpenHABminConfigGenerator {
     public static final long TIMEOUT = 15000;
 
     public OpenHABminConfigGenerator() throws InstantiationException {
-//        try {
-
-//        } catch (CouldNotPerformException ex) {
-//            throw new InstantiationException(this, ex);
-//        }
     }
 
     private void init() throws InitializationException, InterruptedException, CouldNotPerformException {
@@ -139,19 +133,19 @@ public class OpenHABminConfigGenerator {
         try {
 
             // load
-            Document doc = XMLParser.createDocumentFromFile(zwaveNodeConfigFile);
+            Document doc = XMLProcessor.createDocumentFromFile(zwaveNodeConfigFile);
             Element nodeElement = doc.getRootElement();
 
             // remove old values
             try {
-                nodeElement.removeChild(XMLParser.parseOneChildElement("name", nodeElement));
+                nodeElement.removeChild(XMLProcessor.parseOneChildElement("name", nodeElement));
             } catch (Exception ex) {
-
+                // ignore if not exists
             }
             try {
-                nodeElement.removeChild(XMLParser.parseOneChildElement("location", nodeElement));
+                nodeElement.removeChild(XMLProcessor.parseOneChildElement("location", nodeElement));
             } catch (Exception ex) {
-
+                // ignore if not exists
             }
 
             // create new
@@ -168,25 +162,21 @@ public class OpenHABminConfigGenerator {
 
             // save
             try {
-                FileUtils.writeStringToFile(zwaveNodeConfigFile, XMLParser.normalizeFormattingAsString(doc));
-            } catch (IOException ex) {
+                FileUtils.writeStringToFile(zwaveNodeConfigFile, XMLProcessor.normalizeFormattingAsString(doc), StandardCharsets.UTF_8);
+            } catch (final IOException ex) {
                 throw new CouldNotPerformException("Could not save zwave node config!", ex);
             }
 
-        } catch (XMLParsingException | IOException | CouldNotPerformException ex) {
+        } catch (final XMLParsingException | IOException | CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update zwave node config of Device[" + deviceDeviceConfig.getLabel() + "]!", ex);
         }
-    }
-
-    private void shutdown() {
-        logger.info("shutdown");
     }
 
     /**
      * @param args the command line arguments
      */
     public static void main(String[] args) throws Exception {
-        JPService.setApplicationName("dal-openhabmin-zwave-config-updater");
+        JPService.setApplicationName("bco-openhabmin-zwave-config-updater");
         JPService.registerProperty(JPPrefix.class);
         JPService.registerProperty(JPOpenHABminZwaveConfig.class);
         JPService.registerProperty(JPOpenHABDistribution.class);
@@ -196,16 +186,11 @@ public class OpenHABminConfigGenerator {
             final OpenHABminConfigGenerator openHABConfigGenerator = new OpenHABminConfigGenerator();
             openHABConfigGenerator.init();
             openHABConfigGenerator.generate();
-            openHABConfigGenerator.shutdown();
             logger.info(JPService.getApplicationName() + " successfully started.");
         } catch (Exception ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
         }
         logger.info(JPService.getApplicationName() + " finished.");
         System.exit(0);
-    }
-
-    private void createDocumentFromFile(File zwaveNodeConfig) {
-        throw new UnsupportedOperationException("Not supported yet."); //To change body of generated methods, choose Tools | Templates.
     }
 }
