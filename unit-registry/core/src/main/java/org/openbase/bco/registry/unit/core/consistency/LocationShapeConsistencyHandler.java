@@ -10,12 +10,12 @@ package org.openbase.bco.registry.unit.core.consistency;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -33,6 +33,7 @@ import org.openbase.jul.extension.rct.GlobalTransformReceiver;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import rct.TransformerException;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.spatial.FloorCeilingEdgeIndicesType.FloorCeilingEdgeIndices;
@@ -108,9 +109,9 @@ public class LocationShapeConsistencyHandler extends AbstractProtoBufRegistryCon
                     rootUnitConfig.getPlacementConfig().getTransformationFrameId(),
                     System.currentTimeMillis()).getTransform();
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("could not get requestTransform", ex), logger);
+            ExceptionPrinter.printHistory(new CouldNotPerformException("could not get root config", ex), logger);
             return;
-        } catch (Exception ex) {
+        } catch (TransformerException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not get unitTransformation for unit " + unitConfig.getLabel() + " with id: " + unitConfig.getId(), ex), logger, LogLevel.WARN);
             return;
         }

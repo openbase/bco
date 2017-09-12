@@ -10,12 +10,12 @@ package org.openbase.bco.registry.unit.core;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -35,10 +35,12 @@ import org.openbase.bco.registry.lib.com.AbstractRegistryController;
 import org.openbase.bco.registry.unit.core.consistency.BoundingBoxCleanerConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.DeviceInventoryStateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.ExecutableUnitAutostartConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.LocationShapeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.ServiceConfigServiceTemplateIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.ServiceConfigUnitIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitConfigUnitTemplateConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitEnablingStateConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.UnitLocationIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.UnitPositionCleanerConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.agentconfig.AgentLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.agentconfig.AgentLocationConsistencyHandler;
@@ -72,8 +74,6 @@ import org.openbase.bco.registry.unit.core.consistency.deviceconfig.DeviceScopeC
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.ChildWithSameLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationChildConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationHierarchyConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.UnitLocationIdConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.LocationShapeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationLoopConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationParentConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.LocationPlacementConfigConsistencyHandler;
@@ -85,6 +85,7 @@ import org.openbase.bco.registry.unit.core.consistency.locationconfig.RootConsis
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.RootLocationExistencConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.sceneconfig.SceneLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.sceneconfig.SceneScopeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.UnitGroupBoundingBoxConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.UnitGroupMemberExistsConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.UnitGroupMemberListDuplicationConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.UnitGroupMemberListTypesConsistencyHandler;
@@ -97,8 +98,8 @@ import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigScop
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigUserNameConsistencyHandler;
 import org.openbase.bco.registry.unit.core.plugin.DalUnitBoundToHostPlugin;
 import org.openbase.bco.registry.unit.core.plugin.DeviceConfigDeviceClassUnitConsistencyPlugin;
-import org.openbase.bco.registry.unit.core.plugin.PublishUnitTransformationRegistryPlugin;
 import org.openbase.bco.registry.unit.core.plugin.PublishLocationTransformationRegistryPlugin;
+import org.openbase.bco.registry.unit.core.plugin.PublishUnitTransformationRegistryPlugin;
 import org.openbase.bco.registry.unit.core.plugin.ServiceTemplateCreatorRegistryPlugin;
 import org.openbase.bco.registry.unit.core.plugin.UnitTemplateCreatorRegistryPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
@@ -314,6 +315,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupUnitTypeConsistencyHandler(unitTemplateRegistry));
         unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupMemberListTypesConsistencyHandler(agentUnitConfigRegistry, appUnitConfigRegistry, authorizationGroupUnitConfigRegistry, connectionUnitConfigRegistry, dalUnitConfigRegistry, deviceUnitConfigRegistry, locationUnitConfigRegistry, sceneUnitConfigRegistry, unitGroupUnitConfigRegistry, userUnitConfigRegistry, unitTemplateRegistry));
         unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupScopeConsistencyHandler(locationUnitConfigRegistry));
+        unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupBoundingBoxConsistencyHandler(unitConfigRegistryList, locationUnitConfigRegistry));
 
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationPlacementConfigConsistencyHandler());
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationPositionConsistencyHandler());
@@ -332,7 +334,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         sceneUnitConfigRegistry.registerConsistencyHandler(new SceneLabelConsistencyHandler());
         sceneUnitConfigRegistry.registerConsistencyHandler(new SceneScopeConsistencyHandler(locationUnitConfigRegistry));
 
-        // add consistency handler for all unitConfig registries        
+        // add consistency handler for all unitConfig registries
         registerConsistencyHandler(new UnitLocationIdConsistencyHandler(locationUnitConfigRegistry), UnitConfig.class);
         registerConsistencyHandler(new ServiceConfigUnitIdConsistencyHandler(), UnitConfig.class);
         registerConsistencyHandler(new UnitConfigUnitTemplateConsistencyHandler(unitTemplateRegistry), UnitConfig.class);
@@ -1147,12 +1149,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     protected void registerRemoteRegistries() throws CouldNotPerformException {
     }
 
-    /**
-     * 
-     * @return
-     * @deprecated get your own instance via the registry pool.
-     */
-    @Deprecated
     public DeviceRegistryRemote getDeviceRegistryRemote() {
         return deviceRegistryRemote;
     }
