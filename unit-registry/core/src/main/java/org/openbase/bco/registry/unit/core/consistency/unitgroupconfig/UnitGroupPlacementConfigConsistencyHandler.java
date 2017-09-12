@@ -47,22 +47,49 @@ import rst.geometry.TranslationType.Translation;
 import rst.spatial.PlacementConfigType.PlacementConfig;
 
 /**
+ * This consinstency handler creates a bounding box around the bounding boxes of
+ * its members and also fixed position and rotation.
  *
  * @author <a href="mailto:thuppke@techfak.uni-bielefeld.de">Thoren Huppke</a>
  */
 public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
+    /**
+     * True and false as an array for loops.
+     */
     private final static boolean[] BOOLEAN_VALUES = new boolean[]{false, true};
 
+    /**
+     * The list of all the unitConfigRegistries.
+     */
     private final ArrayList<ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder>> unitConfigRegistryList;
+    /**
+     * The locationUnitConfigRegistry.
+     */
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationUnitConfigRegistry;
 
+    /**
+     * Constructor.
+     *
+     * @param unitConfigRegistryList the list of all the unitConfigRegistries.
+     * @param locationUnitConfigRegistry the locationUnitConfigRegistry.
+     */
     public UnitGroupPlacementConfigConsistencyHandler(final ArrayList<ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder>> unitConfigRegistryList,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationUnitConfigRegistry) {
         this.unitConfigRegistryList = unitConfigRegistryList;
         this.locationUnitConfigRegistry = locationUnitConfigRegistry;
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param id {@inheritDoc}
+     * @param entry {@inheritDoc}
+     * @param entryMap {@inheritDoc}
+     * @param registry {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws EntryModification {@inheritDoc}
+     */
     @Override
     public void processData(final String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, final ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap,
             final ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
@@ -71,7 +98,7 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
         final String rootFrameId;
         final Transform3D parentTransformation;
         try {
-            rootFrameId = getRootFrameId(entryMap, locationUnitConfigRegistry);
+            rootFrameId = getRootFrameId(locationUnitConfigRegistry);
             final UnitConfig parentConfig = locationUnitConfigRegistry.get(unitConfig.getPlacementConfig().getLocationId()).getMessage();
             parentTransformation = getRootToUnitTransform3D(rootFrameId, parentConfig);
         } catch (NotAvailableException ex) {
@@ -119,6 +146,17 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
         }
     }
 
+    /**
+     * Updates the placement config based on the minimal coordinates and
+     * dimensions of the bounding box.
+     *
+     * @param placementConfig the PlacementConfig to be updated.
+     * @param minPosition the minimal coordinates of the new bounding box.
+     * @param dimensions the dimensions of the bounding box (x: width, y: depth,
+     * z: height).
+     * @return the updated PlacementConfig including new Position, zero Rotation
+     * and the updated bounding box.
+     */
     private static PlacementConfig updatePlacementConfig(PlacementConfig placementConfig, Point3d minPosition, Point3d dimensions) {
         PlacementConfig.Builder newBuilder = placementConfig.toBuilder();
         newBuilder.setShape(newBuilder.getShapeBuilder()
@@ -136,18 +174,42 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
         return newBuilder.build();
     }
 
+    /**
+     * Returns the coordinate-wise minimum of the two points.
+     *
+     * @param point1 First point.
+     * @param point2 Second point.
+     * @return Point containing the minima of the two points' coordinates.
+     */
     private static Point3d getMin(final Point3d point1, final Point3d point2) {
         return new Point3d(point1.x < point2.x ? point1.x : point2.x,
                 point1.y < point2.y ? point1.y : point2.y,
                 point1.z < point2.z ? point1.z : point2.z);
     }
 
+    /**
+     * Returns the coordinate-wise maximum of the two points.
+     *
+     * @param point1 First point.
+     * @param point2 Second point.
+     * @return Point containing the maxima of the two points' coordinates.
+     */
     private static Point3d getMax(final Point3d point1, final Point3d point2) {
         return new Point3d(point1.x > point2.x ? point1.x : point2.x,
                 point1.y > point2.y ? point1.y : point2.y,
                 point1.z > point2.z ? point1.z : point2.z);
     }
 
+    /**
+     * Returns the points that need to be checked for minima and maxima to
+     * create the unit group bounding box for a certain member.
+     *
+     * @param rootFrameId The frame id of the root location.
+     * @param unitConfig Config of the member unit.
+     * @return Corner points of the member's bounding box in root coordinates.
+     * @throws NotAvailableException is thrown if the points are not available
+     * due to a missing unit transformation.
+     */
     private static List<Point3d> getPointsToCheck(final String rootFrameId, final UnitConfigOrBuilder unitConfig) throws NotAvailableException {
         final List<Point3d> pointsToCheck = new ArrayList<>();
         final Transform3D unitTransformation;
@@ -170,6 +232,12 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
         return pointsToCheck;
     }
 
+    /**
+     * Returns the corners of the given bounding box in local coordinates.
+     *
+     * @param boundingBox The bounding box.
+     * @return The corners of the bounding box in local coordinates.
+     */
     private static List<Point3d> getCorners(AxisAlignedBoundingBox3DFloat boundingBox) {
         final List<Point3d> corners = new ArrayList<>();
         Translation lfb = boundingBox.getLeftFrontBottom();
@@ -194,20 +262,21 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
         return corners;
     }
 
-    private static String getRootFrameId(final ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry) throws NotAvailableException {
+    /**
+     * Gets the frame id of the root location.
+     *
+     * @param locationRegistry the location registry.
+     * @return the frame id of the root location.
+     * @throws NotAvailableException is thrown if the frame id is not available.
+     */
+    private String getRootFrameId(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry) throws NotAvailableException {
         String rootLocationId;
         try {
-            // resolvement via more frequently updated entryMap via consistency checks if this entryMap contains the locations.
-            rootLocationId = LocationUtils.getRootLocation(entryMap).getId();
+            // resolvement via the location registry.
+            rootLocationId = LocationUtils.getRootLocation(locationRegistry.getMessages()).getId();
         } catch (CouldNotPerformException ex) {
-            try {
-                // resolvement via the location registry.
-                rootLocationId = LocationUtils.getRootLocation(locationRegistry.getMessages()).getId();
-            } catch (CouldNotPerformException exx) {
-                // if the root location could not be detected this consistency check is not needed.
-                throw new NotAvailableException("RootFrameId", exx);
-            }
+            // if the root location could not be detected this consistency check is not needed.
+            throw new NotAvailableException("RootFrameId", ex);
         }
 
         try {
@@ -223,6 +292,16 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
         }
     }
 
+    /**
+     * Returns the Transformation from root to unit coordinates for the given
+     * root frame id and unit config.
+     *
+     * @param rootFrameId the frame id of the root location.
+     * @param unitConfig UnitConfig of the unit to transform to.
+     * @return The Transformation from root to unit coordinates.
+     * @throws NotAvailableException is thrown if the transformation is not
+     * available.
+     */
     private static Transform3D getRootToUnitTransform3D(final String rootFrameId, final UnitConfigOrBuilder unitConfig) throws NotAvailableException {
         try {
             // lookup global transformation
@@ -235,6 +314,16 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
         }
     }
 
+    /**
+     * Returns the Transformation from unit to root coordinates for the given
+     * root frame id and unit config.
+     *
+     * @param rootFrameId the frame id of the root location.
+     * @param unitConfig UnitConfig of the unit to transform from.
+     * @return The Transformation from unit to root coordinates.
+     * @throws NotAvailableException is thrown if the transformation is not
+     * available.
+     */
     private static Transform3D getUnitToRootTransform3D(final String rootFrameId, final UnitConfigOrBuilder unitConfig) throws NotAvailableException {
         try {
             // lookup global transformation
