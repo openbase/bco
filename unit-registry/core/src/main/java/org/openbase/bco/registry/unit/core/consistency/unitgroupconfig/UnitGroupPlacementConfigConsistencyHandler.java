@@ -29,7 +29,6 @@ import javax.vecmath.Point3d;
 import org.openbase.bco.registry.lib.util.LocationUtils;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.extension.rct.GlobalTransformReceiver;
@@ -42,24 +41,23 @@ import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfigOrBuilder;
 import rst.geometry.AxisAlignedBoundingBox3DFloatType.AxisAlignedBoundingBox3DFloat;
+import rst.geometry.PoseType.Pose;
+import rst.geometry.RotationType.Rotation;
 import rst.geometry.TranslationType.Translation;
-import rst.spatial.ShapeType.Shape;
+import rst.spatial.PlacementConfigType.PlacementConfig;
 
 /**
  *
  * @author <a href="mailto:thuppke@techfak.uni-bielefeld.de">Thoren Huppke</a>
  */
-public class UnitGroupBoundingBoxConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
+public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
-    private final static Point3d RIGHT = new Point3d(1, 0, 0);
-    private final static Point3d FORWARD = new Point3d(0, 1, 0);
-    private final static Point3d UP = new Point3d(0, 0, 1);
     private final static boolean[] BOOLEAN_VALUES = new boolean[]{false, true};
 
     private final ArrayList<ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder>> unitConfigRegistryList;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationUnitConfigRegistry;
 
-    public UnitGroupBoundingBoxConsistencyHandler(final ArrayList<ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder>> unitConfigRegistryList,
+    public UnitGroupPlacementConfigConsistencyHandler(final ArrayList<ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder>> unitConfigRegistryList,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationUnitConfigRegistry) {
         this.unitConfigRegistryList = unitConfigRegistryList;
         this.locationUnitConfigRegistry = locationUnitConfigRegistry;
@@ -70,68 +68,72 @@ public class UnitGroupBoundingBoxConsistencyHandler extends AbstractProtoBufRegi
             final ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         final UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
 
-        // filter if config does not contain placement or shape
-        if (!unitConfig.hasPlacementConfig()
-                || !unitConfig.getPlacementConfig().hasShape()
-                || unitConfig.getPlacementConfig().getShape().getFloorList().isEmpty()
-                || !unitConfig.getPlacementConfig().getShape().getCeilingList().isEmpty()
-                || !unitConfig.getPlacementConfig().hasTransformationFrameId()
-                || unitConfig.getPlacementConfig().getTransformationFrameId().isEmpty()) {
-            return;
-        }
-
         final String rootFrameId;
-        final Transform3D unitTransformation;
+        final Transform3D parentTransformation;
         try {
             rootFrameId = getRootFrameId(entryMap, locationUnitConfigRegistry);
-            unitTransformation = getRootToUnitTransform3D(rootFrameId, unitConfig);
+            final UnitConfig parentConfig = locationUnitConfigRegistry.get(unitConfig.getPlacementConfig().getLocationId()).getMessage();
+            parentTransformation = getRootToUnitTransform3D(rootFrameId, parentConfig);
         } catch (NotAvailableException ex) {
-            ExceptionPrinter.printHistory(ex, logger);
-            return;
+            throw new CouldNotPerformException("Could not get root to unit transformation.", ex);
         }
 
         Point3d minPosition = new Point3d(Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY, Double.POSITIVE_INFINITY);
         Point3d maxPosition = new Point3d(Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY, Double.NEGATIVE_INFINITY);
         for (String memberId : unitConfig.getUnitGroupConfig().getMemberIdList()) {
-            UnitConfig memberConf;
+            UnitConfig memberConf = null;
             for (ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> reg : unitConfigRegistryList) {
                 try {
-                    memberConf = reg.get(id).getMessage();
+                    memberConf = reg.get(memberId).getMessage();
+                    break;
+                } catch (CouldNotPerformException ex) {
+                }
+            }
+            if (memberConf != null && memberConf.hasPlacementConfig() && memberConf.getPlacementConfig().hasPosition()) {
+                try {
                     List<Point3d> pointsToCheck = getPointsToCheck(rootFrameId, memberConf);
                     minPosition = pointsToCheck.stream().reduce(minPosition, (result, element) -> getMin(result, element));
                     maxPosition = pointsToCheck.stream().reduce(maxPosition, (result, element) -> getMax(result, element));
-                    break;
-                } catch (CouldNotPerformException ex) {
+                } catch (NotAvailableException ex) {
+                    throw new CouldNotPerformException("Could not get Transformation for member with position.", ex);
                 }
             }
         }
         if (minPosition.x == Double.POSITIVE_INFINITY) {
             return;
         }
-        unitTransformation.transform(minPosition);
-        unitTransformation.transform(maxPosition);
+        parentTransformation.transform(minPosition);
+        parentTransformation.transform(maxPosition);
 
-        // Create minimum and dimensions in the current objects
+        // Create minimum and dimensions in the parents coordinate system
         Point3d newMin = getMin(minPosition, maxPosition);
         Point3d dimensions = getMax(minPosition, maxPosition);
         dimensions.sub(newMin);
 
-        //TODO: Continue from here.
         // update PlacementConfig
-        final Shape shape = unitConfig.getPlacementConfig().getShape();
-        Shape newShape = updateShape(shape, newMin, dimensions);
-        if (!shape.equals(newShape)) {
-            unitConfig.getPlacementConfigBuilder().setShape(newShape);
+        final PlacementConfig placementConfig = unitConfig.getPlacementConfig();
+        PlacementConfig newPlacementConfig = updatePlacementConfig(placementConfig, newMin, dimensions);
+        if (!placementConfig.equals(newPlacementConfig)) {
+            unitConfig.setPlacementConfig(newPlacementConfig);
             throw new EntryModification(entry.setMessage(unitConfig), this);
         }
     }
 
-    private static Shape updateShape(Shape shape, Point3d minPosition, Point3d dimensions) {
-        return shape.toBuilder().setBoundingBox(
-                AxisAlignedBoundingBox3DFloat.newBuilder().setLeftFrontBottom(
-                        Translation.newBuilder().setX(minPosition.x).setY(minPosition.y).setZ(minPosition.z)
-                ).setWidth((float) dimensions.x).setDepth((float) dimensions.y).setHeight((float) dimensions.z)
-        ).build();
+    private static PlacementConfig updatePlacementConfig(PlacementConfig placementConfig, Point3d minPosition, Point3d dimensions) {
+        PlacementConfig.Builder newBuilder = placementConfig.toBuilder();
+        newBuilder.setShape(newBuilder.getShapeBuilder()
+                .setBoundingBox(AxisAlignedBoundingBox3DFloat.newBuilder()
+                        .setLeftFrontBottom(Translation.newBuilder().setX(0).setY(0).setZ(0))
+                        .setWidth((float) dimensions.x)
+                        .setDepth((float) dimensions.y)
+                        .setHeight((float) dimensions.z)))
+                .setPosition(Pose.newBuilder()
+                        .setRotation(Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0))
+                        .setTranslation(Translation.newBuilder()
+                                .setX(minPosition.x)
+                                .setY(minPosition.y)
+                                .setZ(minPosition.z)));
+        return newBuilder.build();
     }
 
     private static Point3d getMin(final Point3d point1, final Point3d point2) {
@@ -146,13 +148,13 @@ public class UnitGroupBoundingBoxConsistencyHandler extends AbstractProtoBufRegi
                 point1.z > point2.z ? point1.z : point2.z);
     }
 
-    private static List<Point3d> getPointsToCheck(final String rootFrameId, final UnitConfigOrBuilder unitConfig) {
+    private static List<Point3d> getPointsToCheck(final String rootFrameId, final UnitConfigOrBuilder unitConfig) throws NotAvailableException {
         final List<Point3d> pointsToCheck = new ArrayList<>();
         final Transform3D unitTransformation;
         try {
             unitTransformation = getUnitToRootTransform3D(rootFrameId, unitConfig);
         } catch (NotAvailableException ex) {
-            return pointsToCheck;
+            throw new NotAvailableException("Points to check", ex);
         }
         if (unitConfig.hasPlacementConfig() && unitConfig.getPlacementConfig().hasShape() && unitConfig.getPlacementConfig().getShape().hasBoundingBox()) {
             AxisAlignedBoundingBox3DFloat boundingBox = unitConfig.getPlacementConfig().getShape().getBoundingBox();
@@ -204,7 +206,7 @@ public class UnitGroupBoundingBoxConsistencyHandler extends AbstractProtoBufRegi
                 rootLocationId = LocationUtils.getRootLocation(locationRegistry.getMessages()).getId();
             } catch (CouldNotPerformException exx) {
                 // if the root location could not be detected this consistency check is not needed.
-                throw new NotAvailableException("RootFrameId");
+                throw new NotAvailableException("RootFrameId", exx);
             }
         }
 
@@ -213,11 +215,11 @@ public class UnitGroupBoundingBoxConsistencyHandler extends AbstractProtoBufRegi
             final UnitConfig rootUnitConfig = locationRegistry.get(rootLocationId).getMessage();
             if (!rootUnitConfig.getPlacementConfig().hasTransformationFrameId()
                     || rootUnitConfig.getPlacementConfig().getTransformationFrameId().isEmpty()) {
-                throw new NotAvailableException("RootFrameId");
+                throw new CouldNotPerformException("root UnitConfig has not TransformationFrameId.");
             }
             return rootUnitConfig.getPlacementConfig().getTransformationFrameId();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("RootFrameId");
+            throw new NotAvailableException("RootFrameId", ex);
         }
     }
 
@@ -229,7 +231,7 @@ public class UnitGroupBoundingBoxConsistencyHandler extends AbstractProtoBufRegi
                     rootFrameId,
                     System.currentTimeMillis()).getTransform();
         } catch (TransformerException ex) {
-            throw new NotAvailableException("RootToUnitTransform");
+            throw new NotAvailableException("RootToUnitTransform", ex);
         }
     }
 
@@ -241,7 +243,7 @@ public class UnitGroupBoundingBoxConsistencyHandler extends AbstractProtoBufRegi
                     unitConfig.getPlacementConfig().getTransformationFrameId(),
                     System.currentTimeMillis()).getTransform();
         } catch (TransformerException ex) {
-            throw new NotAvailableException("RootToUnitTransform");
+            throw new NotAvailableException("UnitToRootTransform", ex);
         }
     }
 }
