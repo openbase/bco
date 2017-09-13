@@ -279,10 +279,10 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             }
 
             UnitRemote remote = Units.getUnit(config, false);
-
-            if (!unitRemoteTypeMap.containsKey(remote.getType())) {
-                unitRemoteTypeMap.put(remote.getType(), new ArrayList());
-                for (UnitType superType : Registries.getUnitRegistry().getSuperUnitTypes(remote.getType())) {
+            
+            if (!unitRemoteTypeMap.containsKey(remote.getUnitType())) {
+                unitRemoteTypeMap.put(remote.getUnitType(), new ArrayList());
+                for (UnitType superType : Registries.getUnitRegistry().getSuperUnitTypes(remote.getUnitType())) {
                     if (!unitRemoteTypeMap.containsKey(superType)) {
                         unitRemoteTypeMap.put(superType, new ArrayList<>());
                     }
@@ -291,8 +291,8 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
             try {
                 serviceMap.put(config.getId(), (S) remote);
-                unitRemoteTypeMap.get(remote.getType()).add((S) remote);
-                for (UnitType superType : Registries.getUnitRegistry().getSuperUnitTypes(remote.getType())) {
+                unitRemoteTypeMap.get(remote.getUnitType()).add((S) remote);
+                for (UnitType superType : Registries.getUnitRegistry().getSuperUnitTypes(remote.getUnitType())) {
                     unitRemoteTypeMap.get(superType).add((S) remote);
                 }
             } catch (ClassCastException ex) {
@@ -480,6 +480,27 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             if (!actionDescription.getServiceStateDescription().getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
+            
+            // master
+//            List<Future> actionFutureList = new ArrayList<>();
+//            for (final UnitRemote unitRemote : getInternalUnits()) {
+//                if (actionDescription.getServiceStateDescription().getUnitType() == UnitType.UNKNOWN
+//                        || actionDescription.getServiceStateDescription().getUnitType() == unitRemote.getUnitType()
+//                        || UnitConfigProcessor.isBaseUnit(unitRemote.getUnitType())) {
+//                    ActionDescription.Builder unitActionDescription = ActionDescription.newBuilder(actionDescription);
+//                    ActionReference.Builder actionReference = ActionReference.newBuilder();
+//                    actionReference.setActionId(actionDescription.getId());
+//                    actionReference.setAuthority(actionDescription.getActionAuthority());
+//                    actionReference.setServiceStateDescription(actionDescription.getServiceStateDescription());
+//                    unitActionDescription.addActionChain(actionReference);
+//                    
+//                    ServiceStateDescription.Builder serviceStateDescription = unitActionDescription.getServiceStateDescriptionBuilder();
+//                    serviceStateDescription.setUnitId((String) unitRemote.getId());
+//                    
+//                    actionFutureList.add(unitRemote.applyAction(unitActionDescription.build()));
+//                }
+//            }
+//            return GlobalCachedExecutorService.allOf(ActionFuture.getDefaultInstance(), actionFutureList);
 
             Map<String, UnitRemote> scopeUnitMap = new HashMap();
             for (final UnitRemote unitRemote : getInternalUnits(actionDescription.getServiceStateDescription().getUnitType())) {
@@ -503,6 +524,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                     scopeUnitMap.put(ScopeGenerator.generateStringRep(unitRemote.getScope()), unitRemote);
                 }
             }
+            
+                 
+            
 
             // Setup ActionDescription with resource ids, token and slot
             ActionDescription.Builder actionDescriptionBuilder = actionDescription.toBuilder();

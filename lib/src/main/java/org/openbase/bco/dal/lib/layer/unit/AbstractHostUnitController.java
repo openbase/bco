@@ -49,7 +49,6 @@ import org.openbase.jul.extension.protobuf.ProtobufListDiff;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.SyncObject;
-import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
@@ -135,13 +134,9 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
             synchronized (unitMapLock) {
                 hostedUnitDiff.diff(getHostedUnits());
                 MultiException.ExceptionStack removeExceptionStack = null;
-                for (UnitConfig removedUnitConfig : hostedUnitDiff.getRemovedMessageMap().getMessages()) {
-                    try {
-                        unitMap.remove(removedUnitConfig.getId()).deactivate();
-                    } catch (CouldNotPerformException ex) {
-                        removeExceptionStack = MultiException.push(this, ex, removeExceptionStack);
-                    }
-                }
+                hostedUnitDiff.getRemovedMessageMap().getMessages().forEach((removedUnitConfig) -> {
+                    unitMap.remove(removedUnitConfig.getId()).shutdown();
+                });
 
                 /*
                  * unitController handle their update themselves
@@ -204,7 +199,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
 
     public final void registerUnits(final Collection<UnitConfig> unitConfigs) throws CouldNotPerformException, InterruptedException {
         MultiException.ExceptionStack exceptionStack = null;
-        for (UnitConfigType.UnitConfig unitConfig : unitConfigs) {
+        for (UnitConfig unitConfig : unitConfigs) {
             try {
                 registerUnit(unitConfig);
             } catch (CouldNotPerformException ex) {
@@ -252,7 +247,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
         }
     }
 
-    private <B extends GeneratedMessage.Builder> B registerUnitBuilder(final UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException {
+    private <B extends GeneratedMessage.Builder> B registerUnitBuilder(final UnitConfig unitConfig) throws CouldNotPerformException {
         try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this, isActive())) {
             DB builder = dataBuilder.getInternalBuilder();
             Class builderClass = builder.getClass();
@@ -289,7 +284,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
         }
     }
 
-    private GeneratedMessage.Builder loadUnitBuilder(final UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException {
+    private GeneratedMessage.Builder loadUnitBuilder(final UnitConfig unitConfig) throws CouldNotPerformException {
         GeneratedMessage.Builder builder = null;
         try {
             String unitTypeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name());

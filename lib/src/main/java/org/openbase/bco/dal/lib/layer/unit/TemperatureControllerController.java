@@ -63,7 +63,7 @@ public class TemperatureControllerController extends AbstractDALUnitController<T
 
     @Override
     public Future<ActionFuture> setTargetTemperatureState(final TemperatureState value) throws CouldNotPerformException {
-        logger.debug("Set " + getType().name() + "[" + getLabel() + "] to targetTemperatureState [" + value + "]");
+        logger.debug("Set " + getUnitType().name() + "[" + getLabel() + "] to targetTemperatureState [" + value + "]");
         return targetTemperatureStateService.setTargetTemperatureState(value);
     }
 

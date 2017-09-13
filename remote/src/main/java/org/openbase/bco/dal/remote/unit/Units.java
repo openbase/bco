@@ -56,10 +56,14 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.unitgroup.UnitGroupRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
+import org.openbase.jul.extension.protobuf.ProtobufListDiff;
+import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rct.Transform;
 import rst.domotic.registry.LocationRegistryDataType;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -193,6 +197,8 @@ public class Units {
 
     public static final SyncObject UNIT_POOL_LOCK = new SyncObject("UnitPoolLock");
 
+    private static final ProtobufListDiff<String, UnitConfig, UnitConfig.Builder> UNIT_DIFF = new ProtobufListDiff<>();
+
     static {
         try {
             unitRemoteRegistry = new RemoteControllerRegistry<>();
@@ -220,6 +226,30 @@ public class Units {
                     return "UnitRemotePool";
                 }
             });
+
+            try {
+                Registries.getUnitRegistry().addDataObserver(new Observer<UnitRegistryData>() {
+                    @Override
+                    public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
+                        UNIT_DIFF.diff(data.getDalUnitConfigList());
+
+                        for (String unitId : UNIT_DIFF.getRemovedMessageMap().keySet()) {
+                            if (unitRemoteRegistry.contains(unitId)) {
+                                UnitRemote unitRemote = unitRemoteRegistry.get(unitId);
+                                try {
+                                    unitRemoteRegistry.remove(unitId);
+                                    unitRemote.unlock(unitRemoteRegistry);
+                                    unitRemote.shutdown();
+                                } catch (CouldNotPerformException ex) {
+                                    ExceptionPrinter.printHistory("Could not properly shutdown " + unitRemote, ex, LOGGER);
+                                }
+                            }
+                        }
+                    }
+                });
+            } catch (InterruptedException ex) {
+                throw new CouldNotPerformException("Could not add observer to unit registry", ex);
+            }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new FatalImplementationErrorException(Units.class, new org.openbase.jul.exception.InstantiationException(Units.class, ex)), LOGGER);
         }
@@ -844,8 +874,7 @@ public class Units {
      * @param waitForData if this flag is set to true the current thread will
      * block until the unit remote is fully synchronized with the unit
      * controller.
-     * @return a new or cached unit remote which can be used to control the unit
-     * or request all current unit states.
+     * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
      * @throws NotAvailableException is thrown in case the unit is not available
      * or the label is not unique enough to identify the unit.
      * @throws InterruptedException is thrown in case the thread is externally
@@ -1275,12 +1304,50 @@ public class Units {
      * @param unitConfig the unit where the transformation leads to.
      * @return a transformation future
      * @throws InterruptedException is thrown if the thread was externally interrupted.
+     * @deprecated please use getRootToUnitTransformationFuture(...) instead.
      */
+    @Deprecated
     public static Future<Transform> getUnitTransformation(final UnitConfig unitConfig) throws InterruptedException {
+        return getRootToUnitTransformationFuture(unitConfig);
+    }
+
+    /**
+     * Method returns the transformation leading from the given unit to the root location.
+     *
+     * @param unitConfig the unit where the transformation leads to.
+     * @return a transformation future
+     */
+    public static Future<Transform> getUnitToRootTransformationFuture(final UnitConfig unitConfig) {
         final Future<LocationRegistryDataType.LocationRegistryData> dataFuture;
         try {
-            dataFuture = Registries.getLocationRegistry().getDataFuture();
-            return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getLocationRegistry().getUnitTransformation(unitConfig), dataFuture);
+            try {
+                dataFuture = Registries.getLocationRegistry().getDataFuture();
+                return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getLocationRegistry().getUnitToRootTransformationFuture(unitConfig), dataFuture);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new FatalImplementationErrorException("getLocationRegistry should not throw InterruptedExceptions anymore!", Units.class, ex);
+            }
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
+        }
+    }
+
+    /**
+     * Method returns the transformation leading from the root location to the given unit.
+     *
+     * @param unitConfig the unit where the transformation leads to.
+     * @return a transformation future
+     */
+    public static Future<Transform> getRootToUnitTransformationFuture(final UnitConfig unitConfig) {
+        final Future<LocationRegistryDataType.LocationRegistryData> dataFuture;
+        try {
+            try {
+                dataFuture = Registries.getLocationRegistry().getDataFuture();
+                return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getLocationRegistry().getRootToUnitTransformationFuture(unitConfig), dataFuture);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new FatalImplementationErrorException("getLocationRegistry should not throw InterruptedExceptions anymore!", Units.class, ex);
+            }
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
         }
@@ -1294,12 +1361,37 @@ public class Units {
      * @param unitConfigB the unit where the transformation leads to.
      * @return a transformation future
      * @throws InterruptedException is thrown if the thread was externally interrupted.
+     * @deprecated please use {@code getUnitTransformationFuture()} instead.
      */
+    @Deprecated
     public static Future<Transform> getUnitTransformation(final UnitConfig unitConfigA, final UnitConfig unitConfigB) throws InterruptedException {
         final Future<LocationRegistryDataType.LocationRegistryData> dataFuture;
         try {
             dataFuture = Registries.getLocationRegistry().getDataFuture();
-            return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getLocationRegistry().getUnitTransformation(unitConfigA, unitConfigB), dataFuture);
+            return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getLocationRegistry().getUnitTransformationFuture(unitConfigA, unitConfigB), dataFuture);
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
+        }
+    }
+
+    /**
+     * Method returns the transformation between the given unit A and the given
+     * unit B.
+     *
+     * @param unitConfigA the unit used as transformation base.
+     * @param unitConfigB the unit where the transformation leads to.
+     * @return a transformation future
+     */
+    public static Future<Transform> getUnitTransformationFuture(final UnitConfig unitConfigA, final UnitConfig unitConfigB) {
+        final Future<LocationRegistryDataType.LocationRegistryData> dataFuture;
+        try {
+            try {
+                dataFuture = Registries.getLocationRegistry().getDataFuture();
+                return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getLocationRegistry().getUnitTransformationFuture(unitConfigA, unitConfigB), dataFuture);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new FatalImplementationErrorException("getLocationRegistry should not throw InterruptedExceptions anymore!", Units.class, ex);
+            }
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
         }

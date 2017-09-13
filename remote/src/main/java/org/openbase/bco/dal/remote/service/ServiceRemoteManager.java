@@ -279,15 +279,15 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
                     return CompletableFuture.completedFuture(snapshotBuilder.build());
                 }
 
-                for (AbstractServiceRemote abstractServiceRemote : getServiceRemoteList()) {
+                for (final AbstractServiceRemote abstractServiceRemote : getServiceRemoteList()) {
                     if (!(serviceType == abstractServiceRemote.getServiceType())) {
                         continue;
                     }
 
                     Collection<UnitRemote> internalUnits = abstractServiceRemote.getInternalUnits();
-                    for (UnitRemote unitRemote : internalUnits) {
+                    for (final UnitRemote unitRemote : internalUnits) {
                         // just add units with the according type
-                        if (unitRemote.getType() == unitType) {
+                        if (unitRemote.getUnitType() == unitType) {
                             unitRemoteSet.add(unitRemote);
                         }
                     }
