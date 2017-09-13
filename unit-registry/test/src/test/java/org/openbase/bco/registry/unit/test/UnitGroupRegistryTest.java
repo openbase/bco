@@ -21,7 +21,6 @@ package org.openbase.bco.registry.unit.test;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.junit.AfterClass;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
@@ -40,9 +39,6 @@ import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
-import rst.geometry.PoseType.Pose;
-import rst.geometry.RotationType.Rotation;
-import rst.geometry.TranslationType.Translation;
 import rst.spatial.PlacementConfigType.PlacementConfig;
 
 /**
@@ -50,7 +46,7 @@ import rst.spatial.PlacementConfigType.PlacementConfig;
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class UnitGroupRegistryTest {
-    
+
     private static final Logger LOGGER = LoggerFactory.getLogger(DeviceRegistryTest.class);
 
     private static MockRegistry mockRegistry;
@@ -82,43 +78,29 @@ public class UnitGroupRegistryTest {
 
         LOCATION = MockRegistry.getLocationRegistry().getRootLocationConfig();
     }
-    
+
     /**
      * Test if changing the placement of a unit group works.
-     * 
-     * @throws Exception 
+     *
+     * @throws Exception
      */
     @Test(timeout = 10000)
     public void testPlacementChange() throws Exception {
         LOGGER.info("testPlacementChange");
-        
+
         UnitConfig.Builder unitConfig = UnitConfig.newBuilder();
         unitConfig.setLabel("PlacementChangeGroup");
         unitConfig.setType(UnitType.UNIT_GROUP);
-        
+
         PlacementConfig.Builder placement = unitConfig.getPlacementConfigBuilder();
         placement.setLocationId(LOCATION.getId());
-        
-        Pose.Builder position = placement.getPositionBuilder();
-        
-        Translation.Builder translation = position.getTranslationBuilder();
-        translation.setX(10);
-        translation.setY(20);
-        translation.setZ(15);
-        
-        Rotation.Builder rotation = position.getRotationBuilder();
-        rotation.setQw(1.0);
-        rotation.setQx(0.0);
-        rotation.setQy(0.0);
-        rotation.setQz(0.0);
-        
+
         UnitGroupConfig.Builder unitGroupConfig = unitConfig.getUnitGroupConfigBuilder();
         unitGroupConfig.setUnitType(UnitType.COLORABLE_LIGHT);
         unitGroupConfig.addMemberId(unitRegistry.getUnitConfigs(UnitType.COLORABLE_LIGHT).get(0).getId());
-        
+
         UnitConfig registeredGroup = unitRegistry.registerUnitConfig(unitConfig.build()).get();
-        
-        assertEquals("Translation does not match", translation.build(), registeredGroup.getPlacementConfig().getPosition().getTranslation());
-        assertEquals("Rotation does not match", rotation.build(), registeredGroup.getPlacementConfig().getPosition().getRotation());
+
+        assertEquals("BoundingBox was not generated!", registeredGroup.getPlacementConfig().getShape().getBoundingBox(), MockRegistry.DEFAULT_BOUNDING_BOX);
     }
 }
