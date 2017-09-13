@@ -488,28 +488,28 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
     }
 
     /**
-     * Method returns the transformation from the root location to the given unit.
+     * Method returns the transformation which leads from the root location to the given unit.
      *
      * @param unitConfigTarget the unit where the transformation leads to.
      * @return a transformation future
      */
     public default Future<Transform> getRootToUnitTransformationFuture(final UnitConfig unitConfigTarget) {
         try {
-            return LocationRegistry.this.getUnitTransformationFuture(getRootLocationConfig(), unitConfigTarget);
+            return getUnitTransformationFuture(getRootLocationConfig(), unitConfigTarget);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(new NotAvailableException("UnitTransformation", ex));
         }
     }
     
     /**
-     * Method returns the transformation from the root location to the given unit.
+     * Method returns the transformation which leads from the given unit to the root location.
      *
      * @param unitConfigTarget the unit where the transformation leads to.
      * @return a transformation future
      */
     public default Future<Transform> getUnitToRootTransformationFuture(final UnitConfig unitConfigTarget) {
         try {
-            return LocationRegistry.this.getUnitTransformationFuture(unitConfigTarget, getRootLocationConfig());
+            return getUnitTransformationFuture(unitConfigTarget, getRootLocationConfig());
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(new NotAvailableException("UnitTransformation", ex));
         }
@@ -521,11 +521,9 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * @param unitConfigSource the unit used as transformation base.
      * @param unitConfigTarget the unit where the transformation leads to.
      * @return a transformation future
-     * @deprecated please use {@code getRootToUnitTransformationFuture(...)} instead
      */
-    @Deprecated
     public default Future<Transform> getUnitTransformation(final UnitConfig unitConfigSource, final UnitConfig unitConfigTarget) {
-        return LocationRegistry.this.getUnitTransformationFuture(unitConfigSource, unitConfigTarget);
+        return getUnitTransformationFuture(unitConfigSource, unitConfigTarget);
     }
 
     /**
@@ -754,7 +752,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * @return center coordinates of the unit's BoundingBox relative to unit
      * @throws NotAvailableException is thrown if the center can not be calculate.
      */
-    default public Point3d getUnitBoundingBoxCenterLocalPoint3d(final UnitConfig unitConfig) throws NotAvailableException {
+    default public Point3d getUnitBoundingBoxCenterPoint3d(final UnitConfig unitConfig) throws NotAvailableException {
         final AxisAlignedBoundingBox3DFloatType.AxisAlignedBoundingBox3DFloat bb = getUnitShape(unitConfig).getBoundingBox();
         final TranslationType.Translation lfc = bb.getLeftFrontBottom();
 
@@ -774,7 +772,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
     default public Point3d getUnitBoundingBoxCenterGlobalPoint3d(final UnitConfig unitConfig) throws NotAvailableException {
         try {
             final Transform3D transformation = getUnitToRootTransform3D(unitConfig);
-            final Point3d center = getUnitBoundingBoxCenterLocalPoint3d(unitConfig);
+            final Point3d center = getUnitBoundingBoxCenterPoint3d(unitConfig);
             transformation.transform(center);
             return center;
         } catch (NotAvailableException ex) {
