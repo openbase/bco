@@ -29,6 +29,7 @@ import java.util.concurrent.TimeoutException;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -38,8 +39,10 @@ import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
+import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.PowerStateType;
 import rst.domotic.state.PresenceStateType;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationDataType;
 import rst.domotic.unit.location.LocationDataType.LocationData;
 
@@ -60,7 +63,7 @@ public class StandbyAgent extends AbstractAgentController {
     private final SyncObject standbySync = new SyncObject("StandbySync");
     private boolean standby;
     private final Observer<LocationData> locationDataObserver;
-
+    
     private Snapshot snapshot;
 
     public StandbyAgent() throws InstantiationException, CouldNotPerformException, InterruptedException {
@@ -139,16 +142,38 @@ public class StandbyAgent extends AbstractAgentController {
                     logger.debug("Create snapshot of " + locationRemote.getLabel() + " state.");
                     snapshot = locationRemote.recordSnapshot().get(60, TimeUnit.SECONDS);
 
-                    // filter OFF values
+                    // filter out particular units and services 
                     List<ServiceStateDescription> serviceStateDescriptionList = new ArrayList<>();
                     for (ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
-                        // filter devices which are switched OFF
+                        // filter neutral power states
                         if (serviceStateDescription.getServiceAttribute().toLowerCase().contains("off")) {
                             logger.debug("ignore " + serviceStateDescription.getUnitId() + " because unit is off.");
                             continue;
                         }
+
+                        // filter neutral brightness states
                         if (serviceStateDescription.getServiceAttribute().toLowerCase().contains("brightness: 0.0")) {
                             logger.debug("ignore " + serviceStateDescription.getUnitId() + " because brightness is 0.");
+                            continue;
+                        }
+
+                        // filter base units
+                        if (UnitConfigProcessor.isBaseUnit(serviceStateDescription.getUnitType())) {
+                            logger.debug("ignore " + serviceStateDescription.getUnitId() + " because is a base unit.");
+                            continue;
+                        }
+
+                        // filter rollershutter
+                        if (serviceStateDescription.getUnitType().equals(UnitType.ROLLER_SHUTTER)) {
+                            logger.debug("ignore " + serviceStateDescription.getUnitId() + " because reconstructing roller shutter states are to dangerus.");
+                            continue;
+                        }
+
+                        // let only Power + Brightness + Color States pass because these are the ones which are manipulated. 
+                        if (!serviceStateDescription.getServiceType().equals(ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE)
+                                && !serviceStateDescription.getServiceType().equals(ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE)
+                                && !serviceStateDescription.getServiceType().equals(ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE)) {
+                            logger.debug("ignore " + serviceStateDescription.getUnitId() + " because this type is not supported by " + this);
                             continue;
                         }
 
