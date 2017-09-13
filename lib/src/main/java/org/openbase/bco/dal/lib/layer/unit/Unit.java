@@ -304,10 +304,10 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * @return transform relative to root location
      * @throws NotAvailableException is thrown if the transformation is not available.
      * @throws InterruptedException is thrown if the thread was externally interrupted.
-     * @deprecated please use {@code getUnitToRootTransform3D()} instead.
+     * @deprecated please use {@code getRootToUnitTransform3D()} instead.
      */
     default public Transform3D getTransform3D() throws NotAvailableException, InterruptedException {
-        return getUnitToRootTransform3D();
+        return getRootToUnitTransform3D();
     }
 
     /**
@@ -318,11 +318,11 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * @return transform relative to root location
      * @throws NotAvailableException is thrown if the transformation is not available.
      * @throws InterruptedException is thrown if the thread was externally interrupted.
-     * @deprecated please use {@code getRootToUnitTransform3D()} instead.
+     * @deprecated please use {@code getUnitToRootTransform3D()} instead.
      */
     @Deprecated
     default public Transform3D getTransform3DInverse() throws NotAvailableException, InterruptedException {
-        return getRootToUnitTransform3D();
+        return getUnitToRootTransform3D();
     }
 
     /**
@@ -394,6 +394,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      *
      * @return center coordinates of the unit's BoundingBox relative to root location
      * @throws NotAvailableException is thrown if the center can not be calculate.
+     * @throws java.lang.InterruptedException
      * @deprecated please use {@code getUnitBoundingBoxCenterGlobalPoint3d()} instead.
      */
     @Deprecated
@@ -569,6 +570,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Do not use this method! Use Registries.getLocationRegistry() instead!
      *
      * @return
+     * @throws org.openbase.jul.exception.NotAvailableException
      * @deprecated Do not use this method! Use Registries.getLocationRegistry() instead!
      */
     @Deprecated
