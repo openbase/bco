@@ -10,12 +10,12 @@ package org.openbase.bco.registry.unit.core.consistency.unitgroupconfig;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -27,6 +27,7 @@ import java.util.stream.Collectors;
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3d;
 import org.openbase.bco.registry.lib.util.LocationUtils;
+import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -45,6 +46,7 @@ import rst.geometry.PoseType.Pose;
 import rst.geometry.RotationType.Rotation;
 import rst.geometry.TranslationType.Translation;
 import rst.spatial.PlacementConfigType.PlacementConfig;
+import rst.spatial.ShapeType.Shape;
 
 /**
  * This consinstency handler creates a bounding box around the bounding boxes of
@@ -96,11 +98,11 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
         final UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
 
         final String rootFrameId;
-        final Transform3D parentTransformation;
+        final Transform3D locationTransformation;
         try {
             rootFrameId = getRootFrameId(locationUnitConfigRegistry);
-            final UnitConfig parentConfig = locationUnitConfigRegistry.get(unitConfig.getPlacementConfig().getLocationId()).getMessage();
-            parentTransformation = getRootToUnitTransform3D(rootFrameId, parentConfig);
+            final UnitConfig locationConfig = locationUnitConfigRegistry.get(unitConfig.getPlacementConfig().getLocationId()).getMessage();
+            locationTransformation = getRootToUnitTransform3D(rootFrameId, locationConfig);
         } catch (NotAvailableException ex) {
             throw new CouldNotPerformException("Could not get root to unit transformation.", ex);
         }
@@ -114,23 +116,31 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
                     memberConf = reg.get(memberId).getMessage();
                     break;
                 } catch (CouldNotPerformException ex) {
+                    //Handled below if memberConf == null!
+                    continue;
                 }
             }
-            if (memberConf != null && memberConf.hasPlacementConfig() && memberConf.getPlacementConfig().hasPosition()) {
+            if (memberConf == null) {
+                throw new CouldNotPerformException("Group member not found in registries.");
+            }
+            if (memberConf.hasPlacementConfig() && memberConf.getPlacementConfig().hasPosition()) {
                 try {
                     List<Point3d> pointsToCheck = getPointsToCheck(rootFrameId, memberConf);
                     minPosition = pointsToCheck.stream().reduce(minPosition, (result, element) -> getMin(result, element));
                     maxPosition = pointsToCheck.stream().reduce(maxPosition, (result, element) -> getMax(result, element));
                 } catch (NotAvailableException ex) {
                     throw new CouldNotPerformException("Could not get Transformation for member with position.", ex);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    throw new CouldNotPerformException("Shutdown in progress.");
                 }
             }
         }
         if (minPosition.x == Double.POSITIVE_INFINITY) {
             return;
         }
-        parentTransformation.transform(minPosition);
-        parentTransformation.transform(maxPosition);
+        locationTransformation.transform(minPosition);
+        locationTransformation.transform(maxPosition);
 
         // Create minimum and dimensions in the parents coordinate system
         Point3d newMin = getMin(minPosition, maxPosition);
@@ -209,27 +219,43 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
      * @return Corner points of the member's bounding box in root coordinates.
      * @throws NotAvailableException is thrown if the points are not available
      * due to a missing unit transformation.
+     * @throws InterruptedException is thrown in case of an external
+     * interruption.
      */
-    private static List<Point3d> getPointsToCheck(final String rootFrameId, final UnitConfigOrBuilder unitConfig) throws NotAvailableException {
-        final List<Point3d> pointsToCheck = new ArrayList<>();
-        final Transform3D unitTransformation;
+    private List<Point3d> getPointsToCheck(final String rootFrameId, final UnitConfigOrBuilder unitConfig) throws NotAvailableException, InterruptedException {
         try {
-            unitTransformation = getUnitToRootTransform3D(rootFrameId, unitConfig);
-        } catch (NotAvailableException ex) {
-            throw new NotAvailableException("Points to check", ex);
-        }
-        if (unitConfig.hasPlacementConfig() && unitConfig.getPlacementConfig().hasShape() && unitConfig.getPlacementConfig().getShape().hasBoundingBox()) {
-            AxisAlignedBoundingBox3DFloat boundingBox = unitConfig.getPlacementConfig().getShape().getBoundingBox();
-            return getCorners(boundingBox).stream().map(corner -> {
-                unitTransformation.transform(corner);
-                return corner;
-            }).collect(Collectors.toList());
-        } else {
+            final List<Point3d> pointsToCheck = new ArrayList<>();
+            final Transform3D unitTransformation;
+
+            try {
+                unitTransformation = getUnitToRootTransform3D(rootFrameId, unitConfig);
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not get the unit transformation for unit " + unitConfig.getId(), ex);
+            }
+
+            try {
+                CachedLocationRegistryRemote.getRegistry().waitForData();
+                Shape unitShape = CachedLocationRegistryRemote.getRegistry().getUnitShape((UnitConfig) unitConfig);
+                if (unitShape.hasBoundingBox()) {
+                    AxisAlignedBoundingBox3DFloat boundingBox = unitShape.getBoundingBox();
+                    return getCorners(boundingBox).stream().map(corner -> {
+                        unitTransformation.transform(corner);
+                        return corner;
+                    }).collect(Collectors.toList());
+                }
+            } catch (CouldNotPerformException ex) {
+                if (!(ex instanceof NotAvailableException)) {
+                    throw new CouldNotPerformException("CachedLocationRegistryRemote not available.", ex);
+                }
+                // The other case should lead to the following code aswell.
+            }
             Point3d position = new Point3d(0, 0, 0);
             unitTransformation.transform(position);
             pointsToCheck.add(position);
+            return pointsToCheck;
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Points to check", ex);
         }
-        return pointsToCheck;
     }
 
     /**
@@ -269,7 +295,7 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
      * @return the frame id of the root location.
      * @throws NotAvailableException is thrown if the frame id is not available.
      */
-    private String getRootFrameId(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry) throws NotAvailableException {
+    private static String getRootFrameId(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry) throws NotAvailableException {
         String rootLocationId;
         try {
             // resolvement via the location registry.
