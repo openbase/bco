@@ -99,7 +99,7 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
 
             Assert.assertEquals("Positions are not synchronized!", lightUnitConfig.getPlacementConfig().getPosition(), hostUnitConfig.getPlacementConfig().getPosition());
             Assert.assertNotEquals("TransformationFrameId are not unique!", lightUnitConfig.getPlacementConfig().getTransformationFrameId(), hostUnitConfig.getPlacementConfig().getTransformationFrameId());
-            Assert.assertEquals("Transformations are not synchronized!", Units.getUnitTransformation(lightUnitConfig).get(5, TimeUnit.SECONDS).getTransform(), Units.getUnitTransformation(hostUnitConfig).get(5, TimeUnit.SECONDS).getTransform());
+            Assert.assertEquals("Transformations are not synchronized!", Units.getRootToUnitTransformationFuture(lightUnitConfig).get(5, TimeUnit.SECONDS).getTransform(), Units.getRootToUnitTransformationFuture(hostUnitConfig).get(5, TimeUnit.SECONDS).getTransform());
 
             // verify that all other unit transformations are available
             verifyTransformations();
@@ -120,10 +120,10 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
                 // request new transformation...
                 try {
                     // System.out.println("waiting for transformation of " + unitConfig.getLabel());
-                    Units.getUnitTransformation(unitConfig).get(5000, TimeUnit.MILLISECONDS);
+                    Units.getRootToUnitTransformationFuture(unitConfig).get(5000, TimeUnit.MILLISECONDS);
                 } catch (TimeoutException ex) {
                     LOGGER.error("transformation of " + unitConfig.getLabel() + " NOT AVAILABLE!");
-                    Units.getUnitTransformation(unitConfig).get();
+                    Units.getRootToUnitTransformationFuture(unitConfig).get();
                 }
 
                 // System.out.println("transformation of" + unitConfig.getLabel() + " is available.");
@@ -155,10 +155,10 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
             // request new transformation...
             try {
                 // System.out.println("waiting for transformation of " + unitConfig.getLabel());
-                Units.getUnitTransformation(unitConfig).get(5000, TimeUnit.MILLISECONDS);
+                Units.getRootToUnitTransformationFuture(unitConfig).get(5000, TimeUnit.MILLISECONDS);
             } catch (TimeoutException ex) {
                 LOGGER.error("transformation of " + unitConfig.getLabel() + " NOT AVAILABLE!");
-                Units.getUnitTransformation(unitConfig).get();
+                Units.getRootToUnitTransformationFuture(unitConfig).get();
             }
         }
     }
