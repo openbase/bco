@@ -29,6 +29,7 @@ import static junit.framework.TestCase.assertEquals;
 import static junit.framework.TestCase.assertTrue;
 import static junit.framework.TestCase.fail;
 import org.junit.Test;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
@@ -187,7 +188,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         }
     }
 
-    @Test(timeout = 5000)
+    @Test//(timeout = 5000)
     public void testDeviceClassDeviceConfigUnitConsistencyHandler() throws Exception {
         System.out.println("testDeviceClassDeviceConfigUnitConsistencyHandler");
 
@@ -210,12 +211,12 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         unitTemplate = unitRegistry.getUnitTemplateByType(UnitType.HANDLE).toBuilder().addServiceDescription(ServiceDescription.newBuilder().setType(ServiceType.BATTERY_STATE_SERVICE)).addServiceDescription(ServiceDescription.newBuilder().setType(ServiceType.HANDLE_STATE_SERVICE)).build();
         unitRegistry.updateUnitTemplate(unitTemplate).get();
 
-        unitRegistry.getDeviceRegistryRemote().addDataObserver(notifyChangeObserver);
+        Registries.getDeviceRegistry().addDataObserver(notifyChangeObserver);
         BindingConfig bindingConfig = BindingConfig.newBuilder().setBindingId("OPENHAB").build();
         DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("unittemplateUnitConfigTest", "0149283794283", "company").toBuilder().addUnitTemplateConfig(unitTemplateConfig1).addUnitTemplateConfig(unitTemplateConfig2).setBindingConfig(bindingConfig).build()).get();
         assertTrue(clazz.getUnitTemplateConfigCount() == 2);
         waitForDeviceClass(clazz);
-        unitRegistry.getDeviceRegistryRemote().removeDataObserver(notifyChangeObserver);
+        Registries.getDeviceRegistry().removeDataObserver(notifyChangeObserver);
 
         UnitConfig config = deviceRegistry.registerDeviceConfig(getDeviceUnitConfig("DeviceConfigWhereUnitsShallBeSetViaConsistency", "randomSerial14972", clazz)).get();
         assertEquals("Units in device config were not set according to the device classes unit templates", clazz.getUnitTemplateConfigCount(), config.getDeviceConfig().getUnitIdCount());
