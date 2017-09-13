@@ -154,9 +154,9 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
                         @Override
                         public void run() {
                             try {
-                                statusPanel.setStatus("Waiting for " + StringProcessor.transformUpperCaseToCamelCase(getRemoteService().getType().name()) + " connection...", StatusType.INFO, true);
+                                statusPanel.setStatus("Waiting for " + StringProcessor.transformUpperCaseToCamelCase(getRemoteService().getUnitType().name()) + " connection...", StatusType.INFO, true);
                                 getRemoteService().waitForConnectionState(ConnectionState.CONNECTED);
-                                statusPanel.setStatus("Connection to " + StringProcessor.transformUpperCaseToCamelCase(getRemoteService().getType().name()) + " established.", StatusType.INFO, 3);
+                                statusPanel.setStatus("Connection to " + StringProcessor.transformUpperCaseToCamelCase(getRemoteService().getUnitType().name()) + " established.", StatusType.INFO, 3);
                             } catch (CouldNotPerformException | InterruptedException ex) {
                                 statusPanel.setError(ex);
                             }

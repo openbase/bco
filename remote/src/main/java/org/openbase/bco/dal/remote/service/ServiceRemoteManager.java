@@ -287,7 +287,7 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
                     Collection<UnitRemote> internalUnits = abstractServiceRemote.getInternalUnits();
                     for (final UnitRemote unitRemote : internalUnits) {
                         // just add units with the according type
-                        if (unitRemote.getType() == unitType) {
+                        if (unitRemote.getUnitType() == unitType) {
                             unitRemoteSet.add(unitRemote);
                         }
                     }
