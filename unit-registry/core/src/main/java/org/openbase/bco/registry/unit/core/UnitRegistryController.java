@@ -1148,7 +1148,13 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     protected void registerRemoteRegistries() throws CouldNotPerformException {
     }
-
+    
+    /**
+     * 
+     * @return
+     * @deprecated get your own instance via the registry pool.
+     */
+    @Deprecated
     public DeviceRegistryRemote getDeviceRegistryRemote() {
         return deviceRegistryRemote;
     }
