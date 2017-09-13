@@ -34,7 +34,7 @@
   group: org.openbase.bco
   
 - label: BCO PSC
-  id: bco.pointing-smart-control
+  id: bco.psc
   artifact: psc
   group: org.openbase.bco
 
