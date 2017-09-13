@@ -36,10 +36,10 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rct.GlobalTransformReceiver;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.annotations.RPCMethod;
-import rct.Transform;
 import org.openbase.jul.pattern.provider.DataProvider;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.FutureProcessor;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import rct.Transform;
 import rct.TransformerException;
 import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
@@ -53,7 +53,7 @@ import rst.geometry.AxisAlignedBoundingBox3DFloatType;
 import rst.geometry.RotationType;
 import rst.geometry.TranslationType;
 import rst.math.Vec3DDoubleType.Vec3DDouble;
-import rst.spatial.ShapeType;
+import rst.spatial.ShapeType.Shape;
 import rst.tracking.PointingRay3DFloatCollectionType.PointingRay3DFloatCollection;
 import rst.tracking.PointingRay3DFloatType.PointingRay3DFloat;
 
@@ -790,7 +790,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * @return the shape representing the unit.
      * @throws NotAvailableException is thrown if the unit shape is not available or the resolution has been failed.
      */
-    default public ShapeType.Shape getUnitShape(final String unitId) throws NotAvailableException {
+    default public Shape getUnitShape(final String unitId) throws NotAvailableException {
         try {
             try {
                 return getUnitShape(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(unitId));
@@ -814,12 +814,16 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * @return the shape representing the unit.
      * @throws NotAvailableException is thrown if the unit shape is not available or the resolution has been failed.
      */
-    default public ShapeType.Shape getUnitShape(final UnitConfig unitConfig) throws NotAvailableException {
+    default public Shape getUnitShape(final UnitConfig unitConfig) throws NotAvailableException {
         try {
 
             // resolve shape via unit config
             if (unitConfig.hasPlacementConfig() && unitConfig.getPlacementConfig().hasShape()) {
-                return unitConfig.getPlacementConfig().getShape();
+                Shape shape = unitConfig.getPlacementConfig().getShape();
+                if (shape.hasBoundingBox() || shape.getCeilingCount() != 0 || shape.getFloorCount() != 0 || shape.getFloorCeilingEdgeCount() != 0) {
+                    // Only if shape is not empty!
+                    return unitConfig.getPlacementConfig().getShape();
+                }
             }
 
             // resolve shape via unit host
@@ -839,7 +843,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
             }
 
             // inform that the resolution is not possible.
-            throw new CouldNotPerformException("Could not be resolved shape by any source.");
+            throw new CouldNotPerformException("Shape could not be resolved by any source.");
             
         } catch (final CouldNotPerformException ex) {
             throw new NotAvailableException("Shape", "of Unit [" + unitConfig.getLabel() + "]", ex);
