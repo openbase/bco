@@ -185,7 +185,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
 
     @Override
     public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
-        logger.debug("Set " + getType().name() + "[" + getLabel() + "] to PowerState [" + state + "]");
+        logger.debug("Set " + getUnitType().name() + "[" + getLabel() + "] to PowerState [" + state + "]");
         try {
             verifyOperationServiceStateValue(state.getValue());
         } catch (VerificationFailedException ex) {
@@ -253,7 +253,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
 
     @Override
     public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
-        logger.debug("Set " + getType().name() + "[" + getLabel() + "] to BrightnessState[" + brightnessState + "]");
+        logger.debug("Set " + getUnitType().name() + "[" + getLabel() + "] to BrightnessState[" + brightnessState + "]");
         return brightnessService.setBrightnessState(brightnessState);
     }
 

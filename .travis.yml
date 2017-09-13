@@ -51,6 +51,6 @@ after_deploy:
          sh trigger-travis.sh openbase bco.eveson $TRAVIS_ACCESS_TOKEN
          sh trigger-travis.sh openbase bco.ontology.lib $TRAVIS_ACCESS_TOKEN
          sh trigger-travis.sh openbase bco.bcomfy $TRAVIS_ACCESS_TOKEN
-         sh trigger-travis.sh openbase bco.pointing-smart-control $TRAVIS_ACCESS_TOKEN
+         sh trigger-travis.sh openbase bco.psc $TRAVIS_ACCESS_TOKEN
        fi
 

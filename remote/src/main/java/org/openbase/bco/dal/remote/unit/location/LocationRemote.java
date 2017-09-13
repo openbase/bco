@@ -319,10 +319,10 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
                         continue;
                     }
 
-                    if (!unitRemoteMap.containsKey(unitRemote.getType())) {
-                        unitRemoteMap.put(unitRemote.getType(), new ArrayList<>());
+                    if (!unitRemoteMap.containsKey(unitRemote.getUnitType())) {
+                        unitRemoteMap.put(unitRemote.getUnitType(), new ArrayList<>());
                     }
-                    unitRemoteMap.get(unitRemote.getType()).add(unitRemote);
+                    unitRemoteMap.get(unitRemote.getUnitType()).add(unitRemote);
                 } catch (CouldNotPerformException ex) {
                     exceptionStack = MultiException.push(this, ex, exceptionStack);
                 }
@@ -404,12 +404,12 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         // todo: move this method to the unit interface or at least to the MultiUnitServiceFusion interface shared by the location and group units.
         // return the unfiltered unit template if filter is not active.
         if (!onlyAvailableServices) {
-            return super.getTemplate();
+            return super.getUnitTemplate();
         }
-        final UnitTemplate.Builder unitTemplateBuilder = super.getTemplate().toBuilder();
+        final UnitTemplate.Builder unitTemplateBuilder = super.getUnitTemplate().toBuilder();
 
         unitTemplateBuilder.clearServiceDescription();
-        for (final ServiceDescription serviceDescription : super.getTemplate().getServiceDescriptionList()) {
+        for (final ServiceDescription serviceDescription : super.getUnitTemplate().getServiceDescriptionList()) {
             if (serviceRemoteManager.isServiceAvailable(serviceDescription.getType())) {
                 unitTemplateBuilder.addServiceDescription(serviceDescription);
             }

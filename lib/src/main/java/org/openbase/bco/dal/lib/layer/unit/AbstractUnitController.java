@@ -196,7 +196,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         super.notifyDataUpdate(data);
 
         final Set<ServiceType> serviceTypeSet = new HashSet<>();
-        for (final ServiceDescription serviceDescription : getTemplate().getServiceDescriptionList()) {
+        for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
 
             // check if already handled
             if (!serviceTypeSet.contains(serviceDescription.getType())) {
@@ -319,12 +319,12 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     @Override
-    public UnitTemplate.UnitType getType() throws NotAvailableException {
+    public UnitTemplate.UnitType getUnitType() throws NotAvailableException {
         return getConfig().getType();
     }
 
     @Override
-    public UnitTemplate getTemplate() throws NotAvailableException {
+    public UnitTemplate getUnitTemplate() throws NotAvailableException {
         if (template == null) {
             throw new NotAvailableException("UnitTemplate");
         }
@@ -346,7 +346,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
         // collect and register service interface methods via unit templates
         HashMap<String, ServiceDescription> serviceInterfaceMap = new HashMap<>();
-        for (ServiceDescription serviceDescription : getTemplate().getServiceDescriptionList()) {
+        for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
             serviceInterfaceMap.put(StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getType().name())
                     + StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getPattern().name()), serviceDescription);
         }
