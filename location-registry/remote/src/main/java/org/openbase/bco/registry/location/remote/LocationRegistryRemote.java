@@ -208,7 +208,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
             PolygonsSet polygonsSet = new PolygonsSet(0.1, vertices.toArray(new Vector2D[]{}));
 
             // Transform the given coordinate
-            Transform3D unitTransform = getUnitTransformation(unitConfig).get().getTransform();
+            Transform3D unitTransform = getRootToUnitTransformationFuture(unitConfig).get().getTransform();
             Point3d transformedCoordinate = new Point3d(coordinate.getX(), coordinate.getY(), coordinate.getZ());
             unitTransform.transform(transformedCoordinate);
 
