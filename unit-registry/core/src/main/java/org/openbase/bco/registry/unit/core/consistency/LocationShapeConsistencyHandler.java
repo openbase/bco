@@ -33,6 +33,7 @@ import org.openbase.jul.extension.rct.GlobalTransformReceiver;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import rct.TransformerException;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.spatial.FloorCeilingEdgeIndicesType.FloorCeilingEdgeIndices;
@@ -108,9 +109,9 @@ public class LocationShapeConsistencyHandler extends AbstractProtoBufRegistryCon
                     rootUnitConfig.getPlacementConfig().getTransformationFrameId(),
                     System.currentTimeMillis()).getTransform();
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("could not get requestTransform", ex), logger);
+            ExceptionPrinter.printHistory(new CouldNotPerformException("could not get root config", ex), logger);
             return;
-        } catch (Exception ex) {
+        } catch (TransformerException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not get unitTransformation for unit " + unitConfig.getLabel() + " with id: " + unitConfig.getId(), ex), logger, LogLevel.WARN);
             return;
         }

@@ -110,6 +110,7 @@ import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
+import rst.geometry.AxisAlignedBoundingBox3DFloatType.AxisAlignedBoundingBox3DFloat;
 import rst.geometry.PoseType.Pose;
 import rst.geometry.RotationType.Rotation;
 import rst.geometry.TranslationType.Translation;
@@ -152,6 +153,13 @@ public class MockRegistry {
     public static final String ILLUMINATION_LIGHT_SAVING_AGENT_LABEL = "IlluminationLightSaving";
     public static final String POWER_STATE_SYNCHRONISER_AGENT_LABEL = "PowerStateSynchroniser";
     public static final String PRESENCE_LIGHT_AGENT_LABEL = "PresenceLight";
+    
+    public static final AxisAlignedBoundingBox3DFloat DEFAULT_BOUNDING_BOX =  AxisAlignedBoundingBox3DFloat.newBuilder()
+            .setHeight(10)
+            .setWidth(20)
+            .setDepth(30)
+            .setLeftFrontBottom(Translation.newBuilder().setX(0).setY(0).setZ(0).build())
+            .build();
 
     private static DeviceRegistryLauncher deviceRegistryLauncher;
     private static LocationRegistryLauncher locationRegistryLauncher;
@@ -841,7 +849,9 @@ public class MockRegistry {
         List<UnitTemplate.UnitType> unitTypeList = new ArrayList<>();
         unitTypeList.addAll(Arrays.asList(types));
         return DeviceClass.newBuilder().setLabel(label).setProductNumber(productNumber).setCompany(company)
-                .setBindingConfig(getBindingConfig()).addAllUnitTemplateConfig(getUnitTemplateConfigs(unitTypeList)).build();
+                .setBindingConfig(getBindingConfig()).addAllUnitTemplateConfig(getUnitTemplateConfigs(unitTypeList))
+                .setShape(Shape.newBuilder().setBoundingBox(DEFAULT_BOUNDING_BOX))
+                .build();
     }
 
     public static BindingConfig getBindingConfig() {
