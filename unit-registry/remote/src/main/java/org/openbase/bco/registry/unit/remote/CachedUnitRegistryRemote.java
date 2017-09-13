@@ -73,9 +73,11 @@ public class CachedUnitRegistryRemote {
         }
     }
 
+    // release todo: remove InterruptedException for all getRegistry() methods. 
     /**
      *
-     * @return @throws InterruptedException
+     * @return 
+     * @throws InterruptedException
      * @throws NotAvailableException
      */
     public synchronized static UnitRegistryRemote getRegistry() throws InterruptedException, NotAvailableException {
