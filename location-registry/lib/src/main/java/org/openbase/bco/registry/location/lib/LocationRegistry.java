@@ -793,14 +793,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
     default public Shape getUnitShape(final String unitId) throws NotAvailableException {
         try {
             try {
-                // Workaround to also check the device registry (Maybe needs to be extended more):
-                try {
-                    return getUnitShape(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(unitId));
-                } catch (NotAvailableException ex) {
-                    throw ex;
-                } catch (CouldNotPerformException ex) {
-                    return getUnitShape(CachedDeviceRegistryRemote.getRegistry().getUnitConfigById(unitId));
-                }
+               return getUnitShape(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(unitId));
             } catch (InterruptedException ex) {
                 // because registries should not throw interrupted exceptions in a future release this exception is already transformed into a NotAvailableException.
                 Thread.currentThread().interrupt();
