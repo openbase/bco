@@ -140,4 +140,9 @@ public class AuthenticationRemote implements AuthenticationService, Manageable<V
     public Future<Boolean> isAdmin(String userId) throws NotAvailableException, CouldNotPerformException {
         return RPCHelper.callRemoteServerMethod(userId, remoteServer, Boolean.class);
     }
+
+    @Override
+    public Future<Boolean> hasUser(String userId) throws CouldNotPerformException {
+        return RPCHelper.callRemoteServerMethod(userId, remoteServer, Boolean.class);
+    }
 }
