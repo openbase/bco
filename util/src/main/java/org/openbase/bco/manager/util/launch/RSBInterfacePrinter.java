@@ -26,7 +26,6 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
@@ -108,7 +107,7 @@ public class RSBInterfacePrinter {
     /**
      * This method returns the registry data class resolved by the given registry name.
      *
-     * @param unitType the unit type used to extract the unit class.
+     * @param registryDataClassSimpleName the name is used to extract the registry data class.
      * @return the unit data class.
      * @throws org.openbase.jul.exception.NotAvailableException is thrown if the data class name could not be detected.
      */
@@ -287,12 +286,7 @@ public class RSBInterfacePrinter {
     }
 
     public static List<Method> sortMethodList(final List<Method> methodList) {
-        Collections.sort(methodList, new Comparator<Method>() {
-            @Override
-            public int compare(Method o1, Method o2) {
-                return o1.getName().compareTo(o2.getName());
-            }
-        });
+        Collections.sort(methodList, (Method o1, Method o2) -> o1.getName().compareTo(o2.getName()));
         return methodList;
     }
 
