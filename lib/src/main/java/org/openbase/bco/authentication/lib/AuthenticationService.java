@@ -188,4 +188,7 @@ public interface AuthenticationService {
      */
     @RPCMethod
     public Future<Boolean> isAdmin(String userId) throws NotAvailableException, CouldNotPerformException;
+    
+    @RPCMethod
+    public Future<Boolean> hasUser(String userId) throws CouldNotPerformException;
 }

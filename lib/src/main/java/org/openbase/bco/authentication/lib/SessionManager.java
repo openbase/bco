@@ -585,6 +585,17 @@ public class SessionManager {
         this.store.setCredentials(clientId, keyPair.getPrivate().getEncoded());
     }
 
+    public synchronized boolean hasCredentialsForId(String id) {
+        if (store == null) {
+            try {
+                this.initStore();
+            } catch (InitializationException ex) {
+                return false;
+            }
+        }
+        return this.store.hasEntry(id);
+    }
+
     /**
      * Registers a user.
      *
@@ -799,11 +810,11 @@ public class SessionManager {
     public String getUserId() {
         return userId;
     }
-    
+
     public void addLoginObserver(Observer<String> observer) {
         loginObervable.addObserver(observer);
     }
-    
+
     public void removeLoginObserver(Observer<String> observer) {
         loginObervable.removeObserver(observer);
     }
