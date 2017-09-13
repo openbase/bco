@@ -793,7 +793,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
     default public Shape getUnitShape(final String unitId) throws NotAvailableException {
         try {
             try {
-               return getUnitShape(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(unitId));
+                return getUnitShape(CachedUnitRegistryRemote.getRegistry().getUnitConfigById(unitId));
             } catch (InterruptedException ex) {
                 // because registries should not throw interrupted exceptions in a future release this exception is already transformed into a NotAvailableException.
                 Thread.currentThread().interrupt();
