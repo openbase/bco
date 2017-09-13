@@ -27,7 +27,6 @@ import java.util.concurrent.ExecutionException;
 import org.openbase.bco.dal.remote.unit.TemperatureControllerRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.bco.manager.agent.core.ActionRescheduleHelper;
 import org.openbase.bco.manager.agent.core.TriggerJUL.GenericTrigger;
 import org.openbase.bco.manager.agent.core.TriggerJUL.TriggerPool;
@@ -37,7 +36,6 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import rst.communicationpatterns.ResourceAllocationType;
 import rst.domotic.action.ActionAuthorityType;
 import rst.domotic.action.ActionDescriptionType;
@@ -55,13 +53,11 @@ import rst.domotic.unit.location.LocationDataType;
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class TemperatureControllerAgent extends AbstractAgentController {
+public class TemperatureControllerAgent extends AbstractResourceAllocationAgent {
 
     private LocationRemote locationRemote;
     private final Map<TemperatureControllerRemote, TemperatureState> previousTemperatureState;
     private final PresenceState.State triggerState = PresenceState.State.ABSENT;
-    private final Observer<ActivationState> triggerHolderObserver;
-    private final ActionRescheduleHelper actionRescheduleHelper;
 
     public TemperatureControllerAgent() throws InstantiationException {
         super(TemperatureControllerAgent.class);
@@ -97,30 +93,9 @@ public class TemperatureControllerAgent extends AbstractAgentController {
             } catch (CouldNotPerformException ex) {
                 throw new InitializationException("Could not add agent to agentpool", ex);
             }
-
-            agentTriggerHolder.registerObserver(triggerHolderObserver);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not initialize Agent.", ex);
         }
-    }
-
-    @Override
-    protected void execute() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activating [" + getConfig().getLabel() + "]");
-        agentTriggerHolder.activate();
-    }
-
-    @Override
-    protected void stop() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getConfig().getLabel() + "]");
-        agentTriggerHolder.deactivate();
-    }
-
-    @Override
-    public void shutdown() {
-        agentTriggerHolder.deregisterObserver(triggerHolderObserver);
-        agentTriggerHolder.shutdown();
-        super.shutdown();
     }
 
     private void regulateTemperature() {

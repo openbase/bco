@@ -28,7 +28,6 @@ import java.util.logging.Level;
 import java.util.logging.Logger;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.bco.manager.agent.core.ActionRescheduleHelper;
 import org.openbase.bco.manager.agent.core.TriggerJUL.GenericTrigger;
 import org.openbase.bco.manager.agent.core.TriggerJUL.TriggerPool;
@@ -37,7 +36,6 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.communicationpatterns.ResourceAllocationType;
 import rst.domotic.action.ActionAuthorityType;
@@ -45,7 +43,6 @@ import rst.domotic.action.ActionDescriptionType;
 import rst.domotic.action.MultiResourceAllocationStrategyType;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.ActivationStateType;
-import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.PresenceStateType;
 import rst.domotic.state.PresenceStateType.PresenceState;
@@ -57,13 +54,11 @@ import rst.domotic.unit.location.LocationDataType;
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class RandomLightPatternAgent extends AbstractAgentController {
+public class RandomLightPatternAgent extends AbstractResourceAllocationAgent {
 
     private LocationRemote locationRemote;
     private Thread thread;
     private final PresenceState.State triggerState = PresenceState.State.ABSENT;
-    private final Observer<ActivationState> triggerHolderObserver;
-    private final ActionRescheduleHelper actionRescheduleHelper;
 
     public RandomLightPatternAgent() throws InstantiationException {
         super(RandomLightPatternAgent.class);
@@ -98,29 +93,13 @@ public class RandomLightPatternAgent extends AbstractAgentController {
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not add agent to agentpool", ex);
         }
-
-        agentTriggerHolder.registerObserver(triggerHolderObserver);
-    }
-
-    @Override
-    protected void execute() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activating [" + getConfig().getLabel() + "]");
-        agentTriggerHolder.activate();
     }
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getConfig().getLabel() + "]");
         stopRandomLightPattern();
-        agentTriggerHolder.deactivate();
-    }
 
-    @Override
-    public void shutdown() {
-        stopRandomLightPattern();
-        agentTriggerHolder.deregisterObserver(triggerHolderObserver);
-        agentTriggerHolder.shutdown();
-        super.shutdown();
+        super.stop();
     }
 
     private void makeRandomLightPattern() {

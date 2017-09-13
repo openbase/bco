@@ -26,7 +26,6 @@ import java.util.concurrent.ExecutionException;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.bco.manager.agent.core.ActionRescheduleHelper;
 import org.openbase.bco.manager.agent.core.TriggerDAL.NeighborConnectionPresenceTrigger;
 import org.openbase.bco.manager.agent.core.TriggerJUL.GenericTrigger;
@@ -35,7 +34,6 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import rst.communicationpatterns.ResourceAllocationType;
 import rst.domotic.action.ActionAuthorityType;
 import rst.domotic.action.ActionDescriptionType;
@@ -54,12 +52,10 @@ import rst.domotic.unit.location.LocationDataType.LocationData;
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class NearFieldLightAgent extends AbstractAgentController {
+public class NearFieldLightAgent extends AbstractResourceAllocationAgent {
 
     private LocationRemote locationRemote;
     private List<LocationRemote> neighborRemotes;
-    private final Observer<ActivationState> triggerHolderObserver;
-    private final ActionRescheduleHelper actionRescheduleHelper;
 
     public NearFieldLightAgent() throws InstantiationException {
         super(NearFieldLightAgent.class);
@@ -100,29 +96,6 @@ public class NearFieldLightAgent extends AbstractAgentController {
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not initialize trigger", ex);
         }
-
-        agentTriggerHolder.registerObserver(triggerHolderObserver);
-    }
-
-    @Override
-    protected void execute() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activating [" + getConfig().getLabel() + "]");
-        agentTriggerHolder.activate();
-    }
-
-    @Override
-    protected void stop() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getConfig().getLabel() + "]");
-        actionRescheduleHelper.stopExecution();
-        agentTriggerHolder.deactivate();
-    }
-
-    @Override
-    public void shutdown() {
-        actionRescheduleHelper.stopExecution();
-        agentTriggerHolder.deregisterObserver(triggerHolderObserver);
-        agentTriggerHolder.shutdown();
-        super.shutdown();
     }
 
     private void dimmLights() {

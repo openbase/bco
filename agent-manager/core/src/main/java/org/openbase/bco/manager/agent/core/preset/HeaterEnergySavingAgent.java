@@ -28,7 +28,6 @@ import org.openbase.bco.dal.remote.unit.TemperatureControllerRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.bco.manager.agent.core.ActionRescheduleHelper;
 import org.openbase.bco.manager.agent.core.TriggerJUL.GenericTrigger;
 import org.openbase.bco.manager.agent.core.TriggerJUL.TriggerPool;
@@ -38,7 +37,6 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import rst.communicationpatterns.ResourceAllocationType;
 import rst.domotic.action.ActionAuthorityType;
 import rst.domotic.action.ActionDescriptionType;
@@ -57,13 +55,11 @@ import rst.domotic.unit.connection.ConnectionDataType.ConnectionData;
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class HeaterEnergySavingAgent extends AbstractAgentController {
+public class HeaterEnergySavingAgent extends AbstractResourceAllocationAgent {
 
     private LocationRemote locationRemote;
     private final Map<TemperatureControllerRemote, TemperatureState> previousTemperatureState;
-    private final Observer<ActivationState> triggerHolderObserver;
     private final WindowState.State triggerState = WindowState.State.OPEN;
-    private final ActionRescheduleHelper actionRescheduleHelper;
 
     public HeaterEnergySavingAgent() throws InstantiationException {
         super(HeaterEnergySavingAgent.class);
@@ -104,31 +100,9 @@ public class HeaterEnergySavingAgent extends AbstractAgentController {
                 }
             }
 
-            agentTriggerHolder.registerObserver(triggerHolderObserver);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not initialize Agent.", ex);
         }
-    }
-
-    @Override
-    protected void execute() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activating [" + getConfig().getLabel() + "]");
-        agentTriggerHolder.activate();
-    }
-
-    @Override
-    protected void stop() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getConfig().getLabel() + "]");
-        actionRescheduleHelper.stopExecution();
-        agentTriggerHolder.deactivate();
-    }
-
-    @Override
-    public void shutdown() {
-        actionRescheduleHelper.stopExecution();
-        agentTriggerHolder.deregisterObserver(triggerHolderObserver);
-        agentTriggerHolder.shutdown();
-        super.shutdown();
     }
 
     private void regulateHeater() {

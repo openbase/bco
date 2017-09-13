@@ -24,7 +24,6 @@ package org.openbase.bco.manager.agent.core.preset;
 import java.util.concurrent.ExecutionException;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.bco.manager.agent.core.ActionRescheduleHelper;
 import org.openbase.bco.manager.agent.core.TriggerDAL.IlluminanceDualBoundaryTrigger;
 import org.openbase.bco.manager.agent.core.TriggerJUL.TriggerPool;
@@ -35,7 +34,6 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import rst.communicationpatterns.ResourceAllocationType;
 import rst.domotic.action.ActionAuthorityType;
 import rst.domotic.action.ActionDescriptionType;
@@ -51,7 +49,7 @@ import rst.domotic.unit.location.LocationDataType;
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class IlluminationRollerShutterAgent extends AbstractAgentController {
+public class IlluminationRollerShutterAgent extends AbstractResourceAllocationAgent {
 
     public static final String MINIMUM_NEEDED_KEY = "MINIMUM_ILLUMINATION";
     public static final String MAXIMUM_WANTED_KEY = "MAXIMUM_ILLUMINATION";
@@ -59,8 +57,6 @@ public class IlluminationRollerShutterAgent extends AbstractAgentController {
     private static double MAXIMUM_WANTED_ILLUMINATION = 40000;
 
     private LocationRemote locationRemote;
-    private final Observer<ActivationState> triggerHolderObserver;
-    private final ActionRescheduleHelper actionRescheduleHelper;
 
     public IlluminationRollerShutterAgent() throws InstantiationException {
         super(IlluminationRollerShutterAgent.class);
@@ -122,29 +118,6 @@ public class IlluminationRollerShutterAgent extends AbstractAgentController {
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not add agent to agentpool", ex);
         }
-
-        agentTriggerHolder.registerObserver(triggerHolderObserver);
-    }
-
-    @Override
-    protected void execute() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activating [" + getConfig().getLabel() + "]");
-        agentTriggerHolder.activate();
-    }
-
-    @Override
-    protected void stop() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getConfig().getLabel() + "]");
-        actionRescheduleHelper.stopExecution();
-        agentTriggerHolder.deactivate();
-    }
-
-    @Override
-    public void shutdown() {
-        actionRescheduleHelper.stopExecution();
-        agentTriggerHolder.deregisterObserver(triggerHolderObserver);
-        agentTriggerHolder.shutdown();
-        super.shutdown();
     }
 
     private void regulateShutterLevelDown() {
