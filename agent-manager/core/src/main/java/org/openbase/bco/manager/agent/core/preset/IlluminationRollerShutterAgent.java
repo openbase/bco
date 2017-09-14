@@ -21,70 +21,58 @@ package org.openbase.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.manager.agent.core.AbstractAgentController;
+import org.openbase.bco.dal.remote.action.ActionRescheduler;
+import org.openbase.bco.dal.remote.trigger.preset.IlluminanceDualBoundaryTrigger;
+import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.communicationpatterns.ResourceAllocationType;
+import rst.domotic.action.ActionAuthorityType;
+import rst.domotic.action.ActionDescriptionType;
+import rst.domotic.action.MultiResourceAllocationStrategyType;
+import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.BlindStateType;
 import rst.domotic.unit.UnitConfigType;
+import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.location.LocationDataType;
 
 /**
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class IlluminationRollerShutterAgent extends AbstractAgentController {
+public class IlluminationRollerShutterAgent extends AbstractResourceAllocationAgent {
 
-    private static final int SLEEP_MILLI = 1000;
     public static final String MINIMUM_NEEDED_KEY = "MINIMUM_ILLUMINATION";
     public static final String MAXIMUM_WANTED_KEY = "MAXIMUM_ILLUMINATION";
     private static double MINIMUM_NEEDED_ILLUMINATION = 20000;
     private static double MAXIMUM_WANTED_ILLUMINATION = 40000;
 
     private LocationRemote locationRemote;
-    private Future<ActionFuture> setBlindStateFuture;
-    private final Observer<LocationDataType.LocationData> locationObserver;
-    private boolean regulatedDown = false;
-    private boolean regulatedUp = false;
 
     public IlluminationRollerShutterAgent() throws InstantiationException {
         super(IlluminationRollerShutterAgent.class);
 
-        locationObserver = (final Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) -> {
-            if (data.getIlluminanceState().getIlluminance() > MAXIMUM_WANTED_ILLUMINATION) {
-                if (regulatedUp) {
-                    if (setBlindStateFuture != null && !setBlindStateFuture.isDone()) {
-                        setBlindStateFuture.cancel(true);
-                    }
-                    regulatedUp = false;
-                }
-                if (!regulatedDown) {
+        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
+
+        triggerHolderObserver = (Observable<ActivationState> source, ActivationState data) -> {
+            if (data.getValue().equals(ActivationState.State.ACTIVE)) {
+                if (locationRemote.getIlluminanceState().getIlluminance() > MAXIMUM_WANTED_ILLUMINATION) {
                     regulateShutterLevelDown();
-                }
-            } else if (data.getIlluminanceState().getIlluminance() < MINIMUM_NEEDED_ILLUMINATION) {
-                if (regulatedDown) {
-                    if (setBlindStateFuture != null && !setBlindStateFuture.isDone()) {
-                        setBlindStateFuture.cancel(true);
-                    }
-                    regulatedDown = false;
-                }
-                if (!regulatedUp) {
+
+                } else if (locationRemote.getIlluminanceState().getIlluminance() < MINIMUM_NEEDED_ILLUMINATION) {
                     regulateShutterLevelUp();
                 }
             } else {
-                if (regulatedDown || regulatedUp) {
-                    if (setBlindStateFuture != null && !setBlindStateFuture.isDone()) {
-                        setBlindStateFuture.cancel(true);
-                    }
-                }
+                actionRescheduleHelper.stopExecution();
             }
         };
     }
@@ -117,57 +105,54 @@ public class IlluminationRollerShutterAgent extends AbstractAgentController {
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
-    }
 
-    @Override
-    protected void execute() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activating [" + getConfig().getLabel() + "]");
-        locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), true, Units.LOCATION);
-
-        /** Add trigger here and replace dataObserver */
-        locationRemote.addDataObserver(locationObserver);
-        locationRemote.waitForData();
-    }
-
-    @Override
-    protected void stop() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getConfig().getLabel() + "]");
-        locationRemote.removeDataObserver(locationObserver);
-    }
-
-    private void regulateShutterLevelDown() throws CouldNotPerformException {
-        BlindStateType.BlindState blindState = BlindStateType.BlindState.newBuilder().setMovementState(BlindStateType.BlindState.MovementState.DOWN).build();
-        setBlindStateFuture = locationRemote.setBlindState(blindState);
-
-        while (locationRemote.getIlluminanceState().getIlluminance() > MAXIMUM_WANTED_ILLUMINATION
-                && !setBlindStateFuture.isDone()
-                && locationRemote.getBlindState().getOpeningRatio() != 0.0) {
-            try {
-                Thread.sleep(SLEEP_MILLI);
-            } catch (InterruptedException ex) {
-            }
+        try {
+            locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), true, Units.LOCATION);
+        } catch (NotAvailableException ex) {
+            throw new InitializationException("LocationRemote not available.", ex);
         }
-        blindState = BlindStateType.BlindState.newBuilder().setMovementState(BlindStateType.BlindState.MovementState.STOP).build();
-        locationRemote.setBlindState(blindState);
 
-        regulatedDown = true;
+        try {
+            IlluminanceDualBoundaryTrigger<LocationRemote, LocationDataType.LocationData> agentTrigger = new IlluminanceDualBoundaryTrigger(locationRemote, MAXIMUM_WANTED_ILLUMINATION, MINIMUM_NEEDED_ILLUMINATION, IlluminanceDualBoundaryTrigger.TriggerOperation.OUTSIDE_ACTIVE);
+            agentTriggerHolder.addTrigger(agentTrigger, TriggerPool.TriggerOperation.OR);
+        } catch (CouldNotPerformException ex) {
+            throw new InitializationException("Could not add agent to agentpool", ex);
+        }
     }
 
-    private void regulateShutterLevelUp() throws CouldNotPerformException {
-        BlindStateType.BlindState blindState = BlindStateType.BlindState.newBuilder().setMovementState(BlindStateType.BlindState.MovementState.UP).build();
-        setBlindStateFuture = locationRemote.setBlindState(blindState);
-
-        while (locationRemote.getIlluminanceState().getIlluminance() < MINIMUM_NEEDED_ILLUMINATION
-                && !setBlindStateFuture.isDone()
-                && locationRemote.getBlindState().getOpeningRatio() != 100.0) {
-            try {
-                Thread.sleep(SLEEP_MILLI);
-            } catch (InterruptedException ex) {
-            }
+    private void regulateShutterLevelDown() {
+        try {
+            ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+                    1000 * 30,
+                    ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+                    ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
+                    locationRemote,
+                    BlindStateType.BlindState.newBuilder().setMovementState(BlindStateType.BlindState.MovementState.DOWN).build(),
+                    UnitTemplateType.UnitTemplate.UnitType.UNKNOWN,
+                    ServiceTemplateType.ServiceTemplate.ServiceType.BLIND_STATE_SERVICE,
+                    MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+            logger.error("Could not dim lights.", ex);
         }
-        blindState = BlindStateType.BlindState.newBuilder().setMovementState(BlindStateType.BlindState.MovementState.STOP).build();
-        setBlindStateFuture = locationRemote.setBlindState(blindState);
+    }
 
-        regulatedUp = true;
+    private void regulateShutterLevelUp() {
+        try {
+            ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+                    1000 * 30,
+                    ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+                    ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
+                    locationRemote,
+                    BlindStateType.BlindState.newBuilder().setMovementState(BlindStateType.BlindState.MovementState.UP).build(),
+                    UnitTemplateType.UnitTemplate.UnitType.UNKNOWN,
+                    ServiceTemplateType.ServiceTemplate.ServiceType.BLIND_STATE_SERVICE,
+                    MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+            logger.error("Could not dim lights.", ex);
+        }
     }
 }

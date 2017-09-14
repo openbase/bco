@@ -26,6 +26,7 @@ import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
+import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
 import org.openbase.bco.dal.lib.layer.unit.MotionDetectorController;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.MotionDetectorRemote;
@@ -36,6 +37,8 @@ import org.openbase.bco.dal.remote.unit.util.UnitStateAwaiter;
 import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.slf4j.LoggerFactory;
@@ -85,9 +88,19 @@ public class AbsenceEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
 
     /**
      * Test of activate method, of class PowerStateSynchroniserAgent.
+     * @throws java.lang.Exception
      */
     @Test(timeout = 10000)
     public void testAbsenceEnergySavingAgent() throws Exception {
+        // TODO: turn back on when resource allocation is integrated for unit tests
+        try {
+            if (!JPService.getProperty(JPResourceAllocation.class).getValue()) {
+                return;
+            }
+        } catch (JPNotAvailableException ex) {
+            throw new CouldNotPerformException("Could not access JPResourceAllocation property", ex);
+        }
+        
         System.out.println("testAbsenceEnergySavingAgent");
         CachedAgentRegistryRemote.waitForData();
 
