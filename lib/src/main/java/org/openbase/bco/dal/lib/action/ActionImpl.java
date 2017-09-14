@@ -179,11 +179,9 @@ public class ActionImpl implements Action {
                     // register allocation update handler
                     unitAllocation.getTaskExecutor().getRemote().addSchedulerListener((allocation) -> {
                         try {
-                            System.out.println("Update Allocation - Scope: " + ScopeGenerator.generateStringRep(unit.getScope()) + " State: " + allocation.getState());
-                        } catch (NotAvailableException ex) {
-                            java.util.logging.Logger.getLogger(ActionImpl.class.getName()).log(Level.SEVERE, null, ex);
+                            LOGGER.info("Update Allocation - Scope:[" + ScopeGenerator.generateStringRep(unit.getScope()) + "] State: [" + allocation.getState() + "]");
                         } catch (CouldNotPerformException ex) {
-                            java.util.logging.Logger.getLogger(ActionImpl.class.getName()).log(Level.SEVERE, null, ex);
+                            LOGGER.info("Update Allocation - Scope[?] State[" + allocation.getState() + "]");
                         }
                         actionDescriptionBuilder.setResourceAllocation(allocation);
                     });
