@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.jp;
  * #L%
  */
 
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jps.preset.AbstractJPBoolean;
 
 /**
@@ -37,7 +38,12 @@ public class JPResourceAllocation extends AbstractJPBoolean {
     }
 
     @Override
+    protected Boolean getPropertyDefaultValue() throws JPNotAvailableException {
+        return false;
+    }
+    
+    @Override
     public String getDescription() {
-        return "Enable the usage of the resource allocation.";
+        return "Enable the usage of the resource allocation, by this a allocation server is needed for proper bco operation.";
     }
 }
