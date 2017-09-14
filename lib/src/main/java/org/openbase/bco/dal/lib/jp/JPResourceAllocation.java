@@ -1,6 +1,6 @@
-package org.openbase.bco.dal.lib.layer.unit.agent;
+package org.openbase.bco.dal.lib.jp;
 
-/*
+/*-
  * #%L
  * BCO DAL Library
  * %%
@@ -21,15 +21,29 @@ package org.openbase.bco.dal.lib.layer.unit.agent;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.EmphasisStateOperationService;
-import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
-import rst.domotic.unit.agent.AgentDataType.AgentData;
+
+import org.openbase.jps.exception.JPNotAvailableException;
+import org.openbase.jps.preset.AbstractJPBoolean;
 
 /**
  *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface Agent extends BaseUnit<AgentData>, ActivationStateOperationService, EmphasisStateOperationService {
+public class JPResourceAllocation extends AbstractJPBoolean {
 
+    public final static String[] COMMAND_IDENTIFIERS = {"--resource-allocation"};
+
+    public JPResourceAllocation() {
+        super(COMMAND_IDENTIFIERS);
+    }
+
+    @Override
+    protected Boolean getPropertyDefaultValue() throws JPNotAvailableException {
+        return false;
+    }
+    
+    @Override
+    public String getDescription() {
+        return "Enable the usage of the resource allocation, by this a allocation server is needed for proper bco operation.";
+    }
 }

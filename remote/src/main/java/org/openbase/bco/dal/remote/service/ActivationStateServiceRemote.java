@@ -23,14 +23,19 @@ package org.openbase.bco.dal.remote.service;
  */
 import java.util.Collection;
 import java.util.concurrent.Future;
+import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.collection.ActivationStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
+import rst.domotic.action.ActionAuthorityType.ActionAuthority;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -86,11 +91,27 @@ public class ActivationStateServiceRemote extends AbstractServiceRemote<Activati
 
     @Override
     public Future<ActionFuture> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf(super.getServices(), (ActivationStateOperationService input) -> input.setActivationState(activationState));
+        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+
+        try {
+            return applyAction(Service.upateActionDescription(actionDescription, activationState, getServiceType()).build());
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new CouldNotPerformException("Could not set activationState", ex);
+        }
     }
 
     @Override
     public Future<ActionFuture> setActivationState(final ActivationState activationState, final UnitType unitType) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf(super.getServices(unitType), (ActivationStateOperationService input) -> input.setActivationState(activationState));
+        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
+        serviceStateDescription.setUnitType(unitType);
+        
+        try {
+            return applyAction(Service.upateActionDescription(actionDescription, activationState, getServiceType()).build());
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new CouldNotPerformException("Could not set activationState", ex);
+        }
     }
 }

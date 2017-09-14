@@ -24,15 +24,21 @@ package org.openbase.bco.dal.remote.service;
 import java.util.Collection;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.collection.StandbyStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.iface.Processable;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
+import rst.domotic.action.ActionAuthorityType.ActionAuthority;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -48,21 +54,29 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
     }
 
     @Override
-    public Future<ActionFuture> setStandbyState(final StandbyState state) throws CouldNotPerformException {
-         return GlobalCachedExecutorService.allOf(super.getServices(), new Processable<StandbyStateOperationService, Future<ActionFuture>>() {
-             @Override
-             public Future<ActionFuture> process(StandbyStateOperationService input) throws CouldNotPerformException, InterruptedException {
-                 return input.setStandbyState(state);
-             }
-         });
-        
-        
-//        return GlobalCachedExecutorService.allOf(super.getServices(), (StandbyStateOperationService input) -> input.setStandbyState(state));
+    public Future<ActionFuture> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
+         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+
+        try {
+            return applyAction(Service.upateActionDescription(actionDescription, standbyState, getServiceType()).build());
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new CouldNotPerformException("Could not set standbyState", ex);
+        }
     }
 
     @Override
-    public Future<ActionFuture> setStandbyState(final StandbyState state, final UnitType unitType) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.allOf(super.getServices(unitType), (StandbyStateOperationService input) -> input.setStandbyState(state));
+    public Future<ActionFuture> setStandbyState(final StandbyState standbyState, final UnitType unitType) throws CouldNotPerformException {
+        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
+        serviceStateDescription.setUnitType(unitType);
+        
+        try {
+            return applyAction(Service.upateActionDescription(actionDescription, standbyState, getServiceType()).build());
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new CouldNotPerformException("Could not set standbyState", ex);
+        }
     }
 
     public Collection<StandbyStateOperationService> getStandbyStateOperationServices() {

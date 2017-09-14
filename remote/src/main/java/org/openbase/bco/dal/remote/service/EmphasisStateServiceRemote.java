@@ -1,6 +1,6 @@
 package org.openbase.bco.dal.remote.service;
 
-/*
+/*-
  * #%L
  * BCO DAL Remote
  * %%
@@ -25,8 +25,8 @@ import java.util.Collection;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.Service;
-import org.openbase.bco.dal.lib.layer.service.collection.BrightnessStateOperationServiceCollection;
-import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.collection.EmphasisStateOperationServiceCollection;
+import org.openbase.bco.dal.lib.layer.service.operation.EmphasisStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -35,33 +35,37 @@ import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionFutureType;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.BrightnessStateType.BrightnessState;
+import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.state.EmphasisStateType.EmphasisState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
-// TODO pleminoq: This seems to cause in problems because units using this service in different ways.
 /**
  *
- * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class BrightnessStateServiceRemote extends AbstractServiceRemote<BrightnessStateOperationService, BrightnessState> implements BrightnessStateOperationServiceCollection {
+public class EmphasisStateServiceRemote extends AbstractServiceRemote<EmphasisStateOperationService, EmphasisState> implements EmphasisStateOperationServiceCollection {
 
-    public BrightnessStateServiceRemote() {
-        super(ServiceType.BRIGHTNESS_STATE_SERVICE, BrightnessState.class);
+    public EmphasisStateServiceRemote() {
+        super(ServiceTemplateType.ServiceTemplate.ServiceType.EMPHASIS_STATE_SERVICE, EmphasisState.class);
     }
 
-    public Collection<BrightnessStateOperationService> getBrightnessStateOperationServices() throws CouldNotPerformException {
+    public Collection<EmphasisStateOperationService> getEmphasisStateOperationServices() throws CouldNotPerformException {
         return getServices();
     }
 
     @Override
-    public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
+    protected EmphasisState computeServiceState() throws CouldNotPerformException {
+        return getEmphasisState(UnitType.UNKNOWN);
+    }
+
+    @Override
+    public Future<ActionFutureType.ActionFuture> setEmphasisState(EmphasisState emphasisState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
 
         try {
-            return applyAction(Service.upateActionDescription(actionDescription, brightnessState, getServiceType()).build());
+            return applyAction(Service.upateActionDescription(actionDescription, emphasisState, getServiceType()).build());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new CouldNotPerformException("Could not set brightnessState", ex);
@@ -69,51 +73,46 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
     }
 
     @Override
-    public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState, final UnitType unitType) throws CouldNotPerformException {
+    public Future<ActionFutureType.ActionFuture> setEmphasisState(EmphasisState emphasisState, UnitType unitType) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
         serviceStateDescription.setUnitType(unitType);
-        
+
         try {
-            return applyAction(Service.upateActionDescription(actionDescription, brightnessState, getServiceType()).build());
+            return applyAction(Service.upateActionDescription(actionDescription, emphasisState, getServiceType()).build());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new CouldNotPerformException("Could not set brightnessState", ex);
         }
     }
 
-    /**
-     * {@inheritDoc}
-     * Computes the average brightness value.
-     *
-     * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
-     */
     @Override
-    protected BrightnessState computeServiceState() throws CouldNotPerformException {
-        return getBrightnessState(UnitType.UNKNOWN);
-    }
-
-    @Override
-    public BrightnessState getBrightnessState() throws NotAvailableException {
+    public EmphasisState getEmphasisState() throws NotAvailableException {
         return getData();
     }
 
     @Override
-    public BrightnessState getBrightnessState(final UnitType unitType) throws NotAvailableException {
-        Collection<BrightnessStateOperationService> brightnessStateOperationServices = getServices(unitType);
-        int serviceNumber = brightnessStateOperationServices.size();
-        Double average = 0d;
+    public EmphasisState getEmphasisState(UnitType unitType) throws NotAvailableException {
+        Collection<EmphasisStateOperationService> emphasisStateOperationServices = getServices(unitType);
+        int serviceNumber = emphasisStateOperationServices.size();
+        Double averageComfort = 0d;
+        Double averageEnergy = 0d;
+        Double averageSecurity = 0d;
         long timestamp = 0;
-        for (BrightnessStateOperationService service : brightnessStateOperationServices) {
+        for (EmphasisStateOperationService service : emphasisStateOperationServices) {
             if (!((UnitRemote) service).isDataAvailable()) {
                 serviceNumber--;
                 continue;
             }
-            average += service.getBrightnessState().getBrightness();
-            timestamp = Math.max(timestamp, service.getBrightnessState().getTimestamp().getTime());
+            averageComfort += service.getEmphasisState().getComfort();
+            averageEnergy += service.getEmphasisState().getEnergy();
+            averageSecurity += service.getEmphasisState().getSecurity();
+            timestamp = Math.max(timestamp, service.getEmphasisState().getTimestamp().getTime());
         }
-        average /= serviceNumber;
-        return TimestampProcessor.updateTimestamp(timestamp, BrightnessState.newBuilder().setBrightness(average), TimeUnit.MICROSECONDS, logger).build();
+        averageComfort /= serviceNumber;
+        averageEnergy /= serviceNumber;
+        averageSecurity /= serviceNumber;
+        return TimestampProcessor.updateTimestamp(timestamp, EmphasisState.newBuilder().setComfort(averageComfort).setEnergy(averageEnergy).setSecurity(averageSecurity), TimeUnit.MICROSECONDS, logger).build();
     }
+
 }

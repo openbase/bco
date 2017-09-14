@@ -100,5 +100,11 @@
             <artifactId>registry.util</artifactId>
             <version>${dependency.bco.registry.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openbase</groupId>
+            <artifactId>jul.pattern.trigger</artifactId>
+            <version>${dependency.jul.version}</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 </project>

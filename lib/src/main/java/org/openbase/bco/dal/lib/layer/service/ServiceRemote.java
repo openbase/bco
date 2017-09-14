@@ -32,9 +32,10 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
-import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType;
-import rst.domotic.unit.UnitTemplateType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -59,6 +60,17 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
     Collection<UnitRemote> getInternalUnits();
 
     /**
+     * Return a collection of all internally used unit remotes with the given type
+     * and base units.
+     * 
+     * @param unitType the type witch fill the internal unit remotes are filtered
+     * @return an unmodifiable collection of unit remotes limited limited to the type and service interface.
+     * @throws NotAvailableException thrown if the type of an internally used unit remote is not available
+     * @throws java.lang.InterruptedException
+     */
+    Collection<UnitRemote> getInternalUnits(UnitType unitType) throws CouldNotPerformException, InterruptedException;
+
+    /**
      *
      * @return the current service state
      * @throws NotAvailableException if the service state has not been set at least once.
@@ -72,7 +84,7 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
      *
      * @return the remote service type.
      */
-    ServiceTemplateType.ServiceTemplate.ServiceType getServiceType();
+    ServiceType getServiceType();
 
     /**
      * Returns a collection of all internally used unit remotes.
@@ -84,10 +96,10 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
     /**
      * Returns a collection of all internally used unit remotes filtered by the given unit type.
      *
-     * @param unitType
+     * @param unitType the unit type after which the services are filtered
      * @return a collection of unit remotes limited to the service interface.
      */
-    Collection<S> getServices(final UnitTemplateType.UnitTemplate.UnitType unitType);
+    Collection<S> getServices(final UnitType unitType);
 
     boolean hasInternalRemotes();
 
@@ -131,7 +143,7 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
      * @throws CouldNotPerformException
      * @throws InterruptedException
      */
-    void removeUnit(UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException;
+    void removeUnit(UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException;
 
     /**
      * Method blocks until an initial data message was dataObserverreceived from every remote controller.

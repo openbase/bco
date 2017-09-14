@@ -34,6 +34,7 @@ import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.state.EmphasisStateType.EmphasisState;
 import rst.domotic.unit.agent.AgentDataType.AgentData;
 
 /**
@@ -45,6 +46,7 @@ public class AgentRemote extends AbstractUnitRemote<AgentData> implements Agent 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivationState.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(EmphasisState.getDefaultInstance()));
     }
 
     public AgentRemote() {
@@ -65,5 +67,20 @@ public class AgentRemote extends AbstractUnitRemote<AgentData> implements Agent 
     @Override
     public ActivationState getActivationState() throws NotAvailableException {
         return getData().getActivationState();
+    }
+
+    @Override
+    public Future<ActionFuture> setEmphasisState(EmphasisState emphasisState) throws CouldNotPerformException {
+        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+        try {
+            return applyAction(updateActionDescription(actionDescription, emphasisState).build());
+        } catch (InterruptedException ex) {
+            throw new CouldNotPerformException("Interrupted while setting emphasisState.", ex);
+        }
+    }
+
+    @Override
+    public EmphasisState getEmphasisState() throws NotAvailableException {
+        return getData().getEmphasisState();
     }
 }

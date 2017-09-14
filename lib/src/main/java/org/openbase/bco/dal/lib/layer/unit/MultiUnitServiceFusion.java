@@ -153,10 +153,12 @@ public interface MultiUnitServiceFusion extends BrightnessStateOperationServiceC
         return ((PowerStateOperationServiceCollection) getServiceRemote(ServiceType.POWER_STATE_SERVICE)).setPowerState(powerState, unitType);
     }
 
+    @Override
     default public Future<ActionFuture> setPowerState(final PowerState.State state) throws CouldNotPerformException {
         return setPowerState(PowerState.newBuilder().setValue(state).build());
     }
 
+    @Override
     default public Future<ActionFuture> setPowerState(final PowerState.State state, final UnitType unitType) throws CouldNotPerformException {
         return setPowerState(PowerState.newBuilder().setValue(state).build(), unitType);
     }
