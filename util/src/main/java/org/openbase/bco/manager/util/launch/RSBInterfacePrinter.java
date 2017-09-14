@@ -131,7 +131,7 @@ public class RSBInterfacePrinter {
             System.out.println("==================================================");
             System.out.println("BaseCubeOne - Registry (Service Discovery) RSB API ");
             System.out.println("==================================================");
-             System.out.println();
+            System.out.println();
             System.out.println("General Information:");
             System.out.println();
             System.out.println(AnsiColor.colorize("    Registry Scope Structure:", SUB_HEADLINE));
