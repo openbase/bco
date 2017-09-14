@@ -215,9 +215,9 @@ public class ActionImpl implements Action {
 
                         // Resource Allocation
                         try {
-                            
+
                             // fake resource if needed
-                            if(! actionDescriptionBuilder.hasResourceAllocation() || actionDescriptionBuilder.getResourceAllocation().isInitialized()) {
+                            if (!actionDescriptionBuilder.hasResourceAllocation() || !actionDescriptionBuilder.getResourceAllocation().isInitialized()) {
                                 ResourceAllocationType.ResourceAllocation.Builder resourceAllocationBuilder = actionDescriptionBuilder.getResourceAllocationBuilder();
                                 resourceAllocationBuilder.setId(resourceAllocationBuilder.getId());
                                 resourceAllocationBuilder.setState(ResourceAllocationType.ResourceAllocation.State.REQUESTED);
@@ -226,7 +226,7 @@ public class ActionImpl implements Action {
                                 resourceAllocationBuilder.setSlot(IntervalType.Interval.getDefaultInstance());
                                 resourceAllocationBuilder.setPolicy(ResourceAllocationType.ResourceAllocation.Policy.PRESERVE);
                             }
-                            
+
                             ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
                             actionFuture.addActionDescription(actionDescriptionBuilder);
 
