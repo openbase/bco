@@ -22,11 +22,11 @@ package org.openbase.bco.manager.agent.core.preset;
  * #L%
  */
 import java.util.concurrent.ExecutionException;
+import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.agent.core.ActionRescheduleHelper;
-import org.openbase.bco.manager.agent.core.TriggerJUL.GenericTrigger;
-import org.openbase.bco.manager.agent.core.TriggerJUL.TriggerPool;
+import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -79,9 +79,9 @@ public class FireAlarmAgent extends AbstractResourceAllocationAgent {
         }
 
         try {
-            GenericTrigger<LocationRemote, LocationData, AlarmState.State> agentTrigger = new GenericTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.SMOKE_ALARM_STATE_SERVICE);
+            GenericBCOTrigger<LocationRemote, LocationData, AlarmState.State> agentTrigger = new GenericBCOTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.SMOKE_ALARM_STATE_SERVICE);
             agentTriggerHolder.addTrigger(agentTrigger, TriggerPool.TriggerOperation.OR);
-            GenericTrigger<LocationRemote, LocationData, AlarmState.State> agentFireTrigger = new GenericTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.FIRE_ALARM_STATE_SERVICE);
+            GenericBCOTrigger<LocationRemote, LocationData, AlarmState.State> agentFireTrigger = new GenericBCOTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.FIRE_ALARM_STATE_SERVICE);
             agentTriggerHolder.addTrigger(agentFireTrigger, TriggerPool.TriggerOperation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not add agent to agentpool", ex);

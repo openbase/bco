@@ -26,7 +26,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.AbstractExecutableBaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
-import org.openbase.bco.manager.agent.core.TriggerJUL.TriggerPool;
+import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;

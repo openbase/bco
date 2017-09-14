@@ -22,12 +22,12 @@ package org.openbase.bco.manager.agent.core.preset;
  * #L%
  */
 import java.util.concurrent.ExecutionException;
+import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
 import org.openbase.bco.manager.agent.core.ActionRescheduleHelper;
 import org.openbase.bco.manager.agent.core.ActionRescheduleHelper.RescheduleOption;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.manager.agent.core.TriggerJUL.TriggerPool;
-import org.openbase.bco.manager.agent.core.TriggerJUL.GenericTrigger;
+import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -84,7 +84,7 @@ public class PresenceLightAgent extends AbstractResourceAllocationAgent {
         }
 
         try {
-            GenericTrigger<LocationRemote, LocationData, PresenceState.State> agentTrigger = new GenericTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE);
+            GenericBCOTrigger<LocationRemote, LocationData, PresenceState.State> agentTrigger = new GenericBCOTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE);
             agentTriggerHolder.addTrigger(agentTrigger, TriggerPool.TriggerOperation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not add agent to agentpool", ex);

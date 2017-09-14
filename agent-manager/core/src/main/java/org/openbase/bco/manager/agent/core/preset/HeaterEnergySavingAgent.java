@@ -24,13 +24,13 @@ package org.openbase.bco.manager.agent.core.preset;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
+import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
 import org.openbase.bco.dal.remote.unit.TemperatureControllerRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.agent.core.ActionRescheduleHelper;
-import org.openbase.bco.manager.agent.core.TriggerJUL.GenericTrigger;
-import org.openbase.bco.manager.agent.core.TriggerJUL.TriggerPool;
+import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -92,7 +92,7 @@ public class HeaterEnergySavingAgent extends AbstractResourceAllocationAgent {
             for (ConnectionRemote connectionRemote : locationRemote.getConnectionList(true)) {
                 if (connectionRemote.getConfig().getConnectionConfig().getType().equals(ConnectionConfigType.ConnectionConfig.ConnectionType.WINDOW)) {
                     try {
-                        GenericTrigger<ConnectionRemote, ConnectionData, WindowState.State> trigger = new GenericTrigger(connectionRemote, triggerState, ServiceType.WINDOW_STATE_SERVICE);
+                        GenericBCOTrigger<ConnectionRemote, ConnectionData, WindowState.State> trigger = new GenericBCOTrigger(connectionRemote, triggerState, ServiceType.WINDOW_STATE_SERVICE);
                         agentTriggerHolder.addTrigger(trigger, TriggerPool.TriggerOperation.OR);
                     } catch (CouldNotPerformException ex) {
                         throw new InitializationException("Could not add agent to agentpool", ex);

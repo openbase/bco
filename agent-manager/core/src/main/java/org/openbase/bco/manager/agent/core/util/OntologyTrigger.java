@@ -1,4 +1,16 @@
-package org.openbase.bco.manager.agent.core.TriggerDAL;
+package org.openbase.bco.manager.agent.core.util;
+
+import org.openbase.bco.ontology.lib.trigger.Trigger;
+import org.openbase.bco.ontology.lib.trigger.TriggerFactory;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
+import org.slf4j.LoggerFactory;
+import rst.domotic.ontology.TriggerConfigType.TriggerConfig;
+import rst.domotic.state.ActivationStateType.ActivationState;
+import org.openbase.jul.exception.InstantiationException;
 
 /*-
  * #%L
@@ -21,25 +33,13 @@ package org.openbase.bco.manager.agent.core.TriggerDAL;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.manager.agent.core.TriggerJUL.AbstractTrigger;
-import org.openbase.bco.ontology.lib.trigger.Trigger;
-import org.openbase.bco.ontology.lib.trigger.TriggerFactory;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
-import org.slf4j.LoggerFactory;
-import rst.domotic.ontology.TriggerConfigType.TriggerConfig;
-import rst.domotic.state.ActivationStateType.ActivationState;
-
 /**
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class OntologyTrigger extends AbstractTrigger {
+public class OntologyTrigger extends org.openbase.jul.pattern.trigger.AbstractTrigger {
 
+    // TODO: move to ontology
     private Trigger trigger;
     private final Observer<ActivationState.State> triggerObserver;
 
