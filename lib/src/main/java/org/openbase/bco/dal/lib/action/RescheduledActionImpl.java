@@ -64,18 +64,17 @@ public class RescheduledActionImpl extends ActionImpl {
                     case REJECTED:
                         // rejected because the resource is blocked by someone else
                         // TODO: is it possible to get information about the allocaiton that currently blocks this
-                        Thread.sleep(1000);
+                        Thread.sleep(500);
                     case ABORTED:
                     case CANCELLED:
                         if (actionDescriptionBuilder.getExecutionTimePeriod() != 0 && actionDescriptionBuilder.getExecutionValidity().getMillisecondsSinceEpoch() > System.currentTimeMillis()) {
-                            LOGGER.info("Inside boundaries");
                             ActionDescriptionProcessor.updateResourceAllocationId(actionDescriptionBuilder);
                             ActionDescriptionProcessor.updateResourceAllocationSlot(actionDescriptionBuilder);
                             return call();
                         }
 
                 }
-                LOGGER.info("Execution finished.");
+                LOGGER.info("Execution finished. Scope: " + ScopeGenerator.generateStringRep(unit.getScope()));
                 if (unitAllocation.getTaskExecutor().getFuture().isCancelled()) {
                     return null;
                 }
