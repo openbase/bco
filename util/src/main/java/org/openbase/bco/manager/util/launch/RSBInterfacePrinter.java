@@ -50,7 +50,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class RSBInterfacePrinter {
-    
+
     protected static final Logger LOGGER = LoggerFactory.getLogger(RSBInterfacePrinter.class);
 
     public enum AnsiColor {
@@ -88,9 +88,10 @@ public class RSBInterfacePrinter {
     public static final AnsiColor SCOPE_COLOR = AnsiColor.ANSI_GREEN;
     public static final AnsiColor RETURN_LIMITER_COLOR = AnsiColor.ANSI_GREEN;
     public static final AnsiColor PARAMETER_LIMITER_COLOR = AnsiColor.ANSI_RED;
+    public static final AnsiColor SUB_HEADLINE = AnsiColor.ANSI_CYAN;
     public static final AnsiColor TYPE_LIMITER_COLOR = AnsiColor.ANSI_RED;
-    public static final AnsiColor UNIT_TYPE_COLOR = AnsiColor.ANSI_CYAN;
-    public static final AnsiColor REGISTRY_TYPE_COLOR = AnsiColor.ANSI_CYAN;
+    public static final AnsiColor UNIT_TYPE_COLOR = SUB_HEADLINE;
+    public static final AnsiColor REGISTRY_TYPE_COLOR = SUB_HEADLINE;
 
     public static String colorize(String text) {
 
@@ -103,7 +104,7 @@ public class RSBInterfacePrinter {
 
         return text;
     }
-    
+
     /**
      * This method returns the registry data class resolved by the given registry name.
      *
@@ -113,7 +114,7 @@ public class RSBInterfacePrinter {
      */
     public static Class<? extends GeneratedMessage> getRegistryDataClass(final String registryDataClassSimpleName) throws NotAvailableException {
         final String registryDataClassName = UnitRegistryData.class.getPackage().getName() + "." + registryDataClassSimpleName + "DataType$" + registryDataClassSimpleName + "Data";
-     
+
         try {
             return (Class<? extends GeneratedMessage>) Class.forName(registryDataClassName);
         } catch (NullPointerException | ClassNotFoundException | ClassCastException ex) {
@@ -130,6 +131,18 @@ public class RSBInterfacePrinter {
             System.out.println("==================================================");
             System.out.println("BaseCubeOne - Registry (Service Discovery) RSB API ");
             System.out.println("==================================================");
+            System.out.println();
+            System.out.println("General Information:");
+            System.out.println();
+            System.out.println(AnsiColor.colorize("    Registry Scope Structure:", SUB_HEADLINE));
+            System.out.println(colorize("        / registry / <RegistryName> / <CommunicationPattern> : <RegistryDataType>"));
+            System.out.println();
+            System.out.println(AnsiColor.colorize("    Each registry publishes status changes via a dedecated rsb informer on the following status scope:", SUB_HEADLINE));
+            System.out.println(colorize("        / <RegistryScope> / status"));
+            System.out.println();
+            System.out.println(AnsiColor.colorize("    Each registry provides a set of rsb remote procedure call (rpc) methods accessable by there control scope:", SUB_HEADLINE));
+            System.out.println(colorize("        / <RegistryScope> / ctrl"));
+            System.out.println();
             System.out.println();
             System.out.println("This is the set of rpc methods provided by all registries:");
             System.out.println();
@@ -169,14 +182,16 @@ public class RSBInterfacePrinter {
             System.out.println(colorize("BaseCubeOne - DAL (Domotic Abstract Layer) RSB API"));
             System.out.println("===========================================================");
             System.out.println();
-            System.out.println("General unit scope structure:");
-            System.out.println(colorize("    / <LocationScope> / <UnitType> / <UnitLabel> / <CommunicationPattern> : <UnitDataType>"));
+            System.out.println("General Information:");
             System.out.println();
-            System.out.println("    Each unit publishes status changes via a dedecated rsb informer on the following status scope:");
-            System.out.println(colorize("    / <UnitScope> / status"));
+            System.out.println(AnsiColor.colorize("    Unit Scope Structure:", SUB_HEADLINE));
+            System.out.println(colorize("        / <LocationScope> / <UnitType> / <UnitLabel> / <CommunicationPattern> : <UnitDataType>"));
             System.out.println();
-            System.out.println("    Each unit provides a set of rsb remote procedure call (rpc) methods accessable by there control scope:");
-            System.out.println(colorize("    / <UnitScope> / ctrl"));
+            System.out.println(AnsiColor.colorize("    Each unit publishes status changes via a dedecated rsb informer on the following status scope:", SUB_HEADLINE));
+            System.out.println(colorize("        / <UnitScope> / status"));
+            System.out.println();
+            System.out.println(AnsiColor.colorize("    Each unit provides a set of rsb remote procedure call (rpc) methods accessable by there control scope:", SUB_HEADLINE));
+            System.out.println(colorize("        / <UnitScope> / ctrl"));
             System.out.println();
             System.out.println();
             System.out.println("This static set of rpc methods is provided by all units:");
