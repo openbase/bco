@@ -46,11 +46,13 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.communicationpatterns.ResourceAllocationType;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.state.ActionStateType.ActionState;
+import rst.timing.IntervalType;
 
 /**
  *
@@ -215,6 +217,18 @@ public class ActionImpl implements Action {
 
                         // Resource Allocation
                         try {
+                            
+                            // fake resource if needed
+                            if(! actionDescriptionBuilder.hasResourceAllocation() || actionDescriptionBuilder.getResourceAllocation().isInitialized()) {
+                                ResourceAllocationType.ResourceAllocation.Builder resourceAllocationBuilder = actionDescriptionBuilder.getResourceAllocationBuilder();
+                                resourceAllocationBuilder.setId(resourceAllocationBuilder.getId());
+                                resourceAllocationBuilder.setState(ResourceAllocationType.ResourceAllocation.State.REQUESTED);
+                                resourceAllocationBuilder.setPriority(ResourceAllocationType.ResourceAllocation.Priority.NORMAL);
+                                resourceAllocationBuilder.setInitiator(ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM);
+                                resourceAllocationBuilder.setSlot(IntervalType.Interval.getDefaultInstance());
+                                resourceAllocationBuilder.setPolicy(ResourceAllocationType.ResourceAllocation.Policy.PRESERVE);
+                            }
+                            
                             ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
                             actionFuture.addActionDescription(actionDescriptionBuilder);
 
