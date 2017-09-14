@@ -34,6 +34,7 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote.ConnectionState;
 import org.openbase.jul.pattern.trigger.AbstractTrigger;
+import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
@@ -46,6 +47,8 @@ import rst.domotic.state.ActivationStateType.ActivationState;
  * @param <STE> StateTypeEnum
  */
 public class GenericBCOTrigger<UR extends AbstractUnitRemote, DT extends GeneratedMessage, STE extends Enum<STE>> extends AbstractTrigger {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(GenericBCOTrigger.class);
 
     private final UR unitRemote;
     private final STE targetState;
@@ -84,17 +87,17 @@ public class GenericBCOTrigger<UR extends AbstractUnitRemote, DT extends Generat
                 notifyChange(TimestampProcessor.updateTimestampWithCurrentTime(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build()));
             }
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory("Could not verify condition " + this, ex, LoggerFactory.getLogger(getClass()));
+            ExceptionPrinter.printHistory("Could not verify condition " + this, ex, LOGGER);
         } catch (NoSuchMethodException ex) {
-            ExceptionPrinter.printHistory("Method not known " + this, ex, LoggerFactory.getLogger(getClass()));
+            ExceptionPrinter.printHistory("Method not known " + this, ex, LOGGER);
         } catch (SecurityException ex) {
-            ExceptionPrinter.printHistory("Security Exception " + this, ex, LoggerFactory.getLogger(getClass()));
+            ExceptionPrinter.printHistory("Security Exception " + this, ex, LOGGER);
         } catch (IllegalAccessException ex) {
-            ExceptionPrinter.printHistory("Illegal Access Exception " + this, ex, LoggerFactory.getLogger(getClass()));
+            ExceptionPrinter.printHistory("Illegal Access Exception " + this, ex, LOGGER);
         } catch (IllegalArgumentException ex) {
-            ExceptionPrinter.printHistory("Illegal Argument Exception " + this, ex, LoggerFactory.getLogger(getClass()));
+            ExceptionPrinter.printHistory("Illegal Argument Exception " + this, ex, LOGGER);
         } catch (InvocationTargetException ex) {
-            ExceptionPrinter.printHistory("Could not invoke method " + this, ex, LoggerFactory.getLogger(getClass()));
+            ExceptionPrinter.printHistory("Could not invoke method " + this, ex, LOGGER);
         }
     }
 
@@ -126,7 +129,7 @@ public class GenericBCOTrigger<UR extends AbstractUnitRemote, DT extends Generat
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory("Could not shutdown " + this, ex, LoggerFactory.getLogger(getClass()));
+            ExceptionPrinter.printHistory("Could not shutdown " + this, ex, LOGGER);
         }
         super.shutdown();
     }
