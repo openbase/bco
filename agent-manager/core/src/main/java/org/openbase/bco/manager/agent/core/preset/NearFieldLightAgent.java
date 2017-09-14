@@ -27,7 +27,7 @@ import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.manager.agent.core.ActionRescheduleHelper;
+import org.openbase.bco.dal.remote.action.ActionRescheduler;
 import org.openbase.bco.dal.remote.trigger.preset.NeighborConnectionPresenceTrigger;
 import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -60,7 +60,7 @@ public class NearFieldLightAgent extends AbstractResourceAllocationAgent {
     public NearFieldLightAgent() throws InstantiationException {
         super(NearFieldLightAgent.class);
 
-        actionRescheduleHelper = new ActionRescheduleHelper(ActionRescheduleHelper.RescheduleOption.EXTEND, 30);
+        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
 
         triggerHolderObserver = (Observable<ActivationState> source, ActivationState data) -> {
             if (data.getValue().equals(ActivationState.State.ACTIVE)) {
