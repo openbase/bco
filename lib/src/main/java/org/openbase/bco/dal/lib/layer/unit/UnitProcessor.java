@@ -47,7 +47,7 @@ public class UnitProcessor {
 
     public static void verifyUnitType(final Unit<?> unit) throws VerificationFailedException {
         try {
-            UnitConfigProcessor.verifyUnitType(unit.getConfig(), unit.getType());
+            UnitConfigProcessor.verifyUnitType(unit.getConfig(), unit.getUnitType());
         } catch (NotAvailableException ex) {
             throw new VerificationFailedException("Could not verify unit type!", ex);
         }
@@ -55,7 +55,7 @@ public class UnitProcessor {
 
     public static void verifyUnitConfig(final Unit<?> unit) throws VerificationFailedException {
         try {
-            UnitConfigProcessor.verifyUnitConfig(unit.getConfig(), unit.getType());
+            UnitConfigProcessor.verifyUnitConfig(unit.getConfig(), unit.getUnitType());
         } catch (NotAvailableException ex) {
             throw new VerificationFailedException("Could not verify unit type!", ex);
         }
@@ -74,6 +74,6 @@ public class UnitProcessor {
      * @throws org.openbase.jul.exception.NotAvailableException is thrown if the data class could not be detected.
      */
     public static Class<? extends GeneratedMessage> getUnitDataClass(final Unit<?> unit) throws NotAvailableException {
-        return UnitConfigProcessor.getUnitDataClass(unit.getType());
+        return UnitConfigProcessor.getUnitDataClass(unit.getUnitType());
     }
 }

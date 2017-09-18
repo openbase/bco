@@ -110,18 +110,6 @@
             <type>jar</type>
             <exclusions>
                 <exclusion>
-                    <groupId>net.time4j</groupId>
-                    <artifactId>time4j-misc</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.time4j</groupId>
-                    <artifactId>time4j-range</artifactId>
-                </exclusion>
-                <exclusion>
-                    <groupId>net.time4j</groupId>
-                    <artifactId>time4j-core</artifactId>
-                </exclusion>
-                <exclusion>
                     <groupId>rsb</groupId>
                     <artifactId>rsb</artifactId>
                 </exclusion>

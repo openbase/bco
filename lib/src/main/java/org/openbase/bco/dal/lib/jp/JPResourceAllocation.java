@@ -1,9 +1,8 @@
+package org.openbase.bco.dal.lib.jp;
 
-package org.openbase.bco.dal.remote.unit;
-
-/*
+/*-
  * #%L
- * BCO DAL Remote
+ * BCO DAL Library
  * %%
  * Copyright (C) 2014 - 2017 openbase.org
  * %%
@@ -23,13 +22,28 @@ package org.openbase.bco.dal.remote.unit;
  * #L%
  */
 
-import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jps.exception.JPNotAvailableException;
+import org.openbase.jps.preset.AbstractJPBoolean;
 
 /**
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ *
+ * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public class UnitGroupRemote extends org.openbase.bco.dal.remote.unit.unitgroup.UnitGroupRemote {
+public class JPResourceAllocation extends AbstractJPBoolean {
 
-    public UnitGroupRemote() throws InstantiationException {
+    public final static String[] COMMAND_IDENTIFIERS = {"--resource-allocation"};
+
+    public JPResourceAllocation() {
+        super(COMMAND_IDENTIFIERS);
+    }
+
+    @Override
+    protected Boolean getPropertyDefaultValue() throws JPNotAvailableException {
+        return false;
+    }
+    
+    @Override
+    public String getDescription() {
+        return "Enable the usage of the resource allocation, by this a allocation server is needed for proper bco operation.";
     }
 }

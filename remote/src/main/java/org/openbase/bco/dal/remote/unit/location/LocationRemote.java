@@ -3,6 +3,7 @@ package org.openbase.bco.dal.remote.unit.location;
 import com.google.protobuf.GeneratedMessage;
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -25,14 +26,17 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
+import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.AlarmStateType;
 import rst.domotic.state.BlindStateType;
 import rst.domotic.state.BrightnessStateType;
@@ -46,6 +50,7 @@ import rst.domotic.state.StandbyStateType;
 import rst.domotic.state.TamperStateType;
 import rst.domotic.state.TemperatureStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
@@ -151,7 +156,18 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
 
     @Override
     public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
-        return RPCHelper.callRemoteMethod(actionDescription, this, ActionFuture.class);
+        return RPCHelper.callRemoteMethod(updateActionDescription(actionDescription.toBuilder()).build(), this, ActionFuture.class);
+    }
+    
+    protected ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription) throws CouldNotPerformException {
+        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
+        serviceStateDescription.setUnitId(getId());
+
+        actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
+        //TODO: update USER key with authentification
+        actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
+        
+        return actionDescription;
     }
 
     @Override
@@ -225,6 +241,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
 
     /**
      * Method collects all connections between this and the given location and returns those instances.
+     *
      * @param locationID the location id of the location to check.
      * @param waitForData flag defines if the method should block until all needed instances are available.
      * @return a collection of unit connection remotes.
@@ -251,6 +268,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
 
     /**
      * Method checks if an direct connection exists between this and the given location.
+     *
      * @param locationID the location id of the location to check.
      * @param connectionType the type of the connection. To disable this filter use ConnectionType.UNKNOWN
      * @param waitForData flag defines if the method should block until all needed instances are available.
@@ -308,16 +326,16 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
             for (final String unitId : getConfig().getLocationConfig().getUnitIdList()) {
                 try {
                     UnitRemote<? extends GeneratedMessage> unitRemote = Units.getUnit(unitId, false);
-                    
+
                     // filter recursive units if needed.
                     if (!recursive && !unitRemote.getConfig().getPlacementConfig().getLocationId().equals(getId())) {
                         continue;
                     }
-                    
-                    if (!unitRemoteMap.containsKey(unitRemote.getType())) {
-                        unitRemoteMap.put(unitRemote.getType(), new ArrayList<>());
+
+                    if (!unitRemoteMap.containsKey(unitRemote.getUnitType())) {
+                        unitRemoteMap.put(unitRemote.getUnitType(), new ArrayList<>());
                     }
-                    unitRemoteMap.get(unitRemote.getType()).add(unitRemote);
+                    unitRemoteMap.get(unitRemote.getUnitType()).add(unitRemote);
                 } catch (CouldNotPerformException ex) {
                     exceptionStack = MultiException.push(this, ex, exceptionStack);
                 }
@@ -385,5 +403,64 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
             ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
         }
         return unitRemote;
+    }
+
+    /**
+     * Method returns the unit template of this unit containing all provided service templates.
+     *
+     * @param onlyAvailableServices if the filter flag is set to true, only service templates are included which are available for the current instance.
+     * @return the {@code UnitTemplate} of this unit.
+     * @throws NotAvailableException is thrown if the {@code UnitTemplate} is currently not available.
+     */
+    public UnitTemplate getTemplate(final boolean onlyAvailableServices) throws NotAvailableException {
+
+        // todo: move this method to the unit interface or at least to the MultiUnitServiceFusion interface shared by the location and group units.
+        // return the unfiltered unit template if filter is not active.
+        if (!onlyAvailableServices) {
+            return super.getUnitTemplate();
+        }
+        final UnitTemplate.Builder unitTemplateBuilder = super.getUnitTemplate().toBuilder();
+
+        unitTemplateBuilder.clearServiceDescription();
+        for (final ServiceDescription serviceDescription : super.getUnitTemplate().getServiceDescriptionList()) {
+            if (serviceRemoteManager.isServiceAvailable(serviceDescription.getType())) {
+                unitTemplateBuilder.addServiceDescription(serviceDescription);
+            }
+        }
+        return unitTemplateBuilder.build();
+    }
+
+    /**
+     * Method returns a set of all currently available service types of this unit instance.
+     *
+     * @return a set of {@code ServiceTypes}.
+     * @throws NotAvailableException is thrown if the service types can not be detected.
+     */
+    public Set<ServiceType> getAvailableServiceTypes() throws NotAvailableException {
+
+        // todo: move this method to the unit interface or at least to the MultiUnitServiceFusion interface shared by the location and group units.
+        final Set<ServiceType> serviceTypeList = new HashSet<>();
+
+        for (final ServiceDescription serviceDescription : getTemplate(true).getServiceDescriptionList()) {
+            serviceTypeList.add(serviceDescription.getType());
+        }
+        return serviceTypeList;
+    }
+
+    /**
+     * Method returns a set of all currently available service descriptions of this unit instance.
+     *
+     * @return a set of {@code ServiceDescription}.
+     * @throws NotAvailableException is thrown if the service types can not be detected.
+     */
+    public Set<ServiceDescription> getAvailableServiceDescriptions() throws NotAvailableException {
+
+        // todo: move this method to the unit interface or at least to the MultiUnitServiceFusion interface shared by the location and group units.
+        final Set<ServiceDescription> serviceDescriptionList = new HashSet<>();
+
+        for (final ServiceDescription serviceDescription : getTemplate(true).getServiceDescriptionList()) {
+            serviceDescriptionList.add(serviceDescription);
+        }
+        return serviceDescriptionList;
     }
 }

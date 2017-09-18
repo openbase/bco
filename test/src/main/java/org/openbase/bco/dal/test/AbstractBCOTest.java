@@ -26,8 +26,6 @@ import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
 
@@ -44,9 +42,8 @@ public class AbstractBCOTest {
     public static void setUpClass() throws Throwable {
         try {
             JPService.setupJUnitTestMode();
-
             mockRegistry = MockRegistryHolder.newMockRegistry();
-        } catch (JPServiceException | CouldNotPerformException ex) {
+        } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
     }

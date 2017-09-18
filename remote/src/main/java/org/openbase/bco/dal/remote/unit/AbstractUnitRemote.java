@@ -83,11 +83,11 @@ import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.rsb.ScopeType;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import rst.geometry.AxisAlignedBoundingBox3DFloatType.AxisAlignedBoundingBox3DFloat;
 import rst.geometry.RotationType.Rotation;
 import rst.geometry.TranslationType.Translation;
-import rst.rsb.ScopeType;
-import org.openbase.bco.dal.lib.layer.service.Services;
 
 /**
  *
@@ -114,12 +114,15 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         this.serviceStateObservableMap = new HashMap<>();
         this.unitRegistryObserver = new Observer<UnitRegistryData>() {
             @Override
-            public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
+            public void update(final Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
                 try {
                     final UnitConfig newUnitConfig = Registries.getUnitRegistry(true).getUnitConfigById(getId());
                     if (!newUnitConfig.equals(getConfig())) {
                         applyConfigUpdate(newUnitConfig);
                     }
+                } catch (NotAvailableException ex) {
+                    // unit config has been removed, probably because of deletion, Units will shutdown this remote
+                    logger.debug("Could not update unit remote", ex);
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory("Could not update unit config of " + this, ex, logger);
                 }
@@ -180,7 +183,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * @throws java.lang.InterruptedException
      */
     @Override
-    public void init(ScopeType.Scope scope) throws InitializationException, InterruptedException {
+    public void init(final ScopeType.Scope scope) throws InitializationException, InterruptedException {
         try {
             init(getUnitRegistry().getUnitConfigByScope(scope));
         } catch (CouldNotPerformException ex) {
@@ -196,7 +199,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * @throws java.lang.InterruptedException
      */
     @Override
-    public void init(Scope scope) throws InitializationException, InterruptedException {
+    public void init(final Scope scope) throws InitializationException, InterruptedException {
         try {
             this.init(ScopeTransformer.transform(scope));
         } catch (CouldNotPerformException ex) {
@@ -212,7 +215,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * @throws java.lang.InterruptedException
      */
     @Override
-    public void init(String scope) throws InitializationException, InterruptedException {
+    public void init(final String scope) throws InitializationException, InterruptedException {
         try {
             this.init(ScopeGenerator.generateScope(scope));
         } catch (CouldNotPerformException ex) {
@@ -220,6 +223,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         }
     }
 
+    @Deprecated
     public void init(final String label, final ScopeProvider location) throws InitializationException, InterruptedException {
         try {
             init(ScopeGenerator.generateScope(label, getDataClass().getSimpleName(), location.getScope()));
@@ -254,7 +258,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         super.notifyDataUpdate(data);
 
         final Set<ServiceType> serviceTypeSet = new HashSet<>();
-        for (final ServiceDescription serviceDescription : getTemplate().getServiceDescriptionList()) {
+        for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
 
             // check if already handled
             if (!serviceTypeSet.contains(serviceDescription.getType())) {
@@ -270,12 +274,12 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     }
 
     @Override
-    public void addServiceStateObserver(ServiceType serviceType, Observer observer) {
+    public void addServiceStateObserver(final ServiceType serviceType, final Observer observer) {
         serviceStateObservableMap.get(serviceType).addObserver(observer);
     }
 
     @Override
-    public void removeServiceStateObserver(ServiceType serviceType, Observer observer) {
+    public void removeServiceStateObserver(final ServiceType serviceType, final Observer observer) {
         serviceStateObservableMap.get(serviceType).removeObserver(observer);
     }
 
@@ -299,7 +303,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
                 logger.debug("Skip config update because no config change detected!");
                 return config;
             }
-        } catch (NotAvailableException ex) {
+        } catch (final NotAvailableException ex) {
             logger.trace("Unit config change check failed because config is not available yet.");
         }
 
@@ -372,7 +376,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
-    public void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+    public void waitForData(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
         verifyEnablingState();
         super.waitForData(timeout, timeUnit);
     }
@@ -410,7 +414,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * @throws org.openbase.jul.exception.NotAvailableException
      */
     @Override
-    public UnitType getType() throws NotAvailableException {
+    public UnitType getUnitType() throws NotAvailableException {
         try {
             return getConfig().getType();
         } catch (NullPointerException | NotAvailableException ex) {
@@ -424,25 +428,11 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * @throws org.openbase.jul.exception.NotAvailableException
      */
     @Override
-    public UnitTemplate getTemplate() throws NotAvailableException {
+    public UnitTemplate getUnitTemplate() throws NotAvailableException {
         if (template == null) {
             throw new NotAvailableException("UnitTemplate");
         }
         return template;
-    }
-
-    /**
-     * Method returns the transformation between the root location and this unit.
-     *
-     * @return a transformation future
-     * @throws InterruptedException is thrown if the thread was externally interrupted.
-     */
-    public Future<Transform> getTransformation() throws InterruptedException {
-        try {
-            return Units.getUnitTransformation(getConfig());
-        } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
-        }
     }
 
     /**
@@ -532,6 +522,21 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     public void setSessionManager(SessionManager sessionManager) {
         this.sessionManager = sessionManager;
     }
+    
+    /** Method returns the transformation between the root location and this unit.
+     *
+     * @return a transformation future
+     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     * @deprecated please use {@code getRootToUnitTransformationFuture()} instead.
+     */
+    @Deprecated
+    public Future<Transform> getTransformation() throws InterruptedException {
+        try {
+            return Units.getRootToUnitTransformationFuture(getConfig());
+        } catch (CouldNotPerformException ex) {
+            return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
+        }
+    }
 
     /**
      * {@inheritDoc}
@@ -543,8 +548,8 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      */
     @Override
     public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException, RejectedException {
-        ActionDescription initialized = initializeRequest(actionDescription);
-        return new AuthenticatedActionFuture(RPCHelper.callRemoteMethod(initialized, this, ActionFuture.class), initialized.getActionAuthority().getTicketAuthenticatorWrapper(), this.sessionManager);
+        ActionDescription initializedActionDescription = initializeRequest(actionDescription);
+        return new AuthenticatedActionFuture(RPCHelper.callRemoteMethod(initializedActionDescription, this, ActionFuture.class), initializedActionDescription.getActionAuthority().getTicketAuthenticatorWrapper(), this.sessionManager);
     }
 
     private ActionDescription initializeRequest(final ActionDescription actionDescription) throws CouldNotPerformException {

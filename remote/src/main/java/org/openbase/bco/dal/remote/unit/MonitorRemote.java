@@ -65,7 +65,7 @@ public class MonitorRemote extends AbstractUnitRemote<MonitorData> implements Mo
     public Future<ActionFuture> setPowerState(final PowerState powerState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return this.applyAction(updateActionDescription(actionDescription, powerState).build());
+            return applyAction(updateActionDescription(actionDescription, powerState).build());
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting powerState.", ex);
         }
@@ -84,7 +84,7 @@ public class MonitorRemote extends AbstractUnitRemote<MonitorData> implements Mo
     public Future<ActionFuture> setStandbyState(StandbyState standbyState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return this.applyAction(updateActionDescription(actionDescription, standbyState).build());
+            return applyAction(updateActionDescription(actionDescription, standbyState).build());
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting powerState.", ex);
         }

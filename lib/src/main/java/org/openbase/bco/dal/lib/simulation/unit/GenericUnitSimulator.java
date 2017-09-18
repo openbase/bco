@@ -64,7 +64,7 @@ public class GenericUnitSimulator extends AbstractUnitSimulator {
     private void initServiceSimulators(final UnitController unitController) throws InitializationException, InterruptedException {
         try {
             final MultiException.ExceptionStack exceptionStack = new MultiException.ExceptionStack();
-            for (final ServiceDescription serviceDescription : unitController.getTemplate().getServiceDescriptionList()) {
+            for (final ServiceDescription serviceDescription : unitController.getUnitTemplate().getServiceDescriptionList()) {
                 try {
                     serviceSimulatorList.add(serviceSimulatorFactory.newInstance(unitController, serviceDescription.getType()));
                 } catch (final CouldNotPerformException ex) {

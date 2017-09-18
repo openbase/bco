@@ -105,7 +105,7 @@ public abstract class AbstractDALUnitController<M extends GeneratedMessage, MB e
             }
 
             // === Verify if all update methods are registered. ===
-            for (ServiceDescription serviceDescription : getTemplate().getServiceDescriptionList()) {
+            for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
 
                 // filter other services than provider
                 if (serviceDescription.getPattern() != ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER) {
