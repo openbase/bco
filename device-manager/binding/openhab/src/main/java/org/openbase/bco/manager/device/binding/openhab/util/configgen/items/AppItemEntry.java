@@ -21,12 +21,11 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen.items;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.GroupEntry;
-import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -34,9 +33,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public class AppItemEntry extends AbstractItemEntry {
 
-    public static String APP_GROUP_LABEL = "Apps";
-
-    public AppItemEntry(final UnitConfig appUnitConfig, final LocationRegistryRemote locationRegistryRemote) throws org.openbase.jul.exception.InstantiationException {
+    public AppItemEntry(final UnitConfig appUnitConfig) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         super(appUnitConfig, null);
         try {
             this.itemId = generateItemId(appUnitConfig);
@@ -44,8 +41,8 @@ public class AppItemEntry extends AbstractItemEntry {
             this.commandType = "Switch";
             this.label = appUnitConfig.getLabel();
             this.itemHardwareConfig = "rsb=\"bco.manager.app:" + appUnitConfig.getId() + "\"";
-            groups.add(APP_GROUP_LABEL);
-//            groups.add(GroupEntry.generateGroupID(appUnitConfig.getPlacementConfig().getLocationId(), locationRegistryRemote));
+            groups.add(ItemIdGenerator.generateUnitGroupID(UnitType.APP));
+            groups.add(ItemIdGenerator.generateUnitGroupID(appUnitConfig.getPlacementConfig().getLocationId()));
             calculateGaps();
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);

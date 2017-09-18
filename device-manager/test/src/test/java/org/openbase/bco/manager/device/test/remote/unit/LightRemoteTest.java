@@ -64,7 +64,7 @@ public class LightRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 5000)
+    @Test//(timeout = 5000)
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();

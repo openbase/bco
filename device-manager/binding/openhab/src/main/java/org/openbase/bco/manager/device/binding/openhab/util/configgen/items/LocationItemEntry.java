@@ -21,13 +21,13 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen.items;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.GroupEntry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -35,7 +35,6 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public class LocationItemEntry extends AbstractItemEntry {
 
-    public static String LOCATION_GROUP_LABEL = "Locations";
     public static String LOCATION_RSB_BINDING_CONFIG = "bco.manager.location";
 
     public LocationItemEntry(final UnitConfig locationUnitConfig, final ServiceDescription serviceDescription) throws org.openbase.jul.exception.InstantiationException {
@@ -49,8 +48,8 @@ public class LocationItemEntry extends AbstractItemEntry {
                 label += " [%.0f]";
             }
             this.itemHardwareConfig = "rsb=\"" + LOCATION_RSB_BINDING_CONFIG + ":" + locationUnitConfig.getId() + "\"";
-            groups.add(LOCATION_GROUP_LABEL);
-            groups.add(GroupEntry.generateGroupID(locationUnitConfig));
+            groups.add(ItemIdGenerator.generateUnitGroupID(UnitType.LOCATION));
+            groups.add(ItemIdGenerator.generateUnitGroupID(locationUnitConfig));
             calculateGaps();
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);

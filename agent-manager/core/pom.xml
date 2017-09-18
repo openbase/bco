@@ -93,7 +93,7 @@
         <dependency>
             <groupId>org.openbase.bco</groupId>
             <artifactId>ontology.lib</artifactId>
-            <version>${project.version}</version>
+            <version>${dependency.bco.ontology.version}</version>
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>

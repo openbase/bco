@@ -21,7 +21,6 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen.items;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.GroupEntry;
 import static org.openbase.bco.manager.device.binding.openhab.util.configgen.items.AbstractItemEntry.ITEM_SEGMENT_DELIMITER;
 import static org.openbase.bco.manager.device.binding.openhab.util.configgen.items.AbstractItemEntry.ITEM_SUBSEGMENT_DELIMITER;
 import static org.openbase.bco.manager.device.binding.openhab.util.configgen.items.LocationItemEntry.LOCATION_RSB_BINDING_CONFIG;
@@ -31,6 +30,7 @@ import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -38,9 +38,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public class ConnectionItemEntry extends AbstractItemEntry {
 
-    public static String CONNECTION_GROUP_LABEL = "Connections";
-
-    public ConnectionItemEntry(final UnitConfig connectionUnitConfig, final ServiceDescription serviceDescription) throws org.openbase.jul.exception.InstantiationException {
+    public ConnectionItemEntry(final UnitConfig connectionUnitConfig, final ServiceDescription serviceDescription) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         super(connectionUnitConfig, null);
         try {
             this.itemId = generateItemId(connectionUnitConfig, serviceDescription.getType());
@@ -48,8 +46,9 @@ public class ConnectionItemEntry extends AbstractItemEntry {
             this.commandType = getDefaultCommand(serviceDescription.getType());
             this.label = connectionUnitConfig.getLabel();
             this.itemHardwareConfig = "rsb=\"" + LOCATION_RSB_BINDING_CONFIG + ":" + connectionUnitConfig.getId() + "\"";
-            groups.add(CONNECTION_GROUP_LABEL);
-            groups.add(GroupEntry.generateGroupID(connectionUnitConfig.getScope()));
+            
+            groups.add(ItemIdGenerator.generateUnitGroupID(UnitType.CONNECTION));
+            groups.add(ItemIdGenerator.generateUnitGroupID(connectionUnitConfig.getPlacementConfig().getLocationId()));
             calculateGaps();
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);

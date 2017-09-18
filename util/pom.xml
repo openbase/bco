@@ -114,6 +114,11 @@
         </plugins>
     </build>    
 
+    <properties>
+        <skipTests>false</skipTests>
+    </properties>
+
+
     <dependencies>
         <!-- registries -->
         <dependency>
@@ -177,6 +182,12 @@
             <groupId>org.openbase.bco</groupId>
             <artifactId>manager.device.binding.openhab</artifactId>
             <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>dal.test</artifactId>
+            <version>${dependency.bco.dal.version}</version>
+            <scope>test</scope>
         </dependency>
         
     </dependencies>

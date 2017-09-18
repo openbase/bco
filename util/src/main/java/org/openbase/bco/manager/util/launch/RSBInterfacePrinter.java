@@ -21,24 +21,27 @@ package org.openbase.bco.manager.util.launch;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.GeneratedMessage;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
-import java.util.Comparator;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
-import static org.openbase.jps.core.JPService.printHelp;
-import org.openbase.jps.preset.JPVerbose;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rsb.com.RSBRemote;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.iface.annotations.RPCMethod;
+import org.openbase.jul.storage.registry.RegistryRemote;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -48,8 +51,11 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public class RSBInterfacePrinter {
 
+    protected static final Logger LOGGER = LoggerFactory.getLogger(RSBInterfacePrinter.class);
+
     public enum AnsiColor {
 
+        // todo: move to jul
         ANSI_RESET("\u001B[0m"),
         ANSI_BLACK("\u001B[30m"),
         ANSI_RED("\u001B[31m"),
@@ -82,8 +88,10 @@ public class RSBInterfacePrinter {
     public static final AnsiColor SCOPE_COLOR = AnsiColor.ANSI_GREEN;
     public static final AnsiColor RETURN_LIMITER_COLOR = AnsiColor.ANSI_GREEN;
     public static final AnsiColor PARAMETER_LIMITER_COLOR = AnsiColor.ANSI_RED;
+    public static final AnsiColor SUB_HEADLINE = AnsiColor.ANSI_CYAN;
     public static final AnsiColor TYPE_LIMITER_COLOR = AnsiColor.ANSI_RED;
-    public static final AnsiColor UNIT_TYPE_COLOR = AnsiColor.ANSI_CYAN;
+    public static final AnsiColor UNIT_TYPE_COLOR = SUB_HEADLINE;
+    public static final AnsiColor REGISTRY_TYPE_COLOR = SUB_HEADLINE;
 
     public static String colorize(String text) {
 
@@ -98,52 +106,102 @@ public class RSBInterfacePrinter {
     }
 
     /**
-     * This is a command line tool to query registry entries.
+     * This method returns the registry data class resolved by the given registry name.
      *
-     * TODOs
-     * - JPService should be used in a future release.
-     * - Resolve units via raw protobuf message.
-     *
-     * @param args
+     * @param registryDataClassSimpleName the name is used to extract the registry data class.
+     * @return the unit data class.
+     * @throws org.openbase.jul.exception.NotAvailableException is thrown if the data class name could not be detected.
      */
-    public static void main(String[] args) {
-        boolean resultsFound = false;
+    public static Class<? extends GeneratedMessage> getRegistryDataClass(final String registryDataClassSimpleName) throws NotAvailableException {
+        final String registryDataClassName = UnitRegistryData.class.getPackage().getName() + "." + registryDataClassSimpleName + "DataType$" + registryDataClassSimpleName + "Data";
 
         try {
+            return (Class<? extends GeneratedMessage>) Class.forName(registryDataClassName);
+        } catch (NullPointerException | ClassNotFoundException | ClassCastException ex) {
+            throw new NotAvailableException("RegistryDataClass", registryDataClassName, new CouldNotPerformException("Could not detect class!", ex));
+        }
+    }
 
-            JPService.setApplicationName("bco-interface-printer");
-            JPService.registerProperty(JPVerbose.class, true);
+    public static void main(String[] args) {
 
-            // help
-            if (args.length > 0 && (args[0].equals("-h") || args[0].equals("--help"))) {
-                printHelp();
-                System.exit(0);
+        JPService.setApplicationName("bco-interface-printer");
+        JPService.parseAndExitOnError(args);
+
+        try {
+            System.out.println("==================================================");
+            System.out.println("BaseCubeOne - Registry (Service Discovery) RSB API ");
+            System.out.println("==================================================");
+            System.out.println();
+            System.out.println("General Information:");
+            System.out.println();
+            System.out.println(AnsiColor.colorize("    Registry Scope Structure:", SUB_HEADLINE));
+            System.out.println(colorize("        / registry / <RegistryName> / <CommunicationPattern> : <RegistryDataType>"));
+            System.out.println();
+            System.out.println(AnsiColor.colorize("    Each registry publishes status changes via a dedecated rsb informer on the following status scope:", SUB_HEADLINE));
+            System.out.println(colorize("        / <RegistryScope> / status"));
+            System.out.println();
+            System.out.println(AnsiColor.colorize("    Each registry provides a set of rsb remote procedure call (rpc) methods accessable by there control scope:", SUB_HEADLINE));
+            System.out.println(colorize("        / <RegistryScope> / ctrl"));
+            System.out.println();
+            System.out.println();
+            System.out.println("This is the set of rpc methods provided by all registries:");
+            System.out.println();
+            System.out.println("    " + AnsiColor.colorize("All", UNIT_TYPE_COLOR));
+            System.out.println(colorize("        / <RegistryScope> / ctrl / ping() : The connection delay as integer"));
+            System.out.println(colorize("        / <RegistryScope> / ctrl / requestStatus() : <RegistryDataType>"));
+            System.out.println();
+            System.out.println("This is the registry specific set of rpc methods:");
+            System.out.println();
+            String unitDataType;
+
+            for (final RegistryRemote registry : Registries.getRegistries(true)) {
+
+                // print unit data type
+                try {
+                    unitDataType = transformToRSTTypeName(getRegistryDataClass(registry.getName()).getName());
+                } catch (final NotAvailableException ex) {
+                    ExceptionPrinter.printHistory(ex, LOGGER);
+                    unitDataType = "?";
+                }
+
+                System.out.println("    " + AnsiColor.colorize(registry.getName(), UNIT_TYPE_COLOR) + colorize(" : " + unitDataType));
+
+                final String scope = ScopeGenerator.generateStringRep(((RSBRemote) registry).getScope());
+                for (final Method method : detectRPCMethods(registry)) {
+                    final String params = detectParameterType(method);
+                    final String returnType = detectReturnType(method);
+                    System.out.println(colorize("       " + scope.replace("/", " / ") + "ctrl / " + method.getName() + "(" + transformToRSTTypeName(params) + ")" + (returnType.isEmpty() ? "" : " : " + returnType)));
+                }
+                System.out.println();
             }
 
             // init
             Registries.waitForData();
             final ArrayList<UnitConfig> unitConfigs = new ArrayList<>();
-
-            System.out.println(colorize("BaseCubeOne DAL <UnitScope> Structure"));
-            System.out.println(colorize("    / <LocationScope> / <UnitType> / <UnitLabel> / <CommunicationPattern> : <UnitDataType>"));
-            System.out.println("");
-            System.out.println("    Each unit publishes status changes via a dedecated rsb informer on the following status scope:");
-            System.out.println(colorize("    / <UnitScope> / status"));
-            System.out.println("");
-            System.out.println("    Each unit provides a set of rsb remote procedure call (rpc) methods accessable by there control scope:");
-            System.out.println(colorize("    / <UnitScope> / ctrl"));
-            System.out.println("");
-            System.out.println("");
+            System.out.println("===========================================================");
+            System.out.println(colorize("BaseCubeOne - DAL (Domotic Abstract Layer) RSB API"));
+            System.out.println("===========================================================");
+            System.out.println();
+            System.out.println("General Information:");
+            System.out.println();
+            System.out.println(AnsiColor.colorize("    Unit Scope Structure:", SUB_HEADLINE));
+            System.out.println(colorize("        / <LocationScope> / <UnitType> / <UnitLabel> / <CommunicationPattern> : <UnitDataType>"));
+            System.out.println();
+            System.out.println(AnsiColor.colorize("    Each unit publishes status changes via a dedecated rsb informer on the following status scope:", SUB_HEADLINE));
+            System.out.println(colorize("        / <UnitScope> / status"));
+            System.out.println();
+            System.out.println(AnsiColor.colorize("    Each unit provides a set of rsb remote procedure call (rpc) methods accessable by there control scope:", SUB_HEADLINE));
+            System.out.println(colorize("        / <UnitScope> / ctrl"));
+            System.out.println();
+            System.out.println();
             System.out.println("This static set of rpc methods is provided by all units:");
-            System.out.println("");
-            System.out.println(colorize("    / <UnitScope> / ctrl / ping() : The connection delay as integer"));
-            System.out.println(colorize("    / <UnitScope> / ctrl / requestStatus() : <UnitDataType>"));
-            System.out.println("");
+            System.out.println();
+            System.out.println("    " + AnsiColor.colorize("All", UNIT_TYPE_COLOR));
+            System.out.println(colorize("        / <UnitScope> / ctrl / ping() : The connection delay as integer"));
+            System.out.println(colorize("        / <UnitScope> / ctrl / requestStatus() : <UnitDataType>"));
+            System.out.println();
             System.out.println("Furthermore each unit provids a type specific set of rpc methods related to there services:");
-            System.out.println("");
-
-            List<Method> methodSet = new ArrayList();
-            String unitDataType;
+            System.out.println();
 
             // print by unit type
             unitConfigs.clear();
@@ -154,78 +212,29 @@ public class RSBInterfacePrinter {
                         continue;
                     }
 
+                    // print unit data type
                     try {
                         unitDataType = transformToRSTTypeName(UnitConfigProcessor.getUnitDataClass(unitType).getName());
                     } catch (final NotAvailableException ex) {
                         unitDataType = "?";
                     }
-
                     System.out.println("    " + AnsiColor.colorize(unitType.name(), UNIT_TYPE_COLOR) + colorize(" : " + unitDataType));
 
-                    // clear methods
-                    methodSet.clear();
-
+                    // print unit rpc methods
+                    final Object unitInstance;
                     try {
-                        Object newInstance = UnitRemoteFactoryImpl.getInstance().newInstance(unitType);
-                        Class<?>[] interfaces = newInstance.getClass().getInterfaces();
-                        for (Class<?> iface : interfaces) {
-//                        System.out.println("found interface: " + iface.getName());
-                            methodSet.addAll(Arrays.asList(iface.getMethods()));
-                        }
-                        methodSet.addAll(Arrays.asList(newInstance.getClass().getMethods()));
+                        unitInstance = UnitRemoteFactoryImpl.getInstance().newInstance(unitType);
                     } catch (CouldNotPerformException ex) {
                         System.out.println("        Auto detection not possible.\n");
                         continue;
                     }
 
-                    final List<Method> methodList = new ArrayList();
-                    for (final Method method : methodSet) {
-
-                        // filter non rpc methods
-                        if (method.getAnnotation(RPCMethod.class) == null) {
-
-                            if (method.getName().equals("requestStatus")) {
-                                System.out.println("halt!");
-                            }
-                            continue;
-                        }
-
-                        // filter default methods because they do not provide real data types.
-                        if (method.isDefault()) {
-                            continue;
-                        }
-                        methodList.add(method);
-                    }
-
-                    Collections.sort(methodList, new Comparator<Method>() {
-                        @Override
-                        public int compare(Method o1, Method o2) {
-                            return o1.getName().compareTo(o2.getName());
-                        }
-                    });
-
-                    for (final Method method : methodList) {
-
-                        // detect method param type
-                        final String params = (method.getParameterTypes().length != 0) ? method.getParameterTypes()[0].getName() : "";
-
-//                    System.out.println("getAnnotatedReturnType" + method.getAnnotatedReturnType());
-//                    System.out.println("getReturnType" + method.getReturnType());
-//                    System.out.println("getGenericReturnType" + method.getGenericReturnType());
-                        // detect method return type
-                        String returnType;
-                        if (method.getReturnType().isAssignableFrom(Future.class)) {
-                            returnType = method.getGenericReturnType().toString();
-                        } else {
-                            returnType = method.getGenericReturnType().toString();
-                        }
-
-                        returnType = transformToRSTTypeName(returnType);
-
-                        // print method representation
+                    for (final Method method : detectRPCMethods(unitInstance)) {
+                        final String params = detectParameterType(method);
+                        final String returnType = detectReturnType(method);
                         System.out.println(colorize("        / <LocationScope> / " + ScopeGenerator.convertIntoValidScopeComponent(unitType.name()) + " / <UnitLabel> / ctrl / " + method.getName() + "(" + transformToRSTTypeName(params) + ")" + (returnType.isEmpty() ? "" : " : " + returnType)));
                     }
-                    System.out.println("");
+                    System.out.println();
                 } catch (Exception ex) {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Could not extract rsb interface of :" + unitType.name()), System.err);
                 }
@@ -236,11 +245,64 @@ public class RSBInterfacePrinter {
             return;
         } catch (Exception ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not detect interface!", ex), System.err);
-//            printHelp();
             System.exit(254);
         }
 
         System.exit(0);
+    }
+
+    public static List<Method> detectRPCMethods(final Object instance) {
+        final List<Method> methodList = new ArrayList();
+        for (final Method method : detectMethods(instance)) {
+
+            // filter non rpc methods
+            if (method.getAnnotation(RPCMethod.class) == null) {
+                continue;
+            }
+
+            // filter default methods because they do not provide real data types.
+            if (method.isDefault()) {
+                continue;
+            }
+            methodList.add(method);
+        }
+        return sortMethodList(methodList);
+    }
+
+    public static List<Method> detectMethods(final Object instance) {
+        final List<Method> methodSet = new ArrayList();
+        Class<?>[] interfaces = instance.getClass().getInterfaces();
+        for (Class<?> iface : interfaces) {
+            // System.out.println("found interface: " + iface.getName());
+            methodSet.addAll(Arrays.asList(iface.getMethods()));
+        }
+        methodSet.addAll(Arrays.asList(instance.getClass().getMethods()));
+        return methodSet;
+    }
+
+    public static String detectParameterType(final Method method) {
+        // detect method param type
+        return (method.getParameterTypes().length != 0) ? method.getParameterTypes()[0].getName() : "";
+    }
+
+    public static String detectReturnType(final Method method) {
+        // detect method return type
+        String returnType;
+        if (method.getReturnType().isAssignableFrom(Future.class)) {
+            returnType = method.getGenericReturnType().toString();
+        } else {
+            returnType = method.getGenericReturnType().toString();
+        }
+
+        // System.out.println("getAnnotatedReturnType" + method.getAnnotatedReturnType());
+        // System.out.println("getReturnType" + method.getReturnType());
+        // System.out.println("getGenericReturnType" + method.getGenericReturnType());
+        return transformToRSTTypeName(returnType);
+    }
+
+    public static List<Method> sortMethodList(final List<Method> methodList) {
+        Collections.sort(methodList, (Method o1, Method o2) -> o1.getName().compareTo(o2.getName()));
+        return methodList;
     }
 
     public static String transformToRSTTypeName(final String inputClassName) {
@@ -259,74 +321,6 @@ public class RSBInterfacePrinter {
         className = className.replaceAll("\\<", "");
         className = className.replaceAll("\\>", "");
         className = className.replaceAll("\\$", ".");
-//        
-////        if(!className.equals(inputClassName)) {
-////            return transformToRSTTypeName(className);
-////        }
         return className.trim();
     }
-
-//    private static void printHelp() {
-//        System.out.println("");
-//        System.out.println("");
-//        System.out.println("Usage:   bco-registry-query ${UNIT_TYPE}");
-//        System.out.println("         bco-registry-query ${UNIT_LOCATION}");
-//        System.out.println("         bco-registry-query ${UNIT_LABEL}");
-//        System.out.println("");
-//        System.out.println("Example: bco-registry-query colorablelight");
-//        System.out.println("         bco-registry-query livingroom");
-//        System.out.println("         bco-registry-query ceilinglamp");
-//        System.out.println("");
-//        System.out.println("Print:   ${ID} ${LABEL} @ ${LOCATION} ${SCOPE}");
-//        System.out.println("");
-//    }
-//
-//    public static void printUnits(List<UnitConfig> unitConfigList) throws InterruptedException, CouldNotPerformException {
-//
-//        // sort by scope
-//        Collections.sort(unitConfigList, new Comparator<UnitConfig>() {
-//            @Override
-//            public int compare(UnitConfig o1, UnitConfig o2) {
-//                try {
-//                    return ScopeGenerator.generateStringRep(o1.getScope()).compareTo(ScopeGenerator.generateStringRep(o2.getScope()));
-//                } catch (CouldNotPerformException ex) {
-//                    ExceptionPrinter.printHistory("Could not sort scope!", ex, System.err);
-//                    return 0;
-//                }
-//            }
-//        });
-//
-//        // calculate max unit label length
-//        int maxUnitLabelLength = 0;
-//        int maxLocationUnitLabelLength = 0;
-//        int maxScopeLength = 0;
-//        for (final UnitConfig unitConfig : unitConfigList) {
-//            maxUnitLabelLength = Math.max(maxUnitLabelLength, unitConfig.getLabel().length());
-//            maxLocationUnitLabelLength = Math.max(maxLocationUnitLabelLength, getLocationLabel(unitConfig).length());
-//            maxScopeLength = Math.max(maxScopeLength, ScopeGenerator.generateStringRep(unitConfig.getScope()).length());
-//        }
-//
-//        // print
-//        for (final UnitConfig unitConfig : unitConfigList) {
-//            printUnit(unitConfig, maxUnitLabelLength, maxLocationUnitLabelLength, maxScopeLength);
-//        }
-//    }
-//
-//    public static void printUnit(final UnitConfig unitConfig, final int maxUnitLabelLength, final int maxLocationUnitLabelLength, final int maxScopeLength) throws InterruptedException, CouldNotPerformException {
-//        System.out.println(unitConfig.getId()
-//                + "  "
-//                + StringProcessor.fillWithSpaces(unitConfig.getLabel(), maxUnitLabelLength, StringProcessor.Alignment.RIGHT)
-//                + " @ " + StringProcessor.fillWithSpaces(getLocationLabel(unitConfig), maxLocationUnitLabelLength)
-//                + "  "
-//                + "[ " + StringProcessor.fillWithSpaces(ScopeGenerator.generateStringRep(unitConfig.getScope()), maxScopeLength) + " ]"
-//        );
-//    }
-//
-//    private static String getLocationLabel(final UnitConfig unitConfig) throws InterruptedException {
-//        try {
-//            return Registries.getLocationRegistry().getLocationConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel();
-//        } catch (CouldNotPerformException ex) {
-//            return "?";
-//        }
-//    }
 }

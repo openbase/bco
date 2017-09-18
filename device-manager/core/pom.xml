@@ -55,6 +55,13 @@
                                 <platform>unix</platform>
                             </platforms>
                         </program>
+                        <program>
+                            <mainClass>org.openbase.bco.manager.device.core.FallbackDeviceManagerLauncher</mainClass>
+                            <id>bco-manager-device-fallback</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
                     </programs>
                 </configuration>
             </plugin>

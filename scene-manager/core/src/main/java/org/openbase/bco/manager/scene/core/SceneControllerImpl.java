@@ -147,6 +147,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         }
 
         MultiException.ExceptionStack exceptionStack = null;
+        
         synchronized (actionListSync) {
             remoteActionList.clear();
             RemoteAction action;
@@ -170,6 +171,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
                 }
             }
         }
+        
         try {
             MultiException.checkAndThrow("Could not fully init units of " + this, exceptionStack);
         } catch (CouldNotPerformException ex) {
@@ -200,7 +202,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     }
 
     public static final int ACTION_REPLAY = 3;
-    public static final int ACTION_EXECUTION_DEPLAY = 5500;
+    public static final int ACTION_EXECUTION_DELAY = 5500;
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
@@ -219,7 +221,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
             }
             // only wait if another interation is following.
             if (i + 1 < ACTION_REPLAY) {
-                Thread.sleep(ACTION_EXECUTION_DEPLAY);
+                Thread.sleep(ACTION_EXECUTION_DELAY);
             }
         }
 

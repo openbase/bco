@@ -22,27 +22,29 @@ package org.openbase.bco.manager.agent.core.preset;
  * #L%
  */
 import java.util.List;
-import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.ExecutionException;
+import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.manager.agent.core.AbstractAgentController;
-import org.openbase.bco.manager.agent.core.TriggerDAL.AgentTriggerPool;
-import org.openbase.bco.manager.agent.core.TriggerDAL.NeighborConnectionPresenceTrigger;
-import org.openbase.bco.manager.agent.core.TriggerJUL.GenericTrigger;
+import org.openbase.bco.dal.remote.action.ActionRescheduler;
+import org.openbase.bco.dal.remote.trigger.preset.NeighborConnectionPresenceTrigger;
+import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.communicationpatterns.ResourceAllocationType;
+import rst.domotic.action.ActionAuthorityType;
+import rst.domotic.action.ActionDescriptionType;
+import rst.domotic.action.MultiResourceAllocationStrategyType;
+import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.unit.UnitConfigType;
+import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig.ConnectionType;
 import rst.domotic.unit.location.LocationDataType.LocationData;
 
@@ -50,23 +52,21 @@ import rst.domotic.unit.location.LocationDataType.LocationData;
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class NearFieldLightAgent extends AbstractAgentController {
+public class NearFieldLightAgent extends AbstractResourceAllocationAgent {
 
     private LocationRemote locationRemote;
-    private Future<ActionFuture> setBrightnessStateFuture;
-    private boolean isDimmed = false;
     private List<LocationRemote> neighborRemotes;
-    private final Observer<ActivationState> triggerHolderObserver;
 
     public NearFieldLightAgent() throws InstantiationException {
         super(NearFieldLightAgent.class);
 
+        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
+
         triggerHolderObserver = (Observable<ActivationState> source, ActivationState data) -> {
             if (data.getValue().equals(ActivationState.State.ACTIVE)) {
                 dimmLights();
-            } else if (setBrightnessStateFuture != null) {
-                setBrightnessStateFuture.cancel(true);
-                isDimmed = false;
+            } else {
+                actionRescheduleHelper.stopExecution();
             }
         };
     }
@@ -83,52 +83,36 @@ public class NearFieldLightAgent extends AbstractAgentController {
 
         try {
             for (LocationRemote neigborRemote : neighborRemotes) {
-                 if (locationRemote.hasDirectConnection(neigborRemote.getId(), ConnectionType.PASSAGE, true)) {
-                    GenericTrigger<LocationRemote, LocationData, PresenceState.State> trigger = new GenericTrigger<>(neigborRemote, PresenceState.State.PRESENT, ServiceType.PRESENCE_STATE_SERVICE);
-                    agentTriggerHolder.addTrigger(trigger, AgentTriggerPool.TriggerOperation.OR);
+                if (locationRemote.hasDirectConnection(neigborRemote.getId(), ConnectionType.PASSAGE, true)) {
+                    GenericBCOTrigger<LocationRemote, LocationData, PresenceState.State> trigger = new GenericBCOTrigger<>(neigborRemote, PresenceState.State.PRESENT, ServiceType.PRESENCE_STATE_SERVICE);
+                    agentTriggerHolder.addTrigger(trigger, TriggerPool.TriggerOperation.OR);
                 } else {
                     for (ConnectionRemote relatedConnection : locationRemote.getDirectConnectionList(neigborRemote.getId(), true)) {
                         NeighborConnectionPresenceTrigger trigger = new NeighborConnectionPresenceTrigger(neigborRemote, relatedConnection);
-                        agentTriggerHolder.addTrigger(trigger, AgentTriggerPool.TriggerOperation.OR);
+                        agentTriggerHolder.addTrigger(trigger, TriggerPool.TriggerOperation.OR);
                     }
                 }
             }
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not initialize trigger", ex);
         }
-
-        agentTriggerHolder.registerObserver(triggerHolderObserver);
-    }
-
-    @Override
-    protected void execute() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activating [" + getConfig().getLabel() + "]");
-        agentTriggerHolder.activate();
-    }
-
-    @Override
-    protected void stop() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getConfig().getLabel() + "]");
-        agentTriggerHolder.deactivate();
-    }
-
-    @Override
-    public void shutdown() {
-        agentTriggerHolder.deregisterObserver(triggerHolderObserver);
-        agentTriggerHolder.shutdown();
-        super.shutdown();
     }
 
     private void dimmLights() {
-        if (isDimmed) {
-            return;
-        }
         try {
-            // Blocking and trying to realloc all lights
-            setBrightnessStateFuture = locationRemote.setBrightnessState(BrightnessState.newBuilder().setBrightness(0.5).build());
-        } catch (CouldNotPerformException ex) {
-            Logger.getLogger(NearFieldLightAgent.class.getName()).log(Level.SEVERE, null, ex);
+            ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+                    1000 * 30,
+                    ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+                    ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
+                    locationRemote,
+                    BrightnessState.newBuilder().setBrightness(0.5).build(),
+                    UnitTemplateType.UnitTemplate.UnitType.DIMMABLE_LIGHT,
+                    ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE,
+                    MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+            logger.error("Could not dim lights.", ex);
         }
-        isDimmed = true;
     }
 }

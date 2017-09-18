@@ -21,21 +21,23 @@ package org.openbase.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
-import java.util.logging.Level;
-import java.util.logging.Logger;
+import java.util.concurrent.ExecutionException;
+import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
+import org.openbase.bco.dal.remote.action.ActionRescheduler;
+import org.openbase.bco.dal.remote.action.ActionRescheduler.RescheduleOption;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.manager.agent.core.AbstractAgentController;
-import org.openbase.bco.manager.agent.core.TriggerDAL.AgentTriggerPool;
-import org.openbase.bco.manager.agent.core.TriggerJUL.GenericTrigger;
+import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
+import rst.domotic.action.ActionAuthorityType.ActionAuthority;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.PowerStateType.PowerState;
@@ -48,31 +50,33 @@ import rst.domotic.unit.location.LocationDataType.LocationData;
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class PresenceLightAgent extends AbstractAgentController {
+public class PresenceLightAgent extends AbstractResourceAllocationAgent {
 
     private LocationRemote locationRemote;
-    private Future<ActionFuture> setPowerStateFuture;
     private final PresenceState.State triggerState = PresenceState.State.PRESENT;
-    private final Observer<ActivationState> triggerHolderObserver;
 
     public PresenceLightAgent() throws InstantiationException {
         super(PresenceLightAgent.class);
 
+        actionRescheduleHelper = new ActionRescheduler(RescheduleOption.EXTEND, 30);
+
         triggerHolderObserver = (Observable<ActivationState> source, ActivationState data) -> {
-            if (data.getValue().equals(ActivationState.State.ACTIVE)) {
-                switchlightsOn();
-            } else {
-                if (setPowerStateFuture != null) {
-                    setPowerStateFuture.cancel(true);
+            logger.warn("New trigger state: " + data.getValue());
+            GlobalCachedExecutorService.submit(() -> {
+                if (data.getValue().equals(ActivationState.State.ACTIVE)) {
+                    switchlightsOn();
+                } else {
+                    logger.warn("Stop execution");
+                    actionRescheduleHelper.stopExecution();
                 }
-            }
+                return null;
+            });
         };
     }
 
     @Override
     public void init(final UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
-
         try {
             locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), true, Units.LOCATION);
         } catch (NotAvailableException ex) {
@@ -80,41 +84,28 @@ public class PresenceLightAgent extends AbstractAgentController {
         }
 
         try {
-            GenericTrigger<LocationRemote, LocationData, PresenceState.State> agentTrigger = new GenericTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE);
-            agentTriggerHolder.addTrigger(agentTrigger, AgentTriggerPool.TriggerOperation.OR);
+            GenericBCOTrigger<LocationRemote, LocationData, PresenceState.State> agentTrigger = new GenericBCOTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE);
+            agentTriggerHolder.addTrigger(agentTrigger, TriggerPool.TriggerOperation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not add agent to agentpool", ex);
         }
-
-        agentTriggerHolder.registerObserver(triggerHolderObserver);
-    }
-
-    @Override
-    protected void execute() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activating [" + getConfig().getLabel() + "]");
-        agentTriggerHolder.activate();
-    }
-
-    @Override
-    protected void stop() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getConfig().getLabel() + "]");
-        agentTriggerHolder.deactivate();
-    }
-
-    @Override
-    public void shutdown() {
-        agentTriggerHolder.deregisterObserver(triggerHolderObserver);
-        agentTriggerHolder.shutdown();
-        super.shutdown();
     }
 
     private void switchlightsOn() {
         try {
-            setPowerStateFuture = locationRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.ON).build(), UnitType.LIGHT);
-            // TODO: Blocking setPowerState function that is trying to realloc all lights as long as jobs not cancelled. 
-            // TODO: Maybe also set Color and Brightness?
-        } catch (CouldNotPerformException ex) {
-            Logger.getLogger(PresenceLightAgent.class.getName()).log(Level.SEVERE, null, ex);
+            ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthority.getDefaultInstance(),
+                    ResourceAllocation.Initiator.SYSTEM,
+                    1000 * 30,
+                    ResourceAllocation.Policy.FIRST,
+                    ResourceAllocation.Priority.NORMAL,
+                    locationRemote,
+                    PowerState.newBuilder().setValue(PowerState.State.ON).build(),
+                    UnitType.LIGHT,
+                    ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
+                    MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+            logger.error("Could not switch on Lights.", ex);
         }
     }
 }
