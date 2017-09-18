@@ -42,6 +42,7 @@ import rct.TransformerFactory;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
+@Deprecated
 public class PublishDeviceTransformationRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());

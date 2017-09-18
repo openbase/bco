@@ -21,6 +21,7 @@ package org.openbase.bco.registry.unit.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -67,14 +68,16 @@ public class CachedUnitRegistryRemote {
             getRegistry().init();
             getRegistry().lock(REMOTE_LOCK);
             getRegistry().requestData().get(10, TimeUnit.SECONDS);
-        } catch (ExecutionException | TimeoutException | CouldNotPerformException ex) {
+        } catch (ExecutionException | TimeoutException | CouldNotPerformException | CancellationException ex) {
             throw new CouldNotPerformException("Could not reinitialize " + CachedUnitRegistryRemote.class.getSimpleName() + "!", ex);
         }
     }
 
+    // release todo: remove InterruptedException for all getRegistry() methods. 
     /**
      *
-     * @return @throws InterruptedException
+     * @return 
+     * @throws InterruptedException
      * @throws NotAvailableException
      */
     public synchronized static UnitRegistryRemote getRegistry() throws InterruptedException, NotAvailableException {

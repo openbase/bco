@@ -21,6 +21,7 @@ package org.openbase.bco.registry.agent.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
@@ -67,7 +68,7 @@ public class CachedAgentRegistryRemote {
             getRegistry().init();
             getRegistry().lock(REMOTE_LOCK);
             getRegistry().requestData().get(10, TimeUnit.SECONDS);
-        } catch (ExecutionException | TimeoutException | CouldNotPerformException ex) {
+        } catch (ExecutionException | TimeoutException | CouldNotPerformException | CancellationException ex) {
             throw new CouldNotPerformException("Could not reinitialize " + CachedAgentRegistryRemote.class.getSimpleName() + "!", ex);
         }
     }

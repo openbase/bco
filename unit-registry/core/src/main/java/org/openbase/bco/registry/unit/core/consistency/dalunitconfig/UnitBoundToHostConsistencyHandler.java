@@ -21,7 +21,6 @@ package org.openbase.bco.registry.unit.core.consistency.dalunitconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.registry.lib.util.DeviceConfigUtils;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
@@ -64,28 +63,14 @@ public class UnitBoundToHostConsistencyHandler extends AbstractProtoBufRegistryC
             modification = true;
         }
 
-        // Overwrite unit bounds by device bounds
-        if (deviceUnitConfig.getBoundToUnitHost() != dalUnitConfig.getBoundToUnitHost()) {
+        // Overwrite unit bounds by device bounds if device bounds is true and unit bounds 
+        if (deviceUnitConfig.getBoundToUnitHost() && !dalUnitConfig.getBoundToUnitHost()) {
             dalUnitConfig.setBoundToUnitHost(deviceUnitConfig.getBoundToUnitHost());
             modification = true;
         }
 
-        // Copy device placement, location and label if bound to device is enabled.
+        // Copy device placement and location if bound to host
         if (dalUnitConfig.getBoundToUnitHost()) {
-            final DeviceClassType.DeviceClass deviceClass = deviceClassRegistry.get(deviceUnitConfig.getDeviceConfig().getDeviceClassId()).getMessage();
-
-            boolean hasDuplicatedUnitType = DeviceConfigUtils.checkDuplicatedUnitType(deviceUnitConfig, deviceClass, registry);
-
-            // Setup device label if unit has no label configured.
-            UnitConfig.Builder unitConfigCopy = UnitConfig.newBuilder(dalUnitConfig.build());
-            DeviceConfigUtils.setupUnitLabelByDeviceConfig(unitConfigCopy, deviceUnitConfig, deviceClass, hasDuplicatedUnitType);
-
-            if (!unitConfigCopy.getLabel().equals(dalUnitConfig)) {
-                if (dalUnitConfig.getLabel().equals(DeviceConfigUtils.generateDefaultUnitLabel(dalUnitConfig, deviceUnitConfig, deviceClass, hasDuplicatedUnitType))) {
-                    logger.debug("Update label of Unit[" + dalUnitConfig.getLabel() + "] to " + unitConfigCopy.getLabel());
-                    modification = modification || DeviceConfigUtils.setupUnitLabelByDeviceConfig(dalUnitConfig, deviceUnitConfig, deviceClass, hasDuplicatedUnitType);
-                }
-            }
 
             // copy location id
             if (!dalUnitConfig.getPlacementConfig().getLocationId().equals(deviceUnitConfig.getPlacementConfig().getLocationId())) {

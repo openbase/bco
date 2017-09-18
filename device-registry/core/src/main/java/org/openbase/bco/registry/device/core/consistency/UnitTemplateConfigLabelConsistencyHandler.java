@@ -45,7 +45,8 @@ public class UnitTemplateConfigLabelConsistencyHandler extends AbstractProtoBufR
         boolean modification = false;
         for (UnitTemplateConfig.Builder unitTemplateConfig : entry.getMessage().toBuilder().getUnitTemplateConfigBuilderList()) {
             if (!unitTemplateConfig.hasLabel() || unitTemplateConfig.getLabel().isEmpty()) {
-                unitTemplateConfig.setLabel(unitTemplateConfig.getId());
+                // unit template starts with deviceClassId_ so remove that
+                unitTemplateConfig.setLabel(unitTemplateConfig.getId().substring(deviceClass.getId().length() + 1));
                 modification = true;
             }
             deviceClass.addUnitTemplateConfig(unitTemplateConfig);

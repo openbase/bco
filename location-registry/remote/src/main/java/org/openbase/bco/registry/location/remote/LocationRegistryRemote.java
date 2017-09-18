@@ -84,7 +84,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
     private final AuthorizationFilter authorizationFilter;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> locationUnitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> connectionUnitConfigRemoteRegistry;
-    
+
     // should be removed!!!
     private UnitRegistryRemote unitRegistry;
 
@@ -99,16 +99,17 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
             throw new InstantiationException(this, ex);
         }
     }
-    
+
     /**
      * {@inheritDoc }
+     *
      * @throws InterruptedException {@inheritDoc }
      * @throws CouldNotPerformException {@inheritDoc }
      */
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         if (!CachedLocationRegistryRemote.getRegistry().equals(this)) {
-            logger.warn("You are using a "+getClass().getSimpleName()+" which is not maintained by the global registry singelton! This is extremely inefficient! Please use \"Registries.get"+getClass().getSimpleName().replace("Remote", "")+"()\" instead creating your own instances!");
+            logger.warn("You are using a " + getClass().getSimpleName() + " which is not maintained by the global registry singelton! This is extremely inefficient! Please use \"Registries.get" + getClass().getSimpleName().replace("Remote", "") + "()\" instead creating your own instances!");
         }
         authorizationFilter.setAuthorizationGroupRegistry(unitRegistry.getAuthorizationGroupUnitConfigRemoteRegistry());
         authorizationFilter.setLocationRegistry(locationUnitConfigRemoteRegistry);
@@ -213,7 +214,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
             PolygonsSet polygonsSet = new PolygonsSet(0.1, vertices.toArray(new Vector2D[]{}));
 
             // Transform the given coordinate
-            Transform3D unitTransform = getUnitTransformation(unitConfig).get().getTransform();
+            Transform3D unitTransform = getRootToUnitTransformationFuture(unitConfig).get().getTransform();
             Point3d transformedCoordinate = new Point3d(coordinate.getX(), coordinate.getY(), coordinate.getZ());
             unitTransform.transform(transformedCoordinate);
 
