@@ -57,6 +57,7 @@ public class AuthorizationHelperTest {
     private static final String USER_3 = "user3";
     private static final String CLIENT_1 = "client1";
     private static final String LOCATION_ROOT = "root";
+    private static final String LOCATION_1 = "location1";
     private static final String UNIT_ID = "unit1";
 
     private final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups;
@@ -298,5 +299,56 @@ public class AuthorizationHelperTest {
         assertEquals(true, AuthorizationHelper.canRead(unitConfig, user2, groups, locations));
         assertEquals(true, AuthorizationHelper.canWrite(unitConfig, user2, groups, locations));
         assertEquals(true, AuthorizationHelper.canAccess(unitConfig, user2, groups, locations));
+    }
+
+    @Test
+    public void testLocationPermission() throws Exception {
+        LocationConfig location1 = LocationConfig.newBuilder().setRoot(false).build();
+        PermissionConfig.Builder permissionConfigLocation = PermissionConfig.newBuilder().setOtherPermission(NONE);
+        PlacementConfig placementConfigLocation = PlacementConfig.newBuilder().setLocationId(LOCATION_ROOT).build();
+        UnitConfig.Builder unitConfigLocationBuilder = UnitConfig.newBuilder()
+          .setLabel(LOCATION_1)
+          .setId(LOCATION_1)
+          .setType(UnitType.LOCATION)
+          .setLocationConfig(location1)
+          .setPlacementConfig(placementConfigLocation)
+          .setPermissionConfig(permissionConfigLocation);
+        locations.put(LOCATION_1, new IdentifiableMessage<>(unitConfigLocationBuilder.build()));
+
+        PlacementConfig placementUnit = PlacementConfig.newBuilder().setLocationId(LOCATION_1).build();
+
+        UnitConfig.Builder unitConfigBuilder = UnitConfig.newBuilder().setId(UNIT_ID).setPlacementConfig(placementUnit);
+        UnitConfig unitConfig = unitConfigBuilder.build();
+
+        PermissionConfig.Builder permissionConfigBuilder = unitConfigLocationBuilder.getPermissionConfigBuilder();
+        Permission.Builder permissionBuilder = permissionConfigBuilder.getOtherPermissionBuilder();
+
+        boolean[] bools = {true, false};
+        for (boolean read : bools) {
+            permissionBuilder.setRead(read);
+
+            for (boolean write : bools) {
+                permissionBuilder.setWrite(write);
+
+                for (boolean access : bools) {
+                    permissionBuilder.setAccess(access);
+                    locations.put(LOCATION_1, new IdentifiableMessage<>(unitConfigLocationBuilder.build()));
+
+                    // If we have read permission on the location, permissions are inherited from the location.
+                    if (read) {
+                        assertEquals(read, AuthorizationHelper.canRead(unitConfig, USER_2, groups, locations));
+                        assertEquals(write, AuthorizationHelper.canWrite(unitConfig, USER_2, groups, locations));
+                        assertEquals(access, AuthorizationHelper.canAccess(unitConfig, USER_2, groups, locations));
+                    }
+                    // If we have no read permission on the location, we have no permissions at all for the unit..
+                    else {
+                        assertEquals(false, AuthorizationHelper.canRead(unitConfig, USER_2, groups, locations));
+                        assertEquals(false, AuthorizationHelper.canWrite(unitConfig, USER_2, groups, locations));
+                        assertEquals(false, AuthorizationHelper.canAccess(unitConfig, USER_2, groups, locations));
+                    }
+                }
+            }
+
+        }
     }
 }
