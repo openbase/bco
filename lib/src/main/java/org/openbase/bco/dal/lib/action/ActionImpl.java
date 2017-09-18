@@ -153,7 +153,7 @@ public class ActionImpl implements Action {
                     if (ticketAuthenticatorWrapper != null) {
                         actionFutureBuilder.setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
                     }
-                    
+
                     // Resource Allocation
                     unitAllocation = UnitAllocator.allocate(actionDescriptionBuilder, () -> {
                         try {
@@ -219,7 +219,12 @@ public class ActionImpl implements Action {
 
                     try {
                         // Verify authority
-                        unit.verifyAuthority(actionDescriptionBuilder.getActionAuthority());
+                        final ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
+
+                        TicketAuthenticatorWrapper ticketAuthenticatorWrapper = unit.verifyAuthority(actionDescriptionBuilder.getActionAuthority());
+                        if (ticketAuthenticatorWrapper != null) {
+                            actionFuture.setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
+                        }
 
                         // Resource Allocation
                         try {
@@ -235,7 +240,6 @@ public class ActionImpl implements Action {
                                 resourceAllocationBuilder.setPolicy(ResourceAllocationType.ResourceAllocation.Policy.PRESERVE);
                             }
 
-                            ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
                             actionFuture.addActionDescription(actionDescriptionBuilder);
 
                             // Execute
