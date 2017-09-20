@@ -53,18 +53,18 @@ import rst.domotic.unit.device.DeviceClassType.DeviceClass;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
-
+    
     private static final Logger LOGGER = LoggerFactory.getLogger(DalRegisterDeviceTest.class);
-
+    
     private static final String DEVICE_CONFIG_LABEL = "RunningDevice";
-
+    
     public DalRegisterDeviceTest() {
     }
-
+    
     @Before
     public void setUp() throws InitializationException, InstantiationException {
     }
-
+    
     @After
     public void tearDown() {
     }
@@ -77,71 +77,73 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 5000)
     public void testRegisterDeviceWhileRunning() throws Exception {
         System.out.println("testRegisterDeviceWhileRunning");
-
+        
         DeviceClass.Builder deviceClassBuilder = MockRegistry.getDeviceClass("TestRegisterDeviceWhileRunnint", "DeviceManagerLauncherAndCoKG123456", "DeviceManagerLauncherAndCoKG", UnitType.COLORABLE_LIGHT, UnitType.POWER_SWITCH).toBuilder();
         UnitTemplateConfig powerSwitchTemplateConfig = deviceClassBuilder.getUnitTemplateConfig(1);
         deviceClassBuilder.removeUnitTemplateConfig(1);
-
+        
         DeviceClass deviceClass = Registries.getDeviceRegistry().registerDeviceClass(deviceClassBuilder.build()).get();
         mockRegistry.waitForDeviceClass(deviceClass);
-
+        
         UnitConfig deviceUnitConfig = Registries.getUnitRegistry().registerUnitConfig(MockRegistry.getDeviceConfig(DEVICE_CONFIG_LABEL, "DeviceManagerLauncherTestSerialNumber", deviceClass)).get();
         UnitConfig colorableLightConfig = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(0));
-
+        
         ColorableLightRemote colorableLightRemote = Units.getUnit(colorableLightConfig, true, ColorableLightRemote.class);
-
+        
         colorableLightRemote.setPowerState(PowerState.State.ON).get();
         assertEquals("Power state has not been set in time!", PowerState.State.ON, colorableLightRemote.getData().getPowerState().getValue());
-
+        
         deviceClassBuilder = deviceClass.toBuilder();
         deviceClassBuilder.addUnitTemplateConfig(powerSwitchTemplateConfig);
-
+        
         deviceClass = Registries.getDeviceRegistry().updateDeviceClass(deviceClassBuilder.build()).get();
         mockRegistry.waitForDeviceClass(deviceClass);
-
+        
         System.out.println(deviceClass);
-
+        
         Registries.getUnitRegistry().waitUntilReady();
         deviceUnitConfig = Registries.getDeviceRegistry().getUnitConfigById(deviceUnitConfig.getId());
         System.out.println("DeviceConfig: " + deviceUnitConfig);
         UnitConfig powerSwitchConfig = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(1));
-
+        
         PowerSwitchRemote powerSwitchRemote = Units.getUnit(powerSwitchConfig, true, PowerSwitchRemote.class);
-
+        
         powerSwitchRemote.setPowerState(PowerState.State.ON).get();
         colorableLightRemote.setPowerState(PowerState.State.OFF).get();
         assertEquals("Power state has not been set in time!", PowerState.State.ON, powerSwitchRemote.getData().getPowerState().getValue());
         assertEquals("Power state has not been set in time!", PowerState.State.OFF, colorableLightRemote.getData().getPowerState().getValue());
-
+        
         deviceClassBuilder = deviceClass.toBuilder();
         deviceClassBuilder.removeUnitTemplateConfig(1);
-
+        
         deviceClass = Registries.getDeviceRegistry().updateDeviceClass(deviceClassBuilder.build()).get();
         mockRegistry.waitForDeviceClass(deviceClass);
-
+        
         Registries.getUnitRegistry().waitUntilReady();
-
+        
+        Registries.getUnitRegistry().requestData().get();
+        
         assertTrue("DeviceManager still contains removed unit controller", !deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().contains(powerSwitchConfig.getId()));
-
+        
         colorableLightRemote.setPowerState(PowerState.State.OFF).get();
         assertEquals("Power state has not been set in time!", PowerState.State.OFF, colorableLightRemote.getData().getPowerState().getValue());
-        assertEquals("Remote has not disconnected even though its config should has been removed!", ConnectionState.DISCONNECTED, powerSwitchRemote.getConnectionState());
+        assertEquals("Remote has not disconnected even though its config should have been removed!", ConnectionState.DISCONNECTED, powerSwitchRemote.getConnectionState());
     }
-
+    
     boolean running = true;
-
+    
     @Test(timeout = 15000)
     public void testRegisteringManyDevices() throws Exception {
         System.out.println("testRegisteringManyDevices");
-
+        
         String deviceClassLabel = "SimpleDevice";
         String productNumber = "ab42-123g";
         String company = "SimpleManufacturing";
         DeviceClass.Builder deviceClassBuilder = MockRegistry.getDeviceClass(deviceClassLabel, productNumber, company, UnitType.COLORABLE_LIGHT, UnitType.COLORABLE_LIGHT, UnitType.POWER_SWITCH).toBuilder();
-
+        
         DeviceClass deviceClass = Registries.getDeviceRegistry().registerDeviceClass(deviceClassBuilder.build()).get();
         mockRegistry.waitForDeviceClass(deviceClass);
-
+        
         final List<UnitConfig> registeredUnitConfigs = new ArrayList<>();
         final SyncObject synchronizer = new SyncObject("synchronizer");
 
@@ -183,24 +185,24 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
                 UnitConfig colorableLightConfig1 = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(0));
                 UnitConfig colorableLightConfig2 = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(1));
                 UnitConfig powerSwitchConfig = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(2));
-
+                
                 System.out.println("Add to list");
                 registeredUnitConfigs.add(deviceUnitConfig);
                 registeredUnitConfigs.add(colorableLightConfig1);
                 registeredUnitConfigs.add(colorableLightConfig2);
                 registeredUnitConfigs.add(powerSwitchConfig);
-
+                
                 synchronized (synchronizer) {
                     synchronizer.notifyAll();
                 }
-
+                
                 System.out.println("GetColorRemote1");
                 ColorableLightRemote colorableLightRemote1 = Units.getUnit(colorableLightConfig1, true, ColorableLightRemote.class);
                 System.out.println("GetColorRemote1");
                 ColorableLightRemote colorableLightRemote2 = Units.getUnit(colorableLightConfig2, true, ColorableLightRemote.class);
                 System.out.println("GetPowerRemote");
                 PowerSwitchRemote powerSwitchRemote = Units.getUnit(powerSwitchConfig, true, PowerSwitchRemote.class);
-
+                
                 System.out.println("SetPowerState1");
                 colorableLightRemote1.setPowerState(PowerState.State.ON).get();
                 System.out.println("SetPowerState2");
