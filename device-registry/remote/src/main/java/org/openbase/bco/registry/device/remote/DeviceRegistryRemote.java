@@ -84,7 +84,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
             throw new InstantiationException(this, ex);
         }
     }
-
+    
     /**
      * {@inheritDoc }
      *

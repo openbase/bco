@@ -39,7 +39,6 @@ import org.openbase.bco.registry.app.remote.CachedAppRegistryRemote;
 import org.openbase.bco.registry.device.core.DeviceRegistryLauncher;
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
-import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.location.core.LocationRegistryLauncher;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
@@ -153,8 +152,8 @@ public class MockRegistry {
     public static final String ILLUMINATION_LIGHT_SAVING_AGENT_LABEL = "IlluminationLightSaving";
     public static final String POWER_STATE_SYNCHRONISER_AGENT_LABEL = "PowerStateSynchroniser";
     public static final String PRESENCE_LIGHT_AGENT_LABEL = "PresenceLight";
-    
-    public static final AxisAlignedBoundingBox3DFloat DEFAULT_BOUNDING_BOX =  AxisAlignedBoundingBox3DFloat.newBuilder()
+
+    public static final AxisAlignedBoundingBox3DFloat DEFAULT_BOUNDING_BOX = AxisAlignedBoundingBox3DFloat.newBuilder()
             .setHeight(10)
             .setWidth(20)
             .setDepth(30)
@@ -176,8 +175,6 @@ public class MockRegistry {
     private static SceneRegistry sceneRegistry;
     private static UserRegistry userRegisty;
     private static UnitRegistry unitRegistry;
-
-    private final DeviceRegistryRemote deviceRegistryRemote;
 
     private static UnitConfig paradiseLocation;
     private static UnitConfig hellLocation;
@@ -409,8 +406,6 @@ public class MockRegistry {
             LOGGER.info("Reinitialized remotes!");
             Registries.waitForData();
 
-            deviceRegistryRemote = unitRegistryLauncher.getLaunchable().getDeviceRegistryRemote();
-
             registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
                     LOGGER.info("Update unitTemplates...");
@@ -640,7 +635,11 @@ public class MockRegistry {
 
     private void registerDevices() throws CouldNotPerformException, InterruptedException {
         try {
-            deviceRegistryRemote.addDataObserver(notifyChangeObserver);
+//            Registries.getDeviceRegistry(true).addDataObserver((source, data) -> {
+//                LOGGER.info("DeviceClass update: " + Arrays.toString(data.getDeviceClassList().toArray()));
+//            });
+
+            Registries.getDeviceRegistry(true).addDataObserver(notifyChangeObserver);
             // colorable light
             DeviceClass colorableLightClass = deviceRegistry.registerDeviceClass(getDeviceClass("Philips_Hue_E27", "KV01_18U", "Philips", UnitType.COLORABLE_LIGHT)).get();
             waitForDeviceClass(colorableLightClass);
@@ -741,7 +740,7 @@ public class MockRegistry {
             registerDeviceUnitConfig(getDeviceConfig("Gire_TemperatureController_Device", serialNumber, temperatureControllerClass));
             deviceRegistry.registerDeviceConfig(getDeviceConfig("Gire_TemperatureController_Device_Stairway", serialNumber, temperatureControllerClass, stairwayLocation)).get();
 
-            deviceRegistryRemote.removeDataObserver(notifyChangeObserver);
+            Registries.getDeviceRegistry(true).removeDataObserver(notifyChangeObserver);
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
         }
@@ -749,13 +748,13 @@ public class MockRegistry {
 
     public void waitForDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
         try {
-            deviceRegistryRemote.waitForData();
+            Registries.getDeviceRegistry(true).waitForData();
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
         synchronized (LOCK) {
             try {
-                while (!deviceRegistryRemote.containsDeviceClass(deviceClass)) {
+                while (!Registries.getDeviceRegistry(true).containsDeviceClass(deviceClass)) {
                     LOCK.wait();
                 }
             } catch (InterruptedException ex) {

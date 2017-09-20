@@ -90,5 +90,8 @@ public class RegistrySynchronizationFuture<M extends GeneratedMessage> implement
         }
         return result;
     }
-
+    
+    public Future<M> getInternalFuture() {
+        return internalFuture;
+    }
 }
