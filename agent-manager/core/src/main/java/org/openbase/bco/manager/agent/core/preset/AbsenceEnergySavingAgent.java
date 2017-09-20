@@ -22,62 +22,60 @@ package org.openbase.bco.manager.agent.core.preset;
  * #L%
  */
 import java.util.List;
-import java.util.concurrent.Future;
+import java.util.concurrent.ExecutionException;
+import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.unit.unitgroup.UnitGroupRemote;
-import org.openbase.bco.manager.agent.core.AbstractAgentController;
-import org.openbase.bco.manager.agent.core.TriggerDAL.AgentTriggerPool;
-import org.openbase.bco.manager.agent.core.TriggerJUL.GenericTrigger;
+import org.openbase.bco.dal.remote.action.ActionRescheduler;
+import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
-import rst.domotic.action.ActionFutureType.ActionFuture;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import rst.communicationpatterns.ResourceAllocationType;
+import rst.domotic.action.ActionAuthorityType;
+import rst.domotic.action.ActionDescriptionType;
+import rst.domotic.action.MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.ActivationStateType;
-import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.PresenceStateType.PresenceState;
-import rst.domotic.unit.UnitConfigType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationDataType;
 
 /**
  *
- * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo
- * Michalski</a>
+ * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class AbsenceEnergySavingAgent extends AbstractAgentController {
+public class AbsenceEnergySavingAgent extends AbstractResourceAllocationAgent {
 
     private LocationRemote locationRemote;
-    private Future<ActionFuture> setLightPowerStateFuture;
-    private Future<ActionFuture> setMultimediaPowerStateFuture;
     private final PresenceState.State triggerState = PresenceState.State.ABSENT;
-    private final Observer<ActivationState> triggerHolderObserver;
 
     public AbsenceEnergySavingAgent() throws InstantiationException {
         super(AbsenceEnergySavingAgent.class);
 
+        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
+
         triggerHolderObserver = (Observable<ActivationStateType.ActivationState> source, ActivationStateType.ActivationState data) -> {
-            if (data.getValue().equals(ActivationStateType.ActivationState.State.ACTIVE)) {
-                switchlightsOff();
-                switchMultimediaOff();
-            } else {
-                if (setLightPowerStateFuture != null && !setLightPowerStateFuture.isDone()) {
-                    setLightPowerStateFuture.cancel(true);
+            GlobalCachedExecutorService.submit(() -> {
+                if (data.getValue().equals(ActivationStateType.ActivationState.State.ACTIVE)) {
+                    switchlightsOff();
+                    switchMultimediaOff();
+                } else {
+                    actionRescheduleHelper.stopExecution();
                 }
-                if (setMultimediaPowerStateFuture != null && !setMultimediaPowerStateFuture.isDone()) {
-                    setMultimediaPowerStateFuture.cancel(true);
-                }
-            }
+                return null;
+            });
         };
     }
 
     @Override
-    public void init(final UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
+    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
 
         try {
@@ -87,42 +85,28 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
         }
 
         try {
-            GenericTrigger<LocationRemote, LocationDataType.LocationData, PresenceState.State> agentTrigger = new GenericTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE);
-            agentTriggerHolder.addTrigger(agentTrigger, AgentTriggerPool.TriggerOperation.OR);
+            GenericBCOTrigger<LocationRemote, LocationDataType.LocationData, PresenceState.State> agentTrigger = new GenericBCOTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE);
+            agentTriggerHolder.addTrigger(agentTrigger, TriggerPool.TriggerOperation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not add agent to agentpool", ex);
         }
-
-        agentTriggerHolder.registerObserver(triggerHolderObserver);
-    }
-
-    @Override
-    protected void execute() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activating [" + getConfig().getLabel() + "]");
-        agentTriggerHolder.activate();
-    }
-
-    @Override
-    protected void stop() throws CouldNotPerformException, InterruptedException {
-        logger.info("Deactivating [" + getConfig().getLabel() + "]");
-        agentTriggerHolder.deactivate();
-    }
-
-    @Override
-    public void shutdown() {
-        agentTriggerHolder.deregisterObserver(triggerHolderObserver);
-        agentTriggerHolder.shutdown();
-        super.shutdown();
     }
 
     private void switchlightsOff() {
-        logger.info("Switch lights off");
         try {
-            setLightPowerStateFuture = locationRemote.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build(), UnitType.LIGHT);
-            // TODO: Blocking setPowerState function that is trying to realloc all lights as long as jobs not cancelled. 
-        } catch (CouldNotPerformException ex) {
-            logger.error("Could not set Powerstate of Lights.");
-            // TODO: Propper Ex handling
+            ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+                    1000 * 30,
+                    ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+                    ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
+                    locationRemote,
+                    PowerState.newBuilder().setValue(PowerState.State.OFF).build(),
+                    UnitType.LIGHT,
+                    ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
+                    MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+            actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+        } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
+            logger.error("Could not switch on Lights.", ex);
         }
     }
 
@@ -131,7 +115,17 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
             List<? extends UnitGroupRemote> unitsByLabel = Units.getUnitsByLabel(locationRemote.getLabel().concat("MultimediaGroup"), true, Units.UNITGROUP);
             if (!unitsByLabel.isEmpty()) {
                 UnitGroupRemote multimediaGroup = unitsByLabel.get(0);
-                setMultimediaPowerStateFuture = multimediaGroup.setPowerState(PowerState.newBuilder().setValue(PowerState.State.OFF).build());
+                ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+                        ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+                        1000 * 30,
+                        ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+                        ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
+                        multimediaGroup,
+                        PowerState.newBuilder().setValue(PowerState.State.OFF).build(),
+                        UnitType.UNKNOWN,
+                        ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
+                        MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+                actionRescheduleHelper.addRescheduleAction(multimediaGroup.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
             }
         } catch (NotAvailableException ex) {
             logger.info("MultimediaGroup not available.");
@@ -139,6 +133,8 @@ public class AbsenceEnergySavingAgent extends AbstractAgentController {
             logger.error("Could not get MultimediaGroup!");
         } catch (CouldNotPerformException ex) {
             logger.error("Could not set Powerstate of MultimediaGroup.");
+        } catch (ExecutionException ex) {
+            logger.error("Could not set Powerstate of MultimediaGroup!");
         }
     }
 }

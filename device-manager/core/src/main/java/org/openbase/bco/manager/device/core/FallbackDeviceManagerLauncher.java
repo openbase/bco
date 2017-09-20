@@ -1,6 +1,6 @@
 package org.openbase.bco.manager.device.core;
 
-/*
+/*-
  * #%L
  * BCO Manager Device Core
  * %%
@@ -21,33 +21,29 @@ package org.openbase.bco.manager.device.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.jp.JPBenchmarkMode;
-import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
+
 import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
 import org.openbase.bco.manager.device.lib.DeviceManager;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.openbase.bco.registry.lib.BCO;
-import org.openbase.jul.pattern.launch.AbstractLauncher;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.openbase.jps.core.JPService;
-import static org.openbase.jul.pattern.launch.AbstractLauncher.main;
 import org.openbase.jps.preset.JPPrefix;
+import org.openbase.jul.pattern.launch.AbstractLauncher;
 
 /**
  *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public class DeviceManagerLauncher extends AbstractLauncher<DeviceManagerController> {
+public class FallbackDeviceManagerLauncher extends AbstractLauncher<FallbackDeviceManagerController> {
 
-    public DeviceManagerLauncher() throws org.openbase.jul.exception.InstantiationException {
-        super(DeviceManager.class, DeviceManagerController.class);
+    public FallbackDeviceManagerLauncher() throws org.openbase.jul.exception.InstantiationException {
+        super(DeviceManager.class, FallbackDeviceManagerController.class);
     }
 
     @Override
     public void loadProperties() {
         JPService.registerProperty(JPPrefix.class);
-        JPService.registerProperty(JPHardwareSimulationMode.class);
-        JPService.registerProperty(JPBenchmarkMode.class);
         JPService.registerProperty(JPLocationRegistryScope.class);
         JPService.registerProperty(JPDeviceRegistryScope.class);
         JPService.registerProperty(JPResourceAllocation.class);
@@ -55,6 +51,6 @@ public class DeviceManagerLauncher extends AbstractLauncher<DeviceManagerControl
 
     public static void main(String args[]) throws Throwable {
         BCO.printLogo();
-        main(args, DeviceManager.class, DeviceManagerLauncher.class);
+        main(args, FallbackDeviceManagerLauncher.class, FallbackDeviceManagerLauncher.class);
     }
 }

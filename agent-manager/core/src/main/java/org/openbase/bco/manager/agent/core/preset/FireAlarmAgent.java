@@ -1,6 +1,6 @@
 package org.openbase.bco.manager.agent.core.preset;
 
-/*
+/*-
  * #%L
  * BCO Manager Agent Core
  * %%
@@ -23,25 +23,24 @@ package org.openbase.bco.manager.agent.core.preset;
  */
 import java.util.concurrent.ExecutionException;
 import org.openbase.bco.dal.remote.trigger.GenericBCOTrigger;
-import org.openbase.bco.dal.remote.action.ActionRescheduler;
-import org.openbase.bco.dal.remote.action.ActionRescheduler.RescheduleOption;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
+import org.openbase.bco.dal.remote.action.ActionRescheduler;
 import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
-import rst.domotic.action.ActionAuthorityType.ActionAuthority;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy;
+import rst.communicationpatterns.ResourceAllocationType;
+import rst.domotic.action.ActionAuthorityType;
+import rst.domotic.action.ActionDescriptionType;
+import rst.domotic.action.MultiResourceAllocationStrategyType;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.state.AlarmStateType.AlarmState;
+import rst.domotic.state.BlindStateType;
 import rst.domotic.state.PowerStateType.PowerState;
-import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationDataType.LocationData;
@@ -50,33 +49,29 @@ import rst.domotic.unit.location.LocationDataType.LocationData;
  *
  * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
-public class PresenceLightAgent extends AbstractResourceAllocationAgent {
+public class FireAlarmAgent extends AbstractResourceAllocationAgent {
 
     private LocationRemote locationRemote;
-    private final PresenceState.State triggerState = PresenceState.State.PRESENT;
+    private final AlarmState.State triggerState = AlarmState.State.ALARM;
 
-    public PresenceLightAgent() throws InstantiationException {
-        super(PresenceLightAgent.class);
+    public FireAlarmAgent() throws InstantiationException {
+        super(FireAlarmAgent.class);
 
-        actionRescheduleHelper = new ActionRescheduler(RescheduleOption.EXTEND, 30);
+        actionRescheduleHelper = new ActionRescheduler(ActionRescheduler.RescheduleOption.EXTEND, 30);
 
         triggerHolderObserver = (Observable<ActivationState> source, ActivationState data) -> {
-            logger.warn("New trigger state: " + data.getValue());
-            GlobalCachedExecutorService.submit(() -> {
-                if (data.getValue().equals(ActivationState.State.ACTIVE)) {
-                    switchlightsOn();
-                } else {
-                    logger.warn("Stop execution");
-                    actionRescheduleHelper.stopExecution();
-                }
-                return null;
-            });
+            if (data.getValue().equals(ActivationState.State.ACTIVE)) {
+                alarmRoutine();
+            } else {
+                actionRescheduleHelper.stopExecution();
+            }
         };
     }
 
     @Override
     public void init(final UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
+
         try {
             locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), true, Units.LOCATION);
         } catch (NotAvailableException ex) {
@@ -84,28 +79,44 @@ public class PresenceLightAgent extends AbstractResourceAllocationAgent {
         }
 
         try {
-            GenericBCOTrigger<LocationRemote, LocationData, PresenceState.State> agentTrigger = new GenericBCOTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.PRESENCE_STATE_SERVICE);
+            GenericBCOTrigger<LocationRemote, LocationData, AlarmState.State> agentTrigger = new GenericBCOTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.SMOKE_ALARM_STATE_SERVICE);
             agentTriggerHolder.addTrigger(agentTrigger, TriggerPool.TriggerOperation.OR);
+            GenericBCOTrigger<LocationRemote, LocationData, AlarmState.State> agentFireTrigger = new GenericBCOTrigger(locationRemote, triggerState, ServiceTemplateType.ServiceTemplate.ServiceType.FIRE_ALARM_STATE_SERVICE);
+            agentTriggerHolder.addTrigger(agentFireTrigger, TriggerPool.TriggerOperation.OR);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("Could not add agent to agentpool", ex);
         }
     }
 
-    private void switchlightsOn() {
+    private void alarmRoutine() {
         try {
-            ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthority.getDefaultInstance(),
-                    ResourceAllocation.Initiator.SYSTEM,
+            ActionDescriptionType.ActionDescription.Builder actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
                     1000 * 30,
-                    ResourceAllocation.Policy.FIRST,
-                    ResourceAllocation.Priority.NORMAL,
+                    ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+                    ResourceAllocationType.ResourceAllocation.Priority.EMERGENCY,
                     locationRemote,
                     PowerState.newBuilder().setValue(PowerState.State.ON).build(),
                     UnitType.LIGHT,
                     ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE,
-                    MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+                    MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
             actionRescheduleHelper.startActionRescheduleing(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+
+            actionDescriptionBuilder = getNewActionDescription(ActionAuthorityType.ActionAuthority.getDefaultInstance(),
+                    ResourceAllocationType.ResourceAllocation.Initiator.SYSTEM,
+                    1000 * 30,
+                    ResourceAllocationType.ResourceAllocation.Policy.FIRST,
+                    ResourceAllocationType.ResourceAllocation.Priority.EMERGENCY,
+                    locationRemote,
+                    BlindStateType.BlindState.newBuilder().setOpeningRatio(100.0).build(),
+                    UnitType.UNKNOWN,
+                    ServiceTemplateType.ServiceTemplate.ServiceType.BLIND_STATE_SERVICE,
+                    MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
+            actionRescheduleHelper.addRescheduleAction(locationRemote.applyAction(actionDescriptionBuilder.build()).get().toBuilder());
+
+            // TODO: Maybe also set Color and Brightness?
         } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
-            logger.error("Could not switch on Lights.", ex);
+            logger.error("Could not execute alarm routine.", ex);
         }
     }
 }

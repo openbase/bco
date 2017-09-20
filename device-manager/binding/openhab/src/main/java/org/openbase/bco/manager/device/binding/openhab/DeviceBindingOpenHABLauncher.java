@@ -22,6 +22,7 @@ package org.openbase.bco.manager.device.binding.openhab;
  * #L%
  */
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
+import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.openbase.bco.registry.lib.BCO;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
@@ -45,6 +46,7 @@ public class DeviceBindingOpenHABLauncher extends AbstractLauncher<DeviceBinding
         JPService.registerProperty(JPHardwareSimulationMode.class);
         JPService.registerProperty(JPLocationRegistryScope.class);
         JPService.registerProperty(JPDeviceRegistryScope.class);
+        JPService.registerProperty(JPResourceAllocation.class);
     }
 
     /**
