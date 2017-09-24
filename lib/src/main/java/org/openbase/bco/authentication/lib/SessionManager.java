@@ -32,6 +32,7 @@ import org.openbase.bco.authentication.lib.jp.JPAuthenticationSimulationMode;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import javax.crypto.BadPaddingException;
+import org.openbase.bco.authentication.lib.exception.SessionExpiredException;
 import org.openbase.bco.authentication.lib.jp.JPEnableAuthentication;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -494,6 +495,13 @@ public class SessionManager {
             if (matcher.find()) {
                 ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
                 throw new PermissionDeniedException(matcher.group(1));
+            }
+            
+            pattern = Pattern.compile("SessionExpiredException: (.*)[\n\r]");
+            matcher = pattern.matcher(cause.getMessage());
+
+            if (matcher.find()) {
+                throw new SessionExpiredException();
             }
 
             ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);

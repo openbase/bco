@@ -27,7 +27,6 @@ import java.io.IOException;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import javax.crypto.BadPaddingException;
-import static org.openbase.bco.authentication.lib.AuthenticationServerHandler.getValidityInterval;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.bco.authentication.lib.jp.JPEnableAuthentication;
 import org.openbase.jps.core.JPService;
@@ -56,8 +55,10 @@ public class AuthenticatedServerManager {
     private static AuthenticatedServerManager instance;
     private TicketAuthenticatorWrapper ticketAuthenticatorWrapper;
     private byte[] sessionKey;
+    private final long ticketValidityTime;
 
     private AuthenticatedServerManager() throws CouldNotPerformException, InterruptedException {
+        ticketValidityTime = JPService.testMode() ? 500 : AuthenticationServerHandler.DEFAULT_VALIDITY_PERIOD_IN_MILLIS;
         try {
             if (JPService.getProperty(JPEnableAuthentication.class).getValue()) {
                 this.login();
@@ -99,7 +100,7 @@ public class AuthenticatedServerManager {
             AuthenticationServerHandler.validateTicket(clientServerTicket, authenticator);
 
             // update period and session key
-            clientServerTicket = clientServerTicket.toBuilder().setValidityPeriod(getValidityInterval()).build();
+            clientServerTicket = clientServerTicket.toBuilder().setValidityPeriod(AuthenticationServerHandler.getValidityInterval(ticketValidityTime)).build();
             Authenticator.Builder authenticatorBuilder = authenticator.toBuilder();
             authenticatorBuilder.setTimestamp(authenticator.getTimestamp().toBuilder().setTime(authenticator.getTimestamp().getTime() + 1));
 
