@@ -206,13 +206,4 @@ public class RegistryFilteringTest {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
     }
-    
-    @Test
-    public void testingTest() throws Exception {
-        SessionManager.getInstance().login(MockRegistry.admin.getId(), MockRegistry.adminPassword);
-        TicketAuthenticatorWrapper request = SessionManager.getInstance().initializeServiceServerRequest();
-        
-        AuthenticatedServerManager.TicketEvaluationWrapper evaluateClientServerTicket = AuthenticatedServerManager.getInstance().evaluateClientServerTicket(request);
-        AuthenticationClientHandler.handleServiceServerResponse(SessionManager.getInstance().getSessionKey(), request, evaluateClientServerTicket.getTicketAuthenticatorWrapper());
-    }
 }

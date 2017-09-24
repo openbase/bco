@@ -153,6 +153,8 @@ public class AuthenticatedServiceProcessor {
      */
     public static <SEND extends GeneratedMessage, RESPONSE extends GeneratedMessage> Future<RESPONSE> requestAuthenticatedAction(final SEND message, final Class<RESPONSE> responseClass, final SessionManager sessionManager, final InternalRequestable internalRequestable) throws CouldNotPerformException {
         if (sessionManager.isLoggedIn()) {
+            // check if login is still valid
+            sessionManager.isAuthenticated();
             // someone is logged in with the session manager
             try {
                 try {
