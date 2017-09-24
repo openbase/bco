@@ -25,7 +25,6 @@ import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
-import static org.openbase.bco.authentication.lib.AuthenticationServerHandler.VALIDITY_PERIOD_IN_MILLIS;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.SessionManager;
@@ -45,6 +44,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 import rst.timing.IntervalType;
 import rst.timing.IntervalType.Interval;
+import static org.openbase.bco.authentication.lib.AuthenticationServerHandler.DEFAULT_VALIDITY_PERIOD_IN_MILLIS;
 
 /**
  *
@@ -131,7 +131,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         long currentTime = 0;
         Interval.Builder validityInterval = IntervalType.Interval.newBuilder();
         validityInterval.setBegin(TimestampJavaTimeTransform.transform(currentTime));
-        validityInterval.setEnd(TimestampJavaTimeTransform.transform(currentTime + VALIDITY_PERIOD_IN_MILLIS));
+        validityInterval.setEnd(TimestampJavaTimeTransform.transform(currentTime + DEFAULT_VALIDITY_PERIOD_IN_MILLIS));
         validityInterval.build();
         
         Ticket.Builder cstb = ticket.toBuilder();
@@ -167,7 +167,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         long currentTime = 0;
         Interval.Builder validityInterval = IntervalType.Interval.newBuilder();
         validityInterval.setBegin(TimestampJavaTimeTransform.transform(currentTime));
-        validityInterval.setEnd(TimestampJavaTimeTransform.transform(currentTime + VALIDITY_PERIOD_IN_MILLIS));
+        validityInterval.setEnd(TimestampJavaTimeTransform.transform(currentTime + DEFAULT_VALIDITY_PERIOD_IN_MILLIS));
         validityInterval.build();
         
         Ticket.Builder cstb = ticket.toBuilder();
