@@ -39,14 +39,11 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote.ConnectionState;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
@@ -81,10 +78,6 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
      */
     @Test(timeout = 5000)
     public void testRegisterDeviceWhileRunning() throws Exception {
-        Registries.getUnitRegistry().addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
-            System.out.println("UNITTEST received unit registry data update");
-        });
-
         System.out.println("testRegisterDeviceWhileRunning");
 
         // create a device class, save and remove the second unit template config
@@ -128,15 +121,6 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
 
         // start a unit remote for it
         PowerSwitchRemote powerSwitchRemote = Units.getUnit(powerSwitchConfig, true, PowerSwitchRemote.class);
-
-        powerSwitchRemote.addConnectionStateObserver(new Observer<ConnectionState>() {
-            @Override
-            public void update(Observable<ConnectionState> source, ConnectionState data) throws Exception {
-                System.out.println("===============================================================");
-                System.out.println("PowerSwitch Service Remote ConnectionState [" + data.name() + "]");
-                System.out.println("===============================================================");
-            }
-        });
 
         // test if both unit remotes can be used
         powerSwitchRemote.setPowerState(PowerState.State.ON).get();
