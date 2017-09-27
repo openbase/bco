@@ -27,8 +27,10 @@ import java.util.concurrent.Future;
 import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
-import org.openbase.bco.registry.lib.com.RegistrySynchronizationFuture;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
+import org.openbase.bco.registry.lib.com.future.RegistrationFuture;
+import org.openbase.bco.registry.lib.com.future.RemovalFuture;
+import org.openbase.bco.registry.lib.com.future.UpdateFuture;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
@@ -136,7 +138,7 @@ public class AgentRegistryRemote extends AbstractVirtualRegistryRemote<AgentRegi
     @Override
     public Future<UnitConfig> registerAgentConfig(final UnitConfig agentUnitConfig) throws CouldNotPerformException {
         try {
-            return new RegistrySynchronizationFuture<>(RPCHelper.callRemoteMethod(agentUnitConfig, this, UnitConfig.class), this);
+            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(agentUnitConfig, this, UnitConfig.class), agentUnitConfigRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register agent config!", ex);
         }
@@ -163,7 +165,7 @@ public class AgentRegistryRemote extends AbstractVirtualRegistryRemote<AgentRegi
     @Override
     public Future<UnitConfig> updateAgentConfig(final UnitConfig agentUnitConfig) throws CouldNotPerformException {
         try {
-            return new RegistrySynchronizationFuture<>(RPCHelper.callRemoteMethod(agentUnitConfig, this, UnitConfig.class), this);
+            return new UpdateFuture<>(RPCHelper.callRemoteMethod(agentUnitConfig, this, UnitConfig.class), agentUnitConfigRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update agent config!", ex);
         }
@@ -172,7 +174,7 @@ public class AgentRegistryRemote extends AbstractVirtualRegistryRemote<AgentRegi
     @Override
     public Future<UnitConfig> removeAgentConfig(final UnitConfig agentUnitConfig) throws CouldNotPerformException {
         try {
-            return new RegistrySynchronizationFuture<>(RPCHelper.callRemoteMethod(agentUnitConfig, this, UnitConfig.class), this);
+            return new RemovalFuture<>(RPCHelper.callRemoteMethod(agentUnitConfig, this, UnitConfig.class), agentUnitConfigRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove agent config!", ex);
         }
@@ -222,7 +224,7 @@ public class AgentRegistryRemote extends AbstractVirtualRegistryRemote<AgentRegi
     @Override
     public Future<AgentClass> registerAgentClass(AgentClass agentClass) throws CouldNotPerformException {
         try {
-            return new RegistrySynchronizationFuture<>(RPCHelper.callRemoteMethod(agentClass, this, AgentClass.class), this);
+            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(agentClass, this, AgentClass.class), agentClassRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register agent class!", ex);
         }
@@ -243,7 +245,7 @@ public class AgentRegistryRemote extends AbstractVirtualRegistryRemote<AgentRegi
     @Override
     public Future<AgentClass> updateAgentClass(AgentClass agentClass) throws CouldNotPerformException {
         try {
-            return new RegistrySynchronizationFuture<>(RPCHelper.callRemoteMethod(agentClass, this, AgentClass.class), this);
+            return new UpdateFuture<>(RPCHelper.callRemoteMethod(agentClass, this, AgentClass.class), agentClassRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update agent class!", ex);
         }
@@ -252,7 +254,7 @@ public class AgentRegistryRemote extends AbstractVirtualRegistryRemote<AgentRegi
     @Override
     public Future<AgentClass> removeAgentClass(AgentClass agentClass) throws CouldNotPerformException {
         try {
-            return new RegistrySynchronizationFuture<>(RPCHelper.callRemoteMethod(agentClass, this, AgentClass.class), this);
+            return new RemovalFuture<>(RPCHelper.callRemoteMethod(agentClass, this, AgentClass.class), agentClassRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove agent class!", ex);
         }

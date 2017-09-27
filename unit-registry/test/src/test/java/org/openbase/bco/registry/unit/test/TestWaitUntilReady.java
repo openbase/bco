@@ -28,7 +28,7 @@ import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.registry.lib.com.RegistrySynchronizationFuture;
+import org.openbase.bco.registry.lib.com.future.AbstractRegistrySynchronizationFuture;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
@@ -136,7 +136,7 @@ public class TestWaitUntilReady {
             waitedUntilReady = false;
             UnitConfig deviceUnitConfig = MockRegistry.getDeviceConfig(deviceLabel + i, String.valueOf(i), deviceClass);
 //            System.out.println("Trigger device registration!");
-            RegistrySynchronizationFuture registrationFuture = (RegistrySynchronizationFuture) Registries.getUnitRegistry().registerUnitConfig(deviceUnitConfig);
+            AbstractRegistrySynchronizationFuture registrationFuture = (AbstractRegistrySynchronizationFuture) Registries.getUnitRegistry().registerUnitConfig(deviceUnitConfig);
 //            System.out.println("Wait until ready");
 
             // needed to make sure the registry is processing the registration task.

@@ -28,8 +28,10 @@ import java.util.concurrent.TimeUnit;
 import org.openbase.bco.registry.app.lib.AppRegistry;
 import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
-import org.openbase.bco.registry.lib.com.RegistrySynchronizationFuture;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
+import org.openbase.bco.registry.lib.com.future.RegistrationFuture;
+import org.openbase.bco.registry.lib.com.future.RemovalFuture;
+import org.openbase.bco.registry.lib.com.future.UpdateFuture;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
@@ -136,7 +138,7 @@ public class AppRegistryRemote extends AbstractVirtualRegistryRemote<AppRegistry
     @Override
     public Future<UnitConfig> registerAppConfig(final UnitConfig appUnitConfig) throws CouldNotPerformException {
         try {
-            return new RegistrySynchronizationFuture<>(RPCHelper.callRemoteMethod(appUnitConfig, this, UnitConfig.class), this);
+            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(appUnitConfig, this, UnitConfig.class), appUnitConfigRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register appUnitConfig!", ex);
         }
@@ -163,7 +165,7 @@ public class AppRegistryRemote extends AbstractVirtualRegistryRemote<AppRegistry
     @Override
     public Future<UnitConfig> updateAppConfig(final UnitConfig appUnitConfig) throws CouldNotPerformException {
         try {
-            return new RegistrySynchronizationFuture<>(RPCHelper.callRemoteMethod(appUnitConfig, this, UnitConfig.class), this);
+            return new UpdateFuture<>(RPCHelper.callRemoteMethod(appUnitConfig, this, UnitConfig.class), appUnitConfigRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update appUnitConfig!", ex);
         }
@@ -172,7 +174,7 @@ public class AppRegistryRemote extends AbstractVirtualRegistryRemote<AppRegistry
     @Override
     public Future<UnitConfig> removeAppConfig(final UnitConfig appUnitConfig) throws CouldNotPerformException {
         try {
-            return new RegistrySynchronizationFuture<>(RPCHelper.callRemoteMethod(appUnitConfig, this, UnitConfig.class), this);
+            return new RemovalFuture<>(RPCHelper.callRemoteMethod(appUnitConfig, this, UnitConfig.class), appUnitConfigRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove appUnitConfig!", ex);
         }
@@ -222,7 +224,7 @@ public class AppRegistryRemote extends AbstractVirtualRegistryRemote<AppRegistry
     @Override
     public Future<AppClass> registerAppClass(AppClass appClass) throws CouldNotPerformException {
         try {
-            return new RegistrySynchronizationFuture<>(RPCHelper.callRemoteMethod(appClass, this, AppClass.class), this);
+            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(appClass, this, AppClass.class), appClassRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register app class!", ex);
         }
@@ -243,7 +245,7 @@ public class AppRegistryRemote extends AbstractVirtualRegistryRemote<AppRegistry
     @Override
     public Future<AppClass> updateAppClass(AppClass appClass) throws CouldNotPerformException {
         try {
-            return new RegistrySynchronizationFuture<>(RPCHelper.callRemoteMethod(appClass, this, AppClass.class), this);
+            return new UpdateFuture<>(RPCHelper.callRemoteMethod(appClass, this, AppClass.class), appClassRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update app class!", ex);
         }
@@ -252,7 +254,7 @@ public class AppRegistryRemote extends AbstractVirtualRegistryRemote<AppRegistry
     @Override
     public Future<AppClass> removeAppClass(AppClass appClass) throws CouldNotPerformException {
         try {
-            return new RegistrySynchronizationFuture<>(RPCHelper.callRemoteMethod(appClass, this, AppClass.class), this);
+            return new RemovalFuture<>(RPCHelper.callRemoteMethod(appClass, this, AppClass.class), appClassRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove app class!", ex);
         }

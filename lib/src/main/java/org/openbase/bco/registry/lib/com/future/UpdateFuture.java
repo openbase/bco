@@ -1,0 +1,54 @@
+/*
+ * To change this license header, choose License Headers in Project Properties.
+ * To change this template file, choose Tools | Templates
+ * and open the template in the editor.
+ */
+package org.openbase.bco.registry.lib.com.future;
+
+/*-
+ * #%L
+ * BCO Registry Lib
+ * %%
+ * Copyright (C) 2014 - 2017 openbase.org
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+import com.google.protobuf.GeneratedMessage;
+import java.util.concurrent.Future;
+import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
+
+/**
+ *
+ * @author pleminoq
+ * @param <M>
+ */
+public class UpdateFuture<M extends GeneratedMessage> extends AbstractRegistrySynchronizationFuture<M> {
+
+    public UpdateFuture(final Future<M> internalFuture, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry) {
+        super(internalFuture, remoteRegistry);
+    }
+
+    @Override
+    protected boolean check(M message, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry) throws CouldNotPerformException {
+        return remoteRegistry.getMessage(getId(message)).equals(message);
+    }
+
+    private String getId(M message) {
+        return (String) message.getField(ProtoBufFieldProcessor.getFieldDescriptor(message.toBuilder(), "id"));
+    }
+}

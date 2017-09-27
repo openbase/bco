@@ -34,8 +34,10 @@ import org.apache.commons.math3.geometry.euclidean.twod.PolygonsSet;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.geometry.partitioning.Region.Location;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
-import org.openbase.bco.registry.lib.com.RegistrySynchronizationFuture;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
+import org.openbase.bco.registry.lib.com.future.RegistrationFuture;
+import org.openbase.bco.registry.lib.com.future.RemovalFuture;
+import org.openbase.bco.registry.lib.com.future.UpdateFuture;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
@@ -152,7 +154,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
     @Override
     public Future<UnitConfig> registerLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException {
         try {
-            return new RegistrySynchronizationFuture<>(RPCHelper.callRemoteMethod(locationConfig, this, UnitConfig.class), this);
+            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(locationConfig, this, UnitConfig.class), locationUnitConfigRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register location config!", ex);
         }
@@ -264,7 +266,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
     @Override
     public Future<UnitConfig> updateLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException {
         try {
-            return new RegistrySynchronizationFuture<>(RPCHelper.callRemoteMethod(locationConfig, this, UnitConfig.class), this);
+            return new UpdateFuture<>(RPCHelper.callRemoteMethod(locationConfig, this, UnitConfig.class), locationUnitConfigRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update location[" + locationConfig + "]!", ex);
         }
@@ -278,7 +280,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
     @Override
     public Future<UnitConfig> removeLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException {
         try {
-            return new RegistrySynchronizationFuture<>(RPCHelper.callRemoteMethod(locationConfig, this, UnitConfig.class), this);
+            return new RemovalFuture<>(RPCHelper.callRemoteMethod(locationConfig, this, UnitConfig.class), locationUnitConfigRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove location[" + locationConfig + "]!", ex);
         }
@@ -465,7 +467,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
     @Override
     public Future<UnitConfig> registerConnectionConfig(UnitConfig connectionConfig) throws CouldNotPerformException {
         try {
-            return new RegistrySynchronizationFuture<>(RPCHelper.callRemoteMethod(connectionConfig, this, UnitConfig.class), this);
+            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(connectionConfig, this, UnitConfig.class), connectionUnitConfigRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register connection config!", ex);
         }
@@ -525,7 +527,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
     @Override
     public Future<UnitConfig> updateConnectionConfig(UnitConfig connectionConfig) throws CouldNotPerformException {
         try {
-            return new RegistrySynchronizationFuture<>(RPCHelper.callRemoteMethod(connectionConfig, this, UnitConfig.class), this);
+            return new UpdateFuture<>(RPCHelper.callRemoteMethod(connectionConfig, this, UnitConfig.class), connectionUnitConfigRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update connection[" + connectionConfig + "]!", ex);
         }
@@ -539,7 +541,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
     @Override
     public Future<UnitConfig> removeConnectionConfig(UnitConfig connectionConfig) throws CouldNotPerformException {
         try {
-            return new RegistrySynchronizationFuture<>(RPCHelper.callRemoteMethod(connectionConfig, this, UnitConfig.class), this);
+            return new RemovalFuture<>(RPCHelper.callRemoteMethod(connectionConfig, this, UnitConfig.class), connectionUnitConfigRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove connection[" + connectionConfig + "]!", ex);
         }
