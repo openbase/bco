@@ -39,6 +39,8 @@ import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketType.Ticket;
@@ -48,7 +50,7 @@ import rst.domotic.authentication.TicketType.Ticket;
  * @author Sebastian Fast <sfast@techfak.uni-bielefeld.de>
  */
 public class SessionManagerTest {
-    
+
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(SessionManagerTest.class);
 
     private static AuthenticatorController authenticatorController;
@@ -413,5 +415,31 @@ public class SessionManagerTest {
         manager.login(MockClientStore.ADMIN_ID, MockClientStore.ADMIN_PASSWORD);
 
         assertEquals(manager.isAdmin(), true);
+    }
+
+    private int notificationCounter = 0;
+
+    /**
+     * Test if the login observable notifies correctly.
+     *
+     * @throws Exception
+     */
+    @Test(timeout = 5000)
+    public void loginObservableTest() throws Exception {
+        System.out.println("loginObservableTest");
+
+        Observer<String> loginObserver = (Observable<String> source, String data) -> {
+            notificationCounter++;
+        };
+
+        SessionManager.getInstance().addLoginObserver(loginObserver);
+
+        SessionManager.getInstance().login(MockCredentialStore.ADMIN_ID, MockCredentialStore.ADMIN_PASSWORD);
+        assertEquals("Notification counter should be 1 after the first login", 1, notificationCounter);
+        SessionManager.getInstance().login(MockCredentialStore.USER_ID, MockCredentialStore.USER_PASSWORD);
+        assertEquals("Notification counter should be 3 after logging in another user because of the logout in between", 3, notificationCounter);
+        SessionManager.getInstance().logout();
+        assertEquals("Notification counter should be 4 after logout", 4, notificationCounter);
+
     }
 }

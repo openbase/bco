@@ -365,7 +365,7 @@ public class SessionManager {
         this.ticketAuthenticatorWrapper = null;
         this.sessionKey = null;
         try {
-            loginObervable.notifyObservers(null);
+            loginObervable.notifyObservers(getUserAtClientId());
         } catch (CouldNotPerformException ex) {
             LOGGER.warn("Could not notify logout to observer", ex);
         }
@@ -384,7 +384,7 @@ public class SessionManager {
         this.sessionKey = null;
         this.ticketAuthenticatorWrapper = null;
         try {
-            loginObervable.notifyObservers(null);
+            loginObervable.notifyObservers(getUserAtClientId());
         } catch (CouldNotPerformException ex) {
             LOGGER.warn("Could not notify complete logout to observer", ex);
         }
@@ -496,7 +496,7 @@ public class SessionManager {
                 ExceptionPrinter.printHistory(cause, LOGGER, LogLevel.ERROR);
                 throw new PermissionDeniedException(matcher.group(1));
             }
-            
+
             pattern = Pattern.compile("SessionExpiredException: (.*)[\n\r]");
             matcher = pattern.matcher(cause.getMessage());
 
