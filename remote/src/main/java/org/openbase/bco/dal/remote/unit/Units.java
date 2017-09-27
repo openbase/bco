@@ -24,7 +24,10 @@ package org.openbase.bco.dal.remote.unit;
 import com.google.protobuf.GeneratedMessage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.dal.remote.unit.app.AppRemote;
@@ -297,17 +300,17 @@ public class Units {
      * @throws InterruptedException
      */
     public static void reinitialize() throws CouldNotPerformException, InterruptedException {
-        //TODO: the unit remotes should be reinitialized but with which config/scope?
-//        try {
-//            for (UnitRemote unitRemote : unitRemoteRegistry.getEntries()) {
-//                unitRemote.unlock(unitRemoteRegistry);
-//                unitRemote.init(unitRemote.getScope());
-//                unitRemote.lock(unitRemoteRegistry);
-//                unitRemote.requestData().get(500, TimeUnit.MILLISECONDS);
-//            }
-//        } catch (ExecutionException | TimeoutException ex) {
-//            throw new CouldNotPerformException("Could not reinitialize units", ex);
-//        }
+        for (UnitRemote unitRemote : unitRemoteRegistry.getEntries()) {
+            try {
+                unitRemote.unlock(unitRemoteRegistry);
+                unitRemote.init(unitRemote.getConfig());
+                unitRemote.lock(unitRemoteRegistry);
+                unitRemote.requestData().get(500, TimeUnit.MILLISECONDS);
+            } catch (ExecutionException | TimeoutException ex) {
+                throw new CouldNotPerformException("Could not reinitialize Units");
+            }
+        }
+
         resetUnitRegistryObserver();
     }
 
