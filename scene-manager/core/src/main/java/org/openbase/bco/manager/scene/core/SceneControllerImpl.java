@@ -250,7 +250,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
             MultiException.checkAndThrow("Could not execute all actions!", exceptionStack);
             logger.debug("Deactivate Scene[" + getConfig().getLabel() + "] because all actions are sucessfully executed.");
         } catch (CouldNotPerformException | CancellationException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Scene[" + getConfig().getLabel() + "] execution failed!"), logger);
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Scene[" + getConfig().getLabel() + "] execution failed!", ex), logger);
         } finally {
             for (Entry<Future<ActionFuture>, RemoteAction> futureActionEntry : executionFutureList.entrySet()) {
                 if (!futureActionEntry.getKey().isDone()) {
