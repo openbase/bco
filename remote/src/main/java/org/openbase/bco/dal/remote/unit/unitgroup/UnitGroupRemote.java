@@ -21,8 +21,6 @@ package org.openbase.bco.dal.remote.unit.unitgroup;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
@@ -31,12 +29,9 @@ import org.openbase.bco.dal.lib.layer.unit.unitgroup.UnitGroup;
 import org.openbase.bco.dal.remote.service.AbstractServiceRemote;
 import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
-import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
@@ -111,33 +106,6 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
                 updateUnitData();
             }
         };
-    }
-
-    @Override
-    public void init(final UnitConfig unitGroupUnitConfig) throws InitializationException, InterruptedException {
-        try {
-            Registries.getUnitRegistry().waitForData();
-
-            if (!unitGroupUnitConfig.hasUnitGroupConfig()) {
-                throw new VerificationFailedException("Given unit config does not contain a unit group config!");
-            }
-
-            if (unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList().isEmpty()) {
-                throw new VerificationFailedException("UnitGroupConfig has no unit members!");
-            }
-
-            List<UnitConfig> unitConfigs = new ArrayList<>();
-            for (String unitConfigId : unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList()) {
-                unitConfigs.add(Registries.getUnitRegistry().getUnitConfigById(unitConfigId));
-            }
-
-            if (unitConfigs.isEmpty()) {
-                throw new CouldNotPerformException("Could not resolve any unit members!");
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
-        }
-        super.init(unitGroupUnitConfig);
     }
 
     @Override
