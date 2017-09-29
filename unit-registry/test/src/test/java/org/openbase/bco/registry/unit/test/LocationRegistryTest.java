@@ -72,7 +72,7 @@ public class LocationRegistryTest {
     }
 
     @BeforeClass
-    public static void setUpClass() throws Exception {
+    public static void setUpClass() throws Throwable {
         try {
             JPService.setupJUnitTestMode();
             JPService.registerProperty(JPDebugMode.class, true);
@@ -134,13 +134,13 @@ public class LocationRegistryTest {
             deviceRegistryThread.join();
             appRegistryThread.join();
             agentRegistryThread.join();
-        } catch (InterruptedException | JPServiceException | CouldNotPerformException ex) {
+        } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
     }
 
     @AfterClass
-    public static void tearDownClass() throws Exception {
+    public static void tearDownClass() throws Throwable {
         try {
             if (unitRegistry != null) {
                 unitRegistry.shutdown();
@@ -159,7 +159,7 @@ public class LocationRegistryTest {
             }
             
             Registries.shutdown();
-        } catch (Exception ex) {
+        } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
     }
