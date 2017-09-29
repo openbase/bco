@@ -91,7 +91,8 @@ public class DimmerController extends AbstractDALUnitController<DimmerData, Dimm
         logger.debug("Apply powerState Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<DimmerData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setPowerState(value);
+            long transactionId = dataBuilder.getInternalBuilder().getPowerState().getTransactionId() + 1;
+            dataBuilder.getInternalBuilder().setPowerState(value.toBuilder().setTransactionId(transactionId));
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply powerState Update[" + value + "] for " + this + "!", ex);
         }
@@ -115,7 +116,8 @@ public class DimmerController extends AbstractDALUnitController<DimmerData, Dimm
         logger.debug("Apply brightnessState Update[" + brightnessState + "] for " + this + ".");
 
         try (ClosableDataBuilder<DimmerData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setBrightnessState(brightnessState);
+            long transactionId = dataBuilder.getInternalBuilder().getBrightnessState().getTransactionId() + 1;
+            dataBuilder.getInternalBuilder().setBrightnessState(brightnessState.toBuilder().setTransactionId(transactionId));
             if (brightnessState.getBrightness() == 0) {
                 dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.OFF);
             } else {

@@ -70,6 +70,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.dal.remote.unit.future.UnitSynchronisationFuture;
 
 /**
  *
@@ -109,6 +110,21 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
                 }
             }
         };
+        addDataObserver((Observable<D> source, D data1) -> {
+            final Set<ServiceType> serviceTypeSet = new HashSet<>();
+            for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
+                // check if already handled
+                if (!serviceTypeSet.contains(serviceDescription.getType())) {
+                    serviceTypeSet.add(serviceDescription.getType());
+                    try {
+                        Object serviceData = Services.invokeProviderServiceMethod(serviceDescription.getType(), data1);
+                        serviceStateObservableMap.get(serviceDescription.getType()).notifyObservers(serviceData);
+                    } catch (CouldNotPerformException ex) {
+                        logger.debug("Could not notify state update for service[" + serviceDescription.getType() + "] because this service is not supported by this remote controller.", ex);
+                    }
+                }
+            }
+        });
     }
 
     protected UnitRegistry getUnitRegistry() throws InterruptedException, CouldNotPerformException {
@@ -234,26 +250,26 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         }
     }
 
-    @Override
-    protected void notifyDataUpdate(final D data) throws CouldNotPerformException {
-        super.notifyDataUpdate(data);
-
-        final Set<ServiceType> serviceTypeSet = new HashSet<>();
-        for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
-
-            // check if already handled
-            if (!serviceTypeSet.contains(serviceDescription.getType())) {
-                serviceTypeSet.add(serviceDescription.getType());
-                try {
-                    Object serviceData = Services.invokeProviderServiceMethod(serviceDescription.getType(), data);
-                    serviceStateObservableMap.get(serviceDescription.getType()).notifyObservers(serviceData);
-                } catch (CouldNotPerformException ex) {
-                    logger.debug("Could not notify state update for service[" + serviceDescription.getType() + "] because this service is not supported by this remote controller.", ex);
-                }
-            }
-        }
-    }
-
+    //TODO: check that its okay that this has been moved to an observer registered in the contstructor
+//    @Override
+//    protected void notifyDataUpdate(final D data) throws CouldNotPerformException {
+//        super.notifyDataUpdate(data);
+//
+//        final Set<ServiceType> serviceTypeSet = new HashSet<>();
+//        for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
+//
+//            // check if already handled
+//            if (!serviceTypeSet.contains(serviceDescription.getType())) {
+//                serviceTypeSet.add(serviceDescription.getType());
+//                try {
+//                    Object serviceData = Services.invokeProviderServiceMethod(serviceDescription.getType(), data);
+//                    serviceStateObservableMap.get(serviceDescription.getType()).notifyObservers(serviceData);
+//                } catch (CouldNotPerformException ex) {
+//                    logger.debug("Could not notify state update for service[" + serviceDescription.getType() + "] because this service is not supported by this remote controller.", ex);
+//                }
+//            }
+//        }
+//    }
     @Override
     public void addServiceStateObserver(final ServiceType serviceType, final Observer observer) {
         serviceStateObservableMap.get(serviceType).addObserver(observer);
@@ -519,7 +535,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      */
     @Override
     public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
-        return RPCHelper.callRemoteMethod(actionDescription, this, ActionFuture.class);
+        return new UnitSynchronisationFuture(RPCHelper.callRemoteMethod(actionDescription, this, ActionFuture.class), this);
     }
 
     /**

@@ -30,29 +30,28 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.TamperStateType.TamperState;
 import rst.domotic.unit.dal.TamperDetectorDataType.TamperDetectorData;
-import rst.timing.TimestampType;
 
 /**
  *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class TamperDetectorController extends AbstractDALUnitController<TamperDetectorData, TamperDetectorData.Builder> implements TamperDetector {
-
+    
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperDetectorData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperState.getDefaultInstance()));
     }
-
+    
     public TamperDetectorController(final UnitHost unitHost, final TamperDetectorData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(TamperDetectorController.class, unitHost, builder);
     }
-
+    
     public void updateTamperStateProvider(TamperState state) throws CouldNotPerformException {
-
+        
         logger.debug("Apply tamperState Update[" + state + "] for " + this + ".");
-
+        
         try (ClosableDataBuilder<TamperDetectorData.Builder> dataBuilder = getDataBuilder(this)) {
-
+            
             TamperState.Builder tamperStateBuilder = dataBuilder.getInternalBuilder().getTamperStateBuilder();
 
             // Update value
@@ -66,13 +65,13 @@ public class TamperDetectorController extends AbstractDALUnitController<TamperDe
                 }
                 tamperStateBuilder.setLastDetection(state.getTimestamp());
             }
-
-            dataBuilder.getInternalBuilder().setTamperState(tamperStateBuilder);
+            
+            dataBuilder.getInternalBuilder().setTamperState(tamperStateBuilder.setTransactionId(tamperStateBuilder.getTransactionId() + 1));
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply tamperState Update[" + state + "] for " + this + "!", ex);
         }
     }
-
+    
     @Override
     public TamperState getTamperState() throws NotAvailableException {
         try {

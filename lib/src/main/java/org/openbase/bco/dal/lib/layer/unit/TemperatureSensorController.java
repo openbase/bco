@@ -36,26 +36,27 @@ import rst.domotic.unit.dal.TemperatureSensorDataType.TemperatureSensorData;
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class TemperatureSensorController extends AbstractDALUnitController<TemperatureSensorData, TemperatureSensorData.Builder> implements TemperatureSensor {
-
+    
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureSensorData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AlarmState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TemperatureState.getDefaultInstance()));
     }
-
+    
     public TemperatureSensorController(final UnitHost unitHost, final TemperatureSensorData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(TemperatureSensorController.class, unitHost, builder);
     }
-
+    
     public void updateTemperatureStateProvider(final TemperatureState temperatureState) throws CouldNotPerformException {
         logger.debug("Apply temperatureState Update[" + temperatureState + "] for " + this + ".");
         try (ClosableDataBuilder<TemperatureSensorData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setTemperatureState(temperatureState);
+            long transactionId = dataBuilder.getInternalBuilder().getTemperatureState().getTransactionId() + 1;
+            dataBuilder.getInternalBuilder().setTemperatureState(temperatureState.toBuilder().setTransactionId(transactionId));
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply temperatureState Update[" + temperatureState + "] for " + this + "!", ex);
         }
     }
-
+    
     @Override
     public TemperatureState getTemperatureState() throws NotAvailableException {
         try {
@@ -64,16 +65,17 @@ public class TemperatureSensorController extends AbstractDALUnitController<Tempe
             throw new NotAvailableException("temperatureState", ex);
         }
     }
-
+    
     public void updateTemperatureAlarmStateProvider(final AlarmState value) throws CouldNotPerformException {
         logger.debug("Apply temperatureAlarmState Update[" + value + "] for " + this + ".");
         try (ClosableDataBuilder<TemperatureSensorData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setTemperatureAlarmState(value);
+            long transactionId = dataBuilder.getInternalBuilder().getTemperatureAlarmState().getTransactionId() + 1;
+            dataBuilder.getInternalBuilder().setTemperatureAlarmState(value.toBuilder().setTransactionId(transactionId));
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not temperatureAlarmState Update[" + value + "] for " + this + "!", ex);
         }
     }
-
+    
     @Override
     public AlarmState getTemperatureAlarmState() throws NotAvailableException {
         try {

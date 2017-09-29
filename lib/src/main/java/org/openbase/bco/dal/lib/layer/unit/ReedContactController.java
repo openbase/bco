@@ -21,8 +21,6 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -37,26 +35,27 @@ import rst.domotic.unit.dal.ReedContactDataType.ReedContactData;
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class ReedContactController extends AbstractDALUnitController<ReedContactData, ReedContactData.Builder> implements ReedContact {
-
+    
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ReedContactData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ContactState.getDefaultInstance()));
     }
-
+    
     public ReedContactController(final UnitHost unitHost, ReedContactData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(ReedContactController.class, unitHost, builder);
     }
-
+    
     public void updateContactStateProvider(final ContactState contactState) throws CouldNotPerformException {
         logger.debug("Apply contactState Update[" + contactState + "] for " + this + ".");
-
+        
         try (ClosableDataBuilder<ReedContactData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setContactState(contactState);
+            long transactionId = dataBuilder.getInternalBuilder().getContactState().getTransactionId() + 1;
+            dataBuilder.getInternalBuilder().setContactState(contactState.toBuilder().setTransactionId(transactionId));
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply contactState Update[" + contactState + "] for " + this + "!", ex);
         }
     }
-
+    
     @Override
     public ContactState getContactState() throws NotAvailableException {
         try {

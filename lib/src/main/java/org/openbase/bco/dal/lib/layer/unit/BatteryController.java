@@ -49,7 +49,8 @@ public class BatteryController extends AbstractDALUnitController<BatteryData, Ba
         logger.debug("Apply batteryState Update[" + batteryState + "] for " + this + ".");
 
         try (ClosableDataBuilder<BatteryData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setBatteryState(batteryState);
+            long transactionId = dataBuilder.getInternalBuilder().getBatteryState().getTransactionId() + 1;
+            dataBuilder.getInternalBuilder().setBatteryState(batteryState.toBuilder().setTransactionId(transactionId));
             if (!batteryState.hasValue() || batteryState.getValue() == BatteryState.State.UNKNOWN) {
                 if (batteryState.getLevel() <= 5) {
                     dataBuilder.getInternalBuilder().getBatteryStateBuilder().setValue(BatteryState.State.INSUFFICIENT);

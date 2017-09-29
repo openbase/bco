@@ -29,29 +29,28 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.MotionStateType.MotionState;
 import rst.domotic.unit.dal.MotionDetectorDataType.MotionDetectorData;
-import rst.timing.TimestampType;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class MotionDetectorController extends AbstractDALUnitController<MotionDetectorData, MotionDetectorData.Builder> implements MotionDetector {
-
+    
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionDetectorData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionState.getDefaultInstance()));
     }
-
+    
     public MotionDetectorController(final UnitHost unitHost, final MotionDetectorData.Builder builder) throws org.openbase.jul.exception.InstantiationException, CouldNotPerformException {
         super(MotionDetectorController.class, unitHost, builder);
     }
-
+    
     public void updateMotionStateProvider(MotionState state) throws CouldNotPerformException {
-
+        
         logger.debug("Apply motionState Update[" + state + "] for " + this + ".");
-
+        
         try (ClosableDataBuilder<MotionDetectorData.Builder> dataBuilder = getDataBuilder(this)) {
-
+            
             MotionState.Builder motionStateBuilder = dataBuilder.getInternalBuilder().getMotionStateBuilder();
 
             // Update value
@@ -65,13 +64,13 @@ public class MotionDetectorController extends AbstractDALUnitController<MotionDe
                 }
                 motionStateBuilder.setLastMotion(state.getTimestamp());
             }
-
-            dataBuilder.getInternalBuilder().setMotionState(motionStateBuilder);
+            
+            dataBuilder.getInternalBuilder().setMotionState(motionStateBuilder.setTransactionId(motionStateBuilder.getTransactionId() + 1));
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply motionState Update[" + state + "] for " + this + "!", ex);
         }
     }
-
+    
     @Override
     public MotionState getMotionState() throws NotAvailableException {
         try {

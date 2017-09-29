@@ -21,8 +21,6 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -37,26 +35,27 @@ import rst.domotic.unit.dal.HandleDataType.HandleData;
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class HandleController extends AbstractDALUnitController<HandleData, HandleData.Builder> implements Handle {
-
+    
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HandleState.getDefaultInstance()));
     }
-
+    
     public HandleController(final UnitHost unitHost, final HandleData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(HandleController.class, unitHost, builder);
     }
-
+    
     public void updateHandleStateProvider(final HandleState handleState) throws CouldNotPerformException {
         logger.debug("Apply handleState Update[" + handleState + "] for " + this + ".");
-
+        
         try (ClosableDataBuilder<HandleData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setHandleState(handleState);
+            long transactionId = dataBuilder.getInternalBuilder().getHandleState().getTransactionId() + 1;
+            dataBuilder.getInternalBuilder().setHandleState(handleState.toBuilder().setTransactionId(transactionId));
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply handleState Update[" + handleState + "] for " + this + "!", ex);
         }
     }
-
+    
     @Override
     public HandleState getHandleState() throws NotAvailableException {
         try {

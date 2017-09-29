@@ -42,18 +42,18 @@ import rst.domotic.unit.UnitConfigType;
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class LightController extends AbstractDALUnitController<LightData, LightData.Builder> implements Light {
-
+    
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LightData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
     }
-
+    
     private PowerStateOperationService powerService;
-
+    
     public LightController(final UnitHost unitHost, final LightData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(LightController.class, unitHost, builder);
     }
-
+    
     @Override
     public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
@@ -63,27 +63,28 @@ public class LightController extends AbstractDALUnitController<LightData, LightD
             throw new InitializationException(this, ex);
         }
     }
-
+    
     public void updatePowerStateProvider(final PowerState powerState) throws CouldNotPerformException {
         logger.debug("Apply powerState Update[" + powerState + "] for " + this + ".");
         try (ClosableDataBuilder<LightData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setPowerState(powerState);
+            long transactionId = dataBuilder.getInternalBuilder().getPowerState().getTransactionId() + 1;
+            dataBuilder.getInternalBuilder().setPowerState(powerState.toBuilder().setTransactionId(transactionId));
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply powerState Update[" + powerState + "] for " + this + "!", ex);
         }
     }
-
+    
     @Override
     public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to PowerState [" + state + "]");
         try {
             verifyOperationServiceStateValue(state.getValue());
-        } catch(VerificationFailedException ex) {
+        } catch (VerificationFailedException ex) {
             return FutureProcessor.canceledFuture(ActionFuture.class, ex);
         }
         return powerService.setPowerState(state);
     }
-
+    
     @Override
     public PowerState getPowerState() throws NotAvailableException {
         try {

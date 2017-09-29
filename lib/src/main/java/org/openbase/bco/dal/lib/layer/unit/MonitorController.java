@@ -72,7 +72,8 @@ public class MonitorController extends AbstractDALUnitController<MonitorData, Mo
     public void updatePowerStateProvider(final PowerState state) throws CouldNotPerformException {
         logger.debug("Apply powerState Update[" + state + "] for " + this + ".");
         try (ClosableDataBuilder<MonitorData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setPowerState(state);
+            long transactionId = dataBuilder.getInternalBuilder().getPowerState().getTransactionId() + 1;
+            dataBuilder.getInternalBuilder().setPowerState(state.toBuilder().setTransactionId(transactionId));
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply powerState Update[" + state + "] for " + this + "!", ex);
         }
@@ -83,7 +84,7 @@ public class MonitorController extends AbstractDALUnitController<MonitorData, Mo
         logger.debug("Setting [" + getLabel() + "] to PowerState [" + state + "]");
         try {
             verifyOperationServiceStateValue(state.getValue());
-        } catch(VerificationFailedException ex) {
+        } catch (VerificationFailedException ex) {
             return FutureProcessor.canceledFuture(ActionFuture.class, ex);
         }
         return powerStateService.setPowerState(state);
@@ -103,7 +104,7 @@ public class MonitorController extends AbstractDALUnitController<MonitorData, Mo
         logger.debug("Setting [" + getLabel() + "] to StandbyState [" + state + "]");
         try {
             verifyOperationServiceStateValue(state.getValue());
-        } catch(VerificationFailedException ex) {
+        } catch (VerificationFailedException ex) {
             return FutureProcessor.canceledFuture(ActionFuture.class, ex);
         }
         return standbyStateService.setStandbyState(state);
@@ -122,7 +123,8 @@ public class MonitorController extends AbstractDALUnitController<MonitorData, Mo
         logger.debug("Apply standbyState Update[" + standbyState + "] for " + this + ".");
         
         try (ClosableDataBuilder<MonitorData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setStandbyState(standbyState);
+            long transactionId = dataBuilder.getInternalBuilder().getStandbyState().getTransactionId() + 1;
+            dataBuilder.getInternalBuilder().setStandbyState(standbyState.toBuilder().setTransactionId(transactionId));
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply standbyState Update[" + standbyState + "] for " + this + "!", ex);
         }

@@ -21,6 +21,8 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.Message;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -61,8 +63,10 @@ import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.FatalImplementationErrorException;
+import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.schedule.FutureProcessor;
 import rct.Transform;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.geometry.RotationType;
 import rst.geometry.RotationType.Rotation;
 import rst.geometry.TranslationType;
@@ -587,5 +591,18 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException(LocationRegistry.class);
         }
+    }
+
+    /**
+     * Get the transaction id of a service state in the data of the unit.
+     *
+     * @param serviceType
+     * @return
+     * @throws CouldNotPerformException
+     */
+    default long getTransactionIdByServiceType(ServiceType serviceType) throws CouldNotPerformException {
+        Message serviceState = (Message) Services.invokeProviderServiceMethod(serviceType, getData());
+        Descriptors.FieldDescriptor fieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceState.toBuilder(), "transaction_id");
+        return (long) serviceState.getField(fieldDescriptor);
     }
 }

@@ -21,8 +21,6 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
@@ -52,7 +50,8 @@ public class SmokeDetectorController extends AbstractDALUnitController<SmokeDete
         logger.debug("Apply smokeAlarmState Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<SmokeDetectorData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setSmokeAlarmState(value);
+            long transactionId = dataBuilder.getInternalBuilder().getSmokeAlarmState().getTransactionId() + 1;
+            dataBuilder.getInternalBuilder().setSmokeAlarmState(value.toBuilder().setTransactionId(transactionId));
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply smokeAlarmState Update[" + value + "] for " + this + "!", ex);
         }
@@ -71,7 +70,8 @@ public class SmokeDetectorController extends AbstractDALUnitController<SmokeDete
         logger.debug("Apply smokeState Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<SmokeDetectorData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setSmokeState(value);
+            long transactionId = dataBuilder.getInternalBuilder().getSmokeState().getTransactionId() + 1;
+            dataBuilder.getInternalBuilder().setSmokeState(value.toBuilder().setTransactionId(transactionId));
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply smokeState Update[" + value + "] for " + this + "!", ex);
         }

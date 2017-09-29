@@ -70,7 +70,8 @@ public class RollerShutterController extends AbstractDALUnitController<RollerShu
     public void updateBlindStateProvider(final BlindState blindState) throws CouldNotPerformException {
         logger.debug("Apply blindState Update[" + blindState + "] for " + this + ".");
         try (ClosableDataBuilder<RollerShutterData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().mergeBlindState(blindState);
+            long transactionId = dataBuilder.getInternalBuilder().getBlindState().getTransactionId() + 1;
+            dataBuilder.getInternalBuilder().mergeBlindState(blindState.toBuilder().setTransactionId(transactionId).build());
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply blindState Update[" + blindState + "] for " + this + "!", ex);
         }

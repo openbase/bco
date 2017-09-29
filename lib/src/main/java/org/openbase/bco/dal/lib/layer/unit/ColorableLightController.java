@@ -177,7 +177,8 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
         logger.debug("Apply powerState Update[" + value + "] for " + this + ".");
 
         try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setPowerState(value);
+            long transactionId = dataBuilder.getInternalBuilder().getPowerState().getTransactionId() + 1;
+            dataBuilder.getInternalBuilder().setPowerState(value.toBuilder().setTransactionId(transactionId));
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply powerState Update[" + value + "] for " + this + "!", ex);
         }
@@ -207,7 +208,8 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
         logger.debug("Apply colorState Update[" + colorState + "] for " + this + ".");
 
         try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setColorState(colorState);
+            long transactionId = dataBuilder.getInternalBuilder().getColorState().getTransactionId() + 1;
+            dataBuilder.getInternalBuilder().setColorState(colorState.toBuilder().setTransactionId(transactionId));
 
             BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(colorState.getColor().getHsbColor().getBrightness()).build();
             dataBuilder.getInternalBuilder().setBrightnessState(brightnessState);
@@ -235,7 +237,8 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
         logger.debug("Apply brightnessState Update[" + brightnessState + "] for " + this + ".");
 
         try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setBrightnessState(brightnessState);
+            long transactionId = dataBuilder.getInternalBuilder().getBrightnessState().getTransactionId() + 1;
+            dataBuilder.getInternalBuilder().setBrightnessState(brightnessState.toBuilder().setTransactionId(transactionId));
 
             HSBColor hsb = dataBuilder.getInternalBuilder().getColorState().getColor().getHsbColor().toBuilder().setBrightness(brightnessState.getBrightness()).build();
             Color color = Color.newBuilder().setType(Color.Type.HSB).setHsbColor(hsb).build();

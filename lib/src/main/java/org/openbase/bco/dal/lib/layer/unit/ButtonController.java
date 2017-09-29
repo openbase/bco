@@ -30,27 +30,26 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.ButtonStateType.ButtonState;
 import rst.domotic.unit.dal.ButtonDataType.ButtonData;
-import rst.timing.TimestampType;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class ButtonController extends AbstractDALUnitController<ButtonData, ButtonData.Builder> implements Button {
-
+    
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonState.getDefaultInstance()));
     }
-
+    
     public ButtonController(final UnitHost unitHost, final ButtonData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(ButtonController.class, unitHost, builder);
     }
-
+    
     public void updateButtonStateProvider(ButtonState state) throws CouldNotPerformException {
         logger.debug("Apply buttonState Update[" + state + "] for " + this + ".");
         try (ClosableDataBuilder<ButtonData.Builder> dataBuilder = getDataBuilder(this)) {
-
+            
             ButtonState.Builder buttonState = dataBuilder.getInternalBuilder().getButtonStateBuilder();
 
             // Update value
@@ -64,13 +63,13 @@ public class ButtonController extends AbstractDALUnitController<ButtonData, Butt
                 }
                 buttonState.setLastPressed(state.getTimestamp());
             }
-
-            dataBuilder.getInternalBuilder().setButtonState(buttonState);
+            
+            dataBuilder.getInternalBuilder().setButtonState(buttonState.setTransactionId(buttonState.getTransactionId() + 1));
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply buttonState Update[" + state + "] for " + this + "!", ex);
         }
     }
-
+    
     @Override
     public ButtonState getButtonState() throws NotAvailableException {
         try {

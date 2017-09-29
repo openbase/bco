@@ -21,8 +21,6 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
-
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -37,26 +35,27 @@ import rst.domotic.unit.dal.PowerConsumptionSensorDataType.PowerConsumptionSenso
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class PowerConsumptionSensorController extends AbstractDALUnitController<PowerConsumptionSensorData, PowerConsumptionSensorData.Builder> implements PowerConsumptionSensor {
-
+    
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionSensorData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerConsumptionState.getDefaultInstance()));
     }
-
+    
     public PowerConsumptionSensorController(final UnitHost unitHost, final PowerConsumptionSensorData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(PowerConsumptionSensorController.class, unitHost, builder);
     }
-
+    
     public void updatePowerConsumptionStateProvider(final PowerConsumptionState state) throws CouldNotPerformException {
         logger.debug("Apply powerConsumptionState Update[" + state + "] for " + this + ".");
-
+        
         try (ClosableDataBuilder<PowerConsumptionSensorData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setPowerConsumptionState(state);
+            long transactionId = dataBuilder.getInternalBuilder().getPowerConsumptionState().getTransactionId() + 1;
+            dataBuilder.getInternalBuilder().setPowerConsumptionState(state.toBuilder().setTransactionId(transactionId));
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply powerConsumptionState Update[" + state + "] for " + this + "!", ex);
         }
     }
-
+    
     @Override
     public PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {
         try {

@@ -24,7 +24,6 @@ package org.openbase.bco.dal.lib.action;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
 import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
@@ -228,13 +227,13 @@ public class ActionImpl implements Action {
                             }
 
                             ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
-                            actionFuture.addActionDescription(actionDescriptionBuilder);
 
                             // Execute
                             updateActionState(ActionState.State.EXECUTING);
 
                             try {
                                 Service.invokeServiceMethod(serviceDescription, unit, serviceAttribute);
+                                actionDescriptionBuilder.setTransactionId(unit.getTransactionIdByServiceType(actionDescriptionBuilder.getServiceStateDescription().getServiceType()));
                             } catch (CouldNotPerformException ex) {
                                 if (ex.getCause() instanceof InterruptedException) {
                                     updateActionState(ActionState.State.ABORTED);
@@ -244,6 +243,8 @@ public class ActionImpl implements Action {
                                 throw new ExecutionException(ex);
                             }
                             updateActionState(ActionState.State.FINISHING);
+
+                            actionFuture.addActionDescription(actionDescriptionBuilder);
                             return actionFuture.build();
                         } catch (final CancellationException ex) {
                             updateActionState(ActionState.State.ABORTED);
