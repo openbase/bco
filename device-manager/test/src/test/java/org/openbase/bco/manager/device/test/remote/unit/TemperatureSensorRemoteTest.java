@@ -95,6 +95,6 @@ public class TemperatureSensorRemoteTest extends AbstractBCODeviceManagerTest {
         AlarmState alarmState = AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
         ((TemperatureSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureSensorRemote.getId())).updateTemperatureAlarmStateProvider(alarmState);
         temperatureSensorRemote.requestData().get();
-        Assert.assertEquals("The getter for the temperature alarm state returns the wrong value!", alarmState, temperatureSensorRemote.getTemperatureAlarmState());
+        Assert.assertEquals("The getter for the temperature alarm state returns the wrong value!", alarmState.getValue(), temperatureSensorRemote.getTemperatureAlarmState().getValue());
     }
 }

@@ -88,9 +88,10 @@ public class AbsenceEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
 
     /**
      * Test of activate method, of class PowerStateSynchroniserAgent.
+     *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test//(timeout = 10000)
     public void testAbsenceEnergySavingAgent() throws Exception {
         // TODO: turn back on when resource allocation is integrated for unit tests
         try {
@@ -100,7 +101,7 @@ public class AbsenceEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         } catch (JPNotAvailableException ex) {
             throw new CouldNotPerformException("Could not access JPResourceAllocation property", ex);
         }
-        
+
         System.out.println("testAbsenceEnergySavingAgent");
         CachedAgentRegistryRemote.waitForData();
 

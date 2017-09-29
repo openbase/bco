@@ -53,7 +53,7 @@ public class UserManagerController implements UserManager, Launchable<Void>, Voi
             this.factory = UserFactoryImpl.getInstance();
             this.userRegistry = new ControllerRegistryImpl<>();
 
-            this.registrySynchronizer = new EnableableEntryRegistrySynchronizer<String, UserController, UnitConfig, UnitConfig.Builder>(userRegistry, Registries.getUserRegistry().getUserConfigRemoteRegistry(), factory) {
+            this.registrySynchronizer = new EnableableEntryRegistrySynchronizer<String, UserController, UnitConfig, UnitConfig.Builder>(userRegistry, Registries.getUserRegistry().getUserConfigRemoteRegistry(), Registries.getUserRegistry(), factory) {
 
                 @Override
                 public boolean enablingCondition(UnitConfig config) {

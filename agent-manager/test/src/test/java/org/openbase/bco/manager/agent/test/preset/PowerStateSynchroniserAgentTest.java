@@ -85,7 +85,7 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
      *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test//(timeout = 10000)
     public void testPowerStateSyncAgent() throws Exception {
         System.out.println("testPowerStateSyncAgent");
 

@@ -95,7 +95,7 @@ public class TemperatureControllerRemoteTest extends AbstractBCODeviceManagerTes
 //        System.out.println(temperatureControllerRemote.getTargetTemperatureState());
         ((TemperatureControllerController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureControllerRemote.getId())).updateTargetTemperatureStateProvider(temperatureState);
         temperatureControllerRemote.requestData().get();
-        Assert.assertEquals("The getter for the target temperature returns the wrong value!", temperatureState, temperatureControllerRemote.getTargetTemperatureState());
+        Assert.assertEquals("The getter for the target temperature returns the wrong value!", temperatureState.getTemperature(), temperatureControllerRemote.getTargetTemperatureState().getTemperature(), 0.1);
     }
 
     /**

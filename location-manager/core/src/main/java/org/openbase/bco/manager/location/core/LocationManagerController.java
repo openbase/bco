@@ -55,7 +55,7 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
     private final ControllerRegistryImpl<String, ConnectionController> connectionRegistry;
     private final ActivatableEntryRegistrySynchronizer<String, LocationController, UnitConfig, UnitConfig.Builder> locationRegistrySynchronizer;
     private final ActivatableEntryRegistrySynchronizer<String, ConnectionController, UnitConfig, UnitConfig.Builder> connectionRegistrySynchronizer;
-    
+
     private final UnitGroupFactory unitGrouptFactory;
     private final ControllerRegistryImpl<String, UnitGroupController> unitGroupRegistry;
     private final ActivatableEntryRegistrySynchronizer<String, UnitGroupController, UnitConfig, UnitConfig.Builder> unitGroupRegistrySynchronizer;
@@ -66,24 +66,24 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
             this.connectionFactory = ConnectionFactoryImpl.getInstance();
             this.locationRegistry = new ControllerRegistryImpl<>();
             this.connectionRegistry = new ControllerRegistryImpl<>();
-            this.locationRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, LocationController, UnitConfig, UnitConfig.Builder>(locationRegistry, Registries.getLocationRegistry().getLocationConfigRemoteRegistry(), locationFactory) {
+            this.locationRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, LocationController, UnitConfig, UnitConfig.Builder>(locationRegistry, Registries.getLocationRegistry().getLocationConfigRemoteRegistry(), Registries.getLocationRegistry(), locationFactory) {
 
                 @Override
                 public boolean activationCondition(final UnitConfig config) {
                     return true;
                 }
             };
-            this.connectionRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, ConnectionController, UnitConfig, UnitConfig.Builder>(connectionRegistry, Registries.getLocationRegistry().getConnectionConfigRemoteRegistry(), connectionFactory) {
+            this.connectionRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, ConnectionController, UnitConfig, UnitConfig.Builder>(connectionRegistry, Registries.getLocationRegistry().getConnectionConfigRemoteRegistry(), Registries.getLocationRegistry(), connectionFactory) {
 
                 @Override
                 public boolean activationCondition(final UnitConfig config) {
                     return true;
                 }
             };
-            
+
             this.unitGrouptFactory = UnitGroupFactoryImpl.getInstance();
             this.unitGroupRegistry = new ControllerRegistryImpl<>();
-            this.unitGroupRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, UnitGroupController, UnitConfig, UnitConfig.Builder>(unitGroupRegistry, Registries.getUnitRegistry().getUnitGroupUnitConfigRemoteRegistry(), unitGrouptFactory) {
+            this.unitGroupRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, UnitGroupController, UnitConfig, UnitConfig.Builder>(unitGroupRegistry, Registries.getUnitRegistry().getUnitGroupUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), unitGrouptFactory) {
 
                 @Override
                 public boolean activationCondition(final UnitConfig config) {

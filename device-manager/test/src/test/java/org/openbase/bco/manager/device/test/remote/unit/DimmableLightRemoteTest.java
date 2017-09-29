@@ -85,6 +85,7 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
 
     /**
      * Test of getPower method, of class DimmerRemote.
+     *
      * @throws java.lang.Exception
      */
     @Test(timeout = 10000)
@@ -98,6 +99,7 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
 
     /**
      * Test of setDimm method, of class DimmerRemote.
+     *
      * @throws java.lang.Exception
      */
     @Test(timeout = 10000)
@@ -112,6 +114,7 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
 
     /**
      * Test of getDimm method, of class DimmerRemote.
+     *
      * @throws java.lang.Exception
      */
     @Test(timeout = 10000)
@@ -121,6 +124,6 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
         BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).build();
         ((DimmableLightController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dimmableLightRemote.getId())).updateBrightnessStateProvider(brightnessState);
         dimmableLightRemote.requestData().get();
-        assertEquals("Dimm has not been set in time!", brightnessState, dimmableLightRemote.getBrightnessState());
+        assertEquals("Dimm has not been set in time!", brightnessState.getBrightness(), dimmableLightRemote.getBrightnessState().getBrightness(), 0.1);
     }
 }

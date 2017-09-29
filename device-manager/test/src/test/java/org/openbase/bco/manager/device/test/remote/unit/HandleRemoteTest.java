@@ -78,6 +78,6 @@ public class HandleRemoteTest extends AbstractBCODeviceManagerTest {
         HandleState handlestate = HandleState.newBuilder().setPosition(90).build();
         ((HandleController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(handleRemote.getId())).updateHandleStateProvider(handlestate);
         handleRemote.requestData().get();
-        Assert.assertEquals("The getter for the handle state returns the wrong value!", handlestate, handleRemote.getHandleState());
+        Assert.assertEquals("The getter for the handle state returns the wrong value!", handlestate.getPosition(), handleRemote.getHandleState().getPosition());
     }
 }

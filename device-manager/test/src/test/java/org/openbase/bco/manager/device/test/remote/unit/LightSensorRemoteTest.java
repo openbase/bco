@@ -71,6 +71,6 @@ public class LightSensorRemoteTest extends AbstractBCODeviceManagerTest {
         IlluminanceState illuminanceState = IlluminanceState.newBuilder().setIlluminance(illuminance).build();
         ((LightSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightSensorRemote.getId())).updateIlluminanceStateProvider(illuminanceState);
         lightSensorRemote.requestData().get();
-        assertEquals("The getter for the illuminance returns the wrong value!", illuminanceState, lightSensorRemote.getIlluminanceState());
+        assertEquals("The getter for the illuminance returns the wrong value!", illuminanceState.getIlluminance(), lightSensorRemote.getIlluminanceState().getIlluminance(), 0.1);
     }
 }

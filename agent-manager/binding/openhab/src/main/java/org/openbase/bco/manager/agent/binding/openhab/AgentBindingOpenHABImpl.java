@@ -59,7 +59,7 @@ public class AgentBindingOpenHABImpl extends AbstractOpenHABBinding {
             factory = new AgentRemoteFactoryImpl();
             hardwareSimulationMode = JPService.getProperty(JPHardwareSimulationMode.class).getValue();
 
-            this.registrySynchronizer = new RegistrySynchronizer<String, AgentRemote, UnitConfig, UnitConfig.Builder>(registry, Registries.getAgentRegistry().getAgentConfigRemoteRegistry(), factory) {
+            this.registrySynchronizer = new RegistrySynchronizer<String, AgentRemote, UnitConfig, UnitConfig.Builder>(registry, Registries.getAgentRegistry().getAgentConfigRemoteRegistry(), Registries.getAgentRegistry(), factory) {
 
                 @Override
                 public boolean verifyConfig(final UnitConfig config) throws VerificationFailedException {

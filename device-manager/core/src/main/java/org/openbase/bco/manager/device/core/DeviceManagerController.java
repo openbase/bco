@@ -93,7 +93,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
 
             Registries.getUnitRegistry().waitForData();
 
-            this.deviceRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, DeviceController, UnitConfig, UnitConfig.Builder>(deviceControllerRegistry, Registries.getUnitRegistry().getDeviceUnitConfigRemoteRegistry(), deviceFactory) {
+            this.deviceRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, DeviceController, UnitConfig, UnitConfig.Builder>(deviceControllerRegistry, Registries.getUnitRegistry().getDeviceUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), deviceFactory) {
 
                 @Override
                 public boolean activationCondition(final UnitConfig config) {

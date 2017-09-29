@@ -31,6 +31,7 @@ import org.openbase.bco.dal.remote.unit.LightRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.PowerStateType.PowerState;
 
 /**
@@ -68,9 +69,10 @@ public class LightRemoteTest extends AbstractBCODeviceManagerTest {
     public void testSetPowerState() throws Exception {
         System.out.println("setPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.ON).build();
-        lightRemote.setPowerState(state).get();
+        ActionFuture actionFuture = lightRemote.setPowerState(state).get();
         lightRemote.requestData().get();
         assertEquals("Power has not been set in time!", state.getValue(), lightRemote.getData().getPowerState().getValue());
+        assertEquals("TransactionId has not been set correctly", actionFuture.getActionDescription(0).getTransactionId(), lightRemote.getData().getPowerState().getTransactionId());
     }
 
     /**

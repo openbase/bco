@@ -53,7 +53,7 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
             this.factory = AppFactoryImpl.getInstance();
             this.appRegistry = new ControllerRegistryImpl<>();
 
-            this.appRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AppController, UnitConfig, UnitConfig.Builder>(appRegistry, Registries.getUnitRegistry().getAppUnitConfigRemoteRegistry(), factory) {
+            this.appRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AppController, UnitConfig, UnitConfig.Builder>(appRegistry, Registries.getUnitRegistry().getAppUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {
 
                 @Override
                 public boolean enablingCondition(final UnitConfig config) {

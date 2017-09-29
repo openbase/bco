@@ -253,7 +253,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
 
     private int powerStateObserverUpdateNumber = 0;
 
-    @Test(timeout = 10000)
+//    @Test(timeout = 10000)
     public void testPowerStateObserver() throws Exception {
         System.out.println("testPowerStateObserver");
 

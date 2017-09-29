@@ -53,7 +53,7 @@ public class AgentManagerController implements AgentManager, Launchable<Void>, V
             this.factory = AgentFactoryImpl.getInstance();
             this.agentRegistry = new ControllerRegistryImpl<>();
 
-            this.agentRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder>(agentRegistry, Registries.getAgentRegistry().getAgentConfigRemoteRegistry(), factory) {
+            this.agentRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder>(agentRegistry, Registries.getAgentRegistry().getAgentConfigRemoteRegistry(), Registries.getAgentRegistry(), factory) {
 
                 @Override
                 public boolean enablingCondition(final UnitConfig config) {

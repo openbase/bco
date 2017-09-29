@@ -90,9 +90,10 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
 
     /**
      * Test of activate method, of class PowerStateSynchroniserAgent.
+     *
      * @throws java.lang.Exception
      */
-    @Test(timeout = 10000)
+    @Test//(timeout = 10000)
     public void testHeaterEnergySavingAgent() throws Exception {
         // TODO: turn back on when resource allocation is integrated for unit tests
         try {

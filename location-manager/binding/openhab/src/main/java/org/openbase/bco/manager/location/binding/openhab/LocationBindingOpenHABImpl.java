@@ -57,7 +57,7 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
     private final RemoteControllerRegistryImpl<String, ConnectionRemote> connectionRegistry;
     private final boolean hardwareSimulationMode;
     private boolean active;
-    
+
     private final UnitGroupRemoteFactoryImpl unitGroupRemoteFactory;
     private final RegistrySynchronizer<String, UnitGroupRemote, UnitConfig, UnitConfig.Builder> unitGroupRegistrySynchronizer;
     private final RemoteControllerRegistryImpl<String, UnitGroupRemote> unitGroupRegistry;
@@ -70,24 +70,24 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
             connectionRegistry = new RemoteControllerRegistryImpl<>();
             locationRemoteFactory = new LocationRemoteFactoryImpl();
             connectionRemoteFactory = new ConnectionRemoteFactoryImpl();
-            locationRegistrySynchronizer = new RegistrySynchronizer<String, LocationRemote, UnitConfig, UnitConfig.Builder>(locationRegistry, Registries.getLocationRegistry().getLocationConfigRemoteRegistry(), locationRemoteFactory) {
+            locationRegistrySynchronizer = new RegistrySynchronizer<String, LocationRemote, UnitConfig, UnitConfig.Builder>(locationRegistry, Registries.getLocationRegistry().getLocationConfigRemoteRegistry(), Registries.getLocationRegistry(), locationRemoteFactory) {
 
                 @Override
                 public boolean verifyConfig(UnitConfig config) throws VerificationFailedException {
                     return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
                 }
             };
-            this.connectionRegistrySynchronizer = new RegistrySynchronizer<String, ConnectionRemote, UnitConfig, UnitConfig.Builder>(connectionRegistry, Registries.getLocationRegistry().getConnectionConfigRemoteRegistry(), connectionRemoteFactory) {
+            this.connectionRegistrySynchronizer = new RegistrySynchronizer<String, ConnectionRemote, UnitConfig, UnitConfig.Builder>(connectionRegistry, Registries.getLocationRegistry().getConnectionConfigRemoteRegistry(), Registries.getLocationRegistry(), connectionRemoteFactory) {
 
                 @Override
                 public boolean verifyConfig(UnitConfig config) throws VerificationFailedException {
                     return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
                 }
             };
-            
+
             unitGroupRegistry = new RemoteControllerRegistryImpl<>();
             unitGroupRemoteFactory = new UnitGroupRemoteFactoryImpl();
-            unitGroupRegistrySynchronizer = new RegistrySynchronizer<String, UnitGroupRemote, UnitConfig, UnitConfig.Builder>(unitGroupRegistry, Registries.getUnitRegistry().getUnitGroupUnitConfigRemoteRegistry(), unitGroupRemoteFactory) {
+            unitGroupRegistrySynchronizer = new RegistrySynchronizer<String, UnitGroupRemote, UnitConfig, UnitConfig.Builder>(unitGroupRegistry, Registries.getUnitRegistry().getUnitGroupUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), unitGroupRemoteFactory) {
 
                 @Override
                 public boolean verifyConfig(UnitConfig config) throws VerificationFailedException {
