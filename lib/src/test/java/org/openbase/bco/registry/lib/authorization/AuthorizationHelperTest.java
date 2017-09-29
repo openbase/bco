@@ -23,6 +23,7 @@ package org.openbase.bco.registry.lib.authorization;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import java.util.HashMap;
 import java.util.Map;
 import org.junit.After;

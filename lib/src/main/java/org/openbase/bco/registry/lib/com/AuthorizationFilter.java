@@ -22,7 +22,7 @@ package org.openbase.bco.registry.lib.com;
  * #L%
  */
 import java.util.Map;
-import org.openbase.bco.registry.lib.authorization.AuthorizationHelper;
+import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.jp.JPEnableAuthentication;
