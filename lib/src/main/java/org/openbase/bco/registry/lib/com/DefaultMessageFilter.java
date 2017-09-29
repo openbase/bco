@@ -22,6 +22,7 @@ package org.openbase.bco.registry.lib.com;
  * #L%
  */
 
+import org.openbase.jul.pattern.AbstractFilter;
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.jul.pattern.Observer;
 

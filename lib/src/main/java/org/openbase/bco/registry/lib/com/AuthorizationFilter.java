@@ -21,9 +21,13 @@ package org.openbase.bco.registry.lib.com;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.jul.pattern.AbstractFilter;
 import java.util.Map;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
+import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
+import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.jps.core.JPService;
