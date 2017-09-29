@@ -24,7 +24,7 @@ package org.openbase.bco.dal.visual;
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.ImageIcon;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.jp.JPEnableAuthentication;
+import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
@@ -67,7 +67,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
             instance = this;
 
             try {
-                if (JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+                if (JPService.getProperty(JPAuthentication.class).getValue()) {
                     SessionManager.getInstance().login(Registries.getUserRegistry(true).getUserIdByUserName(UserCreationPlugin.BCO_USERNAME));
                 }
             } catch (JPNotAvailableException ex) {
@@ -176,7 +176,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
 
         //</editor-fold>
         JPService.setApplicationName(DalVisualRemote.class);
-        JPService.registerProperty(JPEnableAuthentication.class);
+        JPService.registerProperty(JPAuthentication.class);
         JPService.parseAndExitOnError(args);
 
 

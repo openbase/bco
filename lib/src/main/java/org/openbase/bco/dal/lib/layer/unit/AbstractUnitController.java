@@ -37,7 +37,7 @@ import java.util.Set;
 import java.util.concurrent.Future;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
-import org.openbase.bco.authentication.lib.jp.JPEnableAuthentication;
+import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.dal.lib.action.ActionImpl;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -480,7 +480,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      */
     public TicketAuthenticatorWrapper verifyAuthority(final ActionAuthority actionAuthority) throws VerificationFailedException, PermissionDeniedException, InterruptedException, CouldNotPerformException {
         try {
-            if (!JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+            if (!JPService.getProperty(JPAuthentication.class).getValue()) {
                 return null;
             }
         } catch (JPNotAvailableException ex) {
