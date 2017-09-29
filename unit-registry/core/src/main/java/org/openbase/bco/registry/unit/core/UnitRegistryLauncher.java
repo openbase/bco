@@ -24,7 +24,7 @@ package org.openbase.bco.registry.unit.core;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-import org.openbase.bco.authentication.lib.jp.JPEnableAuthentication;
+import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
 import static org.openbase.jul.pattern.launch.AbstractLauncher.main;
@@ -84,7 +84,7 @@ public class UnitRegistryLauncher extends AbstractRegistryLauncher<UnitRegistryC
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
         JPService.registerProperty(JPClearUnitPosition.class);
-        JPService.registerProperty(JPEnableAuthentication.class);
+        JPService.registerProperty(JPAuthentication.class);
 
         JPService.registerProperty(JPRSBHost.class);
         JPService.registerProperty(JPRSBPort.class);

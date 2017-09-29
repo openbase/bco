@@ -25,7 +25,7 @@ import java.util.Map;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.jp.JPEnableAuthentication;
+import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -92,7 +92,7 @@ public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
     @Override
     public void beforeFilter() throws CouldNotPerformException {
         try {
-            if (!JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+            if (!JPService.getProperty(JPAuthentication.class).getValue()) {
                 return;
             }
         } catch (JPNotAvailableException ex) {
@@ -122,7 +122,7 @@ public class AuthorizationFilter extends AbstractFilter<UnitConfig> {
     @Override
     public boolean verify(UnitConfig unitConfig) throws CouldNotPerformException {
         try {
-            if (!JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+            if (!JPService.getProperty(JPAuthentication.class).getValue()) {
                 return true;
             }
         } catch (JPNotAvailableException ex) {
