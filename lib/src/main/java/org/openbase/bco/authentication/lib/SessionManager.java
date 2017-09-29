@@ -33,7 +33,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import javax.crypto.BadPaddingException;
 import org.openbase.bco.authentication.lib.exception.SessionExpiredException;
-import org.openbase.bco.authentication.lib.jp.JPEnableAuthentication;
+import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -232,7 +232,7 @@ public class SessionManager {
      */
     private boolean internalLogin(String id, byte[] key, boolean isUser) throws CouldNotPerformException, NotAvailableException {
         try {
-            if (!JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+            if (!JPService.getProperty(JPAuthentication.class).getValue()) {
                 return false;
             }
         } catch (JPNotAvailableException ex) {

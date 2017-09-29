@@ -30,7 +30,7 @@ import java.util.Map;
 import java.util.concurrent.Future;
 import javax.crypto.BadPaddingException;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
-import org.openbase.bco.authentication.lib.jp.JPEnableAuthentication;
+import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -68,7 +68,7 @@ public class AuthenticatedServiceProcessor {
             AuthenticatedValue.Builder response = AuthenticatedValue.newBuilder();
             if (authenticatedValue.hasTicketAuthenticatorWrapper()) {
                 try {
-                    if (!JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+                    if (!JPService.getProperty(JPAuthentication.class).getValue()) {
                         throw new CouldNotPerformException("Cannot execute authenticated action because authentication is disabled");
                     }
                 } catch (JPNotAvailableException ex) {
@@ -110,7 +110,7 @@ public class AuthenticatedServiceProcessor {
                     UnitConfig unitConfig = configRetrieval.retrieve(message);
 
                     try {
-                        if (JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+                        if (JPService.getProperty(JPAuthentication.class).getValue()) {
                             // check for write permissions for other
                             if (!AuthorizationHelper.canWrite(unitConfig, null, null, locationMap)) {
                                 throw new PermissionDeniedException("Other has not rights to perform this action");

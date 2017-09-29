@@ -21,7 +21,6 @@ package org.openbase.bco.authentication.lib.jp;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jps.preset.AbstractJPBoolean;
@@ -30,11 +29,11 @@ import org.openbase.jps.preset.AbstractJPBoolean;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class JPEnableAuthentication extends AbstractJPBoolean {
+public class JPAuthentication extends AbstractJPBoolean {
 
-    public final static String[] COMMAND_IDENTIFIERS = {"--enable-authentication"};
+    public final static String[] COMMAND_IDENTIFIERS = {"--authentication"};
 
-    public JPEnableAuthentication() {
+    public JPAuthentication() {
         super(COMMAND_IDENTIFIERS);
     }
 
@@ -47,5 +46,4 @@ public class JPEnableAuthentication extends AbstractJPBoolean {
     public String getDescription() {
         return "Enable authentication in BCO.";
     }
-    
 }
