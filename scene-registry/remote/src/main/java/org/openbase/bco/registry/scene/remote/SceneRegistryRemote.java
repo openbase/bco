@@ -69,7 +69,7 @@ public class SceneRegistryRemote extends AbstractVirtualRegistryRemote<SceneRegi
     public SceneRegistryRemote() throws InstantiationException, InterruptedException {
         super(JPSceneRegistryScope.class, SceneRegistryData.class);
         try {
-            sceneConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, SceneRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER);
+            sceneConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, SceneRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -127,7 +127,7 @@ public class SceneRegistryRemote extends AbstractVirtualRegistryRemote<SceneRegi
     @Override
     public Future<UnitConfig> registerSceneConfig(final UnitConfig sceneUnitConfig) throws CouldNotPerformException {
         try {
-            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(sceneUnitConfig, this, UnitConfig.class), sceneConfigRemoteRegistry);
+            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(sceneUnitConfig, this, UnitConfig.class), sceneConfigRemoteRegistry, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register scene config!", ex);
         }
@@ -162,7 +162,7 @@ public class SceneRegistryRemote extends AbstractVirtualRegistryRemote<SceneRegi
     @Override
     public Future<UnitConfig> updateSceneConfig(final UnitConfig sceneUnitConfig) throws CouldNotPerformException {
         try {
-            return new UpdateFuture<>(RPCHelper.callRemoteMethod(sceneUnitConfig, this, UnitConfig.class), sceneConfigRemoteRegistry);
+            return new UpdateFuture<>(RPCHelper.callRemoteMethod(sceneUnitConfig, this, UnitConfig.class), sceneConfigRemoteRegistry, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update scene config!", ex);
         }
@@ -171,7 +171,7 @@ public class SceneRegistryRemote extends AbstractVirtualRegistryRemote<SceneRegi
     @Override
     public Future<UnitConfig> removeSceneConfig(final UnitConfig sceneUnitConfig) throws CouldNotPerformException {
         try {
-            return new RemovalFuture<>(RPCHelper.callRemoteMethod(sceneUnitConfig, this, UnitConfig.class), sceneConfigRemoteRegistry);
+            return new RemovalFuture<>(RPCHelper.callRemoteMethod(sceneUnitConfig, this, UnitConfig.class), sceneConfigRemoteRegistry, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove scene config!", ex);
         }

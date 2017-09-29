@@ -500,7 +500,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
             return FutureProcessor.canceledFuture(new NotAvailableException("UnitTransformation", ex));
         }
     }
-    
+
     /**
      * Method returns the transformation which leads from the given unit to the root location.
      *
@@ -565,7 +565,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
                 System.currentTimeMillis());
         return GlobalCachedExecutorService.allOfInclusiveResultFuture(transformationFuture, getDataFuture());
     }
-    
+
     /**
      * Method returns the transformation from the root location to the given unit.
      *
@@ -580,13 +580,13 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
             throw new NotAvailableException("UnitTransformation", ex);
         }
     }
-    
+
     /**
      * Method returns the transformation from the root location to the given unit.
      *
      * @param unitConfigTarget the unit where the transformation leads to.
      * @return a transformation future
-     * @throws org.openbase.jul.exception.NotAvailableException 
+     * @throws org.openbase.jul.exception.NotAvailableException
      */
     public default Transform getUnitToRootTransformation(final UnitConfig unitConfigTarget) throws NotAvailableException {
         try {
@@ -646,7 +646,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
     /**
      * Gets the Transform3D of the transformation from root to unit coordinate system.
      *
-     * @param unitConfig the unit config to refer the unit. 
+     * @param unitConfig the unit config to refer the unit.
      * @return transform relative to root location
      * @throws NotAvailableException is thrown if the transformation is not available.
      */
@@ -665,7 +665,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * This is basically rotation and translation of the object in the root coordinate system
      * and thereby the inverse transformation to the one returned by getTransform3D().
      *
-     * @param unitConfig the unit config to refer the unit. 
+     * @param unitConfig the unit config to refer the unit.
      * @return transform relative to root location
      * @throws NotAvailableException is thrown if the transformation is not available.
      */
@@ -680,7 +680,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
     /**
      * Gets the position of the unit relative to the root location as a Point3d object.
      *
-     * @param unitConfig the unit config to refer the unit. 
+     * @param unitConfig the unit config to refer the unit.
      * @return position relative to the root location
      * @throws NotAvailableException is thrown if the transformation is not available.
      */
@@ -698,7 +698,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
     /**
      * Gets the position of the unit relative to the root location as a Translation object.
      *
-     * @param unitConfig the unit config to refer the unit. 
+     * @param unitConfig the unit config to refer the unit.
      * @return position relative to the root location
      * @throws NotAvailableException is thrown if the transformation is not available.
      */
@@ -714,7 +714,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
     /**
      * Gets the rotation of the unit relative to the root location as a Quat4d object.
      *
-     * @param unitConfig the unit config to refer the unit. 
+     * @param unitConfig the unit config to refer the unit.
      * @return rotation relative to the root location
      * @throws NotAvailableException is thrown if the transformation is not available.
      */
@@ -732,7 +732,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
     /**
      * Gets the rotation of the unit relative to the root location as a Rotation object.
      *
-     * @param unitConfig the unit config to refer the unit. 
+     * @param unitConfig the unit config to refer the unit.
      * @return rotation relative to the root location
      * @throws NotAvailableException is thrown if the transformation is not available.
      */
@@ -748,7 +748,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
     /**
      * Gets the center coordinates of the unit's BoundingBox in the unit coordinate system as a Point3d object.
      *
-     * @param unitConfig the unit config to refer the unit. 
+     * @param unitConfig the unit config to refer the unit.
      * @return center coordinates of the unit's BoundingBox relative to unit
      * @throws NotAvailableException is thrown if the center can not be calculate.
      */
@@ -765,7 +765,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
     /**
      * Gets the center coordinates of the unit's BoundingBox in the coordinate system of the root location as a Point3d object.
      *
-     * @param unitConfig the unit config to refer the unit. 
+     * @param unitConfig the unit config to refer the unit.
      * @return center coordinates of the unit's BoundingBox relative to root location
      * @throws NotAvailableException is thrown if the center can not be calculate.
      */
@@ -779,7 +779,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
             throw new NotAvailableException("GlobalBoundingBoxCenter", ex);
         }
     }
-    
+
     /**
      * Method returns the unit shape of the given unit referred by the id.
      *
@@ -844,7 +844,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
 
             // inform that the resolution is not possible.
             throw new CouldNotPerformException("Shape could not be resolved by any source.");
-            
+
         } catch (final CouldNotPerformException ex) {
             throw new NotAvailableException("Shape", "of Unit [" + unitConfig.getLabel() + "]", ex);
         }

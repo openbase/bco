@@ -26,17 +26,13 @@ package org.openbase.bco.registry.lib.com.future;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.jul.schedule.AbstractSynchronizationFuture;
 import com.google.protobuf.GeneratedMessage;
-import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import org.openbase.jul.schedule.SyncObject;
+import org.openbase.jul.storage.registry.RegistryRemote;
 
 /**
  * This future is used to synchronize the remote registry in a way that when you call
@@ -45,129 +41,37 @@ import org.openbase.jul.schedule.SyncObject;
  * @author pleminoq
  * @param <M>
  */
-public abstract class AbstractRegistrySynchronizationFuture<M extends GeneratedMessage> implements Future<M> {
+public abstract class AbstractRegistrySynchronizationFuture<M extends GeneratedMessage> extends AbstractSynchronizationFuture<M> {
 
-    final SyncObject CHECK_LOCK = new SyncObject("WaitForMessageLock");
-    final SyncObject SYNCHRONISTION_LOCK = new SyncObject("SynchronisationLock");
-    final Observer notifyChangeObserver = (Observer) (Observable source, Object data) -> {
-        synchronized (CHECK_LOCK) {
-            CHECK_LOCK.notifyAll();
-        }
-    };
-    boolean synchronisationComplete = false;
-
-    private final Future<M> internalFuture;
-    private final Future synchronisationFuture;
     private final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry;
 
-    public AbstractRegistrySynchronizationFuture(final Future<M> internalFuture, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry) {
-        this.internalFuture = internalFuture;
+    public AbstractRegistrySynchronizationFuture(final Future<M> internalFuture, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry, final RegistryRemote registryRemote) {
+        super(internalFuture, registryRemote);
         this.remoteRegistry = remoteRegistry;
-
-        // create a synchronisation task which makes sure that the change requested by
-        // the internal future has at one time been synchronized to the remote registry
-        synchronisationFuture = GlobalCachedExecutorService.submit(() -> {
-            remoteRegistry.addObserver(notifyChangeObserver);
-            try {
-                M restult = internalFuture.get();
-                waitForRemoteRegistrySynchronisation(restult);
-                synchronized (SYNCHRONISTION_LOCK) {
-                    synchronisationComplete = true;
-                    SYNCHRONISTION_LOCK.notifyAll();
-                }
-            } catch (InterruptedException ex) {
-                // restore interrput
-                Thread.currentThread().interrupt();
-            } catch (ExecutionException ex) {
-                // can only happen if the internal future failed so do nothing
-                // because errors on the internal future are received by calling
-                // get on this future anyways
-            } catch (CouldNotPerformException ex) {
-                // can only happen if waitForRemoteRegistrySynchronisation failed
-                // so throw the excepion so that it is cleared that this task failed
-                throw ex;
-            } finally {
-                remoteRegistry.removeObserver(notifyChangeObserver);
-                synchronized (SYNCHRONISTION_LOCK) {
-                    SYNCHRONISTION_LOCK.notifyAll();
-                }
-            }
-            return null;
-        });
     }
 
     @Override
-    public boolean cancel(boolean mayInterruptIfRunning) {
-        return internalFuture.cancel(mayInterruptIfRunning) && synchronisationFuture.cancel(mayInterruptIfRunning);
+    protected void addObserver(Observer observer) {
+        remoteRegistry.addObserver(observer);
     }
 
     @Override
-    public boolean isCancelled() {
-        return internalFuture.isCancelled() && synchronisationFuture.isCancelled();
+    protected void removeObserver(Observer observer) {
+        remoteRegistry.removeObserver(observer);
     }
 
     @Override
-    public boolean isDone() {
-        return internalFuture.isDone() && synchronisationFuture.isDone();
-    }
-
-    @Override
-    public M get() throws InterruptedException, ExecutionException {
-        M result = internalFuture.get();
-
-        synchronized (SYNCHRONISTION_LOCK) {
-            if (!synchronisationComplete && !synchronisationFuture.isDone()) {
-                SYNCHRONISTION_LOCK.wait();
-                if (!synchronisationComplete) {
-                    // synchronisation future was canceled or failed but the internal future not...
-                }
-            } else {
-                // synchronisation future was canceled or failed but the internal future not...
-            }
-        }
-
-        return result;
-    }
-
-    @Override
-    public M get(long timeout, TimeUnit unit) throws InterruptedException, ExecutionException, TimeoutException {
-        M result = internalFuture.get(timeout, unit);
-
-        synchronized (SYNCHRONISTION_LOCK) {
-            if (!synchronisationComplete && !synchronisationFuture.isDone()) {
-                SYNCHRONISTION_LOCK.wait(TimeUnit.MILLISECONDS.convert(timeout, unit));
-                if (!synchronisationComplete && !synchronisationFuture.isDone()) {
-                    throw new TimeoutException();
-                } else if (!synchronisationComplete) {
-                    // synchronisation future was canceled or failed but the internal future not...
-                }
-            } else {
-                // synchronisation future was canceled or failed but the internal future not...
-            }
-        }
-
-        return result;
-    }
-
-    public Future<M> getInternalFuture() {
-        return internalFuture;
-    }
-
-    private void waitForRemoteRegistrySynchronisation(final M message) throws CouldNotPerformException {
+    protected void beforeWaitForSynchronization() throws CouldNotPerformException {
         try {
             remoteRegistry.waitForData();
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
-        synchronized (CHECK_LOCK) {
-            try {
-                while (!check(message, remoteRegistry)) {
-                    CHECK_LOCK.wait();
-                }
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }
-        }
+    }
+
+    @Override
+    protected boolean check(M message) throws CouldNotPerformException {
+        return check(message, remoteRegistry);
     }
 
     protected abstract boolean check(final M message, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry) throws CouldNotPerformException;

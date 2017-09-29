@@ -431,6 +431,12 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
+    protected void notifyDataUpdate(UnitRegistryData data) throws CouldNotPerformException {
+        super.notifyDataUpdate(data); //To change body of generated methods, choose Tools | Templates.
+        logger.warn("UnitRegistryController notfied with [" + deviceUnitConfigRegistry.getEntries().size() + ", " + getData().getDeviceUnitConfigCount() + "]");
+    }
+
+    @Override
     public final void syncRegistryFlags() throws CouldNotPerformException, InterruptedException {
         setDataField(UnitRegistryData.DAL_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, dalUnitConfigRegistry.isReadOnly());
         setDataField(UnitRegistryData.DAL_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, dalUnitConfigRegistry.isConsistent());

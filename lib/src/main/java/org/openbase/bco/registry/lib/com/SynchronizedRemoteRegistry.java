@@ -57,9 +57,14 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
     private final FieldDescriptor[] fieldDescriptors;
 
     /**
-     * The remote service to get informed about data updates.
+     * The remote service to resolve the name.
      */
     private final RSBRemoteService<M> remoteService;
+
+    /**
+     * The observable to get informed about data updates.
+     */
+    private final Observable<M> observable;
 
     /**
      * The internal data synchronizer which synchronizes the remote registry via the remote service.
@@ -70,12 +75,14 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
 
     /**
      *
+     * @param observable The observable to get informed about data updates.
      * @param remoteService The remote service to get informed about data updates.
      * @param protobufFieldNumbers The field numbers to identify the descriptor fields which are used for the internal registry synchronization.
      * @throws InstantiationException is thrown in case the instantiation fails.
      */
-    public SynchronizedRemoteRegistry(final RSBRemoteService remoteService, final int... protobufFieldNumbers) throws InstantiationException {
+    public SynchronizedRemoteRegistry(final Observable observable, final RSBRemoteService remoteService, final int... protobufFieldNumbers) throws InstantiationException {
         try {
+            this.observable = observable;
             this.fieldDescriptors = ProtoBufFieldProcessor.getFieldDescriptors(remoteService.getDataClass(), protobufFieldNumbers);
             this.remoteService = remoteService;
             this.remoteRegistrySynchronizer = new RemoteRegistrySynchronizer();
@@ -87,10 +94,29 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
     /**
      *
      * @param remoteService The remote service to get informed about data updates.
+     * @param protobufFieldNumbers The field numbers to identify the descriptor fields which are used for the internal registry synchronization.
+     * @throws InstantiationException is thrown in case the instantiation fails.
+     */
+    public SynchronizedRemoteRegistry(final RSBRemoteService remoteService, final int... protobufFieldNumbers) throws InstantiationException {
+        try {
+            this.observable = null;
+            this.fieldDescriptors = ProtoBufFieldProcessor.getFieldDescriptors(remoteService.getDataClass(), protobufFieldNumbers);
+            this.remoteService = remoteService;
+            this.remoteRegistrySynchronizer = new RemoteRegistrySynchronizer();
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
+    }
+
+    /**
+     *
+     * @param observable The observable to get informed about data updates.
+     * @param remoteService The remote service to get informed about data updates.
      * @param fieldDescriptors The field descriptors which are used for the internal registry synchronization.
      * @throws InstantiationException is thrown in case the instantiation fails.
      */
-    public SynchronizedRemoteRegistry(final RSBRemoteService<M> remoteService, final Descriptors.FieldDescriptor... fieldDescriptors) throws InstantiationException {
+    public SynchronizedRemoteRegistry(final Observable observable, final RSBRemoteService<M> remoteService, final Descriptors.FieldDescriptor... fieldDescriptors) throws InstantiationException {
+        this.observable = observable;
         this.fieldDescriptors = fieldDescriptors;
         this.remoteService = remoteService;
         this.remoteRegistrySynchronizer = new RemoteRegistrySynchronizer();
@@ -98,13 +124,15 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
 
     /**
      *
+     * @param observable The observable to get informed about data updates.
      * @param remoteService The remote service to get informed about data updates.
      * @param internalMap the internal map instance of this registry.
      * @param fieldDescriptors The field descriptors which are used for the internal registry synchronization.
      * @throws InstantiationException is thrown in case the instantiation fails.
      */
-    public SynchronizedRemoteRegistry(final RSBRemoteService<M> remoteService, final Map<KEY, IdentifiableMessage<KEY, M, MB>> internalMap, final Descriptors.FieldDescriptor... fieldDescriptors) throws InstantiationException {
+    public SynchronizedRemoteRegistry(final Observable observable, final RSBRemoteService<M> remoteService, final Map<KEY, IdentifiableMessage<KEY, M, MB>> internalMap, final Descriptors.FieldDescriptor... fieldDescriptors) throws InstantiationException {
         super(internalMap);
+        this.observable = observable;
         this.fieldDescriptors = fieldDescriptors;
         this.remoteService = remoteService;
         this.remoteRegistrySynchronizer = new RemoteRegistrySynchronizer();
@@ -134,14 +162,25 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
             logger.warn("Already activated");
             return;
         }
-        remoteService.addDataObserver(remoteRegistrySynchronizer);
-
-        // trigger initial synch if data is available
-        if (remoteService.isDataAvailable()) {
-            try {
-                remoteRegistrySynchronizer.update(null, remoteService.getData());
-            } catch (Exception ex) {
-                ExceptionPrinter.printHistory("Initial synchronization of " + this + " failed!", ex, LOGGER);
+        if (observable != null) {
+            observable.addObserver(remoteRegistrySynchronizer);
+            // trigger initial synch if data is available
+            if (observable.isValueAvailable()) {
+                try {
+                    remoteRegistrySynchronizer.update(null, observable.getValue());
+                } catch (Exception ex) {
+                    ExceptionPrinter.printHistory("Initial synchronization of " + this + " failed!", ex, LOGGER);
+                }
+            }
+        } else {
+            remoteService.addDataObserver(remoteRegistrySynchronizer);
+            // trigger initial synch if data is available
+            if (remoteService.isDataAvailable()) {
+                try {
+                    remoteRegistrySynchronizer.update(null, remoteService.getData());
+                } catch (Exception ex) {
+                    ExceptionPrinter.printHistory("Initial synchronization of " + this + " failed!", ex, LOGGER);
+                }
             }
         }
 
@@ -150,7 +189,11 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        remoteService.removeDataObserver(remoteRegistrySynchronizer);
+        if (observable != null) {
+            observable.removeObserver(remoteRegistrySynchronizer);
+        } else {
+            remoteService.removeDataObserver(remoteRegistrySynchronizer);
+        }
         active = false;
     }
 

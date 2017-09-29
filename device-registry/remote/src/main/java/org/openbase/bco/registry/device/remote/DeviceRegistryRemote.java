@@ -80,8 +80,8 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
     public DeviceRegistryRemote() throws InstantiationException {
         super(JPDeviceRegistryScope.class, DeviceRegistryData.class);
         try {
-            deviceClassRemoteRegistry = new SynchronizedRemoteRegistry<>(this, DeviceRegistryData.DEVICE_CLASS_FIELD_NUMBER);
-            deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, DeviceRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER);
+            deviceClassRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, DeviceRegistryData.DEVICE_CLASS_FIELD_NUMBER);
+            deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, DeviceRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -150,7 +150,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
     @Override
     public Future<UnitConfig> registerDeviceConfig(final UnitConfig deviceConfig) throws CouldNotPerformException {
         try {
-            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(deviceConfig, this, UnitConfig.class), deviceUnitConfigRemoteRegistry);
+            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(deviceConfig, this, UnitConfig.class), deviceUnitConfigRemoteRegistry, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register device config!", ex);
         }
@@ -275,7 +275,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
     @Override
     public Future<UnitConfig> updateDeviceConfig(final UnitConfig deviceConfig) throws CouldNotPerformException {
         try {
-            return new UpdateFuture<>(RPCHelper.callRemoteMethod(deviceConfig, this, UnitConfig.class), deviceUnitConfigRemoteRegistry);
+            return new UpdateFuture<>(RPCHelper.callRemoteMethod(deviceConfig, this, UnitConfig.class), deviceUnitConfigRemoteRegistry, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update device config!", ex);
         }
@@ -303,7 +303,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
     @Override
     public Future<UnitConfig> removeDeviceConfig(final UnitConfig deviceConfig) throws CouldNotPerformException {
         try {
-            return new RemovalFuture<>(RPCHelper.callRemoteMethod(deviceConfig, this, UnitConfig.class), deviceUnitConfigRemoteRegistry);
+            return new RemovalFuture<>(RPCHelper.callRemoteMethod(deviceConfig, this, UnitConfig.class), deviceUnitConfigRemoteRegistry, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove device config!", ex);
         }
@@ -319,7 +319,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
     @Override
     public Future<DeviceClass> registerDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
         try {
-            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(deviceClass, this, DeviceClass.class), deviceClassRemoteRegistry);
+            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(deviceClass, this, DeviceClass.class), deviceClassRemoteRegistry, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register device class!", ex);
         }
@@ -361,7 +361,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
     @Override
     public Future<DeviceClass> updateDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
         try {
-            return new UpdateFuture<>(RPCHelper.callRemoteMethod(deviceClass, this, DeviceClass.class), deviceClassRemoteRegistry);
+            return new UpdateFuture<>(RPCHelper.callRemoteMethod(deviceClass, this, DeviceClass.class), deviceClassRemoteRegistry, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update device class!", ex);
         }
@@ -377,7 +377,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
     @Override
     public Future<DeviceClass> removeDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
         try {
-            return new RemovalFuture<>(RPCHelper.callRemoteMethod(deviceClass, this, DeviceClass.class), deviceClassRemoteRegistry);
+            return new RemovalFuture<>(RPCHelper.callRemoteMethod(deviceClass, this, DeviceClass.class), deviceClassRemoteRegistry, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove device class!", ex);
         }

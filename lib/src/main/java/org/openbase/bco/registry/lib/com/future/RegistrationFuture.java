@@ -30,6 +30,7 @@ import com.google.protobuf.GeneratedMessage;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.storage.registry.RegistryRemote;
 
 /**
  *
@@ -38,8 +39,8 @@ import org.openbase.jul.exception.CouldNotPerformException;
  */
 public class RegistrationFuture<M extends GeneratedMessage> extends AbstractRegistrySynchronizationFuture<M> {
 
-    public RegistrationFuture(final Future<M> internalFuture, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry) {
-        super(internalFuture, remoteRegistry);
+    public RegistrationFuture(final Future<M> internalFuture, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry, final RegistryRemote registryRemote) {
+        super(internalFuture, remoteRegistry, registryRemote);
     }
 
     @Override

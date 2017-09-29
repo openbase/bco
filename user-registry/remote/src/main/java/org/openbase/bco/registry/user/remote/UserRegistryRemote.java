@@ -74,8 +74,8 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
     public UserRegistryRemote() throws InstantiationException, InterruptedException {
         super(JPUserRegistryScope.class, UserRegistryData.class);
         try {
-            userConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UserRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
-            authorizationGroupConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UserRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
+            userConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UserRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
+            authorizationGroupConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UserRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -132,7 +132,7 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
     @Override
     public Future<UnitConfig> registerUserConfig(final UnitConfig userConfig) throws CouldNotPerformException {
         try {
-            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(userConfig, this, UnitConfig.class), userConfigRemoteRegistry);
+            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(userConfig, this, UnitConfig.class), userConfigRemoteRegistry, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register user config!", ex);
         }
@@ -173,7 +173,7 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
     @Override
     public Future<UnitConfig> updateUserConfig(final UnitConfig userConfig) throws CouldNotPerformException {
         try {
-            return new UpdateFuture<>(RPCHelper.callRemoteMethod(userConfig, this, UnitConfig.class), userConfigRemoteRegistry);
+            return new UpdateFuture<>(RPCHelper.callRemoteMethod(userConfig, this, UnitConfig.class), userConfigRemoteRegistry, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update user config[" + userConfig + "]!", ex);
         }
@@ -182,7 +182,7 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
     @Override
     public Future<UnitConfig> removeUserConfig(final UnitConfig userConfig) throws CouldNotPerformException {
         try {
-            return new RemovalFuture<>(RPCHelper.callRemoteMethod(userConfig, this, UnitConfig.class), userConfigRemoteRegistry);
+            return new RemovalFuture<>(RPCHelper.callRemoteMethod(userConfig, this, UnitConfig.class), userConfigRemoteRegistry, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove user config[" + userConfig + "]!", ex);
         }
@@ -226,7 +226,7 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
     @Override
     public Future<UnitConfig> registerAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
         try {
-            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(groupConfig, this, UnitConfig.class), authorizationGroupConfigRemoteRegistry);
+            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(groupConfig, this, UnitConfig.class), authorizationGroupConfigRemoteRegistry, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register group config!", ex);
         }
@@ -247,7 +247,7 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
     @Override
     public Future<UnitConfig> updateAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
         try {
-            return new UpdateFuture<>(RPCHelper.callRemoteMethod(groupConfig, this, UnitConfig.class), authorizationGroupConfigRemoteRegistry);
+            return new UpdateFuture<>(RPCHelper.callRemoteMethod(groupConfig, this, UnitConfig.class), authorizationGroupConfigRemoteRegistry, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update group config[" + groupConfig + "]!", ex);
         }
@@ -256,7 +256,7 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
     @Override
     public Future<UnitConfig> removeAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
         try {
-            return new RemovalFuture<>(RPCHelper.callRemoteMethod(groupConfig, this, UnitConfig.class), authorizationGroupConfigRemoteRegistry);
+            return new RemovalFuture<>(RPCHelper.callRemoteMethod(groupConfig, this, UnitConfig.class), authorizationGroupConfigRemoteRegistry, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove group config[" + groupConfig + "]!", ex);
         }

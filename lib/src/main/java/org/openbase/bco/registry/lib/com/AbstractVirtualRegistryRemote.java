@@ -37,6 +37,7 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
+import rst.domotic.registry.DeviceRegistryDataType.DeviceRegistryData;
 
 /**
  *
@@ -79,7 +80,7 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
         getRemoteRegistries().forEach((remoteRegistry) -> {
             remoteRegistry.addObserver(synchronisationObserver);
         });
-        
+
         // initial check
         synchronized (virtualRegistrySyncLock) {
             virtualRegistrySyncLock.notifyAll();
@@ -158,6 +159,13 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
     private boolean equalMessageCounts() {
         for (RemoteRegistry remoteRegistry : remoteRegistrySyncMap.keySet()) {
             try {
+                if (remoteRegistry instanceof SynchronizedRemoteRegistry) {
+                    SynchronizedRemoteRegistry a = (SynchronizedRemoteRegistry) remoteRegistry;
+                    if (a.getFieldDescriptors().length == 1 && a.getFieldDescriptors()[0].getName().equals(ProtoBufFieldProcessor.getFieldDescriptor(DeviceRegistryData.getDefaultInstance(), DeviceRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER).getName())) {
+                        System.out.println("DeviceUnitConfig registry in device contains [" + a.getEntries().size() + "] entries");
+                        System.out.println("UnitRegistry contains [" + remoteRegistrySyncMap.get(remoteRegistry).getData().getRepeatedFieldCount(remoteRegistryFieldDescriptorMap.get(remoteRegistry)) + "] devices");
+                    }
+                }
                 if (remoteRegistrySyncMap.get(remoteRegistry).getData().getRepeatedFieldCount(remoteRegistryFieldDescriptorMap.get(remoteRegistry)) != remoteRegistry.getMessages().size()) {
                     return false;
                 }

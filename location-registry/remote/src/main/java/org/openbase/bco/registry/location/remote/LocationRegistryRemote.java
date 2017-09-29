@@ -91,8 +91,8 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
     public LocationRegistryRemote() throws InstantiationException {
         super(JPLocationRegistryScope.class, LocationRegistryData.class);
         try {
-            this.locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, LocationRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER);
-            this.connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, LocationRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER);
+            this.locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, LocationRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER);
+            this.connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, LocationRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -154,7 +154,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
     @Override
     public Future<UnitConfig> registerLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException {
         try {
-            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(locationConfig, this, UnitConfig.class), locationUnitConfigRemoteRegistry);
+            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(locationConfig, this, UnitConfig.class), locationUnitConfigRemoteRegistry, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register location config!", ex);
         }
@@ -266,7 +266,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
     @Override
     public Future<UnitConfig> updateLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException {
         try {
-            return new UpdateFuture<>(RPCHelper.callRemoteMethod(locationConfig, this, UnitConfig.class), locationUnitConfigRemoteRegistry);
+            return new UpdateFuture<>(RPCHelper.callRemoteMethod(locationConfig, this, UnitConfig.class), locationUnitConfigRemoteRegistry, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update location[" + locationConfig + "]!", ex);
         }
@@ -280,7 +280,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
     @Override
     public Future<UnitConfig> removeLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException {
         try {
-            return new RemovalFuture<>(RPCHelper.callRemoteMethod(locationConfig, this, UnitConfig.class), locationUnitConfigRemoteRegistry);
+            return new RemovalFuture<>(RPCHelper.callRemoteMethod(locationConfig, this, UnitConfig.class), locationUnitConfigRemoteRegistry, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove location[" + locationConfig + "]!", ex);
         }
@@ -467,7 +467,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
     @Override
     public Future<UnitConfig> registerConnectionConfig(UnitConfig connectionConfig) throws CouldNotPerformException {
         try {
-            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(connectionConfig, this, UnitConfig.class), connectionUnitConfigRemoteRegistry);
+            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(connectionConfig, this, UnitConfig.class), connectionUnitConfigRemoteRegistry, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register connection config!", ex);
         }
@@ -527,7 +527,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
     @Override
     public Future<UnitConfig> updateConnectionConfig(UnitConfig connectionConfig) throws CouldNotPerformException {
         try {
-            return new UpdateFuture<>(RPCHelper.callRemoteMethod(connectionConfig, this, UnitConfig.class), connectionUnitConfigRemoteRegistry);
+            return new UpdateFuture<>(RPCHelper.callRemoteMethod(connectionConfig, this, UnitConfig.class), connectionUnitConfigRemoteRegistry, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update connection[" + connectionConfig + "]!", ex);
         }
@@ -541,7 +541,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
     @Override
     public Future<UnitConfig> removeConnectionConfig(UnitConfig connectionConfig) throws CouldNotPerformException {
         try {
-            return new RemovalFuture<>(RPCHelper.callRemoteMethod(connectionConfig, this, UnitConfig.class), connectionUnitConfigRemoteRegistry);
+            return new RemovalFuture<>(RPCHelper.callRemoteMethod(connectionConfig, this, UnitConfig.class), connectionUnitConfigRemoteRegistry, this);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove connection[" + connectionConfig + "]!", ex);
         }
