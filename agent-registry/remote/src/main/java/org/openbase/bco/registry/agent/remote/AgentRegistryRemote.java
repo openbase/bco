@@ -29,6 +29,9 @@ import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
 import org.openbase.bco.registry.lib.com.AuthorizationFilter;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
+import org.openbase.bco.registry.lib.com.future.RegistrationFuture;
+import org.openbase.bco.registry.lib.com.future.RemovalFuture;
+import org.openbase.bco.registry.lib.com.future.UpdateFuture;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
@@ -66,9 +69,9 @@ public class AgentRegistryRemote extends AbstractVirtualRegistryRemote<AgentRegi
     private final AuthorizationFilter authorizationFilter;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> agentUnitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, AgentClass, AgentClass.Builder> agentClassRemoteRegistry;
-    
+
     private UnitRegistryRemote unitRegistry;
-    
+
     public AgentRegistryRemote() throws InstantiationException {
         super(JPAgentRegistryScope.class, AgentRegistryData.class);
         try {
@@ -80,16 +83,17 @@ public class AgentRegistryRemote extends AbstractVirtualRegistryRemote<AgentRegi
             throw new InstantiationException(this, ex);
         }
     }
-    
+
     /**
      * {@inheritDoc }
+     *
      * @throws InterruptedException {@inheritDoc }
      * @throws CouldNotPerformException {@inheritDoc }
      */
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         if (!CachedAgentRegistryRemote.getRegistry().equals(this)) {
-            logger.warn("You are using a "+getClass().getSimpleName()+" which is not maintained by the global registry singelton! This is extremely inefficient! Please use \"Registries.get"+getClass().getSimpleName().replace("Remote", "")+"()\" instead creating your own instances!");
+            logger.warn("You are using a " + getClass().getSimpleName() + " which is not maintained by the global registry singelton! This is extremely inefficient! Please use \"Registries.get" + getClass().getSimpleName().replace("Remote", "") + "()\" instead creating your own instances!");
         }
         authorizationFilter.setAuthorizationGroupRegistry(unitRegistry.getAuthorizationGroupUnitConfigRemoteRegistry());
         authorizationFilter.setLocationRegistry(unitRegistry.getLocationUnitConfigRemoteRegistry());
@@ -140,7 +144,7 @@ public class AgentRegistryRemote extends AbstractVirtualRegistryRemote<AgentRegi
     @Override
     public Future<UnitConfig> registerAgentConfig(final UnitConfig agentUnitConfig) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(agentUnitConfig, this, UnitConfig.class);
+            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(agentUnitConfig, this, UnitConfig.class), agentUnitConfigRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register agent config!", ex);
         }
@@ -167,7 +171,7 @@ public class AgentRegistryRemote extends AbstractVirtualRegistryRemote<AgentRegi
     @Override
     public Future<UnitConfig> updateAgentConfig(final UnitConfig agentUnitConfig) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(agentUnitConfig, this, UnitConfig.class);
+            return new UpdateFuture<>(RPCHelper.callRemoteMethod(agentUnitConfig, this, UnitConfig.class), agentUnitConfigRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update agent config!", ex);
         }
@@ -176,7 +180,7 @@ public class AgentRegistryRemote extends AbstractVirtualRegistryRemote<AgentRegi
     @Override
     public Future<UnitConfig> removeAgentConfig(final UnitConfig agentUnitConfig) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(agentUnitConfig, this, UnitConfig.class);
+            return new RemovalFuture<>(RPCHelper.callRemoteMethod(agentUnitConfig, this, UnitConfig.class), agentUnitConfigRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove agent config!", ex);
         }
@@ -226,7 +230,7 @@ public class AgentRegistryRemote extends AbstractVirtualRegistryRemote<AgentRegi
     @Override
     public Future<AgentClass> registerAgentClass(AgentClass agentClass) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(agentClass, this, AgentClass.class);
+            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(agentClass, this, AgentClass.class), agentClassRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register agent class!", ex);
         }
@@ -247,7 +251,7 @@ public class AgentRegistryRemote extends AbstractVirtualRegistryRemote<AgentRegi
     @Override
     public Future<AgentClass> updateAgentClass(AgentClass agentClass) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(agentClass, this, AgentClass.class);
+            return new UpdateFuture<>(RPCHelper.callRemoteMethod(agentClass, this, AgentClass.class), agentClassRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update agent class!", ex);
         }
@@ -256,7 +260,7 @@ public class AgentRegistryRemote extends AbstractVirtualRegistryRemote<AgentRegi
     @Override
     public Future<AgentClass> removeAgentClass(AgentClass agentClass) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(agentClass, this, AgentClass.class);
+            return new RemovalFuture<>(RPCHelper.callRemoteMethod(agentClass, this, AgentClass.class), agentClassRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove agent class!", ex);
         }

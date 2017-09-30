@@ -26,6 +26,9 @@ import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
 import org.openbase.bco.registry.lib.com.AuthorizationFilter;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
+import org.openbase.bco.registry.lib.com.future.RegistrationFuture;
+import org.openbase.bco.registry.lib.com.future.RemovalFuture;
+import org.openbase.bco.registry.lib.com.future.UpdateFuture;
 import org.openbase.bco.registry.scene.lib.SceneRegistry;
 import org.openbase.bco.registry.scene.lib.jp.JPSceneRegistryScope;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
@@ -62,7 +65,7 @@ public class SceneRegistryRemote extends AbstractVirtualRegistryRemote<SceneRegi
 
     private final AuthorizationFilter authorizationFilter;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> sceneConfigRemoteRegistry;
-    
+
     private UnitRegistryRemote unitRegistry;
 
     public SceneRegistryRemote() throws InstantiationException, InterruptedException {
@@ -77,19 +80,20 @@ public class SceneRegistryRemote extends AbstractVirtualRegistryRemote<SceneRegi
 
     /**
      * {@inheritDoc }
+     *
      * @throws InterruptedException {@inheritDoc }
      * @throws CouldNotPerformException {@inheritDoc }
      */
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
         if (!CachedSceneRegistryRemote.getRegistry().equals(this)) {
-            logger.warn("You are using a "+getClass().getSimpleName()+" which is not maintained by the global registry singelton! This is extremely inefficient! Please use \"Registries.get"+getClass().getSimpleName().replace("Remote", "")+"()\" instead creating your own instances!");
+            logger.warn("You are using a " + getClass().getSimpleName() + " which is not maintained by the global registry singelton! This is extremely inefficient! Please use \"Registries.get" + getClass().getSimpleName().replace("Remote", "") + "()\" instead creating your own instances!");
         }
         authorizationFilter.setAuthorizationGroupRegistry(unitRegistry.getAuthorizationGroupUnitConfigRemoteRegistry());
         authorizationFilter.setLocationRegistry(unitRegistry.getLocationUnitConfigRemoteRegistry());
         super.activate();
     }
-    
+
     @Override
     protected void registerRemoteRegistries() throws CouldNotPerformException {
         registerRemoteRegistry(sceneConfigRemoteRegistry);
@@ -128,7 +132,7 @@ public class SceneRegistryRemote extends AbstractVirtualRegistryRemote<SceneRegi
     @Override
     public Future<UnitConfig> registerSceneConfig(final UnitConfig sceneUnitConfig) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(sceneUnitConfig, this, UnitConfig.class);
+            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(sceneUnitConfig, this, UnitConfig.class), sceneConfigRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register scene config!", ex);
         }
@@ -163,7 +167,7 @@ public class SceneRegistryRemote extends AbstractVirtualRegistryRemote<SceneRegi
     @Override
     public Future<UnitConfig> updateSceneConfig(final UnitConfig sceneUnitConfig) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(sceneUnitConfig, this, UnitConfig.class);
+            return new UpdateFuture<>(RPCHelper.callRemoteMethod(sceneUnitConfig, this, UnitConfig.class), sceneConfigRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update scene config!", ex);
         }
@@ -172,7 +176,7 @@ public class SceneRegistryRemote extends AbstractVirtualRegistryRemote<SceneRegi
     @Override
     public Future<UnitConfig> removeSceneConfig(final UnitConfig sceneUnitConfig) throws CouldNotPerformException {
         try {
-            return RPCHelper.callRemoteMethod(sceneUnitConfig, this, UnitConfig.class);
+            return new RemovalFuture<>(RPCHelper.callRemoteMethod(sceneUnitConfig, this, UnitConfig.class), sceneConfigRemoteRegistry);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove scene config!", ex);
         }

@@ -21,13 +21,14 @@ package org.openbase.bco.registry.unit.test;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.logging.Level;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.bco.registry.lib.com.future.AbstractRegistrySynchronizationFuture;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
@@ -58,7 +59,7 @@ public class TestWaitUntilReady {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(TestWaitUntilReady.class);
 
-    private static boolean deplayConsistencyCheck = false;
+    private static boolean delayConsistencyCheck = false;
 
     public TestWaitUntilReady() {
     }
@@ -75,10 +76,9 @@ public class TestWaitUntilReady {
 
                 @Override
                 public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-                    if (!registry.isSandbox() && !alreadyDelayed && deplayConsistencyCheck) {
+                    if (!registry.isSandbox() && !alreadyDelayed && delayConsistencyCheck) {
                         try {
                             Thread.sleep(10);
-//                            LOGGER.info("counter : " + counter++);
                         } catch (InterruptedException ex) {
                             java.util.logging.Logger.getLogger(TestWaitUntilReady.class.getName()).log(Level.SEVERE, null, ex);
                         }
@@ -126,19 +126,17 @@ public class TestWaitUntilReady {
             if (waitedUntilReady) {
                 System.out.println("Received an update even though waitUntilReady has returned!");
                 assert false;
-            } else {
-//                System.out.println("update received");
             }
         });
 
         final String deviceLabel = "ReadyDevice ";
         final int iterations = 5;
-        deplayConsistencyCheck = true;
+        delayConsistencyCheck = true;
         for (int i = 0; i < iterations; ++i) {
             waitedUntilReady = false;
             UnitConfig deviceUnitConfig = MockRegistry.getDeviceConfig(deviceLabel + i, String.valueOf(i), deviceClass);
 //            System.out.println("Trigger device registration!");
-            Future<UnitConfig> registerUnitConfig = Registries.getUnitRegistry().registerUnitConfig(deviceUnitConfig);
+            AbstractRegistrySynchronizationFuture registrationFuture = (AbstractRegistrySynchronizationFuture) Registries.getUnitRegistry().registerUnitConfig(deviceUnitConfig);
 //            System.out.println("Wait until ready");
 
             // needed to make sure the registry is processing the registration task.
@@ -148,13 +146,17 @@ public class TestWaitUntilReady {
             Registries.waitUntilReady();
 //            System.out.println("continue");
             Assert.assertTrue("Test failed because registry is not consistent after wait until done returned.", Registries.getUnitRegistry().getData().getUnitConfigRegistryConsistent());
+            long time = System.currentTimeMillis();
             try {
-                registerUnitConfig.get(2, TimeUnit.MILLISECONDS);
-            } catch (Exception ex) {
+//                registrationFuture.get();
+                registrationFuture.getInternalFuture().get(5, TimeUnit.MILLISECONDS);
+                LOGGER.warn("Get after waitUntil ready took: " + (System.currentTimeMillis() - time) + "ms");
+            } catch (TimeoutException ex) {
+                LOGGER.warn("Get after waitUntil ready took: " + (System.currentTimeMillis() - time) + "ms");
                 Assert.assertTrue("Test failed because registration result is not available", false);
             }
             waitedUntilReady = true;
         }
-        deplayConsistencyCheck = false;
+        delayConsistencyCheck = false;
     }
 }

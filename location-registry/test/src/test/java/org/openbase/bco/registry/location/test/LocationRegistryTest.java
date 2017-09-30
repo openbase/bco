@@ -22,11 +22,14 @@ package org.openbase.bco.registry.location.test;
  * #L%
  */
 import java.io.IOException;
+import java.util.List;
 import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import org.junit.AfterClass;
+import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Test;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -35,6 +38,9 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.openbase.bco.registry.remote.Registries;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
+import rst.math.Vec3DDoubleType.Vec3DDouble;
 
 /**
  *
@@ -75,19 +81,19 @@ public class LocationRegistryTest {
      *
      * @throws java.lang.Exception
      */
-//    @Test(timeout = 5000)
-//    public void testGetLocationConfigsByCoordinate() throws Exception {
-//        System.out.println("testGetLocationConfigsByCoordinate");
-//        List<UnitConfig> pointEden = Registries.getLocationRegistry().getLocationConfigsByCoordinate(Vec3DDouble.newBuilder().setX(1.5).setY(4).setZ(0).build());
-//        assertEquals(3, pointEden.size());
-//
-//        List<UnitConfig> pointEdenFilter = Registries.getLocationRegistry().getLocationConfigsByCoordinate(Vec3DDouble.newBuilder().setX(1.5).setY(4).setZ(0).build(), LocationType.TILE);
-//        assertEquals(1, pointEdenFilter.size());
-//
-//        List<UnitConfig> pointParadise = Registries.getLocationRegistry().getLocationConfigsByCoordinate(Vec3DDouble.newBuilder().setX(0.5).setY(3).setZ(0).build());
-//        assertEquals(1, pointParadise.size());
-//
-//        List<UnitConfig> pointHell = Registries.getLocationRegistry().getLocationConfigsByCoordinate(Vec3DDouble.newBuilder().setX(4).setY(3).setZ(0).build());
-//        assertEquals(2, pointHell.size());
-//    }
+    @Test(timeout = 5000)
+    public void testGetLocationConfigsByCoordinate() throws Exception {
+        System.out.println("testGetLocationConfigsByCoordinate");
+        List<UnitConfig> pointEden = Registries.getLocationRegistry().getLocationConfigsByCoordinate(Vec3DDouble.newBuilder().setX(1.5).setY(4).setZ(0).build());
+        assertEquals(3, pointEden.size());
+
+        List<UnitConfig> pointEdenFilter = Registries.getLocationRegistry().getLocationConfigsByCoordinate(Vec3DDouble.newBuilder().setX(1.5).setY(4).setZ(0).build(), LocationType.TILE);
+        assertEquals(1, pointEdenFilter.size());
+
+        List<UnitConfig> pointParadise = Registries.getLocationRegistry().getLocationConfigsByCoordinate(Vec3DDouble.newBuilder().setX(0.5).setY(3).setZ(0).build());
+        assertEquals(1, pointParadise.size());
+
+        List<UnitConfig> pointHell = Registries.getLocationRegistry().getLocationConfigsByCoordinate(Vec3DDouble.newBuilder().setX(4).setY(3).setZ(0).build());
+        assertEquals(2, pointHell.size());
+    }
 }

@@ -32,7 +32,6 @@ import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryController;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
-import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -68,14 +67,12 @@ public class AgentRegistryController extends AbstractVirtualRegistryController<A
     private final ProtoBufFileSynchronizedRegistry<String, AgentClass, AgentClass.Builder, AgentRegistryData.Builder> agentClassRegistry;
 
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> agentUnitConfigRemoteRegistry;
-    private final UnitRegistryRemote unitRegistryRemote;
 
     public AgentRegistryController() throws InstantiationException, InterruptedException {
         super(JPAgentRegistryScope.class, AgentRegistryData.newBuilder());
         try {
-            unitRegistryRemote = CachedUnitRegistryRemote.getRegistry();
             agentClassRegistry = new ProtoBufFileSynchronizedRegistry<>(AgentClass.class, getBuilderSetup(), getDataFieldDescriptor(AgentRegistryData.AGENT_CLASS_FIELD_NUMBER), new AgentClassIdGenerator(), JPService.getProperty(JPAgentClassDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(unitRegistryRemote, UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER);
+            agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(CachedUnitRegistryRemote.getRegistry(), UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER);
         } catch (JPServiceException | CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -97,7 +94,12 @@ public class AgentRegistryController extends AbstractVirtualRegistryController<A
      */
     @Override
     protected void registerRegistryRemotes() throws CouldNotPerformException {
-        registerRegistryRemote(unitRegistryRemote);
+        try {
+            registerRegistryRemote(CachedUnitRegistryRemote.getRegistry());
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            // registries do not throw interrupted exception within the next release.
+        }
     }
 
     /**
@@ -161,49 +163,92 @@ public class AgentRegistryController extends AbstractVirtualRegistryController<A
     @Override
     public Future<UnitConfig> registerAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException {
         verifyAgentUnitConfig(agentUnitConfig);
-        return unitRegistryRemote.registerUnitConfig(agentUnitConfig);
+        try {
+            return CachedUnitRegistryRemote.getRegistry().registerUnitConfig(agentUnitConfig);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            return null;
+            // registries do not throw interrupted exception within the next release.
+        }
     }
 
     @Override
     public UnitConfig getAgentConfigById(String agentUnitConfigId) throws CouldNotPerformException {
-        unitRegistryRemote.validateData();
+        try {
+            CachedUnitRegistryRemote.getRegistry().validateData();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            // registries do not throw interrupted exception within the next release.
+        }
         return agentUnitConfigRemoteRegistry.getMessage(agentUnitConfigId);
     }
 
     @Override
     public Boolean containsAgentConfigById(String agentUnitConfigId) throws CouldNotPerformException {
-        unitRegistryRemote.validateData();
+        try {
+            CachedUnitRegistryRemote.getRegistry().validateData();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            // registries do not throw interrupted exception within the next release.
+        }
         return agentUnitConfigRemoteRegistry.contains(agentUnitConfigId);
     }
 
     @Override
     public Boolean containsAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException {
         verifyAgentUnitConfig(agentUnitConfig);
-        unitRegistryRemote.validateData();
+        try {
+            CachedUnitRegistryRemote.getRegistry().validateData();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            // registries do not throw interrupted exception within the next release.
+        }
         return agentUnitConfigRemoteRegistry.contains(agentUnitConfig);
     }
 
     @Override
     public Future<UnitConfig> updateAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException {
-        verifyAgentUnitConfig(agentUnitConfig);
-        return unitRegistryRemote.updateUnitConfig(agentUnitConfig);
+        try {
+            verifyAgentUnitConfig(agentUnitConfig);
+            return CachedUnitRegistryRemote.getRegistry().updateUnitConfig(agentUnitConfig);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            // registries do not throw interrupted exception within the next release.
+            return null;
+        }
     }
 
     @Override
     public Future<UnitConfig> removeAgentConfig(UnitConfig agentUnitConfig) throws CouldNotPerformException {
-        verifyAgentUnitConfig(agentUnitConfig);
-        return unitRegistryRemote.removeUnitConfig(agentUnitConfig);
+        try {
+            verifyAgentUnitConfig(agentUnitConfig);
+            return CachedUnitRegistryRemote.getRegistry().removeUnitConfig(agentUnitConfig);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            // registries do not throw interrupted exception within the next release.
+            return null;
+        }
     }
 
     @Override
     public List<UnitConfig> getAgentConfigs() throws CouldNotPerformException {
-        unitRegistryRemote.validateData();
+        try {
+            CachedUnitRegistryRemote.getRegistry().validateData();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            // registries do not throw interrupted exception within the next release.
+        }
         return agentUnitConfigRemoteRegistry.getMessages();
     }
 
     @Override
     public Boolean isAgentConfigRegistryReadOnly() throws CouldNotPerformException {
-        unitRegistryRemote.validateData();
+        try {
+            CachedUnitRegistryRemote.getRegistry().validateData();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            // registries do not throw interrupted exception within the next release.
+        }
         return getData().getAgentUnitConfigRegistryReadOnly();
     }
 
@@ -218,7 +263,12 @@ public class AgentRegistryController extends AbstractVirtualRegistryController<A
             throw new NotAvailableException("agentClassId [" + agentClassId + "]");
         }
 
-        unitRegistryRemote.validateData();
+        try {
+            CachedUnitRegistryRemote.getRegistry().validateData();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            // registries do not throw interrupted exception within the next release.
+        }
         List<UnitConfig> agentUnitConfigs = new ArrayList<>();
         for (UnitConfig agentUnitConfig : getAgentConfigs()) {
             if (agentUnitConfig.getAgentConfig().getAgentClassId().equals(agentClassId)) {
@@ -282,7 +332,12 @@ public class AgentRegistryController extends AbstractVirtualRegistryController<A
      */
     @Override
     public Boolean isAgentConfigRegistryConsistent() throws CouldNotPerformException {
-        unitRegistryRemote.validateData();
+        try {
+            CachedUnitRegistryRemote.getRegistry().validateData();
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            // registries do not throw interrupted exception within the next release.
+        }
         return getData().getAgentUnitConfigRegistryConsistent();
     }
 
