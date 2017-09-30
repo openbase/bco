@@ -21,7 +21,6 @@ package org.openbase.bco.dal.test;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
@@ -36,13 +35,14 @@ import org.slf4j.LoggerFactory;
 public class AbstractBCOTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AbstractBCOTest.class);
-    
+
     protected static MockRegistry mockRegistry;
 
     public static void setUpClass() throws Throwable {
         try {
             JPService.setupJUnitTestMode();
             mockRegistry = MockRegistryHolder.newMockRegistry();
+            Units.reinitialize();
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }

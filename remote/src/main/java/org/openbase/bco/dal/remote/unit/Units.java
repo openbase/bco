@@ -24,7 +24,10 @@ package org.openbase.bco.dal.remote.unit;
 import com.google.protobuf.GeneratedMessage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
@@ -57,6 +60,7 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.unitgroup.UnitGroupRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
+import org.openbase.jul.extension.protobuf.IdentifiableMessageMap;
 import org.openbase.jul.extension.protobuf.ProtobufListDiff;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
@@ -198,7 +202,27 @@ public class Units {
 
     public static final SyncObject UNIT_POOL_LOCK = new SyncObject("UnitPoolLock");
 
+    // register an observer that calls shutdown on units whose configs have been removed from the registry
     private static final ProtobufListDiff<String, UnitConfig, UnitConfig.Builder> UNIT_DIFF = new ProtobufListDiff<>();
+    private static final Observer<UnitRegistryData> UNIT_REGISTRY_OBSERVER = new Observer<UnitRegistryData>() {
+        @Override
+        public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
+            UNIT_DIFF.diff(data.getDalUnitConfigList());
+
+            for (String unitId : UNIT_DIFF.getRemovedMessageMap().keySet()) {
+                if (unitRemoteRegistry.contains(unitId)) {
+                    UnitRemote unitRemote = unitRemoteRegistry.get(unitId);
+                    try {
+                        unitRemoteRegistry.remove(unitId);
+                        unitRemote.unlock(unitRemoteRegistry);
+                        unitRemote.shutdown();
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistory("Could not properly shutdown " + unitRemote, ex, LOGGER);
+                    }
+                }
+            }
+        }
+    };
 
     static {
         try {
@@ -229,25 +253,7 @@ public class Units {
             });
 
             try {
-                Registries.getUnitRegistry().addDataObserver(new Observer<UnitRegistryData>() {
-                    @Override
-                    public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
-                        UNIT_DIFF.diff(data.getDalUnitConfigList());
-
-                        for (String unitId : UNIT_DIFF.getRemovedMessageMap().keySet()) {
-                            if (unitRemoteRegistry.contains(unitId)) {
-                                UnitRemote unitRemote = unitRemoteRegistry.get(unitId);
-                                try {
-                                    unitRemoteRegistry.remove(unitId);
-                                    unitRemote.unlock(unitRemoteRegistry);
-                                    unitRemote.shutdown();
-                                } catch (CouldNotPerformException ex) {
-                                    ExceptionPrinter.printHistory("Could not properly shutdown " + unitRemote, ex, LOGGER);
-                                }
-                            }
-                        }
-                    }
-                });
+                Registries.getUnitRegistry().addDataObserver(UNIT_REGISTRY_OBSERVER);
             } catch (InterruptedException ex) {
                 throw new CouldNotPerformException("Could not add observer to unit registry", ex);
             }
@@ -261,7 +267,7 @@ public class Units {
      * clearing the local registry. This is needed for unit tests because else
      * remote states are not cleared between tests which can result in
      * unpredictable values. This method can only be triggered in test mode.
-     * Else it throws a FatalImplementationError.
+     * Else it throws a FatalImplementationErrorException.
      *
      * @param responsibleObject should be the object which triggers the reset
      * which is used for proper exception handling
@@ -285,6 +291,42 @@ public class Units {
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not reset Units!", ex);
         }
+    }
+
+    /**
+     * Method forces a resynchronization on all unit remotes.
+     *
+     * @throws CouldNotPerformException
+     * @throws InterruptedException
+     */
+    public static void reinitialize() throws CouldNotPerformException, InterruptedException {
+        for (UnitRemote unitRemote : unitRemoteRegistry.getEntries()) {
+            try {
+                unitRemote.unlock(unitRemoteRegistry);
+                unitRemote.init(unitRemote.getConfig());
+                unitRemote.lock(unitRemoteRegistry);
+                unitRemote.requestData().get(500, TimeUnit.MILLISECONDS);
+            } catch (ExecutionException | TimeoutException ex) {
+                throw new CouldNotPerformException("Could not reinitialize Units");
+            }
+        }
+
+        resetUnitRegistryObserver();
+    }
+
+    /**
+     * Reset the unit registry observer by removing it reseting the unit diff and adding the observer again.
+     * This is needed in unit tests because if multiple tests are run and in theses tests
+     * the MockRegistry is restarted then the observer is registered on an old instance of the unit remote
+     * and thus the effects of the observer cannot be tested.
+     *
+     * @throws InterruptedException thrown if Registries.getUnitRegistry is interrupted
+     * @throws org.openbase.jul.exception.CouldNotPerformException thrown if the unit registry is not available
+     */
+    private static void resetUnitRegistryObserver() throws InterruptedException, CouldNotPerformException {
+        Registries.getUnitRegistry().removeDataObserver(UNIT_REGISTRY_OBSERVER);
+        UNIT_DIFF.replaceOriginMap(new IdentifiableMessageMap<>(Registries.getUnitRegistry().getDalUnitConfigs()));
+        Registries.getUnitRegistry().addDataObserver(UNIT_REGISTRY_OBSERVER);
     }
 
     /**
