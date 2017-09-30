@@ -22,7 +22,7 @@ package org.openbase.bco.manager.app.core;
  * #L%
  */
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.jp.JPEnableAuthentication;
+import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.manager.app.lib.AppController;
 import org.openbase.bco.manager.app.lib.AppFactory;
 import org.openbase.bco.manager.app.lib.AppManager;
@@ -81,7 +81,7 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
         Registries.waitForData();
         
         try {
-            if (JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+            if (JPService.getProperty(JPAuthentication.class).getValue()) {
                 SessionManager.getInstance().login(Registries.getUserRegistry().getUserIdByUserName(UserCreationPlugin.BCO_USERNAME));
             }
         } catch (JPNotAvailableException ex) {

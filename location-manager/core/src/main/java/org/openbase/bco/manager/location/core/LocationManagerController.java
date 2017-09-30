@@ -22,7 +22,7 @@ package org.openbase.bco.manager.location.core;
  * #L%
  */
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.jp.JPEnableAuthentication;
+import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.manager.location.lib.ConnectionController;
 import org.openbase.bco.manager.location.lib.ConnectionFactory;
 import org.openbase.bco.manager.location.lib.LocationController;
@@ -113,7 +113,7 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
 //        System.out.println("Connection: "+CachedLocationRegistryRemote.getRegistry().getConnectionConfigs().size());
 //        System.out.println("Loc: "+locationRegistryRemote.getLocationConfigs().size());
         try {
-            if (JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+            if (JPService.getProperty(JPAuthentication.class).getValue()) {
                 SessionManager.getInstance().login(Registries.getUserRegistry().getUserIdByUserName(UserCreationPlugin.BCO_USERNAME));
             }
         } catch (JPNotAvailableException ex) {

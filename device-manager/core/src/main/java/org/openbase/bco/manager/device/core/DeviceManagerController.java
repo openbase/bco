@@ -22,7 +22,7 @@ package org.openbase.bco.manager.device.core;
  * #L%
  */
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.jp.JPEnableAuthentication;
+import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.mock.ServiceFactoryMock;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
@@ -152,7 +152,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
         // TODO: pleminoq: let us analyse why this wait For data is needed. Without the sychnchronizer sync task is interrupted. And why is this never happening in the unit tests???
         Registries.getUnitRegistry().waitForData();
         try {
-            if (JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+            if (JPService.getProperty(JPAuthentication.class).getValue()) {
                 SessionManager.getInstance().login(Registries.getUserRegistry().getUserIdByUserName(UserCreationPlugin.BCO_USERNAME));
             }
         } catch (JPNotAvailableException ex) {

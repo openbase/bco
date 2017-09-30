@@ -22,7 +22,7 @@ package org.openbase.bco.manager.scene.core;
  * #L%
  */
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.jp.JPEnableAuthentication;
+import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.manager.scene.lib.SceneController;
 import org.openbase.bco.manager.scene.lib.SceneFactory;
 import org.openbase.bco.manager.scene.lib.SceneManager;
@@ -82,7 +82,7 @@ public class SceneManagerController implements SceneManager, Launchable<Void>, V
         Registries.waitForData();
 
         try {
-            if (JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+            if (JPService.getProperty(JPAuthentication.class).getValue()) {
                 SessionManager.getInstance().login(Registries.getUserRegistry().getUserIdByUserName(UserCreationPlugin.BCO_USERNAME));
             }
         } catch (JPNotAvailableException ex) {

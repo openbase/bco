@@ -26,7 +26,7 @@ package org.openbase.bco.manager.agent.core;
  */
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.jp.JPEnableAuthentication;
+import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.bco.manager.agent.lib.AgentFactory;
 import org.openbase.bco.manager.agent.lib.AgentManager;
@@ -81,7 +81,7 @@ public class AgentManagerController implements AgentManager, Launchable<Void>, V
         Registries.waitForData();
 
         try {
-            if (JPService.getProperty(JPEnableAuthentication.class).getValue()) {
+            if (JPService.getProperty(JPAuthentication.class).getValue()) {
                 SessionManager.getInstance().login(Registries.getUserRegistry().getUserIdByUserName(UserCreationPlugin.BCO_USERNAME));
             }
         } catch (JPNotAvailableException ex) {
