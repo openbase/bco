@@ -21,12 +21,10 @@ package org.openbase.bco.manager.device.test;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.openbase.bco.dal.test.AbstractBCOTest;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -59,7 +57,7 @@ public class AbstractBCODeviceManagerTest extends AbstractBCOTest {
             if (deviceManagerLauncher != null) {
                 deviceManagerLauncher.shutdown();
             }
-            MockRegistryHolder.shutdownMockRegistry();
+            AbstractBCOTest.tearDownClass();
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
