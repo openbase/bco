@@ -24,7 +24,6 @@ package org.openbase.bco.dal.lib.action;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.logging.Level;
 import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
@@ -47,8 +46,8 @@ import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.communicationpatterns.ResourceAllocationType;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.state.ActionStateType.ActionState;
@@ -147,7 +146,9 @@ public class ActionImpl implements Action {
 
                 try {
                     // Verify authority
-                    unit.verifyAuthority(actionDescriptionBuilder.getActionAuthority());
+                    final ActionFuture.Builder actionFutureBuilder = ActionFuture.newBuilder();
+
+                    unit.verifyAndUpdateAuthority(actionDescriptionBuilder.getActionAuthority(), actionFutureBuilder.getTicketAuthenticatorWrapperBuilder());
 
                     // Resource Allocation
                     unitAllocation = UnitAllocator.allocate(actionDescriptionBuilder, () -> {
@@ -190,6 +191,9 @@ public class ActionImpl implements Action {
                 } catch (CouldNotPerformException ex) {
                     updateActionState(ActionState.State.REJECTED);
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    return null;
                 }
             }
         } catch (CouldNotPerformException ex) {
@@ -211,7 +215,9 @@ public class ActionImpl implements Action {
 
                     try {
                         // Verify authority
-                        unit.verifyAuthority(actionDescriptionBuilder.getActionAuthority());
+                        final ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
+
+                        unit.verifyAndUpdateAuthority(actionDescriptionBuilder.getActionAuthority(), actionFuture.getTicketAuthenticatorWrapperBuilder());
 
                         // Resource Allocation
                         try {
@@ -227,7 +233,6 @@ public class ActionImpl implements Action {
                                 resourceAllocationBuilder.setPolicy(ResourceAllocationType.ResourceAllocation.Policy.PRESERVE);
                             }
 
-                            ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
                             actionFuture.addActionDescription(actionDescriptionBuilder);
 
                             // Execute

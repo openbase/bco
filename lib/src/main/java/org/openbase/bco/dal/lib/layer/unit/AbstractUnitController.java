@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
+import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -34,6 +35,9 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Future;
+import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
+import org.openbase.bco.authentication.lib.AuthorizationHelper;
+import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.dal.lib.action.ActionImpl;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -42,14 +46,18 @@ import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
+import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -65,6 +73,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
@@ -341,7 +350,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     @Override
     public void registerMethods(RSBLocalServer server) throws CouldNotPerformException {
-
         RPCHelper.registerInterface(Unit.class, this, server);
 
         // collect and register service interface methods via unit templates
@@ -460,8 +468,60 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
-    public void verifyAuthority(final ActionAuthority actionAuthority) throws VerificationFailedException {
-        // todo
+    /**
+     * Verifies the authority by verifying its internal TicketAuthenticationWrapper with the authenticator.
+     * It the authenticator has no TicketAuthenticationWrapper null is returned because no one is logged in.
+     *
+     * @param actionAuthority the authority verified
+     * @return an updated TicketAuthenticationWrapper of null if no one is logged in
+     * @throws VerificationFailedException if someone is logged in but the verification with the authenticator fails
+     * @throws org.openbase.jul.exception.PermissionDeniedException
+     * @throws java.lang.InterruptedException
+     */
+    public void verifyAndUpdateAuthority(final ActionAuthority actionAuthority, final TicketAuthenticatorWrapper.Builder ticketAuthenticatorWrapperBuilder) throws VerificationFailedException, PermissionDeniedException, InterruptedException, CouldNotPerformException {
+        
+        // check if authentication is enabled
+        try {
+            if (!JPService.getProperty(JPAuthentication.class).getValue()) {
+                return;
+            }
+        } catch (JPNotAvailableException ex) {
+            throw new CouldNotPerformException("Could not check JPEncableAuthentication property", ex);
+        }
+
+        // If there is no TicketAuthenticationWrapper, check permissions without userId and groups.
+        if (!actionAuthority.hasTicketAuthenticatorWrapper()) {
+            try {
+                Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations = Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap();
+
+                if (!AuthorizationHelper.canAccess(getConfig(), null, null, locations)) {
+                    throw new PermissionDeniedException("You have no permission to execute this action.");
+                }
+                return;
+            } catch (NotAvailableException ex) {
+                throw new VerificationFailedException("Verifying authority failed", ex);
+            }
+        }
+
+        try {
+            TicketAuthenticatorWrapper wrapper = actionAuthority.getTicketAuthenticatorWrapper();
+            AuthenticatedServerManager.TicketEvaluationWrapper validatedTicketWrapper = AuthenticatedServerManager.getInstance().evaluateClientServerTicket(wrapper);
+            Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups = Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap();
+            Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations = Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap();
+
+            if (!AuthorizationHelper.canAccess(getConfig(), validatedTicketWrapper.getUserId(), groups, locations)) {
+                throw new PermissionDeniedException("You have no permission to execute this action.");
+            }
+            
+            // update current ticketAuthenticatorWrapperBuilder
+            ticketAuthenticatorWrapperBuilder.setAuthenticator(validatedTicketWrapper.getTicketAuthenticatorWrapper().getAuthenticator());
+            ticketAuthenticatorWrapperBuilder.setTicket(validatedTicketWrapper.getTicketAuthenticatorWrapper().getTicket());
+        } catch (IOException | CouldNotPerformException ex) {
+            throw new VerificationFailedException("Verifying authority failed", ex);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(new VerificationFailedException("Interrupted while verifrying authority", ex), logger);
+        }
     }
 
     @Override

@@ -21,6 +21,7 @@ package org.openbase.bco.dal.remote.unit.authorizationgroup;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.io.StreamCorruptedException;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.unit.authorizationgroup.AuthorizationGroup;
 import org.openbase.bco.dal.remote.VoidFuture;

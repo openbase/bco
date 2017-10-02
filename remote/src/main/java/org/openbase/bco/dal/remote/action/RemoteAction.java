@@ -21,10 +21,10 @@ package org.openbase.bco.dal.remote.action;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.concurrent.Callable;
 import java.util.UUID;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
-import java.util.concurrent.FutureTask;
 import org.openbase.bco.dal.lib.action.Action;
 import org.openbase.bco.dal.remote.service.AbstractServiceRemote;
 import org.openbase.bco.dal.remote.service.ServiceRemoteFactory;
@@ -61,7 +61,7 @@ public class RemoteAction implements Action {
     private UnitConfig unitConfig;
     private ServiceRemoteFactory serviceRemoteFactory;
     private AbstractServiceRemote serviceRemote;
-    private Future executionFuture;
+    private Future<ActionFuture> executionFuture;
     private final SyncObject executionSync = new SyncObject(RemoteAction.class);
 
     @Override
@@ -101,7 +101,7 @@ public class RemoteAction implements Action {
         synchronized (executionSync) {
 
             // todo: Why is this double task encapsulation needed? I remember some synchronization issues by directly passing the apply action future. Investigate if this is just stupid code otherwise add some doc to explain this strategy.
-            final FutureTask task = new FutureTask(() -> {
+            final Callable<ActionFuture> task = () -> {
                 try {
                     ResourceAllocation.Builder resourceAllocation = ResourceAllocation.newBuilder();
                     resourceAllocation.setPolicy(ResourceAllocation.Policy.FIRST);
@@ -115,8 +115,11 @@ public class RemoteAction implements Action {
                 } catch (Exception ex) { // InterruptedException | CancellationException | CouldNotPerformException | NullPointerException
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Execution " + actionDescription.getActionState().getValue() + "!", ex), LOGGER, LogLevel.WARN);
                 }
-                return null;
-            });
+
+                // todo: setup action future.
+                final ActionFuture actionFuture = ActionFuture.getDefaultInstance();
+                return actionFuture;
+            };
             executionFuture = GlobalCachedExecutorService.submit(task);
         }
         return executionFuture;

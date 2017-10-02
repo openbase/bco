@@ -29,6 +29,7 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.dal.remote.unit.app.AppRemote;
 import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
@@ -259,7 +260,6 @@ public class Units {
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new FatalImplementationErrorException(Units.class, new org.openbase.jul.exception.InstantiationException(Units.class, ex)), LOGGER);
         }
-
     }
 
     /**
@@ -347,7 +347,7 @@ public class Units {
         Registries.getUnitRegistry().waitForData();
         return Registries.getUnitRegistry();
     }
-
+        
     /**
      * Returns the unit remote of the unit identified by the given unit id.
      *
@@ -386,6 +386,8 @@ public class Units {
                 unitRemote.activate();
                 unitRemote.lock(unitRemoteRegistry);
             }
+            // set sessionManager in unit remote
+            unitRemote.setSessionManager(SessionManager.getInstance());
             return unitRemote;
         } catch (CouldNotPerformException | NullPointerException ex) {
             throw new NotAvailableException("UnitRemote[" + unitId + "]", ex);
@@ -429,12 +431,14 @@ public class Units {
                 unitRemote.activate();
                 unitRemote.lock(unitRemoteRegistry);
             }
+            // set sessionManager in unit remote
+            unitRemote.setSessionManager(SessionManager.getInstance());
             return unitRemote;
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("UnitRemote[" + unitConfig.getId() + "]", ex);
         }
     }
-
+    
     /**
      * Method waits for unit data if the waitForData flag is set.
      *
