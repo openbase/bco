@@ -469,13 +469,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     /**
-     * Verifies the authority by verifying its internal TicketAuthenticationWrapper with the authenticator.
-     * It the authenticator has no TicketAuthenticationWrapper null is returned because no one is logged in.
+     * Verifies the authority by verifying its internal TicketAuthenticationWrapper with the authenticator and updates the given {@code ticketAuthenticatorWrapperBuilder}.
+     * It the authenticator has no TicketAuthenticationWrapper, the given {@code ticketAuthenticatorWrapperBuilder} is just not updated.
      *
      * @param actionAuthority the authority verified
-     * @return an updated TicketAuthenticationWrapper of null if no one is logged in
+     * @param ticketAuthenticatorWrapperBuilder the ticketAuthenticator to update.
      * @throws VerificationFailedException if someone is logged in but the verification with the authenticator fails
-     * @throws org.openbase.jul.exception.PermissionDeniedException
+     * @throws org.openbase.jul.exception.PermissionDeniedException is thrown in case the authority has no permission for the related action.
      * @throws java.lang.InterruptedException
      */
     public void verifyAndUpdateAuthority(final ActionAuthority actionAuthority, final TicketAuthenticatorWrapper.Builder ticketAuthenticatorWrapperBuilder) throws VerificationFailedException, PermissionDeniedException, InterruptedException, CouldNotPerformException {
