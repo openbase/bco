@@ -26,7 +26,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
 import org.openbase.bco.authentication.lib.AuthorizationFilter;
-import org.openbase.bco.registry.lib.com.DefaultMessageFilter;
+import org.openbase.jul.pattern.MockUpFilter;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.com.future.RegistrationFuture;
 import org.openbase.bco.registry.lib.com.future.RemovalFuture;
@@ -80,7 +80,7 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
             authorizationFilter = new AuthorizationFilter();
             
             userConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, UserRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
-            authorizationGroupConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, new DefaultMessageFilter(), UserRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
+            authorizationGroupConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, new MockUpFilter(), UserRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

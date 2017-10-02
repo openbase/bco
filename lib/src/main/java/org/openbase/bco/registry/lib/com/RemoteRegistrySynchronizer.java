@@ -21,6 +21,7 @@ package org.openbase.bco.registry.lib.com;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.jul.pattern.MockUpFilter;
 import org.openbase.jul.pattern.AbstractFilter;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
@@ -65,7 +66,7 @@ public class RemoteRegistrySynchronizer<M extends GeneratedMessage> implements O
      * @param fieldDescriptors the fields which are used for the synchronization
      */
     public RemoteRegistrySynchronizer(final RemoteRegistry<?, M, ?> remoteRegistry, final FieldDescriptor[] fieldDescriptors) {
-        this(remoteRegistry, fieldDescriptors, new DefaultMessageFilter<>());
+        this(remoteRegistry, fieldDescriptors, new MockUpFilter<>());
     }
 
     /**

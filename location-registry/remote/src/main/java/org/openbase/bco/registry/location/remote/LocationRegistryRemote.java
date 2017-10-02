@@ -35,7 +35,7 @@ import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.geometry.partitioning.Region.Location;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
 import org.openbase.bco.authentication.lib.AuthorizationFilter;
-import org.openbase.bco.registry.lib.com.DefaultMessageFilter;
+import org.openbase.jul.pattern.MockUpFilter;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.com.future.RegistrationFuture;
 import org.openbase.bco.registry.lib.com.future.RemovalFuture;
@@ -96,7 +96,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
         try {
             authorizationFilter = new AuthorizationFilter();
             
-            this.locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, new DefaultMessageFilter(), LocationRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER);
+            this.locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, new MockUpFilter(), LocationRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER);
             this.connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, LocationRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
