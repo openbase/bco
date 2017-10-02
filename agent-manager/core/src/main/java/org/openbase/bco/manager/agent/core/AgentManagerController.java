@@ -25,10 +25,16 @@ package org.openbase.bco.manager.agent.core;
  *
  */
 import java.util.concurrent.TimeUnit;
+import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.bco.manager.agent.lib.AgentFactory;
 import org.openbase.bco.manager.agent.lib.AgentManager;
+import org.openbase.bco.registry.login.SystemLogin;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.iface.Launchable;
@@ -74,6 +80,8 @@ public class AgentManagerController implements AgentManager, Launchable<Void>, V
     public void activate() throws CouldNotPerformException, InterruptedException {
         // TODO: pleminoq: let us analyse why this wait For Datta is needed. Without the sychnchronizer sync task is interrupted. And why is this never happening in the unit tests???
         Registries.waitForData();
+
+        SystemLogin.loginBCOUser();
 
         agentRegistrySynchronizer.activate();
     }

@@ -24,6 +24,7 @@ package org.openbase.bco.manager.app.core;
 import org.openbase.bco.manager.app.lib.AppController;
 import org.openbase.bco.manager.app.lib.AppFactory;
 import org.openbase.bco.manager.app.lib.AppManager;
+import org.openbase.bco.registry.login.SystemLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -74,7 +75,7 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
     public void activate() throws CouldNotPerformException, InterruptedException {
         //TODO: why is this necessary
         Registries.waitForData();
-
+        SystemLogin.loginBCOUser();
         appRegistrySynchronizer.activate();
     }
 

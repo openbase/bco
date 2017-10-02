@@ -21,6 +21,7 @@ package org.openbase.bco.manager.util.launch;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.authentication.core.AuthenticatorLauncher;
 import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.manager.agent.core.AgentManagerLauncher;
 import org.openbase.bco.manager.app.core.AppManagerLauncher;
@@ -48,6 +49,10 @@ public class BCOLauncher {
     public static void main(final String[] args) {
         BCO.printLogo();
         AbstractLauncher.main(args, BCO.class,
+                /**
+                 * Authenticator *
+                 */
+                AuthenticatorLauncher.class,
                 /**
                  * Registry *
                  */

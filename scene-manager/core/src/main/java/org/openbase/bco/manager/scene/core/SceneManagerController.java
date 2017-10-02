@@ -24,6 +24,7 @@ package org.openbase.bco.manager.scene.core;
 import org.openbase.bco.manager.scene.lib.SceneController;
 import org.openbase.bco.manager.scene.lib.SceneFactory;
 import org.openbase.bco.manager.scene.lib.SceneManager;
+import org.openbase.bco.registry.login.SystemLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -75,7 +76,7 @@ public class SceneManagerController implements SceneManager, Launchable<Void>, V
     public void activate() throws CouldNotPerformException, InterruptedException {
         //TODO: why is this necessary
         Registries.waitForData();
-
+        SystemLogin.loginBCOUser();
         sceneRegistrySynchronizer.activate();
     }
 

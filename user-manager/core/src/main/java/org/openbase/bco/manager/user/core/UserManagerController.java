@@ -21,10 +21,16 @@ package org.openbase.bco.manager.user.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.manager.user.lib.UserController;
 import org.openbase.bco.manager.user.lib.UserFactory;
 import org.openbase.bco.manager.user.lib.UserManager;
+import org.openbase.bco.registry.login.SystemLogin;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.iface.Launchable;
@@ -74,6 +80,9 @@ public class UserManagerController implements UserManager, Launchable<Void>, Voi
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         Registries.getUserRegistry().waitForData();
+
+        SystemLogin.loginBCOUser();
+
         registrySynchronizer.activate();
     }
 

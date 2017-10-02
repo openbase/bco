@@ -29,6 +29,7 @@ import org.openbase.bco.dal.lib.simulation.UnitSimulationManager;
 import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.bco.manager.device.lib.DeviceFactory;
 import org.openbase.bco.manager.device.lib.DeviceManager;
+import org.openbase.bco.registry.login.SystemLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -146,6 +147,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
         active = true;
         // TODO: pleminoq: let us analyse why this wait For data is needed. Without the sychnchronizer sync task is interrupted. And why is this never happening in the unit tests???
         Registries.getUnitRegistry().waitForData();
+        SystemLogin.loginBCOUser();
         deviceRegistrySynchronizer.activate();
         unitSimulationManager.activate();
     }
