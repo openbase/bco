@@ -30,6 +30,7 @@ import org.openbase.bco.manager.location.lib.LocationFactory;
 import org.openbase.bco.manager.location.lib.LocationManager;
 import org.openbase.bco.manager.location.lib.unitgroup.UnitGroupController;
 import org.openbase.bco.manager.location.lib.unitgroup.UnitGroupFactory;
+import org.openbase.bco.registry.login.SystemLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.jps.core.JPService;
@@ -109,16 +110,8 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
     public void activate() throws CouldNotPerformException, InterruptedException {
         // TODO: pleminoq: let us analyse why this waitForData is needed. Without the sychnchronizer sync task is interrupted. And why is this never happening in the unit tests???
         Registries.getLocationRegistry().waitForData();
-//        System.out.println("Locations: "+CachedLocationRegistryRemote.getRegistry().getLocationConfigs().size());
-//        System.out.println("Connection: "+CachedLocationRegistryRemote.getRegistry().getConnectionConfigs().size());
-//        System.out.println("Loc: "+locationRegistryRemote.getLocationConfigs().size());
-        try {
-            if (JPService.getProperty(JPAuthentication.class).getValue()) {
-                SessionManager.getInstance().login(Registries.getUserRegistry().getUserIdByUserName(UserCreationPlugin.BCO_USERNAME));
-            }
-        } catch (JPNotAvailableException ex) {
-            // do nothing
-        }
+
+        SystemLogin.loginBCOUser();
 
         locationRegistrySynchronizer.activate();
         connectionRegistrySynchronizer.activate();
