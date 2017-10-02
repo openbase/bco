@@ -21,6 +21,8 @@ package org.openbase.bco.manager.location.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.manager.location.lib.ConnectionController;
 import org.openbase.bco.manager.location.lib.ConnectionFactory;
 import org.openbase.bco.manager.location.lib.LocationController;
@@ -28,7 +30,11 @@ import org.openbase.bco.manager.location.lib.LocationFactory;
 import org.openbase.bco.manager.location.lib.LocationManager;
 import org.openbase.bco.manager.location.lib.unitgroup.UnitGroupController;
 import org.openbase.bco.manager.location.lib.unitgroup.UnitGroupFactory;
+import org.openbase.bco.registry.login.SystemLogin;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
+import org.openbase.jps.core.JPService;
+import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.iface.Launchable;
@@ -104,9 +110,9 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
     public void activate() throws CouldNotPerformException, InterruptedException {
         // TODO: pleminoq: let us analyse why this waitForData is needed. Without the sychnchronizer sync task is interrupted. And why is this never happening in the unit tests???
         Registries.getLocationRegistry().waitForData();
-//        System.out.println("Locations: "+CachedLocationRegistryRemote.getRegistry().getLocationConfigs().size());
-//        System.out.println("Connection: "+CachedLocationRegistryRemote.getRegistry().getConnectionConfigs().size());
-//        System.out.println("Loc: "+locationRegistryRemote.getLocationConfigs().size());
+
+        SystemLogin.loginBCOUser();
+
         locationRegistrySynchronizer.activate();
         connectionRegistrySynchronizer.activate();
         unitGroupRegistrySynchronizer.activate();
