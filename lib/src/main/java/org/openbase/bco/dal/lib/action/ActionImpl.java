@@ -48,7 +48,6 @@ import org.slf4j.LoggerFactory;
 import rst.communicationpatterns.ResourceAllocationType;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.state.ActionStateType.ActionState;
@@ -149,10 +148,7 @@ public class ActionImpl implements Action {
                     // Verify authority
                     final ActionFuture.Builder actionFutureBuilder = ActionFuture.newBuilder();
 
-                    TicketAuthenticatorWrapper ticketAuthenticatorWrapper = unit.verifyAuthority(actionDescriptionBuilder.getActionAuthority());
-                    if (ticketAuthenticatorWrapper != null) {
-                        actionFutureBuilder.setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
-                    }
+                    unit.verifyAndUpdateAuthority(actionDescriptionBuilder.getActionAuthority(), actionFutureBuilder.getTicketAuthenticatorWrapperBuilder());
 
                     // Resource Allocation
                     unitAllocation = UnitAllocator.allocate(actionDescriptionBuilder, () -> {
@@ -221,10 +217,7 @@ public class ActionImpl implements Action {
                         // Verify authority
                         final ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
 
-                        TicketAuthenticatorWrapper ticketAuthenticatorWrapper = unit.verifyAuthority(actionDescriptionBuilder.getActionAuthority());
-                        if (ticketAuthenticatorWrapper != null) {
-                            actionFuture.setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
-                        }
+                        unit.verifyAndUpdateAuthority(actionDescriptionBuilder.getActionAuthority(), actionFuture.getTicketAuthenticatorWrapperBuilder());
 
                         // Resource Allocation
                         try {

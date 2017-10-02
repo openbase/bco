@@ -478,10 +478,12 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      * @throws org.openbase.jul.exception.PermissionDeniedException
      * @throws java.lang.InterruptedException
      */
-    public TicketAuthenticatorWrapper verifyAuthority(final ActionAuthority actionAuthority) throws VerificationFailedException, PermissionDeniedException, InterruptedException, CouldNotPerformException {
+    public void verifyAndUpdateAuthority(final ActionAuthority actionAuthority, final TicketAuthenticatorWrapper.Builder ticketAuthenticatorWrapperBuilder) throws VerificationFailedException, PermissionDeniedException, InterruptedException, CouldNotPerformException {
+        
+        // check if authentication is enabled
         try {
             if (!JPService.getProperty(JPAuthentication.class).getValue()) {
-                return null;
+                return;
             }
         } catch (JPNotAvailableException ex) {
             throw new CouldNotPerformException("Could not check JPEncableAuthentication property", ex);
@@ -495,8 +497,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 if (!AuthorizationHelper.canAccess(getConfig(), null, null, locations)) {
                     throw new PermissionDeniedException("You have no permission to execute this action.");
                 }
-
-                return null;
+                return;
             } catch (NotAvailableException ex) {
                 throw new VerificationFailedException("Verifying authority failed", ex);
             }
@@ -505,15 +506,16 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         try {
             TicketAuthenticatorWrapper wrapper = actionAuthority.getTicketAuthenticatorWrapper();
             AuthenticatedServerManager.TicketEvaluationWrapper validatedTicketWrapper = AuthenticatedServerManager.getInstance().evaluateClientServerTicket(wrapper);
-            String clientId = validatedTicketWrapper.getUserId();
             Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups = Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap();
             Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations = Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap();
 
-            if (!AuthorizationHelper.canAccess(getConfig(), clientId, groups, locations)) {
+            if (!AuthorizationHelper.canAccess(getConfig(), validatedTicketWrapper.getUserId(), groups, locations)) {
                 throw new PermissionDeniedException("You have no permission to execute this action.");
             }
-
-            return validatedTicketWrapper.getTicketAuthenticatorWrapper();
+            
+            // update current ticketAuthenticatorWrapperBuilder
+            ticketAuthenticatorWrapperBuilder.setAuthenticator(validatedTicketWrapper.getTicketAuthenticatorWrapper().getAuthenticator());
+            ticketAuthenticatorWrapperBuilder.setTicket(validatedTicketWrapper.getTicketAuthenticatorWrapper().getTicket());
         } catch (IOException | CouldNotPerformException ex) {
             throw new VerificationFailedException("Verifying authority failed", ex);
         } catch (InterruptedException ex) {
