@@ -28,7 +28,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
-import org.openbase.bco.registry.lib.com.AuthorizationFilter;
+import org.openbase.bco.authentication.lib.AuthorizationFilter;
 import org.openbase.bco.registry.lib.com.DefaultMessageFilter;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.com.future.RegistrationFuture;
@@ -165,8 +165,8 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
 
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
-        authorizationFilter.setAuthorizationGroupRegistry(authorizationGroupUnitConfigRemoteRegistry);
-        authorizationFilter.setLocationRegistry(locationUnitConfigRemoteRegistry);
+        authorizationFilter.setAuthorizationGroups(authorizationGroupUnitConfigRemoteRegistry.getEntryMap());
+        authorizationFilter.setLocations(locationUnitConfigRemoteRegistry.getEntryMap());
 
         super.activate();
     }

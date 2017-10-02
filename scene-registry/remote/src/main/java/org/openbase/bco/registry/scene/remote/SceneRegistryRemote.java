@@ -24,7 +24,7 @@ package org.openbase.bco.registry.scene.remote;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
-import org.openbase.bco.registry.lib.com.AuthorizationFilter;
+import org.openbase.bco.authentication.lib.AuthorizationFilter;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.com.future.RegistrationFuture;
 import org.openbase.bco.registry.lib.com.future.RemovalFuture;
@@ -89,8 +89,8 @@ public class SceneRegistryRemote extends AbstractVirtualRegistryRemote<SceneRegi
         if (!CachedSceneRegistryRemote.getRegistry().equals(this)) {
             logger.warn("You are using a " + getClass().getSimpleName() + " which is not maintained by the global registry singelton! This is extremely inefficient! Please use \"Registries.get" + getClass().getSimpleName().replace("Remote", "") + "()\" instead creating your own instances!");
         }
-        authorizationFilter.setAuthorizationGroupRegistry(unitRegistry.getAuthorizationGroupUnitConfigRemoteRegistry());
-        authorizationFilter.setLocationRegistry(unitRegistry.getLocationUnitConfigRemoteRegistry());
+        authorizationFilter.setAuthorizationGroups(unitRegistry.getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap());
+        authorizationFilter.setLocations(unitRegistry.getLocationUnitConfigRemoteRegistry().getEntryMap());
         super.activate();
     }
 

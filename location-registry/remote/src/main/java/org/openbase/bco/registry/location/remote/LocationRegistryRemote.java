@@ -34,7 +34,7 @@ import org.apache.commons.math3.geometry.euclidean.twod.PolygonsSet;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.geometry.partitioning.Region.Location;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
-import org.openbase.bco.registry.lib.com.AuthorizationFilter;
+import org.openbase.bco.authentication.lib.AuthorizationFilter;
 import org.openbase.bco.registry.lib.com.DefaultMessageFilter;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.com.future.RegistrationFuture;
@@ -114,8 +114,8 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
         if (!CachedLocationRegistryRemote.getRegistry().equals(this)) {
             logger.warn("You are using a " + getClass().getSimpleName() + " which is not maintained by the global registry singelton! This is extremely inefficient! Please use \"Registries.get" + getClass().getSimpleName().replace("Remote", "") + "()\" instead creating your own instances!");
         }
-        authorizationFilter.setAuthorizationGroupRegistry(unitRegistry.getAuthorizationGroupUnitConfigRemoteRegistry());
-        authorizationFilter.setLocationRegistry(locationUnitConfigRemoteRegistry);
+        authorizationFilter.setAuthorizationGroups(unitRegistry.getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap());
+        authorizationFilter.setLocations(locationUnitConfigRemoteRegistry.getEntryMap());
         super.activate();
     }
 
