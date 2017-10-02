@@ -150,6 +150,30 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
         validateData();
         return userConfigRemoteRegistry.getMessage(userConfigId);
     }
+    
+     /**
+     * Retrieves a user ID according to a given user name.
+     * If multiple users happen to have the same user name, the first one is returned.
+     *
+     * @param userName
+     * @return User ID
+     * @throws CouldNotPerformException
+     * @throws NotAvailableException If no user with the given user name could be found.
+     * @deprecated removed out of security reasons.
+     */
+    @Deprecated
+    public UnitConfig getUserConfigByUserName(final String userName) throws CouldNotPerformException, NotAvailableException {
+        validateData();
+        List<UnitConfig> messages = userConfigRemoteRegistry.getMessages();
+
+        for (UnitConfig message : messages) {
+            if (message.getUserConfig().getUserName().equals(userName)) {
+                return message;
+            }
+        }
+
+        throw new NotAvailableException(userName);
+    }
 
     @Override
     public String getUserIdByUserName(final String userName) throws CouldNotPerformException, NotAvailableException {
