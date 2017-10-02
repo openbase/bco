@@ -26,6 +26,7 @@ import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.manager.user.lib.UserController;
 import org.openbase.bco.manager.user.lib.UserFactory;
 import org.openbase.bco.manager.user.lib.UserManager;
+import org.openbase.bco.registry.login.SystemLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.jps.core.JPService;
@@ -80,13 +81,7 @@ public class UserManagerController implements UserManager, Launchable<Void>, Voi
     public void activate() throws CouldNotPerformException, InterruptedException {
         Registries.getUserRegistry().waitForData();
 
-        try {
-            if (JPService.getProperty(JPAuthentication.class).getValue()) {
-                SessionManager.getInstance().login(Registries.getUserRegistry().getUserIdByUserName(UserCreationPlugin.BCO_USERNAME));
-            }
-        } catch (JPNotAvailableException ex) {
-            // do nothing
-        }
+        SystemLogin.loginBCOUser();
 
         registrySynchronizer.activate();
     }
