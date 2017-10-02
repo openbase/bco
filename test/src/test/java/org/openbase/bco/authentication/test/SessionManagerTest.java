@@ -432,14 +432,16 @@ public class SessionManagerTest {
             notificationCounter++;
         };
 
-        SessionManager.getInstance().addLoginObserver(loginObserver);
+        SessionManager sessionManager = new SessionManager();
+        sessionManager.addLoginObserver(loginObserver);
 
-        SessionManager.getInstance().login(MockCredentialStore.ADMIN_ID, MockCredentialStore.ADMIN_PASSWORD);
+        sessionManager.login(MockCredentialStore.ADMIN_ID, MockCredentialStore.ADMIN_PASSWORD);
         assertEquals("Notification counter should be 1 after the first login", 1, notificationCounter);
-        SessionManager.getInstance().login(MockCredentialStore.USER_ID, MockCredentialStore.USER_PASSWORD);
+        sessionManager.login(MockCredentialStore.USER_ID, MockCredentialStore.USER_PASSWORD);
         assertEquals("Notification counter should be 3 after logging in another user because of the logout in between", 3, notificationCounter);
-        SessionManager.getInstance().logout();
+        sessionManager.logout();
         assertEquals("Notification counter should be 4 after logout", 4, notificationCounter);
 
+        sessionManager.removeLoginObserver(loginObserver);
     }
 }
