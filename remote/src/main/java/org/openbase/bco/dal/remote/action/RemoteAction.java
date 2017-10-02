@@ -60,7 +60,7 @@ public class RemoteAction implements Action {
     private ActionDescription actionDescription;
     private UnitConfig unitConfig;
     private ServiceRemoteFactory serviceRemoteFactory;
-    private AbstractServiceRemote serviceRemote;
+    private AbstractServiceRemote<?, ?> serviceRemote;
     private Future<ActionFuture> executionFuture;
     private final SyncObject executionSync = new SyncObject(RemoteAction.class);
 
@@ -111,14 +111,10 @@ public class RemoteAction implements Action {
                     resourceAllocation.setState(ResourceAllocation.State.REQUESTED);
                     resourceAllocation.setSlot(Interval.getDefaultInstance());
                     actionDescription = actionDescription.toBuilder().setResourceAllocation(resourceAllocation).build();
-                    serviceRemote.applyAction(getActionDescription()).get();
+                    return serviceRemote.applyAction(getActionDescription()).get();
                 } catch (Exception ex) { // InterruptedException | CancellationException | CouldNotPerformException | NullPointerException
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Execution " + actionDescription.getActionState().getValue() + "!", ex), LOGGER, LogLevel.WARN);
                 }
-
-                // todo: setup action future.
-                final ActionFuture actionFuture = ActionFuture.getDefaultInstance();
-                return actionFuture;
             };
             executionFuture = GlobalCachedExecutorService.submit(task);
         }
