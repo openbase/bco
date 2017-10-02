@@ -36,7 +36,6 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.RegistryRemote;
-import org.openbase.jul.storage.registry.RemoteRegistry;
 
 /**
  *
@@ -45,8 +44,8 @@ import org.openbase.jul.storage.registry.RemoteRegistry;
  */
 public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> extends AbstractRegistryRemote<M> {
 
-    private final Map<RemoteRegistry, Descriptors.FieldDescriptor> remoteRegistryFieldDescriptorMap;
-    private final Map<RemoteRegistry, RegistryRemote<? extends GeneratedMessage>> remoteRegistrySyncMap;
+    private final Map<SynchronizedRemoteRegistry, Descriptors.FieldDescriptor> remoteRegistryFieldDescriptorMap;
+    private final Map<SynchronizedRemoteRegistry, RegistryRemote<? extends GeneratedMessage>> remoteRegistrySyncMap;
     private final List<RegistryRemote<? extends GeneratedMessage>> registryRemotes;
 
     private final SyncObject virtualRegistrySyncLock = new SyncObject("RegistryRemoteVirtualSyncLock");
@@ -100,7 +99,7 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
 
     protected abstract void registerRegistryRemotes() throws InitializationException, InterruptedException;
 
-    protected void bindRegistryRemoteToRemoteRegistry(RemoteRegistry remoteRegistry, RegistryRemote<? extends GeneratedMessage> registryRemote, Integer fieldNumber) throws CouldNotPerformException {
+    protected void bindRegistryRemoteToRemoteRegistry(SynchronizedRemoteRegistry remoteRegistry, RegistryRemote<? extends GeneratedMessage> registryRemote, Integer fieldNumber) throws CouldNotPerformException {
         try {
             Descriptors.FieldDescriptor fieldDescriptor = null;
             try {
@@ -156,9 +155,13 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
     }
 
     private boolean equalMessageCounts() {
-        for (RemoteRegistry remoteRegistry : remoteRegistrySyncMap.keySet()) {
+        for (SynchronizedRemoteRegistry remoteRegistry : remoteRegistrySyncMap.keySet()) {
             try {
-                if (remoteRegistrySyncMap.get(remoteRegistry).getData().getRepeatedFieldCount(remoteRegistryFieldDescriptorMap.get(remoteRegistry)) != remoteRegistry.getMessages().size()) {
+                List messageList = new ArrayList((List) remoteRegistrySyncMap.get(remoteRegistry).getData().getField(remoteRegistryFieldDescriptorMap.get(remoteRegistry)));
+                int registryRemoteMessageCount = remoteRegistry.getFilter().filter(messageList).size();
+                int remoteRegistryMessageCount = remoteRegistry.getMessages().size();
+                if (registryRemoteMessageCount != remoteRegistryMessageCount) {
+                    logger.warn("MessageCount for [" + this + "] is not correct. Expected[" + registryRemoteMessageCount + "] but is [" + remoteRegistryMessageCount + "]");
                     return false;
                 }
             } catch (CouldNotPerformException ex) {

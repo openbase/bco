@@ -25,6 +25,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
+import org.openbase.bco.authentication.lib.AuthorizationFilter;
+import org.openbase.jul.pattern.MockUpFilter;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.com.future.RegistrationFuture;
 import org.openbase.bco.registry.lib.com.future.RemovalFuture;
@@ -66,6 +68,7 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthorizationGroupConfig.getDefaultInstance()));
     }
 
+    private final AuthorizationFilter authorizationFilter;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> userConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> authorizationGroupConfigRemoteRegistry;
 
@@ -74,8 +77,10 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
     public UserRegistryRemote() throws InstantiationException, InterruptedException {
         super(JPUserRegistryScope.class, UserRegistryData.class);
         try {
-            userConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UserRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
-            authorizationGroupConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, UserRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
+            authorizationFilter = new AuthorizationFilter();
+            
+            userConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, UserRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
+            authorizationGroupConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, new MockUpFilter(), UserRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -92,13 +97,15 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
         if (!CachedUserRegistryRemote.getRegistry().equals(this)) {
             logger.warn("You are using a " + getClass().getSimpleName() + " which is not maintained by the global registry singelton! This is extremely inefficient! Please use \"Registries.get" + getClass().getSimpleName().replace("Remote", "") + "()\" instead creating your own instances!");
         }
+        authorizationFilter.setAuthorizationGroups(unitRegistry.getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap());
+        authorizationFilter.setLocations(unitRegistry.getLocationUnitConfigRemoteRegistry().getEntryMap());
         super.activate();
     }
 
     @Override
     protected void registerRemoteRegistries() throws CouldNotPerformException {
-        registerRemoteRegistry(userConfigRemoteRegistry);
         registerRemoteRegistry(authorizationGroupConfigRemoteRegistry);
+        registerRemoteRegistry(userConfigRemoteRegistry);
     }
 
     @Override
@@ -143,8 +150,18 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
         validateData();
         return userConfigRemoteRegistry.getMessage(userConfigId);
     }
-
-    @Override
+    
+     /**
+     * Retrieves a user ID according to a given user name.
+     * If multiple users happen to have the same user name, the first one is returned.
+     *
+     * @param userName
+     * @return User ID
+     * @throws CouldNotPerformException
+     * @throws NotAvailableException If no user with the given user name could be found.
+     * @deprecated removed out of security reasons.
+     */
+    @Deprecated
     public UnitConfig getUserConfigByUserName(final String userName) throws CouldNotPerformException, NotAvailableException {
         validateData();
         List<UnitConfig> messages = userConfigRemoteRegistry.getMessages();
@@ -152,6 +169,20 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
         for (UnitConfig message : messages) {
             if (message.getUserConfig().getUserName().equals(userName)) {
                 return message;
+            }
+        }
+
+        throw new NotAvailableException(userName);
+    }
+
+    @Override
+    public String getUserIdByUserName(final String userName) throws CouldNotPerformException, NotAvailableException {
+        validateData();
+        List<UnitConfig> messages = userConfigRemoteRegistry.getMessages();
+
+        for (UnitConfig message : messages) {
+            if (message.getUserConfig().getUserName().equals(userName)) {
+                return message.getId();
             }
         }
 

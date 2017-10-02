@@ -27,6 +27,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
+import org.openbase.bco.authentication.lib.AuthorizationFilter;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.com.future.RegistrationFuture;
 import org.openbase.bco.registry.lib.com.future.RemovalFuture;
@@ -65,6 +66,7 @@ public class AgentRegistryRemote extends AbstractVirtualRegistryRemote<AgentRegi
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AgentClass.getDefaultInstance()));
     }
 
+    private final AuthorizationFilter authorizationFilter;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> agentUnitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, AgentClass, AgentClass.Builder> agentClassRemoteRegistry;
 
@@ -73,7 +75,9 @@ public class AgentRegistryRemote extends AbstractVirtualRegistryRemote<AgentRegi
     public AgentRegistryRemote() throws InstantiationException {
         super(JPAgentRegistryScope.class, AgentRegistryData.class);
         try {
-            agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, AgentRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER);
+            authorizationFilter = new AuthorizationFilter();
+            
+            agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, AgentRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER);
             agentClassRemoteRegistry = new SynchronizedRemoteRegistry<>(this, AgentRegistryData.AGENT_CLASS_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
@@ -91,6 +95,8 @@ public class AgentRegistryRemote extends AbstractVirtualRegistryRemote<AgentRegi
         if (!CachedAgentRegistryRemote.getRegistry().equals(this)) {
             logger.warn("You are using a " + getClass().getSimpleName() + " which is not maintained by the global registry singelton! This is extremely inefficient! Please use \"Registries.get" + getClass().getSimpleName().replace("Remote", "") + "()\" instead creating your own instances!");
         }
+        authorizationFilter.setAuthorizationGroups(unitRegistry.getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap());
+        authorizationFilter.setLocations(unitRegistry.getLocationUnitConfigRemoteRegistry().getEntryMap());
         super.activate();
     }
 

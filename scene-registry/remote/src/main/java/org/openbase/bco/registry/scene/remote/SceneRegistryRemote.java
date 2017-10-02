@@ -24,6 +24,7 @@ package org.openbase.bco.registry.scene.remote;
 import java.util.List;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
+import org.openbase.bco.authentication.lib.AuthorizationFilter;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.com.future.RegistrationFuture;
 import org.openbase.bco.registry.lib.com.future.RemovalFuture;
@@ -62,6 +63,7 @@ public class SceneRegistryRemote extends AbstractVirtualRegistryRemote<SceneRegi
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SceneConfig.getDefaultInstance()));
     }
 
+    private final AuthorizationFilter authorizationFilter;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> sceneConfigRemoteRegistry;
 
     private UnitRegistryRemote unitRegistry;
@@ -69,7 +71,8 @@ public class SceneRegistryRemote extends AbstractVirtualRegistryRemote<SceneRegi
     public SceneRegistryRemote() throws InstantiationException, InterruptedException {
         super(JPSceneRegistryScope.class, SceneRegistryData.class);
         try {
-            sceneConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, SceneRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER);
+            authorizationFilter = new AuthorizationFilter();
+            sceneConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this, authorizationFilter, SceneRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -86,6 +89,8 @@ public class SceneRegistryRemote extends AbstractVirtualRegistryRemote<SceneRegi
         if (!CachedSceneRegistryRemote.getRegistry().equals(this)) {
             logger.warn("You are using a " + getClass().getSimpleName() + " which is not maintained by the global registry singelton! This is extremely inefficient! Please use \"Registries.get" + getClass().getSimpleName().replace("Remote", "") + "()\" instead creating your own instances!");
         }
+        authorizationFilter.setAuthorizationGroups(unitRegistry.getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap());
+        authorizationFilter.setLocations(unitRegistry.getLocationUnitConfigRemoteRegistry().getEntryMap());
         super.activate();
     }
 

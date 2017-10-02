@@ -27,6 +27,7 @@ import java.util.concurrent.ExecutionException;
 import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.registry.agent.core.AgentRegistryController;
 import org.openbase.bco.registry.app.core.AppRegistryController;
 import org.openbase.bco.registry.device.core.DeviceRegistryController;
@@ -74,13 +75,19 @@ public class VirtualRegistrySyncTest {
     private static UnitRegistryController unitRegistry;
     private static AppRegistryController appRegistry;
     private static AgentRegistryController agentRegistry;
-
     private static LocationRegistryController locationRegistry;
+    
+    private static AuthenticatorController authenticatorController;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
         try {
             JPService.setupJUnitTestMode();
+            
+            authenticatorController = new AuthenticatorController();
+            authenticatorController.init();
+            authenticatorController.activate();
+            authenticatorController.waitForActivation();
 
             deviceRegistry = new DeviceRegistryController();
             unitRegistry = new UnitRegistryController();
@@ -200,6 +207,8 @@ public class VirtualRegistrySyncTest {
             }
             
             Registries.shutdown();
+
+            authenticatorController.shutdown();
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
