@@ -21,8 +21,6 @@ package org.openbase.bco.manager.device.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.mock.ServiceFactoryMock;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
@@ -31,10 +29,8 @@ import org.openbase.bco.dal.lib.simulation.UnitSimulationManager;
 import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.bco.manager.device.lib.DeviceFactory;
 import org.openbase.bco.manager.device.lib.DeviceManager;
+import org.openbase.bco.registry.login.SystemLogin;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -151,13 +147,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
         active = true;
         // TODO: pleminoq: let us analyse why this wait For data is needed. Without the sychnchronizer sync task is interrupted. And why is this never happening in the unit tests???
         Registries.getUnitRegistry().waitForData();
-        try {
-            if (JPService.getProperty(JPAuthentication.class).getValue()) {
-                SessionManager.getInstance().login(Registries.getUserRegistry().getUserIdByUserName(UserCreationPlugin.BCO_USERNAME));
-            }
-        } catch (JPNotAvailableException ex) {
-            // do nothing
-        }
+        SystemLogin.loginBCOUser();
         deviceRegistrySynchronizer.activate();
         unitSimulationManager.activate();
     }

@@ -21,15 +21,11 @@ package org.openbase.bco.manager.scene.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.manager.scene.lib.SceneController;
 import org.openbase.bco.manager.scene.lib.SceneFactory;
 import org.openbase.bco.manager.scene.lib.SceneManager;
+import org.openbase.bco.registry.login.SystemLogin;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.iface.Launchable;
@@ -80,15 +76,7 @@ public class SceneManagerController implements SceneManager, Launchable<Void>, V
     public void activate() throws CouldNotPerformException, InterruptedException {
         //TODO: why is this necessary
         Registries.waitForData();
-
-        try {
-            if (JPService.getProperty(JPAuthentication.class).getValue()) {
-                SessionManager.getInstance().login(Registries.getUserRegistry().getUserIdByUserName(UserCreationPlugin.BCO_USERNAME));
-            }
-        } catch (JPNotAvailableException ex) {
-            // do nothing
-        }
-
+        SystemLogin.loginBCOUser();
         sceneRegistrySynchronizer.activate();
     }
 
