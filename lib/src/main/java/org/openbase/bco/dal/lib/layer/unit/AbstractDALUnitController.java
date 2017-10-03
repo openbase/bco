@@ -100,24 +100,24 @@ public abstract class AbstractDALUnitController<M extends GeneratedMessage, MB e
             String updateMethod;
 
             // === Load unit methods. ===
-            for (Method medhod : getClass().getMethods()) {
-                unitMethods.add(medhod.getName());
-            }
-
-            // === Verify if all update methods are registered. ===
-            for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
-
-                // filter other services than provider
-                if (serviceDescription.getPattern() != ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER) {
-                    continue;
-                }
-
-                // verify
-                updateMethod = ProviderService.getUpdateMethodName(serviceDescription.getType());
-                if (!unitMethods.contains(updateMethod)) {
-                    exceptionStack = MultiException.push(serviceDescription, new NotAvailableException("Method", updateMethod), exceptionStack);
-                }
-            }
+//            for (Method medhod : getClass().getMethods()) {
+//                unitMethods.add(medhod.getName());
+//            }
+//
+//            // === Verify if all update methods are registered. ===
+//            for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
+//
+//                // filter other services than provider
+//                if (serviceDescription.getPattern() != ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER) {
+//                    continue;
+//                }
+//
+//                // verify
+//                updateMethod = ProviderService.getUpdateMethodName(serviceDescription.getType());
+//                if (!unitMethods.contains(updateMethod)) {
+//                    exceptionStack = MultiException.push(serviceDescription, new NotAvailableException("Method", updateMethod), exceptionStack);
+//                }
+//            }
 
             // === throw multi exception in error case. ===
             MultiException.checkAndThrow("At least one update method missing!", exceptionStack);
