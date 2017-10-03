@@ -45,31 +45,31 @@ public class MotionDetectorController extends AbstractDALUnitController<MotionDe
         super(MotionDetectorController.class, unitHost, builder);
     }
     
-    public void updateMotionStateProvider(MotionState state) throws CouldNotPerformException {
-        
-        logger.debug("Apply motionState Update[" + state + "] for " + this + ".");
-        
-        try (ClosableDataBuilder<MotionDetectorData.Builder> dataBuilder = getDataBuilder(this)) {
-            
-            MotionState.Builder motionStateBuilder = dataBuilder.getInternalBuilder().getMotionStateBuilder();
-
-            // Update value
-            motionStateBuilder.setValue(state.getValue());
-
-            // Update timestemp if necessary
-            if (state.getValue() == MotionState.State.MOTION) {
-                if (!state.hasTimestamp()) {
-                    logger.warn("State[" + state.getClass().getSimpleName() + "] of " + this + " does not contain any state related timestampe!");
-                    state = TimestampProcessor.updateTimestampWithCurrentTime(state, logger);
-                }
-                motionStateBuilder.setLastMotion(state.getTimestamp());
-            }
-            
-            dataBuilder.getInternalBuilder().setMotionState(motionStateBuilder.setTransactionId(motionStateBuilder.getTransactionId() + 1));
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply motionState Update[" + state + "] for " + this + "!", ex);
-        }
-    }
+//    public void updateMotionStateProvider(MotionState state) throws CouldNotPerformException {
+//        
+//        logger.debug("Apply motionState Update[" + state + "] for " + this + ".");
+//        
+//        try (ClosableDataBuilder<MotionDetectorData.Builder> dataBuilder = getDataBuilder(this)) {
+//            
+//            MotionState.Builder motionStateBuilder = dataBuilder.getInternalBuilder().getMotionStateBuilder();
+//
+//            // Update value
+//            motionStateBuilder.setValue(state.getValue());
+//
+//            // Update timestemp if necessary
+//            if (state.getValue() == MotionState.State.MOTION) {
+//                if (!state.hasTimestamp()) {
+//                    logger.warn("State[" + state.getClass().getSimpleName() + "] of " + this + " does not contain any state related timestampe!");
+//                    state = TimestampProcessor.updateTimestampWithCurrentTime(state, logger);
+//                }
+//                motionStateBuilder.setLastMotion(state.getTimestamp());
+//            }
+//            
+//            dataBuilder.getInternalBuilder().setMotionState(motionStateBuilder.setTransactionId(motionStateBuilder.getTransactionId() + 1));
+//        } catch (Exception ex) {
+//            throw new CouldNotPerformException("Could not apply motionState Update[" + state + "] for " + this + "!", ex);
+//        }
+//    }
     
     @Override
     public MotionState getMotionState() throws NotAvailableException {

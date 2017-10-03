@@ -46,16 +46,16 @@ public class SmokeDetectorController extends AbstractDALUnitController<SmokeDete
         super(SmokeDetectorController.class, unitHost, builder);
     }
 
-    public void updateSmokeAlarmStateProvider(final AlarmState value) throws CouldNotPerformException {
-        logger.debug("Apply smokeAlarmState Update[" + value + "] for " + this + ".");
-
-        try (ClosableDataBuilder<SmokeDetectorData.Builder> dataBuilder = getDataBuilder(this)) {
-            long transactionId = dataBuilder.getInternalBuilder().getSmokeAlarmState().getTransactionId() + 1;
-            dataBuilder.getInternalBuilder().setSmokeAlarmState(value.toBuilder().setTransactionId(transactionId));
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply smokeAlarmState Update[" + value + "] for " + this + "!", ex);
-        }
-    }
+//    public void updateSmokeAlarmStateProvider(final AlarmState value) throws CouldNotPerformException {
+//        logger.debug("Apply smokeAlarmState Update[" + value + "] for " + this + ".");
+//
+//        try (ClosableDataBuilder<SmokeDetectorData.Builder> dataBuilder = getDataBuilder(this)) {
+//            long transactionId = dataBuilder.getInternalBuilder().getSmokeAlarmState().getTransactionId() + 1;
+//            dataBuilder.getInternalBuilder().setSmokeAlarmState(value.toBuilder().setTransactionId(transactionId));
+//        } catch (Exception ex) {
+//            throw new CouldNotPerformException("Could not apply smokeAlarmState Update[" + value + "] for " + this + "!", ex);
+//        }
+//    }
 
     @Override
     public AlarmState getSmokeAlarmState() throws NotAvailableException {
@@ -66,16 +66,16 @@ public class SmokeDetectorController extends AbstractDALUnitController<SmokeDete
         }
     }
 
-    public void updateSmokeStateProvider(final SmokeState value) throws CouldNotPerformException {
-        logger.debug("Apply smokeState Update[" + value + "] for " + this + ".");
-
-        try (ClosableDataBuilder<SmokeDetectorData.Builder> dataBuilder = getDataBuilder(this)) {
-            long transactionId = dataBuilder.getInternalBuilder().getSmokeState().getTransactionId() + 1;
-            dataBuilder.getInternalBuilder().setSmokeState(value.toBuilder().setTransactionId(transactionId));
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply smokeState Update[" + value + "] for " + this + "!", ex);
-        }
-    }
+//    public void updateSmokeStateProvider(final SmokeState value) throws CouldNotPerformException {
+//        logger.debug("Apply smokeState Update[" + value + "] for " + this + ".");
+//
+//        try (ClosableDataBuilder<SmokeDetectorData.Builder> dataBuilder = getDataBuilder(this)) {
+//            long transactionId = dataBuilder.getInternalBuilder().getSmokeState().getTransactionId() + 1;
+//            dataBuilder.getInternalBuilder().setSmokeState(value.toBuilder().setTransactionId(transactionId));
+//        } catch (Exception ex) {
+//            throw new CouldNotPerformException("Could not apply smokeState Update[" + value + "] for " + this + "!", ex);
+//        }
+//    }
 
     @Override
     public SmokeState getSmokeState() throws NotAvailableException {

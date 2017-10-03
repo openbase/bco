@@ -49,16 +49,16 @@ public class LightSensorController extends AbstractDALUnitController<LightSensor
         super(LightSensorController.class, unitHost, builder);
     }
     
-    public void updateIlluminanceStateProvider(final IlluminanceState illuminanceState) throws CouldNotPerformException {
-        logger.debug("Apply illuminanceState Update[" + illuminanceState + "] for " + this + ".");
-        
-        try (ClosableDataBuilder<LightSensorData.Builder> dataBuilder = getDataBuilder(this)) {
-            long transactionId = dataBuilder.getInternalBuilder().getIlluminanceState().getTransactionId() + 1;
-            dataBuilder.getInternalBuilder().setIlluminanceState(illuminanceState.toBuilder().setTransactionId(transactionId));
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply illuminanceState Update[" + illuminanceState + "] for " + this + "!", ex);
-        }
-    }
+//    public void updateIlluminanceStateProvider(final IlluminanceState illuminanceState) throws CouldNotPerformException {
+//        logger.debug("Apply illuminanceState Update[" + illuminanceState + "] for " + this + ".");
+//        
+//        try (ClosableDataBuilder<LightSensorData.Builder> dataBuilder = getDataBuilder(this)) {
+//            long transactionId = dataBuilder.getInternalBuilder().getIlluminanceState().getTransactionId() + 1;
+//            dataBuilder.getInternalBuilder().setIlluminanceState(illuminanceState.toBuilder().setTransactionId(transactionId));
+//        } catch (Exception ex) {
+//            throw new CouldNotPerformException("Could not apply illuminanceState Update[" + illuminanceState + "] for " + this + "!", ex);
+//        }
+//    }
     
     @Override
     public IlluminanceState getIlluminanceState() throws NotAvailableException {

@@ -46,31 +46,31 @@ public class TamperDetectorController extends AbstractDALUnitController<TamperDe
         super(TamperDetectorController.class, unitHost, builder);
     }
     
-    public void updateTamperStateProvider(TamperState state) throws CouldNotPerformException {
-        
-        logger.debug("Apply tamperState Update[" + state + "] for " + this + ".");
-        
-        try (ClosableDataBuilder<TamperDetectorData.Builder> dataBuilder = getDataBuilder(this)) {
-            
-            TamperState.Builder tamperStateBuilder = dataBuilder.getInternalBuilder().getTamperStateBuilder();
-
-            // Update value
-            tamperStateBuilder.setValue(state.getValue());
-
-            // Update timestemp if necessary
-            if (state.getValue() == TamperState.State.TAMPER) {
-                if (!state.hasTimestamp()) {
-                    logger.warn("State[" + state.getClass().getSimpleName() + "] of " + this + " does not contain any state related timestampe!");
-                    state = TimestampProcessor.updateTimestampWithCurrentTime(state, logger);
-                }
-                tamperStateBuilder.setLastDetection(state.getTimestamp());
-            }
-            
-            dataBuilder.getInternalBuilder().setTamperState(tamperStateBuilder.setTransactionId(tamperStateBuilder.getTransactionId() + 1));
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply tamperState Update[" + state + "] for " + this + "!", ex);
-        }
-    }
+//    public void updateTamperStateProvider(TamperState state) throws CouldNotPerformException {
+//        
+//        logger.debug("Apply tamperState Update[" + state + "] for " + this + ".");
+//        
+//        try (ClosableDataBuilder<TamperDetectorData.Builder> dataBuilder = getDataBuilder(this)) {
+//            
+//            TamperState.Builder tamperStateBuilder = dataBuilder.getInternalBuilder().getTamperStateBuilder();
+//
+//            // Update value
+//            tamperStateBuilder.setValue(state.getValue());
+//
+//            // Update timestemp if necessary
+//            if (state.getValue() == TamperState.State.TAMPER) {
+//                if (!state.hasTimestamp()) {
+//                    logger.warn("State[" + state.getClass().getSimpleName() + "] of " + this + " does not contain any state related timestampe!");
+//                    state = TimestampProcessor.updateTimestampWithCurrentTime(state, logger);
+//                }
+//                tamperStateBuilder.setLastDetection(state.getTimestamp());
+//            }
+//            
+//            dataBuilder.getInternalBuilder().setTamperState(tamperStateBuilder.setTransactionId(tamperStateBuilder.getTransactionId() + 1));
+//        } catch (Exception ex) {
+//            throw new CouldNotPerformException("Could not apply tamperState Update[" + state + "] for " + this + "!", ex);
+//        }
+//    }
     
     @Override
     public TamperState getTamperState() throws NotAvailableException {

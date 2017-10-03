@@ -76,27 +76,27 @@ public class TemperatureControllerController extends AbstractDALUnitController<T
         }
     }
     
-    public void updateTargetTemperatureStateProvider(final TemperatureState temperatureState) throws CouldNotPerformException {
-        try (ClosableDataBuilder<TemperatureControllerData.Builder> dataBuilder = getDataBuilder(this)) {
-            long transactionId = dataBuilder.getInternalBuilder().getTargetTemperatureState().getTransactionId() + 1;
-            dataBuilder.getInternalBuilder().setTargetTemperatureState(temperatureState.toBuilder().setTransactionId(transactionId));
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply target temperature Update[" + temperatureState + "] for " + this + "!", ex);
-        }
-    }
+//    public void updateTargetTemperatureStateProvider(final TemperatureState temperatureState) throws CouldNotPerformException {
+//        try (ClosableDataBuilder<TemperatureControllerData.Builder> dataBuilder = getDataBuilder(this)) {
+//            long transactionId = dataBuilder.getInternalBuilder().getTargetTemperatureState().getTransactionId() + 1;
+//            dataBuilder.getInternalBuilder().setTargetTemperatureState(temperatureState.toBuilder().setTransactionId(transactionId));
+//        } catch (Exception ex) {
+//            throw new CouldNotPerformException("Could not apply target temperature Update[" + temperatureState + "] for " + this + "!", ex);
+//        }
+//    }
     
-    public void updateTemperatureStateProvider(final TemperatureState temperatureState) throws CouldNotPerformException {
-        logger.debug("Apply actual temperatureState Update[" + temperatureState + "] for " + this + ".");
-        
-        try (ClosableDataBuilder<TemperatureControllerData.Builder> dataBuilder = getDataBuilder(this)) {
-            long transactionId = dataBuilder.getInternalBuilder().getTemperatureState().getTransactionId() + 1;
-            dataBuilder.getInternalBuilder().setTemperatureState(temperatureState.toBuilder().setTransactionId(transactionId));
-            // todo remove setActualTemperatureState in next release
-            dataBuilder.getInternalBuilder().setActualTemperatureState(temperatureState);
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply actual temperatureStatee Update[" + temperatureState + "] for " + this + "!", ex);
-        }
-    }
+//    public void updateTemperatureStateProvider(final TemperatureState temperatureState) throws CouldNotPerformException {
+//        logger.debug("Apply actual temperatureState Update[" + temperatureState + "] for " + this + ".");
+//        
+//        try (ClosableDataBuilder<TemperatureControllerData.Builder> dataBuilder = getDataBuilder(this)) {
+//            long transactionId = dataBuilder.getInternalBuilder().getTemperatureState().getTransactionId() + 1;
+//            dataBuilder.getInternalBuilder().setTemperatureState(temperatureState.toBuilder().setTransactionId(transactionId));
+//            // todo remove setActualTemperatureState in next release
+//            dataBuilder.getInternalBuilder().setActualTemperatureState(temperatureState);
+//        } catch (Exception ex) {
+//            throw new CouldNotPerformException("Could not apply actual temperatureStatee Update[" + temperatureState + "] for " + this + "!", ex);
+//        }
+//    }
     
     @Override
     public TemperatureState getTemperatureState() throws NotAvailableException {

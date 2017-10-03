@@ -67,17 +67,17 @@ public class DimmableLightController extends AbstractDALUnitController<DimmableL
             throw new InitializationException(this, ex);
         }
     }
-    
-    public void updatePowerStateProvider(final PowerState value) throws CouldNotPerformException {
-        logger.debug("Apply powerState Update[" + value + "] for " + this + ".");
-        
-        try (ClosableDataBuilder<DimmableLightData.Builder> dataBuilder = getDataBuilder(this)) {
-            long transactionId = dataBuilder.getInternalBuilder().getPowerState().getTransactionId() + 1;
-            dataBuilder.getInternalBuilder().setPowerState(value.toBuilder().setTransactionId(transactionId));
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply powerState Update[" + value + "] for " + this + "!", ex);
-        }
-    }
+//    
+//    public void updatePowerStateProvider(final PowerState value) throws CouldNotPerformException {
+//        logger.debug("Apply powerState Update[" + value + "] for " + this + ".");
+//        
+//        try (ClosableDataBuilder<DimmableLightData.Builder> dataBuilder = getDataBuilder(this)) {
+//            long transactionId = dataBuilder.getInternalBuilder().getPowerState().getTransactionId() + 1;
+//            dataBuilder.getInternalBuilder().setPowerState(value.toBuilder().setTransactionId(transactionId));
+//        } catch (Exception ex) {
+//            throw new CouldNotPerformException("Could not apply powerState Update[" + value + "] for " + this + "!", ex);
+//        }
+//    }
     
     @Override
     public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
@@ -99,21 +99,21 @@ public class DimmableLightController extends AbstractDALUnitController<DimmableL
         }
     }
     
-    public void updateBrightnessStateProvider(final BrightnessState brightnessState) throws CouldNotPerformException {
-        logger.debug("Apply brightnessState Update[" + brightnessState + "] for " + this + ".");
-        
-        try (ClosableDataBuilder<DimmableLightData.Builder> dataBuilder = getDataBuilder(this)) {
-            long transactionId = dataBuilder.getInternalBuilder().getBrightnessState().getTransactionId() + 1;
-            dataBuilder.getInternalBuilder().setBrightnessState(brightnessState.toBuilder().setTransactionId(transactionId));
-            if (brightnessState.getBrightness() == 0) {
-                dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.OFF);
-            } else {
-                dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.ON);
-            }
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply brightnessState Update[" + brightnessState + "] for " + this + "!", ex);
-        }
-    }
+//    public void updateBrightnessStateProvider(final BrightnessState brightnessState) throws CouldNotPerformException {
+//        logger.debug("Apply brightnessState Update[" + brightnessState + "] for " + this + ".");
+//        
+//        try (ClosableDataBuilder<DimmableLightData.Builder> dataBuilder = getDataBuilder(this)) {
+//            long transactionId = dataBuilder.getInternalBuilder().getBrightnessState().getTransactionId() + 1;
+//            dataBuilder.getInternalBuilder().setBrightnessState(brightnessState.toBuilder().setTransactionId(transactionId));
+//            if (brightnessState.getBrightness() == 0) {
+//                dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.OFF);
+//            } else {
+//                dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.ON);
+//            }
+//        } catch (Exception ex) {
+//            throw new CouldNotPerformException("Could not apply brightnessState Update[" + brightnessState + "] for " + this + "!", ex);
+//        }
+//    }
     
     @Override
     public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {

@@ -46,17 +46,17 @@ public class TemperatureSensorController extends AbstractDALUnitController<Tempe
     public TemperatureSensorController(final UnitHost unitHost, final TemperatureSensorData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(TemperatureSensorController.class, unitHost, builder);
     }
-    
-    public void updateTemperatureStateProvider(final TemperatureState temperatureState) throws CouldNotPerformException {
-        logger.debug("Apply temperatureState Update[" + temperatureState + "] for " + this + ".");
-        try (ClosableDataBuilder<TemperatureSensorData.Builder> dataBuilder = getDataBuilder(this)) {
-            long transactionId = dataBuilder.getInternalBuilder().getTemperatureState().getTransactionId() + 1;
-            dataBuilder.getInternalBuilder().setTemperatureState(temperatureState.toBuilder().setTransactionId(transactionId));
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply temperatureState Update[" + temperatureState + "] for " + this + "!", ex);
-        }
-    }
-    
+//    
+//    public void updateTemperatureStateProvider(final TemperatureState temperatureState) throws CouldNotPerformException {
+//        logger.debug("Apply temperatureState Update[" + temperatureState + "] for " + this + ".");
+//        try (ClosableDataBuilder<TemperatureSensorData.Builder> dataBuilder = getDataBuilder(this)) {
+//            long transactionId = dataBuilder.getInternalBuilder().getTemperatureState().getTransactionId() + 1;
+//            dataBuilder.getInternalBuilder().setTemperatureState(temperatureState.toBuilder().setTransactionId(transactionId));
+//        } catch (Exception ex) {
+//            throw new CouldNotPerformException("Could not apply temperatureState Update[" + temperatureState + "] for " + this + "!", ex);
+//        }
+//    }
+//    
     @Override
     public TemperatureState getTemperatureState() throws NotAvailableException {
         try {
@@ -66,15 +66,15 @@ public class TemperatureSensorController extends AbstractDALUnitController<Tempe
         }
     }
     
-    public void updateTemperatureAlarmStateProvider(final AlarmState value) throws CouldNotPerformException {
-        logger.debug("Apply temperatureAlarmState Update[" + value + "] for " + this + ".");
-        try (ClosableDataBuilder<TemperatureSensorData.Builder> dataBuilder = getDataBuilder(this)) {
-            long transactionId = dataBuilder.getInternalBuilder().getTemperatureAlarmState().getTransactionId() + 1;
-            dataBuilder.getInternalBuilder().setTemperatureAlarmState(value.toBuilder().setTransactionId(transactionId));
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not temperatureAlarmState Update[" + value + "] for " + this + "!", ex);
-        }
-    }
+//    public void updateTemperatureAlarmStateProvider(final AlarmState value) throws CouldNotPerformException {
+//        logger.debug("Apply temperatureAlarmState Update[" + value + "] for " + this + ".");
+//        try (ClosableDataBuilder<TemperatureSensorData.Builder> dataBuilder = getDataBuilder(this)) {
+//            long transactionId = dataBuilder.getInternalBuilder().getTemperatureAlarmState().getTransactionId() + 1;
+//            dataBuilder.getInternalBuilder().setTemperatureAlarmState(value.toBuilder().setTransactionId(transactionId));
+//        } catch (Exception ex) {
+//            throw new CouldNotPerformException("Could not temperatureAlarmState Update[" + value + "] for " + this + "!", ex);
+//        }
+//    }
     
     @Override
     public AlarmState getTemperatureAlarmState() throws NotAvailableException {

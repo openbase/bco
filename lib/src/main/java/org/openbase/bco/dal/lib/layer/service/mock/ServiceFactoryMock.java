@@ -21,6 +21,7 @@ package org.openbase.bco.dal.lib.layer.service.mock;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.Message;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -36,8 +37,10 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType.ColorState;
@@ -163,13 +166,13 @@ public class ServiceFactoryMock implements ServiceFactory {
             } else if (stackTrace.length == 0) {
                 throw new InvalidStateException("Could not detect method stack!");
             }
-            String methodName;
-            try {
-                methodName = stackTrace[3].getMethodName().replaceFirst("set", "update") + "Provider";
-            } catch (Exception ex) {
-                throw new CouldNotPerformException("Could not detect update method name!", ex);
-            }
-            unit.getClass().getMethod(methodName, argument.getClass()).invoke(unit, argument);
+            String methodName = "updateStateProvider";
+//            try {
+//                methodName = stackTrace[3].getMethodName().replaceFirst("set", "update") + "Provider";
+//            } catch (Exception ex) {
+//                throw new CouldNotPerformException("Could not detect update method name!", ex);
+//            }
+            unit.getClass().getMethod(methodName, Message.class).invoke(unit, argument);
             return CompletableFuture.completedFuture(null);
         } catch (CouldNotPerformException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             throw new CouldNotPerformException("Could not call remote Message[]", ex);

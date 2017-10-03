@@ -21,7 +21,9 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -58,8 +60,10 @@ import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.MessageObservable;
+import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
@@ -85,6 +89,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePat
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.EnablingStateType.EnablingState;
+import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
@@ -110,6 +115,8 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     private UnitTemplate template;
     private boolean initialized = false;
+
+    private long transactionId = 0;
 
     public AbstractUnitController(final Class unitClass, final DB builder) throws InstantiationException {
         super(builder);
@@ -483,7 +490,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      * @throws java.lang.InterruptedException
      */
     public void verifyAndUpdateAuthority(final ActionAuthority actionAuthority, final TicketAuthenticatorWrapper.Builder ticketAuthenticatorWrapperBuilder) throws VerificationFailedException, PermissionDeniedException, InterruptedException, CouldNotPerformException {
-        
+
         // check if authentication is enabled
         try {
             if (!JPService.getProperty(JPAuthentication.class).getValue()) {
@@ -516,7 +523,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             if (!AuthorizationHelper.canAccess(getConfig(), validatedTicketWrapper.getUserId(), groups, locations)) {
                 throw new PermissionDeniedException("You have no permission to execute this action.");
             }
-            
+
             // update current ticketAuthenticatorWrapperBuilder
             ticketAuthenticatorWrapperBuilder.setAuthenticator(validatedTicketWrapper.getTicketAuthenticatorWrapper().getAuthenticator());
             ticketAuthenticatorWrapperBuilder.setTicket(validatedTicketWrapper.getTicketAuthenticatorWrapper().getTicket());
@@ -563,6 +570,52 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         // shutdown service observer
         for (final MessageObservable serviceObservable : serviceStateObservableMap.values()) {
             serviceObservable.shutdown();
+        }
+    }
+
+    public synchronized long getTransactionId() {
+        return transactionId;
+    }
+
+    public long generateTransactionId() {
+        return ++transactionId;
+    }
+
+    public void updateStateProvider(final Message value) throws CouldNotPerformException {
+        logger.debug("Apply powerState Update[" + value + "] for " + this + ".");
+        ServiceType serviceType = Services.getServiceType(value);
+
+        try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
+            DB internalBuilder = dataBuilder.getInternalBuilder();
+            // move current state to last state
+            Object currentState = Services.invokeServiceMethod(serviceType, PROVIDER, ServiceTempus.CURRENT, internalBuilder);
+            Services.invokeServiceMethod(serviceType, OPERATION, ServiceTempus.LAST, internalBuilder, currentState);
+
+            // test if all fields match to the last request
+            boolean equalFields = true;
+            Message requestedState = (Message) Services.invokeServiceMethod(serviceType, PROVIDER, ServiceTempus.REQUESTED, internalBuilder);
+            for (Descriptors.FieldDescriptor field : value.getDescriptorForType().getFields()) {
+                if (value.hasField(field) && !(value.getField(field).equals(requestedState.getField(field)))) {
+                    equalFields = true;
+                }
+            }
+
+            // choose with which value to update
+            Message newState;
+            if (equalFields) {
+                newState = requestedState;
+            } else {
+                newState = value;
+            }
+            // update the action description
+            Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(newState, "responsible_action");
+            ActionDescription actionDescription = (ActionDescription) newState.getField(descriptor);
+            actionDescription = actionDescription.toBuilder().setTransactionId(generateTransactionId()).build();
+            newState = newState.toBuilder().setField(descriptor, actionDescription).build();
+            // update the current state
+            Services.invokeServiceMethod(serviceType, OPERATION, ServiceTempus.CURRENT, internalBuilder, newState);
+        } catch (Exception ex) {
+            throw new CouldNotPerformException("Could not apply service[" + serviceType.name() + "] update[" + value + "] for " + this + "!", ex);
         }
     }
 }

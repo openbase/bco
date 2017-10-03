@@ -39,6 +39,7 @@ import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.schedule.FutureProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
@@ -173,16 +174,25 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
         return setColor(neutralWhite);
     }
 
-    public void updatePowerStateProvider(final PowerState value) throws CouldNotPerformException {
-        logger.debug("Apply powerState Update[" + value + "] for " + this + ".");
-
-        try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
-            long transactionId = dataBuilder.getInternalBuilder().getPowerState().getTransactionId() + 1;
-            dataBuilder.getInternalBuilder().setPowerState(value.toBuilder().setTransactionId(transactionId));
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply powerState Update[" + value + "] for " + this + "!", ex);
-        }
-    }
+//    public void updatePowerStateProvider(final PowerState value) throws CouldNotPerformException {
+//        logger.debug("Apply powerState Update[" + value + "] for " + this + ".");
+//
+//        try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
+//            // move current state to last state
+//            dataBuilder.getInternalBuilder().setPowerStateLast(dataBuilder.getInternalBuilder().getPowerState());
+//            
+//            PowerState newState;
+//            if (value.getValue() ==  dataBuilder.getInternalBuilder().getPowerStateRequested().getValue()) {
+//                newState = dataBuilder.getInternalBuilder().getPowerStateRequested();
+//            } else {
+//                newState = value;
+//            }
+//            ActionDescription updatedResponsibleAction = newState.getResponsibleAction().toBuilder().setTransactionId(generateTransactionId()).build();
+//            dataBuilder.getInternalBuilder().setPowerState(newState.toBuilder().setResponsibleAction(updatedResponsibleAction));
+//        } catch (Exception ex) {
+//            throw new CouldNotPerformException("Could not apply powerState Update[" + value + "] for " + this + "!", ex);
+//        }
+//    }
 
     @Override
     public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
@@ -204,20 +214,20 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
         }
     }
 
-    public void updateColorStateProvider(final ColorState colorState) throws CouldNotPerformException {
-        logger.debug("Apply colorState Update[" + colorState + "] for " + this + ".");
-
-        try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
-            long transactionId = dataBuilder.getInternalBuilder().getColorState().getTransactionId() + 1;
-            dataBuilder.getInternalBuilder().setColorState(colorState.toBuilder().setTransactionId(transactionId));
-
-            BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(colorState.getColor().getHsbColor().getBrightness()).build();
-            dataBuilder.getInternalBuilder().setBrightnessState(brightnessState);
-            dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.ON);
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply colorState Update[" + colorState + "] for " + this + "!", ex);
-        }
-    }
+//    public void updateColorStateProvider(final ColorState colorState) throws CouldNotPerformException {
+//        logger.debug("Apply colorState Update[" + colorState + "] for " + this + ".");
+//
+//        try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
+//            long transactionId = dataBuilder.getInternalBuilder().getColorState().getTransactionId() + 1;
+//            dataBuilder.getInternalBuilder().setColorState(colorState.toBuilder().setTransactionId(transactionId));
+//
+//            BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(colorState.getColor().getHsbColor().getBrightness()).build();
+//            dataBuilder.getInternalBuilder().setBrightnessState(brightnessState);
+//            dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.ON);
+//        } catch (Exception ex) {
+//            throw new CouldNotPerformException("Could not apply colorState Update[" + colorState + "] for " + this + "!", ex);
+//        }
+//    }
 
     @Override
     public Future<ActionFuture> setColorState(final ColorState colorState) throws CouldNotPerformException {
@@ -233,26 +243,26 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
         }
     }
 
-    public void updateBrightnessStateProvider(BrightnessState brightnessState) throws CouldNotPerformException {
-        logger.debug("Apply brightnessState Update[" + brightnessState + "] for " + this + ".");
-
-        try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
-            long transactionId = dataBuilder.getInternalBuilder().getBrightnessState().getTransactionId() + 1;
-            dataBuilder.getInternalBuilder().setBrightnessState(brightnessState.toBuilder().setTransactionId(transactionId));
-
-            HSBColor hsb = dataBuilder.getInternalBuilder().getColorState().getColor().getHsbColor().toBuilder().setBrightness(brightnessState.getBrightness()).build();
-            Color color = Color.newBuilder().setType(Color.Type.HSB).setHsbColor(hsb).build();
-            dataBuilder.getInternalBuilder().setColorState(dataBuilder.getInternalBuilder().getColorState().toBuilder().setColor(color).build());
-
-            if (brightnessState.getBrightness() == 0) {
-                dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.OFF);
-            } else {
-                dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.ON);
-            }
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply brightnessState Update[" + brightnessState + "] for " + this + "!", ex);
-        }
-    }
+//    public void updateBrightnessStateProvider(BrightnessState brightnessState) throws CouldNotPerformException {
+//        logger.debug("Apply brightnessState Update[" + brightnessState + "] for " + this + ".");
+//
+//        try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
+//            long transactionId = dataBuilder.getInternalBuilder().getBrightnessState().getTransactionId() + 1;
+//            dataBuilder.getInternalBuilder().setBrightnessState(brightnessState.toBuilder().setTransactionId(transactionId));
+//
+//            HSBColor hsb = dataBuilder.getInternalBuilder().getColorState().getColor().getHsbColor().toBuilder().setBrightness(brightnessState.getBrightness()).build();
+//            Color color = Color.newBuilder().setType(Color.Type.HSB).setHsbColor(hsb).build();
+//            dataBuilder.getInternalBuilder().setColorState(dataBuilder.getInternalBuilder().getColorState().toBuilder().setColor(color).build());
+//
+//            if (brightnessState.getBrightness() == 0) {
+//                dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.OFF);
+//            } else {
+//                dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.ON);
+//            }
+//        } catch (Exception ex) {
+//            throw new CouldNotPerformException("Could not apply brightnessState Update[" + brightnessState + "] for " + this + "!", ex);
+//        }
+//    }
 
     @Override
     public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {

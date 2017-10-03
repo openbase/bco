@@ -594,7 +594,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
     }
 
     /**
-     * Get the transaction id of a service state in the data of the unit.
+     * Get the transaction id of a service state in the data of this unit.
      *
      * @param serviceType
      * @return
@@ -602,7 +602,8 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      */
     default long getTransactionIdByServiceType(ServiceType serviceType) throws CouldNotPerformException {
         Message serviceState = (Message) Services.invokeProviderServiceMethod(serviceType, getData());
-        Descriptors.FieldDescriptor fieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceState.toBuilder(), "transaction_id");
-        return (long) serviceState.getField(fieldDescriptor);
+        Descriptors.FieldDescriptor fieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, "responsible_action");
+        ActionDescription actionDescription = (ActionDescription) serviceState.getField(fieldDescriptor);
+        return actionDescription.getTransactionId();
     }
 }

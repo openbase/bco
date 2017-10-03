@@ -45,16 +45,16 @@ public class ReedContactController extends AbstractDALUnitController<ReedContact
         super(ReedContactController.class, unitHost, builder);
     }
     
-    public void updateContactStateProvider(final ContactState contactState) throws CouldNotPerformException {
-        logger.debug("Apply contactState Update[" + contactState + "] for " + this + ".");
-        
-        try (ClosableDataBuilder<ReedContactData.Builder> dataBuilder = getDataBuilder(this)) {
-            long transactionId = dataBuilder.getInternalBuilder().getContactState().getTransactionId() + 1;
-            dataBuilder.getInternalBuilder().setContactState(contactState.toBuilder().setTransactionId(transactionId));
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply contactState Update[" + contactState + "] for " + this + "!", ex);
-        }
-    }
+//    public void updateContactStateProvider(final ContactState contactState) throws CouldNotPerformException {
+//        logger.debug("Apply contactState Update[" + contactState + "] for " + this + ".");
+//        
+//        try (ClosableDataBuilder<ReedContactData.Builder> dataBuilder = getDataBuilder(this)) {
+//            long transactionId = dataBuilder.getInternalBuilder().getContactState().getTransactionId() + 1;
+//            dataBuilder.getInternalBuilder().setContactState(contactState.toBuilder().setTransactionId(transactionId));
+//        } catch (Exception ex) {
+//            throw new CouldNotPerformException("Could not apply contactState Update[" + contactState + "] for " + this + "!", ex);
+//        }
+//    }
     
     @Override
     public ContactState getContactState() throws NotAvailableException {

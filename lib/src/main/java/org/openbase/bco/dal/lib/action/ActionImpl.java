@@ -21,12 +21,16 @@ package org.openbase.bco.dal.lib.action;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.Message;
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
 import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.bco.dal.lib.layer.service.Service.ServiceTempus;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.AbstractUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitAllocation;
 import org.openbase.bco.dal.lib.layer.unit.UnitAllocator;
@@ -39,6 +43,8 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotInitializedException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
+import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -153,6 +159,7 @@ public class ActionImpl implements Action {
                     // Resource Allocation
                     unitAllocation = UnitAllocator.allocate(actionDescriptionBuilder, () -> {
                         try {
+                            setRequestedState();
                             ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
 
                             // Execute
@@ -222,6 +229,7 @@ public class ActionImpl implements Action {
 
                         // Resource Allocation
                         try {
+                            setRequestedState();
 
                             // fake resource if needed
                             if (!actionDescriptionBuilder.hasResourceAllocation() || !actionDescriptionBuilder.getResourceAllocation().isInitialized()) {
@@ -266,6 +274,18 @@ public class ActionImpl implements Action {
                 throw new CouldNotPerformException("Could not execute action!", ex);
             }
         });
+    }
+
+    private void setRequestedState() throws CouldNotPerformException {
+        try (ClosableDataBuilder dataBuilder = unit.getDataBuilder(this)) {
+            // im serviceAttribute actionDescription setzen
+            Message.Builder serviceStateBuilder = ((Message) serviceAttribute).toBuilder();
+            Descriptors.FieldDescriptor fieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, "responsible_action");
+            serviceStateBuilder.setField(fieldDescriptor, actionDescriptionBuilder);
+                    
+            // im dataBuilder serviceAttribute als requested state setzen
+            Services.invokeServiceMethod(serviceDescription.getType(), serviceDescription.getPattern(), ServiceTempus.REQUESTED, dataBuilder, serviceStateBuilder);
+        }
     }
 
     /**

@@ -64,15 +64,15 @@ public class LightController extends AbstractDALUnitController<LightData, LightD
         }
     }
     
-    public void updatePowerStateProvider(final PowerState powerState) throws CouldNotPerformException {
-        logger.debug("Apply powerState Update[" + powerState + "] for " + this + ".");
-        try (ClosableDataBuilder<LightData.Builder> dataBuilder = getDataBuilder(this)) {
-            long transactionId = dataBuilder.getInternalBuilder().getPowerState().getTransactionId() + 1;
-            dataBuilder.getInternalBuilder().setPowerState(powerState.toBuilder().setTransactionId(transactionId));
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply powerState Update[" + powerState + "] for " + this + "!", ex);
-        }
-    }
+//    public void updatePowerStateProvider(final PowerState powerState) throws CouldNotPerformException {
+//        logger.debug("Apply powerState Update[" + powerState + "] for " + this + ".");
+//        try (ClosableDataBuilder<LightData.Builder> dataBuilder = getDataBuilder(this)) {
+//            long transactionId = dataBuilder.getInternalBuilder().getPowerState().getTransactionId() + 1;
+//            dataBuilder.getInternalBuilder().setPowerState(powerState.toBuilder().setTransactionId(transactionId));
+//        } catch (Exception ex) {
+//            throw new CouldNotPerformException("Could not apply powerState Update[" + powerState + "] for " + this + "!", ex);
+//        }
+//    }
     
     @Override
     public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {

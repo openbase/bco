@@ -44,17 +44,17 @@ public class PowerConsumptionSensorController extends AbstractDALUnitController<
     public PowerConsumptionSensorController(final UnitHost unitHost, final PowerConsumptionSensorData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(PowerConsumptionSensorController.class, unitHost, builder);
     }
-    
-    public void updatePowerConsumptionStateProvider(final PowerConsumptionState state) throws CouldNotPerformException {
-        logger.debug("Apply powerConsumptionState Update[" + state + "] for " + this + ".");
-        
-        try (ClosableDataBuilder<PowerConsumptionSensorData.Builder> dataBuilder = getDataBuilder(this)) {
-            long transactionId = dataBuilder.getInternalBuilder().getPowerConsumptionState().getTransactionId() + 1;
-            dataBuilder.getInternalBuilder().setPowerConsumptionState(state.toBuilder().setTransactionId(transactionId));
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply powerConsumptionState Update[" + state + "] for " + this + "!", ex);
-        }
-    }
+//    
+//    public void updatePowerConsumptionStateProvider(final PowerConsumptionState state) throws CouldNotPerformException {
+//        logger.debug("Apply powerConsumptionState Update[" + state + "] for " + this + ".");
+//        
+//        try (ClosableDataBuilder<PowerConsumptionSensorData.Builder> dataBuilder = getDataBuilder(this)) {
+//            long transactionId = dataBuilder.getInternalBuilder().getPowerConsumptionState().getTransactionId() + 1;
+//            dataBuilder.getInternalBuilder().setPowerConsumptionState(state.toBuilder().setTransactionId(transactionId));
+//        } catch (Exception ex) {
+//            throw new CouldNotPerformException("Could not apply powerConsumptionState Update[" + state + "] for " + this + "!", ex);
+//        }
+//    }
     
     @Override
     public PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {

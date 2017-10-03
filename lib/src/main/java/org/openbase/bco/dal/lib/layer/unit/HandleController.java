@@ -44,17 +44,17 @@ public class HandleController extends AbstractDALUnitController<HandleData, Hand
     public HandleController(final UnitHost unitHost, final HandleData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(HandleController.class, unitHost, builder);
     }
-    
-    public void updateHandleStateProvider(final HandleState handleState) throws CouldNotPerformException {
-        logger.debug("Apply handleState Update[" + handleState + "] for " + this + ".");
-        
-        try (ClosableDataBuilder<HandleData.Builder> dataBuilder = getDataBuilder(this)) {
-            long transactionId = dataBuilder.getInternalBuilder().getHandleState().getTransactionId() + 1;
-            dataBuilder.getInternalBuilder().setHandleState(handleState.toBuilder().setTransactionId(transactionId));
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not apply handleState Update[" + handleState + "] for " + this + "!", ex);
-        }
-    }
+//    
+//    public void updateHandleStateProvider(final HandleState handleState) throws CouldNotPerformException {
+//        logger.debug("Apply handleState Update[" + handleState + "] for " + this + ".");
+//        
+//        try (ClosableDataBuilder<HandleData.Builder> dataBuilder = getDataBuilder(this)) {
+//            long transactionId = dataBuilder.getInternalBuilder().getHandleState().getTransactionId() + 1;
+//            dataBuilder.getInternalBuilder().setHandleState(handleState.toBuilder().setTransactionId(transactionId));
+//        } catch (Exception ex) {
+//            throw new CouldNotPerformException("Could not apply handleState Update[" + handleState + "] for " + this + "!", ex);
+//        }
+//    }
     
     @Override
     public HandleState getHandleState() throws NotAvailableException {
