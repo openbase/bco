@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.openbase.bco</groupId>
         <artifactId>manager.scene.binding</artifactId>
-        <version>1.4-SNAPSHOT</version>
+        <version>1.5-SNAPSHOT</version>
     </parent>    
     
     <url>https://github.com/openbase/bco.manager/wiki</url>
