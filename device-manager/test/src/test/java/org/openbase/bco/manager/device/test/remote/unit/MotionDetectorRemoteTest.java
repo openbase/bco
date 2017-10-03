@@ -37,6 +37,7 @@ import org.openbase.jul.extension.rst.processing.TimestampJavaTimeTransform;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.Stopwatch;
 import org.slf4j.LoggerFactory;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.MotionStateType.MotionState;
 
 /**
@@ -77,7 +78,7 @@ public class MotionDetectorRemoteTest extends AbstractBCODeviceManagerTest {
 
         System.out.println("getMotionState");
         MotionState motion = TimestampProcessor.updateTimestampWithCurrentTime(MotionState.newBuilder().setValue(MotionState.State.MOTION)).build();
-        ((MotionDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(motionDetectorRemote.getId())).updateMotionStateProvider(motion);
+        ((MotionDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(motionDetectorRemote.getId())).updateStateProvider(motion);
         motionDetectorRemote.requestData().get();
         Assert.assertEquals("The getter for the motion state returns the wrong value!", motion.getValue(), motionDetectorRemote.getMotionState().getValue());
     }
@@ -95,7 +96,7 @@ public class MotionDetectorRemoteTest extends AbstractBCODeviceManagerTest {
 
         stopwatch.start();
         MotionState motion = TimestampProcessor.updateTimestampWithCurrentTime(MotionState.newBuilder().setValue(MotionState.State.MOTION)).build();
-        ((MotionDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(motionDetectorRemote.getId())).updateMotionStateProvider(motion);
+        ((MotionDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(motionDetectorRemote.getId())).updateStateProvider(motion);
         stopwatch.stop();
         motionDetectorRemote.requestData().get();
         Assert.assertEquals("The getter for the motion state returns the wrong value!", motion.getValue(), motionDetectorRemote.getMotionState().getValue());
@@ -108,7 +109,7 @@ public class MotionDetectorRemoteTest extends AbstractBCODeviceManagerTest {
 
         stopwatch.start();
         motion = TimestampProcessor.updateTimestampWithCurrentTime(MotionState.newBuilder().setValue(MotionState.State.NO_MOTION)).build();
-        ((MotionDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(motionDetectorRemote.getId())).updateMotionStateProvider(motion);
+        ((MotionDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(motionDetectorRemote.getId())).updateStateProvider(motion);
         stopwatch.stop();
         motionDetectorRemote.requestData().get();
         Assert.assertEquals("The getter for the motion state returns the wrong value!", motion.getValue(), motionDetectorRemote.getMotionState().getValue());

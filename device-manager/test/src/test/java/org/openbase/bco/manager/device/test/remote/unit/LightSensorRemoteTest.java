@@ -31,6 +31,7 @@ import org.openbase.bco.dal.remote.unit.LightSensorRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.IlluminanceStateType.IlluminanceState;
 
 /**
@@ -69,7 +70,7 @@ public class LightSensorRemoteTest extends AbstractBCODeviceManagerTest {
         System.out.println("getIlluminance");
         double illuminance = 0.5;
         IlluminanceState illuminanceState = IlluminanceState.newBuilder().setIlluminance(illuminance).build();
-        ((LightSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightSensorRemote.getId())).updateIlluminanceStateProvider(illuminanceState);
+        ((LightSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightSensorRemote.getId())).updateStateProvider(illuminanceState);
         lightSensorRemote.requestData().get();
         assertEquals("The getter for the illuminance returns the wrong value!", illuminanceState.getIlluminance(), lightSensorRemote.getIlluminanceState().getIlluminance(), 0.1);
     }

@@ -32,7 +32,7 @@ import org.openbase.bco.dal.remote.unit.PowerConsumptionSensorRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
-import org.slf4j.LoggerFactory;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
 
 /**
@@ -81,7 +81,7 @@ public class PowerConsumptionSensorRemoteTest extends AbstractBCODeviceManagerTe
         double voltage = 100d;
         double current = 2d;
         PowerConsumptionState state = PowerConsumptionState.newBuilder().setConsumption(consumption).setCurrent(current).setVoltage(voltage).build();
-        ((PowerConsumptionSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(powerConsumptionRemote.getId())).updatePowerConsumptionStateProvider(state);
+        ((PowerConsumptionSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(powerConsumptionRemote.getId())).updateStateProvider(state);
         powerConsumptionRemote.requestData().get();
         Assert.assertEquals("The getter for the power consumption returns the wrong voltage value!", state.getVoltage(), powerConsumptionRemote.getPowerConsumptionState().getVoltage(), 0.1);
         Assert.assertEquals("The getter for the power consumption returns the wrong consumption value!", state.getConsumption(), powerConsumptionRemote.getPowerConsumptionState().getConsumption(), 0.1);

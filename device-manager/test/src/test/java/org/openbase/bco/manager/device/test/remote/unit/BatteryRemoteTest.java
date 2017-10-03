@@ -32,6 +32,7 @@ import org.openbase.bco.dal.remote.unit.BatteryRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BatteryStateType.BatteryState;
 
 /**
@@ -77,7 +78,7 @@ public class BatteryRemoteTest extends AbstractBCODeviceManagerTest {
         System.out.println("getBatteryLevel");
         double level = 34.0;
         BatteryState state = BatteryState.newBuilder().setLevel(level).setValue(BatteryState.State.OK).build();
-        ((BatteryController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(batteryRemote.getId())).updateBatteryStateProvider(state);
+        ((BatteryController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(batteryRemote.getId())).updateStateProvider(state);
         batteryRemote.requestData().get();
         assertEquals("The getter for the battery level returns the wrong value!", state.getValue(), batteryRemote.getBatteryState().getValue());
     }

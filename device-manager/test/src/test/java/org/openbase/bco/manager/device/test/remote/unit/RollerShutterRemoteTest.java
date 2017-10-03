@@ -83,7 +83,7 @@ public class RollerShutterRemoteTest extends AbstractBCODeviceManagerTest {
     public void testGetShutterState() throws Exception {
         System.out.println("getShutterState");
         BlindState state = BlindState.newBuilder().setMovementState(BlindState.MovementState.UP).build();
-        ((RollerShutterController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(rollerShutterRemote.getId())).updateBlindStateProvider(state);
+        ((RollerShutterController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(rollerShutterRemote.getId())).updateStateProvider(state);
         rollerShutterRemote.requestData().get();
         assertEquals("Shutter has not been set in time!", rollerShutterRemote.getBlindState().getMovementState(), state.getMovementState());
     }

@@ -32,6 +32,7 @@ import org.openbase.bco.dal.remote.unit.ReedContactRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ContactStateType.ContactState;
 
 /**
@@ -76,7 +77,7 @@ public class ReedContactRemoteTest extends AbstractBCODeviceManagerTest {
     public void testGetReedSwitchState() throws Exception {
         System.out.println("getReedSwitchState");
         ContactState state = ContactState.newBuilder().setValue(ContactState.State.OPEN).build();
-        ((ReedContactController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(reedContactRemote.getId())).updateContactStateProvider(state);
+        ((ReedContactController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(reedContactRemote.getId())).updateStateProvider(state);
         reedContactRemote.requestData().get();
         Assert.assertEquals("The getter for the reed switch state returns the wrong value!", state.getValue(), reedContactRemote.getContactState().getValue());
     }
