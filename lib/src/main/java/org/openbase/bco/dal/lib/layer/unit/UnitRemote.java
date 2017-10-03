@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.pattern.ConfigurableRemote;
 import rsb.Scope;
@@ -80,4 +81,6 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, Configu
      * @return returns true if the unit is enabled otherwise false.
      */
     boolean isEnabled();
+
+    public void setSessionManager(SessionManager sessionManager);
 }

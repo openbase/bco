@@ -22,13 +22,24 @@ package org.openbase.bco.dal.remote.unit;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+import javax.crypto.BadPaddingException;
+import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
+import org.openbase.bco.authentication.lib.future.AuthenticatedActionFuture;
+import org.openbase.bco.authentication.lib.SessionManager;
+import java.util.concurrent.TimeoutException;
+import javax.media.j3d.Transform3D;
+import javax.vecmath.Point3d;
+import javax.vecmath.Quat4d;
+import javax.vecmath.Vector3d;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.registry.remote.Registries;
@@ -39,7 +50,9 @@ import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.protobuf.processing.GenericMessageProcessor;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
@@ -57,9 +70,11 @@ import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
+import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -90,6 +105,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
 
     private final Observer<UnitRegistryData> unitRegistryObserver;
     private final Map<ServiceType, MessageObservable> serviceStateObservableMap;
+    private SessionManager sessionManager;
 
     public AbstractUnitRemote(final Class<D> dataClass) {
         super(dataClass, UnitConfig.class);
@@ -510,7 +526,17 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     }
 
     /**
-     * Method returns the transformation between the root location and this unit.
+     * Sets the session Manager which is used for the authentication of the
+     * client/user
+     *
+     * @param sessionManager an instance of SessionManager
+     */
+    @Override
+    public void setSessionManager(SessionManager sessionManager) {
+        this.sessionManager = sessionManager;
+    }
+    
+    /** Method returns the transformation between the root location and this unit.
      *
      * @return a transformation future
      * @throws InterruptedException is thrown if the thread was externally interrupted.
@@ -534,8 +560,54 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
-    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
-        return new UnitSynchronisationFuture(RPCHelper.callRemoteMethod(actionDescription, this, ActionFuture.class), this);
+    public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException, RejectedException {
+        ActionDescription initializedActionDescription = initializeRequest(actionDescription);
+        return new UnitSynchronisationFuture(new AuthenticatedActionFuture(RPCHelper.callRemoteMethod(initializedActionDescription, this, ActionFuture.class), initializedActionDescription.getActionAuthority().getTicketAuthenticatorWrapper(), this.sessionManager), this);
+    }
+
+    private ActionDescription initializeRequest(final ActionDescription actionDescription) throws CouldNotPerformException {
+        ActionDescription.Builder actionDescriptionBuilder = actionDescription.toBuilder();
+
+        // if not authenticated, but was and is able to login again, then do so, otherwise log out
+        if (this.isLoggedIn()) {
+            try {
+                this.isAuthenticated();
+            } catch (CouldNotPerformException ex) {
+                try {
+                    this.sessionManager.relog();
+                } catch (CouldNotPerformException ex2) {
+                    // Logout and return CouldNotPerformException, if anything went wrong
+                    this.sessionManager.logout();
+                    ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
+                    throw new CouldNotPerformException("Your session has expired. You have been logged out for security reasons. Please log in again.");
+                }
+            }
+        }
+
+        // then, after relog or incase unit was already or never authenticated
+        if (this.isAuthenticated()) {
+            try {
+                TicketAuthenticatorWrapper wrapper = AuthenticationClientHandler.initServiceServerRequest(this.sessionManager.getSessionKey(), this.sessionManager.getTicketAuthenticatorWrapper());
+                ActionAuthority.Builder actionAuthorityBuilder = actionDescriptionBuilder.getActionAuthorityBuilder();
+                actionAuthorityBuilder.setTicketAuthenticatorWrapper(wrapper);
+            } catch (IOException | BadPaddingException ex) {
+                throw new CouldNotPerformException("Could not initialize client server ticket for request", ex);
+            }
+        } else {
+            // if still not authenticated and cannot login again all rights are used
+            // to make this clear to the receiving controller clear the actionAuthority
+            actionDescriptionBuilder.clearActionAuthority();
+        }
+
+        return actionDescriptionBuilder.build();
+    }
+
+    private boolean isLoggedIn() {
+        return sessionManager != null && sessionManager.isLoggedIn();
+    }
+
+    private boolean isAuthenticated() throws CouldNotPerformException {
+        return sessionManager != null && sessionManager.isAuthenticated();
     }
 
     /**
@@ -567,7 +639,24 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(getScope()));
 
         actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
-        //TODO: update USER key with authentification
+        try {
+            String username = "";
+            if (sessionManager.getUserId() != null) {
+                username += Registries.getUnitRegistry().getUnitConfigById(sessionManager.getUserId()).getUserConfig().getUserName();
+            }
+            if (sessionManager.getClientId() != null) {
+                if(!username.isEmpty()) {
+                    username += "@";
+                }
+                username += Registries.getUnitRegistry().getUnitConfigById(sessionManager.getClientId()).getUserConfig().getUserName();
+            }
+            if (username.isEmpty()) {
+                username = "Other";
+            }
+            actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.AUTHORITY_KEY, username));
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+        }
         actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
 
         return Services.upateActionDescription(actionDescription, serviceAttribute, serviceType);
@@ -582,17 +671,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * @throws CouldNotPerformException
      */
     protected ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Object serviceAttribute) throws CouldNotPerformException {
-        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
-        ResourceAllocation.Builder resourceAllocation = actionDescription.getResourceAllocationBuilder();
-
-        serviceStateDescription.setUnitId(getId());
-        resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(getScope()));
-
-        actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
-        //TODO: update USER key with authentification
-        actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
-
-        return Services.upateActionDescription(actionDescription, serviceAttribute);
+        return updateActionDescription(actionDescription, serviceAttribute, Services.getServiceType(serviceAttribute));
     }
 
     @Override

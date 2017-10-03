@@ -50,35 +50,34 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  * @param <DB> the builder used to build the unit data instance.
  */
 public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractBaseUnitController<D, DB> implements Enableable {
-
+    
     public static final String FIELD_ACTIVATION_STATE = "activation_state";
     public static final String FIELD_AUTOSTART = "autostart";
-
+    
     private final SyncObject enablingLock = new SyncObject(AbstractExecutableBaseUnitController.class);
     private Future<ActionFuture> executionFuture;
     private final SyncObject executionLock = new SyncObject("ExecutionLock");
     private boolean enabled;
-
+    
     public AbstractExecutableBaseUnitController(final Class unitClass, final DB builder) throws org.openbase.jul.exception.InstantiationException {
         super(unitClass, builder);
     }
-
+    
     @Override
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
     }
-
+    
     public ActivationState getActivationState() throws NotAvailableException {
         return (ActivationState) getDataField(FIELD_ACTIVATION_STATE);
     }
-
+    
     public Future<ActionFuture> setActivationState(final ActivationState activation) throws CouldNotPerformException {
         if (activation == null || activation.getValue().equals(ActivationState.State.UNKNOWN)) {
             throw new InvalidStateException("Unknown is not a valid state!");
         }
-
+        
         Future<ActionFuture> result = null;
-
         try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
             try {
                 synchronized (executionLock) {
@@ -88,9 +87,9 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
                         if (isExecuting()) {
                             return executionFuture;
                         }
-
+                        
                         executionFuture = GlobalCachedExecutorService.submit(new Callable<ActionFuture>() {
-
+                            
                             @Override
                             public ActionFuture call() throws Exception {
                                 try {
@@ -129,24 +128,24 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToCamelCase(activation.getValue().name()) + " " + this, ex);
         }
-
+        
         if (result == null) {
             return CompletableFuture.completedFuture(null);
         }
         return result;
     }
-
+    
     public boolean isExecuting() {
         synchronized (executionLock) {
             return executionFuture != null;
         }
     }
-
+    
     @Override
     public boolean isEnabled() {
         return enabled;
     }
-
+    
     @Override
     public void enable() throws CouldNotPerformException, InterruptedException {
         try {
@@ -163,7 +162,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
             throw new CouldNotPerformException("Could not enable " + this, ex);
         }
     }
-
+    
     @Override
     public void disable() throws CouldNotPerformException, InterruptedException {
         try {
@@ -177,7 +176,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
             throw new CouldNotPerformException("Could not disable " + this, ex);
         }
     }
-
+    
     private boolean detectAutostart() {
         try {
             return isAutostartEnabled();
@@ -186,13 +185,13 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
             return true;
         }
     }
-
+    
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
         stop();
         super.deactivate();
     }
-
+    
     public void cancelExecution() {
         synchronized (executionLock) {
             if (isExecuting() && !executionFuture.isDone()) {
@@ -201,10 +200,10 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
             executionFuture = null;
         }
     }
-
+    
     protected abstract boolean isAutostartEnabled() throws CouldNotPerformException;
-
+    
     protected abstract void execute() throws CouldNotPerformException, InterruptedException;
-
+    
     protected abstract void stop() throws CouldNotPerformException, InterruptedException;
 }

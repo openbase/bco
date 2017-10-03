@@ -46,8 +46,8 @@ import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.communicationpatterns.ResourceAllocationType;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.state.ActionStateType.ActionState;
@@ -146,19 +146,21 @@ public class ActionImpl implements Action {
 
                 try {
                     // Verify authority
-                    unit.verifyAuthority(actionDescriptionBuilder.getActionAuthority());
+                    final ActionFuture.Builder actionFutureBuilder = ActionFuture.newBuilder();
+
+                    unit.verifyAndUpdateAuthority(actionDescriptionBuilder.getActionAuthority(), actionFutureBuilder.getTicketAuthenticatorWrapperBuilder());
 
                     // Resource Allocation
                     unitAllocation = UnitAllocator.allocate(actionDescriptionBuilder, () -> {
                         try {
                             ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
-                            actionFuture.addActionDescription(actionDescriptionBuilder);
 
                             // Execute
                             updateActionState(ActionState.State.EXECUTING);
 
                             try {
                                 Service.invokeServiceMethod(serviceDescription, unit, serviceAttribute);
+                                actionDescriptionBuilder.setTransactionId(unit.getTransactionIdByServiceType(actionDescriptionBuilder.getServiceStateDescription().getServiceType()));
                             } catch (CouldNotPerformException ex) {
                                 if (ex.getCause() instanceof InterruptedException) {
                                     updateActionState(ActionState.State.ABORTED);
@@ -167,6 +169,7 @@ public class ActionImpl implements Action {
                                 }
                                 throw new ExecutionException(ex);
                             }
+                            actionFuture.addActionDescription(actionDescriptionBuilder);
                             updateActionState(ActionState.State.FINISHING);
                             return actionFuture.build();
                         } catch (final CancellationException ex) {
@@ -189,6 +192,9 @@ public class ActionImpl implements Action {
                 } catch (CouldNotPerformException ex) {
                     updateActionState(ActionState.State.REJECTED);
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                    return null;
                 }
             }
         } catch (CouldNotPerformException ex) {
@@ -210,7 +216,9 @@ public class ActionImpl implements Action {
 
                     try {
                         // Verify authority
-                        unit.verifyAuthority(actionDescriptionBuilder.getActionAuthority());
+                        final ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
+
+                        unit.verifyAndUpdateAuthority(actionDescriptionBuilder.getActionAuthority(), actionFuture.getTicketAuthenticatorWrapperBuilder());
 
                         // Resource Allocation
                         try {
@@ -225,8 +233,6 @@ public class ActionImpl implements Action {
                                 resourceAllocationBuilder.setSlot(IntervalType.Interval.getDefaultInstance());
                                 resourceAllocationBuilder.setPolicy(ResourceAllocationType.ResourceAllocation.Policy.PRESERVE);
                             }
-
-                            ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
 
                             // Execute
                             updateActionState(ActionState.State.EXECUTING);

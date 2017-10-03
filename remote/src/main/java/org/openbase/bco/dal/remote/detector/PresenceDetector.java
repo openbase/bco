@@ -128,7 +128,10 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         active = false;
         presenceTimeout.cancel();
-        locationDataProvider.removeDataObserver(locationDataObserver);
+        if (locationDataProvider != null) {
+            // can be null if never initialized or initialization failed
+            locationDataProvider.removeDataObserver(locationDataObserver);
+        }
     }
 
     @Override
@@ -204,7 +207,7 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
     public CompletableFuture<PresenceState> getDataFuture() {
         return presenceStateObservable.getValueFuture();
     }
-    
+
     @Override
     public void addDataObserver(final Observer<PresenceState> observer) {
         presenceStateObservable.addObserver(observer);

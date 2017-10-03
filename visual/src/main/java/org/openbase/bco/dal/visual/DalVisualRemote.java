@@ -23,7 +23,9 @@ package org.openbase.bco.dal.visual;
  */
 import java.lang.reflect.InvocationTargetException;
 import javax.swing.ImageIcon;
+import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.registry.lib.BCO;
+import org.openbase.bco.registry.login.SystemLogin;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -61,6 +63,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
         try {
             instance = this;
 
+            SystemLogin.loginBCOUser();
             initComponents();
             loadImage();
 
@@ -164,6 +167,7 @@ public class DalVisualRemote extends javax.swing.JFrame {
 
         //</editor-fold>
         JPService.setApplicationName(DalVisualRemote.class);
+        JPService.registerProperty(JPAuthentication.class);
         JPService.parseAndExitOnError(args);
 
 
