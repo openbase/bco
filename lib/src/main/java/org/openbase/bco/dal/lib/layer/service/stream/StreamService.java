@@ -1,3 +1,5 @@
+package org.openbase.bco.dal.lib.layer.service.stream;
+
 /*-
  * #%L
  * BCO DAL Library

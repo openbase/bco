@@ -43,18 +43,16 @@ public class Consumer implements Manageable<ServiceConfig> {
 
     private boolean active;
     private ServiceRemote boundedProviderService;
-    private final UnitController boundedUnitController;
+    private final UnitController unitController;
     private final Observer serviceStateObserver;
 
-    public Consumer(final UnitController boundedUnitController) {
+    public Consumer(final UnitController unitController) {
         this.active = false;
-        this.boundedUnitController = boundedUnitController;
-        this.serviceStateObserver = new Observer() {
-            @Override
-            public void update(Observable source, Object data) throws Exception {
-                if (boundedProviderService != null) {
-                    boundedUnitController.applyDataUpdate(boundedProviderService.getServiceType(), data);
-                }
+        this.unitController = unitController;
+        this.serviceStateObserver = (Observer) (final Observable source, final Object data) -> {
+            if (boundedProviderService != null) {
+//                    unitController.applyAction(actionDescription)
+                unitController.applyDataUpdate(boundedProviderService.getServiceType(), data);
             }
         };
     }
@@ -89,7 +87,7 @@ public class Consumer implements Manageable<ServiceConfig> {
         try {
             validateInitialization();
             active = true;
-            boundedUnitController.addServiceStateObserver(boundedProviderService.getServiceType(), serviceStateObserver);
+            boundedProviderService.addServiceStateObserver(boundedProviderService.getServiceType(), serviceStateObserver);
         } catch (final CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not activate " + this, ex);
         }
@@ -103,7 +101,7 @@ public class Consumer implements Manageable<ServiceConfig> {
      */
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        boundedUnitController.removeServiceStateObserver(boundedProviderService.getServiceType(), serviceStateObserver);
+        boundedProviderService.removeServiceStateObserver(boundedProviderService.getServiceType(), serviceStateObserver);
         active = false;
     }
 

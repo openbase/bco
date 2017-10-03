@@ -44,6 +44,7 @@ import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
+import org.openbase.bco.dal.lib.layer.service.stream.StreamService;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
@@ -374,6 +375,9 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                             break;
                         case PROVIDER:
                             servicePackage = ProviderService.class.getPackage();
+                            break;
+                        case STREAM:
+                            servicePackage = StreamService.class.getPackage();
                             break;
                         default:
                             throw new NotSupportedException(serviceInterfaceMapEntry.getKey(), this);
