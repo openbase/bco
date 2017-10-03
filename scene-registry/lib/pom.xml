@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.openbase.bco</groupId>
         <artifactId>registry.scene</artifactId>
-        <version>1.4-SNAPSHOT</version>
+        <version>1.5-SNAPSHOT</version>
     </parent>    
     
     <url>https://github.com/openbase/bco.registry/wiki</url>
