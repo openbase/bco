@@ -29,9 +29,19 @@ import org.openbase.bco.manager.agent.core.AgentManagerLauncher;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.manager.location.core.LocationManagerLauncher;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
+import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
+import org.openbase.jul.extension.rsb.iface.RSBListener;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.slf4j.LoggerFactory;
+import rsb.Event;
+import rsb.Handler;
+import rsb.Listener;
+import rst.domotic.registry.DeviceRegistryDataType.DeviceRegistryData;
 
 /**
  *
@@ -44,7 +54,7 @@ public class AbstractBCOAgentManagerTest extends AbstractBCOTest {
     protected static AgentManagerLauncher agentManagerLauncher;
     protected static DeviceManagerLauncher deviceManagerLauncher;
     protected static LocationManagerLauncher locationManagerLauncher;
-    
+
     @BeforeClass
     public static void setUpClass() throws Throwable {
         try {
