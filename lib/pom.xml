@@ -126,7 +126,7 @@
         <dependency>
             <groupId>org.openbase.bco</groupId>
             <artifactId>authentication.lib</artifactId>
-            <version>1.4-SNAPSHOT</version>
+            <version>${dependency.bco.authentication.version}</version>
             <type>jar</type>
         </dependency>
     </dependencies>
