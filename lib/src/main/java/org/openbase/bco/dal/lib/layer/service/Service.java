@@ -52,6 +52,13 @@ public interface Service {
     public static final Package SERVICE_MODE_PACKAGE = OperationModeType.OperationMode.class.getPackage();
     public static final String SERVICE_LABEL = Service.class.getSimpleName();
 
+    // release todo: move to rst
+    public enum ServiceTempus {
+        LAST,
+        CURRENT,
+        REQUESTED
+    }
+    
     /**
      * This method returns the service base name of the given service type.
      *

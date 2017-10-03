@@ -28,6 +28,7 @@ import java.util.Arrays;
 import java.util.Collection;
 import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_LABEL;
 import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKAGE;
+import org.openbase.bco.dal.lib.layer.service.Service.ServiceTempus;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
@@ -181,20 +182,34 @@ public class Services {
     }
 
     public static Method detectServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
+        return detectServiceMethod(serviceType, servicePattern, ServiceTempus.CURRENT, instanceClass, argumentClasses);
+    }
+
+    public static Method detectServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final ServiceTempus serviceTempus, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
+        String messageName = "?";
         try {
-            return instanceClass.getMethod(getServicePrefix(servicePattern) + getServiceStateName(serviceType), argumentClasses);
+            messageName = getServicePrefix(servicePattern) + getServiceStateName(serviceType) + StringProcessor.transformUpperCaseToCamelCase(serviceTempus.name().replace(serviceTempus.CURRENT.name(), ""));
+            return instanceClass.getMethod(messageName, argumentClasses);
         } catch (NoSuchMethodException | SecurityException ex) {
-            throw new CouldNotPerformException("Could not detect service method!", ex);
+            throw new CouldNotPerformException("Could not detect service method[" + messageName + "]!", ex);
         }
     }
 
     public static Method detectServiceMethod(final ServiceDescription description, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
-        return detectServiceMethod(description.getType(), description.getPattern(), instanceClass, argumentClasses);
+        return detectServiceMethod(description, ServiceTempus.CURRENT, instanceClass, argumentClasses);
+    }
+
+    public static Method detectServiceMethod(final ServiceDescription description, final ServiceTempus serviceTempus, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
+        return detectServiceMethod(description.getType(), description.getPattern(), serviceTempus, instanceClass, argumentClasses);
     }
 
     public static Object invokeServiceMethod(final ServiceDescription description, final Service instance, final Object... arguments) throws CouldNotPerformException {
+        return invokeServiceMethod(description, ServiceTempus.CURRENT, instance, arguments);
+    }
+
+    public static Object invokeServiceMethod(final ServiceDescription description, final ServiceTempus serviceTempus, final Service instance, final Object... arguments) throws CouldNotPerformException {
         try {
-            return detectServiceMethod(description, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
+            return detectServiceMethod(description, serviceTempus, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
         } catch (IllegalAccessException | ExceptionInInitializerError ex) {
             throw new NotSupportedException("ServiceType[" + description.getType().name() + "] with Pattern[" + description.getPattern() + "]", instance, ex);
         } catch (NullPointerException ex) {
@@ -209,8 +224,12 @@ public class Services {
     }
 
     public static Object invokeServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
+        return invokeServiceMethod(serviceType, servicePattern, ServiceTempus.CURRENT, instance, arguments);
+    }
+
+    public static Object invokeServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final ServiceTempus serviceTempus, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
         try {
-            return detectServiceMethod(serviceType, servicePattern, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
+            return detectServiceMethod(serviceType, servicePattern, serviceTempus, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
         } catch (IllegalAccessException | ExceptionInInitializerError ex) {
             throw new NotSupportedException("ServiceType[" + serviceType.name() + "] with Pattern[" + servicePattern + "]", instance, ex);
         } catch (NullPointerException ex) {
