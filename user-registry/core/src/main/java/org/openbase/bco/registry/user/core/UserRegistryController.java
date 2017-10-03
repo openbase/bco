@@ -35,6 +35,8 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Launchable;
@@ -73,6 +75,26 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
             this.authorizationGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(unitRegistryRemote, UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
+        }
+    }
+
+    @Override
+    public void activate() throws InterruptedException, CouldNotPerformException {
+        super.activate();
+
+        unitRegistryRemote.waitForData();
+        if (unitRegistryRemote.isDataAvailable()) {
+            try {
+                try (ClosableDataBuilder<UserRegistryData.Builder> dataBuilder = getDataBuilder(this)) {
+                    syncVirtualRegistryFields(dataBuilder.getInternalBuilder(), unitRegistryRemote.getData());
+                } catch (Exception ex) {
+                    throw new CouldNotPerformException("Could not apply data change!", ex);
+                }
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory("Could not sync virtual registry!", ex, logger);
+            }
+        } else {
+            logger.warn("No data for initial sync available");
         }
     }
 
@@ -163,12 +185,12 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
     }
 
     @Override
-    public UnitConfig getUserConfigByUserName(final String userName) throws CouldNotPerformException, NotAvailableException {
+    public String getUserIdByUserName(final String userName) throws CouldNotPerformException, NotAvailableException {
         List<UnitConfig> messages = userUnitConfigRemoteRegistry.getMessages();
 
         for (UnitConfig message : messages) {
             if (message.getUserConfig().getUserName().equals(userName)) {
-                return message;
+                return message.getId();
             }
         }
 

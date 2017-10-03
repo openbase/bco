@@ -31,6 +31,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.registry.agent.core.AgentRegistryController;
 import org.openbase.bco.registry.app.core.AppRegistryController;
 import org.openbase.bco.registry.device.core.DeviceRegistryController;
@@ -39,6 +40,8 @@ import org.openbase.bco.registry.unit.core.UnitRegistryController;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.slf4j.Logger;
@@ -62,6 +65,7 @@ public class LocationRegistryTest {
     private static DeviceRegistryController deviceRegistry;
     private static AppRegistryController appRegistry;
     private static AgentRegistryController agentRegistry;
+    private static AuthenticatorController authenticatorController;
 
     public LocationRegistryTest() {
     }
@@ -71,6 +75,11 @@ public class LocationRegistryTest {
         try {
             JPService.setupJUnitTestMode();
             JPService.registerProperty(JPDebugMode.class, true);
+            
+            authenticatorController = new AuthenticatorController();
+            authenticatorController.init();
+            authenticatorController.activate();
+            authenticatorController.waitForActivation();
 
             try {
                 unitRegistry = new UnitRegistryController();
@@ -82,52 +91,36 @@ public class LocationRegistryTest {
                 deviceRegistry.init();
                 appRegistry.init();
                 agentRegistry.init();
-            } catch (Throwable ex) {
+            } catch (InterruptedException | InitializationException | InstantiationException ex) {
                 throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
             }
 
-            Thread unitRegistryThread = new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        unitRegistry.activate();
-                    } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, LOGGER);
-                    }
+            Thread unitRegistryThread = new Thread(() -> {
+                try {
+                    unitRegistry.activate();
+                } catch (CouldNotPerformException | InterruptedException ex) {
+                    ExceptionPrinter.printHistory(ex, LOGGER);
                 }
             });
-            Thread deviceRegistryThread = new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        deviceRegistry.activate();
-                    } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, LOGGER);
-                    }
+            Thread deviceRegistryThread = new Thread(() -> {
+                try {
+                    deviceRegistry.activate();
+                } catch (CouldNotPerformException | InterruptedException ex) {
+                    ExceptionPrinter.printHistory(ex, LOGGER);
                 }
             });
-            Thread appRegistryThread = new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        appRegistry.activate();
-                    } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, LOGGER);
-                    }
+            Thread appRegistryThread = new Thread(() -> {
+                try {
+                    appRegistry.activate();
+                } catch (CouldNotPerformException | InterruptedException ex) {
+                    ExceptionPrinter.printHistory(ex, LOGGER);
                 }
             });
-            Thread agentRegistryThread = new Thread(new Runnable() {
-
-                @Override
-                public void run() {
-                    try {
-                        agentRegistry.activate();
-                    } catch (CouldNotPerformException | InterruptedException ex) {
-                        ExceptionPrinter.printHistory(ex, LOGGER);
-                    }
+            Thread agentRegistryThread = new Thread(() -> {
+                try {
+                    agentRegistry.activate();
+                } catch (CouldNotPerformException | InterruptedException ex) {
+                    ExceptionPrinter.printHistory(ex, LOGGER);
                 }
             });
 
@@ -141,12 +134,12 @@ public class LocationRegistryTest {
             appRegistryThread.join();
             agentRegistryThread.join();
         } catch (Throwable ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
     }
 
     @AfterClass
-    public static void tearDownClass() throws InterruptedException, CouldNotPerformException {
+    public static void tearDownClass() throws Throwable {
         try {
             if (unitRegistry != null) {
                 unitRegistry.shutdown();
@@ -160,10 +153,13 @@ public class LocationRegistryTest {
             if (agentRegistry != null) {
                 agentRegistry.shutdown();
             }
+            if(authenticatorController != null) {
+                authenticatorController.shutdown();
+            }
             
             Registries.shutdown();
         } catch (Throwable ex) {
-            ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
     }
 

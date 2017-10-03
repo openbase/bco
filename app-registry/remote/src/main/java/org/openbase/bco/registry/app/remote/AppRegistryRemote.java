@@ -28,6 +28,7 @@ import java.util.concurrent.TimeUnit;
 import org.openbase.bco.registry.app.lib.AppRegistry;
 import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
+import org.openbase.bco.authentication.lib.AuthorizationFilter;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.com.future.RegistrationFuture;
 import org.openbase.bco.registry.lib.com.future.RemovalFuture;
@@ -65,6 +66,7 @@ public class AppRegistryRemote extends AbstractVirtualRegistryRemote<AppRegistry
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AppClass.getDefaultInstance()));
     }
 
+    private final AuthorizationFilter authorizationFilter;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> appUnitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, AppClass, AppClass.Builder> appClassRemoteRegistry;
 
@@ -73,7 +75,9 @@ public class AppRegistryRemote extends AbstractVirtualRegistryRemote<AppRegistry
     public AppRegistryRemote() throws InstantiationException, InterruptedException {
         super(JPAppRegistryScope.class, AppRegistryData.class);
         try {
-            appUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, AppRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER);
+            authorizationFilter = new AuthorizationFilter();
+            
+            appUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, authorizationFilter, AppRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER);
             appClassRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, AppRegistryData.APP_CLASS_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
@@ -91,6 +95,8 @@ public class AppRegistryRemote extends AbstractVirtualRegistryRemote<AppRegistry
         if (!CachedAppRegistryRemote.getRegistry().equals(this)) {
             logger.warn("You are using a " + getClass().getSimpleName() + " which is not maintained by the global registry singelton! This is extremely inefficient! Please use \"Registries.get" + getClass().getSimpleName().replace("Remote", "") + "()\" instead creating your own instances!");
         }
+        authorizationFilter.setAuthorizationGroups(unitRegistry.getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap());
+        authorizationFilter.setLocations(unitRegistry.getLocationUnitConfigRemoteRegistry().getEntryMap());
         super.activate();
     }
 

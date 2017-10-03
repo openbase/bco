@@ -21,15 +21,13 @@ package org.openbase.bco.registry.lib.com;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.jul.pattern.AbstractFilter;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
-import java.util.ArrayList;
-import java.util.List;
 import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
@@ -64,32 +62,17 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
     /**
      * The observable to get informed about data updates.
      */
-    private final Observable<M> observable;
+    private Observable<M> observable;
 
     /**
      * The internal data synchronizer which synchronizes the remote registry via the remote service.
      */
-    private final RemoteRegistrySynchronizer remoteRegistrySynchronizer;
+    private final RemoteRegistrySynchronizer<M> remoteRegistrySynchronizer;
 
     private boolean active;
 
-    /**
-     *
-     * @param observable The observable to get informed about data updates.
-     * @param remoteService The remote service to get informed about data updates.
-     * @param protobufFieldNumbers The field numbers to identify the descriptor fields which are used for the internal registry synchronization.
-     * @throws InstantiationException is thrown in case the instantiation fails.
-     */
-    public SynchronizedRemoteRegistry(final Observable observable, final RSBRemoteService remoteService, final int... protobufFieldNumbers) throws InstantiationException {
-        try {
-            this.observable = observable;
-            this.fieldDescriptors = ProtoBufFieldProcessor.getFieldDescriptors(remoteService.getDataClass(), protobufFieldNumbers);
-            this.remoteService = remoteService;
-            this.remoteRegistrySynchronizer = new RemoteRegistrySynchronizer();
-        } catch (CouldNotPerformException ex) {
-            throw new InstantiationException(this, ex);
-        }
-    }
+    private AbstractFilter filter;
+    private Observer filterObserver;
 
     /**
      *
@@ -102,7 +85,63 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
             this.observable = null;
             this.fieldDescriptors = ProtoBufFieldProcessor.getFieldDescriptors(remoteService.getDataClass(), protobufFieldNumbers);
             this.remoteService = remoteService;
-            this.remoteRegistrySynchronizer = new RemoteRegistrySynchronizer();
+            this.remoteRegistrySynchronizer = new RemoteRegistrySynchronizer(this, fieldDescriptors);
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
+    }
+
+    /**
+     *
+     * @param remoteService The remote service to get informed about data updates.
+     * @param filter the filter which is used to synchronize the messages
+     * @param protobufFieldNumbers The field numbers to identify the descriptor fields which are used for the internal registry synchronization.
+     * @throws InstantiationException is thrown in case the instantiation fails.
+     */
+    public SynchronizedRemoteRegistry(final RSBRemoteService remoteService, final AbstractFilter<M> filter, final int... protobufFieldNumbers) throws InstantiationException {
+        try {
+            this.fieldDescriptors = ProtoBufFieldProcessor.getFieldDescriptors(remoteService.getDataClass(), protobufFieldNumbers);
+            this.remoteService = remoteService;
+            this.filter = filter;
+            this.remoteRegistrySynchronizer = new RemoteRegistrySynchronizer(this, fieldDescriptors, filter);
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
+    }
+
+    /**
+     *
+     * @param observable The observable to get informed about data updates.
+     * @param remoteService The remote service to get informed about data updates.
+     * @param protobufFieldNumbers The field numbers to identify the descriptor fields which are used for the internal registry synchronization..
+     * @throws InstantiationException is thrown in case the instantiation fails.
+     */
+    public SynchronizedRemoteRegistry(final Observable observable, final RSBRemoteService remoteService, final int... protobufFieldNumbers) throws InstantiationException {
+        try {
+            this.observable = observable;
+            this.fieldDescriptors = ProtoBufFieldProcessor.getFieldDescriptors(remoteService.getDataClass(), protobufFieldNumbers);
+            this.remoteService = remoteService;
+            this.remoteRegistrySynchronizer = new RemoteRegistrySynchronizer(this, fieldDescriptors);
+        } catch (CouldNotPerformException ex) {
+            throw new InstantiationException(this, ex);
+        }
+    }
+
+    /**
+     *
+     * @param observable The observable to get informed about data updates.
+     * @param remoteService The remote service to get informed about data updates.
+     * @param filter the filter which is used to synchronize the messages
+     * @param protobufFieldNumbers The field numbers to identify the descriptor fields which are used for the internal registry synchronization.
+     * @throws InstantiationException is thrown in case the instantiation fails.
+     */
+    public SynchronizedRemoteRegistry(final Observable observable, final RSBRemoteService remoteService, final AbstractFilter<M> filter, final int... protobufFieldNumbers) throws InstantiationException {
+        try {
+            this.observable = observable;
+            this.fieldDescriptors = ProtoBufFieldProcessor.getFieldDescriptors(remoteService.getDataClass(), protobufFieldNumbers);
+            this.remoteService = remoteService;
+            this.filter = filter;
+            this.remoteRegistrySynchronizer = new RemoteRegistrySynchronizer(this, fieldDescriptors, filter);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -119,7 +158,7 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
         this.observable = observable;
         this.fieldDescriptors = fieldDescriptors;
         this.remoteService = remoteService;
-        this.remoteRegistrySynchronizer = new RemoteRegistrySynchronizer();
+        this.remoteRegistrySynchronizer = new RemoteRegistrySynchronizer(this, fieldDescriptors);
     }
 
     /**
@@ -135,7 +174,7 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
         this.observable = observable;
         this.fieldDescriptors = fieldDescriptors;
         this.remoteService = remoteService;
-        this.remoteRegistrySynchronizer = new RemoteRegistrySynchronizer();
+        this.remoteRegistrySynchronizer = new RemoteRegistrySynchronizer(this, fieldDescriptors);
     }
 
     /**
@@ -184,6 +223,16 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
             }
         }
 
+        // register an observer on the filter to update when the filtering changes
+        filterObserver = (Observable source, Object data) -> {
+            if (remoteService.isDataAvailable()) {
+                remoteRegistrySynchronizer.update(null, remoteService.getData());
+            }
+        };
+        if (filter != null) {
+            filter.addObserver(filterObserver);
+        }
+
         active = true;
     }
 
@@ -193,6 +242,9 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
             observable.removeObserver(remoteRegistrySynchronizer);
         } else {
             remoteService.removeDataObserver(remoteRegistrySynchronizer);
+        }
+        if (filter != null) {
+            filter.removeObserver(filterObserver);
         }
         active = false;
     }
@@ -218,26 +270,7 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
         }
     }
 
-    class RemoteRegistrySynchronizer implements Observer<M> {
-
-        @Override
-        public void update(Observable<M> source, M data) throws Exception {
-            try {
-                if (data == null) {
-                    throw new NotAvailableException("RegistryData");
-                }
-                int entryCount;
-                List<M> entryList = new ArrayList<>();
-                for (final FieldDescriptor fieldDescriptor : fieldDescriptors) {
-                    entryCount = data.getRepeatedFieldCount(fieldDescriptor);
-                    for (int i = 0; i < entryCount; i++) {
-                        entryList.add((M) data.getRepeatedField(fieldDescriptor, i));
-                    }
-                }
-                notifyRegistryUpdate(entryList);
-            } catch (CouldNotPerformException | IndexOutOfBoundsException | ClassCastException | NullPointerException ex) {
-                ExceptionPrinter.printHistory("Registry synchronization failed!", ex, logger);
-            }
-        }
+    public AbstractFilter getFilter() {
+        return filter;
     }
 }

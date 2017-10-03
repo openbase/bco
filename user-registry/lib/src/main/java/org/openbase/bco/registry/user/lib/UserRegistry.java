@@ -106,14 +106,14 @@ public interface UserRegistry extends DataProvider<UserRegistryData>, Shutdownab
     public Boolean isAuthorizationGroupConfigRegistryConsistent() throws CouldNotPerformException;
 
     /**
-     * Retrieves a user config according to a given user name.
+     * Retrieves a user ID according to a given user name.
      * If multiple users happen to have the same user name, the first one is returned.
      *
      * @param userName
-     * @return
+     * @return User ID
      * @throws CouldNotPerformException
      * @throws NotAvailableException If no user with the given user name could be found.
      */
     @RPCMethod
-    public UnitConfig getUserConfigByUserName(final String userName) throws CouldNotPerformException, NotAvailableException;
+    public String getUserIdByUserName(final String userName) throws CouldNotPerformException, NotAvailableException;
 }

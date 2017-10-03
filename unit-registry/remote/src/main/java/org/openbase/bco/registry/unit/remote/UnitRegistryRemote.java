@@ -26,7 +26,11 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
+import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
+import org.openbase.bco.authentication.lib.AuthorizationFilter;
+import org.openbase.jul.pattern.MockUpFilter;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.com.future.RegistrationFuture;
 import org.openbase.bco.registry.lib.com.future.RemovalFuture;
@@ -49,6 +53,7 @@ import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -71,8 +76,10 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitTemplate.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ServiceTemplate.getDefaultInstance()));
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthenticatedValue.getDefaultInstance()));
     }
 
+    private final AuthorizationFilter authorizationFilter;
     private final SynchronizedRemoteRegistry<String, UnitTemplate, UnitTemplate.Builder> unitTemplateRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, ServiceTemplate, ServiceTemplate.Builder> serviceTemplateRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> dalUnitConfigRemoteRegistry;
@@ -93,17 +100,19 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         try {
             this.unitTemplateRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.UNIT_TEMPLATE_FIELD_NUMBER);
             this.serviceTemplateRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.SERVICE_TEMPLATE_FIELD_NUMBER);
-            this.dalUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER);
-            this.userUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
-            this.authorizationGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
-            this.deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER);
-            this.unitGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.UNIT_GROUP_UNIT_CONFIG_FIELD_NUMBER);
-            this.locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER);
-            this.connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER);
-            this.agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER);
-            this.sceneUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER);
-            this.appUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER);
-            this.unitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this,
+
+            this.authorizationFilter = new AuthorizationFilter();
+            this.dalUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry(this.getIntenalPriorizedDataObservable(), this, authorizationFilter, UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER);
+            this.userUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, authorizationFilter, UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
+            this.authorizationGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, new MockUpFilter(), UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
+            this.deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, authorizationFilter, UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER);
+            this.unitGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, authorizationFilter, UnitRegistryData.UNIT_GROUP_UNIT_CONFIG_FIELD_NUMBER);
+            this.locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, new MockUpFilter(), UnitRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER);
+            this.connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, authorizationFilter, UnitRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER);
+            this.agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, authorizationFilter, UnitRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER);
+            this.sceneUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, authorizationFilter, UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER);
+            this.appUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, authorizationFilter, UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER);
+            this.unitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, authorizationFilter,
                     UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER,
@@ -115,7 +124,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                     UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER
             );
-            this.baseUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this,
+            this.baseUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, authorizationFilter,
                     UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.UNIT_GROUP_UNIT_CONFIG_FIELD_NUMBER,
@@ -126,30 +135,8 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                     UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER
             );
-            deviceUnitConfigRemoteRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>>>() {
-                @Override
-                public void update(Observable<Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>>> source, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> data) throws Exception {
-                    logger.warn("deviceUnitConfigRemote registry notifies with [" + data.size() + "] devices");
-                }
-            });
-
-            this.addDataObserver(new Observer<UnitRegistryData>() {
-                @Override
-                public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
-                    logger.warn("UnitRegistry remote notifies data change with [" + data.getDeviceUnitConfigCount() + "] devices");
-                }
-            });
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
-        }
-    }
-
-    @Override
-    protected void notifyDataUpdate(UnitRegistryData data) throws CouldNotPerformException {
-        super.notifyDataUpdate(data); //To change body of generated methods, choose Tools | Templates.
-        logger.warn("UnitRegistry remote received update with [" + data.getDeviceUnitConfigCount() + "] devices");
-        if (data.getDeviceUnitConfigCount() == 24) {
-            int i = 0;
         }
     }
 
@@ -164,20 +151,28 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
          * on one of these remote registries and tries to get values from other remote registries
          * which are registered later than these are not synced yet
          */
+        registerRemoteRegistry(locationUnitConfigRemoteRegistry);
+        registerRemoteRegistry(authorizationGroupUnitConfigRemoteRegistry);
         registerRemoteRegistry(unitConfigRemoteRegistry);
         registerRemoteRegistry(unitTemplateRemoteRegistry);
         registerRemoteRegistry(serviceTemplateRemoteRegistry);
         registerRemoteRegistry(dalUnitConfigRemoteRegistry);
         registerRemoteRegistry(userUnitConfigRemoteRegistry);
-        registerRemoteRegistry(authorizationGroupUnitConfigRemoteRegistry);
         registerRemoteRegistry(deviceUnitConfigRemoteRegistry);
         registerRemoteRegistry(unitGroupUnitConfigRemoteRegistry);
-        registerRemoteRegistry(locationUnitConfigRemoteRegistry);
         registerRemoteRegistry(connectionUnitConfigRemoteRegistry);
         registerRemoteRegistry(agentUnitConfigRemoteRegistry);
         registerRemoteRegistry(sceneUnitConfigRemoteRegistry);
         registerRemoteRegistry(appUnitConfigRemoteRegistry);
         registerRemoteRegistry(baseUnitConfigRemoteRegistry);
+    }
+
+    @Override
+    public void activate() throws InterruptedException, CouldNotPerformException {
+        authorizationFilter.setAuthorizationGroups(authorizationGroupUnitConfigRemoteRegistry.getEntryMap());
+        authorizationFilter.setLocations(locationUnitConfigRemoteRegistry.getEntryMap());
+
+        super.activate();
     }
 
     // todo: sync unitConfigRemoteRegistry
@@ -246,8 +241,13 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      */
     @Override
     public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
+        return new RegistrationFuture<>(AuthenticatedServiceProcessor.requestAuthenticatedAction(unitConfig, UnitConfig.class, SessionManager.getInstance(), this::registerUnitConfigAuthenticated), unitConfigRemoteRegistry, this);
+    }
+
+    @Override
+    public Future<AuthenticatedValue> registerUnitConfigAuthenticated(AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         try {
-            return new RegistrationFuture<>(RPCHelper.callRemoteMethod(unitConfig, this, UnitConfig.class), unitConfigRemoteRegistry, this);
+            return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not register unit config!", ex);
         }
@@ -281,8 +281,13 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
 
     @Override
     public Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
+        return new UpdateFuture<>(AuthenticatedServiceProcessor.requestAuthenticatedAction(unitConfig, UnitConfig.class, SessionManager.getInstance(), this::updateUnitConfigAuthenticated), unitConfigRemoteRegistry, this);
+    }
+
+    @Override
+    public Future<AuthenticatedValue> updateUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         try {
-            return new UpdateFuture<>(RPCHelper.callRemoteMethod(unitConfig, this, UnitConfig.class), unitConfigRemoteRegistry, this);
+            return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not update unit config!", ex);
         }
@@ -290,8 +295,13 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
 
     @Override
     public Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
+        return new RemovalFuture<>(AuthenticatedServiceProcessor.requestAuthenticatedAction(unitConfig, UnitConfig.class, SessionManager.getInstance(), this::removeUnitConfigAuthenticated), unitConfigRemoteRegistry, this);
+    }
+
+    @Override
+    public Future<AuthenticatedValue> removeUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
         try {
-            return new RemovalFuture<>(RPCHelper.callRemoteMethod(unitConfig, this, UnitConfig.class), unitConfigRemoteRegistry, this);
+            return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not remove unit config!", ex);
         }

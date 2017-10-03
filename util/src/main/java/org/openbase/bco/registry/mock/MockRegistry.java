@@ -30,6 +30,10 @@ import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import org.openbase.bco.authentication.core.AuthenticatorController;
+import org.openbase.bco.authentication.core.AuthenticatorLauncher;
+import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.agent.core.AgentRegistryLauncher;
 import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
@@ -72,6 +76,7 @@ import org.openbase.bco.registry.scene.core.SceneRegistryLauncher;
 import org.openbase.bco.registry.scene.lib.SceneRegistry;
 import org.openbase.bco.registry.scene.remote.CachedSceneRegistryRemote;
 import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;
+import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.user.core.UserRegistryLauncher;
@@ -127,6 +132,8 @@ public class MockRegistry {
 
     public static final String USER_NAME = "uSeRnAmE";
     public static UnitConfig testUser;
+    public static UnitConfig admin;
+    public static String adminPassword = UserCreationPlugin.DEFAULT_ADMIN_USERNAME_AND_PASSWORD;
 
     public static final String COLORABLE_LIGHT_LABEL = "Colorable_Light_Unit_Test";
     public static final String BATTERY_LABEL = "Battery_Unit_Test";
@@ -159,6 +166,9 @@ public class MockRegistry {
             .setDepth(30)
             .setLeftFrontBottom(Translation.newBuilder().setX(0).setY(0).setZ(0).build())
             .build();
+
+    private static AuthenticatorLauncher authenticatorLauncher;
+    private static AuthenticatorController authenticatorController;
 
     private static DeviceRegistryLauncher deviceRegistryLauncher;
     private static LocationRegistryLauncher locationRegistryLauncher;
@@ -315,6 +325,23 @@ public class MockRegistry {
         try {
             JPService.setupJUnitTestMode();
             List<Future<Void>> registryStartupTasks = new ArrayList<>();
+            registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
+                try {
+                    authenticatorLauncher = new AuthenticatorLauncher();
+                    authenticatorLauncher.launch();
+                    authenticatorController = authenticatorLauncher.getLaunchable();
+                    authenticatorController.waitForActivation();
+                } catch (CouldNotPerformException ex) {
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
+                }
+                return null;
+            }));
+            LOGGER.info("Starting authenticator...");
+            for (Future<Void> task : registryStartupTasks) {
+                task.get();
+            }
+            registryStartupTasks.clear();
+            
             registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
                     unitRegistryLauncher = new UnitRegistryLauncher();
@@ -484,6 +511,13 @@ public class MockRegistry {
             unitRegistryLauncher.shutdown();
         }
 
+        if (authenticatorLauncher != null) {
+            authenticatorLauncher.shutdown();
+        }
+        
+        SessionManager.getInstance().completeLogout();
+        AuthenticatedServerManager.shutdown();
+
         CachedLocationRegistryRemote.shutdown();
         CachedSceneRegistryRemote.shutdown();
         CachedUserRegistryRemote.shutdown();
@@ -605,6 +639,13 @@ public class MockRegistry {
     }
 
     private void registerUser() throws CouldNotPerformException, InterruptedException {
+        for (UnitConfig unitConfig : unitRegistry.getUnitConfigs(UnitType.USER)) {
+            if (unitConfig.getUserConfig().getUserName().equals(UserCreationPlugin.DEFAULT_ADMIN_USERNAME_AND_PASSWORD)) {
+                admin = unitConfig;
+                break;
+            }
+        }
+        
         UserConfig.Builder config = UserConfig.newBuilder().setFirstName("Max").setLastName("Mustermann").setUserName(USER_NAME);
         UnitConfig userUnitConfig = UnitConfig.newBuilder().setType(UnitType.USER).setUserConfig(config).setEnablingState(EnablingState.newBuilder().setValue(EnablingState.State.ENABLED)).build();
         try {

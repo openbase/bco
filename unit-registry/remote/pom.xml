@@ -65,5 +65,11 @@
             <version>${dependency.jul.version}</version>
             <type>jar</type>
         </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>authentication.lib</artifactId>
+            <version>${dependency.bco.authentication.version}</version>
+            <type>jar</type>
+        </dependency>
     </dependencies>
 </project>

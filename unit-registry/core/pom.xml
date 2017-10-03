@@ -129,5 +129,10 @@
             <artifactId>jul.extension.rct</artifactId>
             <version>${dependency.jul.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>authentication.core</artifactId>
+            <version>${dependency.bco.authentication.version}</version>
+        </dependency>
     </dependencies>
 </project>

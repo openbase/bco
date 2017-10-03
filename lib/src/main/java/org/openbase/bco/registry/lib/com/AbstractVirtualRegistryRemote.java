@@ -46,8 +46,8 @@ import rst.domotic.registry.DeviceRegistryDataType.DeviceRegistryData;
  */
 public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> extends AbstractRegistryRemote<M> {
 
-    private final Map<RemoteRegistry, Descriptors.FieldDescriptor> remoteRegistryFieldDescriptorMap;
-    private final Map<RemoteRegistry, RegistryRemote<? extends GeneratedMessage>> remoteRegistrySyncMap;
+    private final Map<SynchronizedRemoteRegistry, Descriptors.FieldDescriptor> remoteRegistryFieldDescriptorMap;
+    private final Map<SynchronizedRemoteRegistry, RegistryRemote<? extends GeneratedMessage>> remoteRegistrySyncMap;
     private final List<RegistryRemote<? extends GeneratedMessage>> registryRemotes;
 
     private final SyncObject virtualRegistrySyncLock = new SyncObject("RegistryRemoteVirtualSyncLock");
@@ -101,7 +101,7 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
 
     protected abstract void registerRegistryRemotes() throws InitializationException, InterruptedException;
 
-    protected void bindRegistryRemoteToRemoteRegistry(RemoteRegistry remoteRegistry, RegistryRemote<? extends GeneratedMessage> registryRemote, Integer fieldNumber) throws CouldNotPerformException {
+    protected void bindRegistryRemoteToRemoteRegistry(SynchronizedRemoteRegistry remoteRegistry, RegistryRemote<? extends GeneratedMessage> registryRemote, Integer fieldNumber) throws CouldNotPerformException {
         try {
             Descriptors.FieldDescriptor fieldDescriptor = null;
             try {
@@ -157,16 +157,17 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
     }
 
     private boolean equalMessageCounts() {
-        for (RemoteRegistry remoteRegistry : remoteRegistrySyncMap.keySet()) {
+        for (SynchronizedRemoteRegistry remoteRegistry : remoteRegistrySyncMap.keySet()) {
             try {
-                if (remoteRegistry instanceof SynchronizedRemoteRegistry) {
-                    SynchronizedRemoteRegistry a = (SynchronizedRemoteRegistry) remoteRegistry;
-                    if (a.getFieldDescriptors().length == 1 && a.getFieldDescriptors()[0].getName().equals(ProtoBufFieldProcessor.getFieldDescriptor(DeviceRegistryData.getDefaultInstance(), DeviceRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER).getName())) {
-                        System.out.println("DeviceUnitConfig registry in device contains [" + a.getEntries().size() + "] entries");
-                        System.out.println("UnitRegistry contains [" + remoteRegistrySyncMap.get(remoteRegistry).getData().getRepeatedFieldCount(remoteRegistryFieldDescriptorMap.get(remoteRegistry)) + "] devices");
-                    }
+                List messageList = new ArrayList((List) remoteRegistrySyncMap.get(remoteRegistry).getData().getField(remoteRegistryFieldDescriptorMap.get(remoteRegistry)));
+                int registryRemoteMessageCount = messageList.size();
+                int filteredRegistryRemoteMessageCount = remoteRegistry.getFilter().filter(messageList).size();
+                if (registryRemoteMessageCount != filteredRegistryRemoteMessageCount) {
+                    logger.debug(this + " has a been filtered for field[" + remoteRegistryFieldDescriptorMap.get(remoteRegistry).getName() + "] from " + registryRemoteMessageCount + " to " + filteredRegistryRemoteMessageCount);
                 }
-                if (remoteRegistrySyncMap.get(remoteRegistry).getData().getRepeatedFieldCount(remoteRegistryFieldDescriptorMap.get(remoteRegistry)) != remoteRegistry.getMessages().size()) {
+                int remoteRegistryMessageCount = remoteRegistry.getMessages().size();
+                if (filteredRegistryRemoteMessageCount != remoteRegistryMessageCount) {
+                    logger.warn("MessageCount for [" + remoteRegistry + "] is not correct. Expected[" + registryRemoteMessageCount + "] but is [" + remoteRegistryMessageCount + "]");
                     return false;
                 }
             } catch (CouldNotPerformException ex) {

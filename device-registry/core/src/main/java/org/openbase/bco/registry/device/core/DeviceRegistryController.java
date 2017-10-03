@@ -22,6 +22,7 @@ package org.openbase.bco.registry.device.core;
  * #L%
  */
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.device.core.consistency.UnitTemplateConfigIdConsistencyHandler;
 import org.openbase.bco.registry.device.core.consistency.UnitTemplateConfigLabelConsistencyHandler;
@@ -40,9 +41,12 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Launchable;
+import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
