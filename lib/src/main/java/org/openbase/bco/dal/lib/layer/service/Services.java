@@ -26,6 +26,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.logging.Level;
+import java.util.logging.Logger;
 import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_LABEL;
 import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKAGE;
 import org.openbase.bco.dal.lib.layer.service.Service.ServiceTempus;
@@ -294,6 +296,15 @@ public class Services {
             return ServiceType.valueOf(serviceTypeName);
         } catch (IllegalArgumentException ex) {
             throw new CouldNotPerformException("Could not resolve ServiceType for [" + serviceAttribute.getClass().getSimpleName() + "]");
+        }
+    }
+
+    public static ActionDescription getResponsibleAction(final GeneratedMessage serviceState) throws NotAvailableException {
+        try {
+            return (ActionDescription) serviceState.getClass().getMethod("getResponsibleAction").invoke(serviceState);
+        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
+            Logger.getLogger(Services.class.getName()).log(Level.SEVERE, null, ex);
+            throw new NotAvailableException("ActionDescription", ex);
         }
     }
 }

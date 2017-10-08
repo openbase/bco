@@ -21,17 +21,21 @@ package org.openbase.bco.dal.remote.service.consumer;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.remote.service.ServiceRemoteFactoryImpl;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotInitializedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 
 /**
@@ -43,16 +47,23 @@ public class Consumer implements Manageable<ServiceConfig> {
 
     private boolean active;
     private ServiceRemote boundedProviderService;
-    private final UnitController unitController;
     private final Observer serviceStateObserver;
 
-    public Consumer(final UnitController unitController) {
+    public Consumer(final UnitController<?,?> unitController) {
         this.active = false;
-        this.unitController = unitController;
         this.serviceStateObserver = (Observer) (final Observable source, final Object data) -> {
-            if (boundedProviderService != null) {
-//                    unitController.applyAction(actionDescription)
-                unitController.applyDataUpdate(boundedProviderService.getServiceType(), data);
+            try {
+                ActionDescription responsibleAction = Services.getResponsibleAction(((GeneratedMessage) data));
+                
+                // build consumer action out of responsible action
+                ActionDescription.Builder consumerActionBuilder = responsibleAction.toBuilder();
+                consumerActionBuilder.getServiceStateDescriptionBuilder().setUnitId(unitController.getId());
+                consumerActionBuilder.getServiceStateDescriptionBuilder().setUnitType(unitController.getUnitType());
+                
+                // apply new action
+                unitController.applyAction(consumerActionBuilder.build());
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory("Could not consume update!", ex, LOGGER);
             }
         };
     }
