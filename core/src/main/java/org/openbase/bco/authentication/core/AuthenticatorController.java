@@ -59,6 +59,7 @@ import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.exception.SessionExpiredException;
 import org.openbase.bco.authentication.lib.jp.JPAuthenticationSimulationMode;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
+import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.exception.RejectedException;
@@ -99,31 +100,19 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
     private final long ticketValidityTime;
 
-    public AuthenticatorController() {
+    public AuthenticatorController() throws InitializationException  {
         this(new CredentialStore(STORE_FILENAME), EncryptionHelper.generateKey());
     }
 
-    public AuthenticatorController(CredentialStore store) {
+    public AuthenticatorController(CredentialStore store) throws InitializationException  {
         this(store, EncryptionHelper.generateKey());
     }
 
-    public AuthenticatorController(byte[] serviceServerPrivateKey) {
+    public AuthenticatorController(byte[] serviceServerPrivateKey) throws InitializationException  {
         this(new CredentialStore(STORE_FILENAME), serviceServerPrivateKey);
     }
 
-    public AuthenticatorController(final long ticketValidityTime) {
-        this(new CredentialStore(STORE_FILENAME), EncryptionHelper.generateKey(), ticketValidityTime);
-    }
-    
-    public AuthenticatorController(CredentialStore store, final long ticketValidityTime) {
-        this(store, EncryptionHelper.generateKey(), ticketValidityTime);
-    }
-    
-    public AuthenticatorController(CredentialStore store, byte[] serviceServerPrivateKey) {
-        this(store, serviceServerPrivateKey, AuthenticationServerHandler.DEFAULT_VALIDITY_PERIOD_IN_MILLIS);
-    }
-
-    public AuthenticatorController(CredentialStore store, byte[] serviceServerPrivateKey, final long ticketValidityTime) {
+    public AuthenticatorController(CredentialStore store, byte[] serviceServerPrivateKey) throws InitializationException {
         this.server = new NotInitializedRSBLocalServer();
 
         this.ticketGrantingServiceSecretKey = EncryptionHelper.generateKey();
@@ -141,7 +130,11 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
             this.store = store;
         }
 
-        this.ticketValidityTime = ticketValidityTime;
+        try {
+            this.ticketValidityTime = JPService.getProperty(JPSessionTimeout.class).getValue();
+        } catch (JPNotAvailableException ex) {
+            throw new InitializationException(AuthenticatorController.class, ex);
+        }
     }
 
     @Override
@@ -235,7 +228,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                     clientKey = store.getCredentials(split[1].trim());
                 }
 
-                return AuthenticationServerHandler.handleKDCRequest(id, userKey, clientKey, "", ticketGrantingServiceSecretKey);
+                return AuthenticationServerHandler.handleKDCRequest(id, userKey, clientKey, "", ticketGrantingServiceSecretKey, ticketValidityTime);
             } catch (NotAvailableException ex) {
                 ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.WARN);
                 ExceptionReporter.getInstance().report(ex);
