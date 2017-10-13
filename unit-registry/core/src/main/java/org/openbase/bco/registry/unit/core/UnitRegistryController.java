@@ -326,7 +326,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupUnitTypeConsistencyHandler(unitTemplateRegistry));
             unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupMemberListTypesConsistencyHandler(agentUnitConfigRegistry, appUnitConfigRegistry, authorizationGroupUnitConfigRegistry, connectionUnitConfigRegistry, dalUnitConfigRegistry, deviceUnitConfigRegistry, locationUnitConfigRegistry, sceneUnitConfigRegistry, unitGroupUnitConfigRegistry, userUnitConfigRegistry, unitTemplateRegistry));
             unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupScopeConsistencyHandler(locationUnitConfigRegistry));
-            unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupPlacementConfigConsistencyHandler(unitConfigRegistryList, locationUnitConfigRegistry));
+            unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupPlacementConfigConsistencyHandler(unitConfigRegistryList, locationUnitConfigRegistry, CachedDeviceRegistryRemote.getRegistry().getDeviceClassRemoteRegistry()));
 
             locationUnitConfigRegistry.registerConsistencyHandler(new LocationPlacementConfigConsistencyHandler());
             locationUnitConfigRegistry.registerConsistencyHandler(new LocationPositionConsistencyHandler());
@@ -436,6 +436,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             unitGroupUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
             unitGroupUnitConfigRegistry.registerDependency(sceneUnitConfigRegistry);
             unitGroupUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
+            unitGroupUnitConfigRegistry.registerDependency(CachedDeviceRegistryRemote.getRegistry().getDeviceClassRemoteRegistry());
 
             locationUnitConfigRegistry.registerDependency(agentUnitConfigRegistry);
             locationUnitConfigRegistry.registerDependency(appUnitConfigRegistry);

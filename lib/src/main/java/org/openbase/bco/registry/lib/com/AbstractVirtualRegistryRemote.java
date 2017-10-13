@@ -36,8 +36,6 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.RegistryRemote;
-import org.openbase.jul.storage.registry.RemoteRegistry;
-import rst.domotic.registry.DeviceRegistryDataType.DeviceRegistryData;
 
 /**
  *
@@ -167,7 +165,7 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
                 }
                 int remoteRegistryMessageCount = remoteRegistry.getMessages().size();
                 if (filteredRegistryRemoteMessageCount != remoteRegistryMessageCount) {
-                    logger.warn("MessageCount for [" + remoteRegistry + "] is not correct. Expected[" + registryRemoteMessageCount + "] but is [" + remoteRegistryMessageCount + "]");
+                    logger.debug("MessageCount for [" + remoteRegistry + "] is not correct. Expected[" + registryRemoteMessageCount + "] but is [" + remoteRegistryMessageCount + "]");
                     return false;
                 }
             } catch (CouldNotPerformException ex) {
