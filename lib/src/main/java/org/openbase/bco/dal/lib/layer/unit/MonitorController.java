@@ -29,7 +29,6 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.schedule.FutureProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -68,16 +67,6 @@ public class MonitorController extends AbstractDALUnitController<MonitorData, Mo
             throw new InitializationException(this, ex);
         }
     }
-    
-//    public void updatePowerStateProvider(final PowerState state) throws CouldNotPerformException {
-//        logger.debug("Apply powerState Update[" + state + "] for " + this + ".");
-//        try (ClosableDataBuilder<MonitorData.Builder> dataBuilder = getDataBuilder(this)) {
-//            long transactionId = dataBuilder.getInternalBuilder().getPowerState().getTransactionId() + 1;
-//            dataBuilder.getInternalBuilder().setPowerState(state.toBuilder().setTransactionId(transactionId));
-//        } catch (Exception ex) {
-//            throw new CouldNotPerformException("Could not apply powerState Update[" + state + "] for " + this + "!", ex);
-//        }
-//    }
     
     @Override
     public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
@@ -118,15 +107,4 @@ public class MonitorController extends AbstractDALUnitController<MonitorData, Mo
             throw new NotAvailableException("standbyState", ex);
         }
     }
-    
-//    public void updateStandbyStateProvider(final StandbyState standbyState) throws CouldNotPerformException {
-//        logger.debug("Apply standbyState Update[" + standbyState + "] for " + this + ".");
-//        
-//        try (ClosableDataBuilder<MonitorData.Builder> dataBuilder = getDataBuilder(this)) {
-//            long transactionId = dataBuilder.getInternalBuilder().getStandbyState().getTransactionId() + 1;
-//            dataBuilder.getInternalBuilder().setStandbyState(standbyState.toBuilder().setTransactionId(transactionId));
-//        } catch (Exception ex) {
-//            throw new CouldNotPerformException("Could not apply standbyState Update[" + standbyState + "] for " + this + "!", ex);
-//        }
-//    }
 }

@@ -7,11 +7,12 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.schedule.FutureProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.dal.DimmerDataType.DimmerData;
@@ -87,17 +88,6 @@ public class DimmerController extends AbstractDALUnitController<DimmerData, Dimm
         }
     }
 
-//    public void updatePowerStateProvider(final PowerState value) throws CouldNotPerformException {
-//        logger.debug("Apply powerState Update[" + value + "] for " + this + ".");
-//
-//        try (ClosableDataBuilder<DimmerData.Builder> dataBuilder = getDataBuilder(this)) {
-//            long transactionId = dataBuilder.getInternalBuilder().getPowerState().getTransactionId() + 1;
-//            dataBuilder.getInternalBuilder().setPowerState(value.toBuilder().setTransactionId(transactionId));
-//        } catch (Exception ex) {
-//            throw new CouldNotPerformException("Could not apply powerState Update[" + value + "] for " + this + "!", ex);
-//        }
-//    }
-
     @Override
     public Future<ActionFuture> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
         return brightnessStateService.setBrightnessState(brightnessState);
@@ -111,20 +101,17 @@ public class DimmerController extends AbstractDALUnitController<DimmerData, Dimm
             throw new NotAvailableException("brightnessState", ex);
         }
     }
-
-//    public void updateBrightnessStateProvider(final BrightnessState brightnessState) throws CouldNotPerformException {
-//        logger.debug("Apply brightnessState Update[" + brightnessState + "] for " + this + ".");
-//
-//        try (ClosableDataBuilder<DimmerData.Builder> dataBuilder = getDataBuilder(this)) {
-//            long transactionId = dataBuilder.getInternalBuilder().getBrightnessState().getTransactionId() + 1;
-//            dataBuilder.getInternalBuilder().setBrightnessState(brightnessState.toBuilder().setTransactionId(transactionId));
-//            if (brightnessState.getBrightness() == 0) {
-//                dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.OFF);
-//            } else {
-//                dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.ON);
-//            }
-//        } catch (Exception ex) {
-//            throw new CouldNotPerformException("Could not apply brightnessState Update[" + brightnessState + "] for " + this + "!", ex);
-//        }
-//    }
+    
+    @Override
+    protected void updateStateProvider(DimmerData.Builder internalBuilder, ServiceType serviceType) {
+        switch (serviceType) {
+            case BRIGHTNESS_STATE_SERVICE:
+                if (internalBuilder.getBrightnessState().getBrightness() == 0) {
+                    internalBuilder.getPowerStateBuilder().setValue(PowerState.State.OFF);
+                } else {
+                    internalBuilder.getPowerStateBuilder().setValue(PowerState.State.ON);
+                }
+                break;
+        }
+    }
 }

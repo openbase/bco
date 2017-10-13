@@ -23,10 +23,10 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.MotionStateType.MotionState;
 import rst.domotic.unit.dal.MotionDetectorDataType.MotionDetectorData;
 
@@ -35,48 +35,42 @@ import rst.domotic.unit.dal.MotionDetectorDataType.MotionDetectorData;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class MotionDetectorController extends AbstractDALUnitController<MotionDetectorData, MotionDetectorData.Builder> implements MotionDetector {
-    
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionDetectorData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(MotionState.getDefaultInstance()));
     }
-    
+
     public MotionDetectorController(final UnitHost unitHost, final MotionDetectorData.Builder builder) throws org.openbase.jul.exception.InstantiationException, CouldNotPerformException {
         super(MotionDetectorController.class, unitHost, builder);
     }
-    
-//    public void updateMotionStateProvider(MotionState state) throws CouldNotPerformException {
-//        
-//        logger.debug("Apply motionState Update[" + state + "] for " + this + ".");
-//        
-//        try (ClosableDataBuilder<MotionDetectorData.Builder> dataBuilder = getDataBuilder(this)) {
-//            
-//            MotionState.Builder motionStateBuilder = dataBuilder.getInternalBuilder().getMotionStateBuilder();
-//
-//            // Update value
-//            motionStateBuilder.setValue(state.getValue());
-//
-//            // Update timestemp if necessary
-//            if (state.getValue() == MotionState.State.MOTION) {
-//                if (!state.hasTimestamp()) {
-//                    logger.warn("State[" + state.getClass().getSimpleName() + "] of " + this + " does not contain any state related timestampe!");
-//                    state = TimestampProcessor.updateTimestampWithCurrentTime(state, logger);
-//                }
-//                motionStateBuilder.setLastMotion(state.getTimestamp());
-//            }
-//            
-//            dataBuilder.getInternalBuilder().setMotionState(motionStateBuilder.setTransactionId(motionStateBuilder.getTransactionId() + 1));
-//        } catch (Exception ex) {
-//            throw new CouldNotPerformException("Could not apply motionState Update[" + state + "] for " + this + "!", ex);
-//        }
-//    }
-    
+
     @Override
     public MotionState getMotionState() throws NotAvailableException {
         try {
             return getData().getMotionState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("motionState", ex);
+        }
+    }
+
+    @Override
+    protected void updateStateProvider(MotionDetectorData.Builder internalBuilder, ServiceType serviceType) {
+        switch (serviceType) {
+            case MOTION_STATE_SERVICE:
+                MotionState.Builder motionState = internalBuilder.getMotionStateBuilder();
+
+                // Update timestamp if necessary
+                if (motionState.getValue() == MotionState.State.MOTION) {
+                    if (!motionState.hasTimestamp()) {
+                        logger.warn("State[" + motionState.getClass().getSimpleName() + "] of " + this + " does not contain any state related timestampe!");
+                        motionState = TimestampProcessor.updateTimestampWithCurrentTime(motionState, logger);
+                    }
+                    motionState.setLastMotion(motionState.getTimestamp());
+                } else if(motionState.getValue() == MotionState.State.NO_MOTION) {
+                    motionState.setLastMotion(internalBuilder.getMotionStateLast().getLastMotion());
+                }
+                break;
         }
     }
 }

@@ -24,10 +24,10 @@ package org.openbase.bco.dal.lib.layer.unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.TamperStateType.TamperState;
 import rst.domotic.unit.dal.TamperDetectorDataType.TamperDetectorData;
 
@@ -36,48 +36,40 @@ import rst.domotic.unit.dal.TamperDetectorDataType.TamperDetectorData;
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class TamperDetectorController extends AbstractDALUnitController<TamperDetectorData, TamperDetectorData.Builder> implements TamperDetector {
-    
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperDetectorData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TamperState.getDefaultInstance()));
     }
-    
+
     public TamperDetectorController(final UnitHost unitHost, final TamperDetectorData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(TamperDetectorController.class, unitHost, builder);
     }
-    
-//    public void updateTamperStateProvider(TamperState state) throws CouldNotPerformException {
-//        
-//        logger.debug("Apply tamperState Update[" + state + "] for " + this + ".");
-//        
-//        try (ClosableDataBuilder<TamperDetectorData.Builder> dataBuilder = getDataBuilder(this)) {
-//            
-//            TamperState.Builder tamperStateBuilder = dataBuilder.getInternalBuilder().getTamperStateBuilder();
-//
-//            // Update value
-//            tamperStateBuilder.setValue(state.getValue());
-//
-//            // Update timestemp if necessary
-//            if (state.getValue() == TamperState.State.TAMPER) {
-//                if (!state.hasTimestamp()) {
-//                    logger.warn("State[" + state.getClass().getSimpleName() + "] of " + this + " does not contain any state related timestampe!");
-//                    state = TimestampProcessor.updateTimestampWithCurrentTime(state, logger);
-//                }
-//                tamperStateBuilder.setLastDetection(state.getTimestamp());
-//            }
-//            
-//            dataBuilder.getInternalBuilder().setTamperState(tamperStateBuilder.setTransactionId(tamperStateBuilder.getTransactionId() + 1));
-//        } catch (Exception ex) {
-//            throw new CouldNotPerformException("Could not apply tamperState Update[" + state + "] for " + this + "!", ex);
-//        }
-//    }
-    
+
     @Override
     public TamperState getTamperState() throws NotAvailableException {
         try {
             return getData().getTamperState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("tamperState", ex);
+        }
+    }
+
+    @Override
+    protected void updateStateProvider(TamperDetectorData.Builder internalBuilder, ServiceType serviceType) {
+        switch (serviceType) {
+            case TAMPER_STATE_SERVICE:
+                TamperState.Builder tamperState = internalBuilder.getTamperStateBuilder();
+
+                // Update timestemp if necessary
+                if (tamperState.getValue() == TamperState.State.TAMPER) {
+                    if (!tamperState.hasTimestamp()) {
+                        logger.warn("State[" + tamperState.getClass().getSimpleName() + "] of " + this + " does not contain any state related timestampe!");
+                        tamperState = TimestampProcessor.updateTimestampWithCurrentTime(tamperState, logger);
+                    }
+                    tamperState.setLastDetection(tamperState.getTimestamp());
+                }
+                break;
         }
     }
 }

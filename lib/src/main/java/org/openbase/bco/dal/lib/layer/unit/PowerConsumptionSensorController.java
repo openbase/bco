@@ -24,7 +24,6 @@ package org.openbase.bco.dal.lib.layer.unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
@@ -44,17 +43,6 @@ public class PowerConsumptionSensorController extends AbstractDALUnitController<
     public PowerConsumptionSensorController(final UnitHost unitHost, final PowerConsumptionSensorData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(PowerConsumptionSensorController.class, unitHost, builder);
     }
-//    
-//    public void updatePowerConsumptionStateProvider(final PowerConsumptionState state) throws CouldNotPerformException {
-//        logger.debug("Apply powerConsumptionState Update[" + state + "] for " + this + ".");
-//        
-//        try (ClosableDataBuilder<PowerConsumptionSensorData.Builder> dataBuilder = getDataBuilder(this)) {
-//            long transactionId = dataBuilder.getInternalBuilder().getPowerConsumptionState().getTransactionId() + 1;
-//            dataBuilder.getInternalBuilder().setPowerConsumptionState(state.toBuilder().setTransactionId(transactionId));
-//        } catch (Exception ex) {
-//            throw new CouldNotPerformException("Could not apply powerConsumptionState Update[" + state + "] for " + this + "!", ex);
-//        }
-//    }
     
     @Override
     public PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {

@@ -28,7 +28,6 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.schedule.FutureProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -63,16 +62,6 @@ public class LightController extends AbstractDALUnitController<LightData, LightD
             throw new InitializationException(this, ex);
         }
     }
-    
-//    public void updatePowerStateProvider(final PowerState powerState) throws CouldNotPerformException {
-//        logger.debug("Apply powerState Update[" + powerState + "] for " + this + ".");
-//        try (ClosableDataBuilder<LightData.Builder> dataBuilder = getDataBuilder(this)) {
-//            long transactionId = dataBuilder.getInternalBuilder().getPowerState().getTransactionId() + 1;
-//            dataBuilder.getInternalBuilder().setPowerState(powerState.toBuilder().setTransactionId(transactionId));
-//        } catch (Exception ex) {
-//            throw new CouldNotPerformException("Could not apply powerState Update[" + powerState + "] for " + this + "!", ex);
-//        }
-//    }
     
     @Override
     public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {

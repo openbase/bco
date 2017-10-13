@@ -24,10 +24,10 @@ package org.openbase.bco.dal.lib.layer.unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ButtonStateType.ButtonState;
 import rst.domotic.unit.dal.ButtonDataType.ButtonData;
 
@@ -36,16 +36,16 @@ import rst.domotic.unit.dal.ButtonDataType.ButtonData;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class ButtonController extends AbstractDALUnitController<ButtonData, ButtonData.Builder> implements Button {
-    
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonState.getDefaultInstance()));
     }
-    
+
     public ButtonController(final UnitHost unitHost, final ButtonData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(ButtonController.class, unitHost, builder);
     }
-    
+
 //    public void updateButtonStateProvider(ButtonState state) throws CouldNotPerformException {
 //        logger.debug("Apply buttonState Update[" + state + "] for " + this + ".");
 //        try (ClosableDataBuilder<ButtonData.Builder> dataBuilder = getDataBuilder(this)) {
@@ -78,4 +78,22 @@ public class ButtonController extends AbstractDALUnitController<ButtonData, Butt
             throw new NotAvailableException("buttonState state", ex);
         }
     }
+
+    @Override
+    protected void updateStateProvider(ButtonData.Builder internalBuilder, ServiceType serviceType) {
+        switch (serviceType) {
+            case BUTTON_STATE_SERVICE:
+                // Update timestemp if necessary
+                ButtonState.Builder buttonState = internalBuilder.getButtonStateBuilder();
+                if (buttonState.getValue() == ButtonState.State.PRESSED || buttonState.getValue() == ButtonState.State.DOUBLE_PRESSED) {
+                    if (!buttonState.hasTimestamp()) {
+                        logger.warn("State[" + buttonState.getClass().getSimpleName() + "] of " + this + " does not contain any state related timestampe!");
+                        buttonState = TimestampProcessor.updateTimestampWithCurrentTime(buttonState, logger);
+                    }
+                    buttonState.setLastPressed(buttonState.getTimestamp());
+                }
+                break;
+        }
+    }
+
 }

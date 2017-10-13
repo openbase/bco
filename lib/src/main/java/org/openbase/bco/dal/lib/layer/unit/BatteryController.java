@@ -24,9 +24,10 @@ package org.openbase.bco.dal.lib.layer.unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.BATTERY_STATE_SERVICE;
 import rst.domotic.state.BatteryStateType.BatteryState;
 import rst.domotic.unit.dal.BatteryDataType.BatteryData;
 
@@ -64,13 +65,29 @@ public class BatteryController extends AbstractDALUnitController<BatteryData, Ba
 //            throw new CouldNotPerformException("Could not apply batteryState Update[" + batteryState + "] for " + this + "!", ex);
 //        }
 //    }
-
     @Override
     public BatteryState getBatteryState() throws NotAvailableException {
         try {
             return getData().getBatteryState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("batteryState", ex);
+        }
+    }
+
+    @Override
+    protected void updateStateProvider(BatteryData.Builder internalBuilder, ServiceType serviceType) {
+        switch (serviceType) {
+            case BATTERY_STATE_SERVICE:
+                if (!internalBuilder.getBatteryState().hasValue() || internalBuilder.getBatteryState().getValue() == BatteryState.State.UNKNOWN) {
+                    if (internalBuilder.getBatteryState().getLevel() <= 5) {
+                        internalBuilder.getBatteryStateBuilder().setValue(BatteryState.State.INSUFFICIENT);
+                    } else if (internalBuilder.getBatteryState().getLevel() <= 15) {
+                        internalBuilder.getBatteryStateBuilder().setValue(BatteryState.State.CRITICAL);
+                    } else {
+                        internalBuilder.getBatteryStateBuilder().setValue(BatteryState.State.OK);
+                    }
+                }
+                break;
         }
     }
 }

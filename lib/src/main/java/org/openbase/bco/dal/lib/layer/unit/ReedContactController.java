@@ -24,7 +24,6 @@ package org.openbase.bco.dal.lib.layer.unit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.state.ContactStateType.ContactState;
@@ -44,17 +43,6 @@ public class ReedContactController extends AbstractDALUnitController<ReedContact
     public ReedContactController(final UnitHost unitHost, ReedContactData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(ReedContactController.class, unitHost, builder);
     }
-    
-//    public void updateContactStateProvider(final ContactState contactState) throws CouldNotPerformException {
-//        logger.debug("Apply contactState Update[" + contactState + "] for " + this + ".");
-//        
-//        try (ClosableDataBuilder<ReedContactData.Builder> dataBuilder = getDataBuilder(this)) {
-//            long transactionId = dataBuilder.getInternalBuilder().getContactState().getTransactionId() + 1;
-//            dataBuilder.getInternalBuilder().setContactState(contactState.toBuilder().setTransactionId(transactionId));
-//        } catch (Exception ex) {
-//            throw new CouldNotPerformException("Could not apply contactState Update[" + contactState + "] for " + this + "!", ex);
-//        }
-//    }
     
     @Override
     public ContactState getContactState() throws NotAvailableException {

@@ -26,6 +26,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
@@ -37,7 +38,6 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -54,12 +54,18 @@ import rst.domotic.state.TemperatureStateType.TemperatureState;
  */
 public class ServiceFactoryMock implements ServiceFactory {
 
-    private static final org.slf4j.Logger logger = LoggerFactory.getLogger(ServiceFactoryMock.class);
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(ServiceFactoryMock.class);
 
-    private final static ServiceFactory instance = new ServiceFactoryMock();
+    private static ServiceFactory instance = new ServiceFactoryMock();
 
     public static ServiceFactory getInstance() {
+        if(instance == null) {
+            instance = new ServiceFactoryMock();
+        }
         return instance;
+    }
+    
+    private ServiceFactoryMock() {
     }
 
     @Override
@@ -153,12 +159,16 @@ public class ServiceFactoryMock implements ServiceFactory {
 
             @Override
             public Future<ActionFuture> setTargetTemperatureState(TemperatureState state) throws CouldNotPerformException {
-                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
+                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
             }
         };
     }
-
+    
     private static Future<ActionFuture> update(final Object argument, final Unit unit) throws CouldNotPerformException {
+        return update(argument, unit, Services.getServiceType(argument));
+    }
+
+    private static Future<ActionFuture> update(final Object argument, final Unit unit, final ServiceType serviceType) throws CouldNotPerformException {
         try {
             StackTraceElement[] stackTrace = Thread.currentThread().getStackTrace();
             if (stackTrace == null) {
@@ -167,12 +177,7 @@ public class ServiceFactoryMock implements ServiceFactory {
                 throw new InvalidStateException("Could not detect method stack!");
             }
             String methodName = "updateStateProvider";
-//            try {
-//                methodName = stackTrace[3].getMethodName().replaceFirst("set", "update") + "Provider";
-//            } catch (Exception ex) {
-//                throw new CouldNotPerformException("Could not detect update method name!", ex);
-//            }
-            unit.getClass().getMethod(methodName, Message.class).invoke(unit, argument);
+            unit.getClass().getMethod(methodName, Message.class, ServiceType.class).invoke(unit, argument, serviceType);
             return CompletableFuture.completedFuture(null);
         } catch (CouldNotPerformException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             throw new CouldNotPerformException("Could not call remote Message[]", ex);

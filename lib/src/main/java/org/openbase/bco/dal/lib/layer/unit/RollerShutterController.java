@@ -32,7 +32,6 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionFutureType.ActionFuture;
@@ -66,16 +65,6 @@ public class RollerShutterController extends AbstractDALUnitController<RollerShu
             throw new InitializationException(this, ex);
         }
     }
-
-//    public void updateBlindStateProvider(final BlindState blindState) throws CouldNotPerformException {
-//        logger.debug("Apply blindState Update[" + blindState + "] for " + this + ".");
-//        try (ClosableDataBuilder<RollerShutterData.Builder> dataBuilder = getDataBuilder(this)) {
-//            long transactionId = dataBuilder.getInternalBuilder().getBlindState().getTransactionId() + 1;
-//            dataBuilder.getInternalBuilder().mergeBlindState(blindState.toBuilder().setTransactionId(transactionId).build());
-//        } catch (Exception ex) {
-//            throw new CouldNotPerformException("Could not apply blindState Update[" + blindState + "] for " + this + "!", ex);
-//        }
-//    }
 
     @Override
     public Future<ActionFuture> setBlindState(final BlindState blindState) throws CouldNotPerformException {

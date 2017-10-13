@@ -28,11 +28,11 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.schedule.FutureProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.dal.DimmableLightDataType.DimmableLightData;
@@ -43,20 +43,20 @@ import rst.domotic.unit.UnitConfigType;
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class DimmableLightController extends AbstractDALUnitController<DimmableLightData, DimmableLightData.Builder> implements DimmableLight {
-    
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DimmableLightData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PowerState.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessState.getDefaultInstance()));
     }
-    
+
     private PowerStateOperationService powerService;
     private BrightnessStateOperationService brightnessService;
-    
+
     public DimmableLightController(final UnitHost unitHost, DimmableLightData.Builder builder) throws org.openbase.jul.exception.InstantiationException, CouldNotPerformException {
         super(DimmableLightController.class, unitHost, builder);
     }
-    
+
     @Override
     public void init(UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
@@ -67,18 +67,7 @@ public class DimmableLightController extends AbstractDALUnitController<DimmableL
             throw new InitializationException(this, ex);
         }
     }
-//    
-//    public void updatePowerStateProvider(final PowerState value) throws CouldNotPerformException {
-//        logger.debug("Apply powerState Update[" + value + "] for " + this + ".");
-//        
-//        try (ClosableDataBuilder<DimmableLightData.Builder> dataBuilder = getDataBuilder(this)) {
-//            long transactionId = dataBuilder.getInternalBuilder().getPowerState().getTransactionId() + 1;
-//            dataBuilder.getInternalBuilder().setPowerState(value.toBuilder().setTransactionId(transactionId));
-//        } catch (Exception ex) {
-//            throw new CouldNotPerformException("Could not apply powerState Update[" + value + "] for " + this + "!", ex);
-//        }
-//    }
-    
+
     @Override
     public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to PowerState [" + state + "]");
@@ -89,7 +78,7 @@ public class DimmableLightController extends AbstractDALUnitController<DimmableL
         }
         return powerService.setPowerState(state);
     }
-    
+
     @Override
     public PowerState getPowerState() throws NotAvailableException {
         try {
@@ -99,33 +88,30 @@ public class DimmableLightController extends AbstractDALUnitController<DimmableL
         }
     }
     
-//    public void updateBrightnessStateProvider(final BrightnessState brightnessState) throws CouldNotPerformException {
-//        logger.debug("Apply brightnessState Update[" + brightnessState + "] for " + this + ".");
-//        
-//        try (ClosableDataBuilder<DimmableLightData.Builder> dataBuilder = getDataBuilder(this)) {
-//            long transactionId = dataBuilder.getInternalBuilder().getBrightnessState().getTransactionId() + 1;
-//            dataBuilder.getInternalBuilder().setBrightnessState(brightnessState.toBuilder().setTransactionId(transactionId));
-//            if (brightnessState.getBrightness() == 0) {
-//                dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.OFF);
-//            } else {
-//                dataBuilder.getInternalBuilder().getPowerStateBuilder().setValue(PowerState.State.ON);
-//            }
-//        } catch (Exception ex) {
-//            throw new CouldNotPerformException("Could not apply brightnessState Update[" + brightnessState + "] for " + this + "!", ex);
-//        }
-//    }
-    
     @Override
     public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
         return brightnessService.setBrightnessState(brightnessState);
     }
-    
+
     @Override
     public BrightnessState getBrightnessState() throws NotAvailableException {
         try {
             return getData().getBrightnessState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("brightnessState", ex);
+        }
+    }
+
+    @Override
+    protected void updateStateProvider(DimmableLightData.Builder internalBuilder, ServiceType serviceType) {
+        switch (serviceType) {
+            case BRIGHTNESS_STATE_SERVICE:
+                if (internalBuilder.getBrightnessState().getBrightness() == 0) {
+                    internalBuilder.getPowerStateBuilder().setValue(PowerState.State.OFF);
+                } else {
+                    internalBuilder.getPowerStateBuilder().setValue(PowerState.State.ON);
+                }
+                break;
         }
     }
 }
