@@ -26,6 +26,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.List;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
@@ -41,11 +42,14 @@ import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
+import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
+ * Agent that synchronizes the behavior of different units with a power source.
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -56,27 +60,42 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
     public static final String TARGET_KEY = "TARGET";
     public static final String SOURCE_BEHAVIOUR_KEY = "SOURCE_BEHAVIOUR";
     public static final String TARGET_BEHAVIOUR_KEY = "TARGET_BEHAVIOUR";
-    private final Object AGENT_LOCK = new SyncObject("PowerStateLock");
+
     private static final PowerState ON = PowerState.newBuilder().setValue(PowerState.State.ON).build();
     private static final PowerState OFF = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
 
+    private static final PowerStateSyncBehaviour DEFAULT_SOURCE_BEHAVIOR = PowerStateSyncBehaviour.OFF;
+    private static final PowerStateSyncBehaviour DEFAULT_TARGET_BEHAVIOR = PowerStateSyncBehaviour.ON;
+
+    /**
+     * Behavior that determines what the targets do if the source changes and vice
+     * versa. The behavior is only valid for targets if the source changes to on
+     * and only valid for the source if all targets turned off.
+     */
     public enum PowerStateSyncBehaviour {
 
+        /**
+         * For source: If all targets are off the source stays or is turned on.
+         * For targets: If the source is turned on all targets are turned or remain on.
+         */
         ON,
+        /**
+         * For source: If all targets are off the source stays or is turned off.
+         * For targets: If the source is turned on all targets are turned or remain off.
+         */
         OFF,
+        /**
+         * For source: If all targets are of the source stays in its current state.
+         * For targets: If the source is turned on all targets remain in their current state.
+         */
         LAST_STATE;
     }
 
-    private PowerState.State sourceLatestPowerState;
-    /**
-     * State that determines what the targets do if the source changes and vice
-     * versa.
-     *
-     * OFF when all targets are off. ON when at least one target is one.
-     */
+    private final Object AGENT_LOCK = new SyncObject("PowerStateLock");
+    private PowerState.State latestPowerStateSource;
+    private PowerState.State latestPowerStateTarget;
+    private final Observer<GeneratedMessage> sourceObserver, sourceRequestObserver, targetObserver, targetRequestObserer;
     private final List<UnitRemote> targetRemotes = new ArrayList<>();
-    private final Observer<GeneratedMessage> sourceObserver, targetObserver;
-    private PowerState.State targetLatestPowerState;
     private UnitRemote sourceRemote;
     private PowerStateSyncBehaviour sourceBehaviour, targetBehaviour;
 
@@ -85,10 +104,32 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
 
         // initialize observer
         sourceObserver = (final Observable<GeneratedMessage> source, GeneratedMessage data) -> {
-            handleSourcePowerStateUpdate(invokeGetPowerState(data).getValue(), source);
+            try {
+                handleSourcePowerStateUpdate(((PowerState) data).getValue(), source);
+            } catch (Exception ex) {
+                ExceptionPrinter.printHistory(ex, logger);
+            }
+        };
+        sourceRequestObserver = (final Observable<GeneratedMessage> source, GeneratedMessage data) -> {
+            try {
+                handleSourcePowerStateRequest((PowerState) data);
+            } catch (Exception ex) {
+                ExceptionPrinter.printHistory(ex, logger);
+            }
         };
         targetObserver = (final Observable<GeneratedMessage> source, GeneratedMessage data) -> {
-            handleTargetPowerStateUpdate(invokeGetPowerState(data).getValue(), source);
+            try {
+                handleTargetPowerStateUpdate(((PowerState) data).getValue());
+            } catch (Exception ex) {
+                ExceptionPrinter.printHistory(ex, logger);
+            }
+        };
+        targetRequestObserer = (final Observable<GeneratedMessage> source, GeneratedMessage data) -> {
+            try {
+                handleTargetPowerStateRequest((PowerState) data);
+            } catch (Exception ex) {
+                ExceptionPrinter.printHistory(ex, logger);
+            }
         };
     }
 
@@ -124,34 +165,144 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
                 i--;
                 logger.debug("Found [" + i + "] target/s");
             }
-            sourceBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(SOURCE_BEHAVIOUR_KEY));
-            targetBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(TARGET_BEHAVIOUR_KEY));
+
+            try {
+                sourceBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(SOURCE_BEHAVIOUR_KEY));
+            } catch (NotAvailableException ex) {
+                sourceBehaviour = DEFAULT_SOURCE_BEHAVIOR;
+            }
+            try {
+                targetBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(TARGET_BEHAVIOUR_KEY));
+            } catch (NotAvailableException ex) {
+                targetBehaviour = DEFAULT_TARGET_BEHAVIOR;
+            }
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
 
-    private void handleTargetPowerStateUpdate(final PowerState.State targetPowerState, final Object target) {
+    /**
+     * Handle a new requested power state for a target remote.
+     *
+     * @param powerState The requested power state for the target remote.
+     */
+    private void handleTargetPowerStateRequest(final PowerState powerState) {
         synchronized (AGENT_LOCK) {
             try {
-                logger.debug("Received new Value[" + targetPowerState + "] for Target[" + target + "]");
-                if (!updateLatestTargetPowerState(targetPowerState, target)) {
-                    return;
-                }
-                if (targetLatestPowerState == PowerState.State.ON) {
-                    if (sourceLatestPowerState != PowerState.State.ON) {
-                        invokeSetPower(sourceRemote, ON);
+                // if on is requested on a target and the source is not yet on turn it on
+                if (powerState.getValue() == PowerState.State.ON && latestPowerStateTarget == PowerState.State.OFF) {
+                    if (getPowerState(sourceRemote).getValue() != PowerState.State.ON) {
+                        setPowerState(sourceRemote, ON);
                     }
-                } else if (targetLatestPowerState == PowerState.State.OFF) {
+                }
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory("Could not handle target power state request!", ex, logger);
+            }
+        }
+    }
+
+    private void handleTargetPowerStateUpdate(final PowerState.State targetPowerState) {
+        synchronized (AGENT_LOCK) {
+            try {
+                // update the accumulated latest power state for all targets
+                if (updateLatestTargetPowerState(targetPowerState)) {
+                    // the state changed to off
                     switch (sourceBehaviour) {
                         case OFF:
-                            if (sourceLatestPowerState != PowerState.State.OFF) {
-                                invokeSetPower(sourceRemote, OFF);
+                            if (latestPowerStateSource != PowerState.State.OFF) {
+                                setPowerState(sourceRemote, OFF);
                             }
                             break;
                         case ON:
-                            if (sourceLatestPowerState != PowerState.State.ON) {
-                                invokeSetPower(sourceRemote, ON);
+                            if (latestPowerStateSource != PowerState.State.ON) {
+                                setPowerState(sourceRemote, ON);
+                            }
+                            break;
+                        case LAST_STATE:
+                            break;
+                    }
+                }
+
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory("Could not handle target power state update!", ex, logger);
+            }
+        }
+    }
+
+    /**
+     * Method accumulates the target power states and returns if this requires a change for the source.
+     *
+     *
+     * @param targetPowerState The update of the power state for one target remote.
+     * @return If the latest target power state has changed to off.
+     * @throws CouldNotPerformException If calling getPowerState on a target remote fails.1
+     */
+    private boolean updateLatestTargetPowerState(final PowerState.State targetPowerState) throws CouldNotPerformException {
+        if (latestPowerStateTarget == PowerState.State.UNKNOWN) {
+            latestPowerStateTarget = targetPowerState;
+            return latestPowerStateTarget == PowerState.State.OFF;
+        }
+
+        if (latestPowerStateTarget == PowerState.State.OFF && targetPowerState == PowerState.State.ON) {
+            latestPowerStateTarget = PowerState.State.ON;
+            return false;
+        }
+
+        if (latestPowerStateTarget == PowerState.State.ON && targetPowerState == PowerState.State.OFF) {
+            latestPowerStateTarget = PowerState.State.OFF;
+            for (UnitRemote targetRemote : targetRemotes) {
+                if (getPowerState(targetRemote).getValue() == PowerState.State.ON) {
+                    latestPowerStateTarget = PowerState.State.ON;
+                    break;
+                }
+            }
+            return latestPowerStateTarget == PowerState.State.OFF;
+        }
+
+        return false;
+    }
+
+    /**
+     * Handle a new requested power state for the source remote.
+     *
+     * @param powerState The requested power state for the source remote.
+     */
+    private void handleSourcePowerStateRequest(final PowerState powerState) {
+        synchronized (AGENT_LOCK) {
+            try {
+                // if off is requested on the source and at least one target is currently on turn it off
+                if (powerState.getValue() == PowerState.State.OFF && latestPowerStateSource == PowerState.State.ON) {
+                    if (latestPowerStateTarget != PowerState.State.OFF) {
+                        for (UnitRemote targetRemote : targetRemotes) {
+                            setPowerState(targetRemote, OFF);
+                        }
+                    }
+                }
+            } catch (Exception ex) {
+                ExceptionPrinter.printHistory("Could not handle source power state request!", ex, logger);
+            }
+        }
+    }
+
+    private void handleSourcePowerStateUpdate(final PowerState.State sourcePowerState, final Object target) {
+        logger.debug("Handle new Value[" + sourcePowerState + "] for Source[" + target + "]");
+        synchronized (AGENT_LOCK) {
+            try {
+                latestPowerStateSource = sourcePowerState;
+                if (latestPowerStateSource == PowerState.State.ON) {
+                    switch (targetBehaviour) {
+                        case OFF:
+                            if (latestPowerStateTarget != PowerState.State.OFF) {
+                                for (UnitRemote targetRemote : targetRemotes) {
+                                    setPowerState(targetRemote, OFF);
+                                }
+                            }
+                            break;
+                        case ON:
+                            if (latestPowerStateTarget != PowerState.State.ON) {
+                                for (UnitRemote targetRemote : targetRemotes) {
+                                    setPowerState(targetRemote, ON);
+                                }
                             }
                             break;
                         case LAST_STATE:
@@ -159,94 +310,17 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
                     }
                 }
             } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory("Could not handle target power state update!", ex, logger);
+                ExceptionPrinter.printHistory("Could not handle source power state change!", ex, logger);
             }
         }
     }
 
-    private void handleSourcePowerStateUpdate(final PowerState.State sourcePowerState, final Object target) {
-        synchronized (AGENT_LOCK) {
-            this.sourceLatestPowerState = sourcePowerState;
-            logger.debug("Handle new Value[" + sourcePowerState + "] for Source[" + target + "]");
-            if (sourceLatestPowerState == PowerState.State.OFF) {
-                if (targetLatestPowerState != PowerState.State.OFF) {
-                    targetRemotes.stream().forEach((targetRemote) -> {
-                        invokeSetPower(targetRemote, OFF);
-                    });
-                }
-            } else if (sourceLatestPowerState == PowerState.State.ON) {
-                switch (targetBehaviour) {
-                    case OFF:
-                        if (targetLatestPowerState != PowerState.State.OFF) {
-                            targetRemotes.stream().forEach((targetRemote) -> {
-                                invokeSetPower(targetRemote, OFF);
-                            });
-                        }
-                        break;
-                    case ON:
-                        if (targetLatestPowerState != PowerState.State.ON) {
-                            targetRemotes.stream().forEach((targetRemote) -> {
-                                invokeSetPower(targetRemote, ON);
-                            });
-                        }
-                        break;
-                    case LAST_STATE:
-                        break;
-                }
-            }
-        }
+    private void setPowerState(final UnitRemote remote, final PowerState powerState) throws CouldNotPerformException {
+        Services.invokeOperationServiceMethod(ServiceType.POWER_STATE_SERVICE, remote, powerState);
     }
 
-    /**
-     *
-     * @param targetPowerState
-     * @return if the latest target power state has changed
-     * @throws CouldNotPerformException
-     */
-    private boolean updateLatestTargetPowerState(final PowerState.State targetPowerState, final Object source) throws CouldNotPerformException {
-        logger.debug("Received new Value[" + targetPowerState + "] for Source[" + source + "]");
-        if (targetLatestPowerState == PowerState.State.UNKNOWN) {
-            targetLatestPowerState = targetPowerState;
-            return true;
-        }
-        if (targetLatestPowerState == PowerState.State.OFF && targetPowerState == PowerState.State.ON) {
-            targetLatestPowerState = PowerState.State.ON;
-            return true;
-        }
-
-        if (targetLatestPowerState == PowerState.State.ON && targetPowerState == PowerState.State.OFF) {
-            targetLatestPowerState = PowerState.State.OFF;
-            for (UnitRemote targetRemote : targetRemotes) {
-                if (invokeGetPowerState(targetRemote.getData()).getValue() == PowerState.State.ON) {
-                    targetLatestPowerState = PowerState.State.ON;
-                    break;
-                }
-            }
-            return targetLatestPowerState == PowerState.State.OFF;
-        }
-
-        return false;
-    }
-
-    private void invokeSetPower(final UnitRemote remote, final PowerState powerState) {
-        logger.debug("Switch " + remote + " to " + powerState.getValue().name());
-        try {
-            Method method = remote.getClass().getMethod("setPowerState", PowerState.class);
-            method.invoke(remote, powerState);
-        } catch (NoSuchMethodException ex) {
-            ExceptionPrinter.printHistory("Remote [" + remote.getClass().getSimpleName() + "] has no set Power method!", ex, logger);
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            ExceptionPrinter.printHistory("Could not invoke setPower method on remote [" + remote.getClass().getSimpleName() + "] with value [" + powerState + "]", ex, logger);
-        }
-    }
-
-    private PowerState invokeGetPowerState(final Object message) throws CouldNotPerformException {
-        try {
-            Method method = message.getClass().getMethod("getPowerState");
-            return (PowerState) method.invoke(message);
-        } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-            throw new CouldNotPerformException("Could not get powerState from message [" + message + "]", ex);
-        }
+    private PowerState getPowerState(final Object object) throws CouldNotPerformException {
+        return (PowerState) Services.invokeProviderServiceMethod(ServiceType.POWER_STATE_SERVICE, object);
     }
 
     @Override
@@ -254,23 +328,25 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
         logger.debug("Executing PowerStateSynchroniser agent");
         sourceRemote.waitForData();
         String targetIds = "";
-        targetLatestPowerState = PowerState.State.UNKNOWN;
+        latestPowerStateTarget = PowerState.State.UNKNOWN;
         for (UnitRemote targetRemote : targetRemotes) {
             targetRemote.waitForData();
             targetIds += "[" + targetRemote.getLabel() + "]";
-            if ((targetLatestPowerState == PowerState.State.OFF || targetLatestPowerState == PowerState.State.UNKNOWN) && invokeGetPowerState(targetRemote.getData()).getValue() == PowerState.State.ON) {
-                targetLatestPowerState = PowerState.State.ON;
-            } else if (targetLatestPowerState == PowerState.State.UNKNOWN && invokeGetPowerState(targetRemote.getData()).getValue() == PowerState.State.OFF) {
-                targetLatestPowerState = PowerState.State.OFF;
+            if ((latestPowerStateTarget == PowerState.State.OFF || latestPowerStateTarget == PowerState.State.UNKNOWN) && getPowerState(targetRemote.getData()).getValue() == PowerState.State.ON) {
+                latestPowerStateTarget = PowerState.State.ON;
+            } else if (latestPowerStateTarget == PowerState.State.UNKNOWN && getPowerState(targetRemote.getData()).getValue() == PowerState.State.OFF) {
+                latestPowerStateTarget = PowerState.State.OFF;
             }
-            targetRemote.addDataObserver(targetObserver);
-            handleTargetPowerStateUpdate(invokeGetPowerState(targetRemote.getData()).getValue(), targetRemote);
+            targetRemote.addServiceStateObserver(ServiceTempus.REQUESTED, ServiceType.POWER_STATE_SERVICE, targetRequestObserer);
+            targetRemote.addServiceStateObserver(ServiceTempus.CURRENT, ServiceType.POWER_STATE_SERVICE, targetObserver);
+            handleTargetPowerStateUpdate(getPowerState(targetRemote.getData()).getValue());
         }
 
         // add data observer after all target remotes have been activated
         // else setPowerState could be called on a target remote without being active
-        sourceRemote.addDataObserver(sourceObserver);
-        handleSourcePowerStateUpdate(invokeGetPowerState(sourceRemote.getData()).getValue(), sourceRemote);
+        sourceRemote.addServiceStateObserver(ServiceTempus.REQUESTED, ServiceType.POWER_STATE_SERVICE, sourceRequestObserver);
+        sourceRemote.addServiceStateObserver(ServiceTempus.CURRENT, ServiceType.POWER_STATE_SERVICE, sourceObserver);
+        handleSourcePowerStateUpdate(getPowerState(sourceRemote.getData()).getValue(), sourceRemote);
 
         logger.debug("Source [" + sourceRemote.getLabel() + "] behaviour [" + sourceBehaviour + "]");
         logger.debug("Targets [" + targetIds + "] behaviour [" + targetBehaviour + "]");
@@ -280,9 +356,9 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
     protected void stop() throws CouldNotPerformException, InterruptedException {
         logger.debug("Stopping PowerStateSynchroniserAgent...");
         sourceRemote.removeDataObserver(sourceObserver);
-        for (UnitRemote targetRemote : targetRemotes) {
+        targetRemotes.forEach((targetRemote) -> {
             targetRemote.removeDataObserver(sourceObserver);
-        }
+        });
     }
 
     public UnitRemote getSourceRemote() {

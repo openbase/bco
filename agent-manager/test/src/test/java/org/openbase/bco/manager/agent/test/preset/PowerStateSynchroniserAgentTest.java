@@ -37,6 +37,8 @@ import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import org.slf4j.LoggerFactory;
 import rst.configuration.EntryType.Entry;
 import rst.configuration.MetaConfigType.MetaConfig;
@@ -103,6 +105,16 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
         DimmerRemote dimmerRemote = Units.getUnit(sourceId, true, Units.DIMMER);
         ColorableLightRemote colorableLightRemote = Units.getUnit(targetId1, true, Units.COLORABLE_LIGHT);
         PowerSwitchRemote powerSwitchRemote = Units.getUnit(targetId2, true, Units.POWER_SWITCH);
+
+        dimmerRemote.addDataObserver((Observable<DimmerData> source, DimmerData data) -> {
+            LOGGER.warn("Dimmer state change to [" + data.getPowerState().getValue() + "]");
+        });
+        colorableLightRemote.addDataObserver((Observable<ColorableLightData> source, ColorableLightData data) -> {
+            LOGGER.warn("ColorableLight state change to [" + data.getPowerState().getValue() + "]");
+        });
+        powerSwitchRemote.addDataObserver((Observable<PowerSwitchData> source, PowerSwitchData data) -> {
+            LOGGER.warn("PowerSwitch state change to [" + data.getPowerState().getValue() + "]");
+        });
 
         UnitStateAwaiter<DimmerData, DimmerRemote> dimmerStateAwaiter = new UnitStateAwaiter(dimmerRemote);
         UnitStateAwaiter<ColorableLightData, ColorableLightRemote> colorableLightStateAwaiter = new UnitStateAwaiter(colorableLightRemote);
