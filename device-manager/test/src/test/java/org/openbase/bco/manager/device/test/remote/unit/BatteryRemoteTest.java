@@ -84,6 +84,15 @@ public class BatteryRemoteTest extends AbstractBCODeviceManagerTest {
             batteryRemote.requestData().get();
             assertEquals("The getter for the battery level returns the wrong value!", state.getLevel(), batteryRemote.getBatteryState().getLevel(), 0.1);
             assertEquals("The battery state has not been updated according to the level!", BatteryState.State.OK, batteryRemote.getData().getBatteryState().getValue());
+            
+            BatteryState lastState = batteryRemote.getBatteryState();
+            level = 9.5;
+            state = BatteryState.newBuilder().setLevel(level).setValue(BatteryState.State.INSUFFICIENT).build();
+            ((BatteryController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(batteryRemote.getId())).updateStateProvider(state);
+            batteryRemote.requestData().get();
+            assertEquals("The getter for the battery level returns the wrong value!", state.getLevel(), batteryRemote.getBatteryState().getLevel(), 0.1);
+            assertEquals("The battery state value has not been updated correctly!", state.getValue(), batteryRemote.getData().getBatteryState().getValue());
+            assertEquals("The last battery state has not been updated correctly!", lastState, batteryRemote.getData().getBatteryStateLast());
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LoggerFactory.getLogger(BatteryRemoteTest.class));
         }
