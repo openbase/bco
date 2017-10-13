@@ -281,10 +281,10 @@ public class ActionImpl implements Action {
             // im serviceAttribute actionDescription setzen
             Message.Builder serviceStateBuilder = ((Message) serviceAttribute).toBuilder();
             Descriptors.FieldDescriptor fieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, "responsible_action");
-            serviceStateBuilder.setField(fieldDescriptor, actionDescriptionBuilder);
+            serviceStateBuilder.setField(fieldDescriptor, actionDescriptionBuilder.build());
                     
             // im dataBuilder serviceAttribute als requested state setzen
-            Services.invokeServiceMethod(serviceDescription.getType(), serviceDescription.getPattern(), ServiceTempus.REQUESTED, dataBuilder, serviceStateBuilder);
+            Services.invokeServiceMethod(serviceDescription.getType(), serviceDescription.getPattern(), ServiceTempus.REQUESTED, dataBuilder.getInternalBuilder(), serviceStateBuilder);
         }
     }
 
