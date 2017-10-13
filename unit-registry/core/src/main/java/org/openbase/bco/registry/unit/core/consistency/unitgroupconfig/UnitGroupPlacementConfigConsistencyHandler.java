@@ -26,9 +26,10 @@ import java.util.List;
 import java.util.stream.Collectors;
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3d;
-import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.extension.rct.GlobalTransformReceiver;
@@ -36,10 +37,13 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import org.openbase.jul.storage.registry.Registry;
 import rct.TransformerException;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfigOrBuilder;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 import rst.geometry.AxisAlignedBoundingBox3DFloatType.AxisAlignedBoundingBox3DFloat;
 import rst.geometry.PoseType.Pose;
 import rst.geometry.RotationType.Rotation;
@@ -69,16 +73,21 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
      */
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationUnitConfigRegistry;
 
+    private final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry;
+
     /**
      * Constructor.
      *
      * @param unitConfigRegistryList the list of all the unitConfigRegistries.
      * @param locationUnitConfigRegistry the locationUnitConfigRegistry.
+     * @param deviceClassRegistry
      */
     public UnitGroupPlacementConfigConsistencyHandler(final ArrayList<ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder>> unitConfigRegistryList,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationUnitConfigRegistry) {
+            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationUnitConfigRegistry,
+            final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry) {
         this.unitConfigRegistryList = unitConfigRegistryList;
         this.locationUnitConfigRegistry = locationUnitConfigRegistry;
+        this.deviceClassRegistry = deviceClassRegistry;
     }
 
     /**
@@ -230,8 +239,9 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
             }
 
             try {
-                CachedLocationRegistryRemote.getRegistry().waitForData();
-                Shape unitShape = CachedLocationRegistryRemote.getRegistry().getUnitShape((UnitConfig) unitConfig);
+//                CachedLocationRegistryRemote.getRegistry().waitForData();
+//                Shape unitShape = CachedLocationRegistryRemote.getRegistry().getUnitShape((UnitConfig) unitConfig);
+                Shape unitShape = getUnitShape(unitConfig);
                 if (unitShape.hasBoundingBox()) {
                     AxisAlignedBoundingBox3DFloat boundingBox = unitShape.getBoundingBox();
                     return getCorners(boundingBox).stream().map(corner -> {
@@ -240,6 +250,7 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
                     }).collect(Collectors.toList());
                 }
             } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
                 if (!(ex instanceof NotAvailableException)) {
                     throw new CouldNotPerformException("CachedLocationRegistryRemote not available.", ex);
                 }
@@ -303,6 +314,69 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
                     System.currentTimeMillis()).getTransform();
         } catch (TransformerException ex) {
             throw new NotAvailableException("UnitToRootTransform", ex);
+        }
+    }
+
+    /**
+     * Method returns the unit shape of the given unit referred by the id.
+     *
+     * If this unit configuration does not provide any shape information the shape of the unit host will be returned.
+     * In case the unit host even does not provide any shape information and the unit is a device than the shape of the device class will be used.
+     *
+     * @param unitId the id to resolve the unit shape.
+     * @return the shape representing the unit.
+     * @throws NotAvailableException is thrown if the unit shape is not available or the resolution has been failed.
+     */
+    private Shape getUnitShape(final String unitId) throws NotAvailableException {
+        try {
+            for (ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> registry : unitConfigRegistryList) {
+                if (registry.contains(unitId)) {
+                    return getUnitShape(registry.getMessage(unitId));
+                }
+            }
+            throw new NotAvailableException("Unit with id["+unitId+"]");
+        } catch (final CouldNotPerformException ex) {
+            throw new NotAvailableException("Shape", "of unit " + unitId, ex);
+        }
+    }
+
+    /**
+     * Method returns the unit shape of the given unit configuration.
+     *
+     * If this unit configuration does not provide any shape information the shape of the unit host will be returned.
+     * In case the unit host even does not provide any shape information and the unit is a device than the shape of the device class will be used.
+     *
+     * @param unitConfig the unit configuration to resolve the unit shape.
+     * @return the shape representing the unit.
+     * @throws NotAvailableException is thrown if the unit shape is not available or the resolution has been failed.
+     */
+    private Shape getUnitShape(final UnitConfigOrBuilder unitConfig) throws NotAvailableException {
+        try {
+
+            // resolve shape via unit config
+            if (unitConfig.hasPlacementConfig() && unitConfig.getPlacementConfig().hasShape()) {
+                Shape shape = unitConfig.getPlacementConfig().getShape();
+                if (shape.hasBoundingBox() || shape.getCeilingCount() != 0 || shape.getFloorCount() != 0 || shape.getFloorCeilingEdgeCount() != 0) {
+                    // Only if shape is not empty!
+                    return unitConfig.getPlacementConfig().getShape();
+                }
+            }
+
+            // resolve shape via unit host
+            if (unitConfig.hasUnitHostId()) {
+                return getUnitShape(unitConfig.getUnitHostId());
+            }
+
+            // resolve shape via device class
+            if (unitConfig.getType().equals(UnitType.DEVICE)) {
+                return deviceClassRegistry.get(unitConfig.getDeviceConfig().getDeviceClassId()).getMessage().getShape();
+            }
+
+            // inform that the resolution is not possible.
+            throw new CouldNotPerformException("Shape could not be resolved by any source.");
+
+        } catch (final CouldNotPerformException ex) {
+            throw new NotAvailableException("Shape", "of Unit [" + unitConfig.getLabel() + "]", ex);
         }
     }
 }
