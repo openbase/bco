@@ -29,6 +29,7 @@ import java.util.concurrent.ExecutionException;
 import javax.crypto.BadPaddingException;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
+import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -58,14 +59,14 @@ public class AuthenticatedServerManager {
     private final long ticketValidityTime;
 
     private AuthenticatedServerManager() throws CouldNotPerformException, InterruptedException {
-        ticketValidityTime = JPService.testMode() ? 500 : AuthenticationServerHandler.DEFAULT_VALIDITY_PERIOD_IN_MILLIS;
         try {
+            this.ticketValidityTime = JPService.getProperty(JPSessionTimeout.class).getValue();
             if (JPService.getProperty(JPAuthentication.class).getValue()) {
                 this.login();
                 this.requestServiceServerSecretKey();
             }
         } catch (JPNotAvailableException ex) {
-            throw new CouldNotPerformException("Could not check JPEnableAuthentication property", ex);
+            throw new CouldNotPerformException("Could not check JPProperty", ex);
         }
     }
 
