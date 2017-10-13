@@ -28,12 +28,14 @@ import org.junit.Test;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rst.processing.TimestampJavaTimeTransform;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
@@ -44,7 +46,6 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 import rst.timing.IntervalType;
 import rst.timing.IntervalType.Interval;
-import static org.openbase.bco.authentication.lib.AuthenticationServerHandler.DEFAULT_VALIDITY_PERIOD_IN_MILLIS;
 
 /**
  *
@@ -131,7 +132,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         long currentTime = 0;
         Interval.Builder validityInterval = IntervalType.Interval.newBuilder();
         validityInterval.setBegin(TimestampJavaTimeTransform.transform(currentTime));
-        validityInterval.setEnd(TimestampJavaTimeTransform.transform(currentTime + DEFAULT_VALIDITY_PERIOD_IN_MILLIS));
+        validityInterval.setEnd(TimestampJavaTimeTransform.transform(currentTime + JPService.getProperty(JPSessionTimeout.class).getValue()));
         validityInterval.build();
         
         Ticket.Builder cstb = ticket.toBuilder();
@@ -167,7 +168,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         long currentTime = 0;
         Interval.Builder validityInterval = IntervalType.Interval.newBuilder();
         validityInterval.setBegin(TimestampJavaTimeTransform.transform(currentTime));
-        validityInterval.setEnd(TimestampJavaTimeTransform.transform(currentTime + DEFAULT_VALIDITY_PERIOD_IN_MILLIS));
+        validityInterval.setEnd(TimestampJavaTimeTransform.transform(currentTime + JPService.getProperty(JPSessionTimeout.class).getValue()));
         validityInterval.build();
         
         Ticket.Builder cstb = ticket.toBuilder();
