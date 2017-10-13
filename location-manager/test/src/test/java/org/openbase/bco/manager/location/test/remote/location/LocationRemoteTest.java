@@ -24,9 +24,7 @@ package org.openbase.bco.manager.location.test.remote.location;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 import org.junit.After;
-import org.junit.AfterClass;
 import org.junit.Assert;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
@@ -42,20 +40,9 @@ import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
-import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
-import org.openbase.bco.manager.location.core.LocationManagerLauncher;
-import org.openbase.bco.registry.location.lib.LocationRegistry;
-import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
-import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.unit.lib.UnitRegistry;
-import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -191,10 +178,10 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
         double temperature = 21;
         TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(temperature).build();
         for (TemperatureSensorController temperatureSensor : temperatureSensorList) {
-            temperatureSensor.updateTemperatureStateProvider(temperatureState);
+            temperatureSensor.updateStateProvider(temperatureState);
         }
         for (TemperatureControllerController temperatureController : temperatureControllerList) {
-            temperatureController.updateTemperatureStateProvider(temperatureState);
+            temperatureController.updateStateProvider(temperatureState);
         }
         System.out.println("ping");
         locationRemote.ping().get();
@@ -210,7 +197,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
         System.out.println("PowerConsumptionSensors: " + powerConsumptionSensorList.size());
         PowerConsumptionState powerConsumptionState = PowerConsumptionState.newBuilder().setVoltage(240).setConsumption(10).setCurrent(1).build();
         for (PowerConsumptionSensorController powerConsumptionSensor : powerConsumptionSensorList) {
-            powerConsumptionSensor.updatePowerConsumptionStateProvider(powerConsumptionState);
+            powerConsumptionSensor.updateStateProvider(powerConsumptionState);
             System.out.println("Updated powerConsumptionState of [" + powerConsumptionSensor.toString() + "] to [" + powerConsumptionSensor.getPowerConsumptionState() + "]");
         }
 
@@ -348,7 +335,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
                 return;
             }
 
-            motionDetectorController.updateMotionStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(MotionState.newBuilder().setValue(MotionState.State.MOTION).build()));
+            motionDetectorController.updateStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(MotionState.newBuilder().setValue(MotionState.State.MOTION).build()));
 
             while (locationRemote.getPresenceState().getValue() != PresenceState.State.PRESENT) {
                 System.out.println("Waiting for locationRemote presenceState update!");
@@ -356,7 +343,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
             }
             Assert.assertEquals("PresenceState of location has not been updated!", PresenceState.State.PRESENT, locationRemote.getPresenceState().getValue());
 
-            motionDetectorController.updateMotionStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(MotionState.newBuilder().setValue(MotionState.State.NO_MOTION).build()));
+            motionDetectorController.updateStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(MotionState.newBuilder().setValue(MotionState.State.NO_MOTION).build()));
 
             Thread.sleep(PresenceDetector.PRESENCE_TIMEOUT);
             while (locationRemote.getPresenceState().getValue() != PresenceState.State.ABSENT) {
@@ -393,7 +380,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
 
             double illuminance = 50000.0;
             for (LightSensorController lightSensorController : lightSensorControllerList) {
-                lightSensorController.updateIlluminanceStateProvider(IlluminanceState.newBuilder().setIlluminance(illuminance).build());
+                lightSensorController.updateStateProvider(IlluminanceState.newBuilder().setIlluminance(illuminance).build());
             }
 
             while (locationRemote.getIlluminanceState().getIlluminance() != illuminance) {
@@ -404,7 +391,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
 
             illuminance = 10000.0;
             for (LightSensorController lightSensorController : lightSensorControllerList) {
-                lightSensorController.updateIlluminanceStateProvider(IlluminanceState.newBuilder().setIlluminance(illuminance).build());
+                lightSensorController.updateStateProvider(IlluminanceState.newBuilder().setIlluminance(illuminance).build());
             }
 
             while (locationRemote.getIlluminanceState().getIlluminance() != illuminance) {
