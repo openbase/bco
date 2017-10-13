@@ -32,7 +32,8 @@ import org.openbase.bco.dal.remote.unit.BatteryRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.slf4j.LoggerFactory;
 import rst.domotic.state.BatteryStateType.BatteryState;
 
 /**
@@ -40,23 +41,23 @@ import rst.domotic.state.BatteryStateType.BatteryState;
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class BatteryRemoteTest extends AbstractBCODeviceManagerTest {
-
+    
     private static BatteryRemote batteryRemote;
-
+    
     public BatteryRemoteTest() {
     }
-
+    
     @BeforeClass
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
-
+        
         batteryRemote = Units.getUnitsByLabel(MockRegistry.BATTERY_LABEL, true, BatteryRemote.class).get(0);
     }
-
+    
     @Before
     public void setUp() {
     }
-
+    
     @After
     public void tearDown() {
     }
@@ -75,11 +76,16 @@ public class BatteryRemoteTest extends AbstractBCODeviceManagerTest {
      */
     @Test(timeout = 10000)
     public void testGetBatteryLevel() throws Exception {
-        System.out.println("getBatteryLevel");
-        double level = 34.0;
-        BatteryState state = BatteryState.newBuilder().setLevel(level).setValue(BatteryState.State.OK).build();
-        ((BatteryController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(batteryRemote.getId())).updateStateProvider(state);
-        batteryRemote.requestData().get();
-        assertEquals("The getter for the battery level returns the wrong value!", state.getValue(), batteryRemote.getBatteryState().getValue());
-    }
+        try {
+            System.out.println("getBatteryLevel");
+            double level = 34.0;
+            BatteryState state = BatteryState.newBuilder().setLevel(level).build();
+            ((BatteryController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(batteryRemote.getId())).updateStateProvider(state);
+            batteryRemote.requestData().get();
+            assertEquals("The getter for the battery level returns the wrong value!", state.getLevel(), batteryRemote.getBatteryState().getLevel(), 0.1);
+            assertEquals("The battery state has not been updated according to the level!", BatteryState.State.OK, batteryRemote.getData().getBatteryState().getValue());
+        } catch (Exception ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LoggerFactory.getLogger(BatteryRemoteTest.class));
+        }
+    }    
 }

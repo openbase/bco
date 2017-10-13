@@ -32,6 +32,7 @@ import org.openbase.bco.dal.remote.unit.SmokeDetectorRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.AlarmStateType.AlarmState;
 import rst.domotic.state.SmokeStateType.SmokeState;
 
@@ -79,7 +80,7 @@ public class SmokeDetectorRemoteTest extends AbstractBCODeviceManagerTest {
     public void testGetSmokeAlarmState() throws Exception {
         System.out.println("getSmokeAlarmState");
         AlarmState alarmState = AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
-        ((SmokeDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(smokeDetectorRemote.getId())).updateStateProvider(alarmState);
+        ((SmokeDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(smokeDetectorRemote.getId())).updateStateProvider(alarmState, ServiceType.SMOKE_ALARM_STATE_SERVICE);
         smokeDetectorRemote.requestData().get();
         Assert.assertEquals("The getter for the smoke alarm state returns the wrong value!", alarmState.getValue(), smokeDetectorRemote.getSmokeAlarmState().getValue());
     }

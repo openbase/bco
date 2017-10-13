@@ -37,7 +37,6 @@ import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.extension.rst.processing.TimestampJavaTimeTransform;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.Stopwatch;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ButtonStateType.ButtonState;
 
 /**
@@ -92,7 +91,7 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
      *
      * @throws java.lang.Exception
      */
-//    @Test(timeout = 10000)
+    @Test(timeout = 10000)
     public void testGetButtonStateTimestamp() throws Exception {
         System.out.println("testGetButtonStateTimestamp");
         long timestamp;

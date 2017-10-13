@@ -32,6 +32,7 @@ import org.openbase.bco.dal.remote.unit.TemperatureControllerRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 
 /**
@@ -92,8 +93,7 @@ public class TemperatureControllerRemoteTest extends AbstractBCODeviceManagerTes
         System.out.println("getTargetTemperature");
         double temperature = 3.141F;
         TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(temperature).build();
-//        System.out.println(temperatureControllerRemote.getTargetTemperatureState());
-        ((TemperatureControllerController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureControllerRemote.getId())).updateStateProvider(temperatureState);
+        ((TemperatureControllerController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureControllerRemote.getId())).updateStateProvider(temperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
         temperatureControllerRemote.requestData().get();
         Assert.assertEquals("The getter for the target temperature returns the wrong value!", temperatureState.getTemperature(), temperatureControllerRemote.getTargetTemperatureState().getTemperature(), 0.1);
     }

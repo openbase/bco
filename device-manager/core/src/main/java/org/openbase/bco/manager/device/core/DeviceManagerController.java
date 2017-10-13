@@ -75,7 +75,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
      * @throws InterruptedException
      */
     public DeviceManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        this(new ServiceFactoryMock());
+        this(ServiceFactoryMock.getInstance());
     }
 
     public DeviceManagerController(final ServiceFactory serviceFactory) throws org.openbase.jul.exception.InstantiationException, InterruptedException {

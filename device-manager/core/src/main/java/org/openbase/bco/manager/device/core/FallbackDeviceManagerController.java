@@ -55,7 +55,7 @@ public class FallbackDeviceManagerController implements Launchable<Void>, VoidIn
         try {
             deviceRegistryRemote = Registries.getDeviceRegistry();
             deviceRegistryRemote.waitForData();
-            deviceManagerController = new DeviceManagerController(new ServiceFactoryMock()) {
+            deviceManagerController = new DeviceManagerController(ServiceFactoryMock.getInstance()) {
 
                 @Override
                 public boolean isSupported(UnitConfig config) throws CouldNotPerformException {
