@@ -25,7 +25,9 @@ import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.pattern.ConfigurableRemote;
+import org.openbase.jul.pattern.Observer;
 import rsb.Scope;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.rsb.ScopeType;
 
@@ -83,4 +85,8 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, Configu
     boolean isEnabled();
 
     public void setSessionManager(SessionManager sessionManager);
+    
+    public void addServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer observer);
+    
+    public void removeServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer observer);
 }

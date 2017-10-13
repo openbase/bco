@@ -92,12 +92,13 @@ public abstract class AbstractDALUnitController<M extends GeneratedMessage, MB e
      * least on update method is not available.
      */
     private void verifyUnitConfig() throws VerificationFailedException {
-        try {
-            logger.debug("Validating unit update methods...");
-
-            MultiException.ExceptionStack exceptionStack = null;
-            List<String> unitMethods = new ArrayList<>();
-            String updateMethod;
+        // The update method is now implemented generically so the check is not needed anymore
+//        try {
+//            logger.debug("Validating unit update methods...");
+//
+//            MultiException.ExceptionStack exceptionStack = null;
+//            List<String> unitMethods = new ArrayList<>();
+//            String updateMethod;
 
             // === Load unit methods. ===
 //            for (Method medhod : getClass().getMethods()) {
@@ -120,9 +121,9 @@ public abstract class AbstractDALUnitController<M extends GeneratedMessage, MB e
 //            }
 
             // === throw multi exception in error case. ===
-            MultiException.checkAndThrow("At least one update method missing!", exceptionStack);
-        } catch (CouldNotPerformException ex) {
-            throw new VerificationFailedException("UnitTemplate is not compatible for configured unit controller!", ex);
-        }
+//            MultiException.checkAndThrow("At least one update method missing!", exceptionStack);
+//        } catch (CouldNotPerformException ex) {
+//            throw new VerificationFailedException("UnitTemplate is not compatible for configured unit controller!", ex);
+//        }
     }
 }
