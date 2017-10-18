@@ -29,7 +29,7 @@ import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.pattern.Observer;
 import rst.domotic.action.ActionDescriptionType;
 import rst.domotic.action.ActionFutureType;
-import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -39,7 +39,7 @@ public interface ServiceProvider {
     @RPCMethod
     public Future<ActionFutureType.ActionFuture> applyAction(final ActionDescriptionType.ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException;
     
-    public void addServiceStateObserver(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType, final Observer observer);
+    public void addServiceStateObserver(final ServiceType serviceType, final Observer observer);
 
-    public void removeServiceStateObserver(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType, final Observer observer);
+    public void removeServiceStateObserver(final ServiceType serviceType, final Observer observer);
 }

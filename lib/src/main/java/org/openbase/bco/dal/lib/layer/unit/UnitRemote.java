@@ -85,8 +85,4 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, Configu
     boolean isEnabled();
 
     public void setSessionManager(SessionManager sessionManager);
-    
-    public void addServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer observer);
-    
-    public void removeServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer observer);
 }

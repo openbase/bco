@@ -1,0 +1,129 @@
+package org.openbase.bco.dal.lib.layer.unit;
+
+/*-
+ * #%L
+ * BCO DAL Library
+ * %%
+ * Copyright (C) 2014 - 2017 openbase.org
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-3.0.html>.
+ * #L%
+ */
+import com.google.protobuf.Descriptors;
+import com.google.protobuf.Message;
+import java.util.HashSet;
+import java.util.Set;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.bco.dal.lib.layer.service.Service.ServiceTempus;
+import static org.openbase.bco.dal.lib.layer.service.Service.ServiceTempus.CURRENT;
+import static org.openbase.bco.dal.lib.layer.service.Service.ServiceTempus.LAST;
+import static org.openbase.bco.dal.lib.layer.service.Service.ServiceTempus.REQUESTED;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.pattern.AbstractObservable;
+import org.openbase.jul.pattern.provider.DataProvider;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate;
+
+/**
+ *
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
+ * @param <M>
+ */
+public class UnitDataFilteredObservable<M extends Message> extends AbstractObservable<M> {
+
+    private final DataProvider<M> unit;
+    private final ServiceTempus serviceTempus;
+    private final Set<String> fieldsToKeep;
+    private UnitTemplate unitTemplate;
+
+    public UnitDataFilteredObservable(final DataProvider<M> dataProvider, final ServiceTempus serviceTempus) {
+        this(dataProvider, serviceTempus, null);
+    }
+
+    public UnitDataFilteredObservable(final DataProvider<M> dataProvider, final ServiceTempus serviceTempus, final UnitTemplate unitTemplate) {
+        super(dataProvider);
+
+        this.unit = dataProvider;
+        this.serviceTempus = serviceTempus;
+        this.setHashGenerator((M value) -> {
+            return removeUnwantedServiceTempus(value.toBuilder()).build().hashCode();
+        });
+
+        this.fieldsToKeep = new HashSet<>();
+        this.unitTemplate = unitTemplate;
+        if (unitTemplate != null) {
+            updateFieldsToKeep();
+        }
+    }
+
+    @Override
+    public void waitForValue(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        unit.waitForData();
+    }
+
+    @Override
+    public M getValue() throws NotAvailableException {
+        return unit.getData();
+    }
+
+    @Override
+    public boolean isValueAvailable() {
+        return unit.isDataAvailable();
+    }
+
+    @Override
+    public Future<M> getValueFuture() {
+        return unit.getDataFuture();
+    }
+
+    private synchronized void updateFieldsToKeep() {
+        fieldsToKeep.clear();
+
+        Set<ServiceType> serviceTypeSet = new HashSet<>();
+        for (ServiceDescription serviceDescription : unitTemplate.getServiceDescriptionList()) {
+            if (!serviceTypeSet.contains(serviceDescription.getType())) {
+                serviceTypeSet.add(serviceDescription.getType());
+
+                String fieldName = serviceDescription.getType().name().replace(Service.SERVICE_LABEL.toUpperCase(), "").toLowerCase();
+                switch (serviceTempus) {
+                    case LAST:
+                    case REQUESTED:
+                        fieldName += serviceTempus.name().toLowerCase();
+                        break;
+                    case CURRENT:
+                        fieldName = fieldName.substring(0, fieldName.length() - 1);
+                }
+                fieldsToKeep.add(fieldName);
+            }
+        }
+    }
+
+    public void updateToUnitTemplateChange(UnitTemplate unitTemplate) {
+        this.unitTemplate = unitTemplate;
+        updateFieldsToKeep();
+    }
+
+    public synchronized Message.Builder removeUnwantedServiceTempus(final Message.Builder builder) {
+        Descriptors.Descriptor descriptorForType = builder.getDescriptorForType();
+        descriptorForType.getFields().stream().filter((field) -> (field.getType() == Descriptors.FieldDescriptor.Type.MESSAGE)).filter((field) -> (!fieldsToKeep.contains(field.getName()))).forEachOrdered((field) -> {
+            builder.clearField(field);
+        });
+        return builder;
+    }
+}

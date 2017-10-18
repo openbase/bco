@@ -64,6 +64,7 @@ import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.FutureProcessor;
 import rct.Transform;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -606,4 +607,25 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
         ActionDescription actionDescription = (ActionDescription) serviceState.getField(fieldDescriptor);
         return actionDescription.getTransactionId();
     }
+
+    @Override
+    default public void addServiceStateObserver(final ServiceType serviceType, final Observer observer) {
+        addServiceStateObserver(ServiceTempus.CURRENT, serviceType, observer);
+    }
+
+    @Override
+    default public void removeServiceStateObserver(final ServiceType serviceType, final Observer observer) {
+        removeServiceStateObserver(ServiceTempus.CURRENT, serviceType, observer);
+    }
+
+    public void addServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer observer);
+
+    public void removeServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer observer);
+
+    public void addDataObserver(ServiceTempus serviceTempus, final Observer<D> observer);
+
+    public void removeDataObserver(ServiceTempus serviceTempus, final Observer<D> observer);
+    
+    public void addRawDataObserver(final Observer<D> observer);
+    public void removeRawDataObserver(final Observer<D> observer);
 }

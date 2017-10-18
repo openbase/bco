@@ -80,6 +80,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.Service.ServiceTempus;
+import org.openbase.bco.dal.lib.layer.unit.UnitDataFilteredObservable;
 import org.openbase.bco.dal.remote.unit.future.UnitSynchronisationFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 
@@ -100,7 +101,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     private boolean initialized = false;
 
     private final Observer<UnitRegistryData> unitRegistryObserver;
-//    private final Map<ServiceType, MessageObservable> serviceStateObservableMap;
+    private final Map<ServiceTempus, UnitDataFilteredObservable<D>> unitDataObservableMap;
     private final Map<ServiceTempus, Map<ServiceType, MessageObservable>> serviceTempusServiceTypeObservableMap;
     private SessionManager sessionManager;
 
@@ -124,10 +125,16 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
             }
         };
 
+        this.unitDataObservableMap = new HashMap<>();
         this.serviceTempusServiceTypeObservableMap = new HashMap<>();
         for (ServiceTempus serviceTempus : ServiceTempus.values()) {
+            this.unitDataObservableMap.put(serviceTempus, new UnitDataFilteredObservable<>(this, serviceTempus));
+            super.addDataObserver((Observable<D> source, D data1) -> {
+                unitDataObservableMap.get(serviceTempus).notifyObservers(data1);
+            });
+
             this.serviceTempusServiceTypeObservableMap.put(serviceTempus, new HashMap<>());
-            addDataObserver((Observable<D> source, D data1) -> {
+            addDataObserver(serviceTempus, (Observable<D> source, D data1) -> {
                 final Set<ServiceType> serviceTypeSet = new HashSet<>();
                 for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
                     if (serviceDescription.getPattern() == ServicePattern.PROVIDER && serviceTempus == ServiceTempus.REQUESTED) {
@@ -138,15 +145,6 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
                         serviceTypeSet.add(serviceDescription.getType());
                         try {
                             Object serviceData = Services.invokeServiceMethod(serviceDescription.getType(), ServicePattern.PROVIDER, serviceTempus, data1);
-                            if (serviceTempusServiceTypeObservableMap.get(serviceTempus) == null) {
-                                logger.error("[" + this + "] has no observable for tempus[" + serviceTempus + "]");
-                            }
-                            if (serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceDescription.getType()) == null) {
-                                logger.error("[" + this + "] has no observable for tempus[" + serviceTempus + "] and type[" + serviceDescription.getType() + "]");
-                            }
-                            if (serviceTempus == ServiceTempus.REQUESTED && serviceDescription.getType() == ServiceType.POWER_STATE_SERVICE) {
-                                int i = 0;
-                            }
                             serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceDescription.getType()).notifyObservers(serviceData);
                         } catch (CouldNotPerformException ex) {
                             logger.debug("Could not notify state update for service[" + serviceDescription.getType() + "] because this service is not supported by this remote controller.", ex);
@@ -302,16 +300,6 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
 //        }
 //    }
     @Override
-    public void addServiceStateObserver(final ServiceType serviceType, final Observer observer) {
-        addServiceStateObserver(ServiceTempus.CURRENT, serviceType, observer);
-    }
-
-    @Override
-    public void removeServiceStateObserver(final ServiceType serviceType, final Observer observer) {
-        removeServiceStateObserver(ServiceTempus.CURRENT, serviceType, observer);
-    }
-
-    @Override
     public void addServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer observer) {
         serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).addObserver(observer);
     }
@@ -319,6 +307,36 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     @Override
     public void removeServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer observer) {
         serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).removeObserver(observer);
+    }
+
+    @Override
+    public void addDataObserver(Observer<D> observer) {
+        addDataObserver(ServiceTempus.CURRENT, observer);
+    }
+
+    @Override
+    public void addDataObserver(ServiceTempus serviceTempus, Observer<D> observer) {
+        unitDataObservableMap.get(serviceTempus).addObserver(observer);
+    }
+
+    @Override
+    public void removeDataObserver(Observer<D> observer) {
+        removeDataObserver(ServiceTempus.CURRENT, observer);
+    }
+
+    @Override
+    public void removeDataObserver(ServiceTempus serviceTempus, Observer<D> observer) {
+        unitDataObservableMap.get(serviceTempus).removeObserver(observer);
+    }
+
+    @Override
+    public void addRawDataObserver(Observer<D> observer) {
+        super.addDataObserver(observer);
+    }
+
+    @Override
+    public void removeRawDataObserver(Observer<D> observer) {
+        super.removeDataObserver(observer);
     }
 
     /**
@@ -350,6 +368,8 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
 
         // register service observable which are not handled yet.
         for (ServiceTempus serviceTempus : ServiceTempus.values()) {
+            unitDataObservableMap.get(serviceTempus).updateToUnitTemplateChange(template);
+
             for (final ServiceDescription serviceDescription : template.getServiceDescriptionList()) {
                 if (serviceDescription.getPattern() == ServicePattern.PROVIDER && serviceTempus == ServiceTempus.REQUESTED) {
                     continue;
@@ -720,11 +740,12 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not remove unit registry observer.", ex), logger);
         }
 
-        // shutdown service observer
-        for (Map<ServiceType, MessageObservable> serviceTypeObservableMap : serviceTempusServiceTypeObservableMap.values()) {
-            for (final MessageObservable serviceObservable : serviceTypeObservableMap.values()) {
+        for (final ServiceTempus serviceTempus : ServiceTempus.values()) {
+            // shutdown service observer
+            for (final MessageObservable serviceObservable : serviceTempusServiceTypeObservableMap.get(serviceTempus).values()) {
                 serviceObservable.shutdown();
             }
+            unitDataObservableMap.get(serviceTempus).shutdown();
         }
     }
 }
