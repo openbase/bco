@@ -635,7 +635,8 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
                 // choose with which value to update
                 if (equalFields) {
-                    newState = requestedState;
+                    Descriptors.FieldDescriptor timestampField = ProtoBufFieldProcessor.getFieldDescriptor(value, "timestamp");
+                    newState = requestedState.toBuilder().setField(timestampField, value.getField(timestampField)).build();
                 } else {
                     newState = value;
                 }
