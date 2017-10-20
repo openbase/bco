@@ -329,16 +329,6 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         unitDataObservableMap.get(serviceTempus).removeObserver(observer);
     }
 
-    @Override
-    public void addRawDataObserver(Observer<D> observer) {
-        super.addDataObserver(observer);
-    }
-
-    @Override
-    public void removeRawDataObserver(Observer<D> observer) {
-        super.removeDataObserver(observer);
-    }
-
     /**
      * {@inheritDoc}
      *

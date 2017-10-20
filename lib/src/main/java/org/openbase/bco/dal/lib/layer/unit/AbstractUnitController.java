@@ -638,14 +638,4 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     public void removeDataObserver(ServiceTempus serviceTempus, Observer<D> observer) {
         unitDataObservableMap.get(serviceTempus).removeObserver(observer);
     }
-
-    @Override
-    public void addRawDataObserver(Observer<D> observer) {
-        super.addDataObserver(observer);
-    }
-
-    @Override
-    public void removeRawDataObserver(Observer<D> observer) {
-        super.removeDataObserver(observer);
-    }
 }

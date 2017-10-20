@@ -93,6 +93,10 @@ public class UnitDataFilteredObservable<M extends Message> extends AbstractObser
     }
 
     private synchronized void updateFieldsToKeep() {
+        if(serviceTempus == ServiceTempus.UNKNOWN) {
+            return;
+        }
+        
         fieldsToKeep.clear();
 
         Set<ServiceType> serviceTypeSet = new HashSet<>();
@@ -119,7 +123,12 @@ public class UnitDataFilteredObservable<M extends Message> extends AbstractObser
         updateFieldsToKeep();
     }
 
-    public synchronized Message.Builder removeUnwantedServiceTempus(final Message.Builder builder) {
+    private synchronized Message.Builder removeUnwantedServiceTempus(final Message.Builder builder) {
+        // if unkown keep everything
+        if(serviceTempus == ServiceTempus.UNKNOWN) {
+            return builder;
+        }
+        
         Descriptors.Descriptor descriptorForType = builder.getDescriptorForType();
         descriptorForType.getFields().stream().filter((field) -> (field.getType() == Descriptors.FieldDescriptor.Type.MESSAGE)).filter((field) -> (!fieldsToKeep.contains(field.getName()))).forEachOrdered((field) -> {
             builder.clearField(field);

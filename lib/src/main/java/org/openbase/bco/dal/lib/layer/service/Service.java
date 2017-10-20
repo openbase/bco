@@ -54,6 +54,7 @@ public interface Service {
 
     // release todo: move to rst
     public enum ServiceTempus {
+        UNKNOWN,
         LAST,
         CURRENT,
         REQUESTED

@@ -608,24 +608,67 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
         return actionDescription.getTransactionId();
     }
 
+    /**
+     * Add an observer which is only notified if the value for the current 
+     * value of the given service type changes.
+     * 
+     * @param serviceType The service type on which the observer is added.
+     * @param observer The observer which is added.
+     */
     @Override
     default public void addServiceStateObserver(final ServiceType serviceType, final Observer observer) {
         addServiceStateObserver(ServiceTempus.CURRENT, serviceType, observer);
     }
 
+    /**
+     * Remove an observer which is only notified if the value for the current 
+     * value of the given service type changes.
+     * 
+     * @param serviceType The service type on which the observer is removed.
+     * @param observer The observer which is removed.
+     */
     @Override
     default public void removeServiceStateObserver(final ServiceType serviceType, final Observer observer) {
         removeServiceStateObserver(ServiceTempus.CURRENT, serviceType, observer);
     }
 
+    /**
+     * Add an observer which is only notified if the desired service type for
+     * the desired service tempus changes.
+     * 
+     * @param serviceTempus The service tempus on which the observer is added.
+     * @param serviceType The service type on which the observer is added.
+     * @param observer The observer which is added.
+     */
     public void addServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer observer);
 
+    /**
+     * Remove an observer which is only notified if the desired service type for
+     * the desired service tempus changes.
+     * 
+     * @param serviceTempus The service tempus on which the observer is removed.
+     * @param serviceType The service type on which the observer is removed.
+     * @param observer The observer which is removed.
+     */
     public void removeServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer observer);
 
+    /**
+     * Add a data observer which is only notified if data for the given
+     * service tempus changes.
+     * The value unknown is equivalent to listening on all changes.
+     * 
+     * @param serviceTempus The service tempus on which the observer is added.
+     * @param observer The observer which is added.
+     */
     public void addDataObserver(ServiceTempus serviceTempus, final Observer<D> observer);
 
+    /**
+     * Remove a data observer which is only notified if data for the given
+     * service tempus changes.
+     * The value unknown is equivalent to listening on all changes.
+     * 
+     * @param serviceTempus The service tempus on which the observer is removed.
+     * @param observer The observer which is removed.
+     */
     public void removeDataObserver(ServiceTempus serviceTempus, final Observer<D> observer);
-    
-    public void addRawDataObserver(final Observer<D> observer);
-    public void removeRawDataObserver(final Observer<D> observer);
 }
