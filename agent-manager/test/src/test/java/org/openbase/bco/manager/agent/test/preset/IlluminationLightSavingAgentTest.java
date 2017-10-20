@@ -125,7 +125,7 @@ public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTes
         UnitStateAwaiter<LocationData, LocationRemote> locationStateAwaiter = new UnitStateAwaiter(locationRemote);
 
         // create intial values with lights on and illuminance of 5000.0
-        lightSensorController.updateStateProvider(IlluminanceState.newBuilder().setIlluminance(5000.0).build());
+        lightSensorController.applyDataUpdate(IlluminanceState.newBuilder().setIlluminance(5000.0).build());
         locationRemote.setPowerState(PowerState.State.ON).get();
         LOGGER.info("WaitFor LightSensor illumincance update");
         lightSensorStateAwaiter.waitForState((LightSensorData data) -> data.getIlluminanceState().getIlluminance() == 5000.0);
@@ -170,7 +170,7 @@ public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTes
         assertEquals("Initial PowerState of Location[" + locationRemote.getLabel() + "] is not ON", PowerState.State.ON, locationRemote.getPowerState().getValue());
 
         // test if on high illuminance lights get switched off
-        lightSensorController.updateStateProvider(IlluminanceState.newBuilder().setIlluminance(7000.0).build());
+        lightSensorController.applyDataUpdate(IlluminanceState.newBuilder().setIlluminance(7000.0).build());
         LOGGER.info("WaitFor LightSensor illumincance update");
         lightSensorStateAwaiter.waitForState((LightSensorData data) -> data.getIlluminanceState().getIlluminance() == 7000.0);
         LOGGER.info("WaitFor location illumincance update");
@@ -186,7 +186,7 @@ public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTes
         //assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has not switched to OFF", PowerState.State.OFF, locationRemote.getPowerState().getValue());
 
         // test if on low illuminance lights say off
-        lightSensorController.updateStateProvider(IlluminanceState.newBuilder().setIlluminance(2000.0).build());
+        lightSensorController.applyDataUpdate(IlluminanceState.newBuilder().setIlluminance(2000.0).build());
         LOGGER.info("WaitFor LightSensor illumincance update");
         lightSensorStateAwaiter.waitForState((LightSensorData data) -> data.getIlluminanceState().getIlluminance() == 2000.0);
         LOGGER.info("WaitFor location illumincance update");

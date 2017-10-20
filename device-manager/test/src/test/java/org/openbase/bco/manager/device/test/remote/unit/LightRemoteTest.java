@@ -88,7 +88,7 @@ public class LightRemoteTest extends AbstractBCODeviceManagerTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        ((LightController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightRemote.getId())).updateStateProvider(state);
+        ((LightController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightRemote.getId())).applyDataUpdate(state);
         lightRemote.requestData().get();
         assertEquals("Light has not been set in time!", state.getValue(), lightRemote.getPowerState().getValue());
     }

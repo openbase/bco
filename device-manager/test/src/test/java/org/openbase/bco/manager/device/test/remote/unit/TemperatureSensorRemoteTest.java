@@ -79,7 +79,7 @@ public class TemperatureSensorRemoteTest extends AbstractBCODeviceManagerTest {
         System.out.println("getTemperature");
         double temperature = 37.0F;
         TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(temperature).build();
-        ((TemperatureSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureSensorRemote.getId())).updateStateProvider(temperatureState);
+        ((TemperatureSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureSensorRemote.getId())).applyDataUpdate(temperatureState);
         temperatureSensorRemote.requestData().get();
         Assert.assertEquals("The getter for the temperature returns the wrong value!", temperature, temperatureSensorRemote.getTemperatureState().getTemperature(), 0.1);
     }
@@ -94,7 +94,7 @@ public class TemperatureSensorRemoteTest extends AbstractBCODeviceManagerTest {
     public void testGetTemperatureAlarmState() throws Exception {
         System.out.println("getTemperatureAlarmState");
         AlarmState alarmState = AlarmState.newBuilder().setValue(AlarmState.State.ALARM).build();
-        ((TemperatureSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureSensorRemote.getId())).updateStateProvider(alarmState, ServiceType.TEMPERATURE_ALARM_STATE_SERVICE);
+        ((TemperatureSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(temperatureSensorRemote.getId())).applyDataUpdate(alarmState, ServiceType.TEMPERATURE_ALARM_STATE_SERVICE);
         temperatureSensorRemote.requestData().get();
         Assert.assertEquals("The getter for the temperature alarm state returns the wrong value!", alarmState.getValue(), temperatureSensorRemote.getTemperatureAlarmState().getValue());
     }

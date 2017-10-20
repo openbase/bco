@@ -21,8 +21,6 @@ package org.openbase.bco.manager.device.binding.openhab.execution;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import com.google.protobuf.Message;
-import org.openbase.bco.dal.lib.layer.unit.AbstractUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -121,7 +119,6 @@ public class OpenHABCommandExecutor {
             }
             throw ex;
         }
-//        unitController.applyDataUpdate(metaData.getServiceType(), serviceData);
-         ((AbstractUnitController) unitController).updateStateProvider((Message) serviceData);
+        unitController.applyDataUpdate(serviceData, metaData.getServiceType());
     }
 }

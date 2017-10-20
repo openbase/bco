@@ -126,7 +126,7 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         motionDetectorRemote.waitForData();
 
         // create intial values with no_motion and lights off
-        motionDetectorController.updateStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(NO_MOTION));
+        motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(NO_MOTION));
         motionDetectorStateAwaiter.waitForState((MotionDetectorData data) -> data.getMotionState().getValue() == MotionState.State.NO_MOTION);
         locationRemote.setPowerState(OFF).get();
         locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
@@ -137,7 +137,7 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         assertEquals("Initial PowerState of Location[" + locationRemote.getLabel() + "] is not OFF", PowerState.State.OFF, locationRemote.getPowerState().getValue());
 
         // test if on motion the lights are turned on
-        motionDetectorController.updateStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(MOTION));
+        motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(MOTION));
         motionDetectorStateAwaiter.waitForState((MotionDetectorData data) -> data.getMotionState().getValue() == MotionState.State.MOTION);
         locationStateAwaiter.waitForState((LocationData data) -> data.getPresenceState().getValue() == PresenceState.State.PRESENT);
         colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.ON);
@@ -149,7 +149,7 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         //assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has not switched to ON", PowerState.State.ON, locationRemote.getPowerState().getValue());
 
         // test if the lights stay on on no motion
-        motionDetectorController.updateStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(NO_MOTION));
+        motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(NO_MOTION));
         motionDetectorStateAwaiter.waitForState((MotionDetectorData data) -> data.getMotionState().getValue() == MotionState.State.NO_MOTION);
         locationStateAwaiter.waitForState((LocationData data) -> data.getPresenceState().getValue() == PresenceState.State.ABSENT);
         colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.ON);

@@ -178,10 +178,10 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
         double temperature = 21;
         TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(temperature).build();
         for (TemperatureSensorController temperatureSensor : temperatureSensorList) {
-            temperatureSensor.updateStateProvider(temperatureState);
+            temperatureSensor.applyDataUpdate(temperatureState);
         }
         for (TemperatureControllerController temperatureController : temperatureControllerList) {
-            temperatureController.updateStateProvider(temperatureState);
+            temperatureController.applyDataUpdate(temperatureState);
         }
         System.out.println("ping");
         locationRemote.ping().get();
@@ -197,7 +197,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
         System.out.println("PowerConsumptionSensors: " + powerConsumptionSensorList.size());
         PowerConsumptionState powerConsumptionState = PowerConsumptionState.newBuilder().setVoltage(240).setConsumption(10).setCurrent(1).build();
         for (PowerConsumptionSensorController powerConsumptionSensor : powerConsumptionSensorList) {
-            powerConsumptionSensor.updateStateProvider(powerConsumptionState);
+            powerConsumptionSensor.applyDataUpdate(powerConsumptionState);
             System.out.println("Updated powerConsumptionState of [" + powerConsumptionSensor.toString() + "] to [" + powerConsumptionSensor.getPowerConsumptionState() + "]");
         }
 
@@ -335,7 +335,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
                 return;
             }
 
-            motionDetectorController.updateStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(MotionState.newBuilder().setValue(MotionState.State.MOTION).build()));
+            motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(MotionState.newBuilder().setValue(MotionState.State.MOTION).build()));
 
             while (locationRemote.getPresenceState().getValue() != PresenceState.State.PRESENT) {
                 System.out.println("Waiting for locationRemote presenceState update!");
@@ -343,7 +343,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
             }
             Assert.assertEquals("PresenceState of location has not been updated!", PresenceState.State.PRESENT, locationRemote.getPresenceState().getValue());
 
-            motionDetectorController.updateStateProvider(TimestampProcessor.updateTimestampWithCurrentTime(MotionState.newBuilder().setValue(MotionState.State.NO_MOTION).build()));
+            motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(MotionState.newBuilder().setValue(MotionState.State.NO_MOTION).build()));
 
             Thread.sleep(PresenceDetector.PRESENCE_TIMEOUT);
             while (locationRemote.getPresenceState().getValue() != PresenceState.State.ABSENT) {
@@ -380,7 +380,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
 
             double illuminance = 50000.0;
             for (LightSensorController lightSensorController : lightSensorControllerList) {
-                lightSensorController.updateStateProvider(IlluminanceState.newBuilder().setIlluminance(illuminance).build());
+                lightSensorController.applyDataUpdate(IlluminanceState.newBuilder().setIlluminance(illuminance).build());
             }
 
             while (locationRemote.getIlluminanceState().getIlluminance() != illuminance) {
@@ -391,7 +391,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
 
             illuminance = 10000.0;
             for (LightSensorController lightSensorController : lightSensorControllerList) {
-                lightSensorController.updateStateProvider(IlluminanceState.newBuilder().setIlluminance(illuminance).build());
+                lightSensorController.applyDataUpdate(IlluminanceState.newBuilder().setIlluminance(illuminance).build());
             }
 
             while (locationRemote.getIlluminanceState().getIlluminance() != illuminance) {

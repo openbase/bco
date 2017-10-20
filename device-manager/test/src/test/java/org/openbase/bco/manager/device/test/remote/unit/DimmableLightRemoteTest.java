@@ -92,7 +92,7 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
     public void testGetPower() throws Exception {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        ((DimmableLightController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dimmableLightRemote.getId())).updateStateProvider(state);
+        ((DimmableLightController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dimmableLightRemote.getId())).applyDataUpdate(state);
         dimmableLightRemote.requestData().get();
         assertEquals("Power has not been set in time!", state.getValue(), dimmableLightRemote.getPowerState().getValue());
     }
@@ -122,7 +122,7 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
         System.out.println("getBrightness");
         Double brightness = 70.0d;
         BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).build();
-        ((DimmableLightController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dimmableLightRemote.getId())).updateStateProvider(brightnessState);
+        ((DimmableLightController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dimmableLightRemote.getId())).applyDataUpdate(brightnessState);
         dimmableLightRemote.requestData().get();
         assertEquals("Dimm has not been set in time!", brightnessState.getBrightness(), dimmableLightRemote.getBrightnessState().getBrightness(), 0.1);
     }

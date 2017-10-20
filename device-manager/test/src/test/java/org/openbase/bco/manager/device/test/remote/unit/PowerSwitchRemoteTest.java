@@ -83,7 +83,7 @@ public class PowerSwitchRemoteTest extends AbstractBCODeviceManagerTest {
     public void testGetPowerState() throws Exception {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        ((PowerSwitchController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(powerSwitchRemote.getId())).updateStateProvider(state);
+        ((PowerSwitchController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(powerSwitchRemote.getId())).applyDataUpdate(state);
         powerSwitchRemote.requestData().get();
         assertEquals("The getter for the power state returns the wrong value!", state.getValue(), powerSwitchRemote.getPowerState().getValue());
     }
