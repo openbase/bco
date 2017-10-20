@@ -44,7 +44,7 @@ public class JPSessionTimeout extends AbstractJPTime {
     @Override
     protected Long getPropertyDefaultValue() throws JPNotAvailableException {
         if (JPService.testMode()) {
-            return MILLI_IN_SECOND;
+            return 5 * MILLI_IN_SECOND;
         }
         return DEFAULT_TIMEOUT;
     }
