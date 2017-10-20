@@ -21,7 +21,7 @@ package org.openbase.bco.authentication.test;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.authentication.lib.mock.MockCredentialStore;
+import org.openbase.bco.authentication.mock.MockCredentialStore;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import javax.crypto.BadPaddingException;
@@ -33,7 +33,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.authentication.core.AuthenticatorController;
-import org.openbase.bco.authentication.lib.mock.MockClientStore;
+import org.openbase.bco.authentication.mock.MockClientStore;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;

@@ -27,8 +27,6 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import org.openbase.bco.authentication.lib.mock.MockClientStore;
-import org.openbase.bco.authentication.lib.jp.JPAuthenticationSimulationMode;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import javax.crypto.BadPaddingException;
@@ -105,17 +103,7 @@ public class SessionManager {
     public SessionManager(CredentialStore userStore, byte[] sessionKey) {
         // load registry
         this.loginObervable = new ObservableImpl<>();
-        boolean simulation = false;
-        try {
-            simulation = JPService.getProperty(JPAuthenticationSimulationMode.class).getValue();
-        } catch (JPNotAvailableException ex) {
-            LOGGER.warn("Could not check simulation property. Starting in normal mode.", ex);
-        }
-        if (simulation) {
-            this.store = new MockClientStore(STORE_FILENAME);
-        } else {
-            this.store = userStore;
-        }
+        this.store = userStore;
         if (sessionKey != null) {
             this.sessionKey = sessionKey;
         }
