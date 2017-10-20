@@ -23,7 +23,6 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  */
 import org.openbase.bco.dal.lib.layer.service.Service;
 import rst.domotic.service.ServiceTemplateType;
-import org.openbase.bco.dal.lib.layer.service.Services;
 
 /**
  *
@@ -45,6 +44,6 @@ public interface ProviderService extends Service {
      * @return the name of the update method.
      */
     public static String getUpdateMethodName(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) {
-        return UPDATE_METHOD_PREFIX + Services.getServiceBaseName(serviceType) + "Provider";
+        return UPDATE_METHOD_PREFIX + "StateProvider";
     }
 }

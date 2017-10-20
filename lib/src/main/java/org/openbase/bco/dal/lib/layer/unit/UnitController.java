@@ -22,7 +22,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
-import java.lang.reflect.Method;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.MessageController;
@@ -32,7 +32,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- * 
+ *
  * @param <D> the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
  */
@@ -40,21 +40,12 @@ public interface UnitController<D extends GeneratedMessage, DB extends D.Builder
 
     /**
      * Method initialize this controller with the given unit configuration.
+     *
      * @param config the unit configuration
      * @throws InitializationException is throw if any error occurs during the initialization phase.
      * @throws InterruptedException is thrown if the current thread was externally interrupted.
      */
     public void init(final UnitConfig config) throws InitializationException, InterruptedException;
-    
-    /**
-     * Returns the service state update method for the given service type.
-     *
-     * @param serviceType the type of service to update
-     * @param serviceArgumentClass the class of the service state.
-     * @return the update method.
-     * @throws CouldNotPerformException is thrown in case the update method could not be detected.
-     */
-    public Method getUpdateMethod(final ServiceType serviceType, final Class serviceArgumentClass) throws CouldNotPerformException;
 
     /**
      * Applies the given service state update for this unit.
@@ -63,5 +54,15 @@ public interface UnitController<D extends GeneratedMessage, DB extends D.Builder
      * @param serviceArgument
      * @throws CouldNotPerformException
      */
-    public void applyDataUpdate(final ServiceType serviceType, final Object serviceArgument) throws CouldNotPerformException;
+    public void applyDataUpdate(final Object serviceArgument, final ServiceType serviceType) throws CouldNotPerformException;
+
+    /**
+     * Applies the given service update for this unit by trying to resolve the service type from it automatically.
+     *
+     * @param serviceArgument
+     * @throws CouldNotPerformException
+     */
+    public default void applyDataUpdate(final Object serviceArgument) throws CouldNotPerformException {
+        applyDataUpdate(serviceArgument, Services.getServiceType(serviceArgument));
+    }
 }

@@ -21,7 +21,6 @@ package org.openbase.bco.dal.lib.layer.service.mock;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import com.google.protobuf.Message;
 import java.lang.reflect.InvocationTargetException;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -176,8 +175,8 @@ public class ServiceFactoryMock implements ServiceFactory {
             } else if (stackTrace.length == 0) {
                 throw new InvalidStateException("Could not detect method stack!");
             }
-            String methodName = "updateStateProvider";
-            unit.getClass().getMethod(methodName, Message.class, ServiceType.class).invoke(unit, argument, serviceType);
+            String methodName = "applyDataUpdate";
+            unit.getClass().getMethod(methodName, Object.class, ServiceType.class).invoke(unit, argument, serviceType);
             return CompletableFuture.completedFuture(null);
         } catch (CouldNotPerformException | NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
             throw new CouldNotPerformException("Could not call remote Message[]", ex);

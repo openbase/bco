@@ -94,7 +94,7 @@ public abstract class AbstractScheduledServiceSimulator<SERVICE_STATE extends Ge
             // apply random service manipulation
             try {
                 // randomly select one of the registered service states, update the service state timestamp and apply the state update on unit controller.
-                unitController.applyDataUpdate(serviceType, TimestampProcessor.updateTimestampWithCurrentTime(serviceState));
+                unitController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(serviceState), serviceType);
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory("Could not apply service modification!", ex, LOGGER);
             }

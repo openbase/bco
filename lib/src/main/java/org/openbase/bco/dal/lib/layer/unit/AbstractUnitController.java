@@ -25,8 +25,6 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -83,7 +81,6 @@ import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.CONSUMER;
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
@@ -435,49 +432,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
     
     @Override
-    public void applyDataUpdate(ServiceTemplate.ServiceType serviceType, Object serviceArgument) throws CouldNotPerformException {
-        try {
-            
-            if (serviceArgument == null) {
-                throw new NotAvailableException("ServiceArgument");
-            }
-            
-            final Method updateMethod = getUpdateMethod(serviceType, serviceArgument.getClass());
-            
-            try {
-                updateMethod.invoke(this, serviceArgument);
-            } catch (IllegalAccessException ex) {
-                throw new CouldNotPerformException("Cannot access related Method [" + updateMethod.getName() + "]", ex);
-            } catch (IllegalArgumentException ex) {
-                throw new CouldNotPerformException("Does not match [" + updateMethod.getParameterTypes()[0].getName() + "] which is needed by [" + updateMethod.getName() + "]!", ex);
-            } catch (InvocationTargetException ex) {
-                throw new CouldNotPerformException("The related method [" + updateMethod.getName() + "] throws an exception during invocation!", ex);
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not apply " + serviceType.name() + " Update[" + serviceArgument + "] for Unit[" + getLabel() + "]!", ex);
-        }
-    }
-    
-    @Override
-    public Method getUpdateMethod(final ServiceTemplate.ServiceType serviceType, Class serviceArgumentClass) throws CouldNotPerformException {
-        try {
-            Method updateMethod;
-            String updateMethodName = ProviderService.getUpdateMethodName(serviceType);
-            try {
-                updateMethod = getClass().getMethod(updateMethodName, serviceArgumentClass);
-                if (updateMethod == null) {
-                    throw new NotAvailableException(updateMethod);
-                }
-            } catch (NoSuchMethodException | SecurityException | NotAvailableException ex) {
-                throw new NotAvailableException("Method " + this + "." + updateMethodName + "(" + serviceArgumentClass + ")", ex);
-            }
-            return updateMethod;
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Unit not compatible!", ex);
-        }
-    }
-    
-    @Override
     public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         try {
             if (!actionDescription.hasDescription() && actionDescription.getDescription().isEmpty()) {
@@ -602,13 +556,11 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         return ++transactionId;
     }
     
-    public void updateStateProvider(final Message value) throws CouldNotPerformException {
-        updateStateProvider(value, Services.getServiceType(value));
-    }
-    
-    public void updateStateProvider(final Message value, final ServiceType serviceType) throws CouldNotPerformException {
-        logger.debug("Apply service[" + serviceType + "] update[" + value + "] for " + this + ".");
+    @Override
+    public void applyDataUpdate(final Object serviceArgument, final ServiceType serviceType) throws CouldNotPerformException {
+        logger.debug("Apply service[" + serviceType + "] update[" + serviceArgument + "] for " + this + ".");
         
+        Message value = (Message) serviceArgument;
         try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
             DB internalBuilder = dataBuilder.getInternalBuilder();
             // move current state to last state
