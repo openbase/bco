@@ -56,7 +56,7 @@ public class TamperDetectorController extends AbstractDALUnitController<TamperDe
     }
 
     @Override
-    protected void updateStateProvider(TamperDetectorData.Builder internalBuilder, ServiceType serviceType) {
+    protected void applyDataUpdate(TamperDetectorData.Builder internalBuilder, ServiceType serviceType) {
         switch (serviceType) {
             case TAMPER_STATE_SERVICE:
                 TamperState.Builder tamperState = internalBuilder.getTamperStateBuilder();

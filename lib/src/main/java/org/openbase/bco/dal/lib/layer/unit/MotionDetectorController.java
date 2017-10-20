@@ -55,7 +55,7 @@ public class MotionDetectorController extends AbstractDALUnitController<MotionDe
     }
 
     @Override
-    protected void updateStateProvider(MotionDetectorData.Builder internalBuilder, ServiceType serviceType) {
+    protected void applyDataUpdate(MotionDetectorData.Builder internalBuilder, ServiceType serviceType) {
         switch (serviceType) {
             case MOTION_STATE_SERVICE:
                 MotionState.Builder motionState = internalBuilder.getMotionStateBuilder();
@@ -67,7 +67,7 @@ public class MotionDetectorController extends AbstractDALUnitController<MotionDe
                         motionState = TimestampProcessor.updateTimestampWithCurrentTime(motionState, logger);
                     }
                     motionState.setLastMotion(motionState.getTimestamp());
-                } else if(motionState.getValue() == MotionState.State.NO_MOTION) {
+                } else if(motionState.getValue() == MotionState.State.NO_MOTION && internalBuilder.getMotionStateLast().hasLastMotion()) {
                     motionState.setLastMotion(internalBuilder.getMotionStateLast().getLastMotion());
                 }
                 break;

@@ -103,7 +103,7 @@ public class DimmableLightController extends AbstractDALUnitController<DimmableL
     }
 
     @Override
-    protected void updateStateProvider(DimmableLightData.Builder internalBuilder, ServiceType serviceType) {
+    protected void applyDataUpdate(DimmableLightData.Builder internalBuilder, ServiceType serviceType) {
         switch (serviceType) {
             case BRIGHTNESS_STATE_SERVICE:
                 if (internalBuilder.getBrightnessState().getBrightness() == 0) {

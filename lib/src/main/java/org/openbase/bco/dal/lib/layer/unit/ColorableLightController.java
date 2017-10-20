@@ -275,7 +275,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
     }
 
     @Override
-    protected void updateStateProvider(ColorableLightData.Builder internalBuilder, ServiceType serviceType) {
+    protected void applyDataUpdate(ColorableLightData.Builder internalBuilder, ServiceType serviceType) {
         switch (serviceType) {
             case COLOR_STATE_SERVICE:
                 BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(internalBuilder.getColorState().getColor().getHsbColor().getBrightness()).build();

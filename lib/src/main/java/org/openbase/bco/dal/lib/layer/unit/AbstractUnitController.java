@@ -604,7 +604,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             // update the current state
             Services.invokeServiceMethod(serviceType, OPERATION, ServiceTempus.CURRENT, internalBuilder, newState);
             // do other state depending update in sub classes
-            updateStateProvider(internalBuilder, serviceType);
+            applyDataUpdate(internalBuilder, serviceType);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply service[" + serviceType.name() + "] update[" + value + "] for " + this + "!", ex);
         }
@@ -616,7 +616,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      * @param internalBuilder The data builder of this unit which already contains the updated state.
      * @param serviceType The service type which has been updated.
      */
-    protected void updateStateProvider(DB internalBuilder, ServiceType serviceType) {
+    protected void applyDataUpdate(DB internalBuilder, ServiceType serviceType) {
         // overwrite in sub classes if a change in one service also results in a change of another
     }
     
