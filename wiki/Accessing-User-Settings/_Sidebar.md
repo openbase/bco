@@ -1,0 +1,5 @@
+- [Start](https://github.com/openbase/bco.authentication/wiki/accessing-user-settings)
+- [Check if a user has administrator permissions](https://github.com/openbase/bco.authentication/wiki/accessing-user-settings#check-if-a-user-has-administrator-permissions)
+- [Change a user's password](https://github.com/openbase/bco.authentication/wiki/accessing-user-settings#change-a-users-password)
+- [Appoint a user an admin (or the opposite way)](https://github.com/openbase/bco.authentication/wiki/accessing-user-settings#appoint-a-user-an-admin-or-the-opposite-way)
+- [How does all of this work in detail? ](https://github.com/openbase/bco.authentication/wiki/accessing-user-settings#how-does-all-of-this-work-in-detail)
