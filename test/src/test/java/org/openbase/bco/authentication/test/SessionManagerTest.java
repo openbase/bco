@@ -23,7 +23,7 @@ package org.openbase.bco.authentication.test;
  */
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
-import org.openbase.bco.authentication.lib.mock.MockCredentialStore;
+import org.openbase.bco.authentication.mock.MockCredentialStore;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
@@ -32,7 +32,7 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
-import org.openbase.bco.authentication.lib.mock.MockClientStore;
+import org.openbase.bco.authentication.mock.MockClientStore;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.CredentialStore;
 import org.openbase.bco.authentication.lib.EncryptionHelper;

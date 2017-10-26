@@ -32,7 +32,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Future;
 import org.apache.commons.lang.RandomStringUtils;
-import org.openbase.bco.authentication.lib.mock.MockCredentialStore;
 import javax.crypto.BadPaddingException;
 import org.openbase.bco.authentication.lib.AuthenticationServerHandler;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
@@ -57,7 +56,6 @@ import org.openbase.bco.authentication.lib.CredentialStore;
 import org.openbase.bco.authentication.lib.ExceptionReporter;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.exception.SessionExpiredException;
-import org.openbase.bco.authentication.lib.jp.JPAuthenticationSimulationMode;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
 import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.jul.exception.NotAvailableException;
@@ -100,15 +98,15 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
 
     private final long ticketValidityTime;
 
-    public AuthenticatorController() throws InitializationException  {
+    public AuthenticatorController() throws InitializationException {
         this(new CredentialStore(STORE_FILENAME), EncryptionHelper.generateKey());
     }
 
-    public AuthenticatorController(CredentialStore store) throws InitializationException  {
+    public AuthenticatorController(CredentialStore store) throws InitializationException {
         this(store, EncryptionHelper.generateKey());
     }
 
-    public AuthenticatorController(byte[] serviceServerPrivateKey) throws InitializationException  {
+    public AuthenticatorController(byte[] serviceServerPrivateKey) throws InitializationException {
         this(new CredentialStore(STORE_FILENAME), serviceServerPrivateKey);
     }
 
@@ -118,17 +116,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
         this.ticketGrantingServiceSecretKey = EncryptionHelper.generateKey();
         this.serviceServerSecretKey = serviceServerPrivateKey;
 
-        boolean simulation = false;
-        try {
-            simulation = JPService.getProperty(JPAuthenticationSimulationMode.class).getValue();
-        } catch (JPNotAvailableException ex) {
-            LOGGER.warn("Could not check simulation property. Starting in normal mode.", ex);
-        }
-        if (simulation) {
-            this.store = new MockCredentialStore();
-        } else {
-            this.store = store;
-        }
+        this.store = store;
 
         try {
             this.ticketValidityTime = JPService.getProperty(JPSessionTimeout.class).getValue();

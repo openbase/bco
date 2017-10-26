@@ -1,8 +1,8 @@
-package org.openbase.bco.authentication.lib.mock;
+package org.openbase.bco.authentication.mock;
 
 /*-
  * #%L
- * BCO Authentication Library
+ * BCO Authentication Test
  * %%
  * Copyright (C) 2017 openbase.org
  * %%
@@ -21,6 +21,7 @@ package org.openbase.bco.authentication.lib.mock;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.security.KeyPair;
 import java.util.HashMap;
 import org.openbase.bco.authentication.lib.CredentialStore;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
@@ -31,7 +32,7 @@ import org.openbase.jul.exception.InitializationException;
  *
  * @author <a href="mailto:cromankiewicz@techfak.uni-bielefeld.de">Constantin Romankiewicz</a>
  */
-public class MockClientStore extends CredentialStore {
+public class MockCredentialStore extends CredentialStore {
 
     public static final String USER_ID = "user";
     public static final String USER_PASSWORD = "password";
@@ -43,12 +44,10 @@ public class MockClientStore extends CredentialStore {
 
     public static final String CLIENT_ID = "client";
 
-    public MockClientStore() {
-        super("mock_client_store.json");
-    }
+    public static final KeyPair SERVICE_SERVER_KEY_PAIR = EncryptionHelper.generateKeyPair();
 
-    public MockClientStore(String filename) {
-        super(filename);
+    public MockCredentialStore() {
+        super("mock_server_store.json");
     }
     
     @Override
@@ -56,13 +55,15 @@ public class MockClientStore extends CredentialStore {
         credentials = new HashMap<>();
         this.setCredentials(ADMIN_ID, ADMIN_PASSWORD_HASH);
         this.setCredentials(USER_ID, USER_PASSWORD_HASH);
+        this.setCredentials(SERVICE_SERVER_ID, SERVICE_SERVER_KEY_PAIR.getPublic().getEncoded());
         try {
             this.setAdmin(ADMIN_ID, true);
-         } catch (CouldNotPerformException ex) {
+        } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
-    
+
     @Override
-    protected void saveStore() {}
+    protected void saveStore() {
+    }
 }
