@@ -13,7 +13,7 @@
    id="svg2"
    version="1.1"
    inkscape:version="0.91 r13725"
-   sodipodi:docname="architekturplan.svg">
+   sodipodi:docname="architecture.svg">
   <metadata
      id="metadata325">
     <rdf:RDF>
@@ -37,12 +37,12 @@
      inkscape:pageopacity="0"
      inkscape:pageshadow="2"
      inkscape:window-width="1920"
-     inkscape:window-height="1141"
+     inkscape:window-height="1029"
      id="namedview321"
      showgrid="false"
-     inkscape:zoom="2.0510581"
-     inkscape:cx="446.03486"
-     inkscape:cy="295.52503"
+     inkscape:zoom="1.0255291"
+     inkscape:cx="391.52453"
+     inkscape:cy="264.08469"
      inkscape:window-x="0"
      inkscape:window-y="0"
      inkscape:window-maximized="1"
@@ -749,22 +749,7 @@
            height="99.94841"
            x="363.71469"
            y="280.64658" /></flowRegion><flowPara
-         id="flowPara3663"></flowPara></flowRoot>    <flowRoot
-       xml:space="preserve"
-       id="flowRoot3665"
-       style="font-style:normal;font-weight:normal;font-size:20px;line-height:125%;font-family:sans-serif;letter-spacing:0px;word-spacing:0px;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
-       transform="translate(145.9751,105.81543)"><flowRegion
-         id="flowRegion3667"><rect
-           id="rect3669"
-           width="200.38437"
-           height="101.89862"
-           x="354.4512"
-           y="280.15903"
-           style="font-size:20px" /></flowRegion><flowPara
-         style="font-size:18.75px;text-align:center;text-anchor:middle"
-         id="flowPara3687">Authenticator</flowPara><flowPara
-         style="font-size:18.75px;text-align:center;text-anchor:middle"
-         id="flowPara3685">Controller</flowPara></flowRoot>    <flowRoot
+         id="flowPara3663" /></flowRoot>    <flowRoot
        xml:space="preserve"
        id="flowRoot3677"
        style="fill:black;stroke:none;stroke-opacity:1;stroke-width:1px;stroke-linejoin:miter;stroke-linecap:butt;fill-opacity:1;font-family:sans-serif;font-style:normal;font-weight:normal;font-size:40px;line-height:125%;letter-spacing:0px;word-spacing:0px"><flowRegion
@@ -774,5 +759,20 @@
            height="74.108086"
            x="340.31213"
            y="287.95987" /></flowRegion><flowPara
-         id="flowPara3683"></flowPara></flowRoot>  </g>
+         id="flowPara3683" /></flowRoot>    <text
+       xml:space="preserve"
+       style="font-style:normal;font-weight:normal;font-size:18.75px;line-height:125%;font-family:Sans;text-align:center;letter-spacing:0px;word-spacing:0px;text-anchor:middle;fill:#000000;fill-opacity:1;stroke:none;stroke-width:1px;stroke-linecap:butt;stroke-linejoin:miter;stroke-opacity:1"
+       x="600.11377"
+       y="404.50146"
+       id="text4326"
+       sodipodi:linespacing="125%"><tspan
+         sodipodi:role="line"
+         id="tspan4328"
+         x="600.11377"
+         y="404.50146">Authenticator</tspan><tspan
+         sodipodi:role="line"
+         x="600.11377"
+         y="427.93896"
+         id="tspan4330">Controller</tspan></text>
+  </g>
 </svg>
