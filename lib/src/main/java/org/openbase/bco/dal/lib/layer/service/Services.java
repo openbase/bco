@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.service;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
@@ -37,7 +38,6 @@ import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
-import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -58,11 +58,11 @@ public class Services {
      * @param serviceType the service type to extract the base name.
      * @return the service base name.
      */
-    public static String getServiceBaseName(ServiceTemplate.ServiceType serviceType) {
+    public static String getServiceBaseName(ServiceType serviceType) {
         return StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replaceAll(Service.SERVICE_LABEL, "");
     }
 
-    public static String getServicePrefix(final ServiceTemplateType.ServiceTemplate.ServicePattern pattern) throws CouldNotPerformException {
+    public static String getServicePrefix(final ServicePattern pattern) throws CouldNotPerformException {
         switch (pattern) {
             case CONSUMER:
                 return "";
@@ -297,11 +297,28 @@ public class Services {
         }
     }
 
-    public static ActionDescription getResponsibleAction(final GeneratedMessage serviceState) throws NotAvailableException {
+    public static ActionDescription getResponsibleAction(final Message serviceState) throws NotAvailableException {
         try {
             return (ActionDescription) serviceState.getClass().getMethod("getResponsibleAction").invoke(serviceState);
         } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
             throw new NotAvailableException("ActionDescription", ex);
         }
+    }
+    
+    public static String getServiceFieldName(final ServiceType serviceType, final ServiceTempus serviceTempus) {
+        String result = serviceType.name().replace(Service.SERVICE_LABEL.toUpperCase(), "").toLowerCase();
+        switch(serviceTempus) {
+            case REQUESTED:
+            case LAST:
+                // add service tempus postfix
+                result += serviceTempus.name().toLowerCase();
+                break;
+            case CURRENT:
+            case UNKNOWN:
+                // remove underscore at the end
+                result = result.substring(0, result.length() - 1);
+                break;
+        }
+        return result;
     }
 }

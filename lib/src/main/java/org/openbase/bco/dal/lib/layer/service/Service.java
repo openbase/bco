@@ -51,6 +51,8 @@ public interface Service {
     public static final Package SERVICE_STATE_PACKAGE = ContactStateType.class.getPackage();
     public static final Package SERVICE_MODE_PACKAGE = OperationModeType.OperationMode.class.getPackage();
     public static final String SERVICE_LABEL = Service.class.getSimpleName();
+    
+    public static final String RESPONSIBLE_ACTION_FIELD_NAME = "responsible_action";
 
     // release todo: move to rst
     public enum ServiceTempus {

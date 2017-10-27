@@ -27,11 +27,8 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.Service.ServiceTempus;
-import static org.openbase.bco.dal.lib.layer.service.Service.ServiceTempus.CURRENT;
-import static org.openbase.bco.dal.lib.layer.service.Service.ServiceTempus.LAST;
-import static org.openbase.bco.dal.lib.layer.service.Service.ServiceTempus.REQUESTED;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.AbstractObservable;
@@ -104,16 +101,7 @@ public class UnitDataFilteredObservable<M extends Message> extends AbstractObser
             if (!serviceTypeSet.contains(serviceDescription.getType())) {
                 serviceTypeSet.add(serviceDescription.getType());
 
-                String fieldName = serviceDescription.getType().name().replace(Service.SERVICE_LABEL.toUpperCase(), "").toLowerCase();
-                switch (serviceTempus) {
-                    case LAST:
-                    case REQUESTED:
-                        fieldName += serviceTempus.name().toLowerCase();
-                        break;
-                    case CURRENT:
-                        fieldName = fieldName.substring(0, fieldName.length() - 1);
-                }
-                fieldsToKeep.add(fieldName);
+                fieldsToKeep.add(Services.getServiceFieldName(serviceDescription.getType(), serviceTempus));
             }
         }
     }

@@ -68,6 +68,7 @@ import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
@@ -576,7 +577,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 Message requestedState = (Message) Services.invokeServiceMethod(serviceType, PROVIDER, ServiceTempus.REQUESTED, internalBuilder);
                 for (Descriptors.FieldDescriptor field : value.getDescriptorForType().getFields()) {
                     // ignore timestamps
-                    if (field.getName().equals("timestamp")) {
+                    if (field.getName().equals(TimestampProcessor.TIMESTEMP_FIELD.toLowerCase())) {
                         continue;
                     }
                     if (value.hasField(field) && !(value.getField(field).equals(requestedState.getField(field)))) {
@@ -587,8 +588,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
                 // choose with which value to update
                 if (equalFields) {
-                    Descriptors.FieldDescriptor timestampField = ProtoBufFieldProcessor.getFieldDescriptor(value, "timestamp");
+                    // use the requested state but update the timestamp
+                    Descriptors.FieldDescriptor timestampField = ProtoBufFieldProcessor.getFieldDescriptor(value, TimestampProcessor.TIMESTEMP_FIELD.toLowerCase());
                     newState = requestedState.toBuilder().setField(timestampField, value.getField(timestampField)).build();
+                    
+                    // clear requested state
+                    Descriptors.FieldDescriptor requestedStateField = ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Services.getServiceFieldName(serviceType, ServiceTempus.REQUESTED));
+                    internalBuilder.clearField(requestedStateField);
                 } else {
                     newState = value;
                 }
@@ -597,7 +603,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 newState = value;
             }
             // update the action description
-            Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(newState, "responsible_action");
+            Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(newState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
             ActionDescription actionDescription = (ActionDescription) newState.getField(descriptor);
             actionDescription = actionDescription.toBuilder().setTransactionId(generateTransactionId()).build();
             newState = newState.toBuilder().setField(descriptor, actionDescription).build();
