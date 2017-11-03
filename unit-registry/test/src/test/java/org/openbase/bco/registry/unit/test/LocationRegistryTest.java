@@ -192,32 +192,6 @@ public class LocationRegistryTest {
     }
 
     /**
-     * Test if a root location is removed that the children become root
-     * locations.
-     *
-     * @throws Exception
-     */
-    @Test(timeout = 5000)
-    public void testRootConsistency() throws Exception {
-        System.out.println("TestRootConsisntency");
-        UnitConfig root = getLocationUnitBuilder(LocationType.ZONE).setLabel("TestRootLocation").build();
-        UnitConfig registeredRoot = unitRegistry.registerUnitConfig(root).get();
-
-        assertTrue("The new location isn't registered as a root location.", registeredRoot.getLocationConfig().getRoot());
-        assertEquals("Wrong location scope", "/testrootlocation/", ScopeGenerator.generateStringRep(registeredRoot.getScope()));
-
-        UnitConfig child = getLocationUnitBuilder(LocationType.ZONE).setLabel("TestChildLocation").setPlacementConfig(PlacementConfig.newBuilder().setLocationId(registeredRoot.getId()).build()).build();
-        UnitConfig registeredChild = unitRegistry.registerUnitConfig(child).get();
-        assertTrue("The new location isn't registered as a child location.", !registeredChild.getLocationConfig().getRoot());
-        assertTrue("The child location isn't represented in its parent.", unitRegistry.getUnitConfigById(registeredRoot.getId()).getLocationConfig().getChildIdList().contains(registeredChild.getId()));
-        assertTrue("The root node contains more than one child.", unitRegistry.getUnitConfigById(registeredRoot.getId()).getLocationConfig().getChildIdCount() == 1);
-
-        UnitConfig removedLocation = unitRegistry.removeUnitConfig(registeredRoot).get();
-        assertFalse("The deleted root location is still available.", unitRegistry.containsUnitConfig(removedLocation));
-        assertTrue("Child hasn't become a root location after the removal of its parent.", unitRegistry.getUnitConfigById(registeredChild.getId()).getLocationConfig().getRoot());
-    }
-
-    /**
      * Test if a root location becomes a child after it is set as a child of
      * root locations.
      *
