@@ -12,6 +12,16 @@ layout: default
 
 ![LocationGraphStructure]({{ site.baseurl }}/images/LocationArchitecture_GraphStructure.png)
 
+## Modifications
+
+### Removal
+
+* The root location cannot be removed
+* Removing a location causes every unit to be moved to its parent
+* Removing a tile causes two additional effects:
+   * Regions inside the tile are removed recursively
+   * Every connection connecting this tile and only one other tile is removed
+
 ## Guidelines
 
 * The transformation provided by each unit transforms between the unit and its parent location.
