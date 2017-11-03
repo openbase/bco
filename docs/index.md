@@ -235,7 +235,7 @@ This repository provides a collection of precompiled libs and tools for rsb. Thi
 
 The rsb python and c++ libs can be installed via the cor-lab debian repository as well as the rsb developer tools:
 ```
-sudo apt-get install librsc0.15 librsb0.15 rsb0.15 rst0.15 cl-rsb rsb-tools-cpp0.15 rsb-tools-cl0.15
+sudo apt-get install librsc0.16 librsb0.16 rsb0.16 rst0.16 librsc0.17 librsb0.17 rsb0.17 rst0.17 cl-rsb rsb-tools-cpp0.18 rsb-tools-cl0.18
 ```
 
 ## RSB Configuration
