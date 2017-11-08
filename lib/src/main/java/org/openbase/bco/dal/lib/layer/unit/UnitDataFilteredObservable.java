@@ -27,7 +27,6 @@ import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.layer.service.Service.ServiceTempus;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -35,6 +34,7 @@ import org.openbase.jul.pattern.AbstractObservable;
 import org.openbase.jul.pattern.provider.DataProvider;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 
 /**

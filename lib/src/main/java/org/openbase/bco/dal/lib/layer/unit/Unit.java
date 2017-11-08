@@ -68,6 +68,7 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.FutureProcessor;
 import rct.Transform;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import rst.geometry.RotationType;
 import rst.geometry.RotationType.Rotation;
 import rst.geometry.TranslationType;

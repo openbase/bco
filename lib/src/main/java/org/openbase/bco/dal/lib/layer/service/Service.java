@@ -53,14 +53,6 @@ public interface Service {
     public static final String SERVICE_LABEL = Service.class.getSimpleName();
     
     public static final String RESPONSIBLE_ACTION_FIELD_NAME = "responsible_action";
-
-    // release todo: move to rst
-    public enum ServiceTempus {
-        UNKNOWN,
-        LAST,
-        CURRENT,
-        REQUESTED
-    }
     
     /**
      * This method returns the service base name of the given service type.

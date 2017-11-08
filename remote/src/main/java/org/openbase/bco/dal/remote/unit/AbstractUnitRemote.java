@@ -79,10 +79,10 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 import org.openbase.bco.dal.lib.layer.service.Services;
-import org.openbase.bco.dal.lib.layer.service.Service.ServiceTempus;
 import org.openbase.bco.dal.lib.layer.unit.UnitDataFilteredObservable;
 import org.openbase.bco.dal.remote.unit.future.UnitSynchronisationFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
+import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 
 /**
  *
