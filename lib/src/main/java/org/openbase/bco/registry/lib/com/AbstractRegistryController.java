@@ -73,6 +73,8 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     private final Class<? extends JPScope> jpScopePropery;
     private final boolean filterSparselyRegistryData;
 
+    private Future notifyChangeFuture;
+
     /**
      * Constructor creates a new RegistryController based on the given scope and publishing registry data of the given builder.
      *
@@ -203,23 +205,53 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     @Override
     public void notifyChange() throws CouldNotPerformException, InterruptedException {
         try {
+            // sync registry flags
+            syncRegistryFlags();
+            
+            // filter notification in case an internal registry is busy.
             if (filterSparselyRegistryData) {
                 // filter notification if any internal registry is busy to avoid spreading incomplete registry context.
                 for (ProtoBufFileSynchronizedRegistry registry : getRegistries()) {
                     if (registry.isBusy()) {
-                        // skip notification
+                        /*
+                         * It can happen that a registry is still busy but it does not produce any
+                         * changes. In this case the observer which triggers this notification is not
+                         * triggered and thus no notification takes place. So schedule a task which
+                         * will notify once all registries are ready.
+                         */
+                        scheduleNotifyChangeTask();
                         return;
                     }
                 }
             }
 
+            // cancel in case the registry which was still busy also notfies
+            // this way notification only takes place once
+            if (notifyChangeFuture != null && !notifyChangeFuture.isDone()) {
+                notifyChangeFuture.cancel(true);
+            }
             // continue notification
-            syncRegistryFlags();
             super.notifyChange();
         } finally {
             synchronized (CHANGE_NOTIFIER) {
                 CHANGE_NOTIFIER.notifyAll();
             }
+        }
+    }
+
+    private void scheduleNotifyChangeTask() {
+        if (notifyChangeFuture == null || notifyChangeFuture.isDone()) {
+            notifyChangeFuture = GlobalCachedExecutorService.submit(() -> {
+                try {
+                    waitUntilReady();
+                    syncRegistryFlags();
+                    super.notifyChange();
+                } catch (InterruptedException ex) {
+                    Thread.currentThread().interrupt();
+                } catch (CouldNotPerformException ex) {
+                    logger.warn("Could not notify change", ex);
+                }
+            });
         }
     }
 
