@@ -25,11 +25,15 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.unit.user.User;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
+import rst.domotic.action.ActionAuthorityType.ActionAuthority;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.UserActivityStateType.UserActivityState;
 import rst.domotic.state.UserPresenceStateType.UserPresenceState;
@@ -51,15 +55,6 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
     public UserRemote() {
         super(UserData.class);
     }
-    
-    @Override
-    public String getUserName() throws NotAvailableException {
-        try {
-            return getConfig().getUserConfig().getUserName();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("username", ex);
-        }
-    }
 
     @Override
     public UserActivityState getUserActivityState() throws NotAvailableException {
@@ -80,57 +75,26 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
     }
 
     @Override
-    public Future<Void> setUserActivityState(UserActivityState userActivityState) throws CouldNotPerformException {
+    public Future<ActionFuture> setUserActivityState(UserActivityState userActivityState) throws CouldNotPerformException {
         //TODO: services for Users have to registered, see dal issue 44
-//        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-//        try {
-//            return this.applyAction(updateActionDescription(actionDescription, UserActivityState, ServiceType).build());
-//        } catch (InterruptedException ex) {
-//            throw new CouldNotPerformException("Interrupted while setting activationState.", ex);
-//        }
-        return RPCHelper.callRemoteMethod(userActivityState, this, Void.class);
+        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+        try {
+            return applyAction(updateActionDescription(actionDescription, userActivityState, ServiceType.USER_ACTIVITY_STATE_SERVICE).build());
+        } catch (InterruptedException ex) {
+            throw new CouldNotPerformException("Interrupted while setting activationState.", ex);
+        }
+//        return RPCHelper.callRemoteMethod(userActivityState, this, Void.class);
     }
 
     @Override
-    public Future<Void> setUserPresenceState(UserPresenceState userPresenceState) throws CouldNotPerformException {
+    public Future<ActionFuture> setUserPresenceState(UserPresenceState userPresenceState) throws CouldNotPerformException {
         //TODO: services for Users have to registered, see dal issue 44
-//        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-//        try {
-//            return this.applyAction(updateActionDescription(actionDescription, userPresenceState, ServiceType.PRESENCE_STATE_SERVICE).build());
-//        } catch (InterruptedException ex) {
-//            throw new CouldNotPerformException("Interrupted while setting activationState.", ex);
-//        }
-        return RPCHelper.callRemoteMethod(userPresenceState, this, Void.class);
-    }
-
-    //TODO move into user unit interface
-    public Boolean isAtHome() throws NotAvailableException {
+        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            switch (getData().getUserPresenceState().getValue()) {
-                case AT_HOME:
-                case SHORT_AT_HOME:
-                case SOON_AWAY:
-                    return true;
-                case AWAY:
-                case SHORT_AWAY:
-                case SOON_AT_HOME:
-                    return false;
-                case UNKNOWN:
-                    throw new InvalidStateException("UserPresenceState is unknown!");
-                default:
-                    throw new AssertionError("Type " + getData().getUserPresenceState().getValue() + " not supported!");
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("AtHomeState");
+            return applyAction(updateActionDescription(actionDescription, userPresenceState, ServiceType.USER_PRESENCE_STATE_SERVICE).build());
+        } catch (InterruptedException ex) {
+            throw new CouldNotPerformException("Interrupted while setting activationState.", ex);
         }
-    }
-
-    //TODO move into user unit interface
-    public String getName() throws NotAvailableException {
-        try {
-            return getConfig().getUserConfig().getFirstName() + " " + getConfig().getUserConfig().getLastName();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Name", ex);
-        }
+//        return RPCHelper.callRemoteMethod(userPresenceState, this, Void.class);
     }
 }
