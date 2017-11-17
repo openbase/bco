@@ -101,23 +101,23 @@ import rst.rsb.ScopeType;
  * @param <DB> the builder used to build the unit data instance.
  */
 public abstract class AbstractUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
-    
+
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionFuture.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescription.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(SnapshotType.Snapshot.getDefaultInstance()));
     }
-    
+
     private final Observer<UnitRegistryData> unitRegistryObserver;
     private final Map<ServiceTempus, UnitDataFilteredObservable<D>> unitDataObservableMap;
     private final Map<ServiceTempus, Map<ServiceType, MessageObservable>> serviceTempusServiceTypeObservableMap;
     private final List<Service> serviceList;
-    
+
     private UnitTemplate template;
     private boolean initialized = false;
-    
+
     private long transactionId = 0;
-    
+
     public AbstractUnitController(final Class unitClass, final DB builder) throws InstantiationException {
         super(builder);
         this.serviceList = new ArrayList<>();
@@ -128,7 +128,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             super.addDataObserver((Observable<D> source, D data) -> {
                 unitDataObservableMap.get(serviceTempus).notifyObservers(data);
             });
-            
+
             serviceTempusServiceTypeObservableMap.put(serviceTempus, new HashMap<>());
         }
         this.unitRegistryObserver = new Observer<UnitRegistryData>() {
@@ -148,7 +148,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             }
         };
     }
-    
+
     @Override
     public void init(Scope scope) throws InitializationException, InterruptedException {
         try {
@@ -157,7 +157,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             throw new InitializationException(this, ex);
         }
     }
-    
+
     @Override
     public void init(ScopeType.Scope scope) throws InitializationException, InterruptedException {
         try {
@@ -166,7 +166,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             throw new InitializationException(this, ex);
         }
     }
-    
+
     public void init(final String label, final ScopeProvider location) throws InitializationException, InterruptedException {
         try {
             init(ScopeGenerator.generateScope(label, getClass().getSimpleName(), location.getScope()));
@@ -174,36 +174,36 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             throw new InitializationException(this, ex);
         }
     }
-    
+
     @Override
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         try {
             if (config == null) {
                 throw new NotAvailableException("config");
             }
-            
+
             if (!config.hasId()) {
                 throw new NotAvailableException("config.id");
             }
-            
+
             if (config.getId().isEmpty()) {
                 throw new NotAvailableException("Field config.id is empty!");
             }
-            
+
             if (!config.hasLabel()) {
                 throw new NotAvailableException("config.label");
             }
-            
+
             if (config.getLabel().isEmpty()) {
                 throw new NotAvailableException("Field config.label is emty!");
             }
-            
+
             super.init(config);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }
-    
+
     @Override
     protected void postInit() throws InitializationException, InterruptedException {
         try {
@@ -216,11 +216,11 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             throw new InitializationException(this, ex);
         }
     }
-    
+
     @Override
     protected void notifyDataUpdate(final D data) throws CouldNotPerformException {
         super.notifyDataUpdate(data);
-        
+
         for (final ServiceTempus serviceTempus : ServiceTempus.values()) {
             final Set<ServiceType> serviceTypeSet = new HashSet<>();
             for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
@@ -238,7 +238,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             }
         }
     }
-    
+
     public boolean isEnabled() {
         try {
             return getConfig().getEnablingState().getValue().equals(EnablingState.State.ENABLED);
@@ -262,10 +262,10 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             return null;
         }
     }
-    
+
     @Override
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        
+
         if (config == null) {
             assert config != null;
             throw new NotAvailableException("UnitConfig");
@@ -280,13 +280,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         } catch (NotAvailableException ex) {
             logger.trace("Unit config change check failed because config is not available yet.");
         }
-        
+
         template = Registries.getUnitRegistry(true).getUnitTemplateByType(config.getType());
 
         // register service observable which are not handled yet.
         for (final ServiceTempus serviceTempus : ServiceTempus.values()) {
             unitDataObservableMap.get(serviceTempus).updateToUnitTemplateChange(template);
-            
+
             for (final ServiceDescription serviceDescription : template.getServiceDescriptionList()) {
 
                 // create observable if new
@@ -295,7 +295,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 }
             }
         }
-        
+
         for (final ServiceTempus serviceTempus : ServiceTempus.values()) {
             // cleanup service observable related to new unit template
             outer:
@@ -313,10 +313,10 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 serviceTempusServiceTypeObservableMap.get(serviceTempus).remove(serviceType).shutdown();
             }
         }
-        
+
         return super.applyConfigUpdate(config);
     }
-    
+
     @Override
     public final String getId() throws NotAvailableException {
         try {
@@ -324,17 +324,17 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             if (!tmpConfig.hasId()) {
                 throw new NotAvailableException("unitconfig.id");
             }
-            
+
             if (tmpConfig.getId().isEmpty()) {
                 throw new InvalidStateException("unitconfig.id is empty");
             }
-            
+
             return tmpConfig.getId();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("id", ex);
         }
     }
-    
+
     @Override
     public String getLabel() throws NotAvailableException {
         try {
@@ -342,7 +342,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             if (!tmpConfig.hasId()) {
                 throw new NotAvailableException("unitconfig.label");
             }
-            
+
             if (tmpConfig.getId().isEmpty()) {
                 throw new InvalidStateException("unitconfig.label is empty");
             }
@@ -351,12 +351,12 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             throw new NotAvailableException("label", ex);
         }
     }
-    
+
     @Override
     public UnitTemplate.UnitType getUnitType() throws NotAvailableException {
         return getConfig().getType();
     }
-    
+
     @Override
     public UnitTemplate getUnitTemplate() throws NotAvailableException {
         if (template == null) {
@@ -364,15 +364,15 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
         return template;
     }
-    
+
     public Collection<Service> getServices() {
         return Collections.unmodifiableList(serviceList);
     }
-    
+
     public void registerService(final Service service) {
         serviceList.add(service);
     }
-    
+
     @Override
     public void registerMethods(RSBLocalServer server) throws CouldNotPerformException {
         RPCHelper.registerInterface(Unit.class, this, server);
@@ -383,7 +383,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             serviceInterfaceMap.put(StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getType().name())
                     + StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getPattern().name()), serviceDescription);
         }
-        
+
         Class<? extends Service> serviceInterfaceClass = null;
         Package servicePackage = null;
         for (Entry<String, ServiceDescription> serviceInterfaceMapEntry : serviceInterfaceMap.entrySet()) {
@@ -420,19 +420,19 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 } catch (ClassNotFoundException | ClassCastException ex) {
                     throw new CouldNotPerformException("Could not load service interface!", ex);
                 }
-                
+
                 if (!serviceInterfaceClass.isAssignableFrom(this.getClass())) {
                     // interface not supported dummy.
                     throw new CouldNotPerformException("Could not register methods for serviceInterface [" + serviceInterfaceClass.getName() + "]");
                 }
-                
+
                 RPCHelper.registerInterface((Class) serviceInterfaceClass, this, server);
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register Interface[" + serviceInterfaceClass + "] Method [" + serviceInterfaceMapEntry.getKey() + "] for Unit[" + this.getLabel() + "].", ex), logger);
             }
         }
     }
-    
+
     @Override
     public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         try {
@@ -444,7 +444,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 logger.info(actionDescription.getDescription());
             }
             logger.info("================");
-            
+
             final ActionImpl action = new ActionImpl(this);
             action.init(actionDescription);
             return action.execute();
@@ -478,7 +478,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         if (!actionAuthority.hasTicketAuthenticatorWrapper()) {
             try {
                 Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations = Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap();
-                
+
                 if (!AuthorizationHelper.canAccess(getConfig(), null, null, locations)) {
                     throw new PermissionDeniedException("You have no permission to execute this action.");
                 }
@@ -487,13 +487,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 throw new VerificationFailedException("Verifying authority failed", ex);
             }
         }
-        
+
         try {
             TicketAuthenticatorWrapper wrapper = actionAuthority.getTicketAuthenticatorWrapper();
             AuthenticatedServerManager.TicketEvaluationWrapper validatedTicketWrapper = AuthenticatedServerManager.getInstance().evaluateClientServerTicket(wrapper);
             Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups = Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap();
             Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations = Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap();
-            
+
             if (!AuthorizationHelper.canAccess(getConfig(), validatedTicketWrapper.getUserId(), groups, locations)) {
                 throw new PermissionDeniedException("You have no permission to execute this action.");
             }
@@ -508,17 +508,17 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             throw ExceptionPrinter.printHistoryAndReturnThrowable(new VerificationFailedException("Interrupted while verifrying authority", ex), logger);
         }
     }
-    
+
     @Override
     public void addServiceStateObserver(ServiceTempus serviceTempus, ServiceType serviceType, Observer observer) {
         serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).addObserver(observer);
     }
-    
+
     @Override
     public void removeServiceStateObserver(ServiceTempus serviceTempus, ServiceType serviceType, Observer observer) {
         serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).removeObserver(observer);
     }
-    
+
     @Override
     public String toString() {
         try {
@@ -527,11 +527,11 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             return getClass().getSimpleName() + "[?]";
         }
     }
-    
+
     @Override
     public void shutdown() {
         super.shutdown();
-        
+
         try {
             // shutdown registry observer
             Registries.getUnitRegistry().removeDataObserver(unitRegistryObserver);
@@ -549,26 +549,26 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             unitDataObservableMap.get(serviceTempus).shutdown();
         }
     }
-    
+
     public synchronized long getTransactionId() {
         return transactionId;
     }
-    
+
     public long generateTransactionId() {
         return ++transactionId;
     }
-    
+
     @Override
     public void applyDataUpdate(final Object serviceArgument, final ServiceType serviceType) throws CouldNotPerformException {
         logger.debug("Apply service[" + serviceType + "] update[" + serviceArgument + "] for " + this + ".");
-        
+
         Message value = (Message) serviceArgument;
         try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
             DB internalBuilder = dataBuilder.getInternalBuilder();
             // move current state to last state
             Object currentState = Services.invokeServiceMethod(serviceType, PROVIDER, ServiceTempus.CURRENT, internalBuilder);
             Services.invokeServiceMethod(serviceType, OPERATION, ServiceTempus.LAST, internalBuilder, currentState);
-            
+
             Message newState;
             if (hasOperationServiceForType(serviceType)) {
                 // if it is an operation service test if the requested state is the new current state
@@ -592,7 +592,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                     // use the requested state but update the timestamp
                     Descriptors.FieldDescriptor timestampField = ProtoBufFieldProcessor.getFieldDescriptor(value, TimestampProcessor.TIMESTEMP_FIELD.toLowerCase());
                     newState = requestedState.toBuilder().setField(timestampField, value.getField(timestampField)).build();
-                    
+
                     // clear requested state
                     Descriptors.FieldDescriptor requestedStateField = ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Services.getServiceFieldName(serviceType, ServiceTempus.REQUESTED));
                     internalBuilder.clearField(requestedStateField);
@@ -603,13 +603,19 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 // no operation service so just update the current state
                 newState = value;
             }
+
+            // verify the service state
+            Services.verifyServiceState(newState);
+
             // update the action description
             Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(newState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
             ActionDescription actionDescription = (ActionDescription) newState.getField(descriptor);
             actionDescription = actionDescription.toBuilder().setTransactionId(generateTransactionId()).build();
             newState = newState.toBuilder().setField(descriptor, actionDescription).build();
+
             // update the current state
             Services.invokeServiceMethod(serviceType, OPERATION, ServiceTempus.CURRENT, internalBuilder, newState);
+
             // do other state depending update in sub classes
             applyDataUpdate(internalBuilder, serviceType);
         } catch (Exception ex) {
@@ -626,7 +632,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     protected void applyDataUpdate(DB internalBuilder, ServiceType serviceType) {
         // overwrite in sub classes if a change in one service also results in a change of another
     }
-    
+
     private boolean hasOperationServiceForType(ServiceType serviceType) throws NotAvailableException {
         for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
             if (serviceDescription.getType() == serviceType && serviceDescription.getPattern() == OPERATION) {
@@ -635,12 +641,12 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
         return false;
     }
-    
+
     @Override
     public void addDataObserver(ServiceTempus serviceTempus, Observer<D> observer) {
         unitDataObservableMap.get(serviceTempus).addObserver(observer);
     }
-    
+
     @Override
     public void removeDataObserver(ServiceTempus serviceTempus, Observer<D> observer) {
         unitDataObservableMap.get(serviceTempus).removeObserver(observer);

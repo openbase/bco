@@ -21,9 +21,11 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.vision.ColorType.Color;
 import rst.vision.HSBColorType.HSBColor;
@@ -66,5 +68,31 @@ public interface ColorStateProviderService extends ProviderService {
         } catch (Exception ex) {
             throw new CouldNotTransformException("Could not transform " + HSBColor.class.getName() + " to " + java.awt.Color.class.getName() + "!", ex);
         }
+    }
+    
+    static void verifyColorState(final ColorState colorState) throws VerificationFailedException {
+        verifyColor(colorState.getColor());
+    }
+
+    static void verifyColor(final Color color) throws VerificationFailedException {
+        if (color.hasHsbColor()) {
+            verifyHsbColor(color.getHsbColor());
+        } else if (color.hasRgbColor()) {
+            verifyRgbColor(color.getRgbColor());
+        } else {
+            throw new VerificationFailedException("Could not detect color type!");
+        }
+    }
+
+    static void verifyHsbColor(final HSBColor hsbColor) throws VerificationFailedException {
+        OperationService.verifyValueRange("hue", hsbColor.getHue(), 0, 360);
+        OperationService.verifyValueRange("saturation", hsbColor.getSaturation(), 0, 100);
+        OperationService.verifyValueRange("brightness", hsbColor.getBrightness(), 0, 100);
+    }
+
+    static void verifyRgbColor(final RGBColor rgbColor) throws VerificationFailedException {
+        OperationService.verifyValueRange("red", rgbColor.getRed(), 0, 255);
+        OperationService.verifyValueRange("green", rgbColor.getGreen(), 0, 255);
+        OperationService.verifyValueRange("blue", rgbColor.getBlue(), 0, 255);
     }
 }

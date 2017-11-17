@@ -21,8 +21,8 @@ package org.openbase.bco.dal.lib.layer.service.operation;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-
 import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.jul.exception.VerificationFailedException;
 
 /**
  *
@@ -30,4 +30,12 @@ import org.openbase.bco.dal.lib.layer.service.Service;
  */
 public interface OperationService extends Service {
 
+    // move to jul math module
+    static void verifyValueRange(final String name, final double value, final double min, final double max) throws VerificationFailedException {
+        if (value < min) {
+            throw new VerificationFailedException("The value of " + name + " is " + value + " which is lower than the defined minimum of " + min);
+        } else if (value > max) {
+            throw new VerificationFailedException("The value of " + name + " is " + value + " which is higher than the defined maximum of " + max);
+        }
+    }
 }

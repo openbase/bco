@@ -1,4 +1,4 @@
-    package org.openbase.bco.dal.lib.layer.service.operation;
+package org.openbase.bco.dal.lib.layer.service.operation;
 
 /*
  * #%L
@@ -36,5 +36,5 @@ public interface BrightnessStateOperationService extends OperationService, Brigh
 
     @RPCMethod
     public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException;
-
+    
 }

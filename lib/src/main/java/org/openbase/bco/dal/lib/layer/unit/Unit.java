@@ -39,8 +39,6 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Identifiable;
@@ -49,7 +47,6 @@ import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.iface.provider.LabelProvider;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
-import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -63,9 +60,12 @@ import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.FatalImplementationErrorException;
+import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.FutureProcessor;
+import org.slf4j.LoggerFactory;
 import rct.Transform;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
@@ -147,6 +147,13 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
         }
     }
 
+    /**
+     * 
+     * @param serviceState
+     * @throws VerificationFailedException
+     * @deprecated please use Services.verifyOperationServiceState(...) instead
+     */
+    @Deprecated
     public default void verifyOperationServiceState(final Object serviceState) throws VerificationFailedException {
 
         if (serviceState == null) {
@@ -168,12 +175,19 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
         }
     }
 
+    /**
+     * 
+     * @param value
+     * @throws VerificationFailedException
+     * @deprecated please use Services.verifyOperationServiceStateValue(...) instead
+     */
+    @Deprecated
     public default void verifyOperationServiceStateValue(final Enum value) throws VerificationFailedException {
-
+        
         if (value == null) {
             throw new VerificationFailedException(new NotAvailableException("ServiceStateValue"));
         }
-
+        
         if (value.name().equals("UNKNOWN")) {
             throw new VerificationFailedException("UNKNOWN." + value.getClass().getSimpleName() + " is an invalid operation service state of " + this + "!");
         }
@@ -194,11 +208,11 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
                 }
 
                 // load operation service attribute by related provider service
-                Object serviceAttribute = Services.invokeServiceMethod(serviceDescription.getType(), ServiceTemplate.ServicePattern.PROVIDER, this);
+                Message serviceAttribute = (Message) Services.invokeServiceMethod(serviceDescription.getType(), ServiceTemplate.ServicePattern.PROVIDER, this);
                 //System.out.println("load[" + serviceAttribute + "] type: " + serviceAttribute.getClass().getSimpleName());
 
                 // verify operation service state (e.g. ignore UNKNOWN service states)
-                verifyOperationServiceState(serviceAttribute);
+                Services.verifyOperationServiceState(serviceAttribute);
 
                 // fill action config
                 final ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();
@@ -216,7 +230,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
 
                 // add action config
                 snapshotBuilder.addServiceStateDescription(serviceStateDescription.build());
-            } catch (CouldNotPerformException ex) {
+            } catch (CouldNotPerformException | ClassCastException ex) {
                 exceptionStack = MultiException.push(this, ex, exceptionStack);
             }
         }

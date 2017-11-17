@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 import java.util.concurrent.Future;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -72,7 +73,7 @@ public class DimmableLightController extends AbstractDALUnitController<DimmableL
     public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to PowerState [" + state + "]");
         try {
-            verifyOperationServiceStateValue(state.getValue());
+            Services.verifyOperationServiceState(state);
         } catch (VerificationFailedException ex) {
             return FutureProcessor.canceledFuture(ActionFuture.class, ex);
         }
@@ -87,7 +88,7 @@ public class DimmableLightController extends AbstractDALUnitController<DimmableL
             throw new NotAvailableException("powerState", ex);
         }
     }
-    
+
     @Override
     public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
         return brightnessService.setBrightnessState(brightnessState);

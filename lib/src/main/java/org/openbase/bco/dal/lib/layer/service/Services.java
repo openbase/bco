@@ -29,11 +29,19 @@ import java.util.Arrays;
 import java.util.Collection;
 import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_LABEL;
 import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKAGE;
+import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
+import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
+import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
+import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.processing.StringProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -48,6 +56,8 @@ import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus
  * @author <a href="mailto:agatting@techfak.uni-bielefeld.de">Andreas Gatting</a>
  */
 public class Services {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(Services.class);
 
     /**
      * This method returns the service base name of the given service type.
@@ -259,7 +269,9 @@ public class Services {
         return classes;
     }
 
-    public static ActionDescription.Builder upateActionDescription(final ActionDescription.Builder actionDescription, final Object serviceAttribue, final ServiceType serviceType) throws CouldNotPerformException {
+    public static ActionDescription.Builder upateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribue, final ServiceType serviceType) throws CouldNotPerformException {
+        verifyServiceState(serviceAttribue);
+
         ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
         ServiceJSonProcessor jSonProcessor = new ServiceJSonProcessor();
 
@@ -282,7 +294,7 @@ public class Services {
         return actionDescription.setDescription(StringProcessor.removeDoubleWhiteSpaces(description));
     }
 
-    public static ActionDescription.Builder upateActionDescription(final ActionDescription.Builder actionDescription, final Object serviceAttribue) throws CouldNotPerformException {
+    public static ActionDescription.Builder upateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribue) throws CouldNotPerformException {
         return upateActionDescription(actionDescription, serviceAttribue, getServiceType(serviceAttribue));
     }
 
@@ -304,10 +316,10 @@ public class Services {
             throw new NotAvailableException("ActionDescription", ex);
         }
     }
-    
+
     public static String getServiceFieldName(final ServiceType serviceType, final ServiceTempus serviceTempus) {
         String result = serviceType.name().replace(Service.SERVICE_LABEL.toUpperCase(), "").toLowerCase();
-        switch(serviceTempus) {
+        switch (serviceTempus) {
             case REQUESTED:
             case LAST:
                 // add service tempus postfix
@@ -320,5 +332,80 @@ public class Services {
                 break;
         }
         return result;
+    }
+
+    public static void verifyOperationServiceState(final Message serviceState) throws VerificationFailedException {
+
+        if (serviceState == null) {
+            throw new VerificationFailedException(new NotAvailableException("ServiceState"));
+        }
+
+        final Method valueMethod;
+        try {
+            valueMethod = serviceState.getClass().getMethod("getValue");
+            try {
+                verifyOperationServiceStateValue((Enum) valueMethod.invoke(serviceState));
+            } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | ClassCastException ex) {
+                ExceptionPrinter.printHistory("Operation service verification phase failed of ServiceState[ "+serviceState.getClass().getSimpleName()+"]!", ex, LOGGER);
+            }
+        } catch (NoSuchMethodException ex) {
+            // service state does contain any value so verification is not needed.
+        }
+
+        verifyServiceState(serviceState);
+    }
+
+    public static void verifyOperationServiceStateValue(final Enum value) throws VerificationFailedException {
+        if (value == null) {
+            throw new VerificationFailedException(new NotAvailableException("ServiceStateValue"));
+        }
+
+        if (value.name().equals("UNKNOWN")) {
+            throw new VerificationFailedException("UNKNOWN." + value.getClass().getSimpleName() + " is an invalid operation service state!");
+        }
+    }
+
+    public static void verifyServiceState(final Message serviceState) throws VerificationFailedException {
+        try {
+            try {
+                detectServiceStateVerificationMethod(serviceState).invoke(null, serviceState);
+            } catch (NotAvailableException ex) {
+                ExceptionPrinter.printHistory("Verification of ServiceState[ "+serviceState.getClass().getSimpleName()+"] skipped because verification method not supported yet.!", ex, LOGGER, LogLevel.DEBUG);
+            } catch (InvocationTargetException ex) {
+                if (ex.getTargetException() instanceof VerificationFailedException) {
+                    throw (VerificationFailedException) ex.getTargetException();
+                } else {
+                    throw ex;
+                }
+            }
+        } catch (VerificationFailedException ex) {
+            throw ex;
+        } catch (NullPointerException | IllegalAccessException | ExceptionInInitializerError | CouldNotPerformException | InvocationTargetException ex) {
+            ExceptionPrinter.printHistory("Verification of service state could no be performed!", ex, LOGGER, LogLevel.WARN);
+        }
+    }
+
+    public static Method detectServiceStateVerificationMethod(final Message serviceState) throws CouldNotPerformException, NotAvailableException {
+        String methodeName = "?";
+        try {
+            methodeName = "verify" + serviceState.getClass().getSimpleName();
+            return detectProviderServiceInterface(serviceState).getMethod(methodeName, serviceState.getClass());
+        } catch (SecurityException | ClassNotFoundException ex) {
+            throw new CouldNotPerformException("Could not detect service method[" + methodeName + "]!", ex);
+        } catch (NoSuchMethodException ex) {
+            throw new NotAvailableException("service state verification method", ex);
+        }
+    }
+
+    public static Class detectProviderServiceInterface(final Message serviceState) throws ClassNotFoundException {
+        return Class.forName(ProviderService.class.getPackage().getName() + "." + serviceState.getClass().getSimpleName() + ProviderService.class.getSimpleName());
+    }
+
+    public static Class detectOperationServiceInterface(final GeneratedMessage serviceState) throws ClassNotFoundException {
+        return Class.forName(OperationService.class.getPackage().getName() + "." + serviceState.getClass().getSimpleName() + OperationService.class.getSimpleName());
+    }
+
+    public static Class detectConsumerServiceInterface(final GeneratedMessage serviceState) throws ClassNotFoundException {
+        return Class.forName(ConsumerService.class.getPackage().getName() + "." + serviceState.getClass().getSimpleName() + ConsumerService.class.getSimpleName());
     }
 }

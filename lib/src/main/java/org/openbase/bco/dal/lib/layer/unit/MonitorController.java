@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 import java.util.concurrent.Future;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -72,7 +73,7 @@ public class MonitorController extends AbstractDALUnitController<MonitorData, Mo
     public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to PowerState [" + state + "]");
         try {
-            verifyOperationServiceStateValue(state.getValue());
+            Services.verifyOperationServiceState(state);
         } catch (VerificationFailedException ex) {
             return FutureProcessor.canceledFuture(ActionFuture.class, ex);
         }
@@ -92,7 +93,7 @@ public class MonitorController extends AbstractDALUnitController<MonitorData, Mo
     public Future<ActionFuture> setStandbyState(final StandbyState state) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to StandbyState [" + state + "]");
         try {
-            verifyOperationServiceStateValue(state.getValue());
+            Services.verifyOperationServiceState(state);
         } catch (VerificationFailedException ex) {
             return FutureProcessor.canceledFuture(ActionFuture.class, ex);
         }

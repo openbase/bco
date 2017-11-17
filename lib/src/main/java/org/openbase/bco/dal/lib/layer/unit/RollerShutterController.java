@@ -25,13 +25,16 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.schedule.FutureProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionFutureType.ActionFuture;
@@ -67,23 +70,30 @@ public class RollerShutterController extends AbstractDALUnitController<RollerShu
     }
 
     @Override
-    public Future<ActionFuture> setBlindState(final BlindState blindState) throws CouldNotPerformException {
-        logger.debug("Setting [" + getLabel() + "] to BlindState [" + blindState + "]");
+    public Future<ActionFuture> setBlindState(final BlindState state) throws CouldNotPerformException {
+        logger.debug("Setting [" + getLabel() + "] to BlindState [" + state + "]");
+        
+        try {
+            Services.verifyOperationServiceState(state);
+        } catch (VerificationFailedException ex) {
+            return FutureProcessor.canceledFuture(ActionFuture.class, ex);
+        }
+        
         // stop before moving in any direction.
-        switch (blindState.getMovementState()) {
+        switch (state.getMovementState()) {
             case DOWN:
             case UP:
                 try {
-                    blindStateService.setBlindState(blindState.toBuilder().setMovementState(BlindState.MovementState.STOP).build()).get(1000, TimeUnit.MILLISECONDS);
+                    blindStateService.setBlindState(state.toBuilder().setMovementState(BlindState.MovementState.STOP).build()).get(1000, TimeUnit.MILLISECONDS);
                 } catch (ExecutionException | TimeoutException | InterruptedException ex) {
                     if (ex instanceof InterruptedException) {
                         Thread.currentThread().interrupt();
                     }
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not stop before blind movement.", ex), logger, LogLevel.WARN);
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not stop before inverse blind movement.", ex), logger, LogLevel.WARN);
                     // continue without stop
                 }
         }
-        return blindStateService.setBlindState(blindState);
+        return blindStateService.setBlindState(state);
     }
 
     @Override

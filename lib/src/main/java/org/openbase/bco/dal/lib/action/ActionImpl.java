@@ -69,7 +69,7 @@ public class ActionImpl implements Action {
 
     private final SyncObject executionSync = new SyncObject(ActionImpl.class);
     private final ServiceJSonProcessor serviceJSonProcessor;
-    private Object serviceAttribute;
+    private Message serviceAttribute;
     private ServiceDescription serviceDescription;
 
     protected final AbstractUnitController unit;
@@ -90,10 +90,13 @@ public class ActionImpl implements Action {
             this.actionDescriptionBuilder = actionDescription.toBuilder();
             this.serviceAttribute = serviceJSonProcessor.deserialize(actionDescription.getServiceStateDescription().getServiceAttribute(), actionDescription.getServiceStateDescription().getServiceAttributeType());
 
-            // Since its an action it has to be an operation service pattern
+            // verify service attribute
+            Services.verifyServiceState(serviceAttribute);
+            
+            // since its an action it has to be an operation service pattern
             this.serviceDescription = ServiceDescription.newBuilder().setType(actionDescription.getServiceStateDescription().getServiceType()).setPattern(ServicePattern.OPERATION).build();
 
-            // Set resource allocation interval if not defined yet
+            // set resource allocation interval if not defined yet
             if (!actionDescription.getResourceAllocation().getSlot().hasBegin()) {
                 ActionDescriptionProcessor.updateResourceAllocationSlot(actionDescriptionBuilder);
             }

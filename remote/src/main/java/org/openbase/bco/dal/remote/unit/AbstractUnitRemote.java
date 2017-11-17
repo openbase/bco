@@ -22,6 +22,7 @@ package org.openbase.bco.dal.remote.unit;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -674,7 +675,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * @return
      * @throws CouldNotPerformException
      */
-    protected ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Object serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
+    protected ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
         ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
         ResourceAllocation.Builder resourceAllocation = actionDescription.getResourceAllocationBuilder();
 
@@ -713,7 +714,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * @return
      * @throws CouldNotPerformException
      */
-    protected ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Object serviceAttribute) throws CouldNotPerformException {
+    protected ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute) throws CouldNotPerformException {
         return updateActionDescription(actionDescription, serviceAttribute, Services.getServiceType(serviceAttribute));
     }
 

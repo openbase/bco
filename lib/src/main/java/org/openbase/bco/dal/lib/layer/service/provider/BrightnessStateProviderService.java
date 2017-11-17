@@ -21,7 +21,9 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 
@@ -33,5 +35,16 @@ public interface BrightnessStateProviderService extends ProviderService {
 
     @RPCMethod
     public BrightnessState getBrightnessState() throws NotAvailableException;
+
+    static void verifyBrightnessState(final BrightnessState brightnessState) throws VerificationFailedException {
+        switch (brightnessState.getBrightnessDataUnit()) {
+            case PERCENT:
+                OperationService.verifyValueRange("brightness", brightnessState.getBrightness(), 0, 100);
+                break;
+            case UNKNOWN:
+            default:
+                throw new VerificationFailedException("BrightnessState data unit unknown!");
+        }
+    }
 
 }
