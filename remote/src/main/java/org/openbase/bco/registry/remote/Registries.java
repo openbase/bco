@@ -35,6 +35,8 @@ import org.openbase.bco.registry.scene.remote.CachedSceneRegistryRemote;
 import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
+import org.openbase.bco.registry.user.activity.remote.CachedUserActivityRegistryRemote;
+import org.openbase.bco.registry.user.activity.remote.UserActivityRegistryRemote;
 import org.openbase.bco.registry.user.remote.CachedUserRegistryRemote;
 import org.openbase.bco.registry.user.remote.UserRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -49,6 +51,7 @@ public class Registries {
     /**
      * Returns a list of all available bco registries.
      *
+     * @param waitForData
      * @return a list of remote registry instances.
      * @throws CouldNotPerformException is throw if at least one registry is not available.
      * @throws InterruptedException is thrown if thread is externally interrupted.
@@ -62,6 +65,7 @@ public class Registries {
         registryList.add(getSceneRegistry(waitForData));
         registryList.add(getUnitRegistry(waitForData));
         registryList.add(getUserRegistry(waitForData));
+        registryList.add(getUserActivityRegistry(waitForData));
         return registryList;
     }
 
@@ -248,6 +252,21 @@ public class Registries {
     }
 
     /**
+     * Returns an initialized and activated remote registry.
+     *
+     * @param waitForData defines if this call should block until the registry data is available.
+     * @return the remote registry instance.
+     * @throws NotAvailableException
+     * @throws InterruptedException is thrown if thread is externally interrupted.
+     */
+    public static UserActivityRegistryRemote getUserActivityRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
+        if (waitForData) {
+            CachedUserActivityRegistryRemote.getRegistry().waitForData();
+        }
+        return CachedUserActivityRegistryRemote.getRegistry();
+    }
+
+    /**
      * Method shutdown all registry instances.
      *
      * Please use method with care!
@@ -263,6 +282,7 @@ public class Registries {
         CachedLocationRegistryRemote.shutdown();
         CachedSceneRegistryRemote.shutdown();
         CachedUserRegistryRemote.shutdown();
+        CachedUserActivityRegistryRemote.shutdown();
     }
 
     /**
@@ -279,6 +299,7 @@ public class Registries {
         CachedLocationRegistryRemote.waitForData();
         CachedSceneRegistryRemote.waitForData();
         CachedUserRegistryRemote.waitForData();
+        CachedUserActivityRegistryRemote.waitForData();
     }
 
     public static boolean isDataAvailable() {
@@ -289,7 +310,8 @@ public class Registries {
                     && CachedDeviceRegistryRemote.getRegistry().isDataAvailable()
                     && CachedLocationRegistryRemote.getRegistry().isDataAvailable()
                     && CachedSceneRegistryRemote.getRegistry().isDataAvailable()
-                    && CachedUserRegistryRemote.getRegistry().isDataAvailable();
+                    && CachedUserRegistryRemote.getRegistry().isDataAvailable()
+                    && CachedUserActivityRegistryRemote.getRegistry().isDataAvailable();
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         } catch (NotAvailableException ex) {
@@ -312,6 +334,7 @@ public class Registries {
         CachedLocationRegistryRemote.reinitialize();
         CachedSceneRegistryRemote.reinitialize();
         CachedUserRegistryRemote.reinitialize();
+        CachedUserActivityRegistryRemote.reinitialize();
     }
 
     /**
@@ -330,5 +353,6 @@ public class Registries {
         CachedLocationRegistryRemote.waitUntilReady();
         CachedSceneRegistryRemote.waitUntilReady();
         CachedUserRegistryRemote.waitUntilReady();
+        CachedUserActivityRegistryRemote.waitUntilReady();
     }
 }

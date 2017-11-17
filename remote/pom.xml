@@ -101,5 +101,10 @@
             <artifactId>registry.unit.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>registry.user.activity.remote</artifactId>
+            <version>${project.version}</version>
+        </dependency>
     </dependencies>
 </project>

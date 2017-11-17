@@ -79,6 +79,9 @@ import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
+import org.openbase.bco.registry.user.activity.core.UserActivityRegistryLauncher;
+import org.openbase.bco.registry.user.activity.lib.UserActivityRegistry;
+import org.openbase.bco.registry.user.activity.remote.CachedUserActivityRegistryRemote;
 import org.openbase.bco.registry.user.core.UserRegistryLauncher;
 import org.openbase.bco.registry.user.lib.UserRegistry;
 import org.openbase.bco.registry.user.remote.CachedUserRegistryRemote;
@@ -177,6 +180,7 @@ public class MockRegistry {
     private static SceneRegistryLauncher sceneRegistryLauncher;
     private static UserRegistryLauncher userRegistryLauncher;
     private static UnitRegistryLauncher unitRegistryLauncher;
+    private static UserActivityRegistryLauncher userActivityRegistryLauncher;
 
     private static DeviceRegistry deviceRegistry;
     private static LocationRegistry locationRegistry;
@@ -185,6 +189,7 @@ public class MockRegistry {
     private static SceneRegistry sceneRegistry;
     private static UserRegistry userRegisty;
     private static UnitRegistry unitRegistry;
+    private static UserActivityRegistry userActivityRegistry;
 
     private static UnitConfig paradiseLocation;
     private static UnitConfig hellLocation;
@@ -383,7 +388,17 @@ public class MockRegistry {
                 }
                 return null;
             }));
-            LOGGER.info("Starting all real registries: unit, device, agent, app ...");
+            registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
+                try {
+                    userActivityRegistryLauncher = new UserActivityRegistryLauncher();
+                    userActivityRegistryLauncher.launch();
+                    userActivityRegistry = userActivityRegistryLauncher.getLaunchable();
+                } catch (CouldNotPerformException ex) {
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
+                }
+                return null;
+            }));
+            LOGGER.info("Starting all real registries: unit, device, agent, app, user-activity ...");
             for (Future<Void> task : registryStartupTasks) {
                 task.get();
             }
@@ -515,6 +530,10 @@ public class MockRegistry {
             authenticatorLauncher.shutdown();
         }
         
+        if(userActivityRegistryLauncher != null) {
+            userActivityRegistryLauncher.shutdown();
+        }
+        
         SessionManager.getInstance().completeLogout();
         AuthenticatedServerManager.shutdown();
 
@@ -527,6 +546,8 @@ public class MockRegistry {
         CachedAppRegistryRemote.shutdown();
 
         CachedUnitRegistryRemote.shutdown();
+        
+        CachedUserActivityRegistryRemote.shutdown();
     }
 
     private void registerLocations() throws CouldNotPerformException, InterruptedException {
