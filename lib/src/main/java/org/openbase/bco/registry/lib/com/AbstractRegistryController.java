@@ -205,6 +205,10 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     @Override
     public void notifyChange() throws CouldNotPerformException, InterruptedException {
         try {
+            // sync registry flags
+            syncRegistryFlags();
+            
+            // filter notification in case an internal registry is busy.
             if (filterSparselyRegistryData) {
                 // filter notification if any internal registry is busy to avoid spreading incomplete registry context.
                 for (ProtoBufFileSynchronizedRegistry registry : getRegistries()) {
@@ -221,8 +225,12 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
                 }
             }
 
+            // cancel in case the registry which was still busy also notfies
+            // this way notification only takes place once
+            if (notifyChangeFuture != null && !notifyChangeFuture.isDone()) {
+                notifyChangeFuture.cancel(true);
+            }
             // continue notification
-            syncRegistryFlags();
             super.notifyChange();
         } finally {
             synchronized (CHANGE_NOTIFIER) {
@@ -236,7 +244,8 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             notifyChangeFuture = GlobalCachedExecutorService.submit(() -> {
                 try {
                     waitUntilReady();
-                    notifyChange();
+                    syncRegistryFlags();
+                    super.notifyChange();
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
                 } catch (CouldNotPerformException ex) {
