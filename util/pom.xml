@@ -182,6 +182,11 @@
             <artifactId>registry.unit.core</artifactId>
             <version>${project.version}</version>
         </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>registry.user.activity.core</artifactId>
+            <version>${project.version}</version>
+        </dependency>
         
         <dependency>
             <groupId>org.openbase.bco</groupId>
@@ -221,6 +226,11 @@
         <dependency>
             <groupId>org.openbase.bco</groupId>
             <artifactId>registry.remote</artifactId>
+            <version>${project.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>registry.user.activity.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>

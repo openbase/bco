@@ -33,6 +33,7 @@ import org.openbase.jul.pattern.launch.AbstractLauncher;
 import org.openbase.bco.registry.location.core.LocationRegistryLauncher;
 import org.openbase.bco.registry.scene.core.SceneRegistryLauncher;
 import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;
+import org.openbase.bco.registry.user.activity.core.UserActivityRegistryLauncher;
 import org.openbase.jul.storage.registry.Registry;
 
 public class RegistryLauncher {
@@ -49,7 +50,8 @@ public class RegistryLauncher {
                 UnitRegistryLauncher.class,
                 LocationRegistryLauncher.class,
                 UserRegistryLauncher.class,
-                SceneRegistryLauncher.class
+                SceneRegistryLauncher.class,
+                UserActivityRegistryLauncher.class
         );
     }
 }

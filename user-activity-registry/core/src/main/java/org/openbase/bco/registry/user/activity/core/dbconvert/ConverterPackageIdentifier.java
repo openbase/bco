@@ -1,8 +1,8 @@
-package org.openbase.bco.registry.lib.generator;
+package org.openbase.bco.registry.user.activity.core.dbconvert;
 
-/*
+/*-
  * #%L
- * BCO Registry Lib
+ * BCO Registry User Activity Core
  * %%
  * Copyright (C) 2014 - 2017 openbase.org
  * %%
@@ -22,20 +22,11 @@ package org.openbase.bco.registry.lib.generator;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
-import java.util.UUID;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.extension.protobuf.IdGenerator;
-
 /**
- *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- * @param <M>
+ * This is a dummy class used for the converter package detection.
+ * 
+ * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public class UUIDGenerator<M extends GeneratedMessage> implements IdGenerator<String, M> {
-
-    @Override
-    public String generateId(final M message) throws CouldNotPerformException {
-        return UUID.randomUUID().toString();
-    }
+public class ConverterPackageIdentifier {
+    
 }
