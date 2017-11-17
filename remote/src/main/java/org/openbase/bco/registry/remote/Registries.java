@@ -65,7 +65,7 @@ public class Registries {
         registryList.add(getSceneRegistry(waitForData));
         registryList.add(getUnitRegistry(waitForData));
         registryList.add(getUserRegistry(waitForData));
-        registryList.add(getUserActivityRegistry(waitForData));
+        registryList.add(Registries.getUserActivityRegistry(waitForData));
         return registryList;
     }
 
@@ -133,6 +133,17 @@ public class Registries {
      */
     public static SceneRegistryRemote getSceneRegistry() throws NotAvailableException, InterruptedException {
         return CachedSceneRegistryRemote.getRegistry();
+    }
+    
+    /**
+     * Returns an initialized and activated remote registry.
+     *
+     * @return the remote registry instance.
+     * @throws NotAvailableException
+     * @throws InterruptedException is thrown if thread is externally interrupted.
+     */
+    public static UserActivityRegistryRemote getUserActivityRegistry() throws NotAvailableException, InterruptedException {
+        return CachedUserActivityRegistryRemote.getRegistry();
     }
 
     /**
