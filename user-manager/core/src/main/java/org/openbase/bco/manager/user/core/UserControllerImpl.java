@@ -29,15 +29,12 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
-import org.openbase.bco.dal.lib.layer.unit.user.User;
 import org.openbase.bco.manager.user.lib.UserController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.Observable;
@@ -47,6 +44,7 @@ import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.UserActivityStateType.UserActivityState;
 import rst.domotic.state.UserPresenceStateType.UserPresenceState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -73,13 +71,6 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     public UserControllerImpl() throws org.openbase.jul.exception.InstantiationException {
         super(UserControllerImpl.class, UserData.newBuilder());
         this.netDeviceDetectorMap = new HashMap<>();
-    }
-    
-    @Override
-    public void registerMethods(final RSBLocalServer server) throws CouldNotPerformException {
-        //TODO: services for Users have to registered, see dal issue 44
-        RPCHelper.registerInterface(User.class, this, server);
-        super.registerMethods(server);
     }
     
     @Override
@@ -196,7 +187,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     }
     
     @Override
-    public Future<Void> setUserActivityState(UserActivityState UserActivityState) throws CouldNotPerformException {
+    public Future<ActionFuture> setUserActivityState(UserActivityState UserActivityState) throws CouldNotPerformException {
         try (ClosableDataBuilder<UserData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setUserActivityState(UserActivityState);
         } catch (CouldNotPerformException | NullPointerException ex) {
@@ -206,7 +197,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     }
     
     @Override
-    public Future<Void> setUserPresenceState(UserPresenceState userPresenceState) throws CouldNotPerformException {
+    public Future<ActionFuture> setUserPresenceState(UserPresenceState userPresenceState) throws CouldNotPerformException {
         try (ClosableDataBuilder<UserData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setUserPresenceState(userPresenceState);
         } catch (CouldNotPerformException | NullPointerException ex) {
