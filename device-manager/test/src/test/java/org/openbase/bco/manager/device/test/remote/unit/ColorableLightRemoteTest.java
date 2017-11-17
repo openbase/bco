@@ -23,6 +23,7 @@ package org.openbase.bco.manager.device.test.remote.unit;
  */
 import java.awt.Color;
 import org.junit.After;
+import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -35,6 +36,7 @@ import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -72,7 +74,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     /**
-     * Test of setColor method, of class AmbientLightRemote.
+     * Test of setColor method, of class ColorableLightRemote.
      *
      * @throws java.lang.Exception
      */
@@ -143,7 +145,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
 //        }
 //    }
     /**
-     * Test of setColor method, of class AmbientLightRemote.
+     * Test of setColor method, of class ColorableLightRemote.
      *
      * @throws java.lang.Exception
      */
@@ -157,7 +159,25 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     /**
-     * Test of getColor method, of class AmbientLightRemote.
+     * Test of setColor method, of class ColorableLightRemote with invalid service state.
+     *
+     * @throws java.lang.Exception
+     */
+    @Test(timeout = 10000)
+    public void testSetColor_InvalidHSBColor() throws Exception {
+        System.out.println("setColor");
+        HSBColor color = HSBColor.newBuilder().setHue(370).setSaturation(111).setBrightness(122).build();
+        try {
+            colorableLightRemote.setColor(color);
+            Assert.assertTrue("Exception does not occure if invalid service state is set!", false);
+        } catch (VerificationFailedException ex) {
+            // should occure!
+        }
+        Assert.assertNotEquals("Invalid color has been applied!", color, colorableLightRemote.getHSBColor());
+    }
+
+    /**
+     * Test of getColor method, of class ColorableLightRemote.
      *
      * @throws java.lang.Exception
      */
@@ -171,7 +191,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     /**
-     * Test of getColor method, of class AmbientLightRemote.
+     * Test of getColor method, of class ColorableLightRemote.
      *
      * @throws java.lang.Exception
      */
@@ -186,7 +206,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     /**
-     * Test of setPowerState method, of class AmbientLightRemote.
+     * Test of setPowerState method, of class ColorableLightRemote.
      *
      * @throws java.lang.Exception
      */
@@ -200,7 +220,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     /**
-     * Test of getPowerState method, of class AmbientLightRemote.
+     * Test of getPowerState method, of class ColorableLightRemote.
      *
      * @throws java.lang.Exception
      */
@@ -214,7 +234,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     /**
-     * Test of setBrightness method, of class AmbientLightRemote.
+     * Test of setBrightness method, of class ColorableLightRemote.
      *
      * @throws java.lang.Exception
      */
@@ -229,7 +249,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     /**
-     * Test of getBrightness method, of class AmbientLightRemote.
+     * Test of getBrightness method, of class ColorableLightRemote.
      *
      * @throws java.lang.Exception
      */
@@ -253,7 +273,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
 
     private int powerStateObserverUpdateNumber = 0;
 
-//    @Test(timeout = 10000)
+    @Test(timeout = 10000)
     public void testPowerStateObserver() throws Exception {
         System.out.println("testPowerStateObserver");
 
