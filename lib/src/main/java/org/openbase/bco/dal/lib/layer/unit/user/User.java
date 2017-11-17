@@ -21,35 +21,56 @@ package org.openbase.bco.dal.lib.layer.unit.user;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
+import org.openbase.bco.dal.lib.layer.service.operation.UserActivityStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.UserPresenceStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.iface.annotations.RPCMethod;
-import rst.domotic.state.UserActivityStateType.UserActivityState;
-import rst.domotic.state.UserPresenceStateType.UserPresenceState;
 import rst.domotic.unit.user.UserDataType.UserData;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface User extends BaseUnit<UserData> {
+public interface User extends BaseUnit<UserData>, UserActivityStateOperationService, UserPresenceStateOperationService {
 
     public final static String TYPE_FIELD_USER_NAME = "user_name";
 
-    public String getUserName() throws NotAvailableException;
+    default public String getUserName() throws NotAvailableException {
+        try {
+            return getConfig().getUserConfig().getUserName();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("username", ex);
+        }
+    }
 
-    //TODO: services for Users have to registered, see dal issue 44
-    @RPCMethod
-    public UserActivityState getUserActivityState() throws NotAvailableException;
+    default public String getName() throws NotAvailableException {
+        try {
+            return getConfig().getUserConfig().getFirstName() + " " + getConfig().getUserConfig().getLastName();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Name", ex);
+        }
+    }
 
-    @RPCMethod
-    public Future<Void> setUserActivityState(UserActivityState UserActivityState) throws CouldNotPerformException;
-
-    @RPCMethod
-    public UserPresenceState getUserPresenceState() throws NotAvailableException;
-
-    @RPCMethod
-    public Future<Void> setUserPresenceState(UserPresenceState userPresenceState) throws CouldNotPerformException;
+    default public Boolean isAtHome() throws NotAvailableException {
+        try {
+            switch (getData().getUserPresenceState().getValue()) {
+                case AT_HOME:
+                case SHORT_AT_HOME:
+                case SOON_AWAY:
+                    return true;
+                case AWAY:
+                case SHORT_AWAY:
+                case SOON_AT_HOME:
+                    return false;
+                case UNKNOWN:
+                    throw new InvalidStateException("UserPresenceState unknown!");
+                default:
+                    throw new AssertionError("Type " + getData().getUserPresenceState().getValue() + " not supported!");
+            }
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("AtHomeState");
+        }
+    }
 }
