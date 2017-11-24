@@ -41,7 +41,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 public class JPCredentialsDirectory extends AbstractJPDirectory {
 
     public static FileHandler.ExistenceHandling existenceHandling = FileHandler.ExistenceHandling.Must;
-    public static FileHandler.AutoMode autoMode = FileHandler.AutoMode.Off;
+    public static FileHandler.AutoMode autoMode = FileHandler.AutoMode.On;
 
     public static final String DEFAULT_CREDENTIALS_PATH = "bco/credentials";
 
