@@ -1,31 +1,9 @@
-package org.openbase.bco.registry.app.remote;
+package org.openbase.bco.registry.lib.com;
 
-/*
- * #%L
- * BCO Registry App Remote
- * %%
- * Copyright (C) 2014 - 2017 openbase.org
- * %%
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU Lesser General Public License as
- * published by the Free Software Foundation, either version 3 of the
- * License, or (at your option) any later version.
- * 
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Lesser Public License for more details.
- * 
- * You should have received a copy of the GNU General Lesser Public
- * License along with this program.  If not, see
- * <http://www.gnu.org/licenses/lgpl-3.0.html>.
- * #L%
- */
 import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.openbase.bco.registry.lib.com.CachedRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
@@ -33,20 +11,20 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.schedule.SyncObject;
+import org.openbase.jul.storage.registry.RegistryRemote;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 /**
  *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public class CachedAppRegistryRemote extends CachedRegistryRemote {
+public abstract class CachedRegistryRemote {
+    public static final Logger LOGGER = LoggerFactory.getLogger(CachedRegistryRemote.class);
 
-    public static final Logger LOGGER = LoggerFactory.getLogger(CachedAppRegistryRemote.class);
+    private static final SyncObject REMOTE_LOCK = new SyncObject("CachedRegistryRemoteLock");
 
-    private static final SyncObject REMOTE_LOCK = new SyncObject("CachedAppRegistryRemoteLock");
-
-    private static AppRegistryRemote registryRemote;
+    private static RegistryRemote registryRemote;
     private static boolean shutdown = false;
 
     static {
@@ -65,13 +43,13 @@ public class CachedAppRegistryRemote extends CachedRegistryRemote {
             if (shutdown) {
                 throw new InvalidStateException("Remote service is shutting down!");
             }
-            getRegistry().unlock(REMOTE_LOCK);
-            getRegistry().init();
-//            getRegistry().reinit();
-            getRegistry().lock(REMOTE_LOCK);
+//            getRegistry().unlock(REMOTE_LOCK);
+//            getRegistry().init();
+            getRegistry().reinit();
+//            getRegistry().lock(REMOTE_LOCK);
             getRegistry().requestData().get(10, TimeUnit.SECONDS);
         } catch (ExecutionException | TimeoutException | CouldNotPerformException | CancellationException ex) {
-            throw new CouldNotPerformException("Could not reinitialize " + CachedAppRegistryRemote.class.getSimpleName() + "!", ex);
+            throw new CouldNotPerformException("Could not reinitialize " + getName() + "!", ex);
         }
     }
 
@@ -80,7 +58,7 @@ public class CachedAppRegistryRemote extends CachedRegistryRemote {
      * @return @throws InterruptedException
      * @throws NotAvailableException
      */
-    public synchronized static AppRegistryRemote getRegistry() throws InterruptedException, NotAvailableException {
+    protected synchronized static RegistryRemote getRegistry() throws InterruptedException, NotAvailableException {
         try {
             if (shutdown) {
                 throw new InvalidStateException("Remote service is shutting down!");
@@ -88,7 +66,8 @@ public class CachedAppRegistryRemote extends CachedRegistryRemote {
 
             if (registryRemote == null) {
                 try {
-                    registryRemote = new AppRegistryRemote();
+                    
+                    registryRemote = getRegistryRemoteClass().getConstructor().newInstance();
                     registryRemote.init();
                     registryRemote.activate();
                     registryRemote.lock(REMOTE_LOCK);
@@ -154,11 +133,19 @@ public class CachedAppRegistryRemote extends CachedRegistryRemote {
                 try {
                     registryRemote.unlock(REMOTE_LOCK);
                 } catch (final CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new FatalImplementationErrorException("Internal remote was locked by an external instance!", CachedAppRegistryRemote.class, ex), LOGGER);
+                    ExceptionPrinter.printHistory(new FatalImplementationErrorException("Internal remote was locked by an external instance!", CachedRegistryRemote.class, ex), LOGGER);
                 }
                 registryRemote.shutdown();
                 registryRemote = null;
             }
         }
+    }
+    
+    public static final String getName() {
+        return CachedRegistryRemote.class.getSimpleName();
+    }
+    
+    public static final <R extends RegistryRemote> Class<R> getRegistryRemoteClass() {
+        return null;
     }
 }

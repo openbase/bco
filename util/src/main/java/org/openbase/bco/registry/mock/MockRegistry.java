@@ -442,7 +442,7 @@ public class MockRegistry {
             }
             registryStartupTasks.clear();
             LOGGER.info("Virtual registries started!");
-
+            
             LOGGER.info("Reinitialize remotes...");
             Registries.reinitialize();
             LOGGER.info("Reinitialized remotes!");

@@ -161,11 +161,11 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
                 int registryRemoteMessageCount = messageList.size();
                 int filteredRegistryRemoteMessageCount = remoteRegistry.getFilter().filter(messageList).size();
                 if (registryRemoteMessageCount != filteredRegistryRemoteMessageCount) {
-                    logger.debug(this + " has a been filtered for field[" + remoteRegistryFieldDescriptorMap.get(remoteRegistry).getName() + "] from " + registryRemoteMessageCount + " to " + filteredRegistryRemoteMessageCount);
+                    logger.info(this + " has a been filtered for field[" + remoteRegistryFieldDescriptorMap.get(remoteRegistry).getName() + "] from " + registryRemoteMessageCount + " to " + filteredRegistryRemoteMessageCount);
                 }
                 int remoteRegistryMessageCount = remoteRegistry.getMessages().size();
                 if (filteredRegistryRemoteMessageCount != remoteRegistryMessageCount) {
-                    logger.debug("MessageCount for [" + remoteRegistry + "] is not correct. Expected[" + registryRemoteMessageCount + "] but is [" + remoteRegistryMessageCount + "]");
+                    logger.info("MessageCount for [" + remoteRegistry + "] is not correct. Expected[" + registryRemoteMessageCount + "] but is [" + remoteRegistryMessageCount + "]");
                     return false;
                 }
             } catch (CouldNotPerformException ex) {

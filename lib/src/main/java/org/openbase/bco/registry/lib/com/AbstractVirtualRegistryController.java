@@ -28,6 +28,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.scope.jp.JPScope;
 import org.openbase.jul.pattern.Observable;
@@ -42,7 +43,7 @@ import org.openbase.jul.storage.registry.RegistryRemote;
  * @param <RM> The message type of the real registry which is mirrored by this virtual registry.
  */
 public abstract class AbstractVirtualRegistryController<M extends GeneratedMessage, MB extends M.Builder<MB>, RM> extends AbstractRegistryController<M, MB> {
-
+    
     private final VirtualRegistrySynchronizer virtualRegistrySynchronizer;
 
     /**
@@ -80,7 +81,7 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
         this.virtualRegistrySynchronizer = new VirtualRegistrySynchronizer();
         this.registryRemoteList = new ArrayList<>();
     }
-
+    
     @Override
     protected void postInit() throws InitializationException, InterruptedException {
         super.postInit(); //To change body of generated methods, choose Tools | Templates.
@@ -95,32 +96,32 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
             throw new InitializationException(this, ex);
         }
     }
-
+    
     @Override
     protected void registerConsistencyHandler() throws CouldNotPerformException {
         // not needed for virtual registries.
     }
-
+    
     @Override
     protected void registerDependencies() throws CouldNotPerformException {
         // not needed for virtual registries.
     }
-
+    
     @Override
     protected void syncRegistryFlags() throws CouldNotPerformException, InterruptedException {
         // not needed for virtual registries.
     }
-
+    
     @Override
     protected void registerRegistries() throws CouldNotPerformException {
         // not needed for virtual registries.
     }
-
+    
     @Override
     protected void registerPlugins() throws CouldNotPerformException, InterruptedException {
         // not needed for virtual registries.
     }
-
+    
     @Override
     protected void activateRemoteRegistries() throws CouldNotPerformException, InterruptedException {
         /* The order here is important!
@@ -129,9 +130,20 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
         super.activateRemoteRegistries();
         getRegistryRemotes().forEach((registryRemote) -> {
             registryRemote.addDataObserver(virtualRegistrySynchronizer);
+            // perform initial sync if data already available
+            if (registryRemote.isDataAvailable()) {
+                logger.info(this + " perform initial sync");
+                try {
+                    virtualRegistrySynchronizer.update(null, (RM) registryRemote.getData());
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Initial sync of [" + this + "] failed", ex), logger, LogLevel.WARN);
+                }
+            } else {
+                logger.info(this + " skip initial sync because remote data not available");
+            }
         });
     }
-
+    
     @Override
     protected void deactivateRemoteRegistries() throws CouldNotPerformException, InterruptedException {
         getRegistryRemotes().forEach((registryRemote) -> {
@@ -139,24 +151,25 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
         });
         super.deactivateRemoteRegistries();
     }
-
+    
     protected void registerRegistryRemote(final RegistryRemote registry) {
         registryRemoteList.add(registry);
     }
-
+    
     protected List<RegistryRemote> getRegistryRemotes() {
         return registryRemoteList;
     }
-
+    
     protected abstract void registerRegistryRemotes() throws CouldNotPerformException;
-
+    
     protected abstract void syncVirtualRegistryFields(final MB virtualDataBuilder, final RM realData) throws CouldNotPerformException;
-
+    
     class VirtualRegistrySynchronizer implements Observer<RM> {
-
+        
         @Override
-        public void update(Observable<RM> source, RM realData) throws Exception {
+        public void update(Observable<RM> source, RM realData) throws CouldNotPerformException {
             try {
+                logger.info(AbstractVirtualRegistryController.this + " virtualRegistrySynchronizer update triggered");
                 try (ClosableDataBuilder<MB> dataBuilder = getDataBuilder(this)) {
                     syncVirtualRegistryFields(dataBuilder.getInternalBuilder(), realData);
                 } catch (Exception ex) {

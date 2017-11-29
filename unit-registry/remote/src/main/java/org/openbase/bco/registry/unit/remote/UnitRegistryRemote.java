@@ -135,6 +135,24 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                     UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER
             );
+
+            this.addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data1) -> {
+                logger.info(UnitRegistryRemote.this + ": notifying with [" + data1.getUserUnitConfigCount() + ", " + data1.getAuthorizationGroupUnitConfigCount() + "]");
+            });
+            this.authorizationGroupUnitConfigRemoteRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>>>() {
+
+                @Override
+                public void update(Observable<Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>>> source, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> data) throws Exception {
+                    logger.info(UnitRegistryRemote.this + ": authorizationGroupRegistry notifying with [" + data.size() + "]");
+                }
+            });
+            this.userUnitConfigRemoteRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>>>() {
+
+                @Override
+                public void update(Observable<Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>>> source, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> data) throws Exception {
+                    logger.info(UnitRegistryRemote.this + ": userRegistry notifying with [" + data.size() + "]");
+                }
+            });
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
