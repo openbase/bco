@@ -132,14 +132,11 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
             registryRemote.addDataObserver(virtualRegistrySynchronizer);
             // perform initial sync if data already available
             if (registryRemote.isDataAvailable()) {
-                logger.info(this + " perform initial sync");
                 try {
                     virtualRegistrySynchronizer.update(null, (RM) registryRemote.getData());
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Initial sync of [" + this + "] failed", ex), logger, LogLevel.WARN);
                 }
-            } else {
-                logger.info(this + " skip initial sync because remote data not available");
             }
         });
     }
@@ -169,7 +166,6 @@ public abstract class AbstractVirtualRegistryController<M extends GeneratedMessa
         @Override
         public void update(Observable<RM> source, RM realData) throws CouldNotPerformException {
             try {
-                logger.info(AbstractVirtualRegistryController.this + " virtualRegistrySynchronizer update triggered");
                 try (ClosableDataBuilder<MB> dataBuilder = getDataBuilder(this)) {
                     syncVirtualRegistryFields(dataBuilder.getInternalBuilder(), realData);
                 } catch (Exception ex) {

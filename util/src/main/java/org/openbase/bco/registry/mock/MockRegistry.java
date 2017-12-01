@@ -89,6 +89,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
@@ -346,7 +347,7 @@ public class MockRegistry {
                 task.get();
             }
             registryStartupTasks.clear();
-            
+
             registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
                     unitRegistryLauncher = new UnitRegistryLauncher();
@@ -442,7 +443,7 @@ public class MockRegistry {
             }
             registryStartupTasks.clear();
             LOGGER.info("Virtual registries started!");
-            
+
             LOGGER.info("Reinitialize remotes...");
             Registries.reinitialize();
             LOGGER.info("Reinitialized remotes!");
@@ -529,11 +530,11 @@ public class MockRegistry {
         if (authenticatorLauncher != null) {
             authenticatorLauncher.shutdown();
         }
-        
-        if(userActivityRegistryLauncher != null) {
+
+        if (userActivityRegistryLauncher != null) {
             userActivityRegistryLauncher.shutdown();
         }
-        
+
         SessionManager.getInstance().completeLogout();
         AuthenticatedServerManager.shutdown();
 
@@ -546,7 +547,7 @@ public class MockRegistry {
         CachedAppRegistryRemote.shutdown();
 
         CachedUnitRegistryRemote.shutdown();
-        
+
         CachedUserActivityRegistryRemote.shutdown();
     }
 
@@ -636,21 +637,45 @@ public class MockRegistry {
             tileIds.clear();
             tileIds.add(heavenLocation.getId());
             tileIds.add(stairwayLocation.getId());
-            reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Heaven_Stairs", UnitType.REED_CONTACT).get(0).getId();
+            List<UnitConfig> unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Heaven_Stairs", UnitType.REED_CONTACT);
+            if (unitConfigList.isEmpty()) {
+                String alternatives = "[";
+                for (UnitConfig unit : Registries.getUnitRegistry().getUnitConfigs(UnitType.REED_CONTACT)) {
+                    alternatives += unit.getLabel() + ", ";
+                }
+                throw new NotAvailableException("UnitConfig[Reed_Heaven_Stairs], alternatives[" + alternatives + "]");
+            }
+            reedContactId = unitConfigList.get(0).getId();
             connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
             locationRegistry.registerConnectionConfig(UnitConfig.newBuilder().setType(UnitType.CONNECTION).setLabel("Stairs_Heaven_Gate").setConnectionConfig(connectionConfig).build()).get();
 
             tileIds.clear();
             tileIds.add(hellLocation.getId());
             tileIds.add(stairwayLocation.getId());
-            reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Hell_Stairs", UnitType.REED_CONTACT).get(0).getId();
+            unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Hell_Stairs", UnitType.REED_CONTACT);
+            if (unitConfigList.isEmpty()) {
+                String alternatives = "[";
+                for (UnitConfig unit : Registries.getUnitRegistry().getUnitConfigs(UnitType.REED_CONTACT)) {
+                    alternatives += unit.getLabel() + ", ";
+                }
+                throw new NotAvailableException("UnitConfig[Reed_Hell_Stairs], alternatives[" + alternatives + "]");
+            }
+            reedContactId = unitConfigList.get(0).getId();
             connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
             locationRegistry.registerConnectionConfig(UnitConfig.newBuilder().setType(UnitType.CONNECTION).setLabel("Stairs_Hell_Gate").setConnectionConfig(connectionConfig).build()).get();
 
             tileIds.clear();
             tileIds.add(hellLocation.getId());
             tileIds.add(stairwayLocation.getId());
-            reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Stairway_Window", UnitType.REED_CONTACT).get(0).getId();
+            unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Stairway_Window", UnitType.REED_CONTACT);
+            if (unitConfigList.isEmpty()) {
+                String alternatives = "[";
+                for (UnitConfig unit : Registries.getUnitRegistry().getUnitConfigs(UnitType.REED_CONTACT)) {
+                    alternatives += unit.getLabel() + ", ";
+                }
+                throw new NotAvailableException("UnitConfig[Reed_Stairway_Window], alternatives[" + alternatives + "]");
+            }
+            reedContactId = unitConfigList.get(0).getId();
             connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.WINDOW).addAllTileId(tileIds).addUnitId(reedContactId).build();
             locationRegistry.registerConnectionConfig(UnitConfig.newBuilder().setType(UnitType.CONNECTION).setLabel("Stairs_Hell_Lookout").setConnectionConfig(connectionConfig).build()).get();
 
@@ -666,7 +691,7 @@ public class MockRegistry {
                 break;
             }
         }
-        
+
         UserConfig.Builder config = UserConfig.newBuilder().setFirstName("Max").setLastName("Mustermann").setUserName(USER_NAME);
         UnitConfig userUnitConfig = UnitConfig.newBuilder().setType(UnitType.USER).setUserConfig(config).setEnablingState(EnablingState.newBuilder().setValue(EnablingState.State.ENABLED)).build();
         try {
