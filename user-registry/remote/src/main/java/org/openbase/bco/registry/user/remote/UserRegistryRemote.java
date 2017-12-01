@@ -81,14 +81,6 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
         try {
             authorizationFilter = new AuthorizationFilter();
             
-            this.getIntenalPriorizedDataObservable().addObserver(new Observer<UserRegistryData>() {
-                
-                @Override
-                public void update(Observable<UserRegistryData> source, UserRegistryData data) throws Exception {
-                    logger.info(UserRegistryRemote.this + " received data update with [" + data.getUserUnitConfigCount() + ", " + data.getAuthorizationGroupUnitConfigCount() + "]");
-                }
-            });
-            
             userConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, authorizationFilter, UserRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
             authorizationGroupConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, new MockUpFilter(), UserRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {

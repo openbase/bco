@@ -265,13 +265,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             registerRegistry(registry);
         });
     }
-    
-    @Override
-    protected void notifyDataUpdate(UnitRegistryData data) throws CouldNotPerformException {
-        super.notifyDataUpdate(data); //To change body of generated methods, choose Tools | Templates.
-
-        logger.info(this + " published data update with [" + data.getUserUnitConfigCount() + ", " + data.getAuthorizationGroupUnitConfigCount() + "]");
-    }
 
     /**
      * {@inheritDoc}

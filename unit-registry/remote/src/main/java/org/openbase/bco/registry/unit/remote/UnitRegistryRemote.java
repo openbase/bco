@@ -23,6 +23,7 @@ package org.openbase.bco.registry.unit.remote;
  */
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.Future;
@@ -43,6 +44,7 @@ import org.openbase.jps.preset.JPReadOnly;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -135,24 +137,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                     UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER
             );
-
-            this.addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data1) -> {
-                logger.info(UnitRegistryRemote.this + ": notifying with [" + data1.getUserUnitConfigCount() + ", " + data1.getAuthorizationGroupUnitConfigCount() + "]");
-            });
-            this.authorizationGroupUnitConfigRemoteRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>>>() {
-
-                @Override
-                public void update(Observable<Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>>> source, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> data) throws Exception {
-                    logger.info(UnitRegistryRemote.this + ": authorizationGroupRegistry notifying with [" + data.size() + "]");
-                }
-            });
-            this.userUnitConfigRemoteRegistry.addObserver(new Observer<Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>>>() {
-
-                @Override
-                public void update(Observable<Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>>> source, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> data) throws Exception {
-                    logger.info(UnitRegistryRemote.this + ": userRegistry notifying with [" + data.size() + "]");
-                }
-            });
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }

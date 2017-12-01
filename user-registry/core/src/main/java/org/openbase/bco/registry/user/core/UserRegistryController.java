@@ -74,46 +74,11 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
             this.unitRegistryRemote = CachedUnitRegistryRemote.getRegistry();
             this.userUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(unitRegistryRemote, UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
             this.authorizationGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(unitRegistryRemote, UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
-            this.unitRegistryRemote.addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
-                logger.info(UserRegistryController.this + " received update with [" + data.getUserUnitConfigCount() + ", " + data.getAuthorizationGroupUnitConfigCount() + "]");
-            });
-            this.userUnitConfigRemoteRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>>> source, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> data) -> {
-                logger.info(UserRegistryController.this + ": userRegistry notifying with [" + data.size() + "]");
-            });
-            this.authorizationGroupUnitConfigRemoteRegistry.addObserver((Observable<Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>>> source, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> data) -> {
-                logger.info(UserRegistryController.this + ": authorizationGroupRegistry notifying with [" + data.size() + "]");
-            });
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
 
-    @Override
-    protected void notifyDataUpdate(UserRegistryData data) throws CouldNotPerformException {
-        super.notifyDataUpdate(data); //To change body of generated methods, choose Tools | Templates.
-
-        logger.info(this + " notified data update with [" + data.getUserUnitConfigCount() + ", " + data.getAuthorizationGroupUnitConfigCount() + "]");
-    }
-
-//    @Override
-//    public void activate() throws InterruptedException, CouldNotPerformException {
-//        super.activate();
-//
-//        unitRegistryRemote.waitForData();
-//        if (unitRegistryRemote.isDataAvailable()) {
-//            try {
-//                try (ClosableDataBuilder<UserRegistryData.Builder> dataBuilder = getDataBuilder(this)) {
-//                    syncVirtualRegistryFields(dataBuilder.getInternalBuilder(), unitRegistryRemote.getData());
-//                } catch (Exception ex) {
-//                    throw new CouldNotPerformException("Could not apply data change!", ex);
-//                }
-//            } catch (CouldNotPerformException ex) {
-//                ExceptionPrinter.printHistory("Could not sync virtual registry!", ex, logger);
-//            }
-//        } else {
-//            logger.warn("No data for initial sync available");
-//        }
-//    }
     @Override
     protected void syncVirtualRegistryFields(final UserRegistryData.Builder virtualDataBuilder, final UnitRegistryData realData) throws CouldNotPerformException {
         virtualDataBuilder.clearUserUnitConfig();
