@@ -25,7 +25,6 @@ import java.util.concurrent.CancellationException;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.openbase.bco.registry.lib.com.CachedRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
@@ -40,7 +39,7 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class CachedAppRegistryRemote extends CachedRegistryRemote {
+public class CachedAppRegistryRemote {
 
     public static final Logger LOGGER = LoggerFactory.getLogger(CachedAppRegistryRemote.class);
 
@@ -65,10 +64,7 @@ public class CachedAppRegistryRemote extends CachedRegistryRemote {
             if (shutdown) {
                 throw new InvalidStateException("Remote service is shutting down!");
             }
-            getRegistry().unlock(REMOTE_LOCK);
-            getRegistry().init();
-//            getRegistry().reinit();
-            getRegistry().lock(REMOTE_LOCK);
+            getRegistry().reinit(REMOTE_LOCK);
             getRegistry().requestData().get(10, TimeUnit.SECONDS);
         } catch (ExecutionException | TimeoutException | CouldNotPerformException | CancellationException ex) {
             throw new CouldNotPerformException("Could not reinitialize " + CachedAppRegistryRemote.class.getSimpleName() + "!", ex);
