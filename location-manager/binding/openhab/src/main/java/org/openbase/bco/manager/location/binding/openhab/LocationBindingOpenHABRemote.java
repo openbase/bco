@@ -96,6 +96,11 @@ public class LocationBindingOpenHABRemote extends AbstractOpenHABRemote {
             ServiceType serviceType = getServiceTypeForCommand(command);
             String methodName = "set" + StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replaceAll("Provider", "").replaceAll("Service", "");
             Object serviceData = OpenhabCommandTransformer.getServiceData(command, serviceType);
+            
+            if(serviceData == null) {
+                throw new NotAvailableException("serviceData");
+            }
+            
             Method relatedMethod;
             try {
                 relatedMethod = remote.getClass().getMethod(methodName, serviceData.getClass());
@@ -120,8 +125,8 @@ public class LocationBindingOpenHABRemote extends AbstractOpenHABRemote {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Waiting for result on method failed with exception", input), logger);
                 return null;
             }, 30, TimeUnit.SECONDS);
-        } catch (NotAvailableException ex) {
-            throw new CouldNotPerformException(ex);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not internal receive command", ex);
         }
     }
 
