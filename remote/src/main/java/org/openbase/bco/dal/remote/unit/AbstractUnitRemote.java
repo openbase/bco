@@ -35,6 +35,7 @@ import javax.crypto.BadPaddingException;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.future.AuthenticatedActionFuture;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.dal.lib.layer.service.ServiceDataFilteredObservable;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.registry.remote.Registries;
@@ -368,7 +369,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
 
                 // create observable if new
                 if (!serviceTempusServiceTypeObservableMap.get(serviceTempus).containsKey(serviceDescription.getType())) {
-                    serviceTempusServiceTypeObservableMap.get(serviceTempus).put(serviceDescription.getType(), new MessageObservable(this));
+                    serviceTempusServiceTypeObservableMap.get(serviceTempus).put(serviceDescription.getType(), new ServiceDataFilteredObservable(this));
                 }
             }
         }
