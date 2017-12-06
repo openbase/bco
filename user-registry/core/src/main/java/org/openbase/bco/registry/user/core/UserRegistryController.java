@@ -23,6 +23,7 @@ package org.openbase.bco.registry.user.core;
  */
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryController;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
@@ -35,11 +36,11 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
+import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Launchable;
+import org.openbase.jul.pattern.Observable;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
@@ -75,26 +76,6 @@ public class UserRegistryController extends AbstractVirtualRegistryController<Us
             this.authorizationGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(unitRegistryRemote, UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
-        }
-    }
-
-    @Override
-    public void activate() throws InterruptedException, CouldNotPerformException {
-        super.activate();
-
-        unitRegistryRemote.waitForData();
-        if (unitRegistryRemote.isDataAvailable()) {
-            try {
-                try (ClosableDataBuilder<UserRegistryData.Builder> dataBuilder = getDataBuilder(this)) {
-                    syncVirtualRegistryFields(dataBuilder.getInternalBuilder(), unitRegistryRemote.getData());
-                } catch (Exception ex) {
-                    throw new CouldNotPerformException("Could not apply data change!", ex);
-                }
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory("Could not sync virtual registry!", ex, logger);
-            }
-        } else {
-            logger.warn("No data for initial sync available");
         }
     }
 

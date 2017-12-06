@@ -45,6 +45,8 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
@@ -60,20 +62,20 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegistryData> implements UserRegistry, Remote<UserRegistryData> {
-
+    
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthorizationGroupConfig.getDefaultInstance()));
     }
-
+    
     private final AuthorizationFilter authorizationFilter;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> userConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> authorizationGroupConfigRemoteRegistry;
-
+    
     private UnitRegistryRemote unitRegistry;
-
+    
     public UserRegistryRemote() throws InstantiationException, InterruptedException {
         super(JPUserRegistryScope.class, UserRegistryData.class);
         try {
@@ -101,13 +103,13 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
         authorizationFilter.setLocations(unitRegistry.getLocationUnitConfigRemoteRegistry().getEntryMap());
         super.activate();
     }
-
+    
     @Override
     protected void registerRemoteRegistries() throws CouldNotPerformException {
         registerRemoteRegistry(authorizationGroupConfigRemoteRegistry);
         registerRemoteRegistry(userConfigRemoteRegistry);
     }
-
+    
     @Override
     protected void registerRegistryRemotes() throws InitializationException, InterruptedException {
         try {
@@ -117,7 +119,7 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
             throw new InitializationException(this, ex);
         }
     }
-
+    
     @Override
     protected void bindRegistryRemoteToRemoteRegistries() {
         try {
@@ -127,15 +129,15 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
             new FatalImplementationErrorException("Could not bind registries", this, ex);
         }
     }
-
+    
     public RemoteRegistry<String, UnitConfig, UnitConfig.Builder> getUserConfigRemoteRegistry() {
         return userConfigRemoteRegistry;
     }
-
+    
     public RemoteRegistry<String, UnitConfig, UnitConfig.Builder> getGroupConfigRemoteRegistry() {
         return authorizationGroupConfigRemoteRegistry;
     }
-
+    
     @Override
     public Future<UnitConfig> registerUserConfig(final UnitConfig userConfig) throws CouldNotPerformException {
         try {
@@ -144,14 +146,14 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
             throw new CouldNotPerformException("Could not register user config!", ex);
         }
     }
-
+    
     @Override
     public UnitConfig getUserConfigById(String userConfigId) throws CouldNotPerformException, NotAvailableException {
         validateData();
         return userConfigRemoteRegistry.getMessage(userConfigId);
     }
-    
-     /**
+
+    /**
      * Retrieves a user ID according to a given user name.
      * If multiple users happen to have the same user name, the first one is returned.
      *
@@ -165,42 +167,42 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
     public UnitConfig getUserConfigByUserName(final String userName) throws CouldNotPerformException, NotAvailableException {
         validateData();
         List<UnitConfig> messages = userConfigRemoteRegistry.getMessages();
-
+        
         for (UnitConfig message : messages) {
             if (message.getUserConfig().getUserName().equals(userName)) {
                 return message;
             }
         }
-
+        
         throw new NotAvailableException(userName);
     }
-
+    
     @Override
     public String getUserIdByUserName(final String userName) throws CouldNotPerformException, NotAvailableException {
         validateData();
         List<UnitConfig> messages = userConfigRemoteRegistry.getMessages();
-
+        
         for (UnitConfig message : messages) {
             if (message.getUserConfig().getUserName().equals(userName)) {
                 return message.getId();
             }
         }
-
+        
         throw new NotAvailableException(userName);
     }
-
+    
     @Override
     public Boolean containsUserConfig(final UnitConfig userConfig) throws CouldNotPerformException {
         validateData();
         return userConfigRemoteRegistry.contains(userConfig);
     }
-
+    
     @Override
     public Boolean containsUserConfigById(final String userConfigId) throws CouldNotPerformException {
         validateData();
         return userConfigRemoteRegistry.contains(userConfigId);
     }
-
+    
     @Override
     public Future<UnitConfig> updateUserConfig(final UnitConfig userConfig) throws CouldNotPerformException {
         try {
@@ -209,7 +211,7 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
             throw new CouldNotPerformException("Could not update user config[" + userConfig + "]!", ex);
         }
     }
-
+    
     @Override
     public Future<UnitConfig> removeUserConfig(final UnitConfig userConfig) throws CouldNotPerformException {
         try {
@@ -218,14 +220,14 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
             throw new CouldNotPerformException("Could not remove user config[" + userConfig + "]!", ex);
         }
     }
-
+    
     @Override
     public List<UnitConfig> getUserConfigs() throws CouldNotPerformException, NotAvailableException {
         validateData();
         List<UnitConfig> messages = userConfigRemoteRegistry.getMessages();
         return messages;
     }
-
+    
     @Override
     public Boolean isUserConfigRegistryReadOnly() throws CouldNotPerformException {
         try {
@@ -235,11 +237,11 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
         } catch (JPServiceException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
-
+        
         validateData();
         return getData().getUserUnitConfigRegistryReadOnly();
     }
-
+    
     @Override
     public List<UnitConfig> getUserConfigsByAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
         List<UnitConfig> userConfigs = new ArrayList<>();
@@ -253,7 +255,7 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
         }
         return userConfigs;
     }
-
+    
     @Override
     public Future<UnitConfig> registerAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
         try {
@@ -262,19 +264,19 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
             throw new CouldNotPerformException("Could not register group config!", ex);
         }
     }
-
+    
     @Override
     public Boolean containsAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
         validateData();
         return authorizationGroupConfigRemoteRegistry.contains(groupConfig);
     }
-
+    
     @Override
     public Boolean containsAuthorizationGroupConfigById(String groupConfigId) throws CouldNotPerformException {
         validateData();
         return authorizationGroupConfigRemoteRegistry.contains(groupConfigId);
     }
-
+    
     @Override
     public Future<UnitConfig> updateAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
         try {
@@ -283,7 +285,7 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
             throw new CouldNotPerformException("Could not update group config[" + groupConfig + "]!", ex);
         }
     }
-
+    
     @Override
     public Future<UnitConfig> removeAuthorizationGroupConfig(UnitConfig groupConfig) throws CouldNotPerformException {
         try {
@@ -292,19 +294,19 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
             throw new CouldNotPerformException("Could not remove group config[" + groupConfig + "]!", ex);
         }
     }
-
+    
     @Override
     public UnitConfig getAuthorizationGroupConfigById(String groupConfigId) throws CouldNotPerformException {
         validateData();
         return authorizationGroupConfigRemoteRegistry.getMessage(groupConfigId);
     }
-
+    
     @Override
     public List<UnitConfig> getAuthorizationGroupConfigs() throws CouldNotPerformException {
         validateData();
         return authorizationGroupConfigRemoteRegistry.getMessages();
     }
-
+    
     @Override
     public List<UnitConfig> getAuthorizationGroupConfigsbyUserConfig(UnitConfig userConfig) throws CouldNotPerformException {
         validateData();
@@ -316,7 +318,7 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
         }
         return groupConfigs;
     }
-
+    
     @Override
     public Boolean isAuthorizationGroupConfigRegistryReadOnly() throws CouldNotPerformException {
         validateData();
@@ -327,7 +329,7 @@ public class UserRegistryRemote extends AbstractVirtualRegistryRemote<UserRegist
         } catch (JPServiceException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
         }
-
+        
         return getData().getAuthorizationGroupUnitConfigRegistryReadOnly();
     }
 

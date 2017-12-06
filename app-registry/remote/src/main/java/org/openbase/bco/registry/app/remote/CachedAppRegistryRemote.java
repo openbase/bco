@@ -41,7 +41,7 @@ import org.slf4j.LoggerFactory;
  */
 public class CachedAppRegistryRemote {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CachedAppRegistryRemote.class);
+    public static final Logger LOGGER = LoggerFactory.getLogger(CachedAppRegistryRemote.class);
 
     private static final SyncObject REMOTE_LOCK = new SyncObject("CachedAppRegistryRemoteLock");
 
@@ -64,9 +64,7 @@ public class CachedAppRegistryRemote {
             if (shutdown) {
                 throw new InvalidStateException("Remote service is shutting down!");
             }
-            getRegistry().unlock(REMOTE_LOCK);
-            getRegistry().init();
-            getRegistry().lock(REMOTE_LOCK);
+            getRegistry().reinit(REMOTE_LOCK);
             getRegistry().requestData().get(10, TimeUnit.SECONDS);
         } catch (ExecutionException | TimeoutException | CouldNotPerformException | CancellationException ex) {
             throw new CouldNotPerformException("Could not reinitialize " + CachedAppRegistryRemote.class.getSimpleName() + "!", ex);
