@@ -30,6 +30,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfigOrBuilder;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
@@ -67,7 +68,7 @@ public class UnitConfigProcessor {
         return !isBaseUnit(unitType);
     }
 
-    public static boolean isBaseUnit(final UnitConfig unitConfig) throws CouldNotPerformException {
+    public static boolean isBaseUnit(final UnitConfigOrBuilder unitConfig) throws CouldNotPerformException {
         verifyUnitConfig(unitConfig, unitConfig.getType());
         return isBaseUnit(unitConfig.getType());
     }
@@ -88,8 +89,19 @@ public class UnitConfigProcessor {
                 return false;
         }
     }
+    
+    public static boolean isVirtualUnit(final UnitConfigOrBuilder unitConfig) throws CouldNotPerformException {
+        
+        // base units are never virtual!
+        if(isBaseUnit(unitConfig)) {
+            return false;
+        }
+        
+        return unitConfig.getUnitHostId().equals(unitConfig.getId());
+    }
+        
 
-    public static void verifyUnitType(final UnitConfig unitConfig, final UnitType unitType) throws VerificationFailedException {
+    public static void verifyUnitType(final UnitConfigOrBuilder unitConfig, final UnitType unitType) throws VerificationFailedException {
         // verify if unit type is defined
         if (!unitConfig.hasType()) {
             throw new VerificationFailedException("UnitType not available!");
@@ -101,7 +113,7 @@ public class UnitConfigProcessor {
         }
     }
 
-    public static void verifyUnitConfig(final UnitConfig unitConfig, final UnitType unitType) throws VerificationFailedException {
+    public static void verifyUnitConfig(final UnitConfigOrBuilder unitConfig, final UnitType unitType) throws VerificationFailedException {
 
         verifyUnitType(unitConfig, unitType);
 
