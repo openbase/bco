@@ -34,7 +34,7 @@ import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import rst.configuration.MetaConfigType.MetaConfig;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
-import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -136,7 +136,7 @@ public class ServiceItemEntry extends AbstractItemEntry {
 
     private boolean checkAlreadyAvailableThrougOtherComponents(final UnitConfig unitConfig, final ServiceConfig serviceConfig) {
         // skip if function is already available through other components
-        if (unitConfig.getType() == UnitType.COLORABLE_LIGHT && serviceConfig.getServiceDescription().getType() == ServiceTemplateType.ServiceTemplate.ServiceType.BRIGHTNESS_STATE_SERVICE) {
+        if (unitConfig.getType() == UnitType.COLORABLE_LIGHT && serviceConfig.getServiceDescription().getType() == ServiceType.BRIGHTNESS_STATE_SERVICE) {
             return true;
         }
         return false;

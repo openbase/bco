@@ -33,16 +33,16 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public class SceneItemEntry extends AbstractItemEntry {
 
-    public SceneItemEntry(final UnitConfig sceneUnitConfig) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        super(sceneUnitConfig, null);
+    public SceneItemEntry(final UnitConfig unitConfig) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+        super(unitConfig, null);
         try {
-            this.itemId = generateItemId(sceneUnitConfig);
+            this.itemId = generateItemId(unitConfig);
             this.icon = "";
             this.commandType = "Switch";
-            this.label = sceneUnitConfig.getLabel();
-            this.itemHardwareConfig = "rsb=\"bco.manager.scene:" + sceneUnitConfig.getId() + "\"";
+            this.label = unitConfig.getLabel();
+            this.itemHardwareConfig = "rsb=\"bco.manager.scene:" + unitConfig.getId() + "\"";
             groups.add(ItemIdGenerator.generateUnitGroupID(UnitType.SCENE));
-            groups.add(ItemIdGenerator.generateUnitGroupID(sceneUnitConfig.getPlacementConfig().getLocationId()));
+            groups.add(ItemIdGenerator.generateUnitGroupID(unitConfig.getPlacementConfig().getLocationId()));
             calculateGaps();
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
