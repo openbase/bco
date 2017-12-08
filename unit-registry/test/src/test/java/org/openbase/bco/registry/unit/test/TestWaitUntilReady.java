@@ -124,8 +124,7 @@ public class TestWaitUntilReady {
 
         Registries.getUnitRegistry().addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
             if (waitedUntilReady) {
-                System.out.println("Received an update even though waitUntilReady has returned!");
-                assert false;
+                Assert.assertTrue("Received an update even though waitUntilReady has returned!", false);
             }
         });
 
@@ -150,7 +149,7 @@ public class TestWaitUntilReady {
             try {
 //                registrationFuture.get();
                 registrationFuture.getInternalFuture().get(5, TimeUnit.MILLISECONDS);
-                LOGGER.warn("Get after waitUntil ready took: " + (System.currentTimeMillis() - time) + "ms");
+                LOGGER.info("Get after waitUntil ready took: " + (System.currentTimeMillis() - time) + "ms");
             } catch (TimeoutException ex) {
                 LOGGER.warn("Get after waitUntil ready took: " + (System.currentTimeMillis() - time) + "ms");
                 Assert.assertTrue("Test failed because registration result is not available", false);
