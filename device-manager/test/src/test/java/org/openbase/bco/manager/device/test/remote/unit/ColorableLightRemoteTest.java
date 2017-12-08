@@ -22,14 +22,17 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * #L%
  */
 import java.awt.Color;
+import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
+import org.openbase.bco.dal.remote.unit.LightRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
@@ -37,12 +40,19 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.Remote;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType.ColorState;
+import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType;
 import rst.vision.HSBColorType.HSBColor;
 
 /**
@@ -50,6 +60,8 @@ import rst.vision.HSBColorType.HSBColor;
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(ColorableLightRemoteTest.class);
 
     private static ColorableLightRemote colorableLightRemote;
 
@@ -93,9 +105,13 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
 //
 //        colorableLightRemote.setPowerState(PowerState.State.OFF).get();
 //
+//        UnitConfig colorableLightConfig = colorableLightRemote.getConfig();
+//        UnitConfig.Builder lightConfig = UnitConfig.newBuilder().setLabel("LightUnit").setScope(colorableLightConfig.getScope()).setId(colorableLightConfig.getId()).setType(UnitTemplateType.UnitTemplate.UnitType.LIGHT);
+//        lightConfig.getEnablingStateBuilder().setValue(EnablingState.State.ENABLED);
 //        try {
 //            LightRemote lightRemote = new LightRemote();
-//            lightRemote.initByLabel(label);
+//            lightRemote.setSessionManager(SessionManager.getInstance());
+//            lightRemote.init(lightConfig.build());
 //            lightRemote.activate();
 //            lightRemote.requestData().get();
 //            lightRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
@@ -106,19 +122,11 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
 //            assertEquals("ColorableLightRemote and LightRemote don't have the same powerState!", colorableLightRemote.getPowerState().getValue(), lightRemote.getPowerState().getValue());
 //            Thread.sleep(200);
 //
-//            lightRemote.addPowerStateObserver(new Observer<PowerState>() {
-//
-//                @Override
-//                public void update(Observable<PowerState> source, PowerState data) throws Exception {
-//                    System.out.println("Received power update in lightRemote [" + data.getValue() + "]");
-//                }
+//            lightRemote.addServiceStateObserver(ServiceType.POWER_STATE_SERVICE, (Observer<PowerState>) (Observable<PowerState> source, PowerState data) -> {
+//                System.out.println("Received power update in lightRemote [" + data.getValue() + "]");
 //            });
-//            colorableLightRemote.addPowerStateObserver(new Observer<PowerState>() {
-//
-//                @Override
-//                public void update(Observable<PowerState> source, PowerState data) throws Exception {
-//                    System.out.println("Received power update in colorableLightRemote [" + data.getValue() + "]");
-//                }
+//            colorableLightRemote.addServiceStateObserver(ServiceType.POWER_STATE_SERVICE, (Observer<PowerState>) (Observable<PowerState> source, PowerState data) -> {
+//                System.out.println("Received power update in colorableLightRemote [" + data.getValue() + "]");
 //            });
 //
 //            PowerState.State powerState;
@@ -140,10 +148,11 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
 ////            colorableLightRemote.requestData().get();
 ////            System.out.println("Before test!");
 ////            assertEquals("ColorableLightRemote and LightRemote don't have the same powerState!", colorableLightRemote.getPowerState().getValue(), lightRemote.getPowerState().getValue());
-//        } catch (InterruptedException | CouldNotPerformException | ExecutionException ex) {
+//        } catch (Exception ex) {
 //            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
 //        }
 //    }
+
     /**
      * Test of setColor method, of class ColorableLightRemote.
      *
