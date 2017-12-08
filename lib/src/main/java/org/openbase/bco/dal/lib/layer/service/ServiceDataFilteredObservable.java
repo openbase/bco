@@ -44,17 +44,10 @@ public class ServiceDataFilteredObservable<M extends Message> extends MessageObs
 
     private Builder removeResponsibleActoin(final Builder builder) {
         Descriptors.Descriptor descriptorForType = builder.getDescriptorForType();
-        for (Descriptors.FieldDescriptor field : descriptorForType.getFields()) {
-            if (field.getType() == Descriptors.FieldDescriptor.Type.MESSAGE) {
-                if (field.getMessageType().getName().equals(RESPONSIBLE_ACTION_FIELD)) {
-                    builder.clearField(field);
-                }
-            }
-        }
-//        System.out.println("Removed responsible action from [" + builder.build() + "]");
+        descriptorForType.getFields().stream().filter((field) -> (field.getType() == Descriptors.FieldDescriptor.Type.MESSAGE && field.getName().equals(RESPONSIBLE_ACTION_FIELD))).forEachOrdered((field) -> {
+            builder.clearField(field);
+        });
         return builder;
     }
-    
-    
 
 }
