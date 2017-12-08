@@ -168,9 +168,9 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
 
     @Override
     public void shutdown() {
+        deviceRegistrySynchronizer.shutdown();
         deviceControllerRegistry.shutdown();
         unitControllerRegistry.shutdown();
-        deviceRegistrySynchronizer.shutdown();
         unitSimulationManager.shutdown();
         instance = null;
     }
