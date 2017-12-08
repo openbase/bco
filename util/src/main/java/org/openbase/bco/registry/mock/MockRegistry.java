@@ -810,9 +810,9 @@ public class MockRegistry {
             waitForDeviceClass(reedSwitchClass);
 
             registerDeviceUnitConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass));
-            deviceRegistry.registerDeviceConfig(getDeviceConfig("Reed_Heaven_Stairs", serialNumber, reedSwitchClass, stairwayLocation)).get();
-            deviceRegistry.registerDeviceConfig(getDeviceConfig("Reed_Hell_Stairs", serialNumber, reedSwitchClass, stairwayLocation)).get();
-            deviceRegistry.registerDeviceConfig(getDeviceConfig("Reed_Stairway_Window", serialNumber, reedSwitchClass, stairwayLocation)).get();
+            LOGGER.info(deviceRegistry.registerDeviceConfig(getDeviceConfig("Reed_Heaven_Stairs", serialNumber, reedSwitchClass, stairwayLocation)).get().toString());
+            LOGGER.info(deviceRegistry.registerDeviceConfig(getDeviceConfig("Reed_Hell_Stairs", serialNumber, reedSwitchClass, stairwayLocation)).get().toString());
+            LOGGER.info(deviceRegistry.registerDeviceConfig(getDeviceConfig("Reed_Stairway_Window", serialNumber, reedSwitchClass, stairwayLocation)).get().toString());
 
             // rollershutter
             DeviceClass rollershutterClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA628C", "TYA628C", "Hager",
@@ -882,6 +882,9 @@ public class MockRegistry {
      */
     private static void registerDeviceUnitConfig(final UnitConfig deviceUnitConfig) throws CouldNotPerformException, InterruptedException, ExecutionException {
         UnitConfig tmp = deviceRegistry.registerDeviceConfig(deviceUnitConfig).get();
+        if(tmp.getLabel().equals("HM_ReedSwitch_Device")) {
+            LOGGER.info(tmp.toString());
+        }
         updateUnitLabel(tmp.getDeviceConfig().getUnitIdList());
     }
 
