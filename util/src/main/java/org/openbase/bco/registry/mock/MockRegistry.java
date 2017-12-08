@@ -630,14 +630,23 @@ public class MockRegistry {
             List<String> tileIds = new ArrayList<>();
             tileIds.add(heavenLocation.getId());
             tileIds.add(hellLocation.getId());
-            String reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabel(REED_CONTACT_LABEL).get(0).getId();
+            List<UnitConfig> unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(REED_CONTACT_LABEL, UnitType.REED_CONTACT);
+            if (unitConfigList.isEmpty()) {
+                String alternatives = "[";
+                for (UnitConfig unit : Registries.getUnitRegistry().getUnitConfigs(UnitType.REED_CONTACT)) {
+                    alternatives += unit.getLabel() + ", ";
+                }
+                throw new NotAvailableException("UnitConfig[Reed_Heaven_Stairs], alternatives[" + alternatives + "]");
+            }
+            String reedContactId = unitConfigList.get(0).getId();
+//            String reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabel(REED_CONTACT_LABEL).get(0).getId();
             ConnectionConfig connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
             locationRegistry.registerConnectionConfig(UnitConfig.newBuilder().setType(UnitType.CONNECTION).setLabel("Gate").setConnectionConfig(connectionConfig).build()).get();
 
             tileIds.clear();
             tileIds.add(heavenLocation.getId());
             tileIds.add(stairwayLocation.getId());
-            List<UnitConfig> unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Heaven_Stairs", UnitType.REED_CONTACT);
+            unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Heaven_Stairs", UnitType.REED_CONTACT);
             if (unitConfigList.isEmpty()) {
                 String alternatives = "[";
                 for (UnitConfig unit : Registries.getUnitRegistry().getUnitConfigs(UnitType.REED_CONTACT)) {

@@ -47,17 +47,21 @@ import rst.math.Vec3DDoubleType.Vec3DDouble;
  * @author <a href="mailto:jdaberkow@techfak.uni-bielefeld.de">Julian Daberkow</a>
  */
 public class LocationRegistryTest {
-
+    
     private static final Logger LOGGER = LoggerFactory.getLogger(LocationRegistryTest.class);
-
+    
     @BeforeClass
     public static void setUpClass() throws IOException, JPServiceException, InterruptedException, CouldNotPerformException, ExecutionException {
         JPService.setupJUnitTestMode();
-
-        MockRegistryHolder.newMockRegistry();
-        Registries.getLocationRegistry().waitForData();
+        
+        try {
+            MockRegistryHolder.newMockRegistry();
+            Registries.getLocationRegistry().waitForData();
+        } catch (Exception ex) {
+            ExceptionPrinter.printHistory("Could not start LocationRegistryTest", ex, LOGGER);
+        }
     }
-
+    
     @AfterClass
     public static void tearDownClass() throws Throwable {
         try {
@@ -66,11 +70,11 @@ public class LocationRegistryTest {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
     }
-
+    
     @Before
     public void setUp() throws CouldNotPerformException {
     }
-
+    
     @After
     public void tearDown() throws CouldNotPerformException {
     }
@@ -86,13 +90,13 @@ public class LocationRegistryTest {
         System.out.println("testGetLocationConfigsByCoordinate");
         List<UnitConfig> pointEden = Registries.getLocationRegistry().getLocationConfigsByCoordinate(Vec3DDouble.newBuilder().setX(1.5).setY(4).setZ(0).build());
         assertEquals(3, pointEden.size());
-
+        
         List<UnitConfig> pointEdenFilter = Registries.getLocationRegistry().getLocationConfigsByCoordinate(Vec3DDouble.newBuilder().setX(1.5).setY(4).setZ(0).build(), LocationType.TILE);
         assertEquals(1, pointEdenFilter.size());
-
+        
         List<UnitConfig> pointParadise = Registries.getLocationRegistry().getLocationConfigsByCoordinate(Vec3DDouble.newBuilder().setX(0.5).setY(3).setZ(0).build());
         assertEquals(1, pointParadise.size());
-
+        
         List<UnitConfig> pointHell = Registries.getLocationRegistry().getLocationConfigsByCoordinate(Vec3DDouble.newBuilder().setX(4).setY(3).setZ(0).build());
         assertEquals(2, pointHell.size());
     }
