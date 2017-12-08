@@ -630,61 +630,28 @@ public class MockRegistry {
             List<String> tileIds = new ArrayList<>();
             tileIds.add(heavenLocation.getId());
             tileIds.add(hellLocation.getId());
-            List<UnitConfig> unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(REED_CONTACT_LABEL, UnitType.REED_CONTACT);
-            if (unitConfigList.isEmpty()) {
-                String alternatives = "[";
-                for (UnitConfig unit : Registries.getUnitRegistry().getUnitConfigs(UnitType.REED_CONTACT)) {
-                    alternatives += unit.getLabel() + ", ";
-                }
-                throw new NotAvailableException("UnitConfig[Reed_Heaven_Stairs], alternatives[" + alternatives + "]");
-            }
-            String reedContactId = unitConfigList.get(0).getId();
-//            String reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabel(REED_CONTACT_LABEL).get(0).getId();
+            String reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabel(REED_CONTACT_LABEL).get(0).getId();
             ConnectionConfig connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
             locationRegistry.registerConnectionConfig(UnitConfig.newBuilder().setType(UnitType.CONNECTION).setLabel("Gate").setConnectionConfig(connectionConfig).build()).get();
 
             tileIds.clear();
             tileIds.add(heavenLocation.getId());
             tileIds.add(stairwayLocation.getId());
-            unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Heaven_Stairs", UnitType.REED_CONTACT);
-            if (unitConfigList.isEmpty()) {
-                String alternatives = "[";
-                for (UnitConfig unit : Registries.getUnitRegistry().getUnitConfigs(UnitType.REED_CONTACT)) {
-                    alternatives += unit.getLabel() + ", ";
-                }
-                throw new NotAvailableException("UnitConfig[Reed_Heaven_Stairs], alternatives[" + alternatives + "]");
-            }
-            reedContactId = unitConfigList.get(0).getId();
+            reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Heaven_Stairs", UnitType.REED_CONTACT).get(0).getId();
             connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
             locationRegistry.registerConnectionConfig(UnitConfig.newBuilder().setType(UnitType.CONNECTION).setLabel("Stairs_Heaven_Gate").setConnectionConfig(connectionConfig).build()).get();
 
             tileIds.clear();
             tileIds.add(hellLocation.getId());
             tileIds.add(stairwayLocation.getId());
-            unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Hell_Stairs", UnitType.REED_CONTACT);
-            if (unitConfigList.isEmpty()) {
-                String alternatives = "[";
-                for (UnitConfig unit : Registries.getUnitRegistry().getUnitConfigs(UnitType.REED_CONTACT)) {
-                    alternatives += unit.getLabel() + ", ";
-                }
-                throw new NotAvailableException("UnitConfig[Reed_Hell_Stairs], alternatives[" + alternatives + "]");
-            }
-            reedContactId = unitConfigList.get(0).getId();
+            reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Hell_Stairs", UnitType.REED_CONTACT).get(0).getId();
             connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
             locationRegistry.registerConnectionConfig(UnitConfig.newBuilder().setType(UnitType.CONNECTION).setLabel("Stairs_Hell_Gate").setConnectionConfig(connectionConfig).build()).get();
 
             tileIds.clear();
             tileIds.add(hellLocation.getId());
             tileIds.add(stairwayLocation.getId());
-            unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Stairway_Window", UnitType.REED_CONTACT);
-            if (unitConfigList.isEmpty()) {
-                String alternatives = "[";
-                for (UnitConfig unit : Registries.getUnitRegistry().getUnitConfigs(UnitType.REED_CONTACT)) {
-                    alternatives += unit.getLabel() + ", ";
-                }
-                throw new NotAvailableException("UnitConfig[Reed_Stairway_Window], alternatives[" + alternatives + "]");
-            }
-            reedContactId = unitConfigList.get(0).getId();
+            reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Stairway_Window", UnitType.REED_CONTACT).get(0).getId();
             connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.WINDOW).addAllTileId(tileIds).addUnitId(reedContactId).build();
             locationRegistry.registerConnectionConfig(UnitConfig.newBuilder().setType(UnitType.CONNECTION).setLabel("Stairs_Hell_Lookout").setConnectionConfig(connectionConfig).build()).get();
 
@@ -731,9 +698,6 @@ public class MockRegistry {
 
     private void registerDevices() throws CouldNotPerformException, InterruptedException {
         try {
-//            Registries.getDeviceRegistry(true).addDataObserver((source, data) -> {
-//                LOGGER.info("DeviceClass update: " + Arrays.toString(data.getDeviceClassList().toArray()));
-//            });
 
             Registries.getDeviceRegistry(true).addDataObserver(notifyChangeObserver);
             // colorable light
@@ -810,9 +774,9 @@ public class MockRegistry {
             waitForDeviceClass(reedSwitchClass);
 
             registerDeviceUnitConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass));
-            LOGGER.info(deviceRegistry.registerDeviceConfig(getDeviceConfig("Reed_Heaven_Stairs", serialNumber, reedSwitchClass, stairwayLocation)).get().toString());
-            LOGGER.info(deviceRegistry.registerDeviceConfig(getDeviceConfig("Reed_Hell_Stairs", serialNumber, reedSwitchClass, stairwayLocation)).get().toString());
-            LOGGER.info(deviceRegistry.registerDeviceConfig(getDeviceConfig("Reed_Stairway_Window", serialNumber, reedSwitchClass, stairwayLocation)).get().toString());
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("Reed_Heaven_Stairs", serialNumber, reedSwitchClass, stairwayLocation)).get();
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("Reed_Hell_Stairs", serialNumber, reedSwitchClass, stairwayLocation)).get();
+            deviceRegistry.registerDeviceConfig(getDeviceConfig("Reed_Stairway_Window", serialNumber, reedSwitchClass, stairwayLocation)).get();
 
             // rollershutter
             DeviceClass rollershutterClass = deviceRegistry.registerDeviceClass(getDeviceClass("Hager_TYA628C", "TYA628C", "Hager",
@@ -882,9 +846,6 @@ public class MockRegistry {
      */
     private static void registerDeviceUnitConfig(final UnitConfig deviceUnitConfig) throws CouldNotPerformException, InterruptedException, ExecutionException {
         UnitConfig tmp = deviceRegistry.registerDeviceConfig(deviceUnitConfig).get();
-        if(tmp.getLabel().equals("HM_ReedSwitch_Device")) {
-            LOGGER.info(tmp.toString());
-        }
         updateUnitLabel(tmp.getDeviceConfig().getUnitIdList());
     }
 

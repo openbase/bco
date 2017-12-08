@@ -22,7 +22,6 @@ package org.openbase.bco.registry.device.core;
  * #L%
  */
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.device.core.consistency.UnitTemplateConfigIdConsistencyHandler;
 import org.openbase.bco.registry.device.core.consistency.UnitTemplateConfigLabelConsistencyHandler;
@@ -41,12 +40,9 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Launchable;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
@@ -68,7 +64,7 @@ import rst.rsb.ScopeType;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class DeviceRegistryController extends AbstractVirtualRegistryController<DeviceRegistryData, DeviceRegistryData.Builder, UnitRegistryData> implements DeviceRegistry, Launchable<ScopeType.Scope> {
-
+    
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceClass.getDefaultInstance()));
@@ -77,12 +73,12 @@ public class DeviceRegistryController extends AbstractVirtualRegistryController<
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitGroupConfig.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitConfig.getDefaultInstance()));
     }
-
+    
     private ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> deviceClassRegistry;
-
+    
     private final UnitRegistryRemote unitRegistryRemote;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> deviceUnitConfigRemoteRegistry;
-
+    
     public DeviceRegistryController() throws InstantiationException, InterruptedException {
         super(JPDeviceRegistryScope.class, DeviceRegistryData.newBuilder(), SPARSELY_REGISTRY_DATA_NOTIFIED);
         try {
@@ -93,32 +89,32 @@ public class DeviceRegistryController extends AbstractVirtualRegistryController<
             throw new InstantiationException(this, ex);
         }
     }
-
+    
     @Override
     protected void registerConsistencyHandler() throws CouldNotPerformException {
         deviceClassRegistry.registerConsistencyHandler(new UnitTemplateConfigIdConsistencyHandler());
         deviceClassRegistry.registerConsistencyHandler(new UnitTemplateConfigLabelConsistencyHandler());
     }
-
+    
     @Override
     protected void registerDependencies() throws CouldNotPerformException {
         deviceClassRegistry.registerDependency(unitRegistryRemote.getUnitTemplateRemoteRegistry());
     }
-
+    
     @Override
     protected void registerPlugins() throws CouldNotPerformException, InterruptedException {
     }
-
+    
     @Override
     protected void registerRegistryRemotes() throws CouldNotPerformException {
         registerRegistryRemote(unitRegistryRemote);
     }
-
+    
     @Override
     protected void registerRemoteRegistries() throws CouldNotPerformException {
         registerRemoteRegistry(deviceUnitConfigRemoteRegistry);
     }
-
+    
     @Override
     protected void registerRegistries() throws CouldNotPerformException {
         registerRegistry(deviceClassRegistry);
@@ -135,12 +131,12 @@ public class DeviceRegistryController extends AbstractVirtualRegistryController<
         setDataField(DeviceRegistryData.DEVICE_CLASS_REGISTRY_READ_ONLY_FIELD_NUMBER, deviceClassRegistry.isReadOnly());
         setDataField(DeviceRegistryData.DEVICE_CLASS_REGISTRY_CONSISTENT_FIELD_NUMBER, deviceClassRegistry.isConsistent());
     }
-
+    
     @Override
     protected void syncVirtualRegistryFields(final DeviceRegistryData.Builder virtualDataBuilder, final UnitRegistryData realData) throws CouldNotPerformException {
         virtualDataBuilder.clearDeviceUnitConfig();
         virtualDataBuilder.addAllDeviceUnitConfig(realData.getDeviceUnitConfigList());
-
+        
         virtualDataBuilder.setDeviceUnitConfigRegistryConsistent(realData.getDeviceUnitConfigRegistryConsistent());
         virtualDataBuilder.setDeviceUnitConfigRegistryReadOnly(realData.getDeviceUnitConfigRegistryReadOnly());
     }
@@ -156,7 +152,7 @@ public class DeviceRegistryController extends AbstractVirtualRegistryController<
         super.registerMethods(server);
         RPCHelper.registerInterface(DeviceRegistry.class, this, server);
     }
-
+    
     private void verifyDeviceUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
         UnitConfigProcessor.verifyUnitConfig(unitConfig, UnitType.DEVICE);
     }
@@ -565,7 +561,7 @@ public class DeviceRegistryController extends AbstractVirtualRegistryController<
     public List<ServiceConfig> getServiceConfigs(final ServiceType serviceType) throws CouldNotPerformException {
         return unitRegistryRemote.getServiceConfigs(serviceType);
     }
-
+    
     public ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, DeviceRegistryData.Builder> getDeviceClassRegistry() {
         return deviceClassRegistry;
     }

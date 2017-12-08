@@ -23,6 +23,7 @@ package org.openbase.bco.registry.unit.core.plugin;
  */
 import java.util.ArrayList;
 import java.util.List;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;

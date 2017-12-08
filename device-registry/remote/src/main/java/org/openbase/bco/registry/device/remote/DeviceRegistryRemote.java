@@ -23,7 +23,6 @@ package org.openbase.bco.registry.device.remote;
  */
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Map;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
@@ -44,10 +43,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -90,7 +86,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
         super(JPDeviceRegistryScope.class, DeviceRegistryData.class);
         try {
             authorizationFilter = new AuthorizationFilter();
-
+            
             deviceClassRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, DeviceRegistryData.DEVICE_CLASS_FIELD_NUMBER);
             deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, authorizationFilter, DeviceRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {

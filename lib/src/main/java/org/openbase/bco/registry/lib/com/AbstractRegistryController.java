@@ -24,14 +24,18 @@ package org.openbase.bco.registry.lib.com;
 import com.google.protobuf.GeneratedMessage;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Random;
 import java.util.concurrent.Future;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
+import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -73,6 +77,10 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     private final Class<? extends JPScope> jpScopePropery;
     private final boolean filterSparselyRegistryData;
 
+    private final List<Registry> lockedRegistries;
+    private final Random randomJitter;
+    private final ReentrantReadWriteLock lock;
+
     private Future notifyChangeFuture;
 
     /**
@@ -106,6 +114,10 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         this.registryList = new ArrayList<>();
         this.remoteRegistryList = new ArrayList<>();
         this.protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
+
+        this.randomJitter = new Random();
+        this.lockedRegistries = new ArrayList<>();
+        this.lock = new ReentrantReadWriteLock();
     }
 
     @Override
@@ -207,7 +219,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         try {
             // sync registry flags
             syncRegistryFlags();
-            
+
             // filter notification in case an internal registry is busy.
             if (filterSparselyRegistryData) {
                 // filter notification if any internal registry is busy to avoid spreading incomplete registry context.
@@ -230,9 +242,15 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             if (notifyChangeFuture != null && !notifyChangeFuture.isDone()) {
                 notifyChangeFuture.cancel(true);
             }
-            // continue notification
+
+            // lock internal registries so that no changes can take place while notifying
+            lockInternalRegistries();
             super.notifyChange();
         } finally {
+            // unlock internal registries only if this thread has locked them before
+            if (lock.isWriteLockedByCurrentThread()) {
+                unlockInternalRegistries();
+            }
             synchronized (CHANGE_NOTIFIER) {
                 CHANGE_NOTIFIER.notifyAll();
             }
@@ -245,7 +263,16 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
                 try {
                     waitUntilReady();
                     syncRegistryFlags();
-                    super.notifyChange();
+                    try {
+                        // lock internal registries so that no changes can take place while notifying
+                        lockInternalRegistries();
+                        super.notifyChange();
+                    } finally {
+                        // unlock internal registries only if this thread has locked them before
+                        if (lock.isWriteLockedByCurrentThread()) {
+                            unlockInternalRegistries();
+                        }
+                    }
                 } catch (InterruptedException ex) {
                     Thread.currentThread().interrupt();
                 } catch (CouldNotPerformException ex) {
@@ -253,6 +280,57 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
                 }
             });
         }
+    }
+
+    private void lockInternalRegistries() throws InterruptedException {
+        boolean success;
+        // iterate until thread is interrupted
+        while (!Thread.currentThread().isInterrupted()) {
+            success = true;
+
+            // try to lock this controller
+            if (lock.writeLock().tryLock()) {
+                // try to lock all internal registries
+                for (Registry registry : getRegistries()) {
+                    try {
+                        if (registry.tryLockRegistry()) {
+                            // if succesfully locked add to list
+                            lockedRegistries.add(registry);
+                        } else {
+                            // if one could not be locked break
+                            success = false;
+                            break;
+                        }
+                    } catch (RejectedException ex) {
+                        // only remote registries throw this exception on trylock so create a fatal implementation error
+                        ExceptionPrinter.printHistory(new FatalImplementationErrorException("Internal registry[" + registry + "] not lockable", this), logger);
+                    }
+                }
+
+                // return if succesfully locked all registries
+                if (success) {
+                    return;
+                }
+                // unlock all if not succesfully locked
+                unlockInternalRegistries();
+            }
+
+            // sleep for a random time and afterwards try to lock again
+            Thread.sleep(20 + randomJitter.nextInt(30));
+        }
+    }
+
+    private void unlockInternalRegistries() {
+        assert lock.isWriteLockedByCurrentThread();
+
+        // unlock all internal registries
+        lockedRegistries.forEach((registry) -> {
+            registry.unlockRegistry();
+        });
+        // clear list
+        lockedRegistries.clear();
+        // unlock this controller
+        lock.writeLock().unlock();
     }
 
     protected void activateRemoteRegistries() throws CouldNotPerformException, InterruptedException {
