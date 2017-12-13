@@ -10,7 +10,7 @@
 
 - label: BCO Authentication
   id: bco.authentication 
-  artifact: 
+  artifact: authentication
   group: org.openbase.bco
 
 - label: BCO Registry
