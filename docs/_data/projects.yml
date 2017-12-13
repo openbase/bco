@@ -88,4 +88,9 @@
   artifact: planetsudo.ai
   group: org.openbase
 
+- label: Jeoparnaire
+  id: jeoparnaire
+  artifact: jeoparnaire
+  group: org.openbase
+
 
