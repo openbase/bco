@@ -155,24 +155,28 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
     }
 
     private boolean equalMessageCounts() {
-        for (SynchronizedRemoteRegistry remoteRegistry : remoteRegistrySyncMap.keySet()) {
-            try {
-                List messageList = new ArrayList((List) remoteRegistrySyncMap.get(remoteRegistry).getData().getField(remoteRegistryFieldDescriptorMap.get(remoteRegistry)));
-                int registryRemoteMessageCount = messageList.size();
-                int filteredRegistryRemoteMessageCount = remoteRegistry.getFilter().filter(messageList).size();
-                if (registryRemoteMessageCount != filteredRegistryRemoteMessageCount) {
-                    logger.info(this + " has a been filtered for field[" + remoteRegistryFieldDescriptorMap.get(remoteRegistry).getName() + "] from " + registryRemoteMessageCount + " to " + filteredRegistryRemoteMessageCount);
-                }
-                int remoteRegistryMessageCount = remoteRegistry.getMessages().size();
-                if (filteredRegistryRemoteMessageCount != remoteRegistryMessageCount) {
-                    logger.info("MessageCount for [" + remoteRegistry + "] is not correct. Expected[" + registryRemoteMessageCount + "] but is [" + remoteRegistryMessageCount + "]");
+        // if not synchronized it could happen that equal message count is called from two different threads
+        // which can modify the computed integers before checking
+        synchronized (virtualRegistrySyncLock) {
+            for (SynchronizedRemoteRegistry remoteRegistry : remoteRegistrySyncMap.keySet()) {
+                try {
+                    List messageList = new ArrayList((List) remoteRegistrySyncMap.get(remoteRegistry).getData().getField(remoteRegistryFieldDescriptorMap.get(remoteRegistry)));
+                    int registryRemoteMessageCount = messageList.size();
+                    int filteredRegistryRemoteMessageCount = remoteRegistry.getFilter().filter(messageList).size();
+                    if (registryRemoteMessageCount != filteredRegistryRemoteMessageCount) {
+                        logger.info(this + " has a been filtered for field[" + remoteRegistryFieldDescriptorMap.get(remoteRegistry).getName() + "] from " + registryRemoteMessageCount + " to " + filteredRegistryRemoteMessageCount);
+                    }
+                    int remoteRegistryMessageCount = remoteRegistry.getMessages().size();
+                    if (filteredRegistryRemoteMessageCount != remoteRegistryMessageCount) {
+                        logger.info("MessageCount for [" + remoteRegistry + "] is not correct. Expected[" + registryRemoteMessageCount + "] but is [" + remoteRegistryMessageCount + "]");
+                        return false;
+                    }
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not check if registries contains the same amount of entries!", ex, logger);
                     return false;
                 }
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory("Could not check if registries contains the same amount of entries!", ex, logger);
-                return false;
             }
+            return true;
         }
-        return true;
     }
 }
