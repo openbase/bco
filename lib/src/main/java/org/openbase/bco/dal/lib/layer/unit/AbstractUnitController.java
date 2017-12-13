@@ -554,6 +554,11 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         return transactionId;
     }
 
+    /**
+     * Transaction id should never be 0 because thats the builder default value.
+     *
+     * @return the next transactionId
+     */
     public long generateTransactionId() {
         return ++transactionId;
     }

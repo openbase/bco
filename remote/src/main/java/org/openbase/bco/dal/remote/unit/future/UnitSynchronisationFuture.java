@@ -31,6 +31,8 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.schedule.AbstractSynchronizationFuture;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.pattern.Observer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 
@@ -40,11 +42,14 @@ import rst.domotic.action.ActionFutureType.ActionFuture;
  */
 public class UnitSynchronisationFuture extends AbstractSynchronizationFuture<ActionFuture> {
 
+    private final Logger logger;
+
     private final UnitRemote unitRemote;
 
     public UnitSynchronisationFuture(final Future<ActionFuture> internalFuture, final UnitRemote unitRemote) {
         super(internalFuture, unitRemote);
         this.unitRemote = unitRemote;
+        this.logger = LoggerFactory.getLogger(unitRemote.getClass());
     }
 
     @Override
@@ -69,6 +74,11 @@ public class UnitSynchronisationFuture extends AbstractSynchronizationFuture<Act
     @Override
     protected boolean check(ActionFuture actionFuture) throws CouldNotPerformException {
         ActionDescription actionDescription = actionFuture.getActionDescription(0);
+        if (!actionDescription.hasTransactionId() || actionDescription.getTransactionId() == 0) {
+            // this is for compatibility reasons with old versions
+            logger.warn("TransactionId has not been set by the controller");
+            return true;
+        }
         return unitRemote.getTransactionIdByServiceType(actionDescription.getServiceStateDescription().getServiceType()) >= actionDescription.getTransactionId();
     }
 
