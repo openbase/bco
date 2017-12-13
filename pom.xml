@@ -206,7 +206,7 @@
         <dependency.bco.version>1.5-SNAPSHOT</dependency.bco.version>
         <dependency.jul.version>${dependency.bco.version}</dependency.jul.version>
         <dependency.bco.authentication.version>${dependency.bco.version}</dependency.bco.authentication.version>
-        <dependency.apache-math.version>[3.6,3.7-SNAPSHOT)</dependency.apache-math.version>
+        <dependency.apache-math.version>[3.6,3.7-alpha)</dependency.apache-math.version>
         <dependency.org.codehaus.mojo.license-maven-plugin.version>1.10</dependency.org.codehaus.mojo.license-maven-plugin.version>
     </properties>
     
