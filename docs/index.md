@@ -80,7 +80,10 @@ Repository: <https://github.com/openbase/bco.manager.git>
 bco-registry-editor
 ```
 ```
-bco-registry-printer
+bco-print-registry
+```
+```
+bco-print-interface-rsb
 ```
 ```
 bco-query
