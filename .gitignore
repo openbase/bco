@@ -5,3 +5,4 @@ build
 **/*/nbactions.xml
 /target/
 /lib/nbproject/
+*.iml

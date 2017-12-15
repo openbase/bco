@@ -10,20 +10,22 @@ package org.openbase.bco.dal.lib.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collection;
@@ -35,6 +37,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.Future;
+
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
@@ -83,9 +86,11 @@ import rst.domotic.action.SnapshotType;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
+
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.CONSUMER;
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER;
+
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import rst.domotic.state.EnablingStateType.EnablingState;
@@ -94,11 +99,9 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
 
 /**
- *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- *
- * @param <D> the data type of this unit used for the state synchronization.
+ * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
 
@@ -249,7 +252,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     /**
-     *
      * @return
      * @deprecated please use Registries.getUnitRegistry(true) instead;
      */
@@ -441,7 +443,11 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 // Please make sure all action descriptions provide a description.
                 logger.info("Apply action on " + this);
             } else {
-                logger.info(actionDescription.getDescription());
+                if (!actionDescription.hasDescription() || actionDescription.getDescription().isEmpty()) {
+                    logger.info("Action[" + actionDescription.getServiceStateDescription().getServiceType() + ", " + actionDescription.getServiceStateDescription().getServiceAttribute() + "] for unit[" + ScopeGenerator.generateStringRep(getScope()) + "] is without a description");
+                } else {
+                    logger.info(actionDescription.getDescription());
+                }
             }
             logger.info("================");
 
@@ -457,9 +463,9 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      * Verifies the authority by verifying its internal TicketAuthenticationWrapper with the authenticator and updates the given {@code ticketAuthenticatorWrapperBuilder}.
      * It the authenticator has no TicketAuthenticationWrapper, the given {@code ticketAuthenticatorWrapperBuilder} is just not updated.
      *
-     * @param actionAuthority the authority verified
+     * @param actionAuthority                   the authority verified
      * @param ticketAuthenticatorWrapperBuilder the ticketAuthenticator to update.
-     * @throws VerificationFailedException if someone is logged in but the verification with the authenticator fails
+     * @throws VerificationFailedException                          if someone is logged in but the verification with the authenticator fails
      * @throws org.openbase.jul.exception.PermissionDeniedException is thrown in case the authority has no permission for the related action.
      * @throws java.lang.InterruptedException
      */
@@ -632,7 +638,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
      * Method can be implemented by sub classes to apply other than the default changes.
      *
      * @param internalBuilder The data builder of this unit which already contains the updated state.
-     * @param serviceType The service type which has been updated.
+     * @param serviceType     The service type which has been updated.
      */
     protected void applyDataUpdate(DB internalBuilder, ServiceType serviceType) {
         // overwrite in sub classes if a change in one service also results in a change of another
