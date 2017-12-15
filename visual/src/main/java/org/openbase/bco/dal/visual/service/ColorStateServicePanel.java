@@ -38,7 +38,7 @@ import org.slf4j.LoggerFactory;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class ColorStateServicePanel extends AbstractServicePanel<ColorStateProviderService, ConsumerService, ColorStateOperationService> {
-
+    
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
     /**
@@ -48,7 +48,7 @@ public class ColorStateServicePanel extends AbstractServicePanel<ColorStateProvi
      */
     public ColorStateServicePanel() throws InstantiationException {
         initComponents();
-
+        
         colorChooser.getSelectionModel().addChangeListener(new ChangeListener() {
             @Override
             public void stateChanged(ChangeEvent e) {
@@ -60,7 +60,7 @@ public class ColorStateServicePanel extends AbstractServicePanel<ColorStateProvi
             }
         });
     }
-
+    
     @Override
     protected void updateDynamicComponents() {
         try {
@@ -82,6 +82,7 @@ public class ColorStateServicePanel extends AbstractServicePanel<ColorStateProvi
         colorChooser = new javax.swing.JColorChooser();
         colorPreviewPanel = new javax.swing.JPanel();
         jLabel2 = new javax.swing.JLabel();
+        neutralWhiteButton = new javax.swing.JButton();
 
         colorPreviewPanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0)));
 
@@ -110,32 +111,57 @@ public class ColorStateServicePanel extends AbstractServicePanel<ColorStateProvi
                     .addContainerGap()))
         );
 
+        neutralWhiteButton.setText("SetNeutralWhite");
+        neutralWhiteButton.setToolTipText("");
+        neutralWhiteButton.addActionListener(new java.awt.event.ActionListener() {
+            public void actionPerformed(java.awt.event.ActionEvent evt) {
+                neutralWhiteButtonActionPerformed(evt);
+            }
+        });
+
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
-                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
-                    .addComponent(colorChooser, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-                    .addComponent(colorPreviewPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
+                .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                    .addGroup(layout.createSequentialGroup()
+                        .addContainerGap()
+                        .addGroup(layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING, false)
+                            .addGroup(layout.createSequentialGroup()
+                                .addComponent(colorChooser, javax.swing.GroupLayout.DEFAULT_SIZE, 628, Short.MAX_VALUE)
+                                .addGap(65, 65, 65))
+                            .addComponent(colorPreviewPanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)))
+                    .addGroup(layout.createSequentialGroup()
+                        .addGap(224, 224, 224)
+                        .addComponent(neutralWhiteButton, javax.swing.GroupLayout.PREFERRED_SIZE, 273, javax.swing.GroupLayout.PREFERRED_SIZE)))
                 .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE))
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addContainerGap()
+                .addContainerGap(javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
                 .addComponent(colorPreviewPanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.UNRELATED)
                 .addComponent(colorChooser, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addContainerGap())
+                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                .addComponent(neutralWhiteButton))
         );
     }// </editor-fold>//GEN-END:initComponents
+
+    private void neutralWhiteButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_neutralWhiteButtonActionPerformed
+        try {
+            notifyActionProcessing(getOperationService().setNeutralWhite());
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set neutral white"), logger);
+        }
+    }//GEN-LAST:event_neutralWhiteButtonActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
     private javax.swing.JColorChooser colorChooser;
     private javax.swing.JPanel colorPreviewPanel;
     private javax.swing.JLabel jLabel2;
+    private javax.swing.JButton neutralWhiteButton;
     // End of variables declaration//GEN-END:variables
 }

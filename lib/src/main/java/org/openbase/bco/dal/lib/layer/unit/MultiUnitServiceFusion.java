@@ -82,7 +82,7 @@ public interface MultiUnitServiceFusion extends BrightnessStateOperationServiceC
 
     @RPCMethod
     public Future<SnapshotType.Snapshot> recordSnapshot(final UnitType unitType) throws CouldNotPerformException, InterruptedException;
-    
+
     @Override
     default public Future<ActionFuture> setBlindState(final BlindState blindState, final UnitType unitType) throws CouldNotPerformException {
         return ((BlindStateOperationServiceCollection) getServiceRemote(ServiceType.BLIND_STATE_SERVICE)).setBlindState(blindState, unitType);
@@ -281,5 +281,10 @@ public interface MultiUnitServiceFusion extends BrightnessStateOperationServiceC
     @Override
     public default IlluminanceStateType.IlluminanceState getIlluminanceState(final UnitType unitType) throws NotAvailableException {
         return ((IlluminanceStateProviderServiceCollection) getServiceRemote(ServiceType.ILLUMINANCE_STATE_SERVICE)).getIlluminanceState(unitType);
+    }
+
+    @Override
+    default public Future<ActionFuture> setNeutralWhite() throws CouldNotPerformException {
+        return ((ColorStateOperationServiceCollection) getServiceRemote(ServiceType.COLOR_STATE_SERVICE)).setNeutralWhite();
     }
 }

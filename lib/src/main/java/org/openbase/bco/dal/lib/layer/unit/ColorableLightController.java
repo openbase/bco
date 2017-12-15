@@ -54,6 +54,7 @@ import rst.vision.ColorType.Color;
 import rst.vision.HSBColorType.HSBColor;
 import rst.vision.RGBColorType.RGBColor;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
+import org.openbase.jul.extension.rst.transform.HSBColorToRGBColorTransformer;
 
 /**
  *
@@ -233,7 +234,11 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
         } catch (VerificationFailedException ex) {
             return FutureProcessor.canceledFuture(ActionFuture.class, ex);
         }
-        return colorService.setColorState(state);
+        if (state.getColor().getType() == Color.Type.RGB) {
+            return colorService.setColor(HSBColorToRGBColorTransformer.transform(state.getColor().getRgbColor()));
+        } else {
+            return colorService.setColorState(state);
+        }
     }
 
     @Override

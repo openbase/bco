@@ -21,7 +21,9 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.ArrayList;
 import java.util.Collection;
+import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.Service;
@@ -34,6 +36,7 @@ import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
@@ -133,5 +136,14 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
         } catch (CouldNotTransformException ex) {
             throw new NotAvailableException("Could not transform from HSB to RGB or vice-versa!", ex);
         }
+    }
+
+    @Override
+    public Future<ActionFuture> setNeutralWhite() throws CouldNotPerformException {
+        List<Future> futureList = new ArrayList<>();
+        for(ColorStateOperationService colorStateOperationService : getColorStateOperationServices()) {
+            futureList.add(colorStateOperationService.setNeutralWhite());
+        }
+        return GlobalCachedExecutorService.allOf(ActionFuture.getDefaultInstance(), futureList);
     }
 }
