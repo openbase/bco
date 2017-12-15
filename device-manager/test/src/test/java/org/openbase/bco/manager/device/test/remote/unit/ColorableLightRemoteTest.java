@@ -41,6 +41,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rst.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
@@ -277,7 +278,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
         System.out.println("testSetNeutralWhite");
         colorableLightRemote.setNeutralWhite().get();
         colorableLightRemote.requestData().get();
-        assertEquals("Neutral white was not set to the default value!", ColorStateOperationService.DEFAULT_NEUTRAL_WHITE, colorableLightRemote.getColorState().getColor().getRgbColor());
+        assertEquals("Neutral white was not set to the default value!", HSBColorToRGBColorTransformer.transform(ColorStateOperationService.DEFAULT_NEUTRAL_WHITE), colorableLightRemote.getColorState().getColor().getHsbColor());
     }
 
     private int powerStateObserverUpdateNumber = 0;

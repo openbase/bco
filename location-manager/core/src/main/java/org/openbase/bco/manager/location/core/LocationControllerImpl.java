@@ -21,15 +21,19 @@ package org.openbase.bco.manager.location.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
+
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
 import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
+
 import static org.openbase.bco.manager.location.core.LocationManagerController.LOGGER;
+
 import org.openbase.bco.manager.location.lib.LocationController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -41,6 +45,7 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.RecurrenceEventFilter;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType;
@@ -70,7 +75,6 @@ import rst.vision.HSBColorType;
 import rst.vision.RGBColorType;
 
 /**
- *
  * UnitConfig
  */
 public class LocationControllerImpl extends AbstractBaseUnitController<LocationData, LocationData.Builder> implements LocationController {
@@ -98,9 +102,17 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
 
     private final PresenceDetector presenceDetector;
     private final ServiceRemoteManager serviceRemoteManager;
+    private final RecurrenceEventFilter unitEventFilter;
 
     public LocationControllerImpl() throws InstantiationException {
         super(LocationControllerImpl.class, LocationData.newBuilder());
+        // update location data on updates from internal units at most every 100ms
+        unitEventFilter = new RecurrenceEventFilter(10) {
+            @Override
+            public void relay() throws Exception {
+                updateUnitData();
+            }
+        };
         this.serviceRemoteManager = new ServiceRemoteManager(this) {
             @Override
             protected Set<ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
@@ -108,8 +120,12 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
             }
 
             @Override
-            protected void notifyServiceUpdate(Observable source, Object data) throws NotAvailableException, InterruptedException {
-                updateUnitData();
+            protected void notifyServiceUpdate(Observable source, Object data) throws NotAvailableException {
+                try {
+                    unitEventFilter.trigger();
+                } catch (final CouldNotPerformException ex) {
+                    logger.error("Could not trigger recurrence event filter for location[" + getLabel() + "]");
+                }
             }
         };
         this.presenceDetector = new PresenceDetector();
@@ -170,20 +186,12 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
         presenceDetector.deactivate();
     }
 
-    private synchronized void updateUnitData() throws InterruptedException {
+    private void updateUnitData() throws InterruptedException {
         try (ClosableDataBuilder<LocationDataType.LocationData.Builder> dataBuilder = getDataBuilder(this)) {
             serviceRemoteManager.updateBuilderWithAvailableServiceStates(dataBuilder.getInternalBuilder(), getDataClass(), getSupportedServiceTypes());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), LOGGER, LogLevel.WARN);
         }
-    }
-
-    private boolean isServiceTypeSupported(final ServiceType serviceType) throws CouldNotPerformException, InterruptedException {
-        if (serviceType == null) {
-            assert false;
-            throw new NotAvailableException("ServiceType");
-        }
-        return getSupportedServiceTypes().contains(serviceType);
     }
 
     @Override
