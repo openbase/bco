@@ -24,6 +24,7 @@ package org.openbase.bco.registry.launch;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
+import org.openbase.bco.authentication.core.AuthenticatorLauncher;
 import org.openbase.bco.registry.agent.core.AgentRegistryLauncher;
 import org.openbase.bco.registry.app.core.AppRegistryLauncher;
 import org.openbase.bco.registry.device.core.DeviceRegistryLauncher;
@@ -44,6 +45,7 @@ public class RegistryLauncher {
     public static void main(final String[] args) {
         BCO.printLogo();
         AbstractLauncher.main(args, Registry.class,
+                AuthenticatorLauncher.class,
                 DeviceRegistryLauncher.class,
                 AppRegistryLauncher.class,
                 AgentRegistryLauncher.class,
@@ -51,6 +53,7 @@ public class RegistryLauncher {
                 LocationRegistryLauncher.class,
                 UserRegistryLauncher.class,
                 SceneRegistryLauncher.class,
+                UserActivityRegistryLauncher.class,
                 UserActivityRegistryLauncher.class
         );
     }
