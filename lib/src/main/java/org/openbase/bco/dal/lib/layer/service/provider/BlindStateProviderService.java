@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * #L%
  */
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.state.BlindStateType.BlindState;
 
@@ -34,4 +35,16 @@ public interface BlindStateProviderService extends ProviderService {
     @RPCMethod
     public BlindState getBlindState() throws NotAvailableException;
 
+    static void verifyBlindState(final BlindState blindState) throws VerificationFailedException {
+        if (!blindState.hasMovementState()) {
+            throw new VerificationFailedException("MovementState not available!");
+        }
+
+        switch (blindState.getMovementState()) {
+            case UNKNOWN:
+                throw new VerificationFailedException("MovementState unknown!");
+            default:
+                break;
+        }
+    }
 }

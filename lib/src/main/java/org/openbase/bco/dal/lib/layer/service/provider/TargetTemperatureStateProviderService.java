@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * #L%
  */
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 
@@ -34,4 +35,7 @@ public interface TargetTemperatureStateProviderService extends ProviderService {
     @RPCMethod
     public TemperatureState getTargetTemperatureState() throws NotAvailableException;
 
+    static void verifTargetTemperatureState(final TemperatureState targetTemperatureState) throws VerificationFailedException {
+        TemperatureStateProviderService.verifyTemperatureState(targetTemperatureState);
+    }
 }

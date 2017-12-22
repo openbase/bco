@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * #L%
  */
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
 
@@ -33,5 +34,17 @@ public interface TemperatureStateProviderService extends ProviderService {
 
     @RPCMethod
     public TemperatureState getTemperatureState() throws NotAvailableException;
+
+    static void verifyTemperatureState(final TemperatureState temperatureState) throws VerificationFailedException {
+        if (temperatureState.hasTemperature()) {
+            throw new VerificationFailedException("Temperature value unknown!");
+        }
+        switch (temperatureState.getTemperatureDataUnit()) {
+            case UNKNOWN:
+                throw new VerificationFailedException("TemperatureState data unit unknown!");
+            default:
+                return;
+        }
+    }
 
 }

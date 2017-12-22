@@ -71,6 +71,9 @@ public interface ColorStateProviderService extends ProviderService {
     }
     
     static void verifyColorState(final ColorState colorState) throws VerificationFailedException {
+        if(!colorState.hasColor()) {
+            throw new VerificationFailedException("Color state unknown!");
+        }
         verifyColor(colorState.getColor());
     }
 

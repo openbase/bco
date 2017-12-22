@@ -42,9 +42,9 @@ public interface BrightnessStateProviderService extends ProviderService {
                 OperationService.verifyValueRange("brightness", brightnessState.getBrightness(), 0, 100);
                 break;
             case UNKNOWN:
-            default:
                 throw new VerificationFailedException("BrightnessState data unit unknown!");
+            default:
+                break;
         }
     }
-
 }

@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * #L%
  */
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.state.EmphasisStateType.EmphasisState;
 
@@ -34,4 +35,9 @@ public interface EmphasisStateProviderService extends ProviderService {
     @RPCMethod
     public EmphasisState getEmphasisState() throws NotAvailableException;
 
+    static void verifyEmphasisState(final EmphasisState emphasisState) throws VerificationFailedException {
+        if (!emphasisState.hasComfort() && !emphasisState.hasSecurity() && !emphasisState.hasEnergy()) {
+            throw new VerificationFailedException("EmphasisState does not contain emphasis!");
+        }
+    }
 }
