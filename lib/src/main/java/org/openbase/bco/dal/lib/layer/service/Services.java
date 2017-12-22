@@ -33,6 +33,7 @@ import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.VerificationFailedException;
@@ -381,7 +382,7 @@ public class Services {
         } catch (VerificationFailedException ex) {
             throw ex;
         } catch (NullPointerException | IllegalAccessException | ExceptionInInitializerError | CouldNotPerformException | InvocationTargetException ex) {
-            ExceptionPrinter.printHistory("Verification of service state could no be performed!", ex, LOGGER, LogLevel.WARN);
+            ExceptionPrinter.printHistory(new FatalImplementationErrorException("Verification of service state could no be performed!", Services.class, ex), LOGGER, LogLevel.WARN);
         }
     }
 
