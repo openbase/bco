@@ -113,7 +113,7 @@ public class RemoteAction implements Action {
                     actionDescription = actionDescription.toBuilder().setResourceAllocation(resourceAllocation).build();
                     return serviceRemote.applyAction(getActionDescription()).get();
                 } catch (Exception ex) { // InterruptedException | CancellationException | CouldNotPerformException | NullPointerException
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Execution " + actionDescription.getActionState().getValue() + "!", ex), LOGGER, LogLevel.WARN);
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not execution " + actionDescription + " with state: " + actionDescription.getActionState().getValue() + "!", ex), LOGGER, LogLevel.WARN);
                 }
             };
             executionFuture = GlobalCachedExecutorService.submit(task);
