@@ -21,15 +21,20 @@ package org.openbase.bco.authentication.test;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import java.io.IOException;
 import java.util.concurrent.ExecutionException;
+
+import com.sun.corba.se.impl.orbutil.concurrent.Sync;
 import org.openbase.bco.authentication.mock.MockCredentialStore;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import static org.junit.Assert.*;
+
 import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.mock.MockClientStore;
@@ -41,12 +46,12 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketType.Ticket;
 
 /**
- *
  * @author Sebastian Fast <sfast@techfak.uni-bielefeld.de>
  */
 public class SessionManagerTest {
@@ -251,7 +256,7 @@ public class SessionManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test//(timeout = 5000)
+    @Test(timeout = 5000)
     public void registerClientAndLoginAndLoginUserAndLogout() throws Exception {
         System.out.println("registerClientAndLoginAndLoginUserAndLogout");
         SessionManager manager = new SessionManager(clientStore);
@@ -428,18 +433,36 @@ public class SessionManagerTest {
     public void loginObservableTest() throws Exception {
         System.out.println("loginObservableTest");
 
+        final SyncObject loginSyncObject = new SyncObject("LoginSyncObject");
+        final long maxWaitTime = 1000;
+
         Observer<String> loginObserver = (Observable<String> source, String data) -> {
-            notificationCounter++;
+            synchronized (loginSyncObject) {
+                notificationCounter++;
+                loginSyncObject.notifyAll();
+            }
         };
 
         SessionManager sessionManager = new SessionManager();
         sessionManager.addLoginObserver(loginObserver);
 
         sessionManager.login(MockCredentialStore.ADMIN_ID, MockCredentialStore.ADMIN_PASSWORD);
+        synchronized (loginSyncObject) {
+            loginSyncObject.wait(maxWaitTime);
+        }
         assertEquals("Notification counter should be 1 after the first login", 1, notificationCounter);
+        synchronized (loginSyncObject) {
+            loginSyncObject.wait(maxWaitTime);
+        }
         sessionManager.login(MockCredentialStore.USER_ID, MockCredentialStore.USER_PASSWORD);
+        synchronized (loginSyncObject) {
+            loginSyncObject.wait(maxWaitTime);
+        }
         assertEquals("Notification counter should be 3 after logging in another user because of the logout in between", 3, notificationCounter);
         sessionManager.logout();
+        synchronized (loginSyncObject) {
+            loginSyncObject.wait(maxWaitTime);
+        }
         assertEquals("Notification counter should be 4 after logout", 4, notificationCounter);
 
         sessionManager.removeLoginObserver(loginObserver);

@@ -42,6 +42,7 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.AuthenticatorType;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
@@ -78,7 +79,7 @@ public class SessionManager {
      * Observable on which it is notified if login or logout is triggered.
      * The user@client id is notified on login in null on logout.
      */
-    private final ObservableImpl<String> loginObervable;
+    private final ObservableImpl<String> loginObservable;
 
     public static synchronized SessionManager getInstance() {
         if (instance == null) {
@@ -102,7 +103,8 @@ public class SessionManager {
 
     public SessionManager(CredentialStore userStore, byte[] sessionKey) {
         // load registry
-        this.loginObervable = new ObservableImpl<>();
+        this.loginObservable = new ObservableImpl<>();
+        this.loginObservable.setExecutorService(GlobalCachedExecutorService.getInstance().getExecutorService());
         this.store = userStore;
         if (sessionKey != null) {
             this.sessionKey = sessionKey;
@@ -294,7 +296,7 @@ public class SessionManager {
             this.sessionKey = (byte[]) list.get(1); // save SS session key somewhere on client side
 
             try {
-                loginObervable.notifyObservers(getUserAtClientId());
+                loginObservable.notifyObservers(getUserAtClientId());
             } catch (CouldNotPerformException ex) {
                 LOGGER.warn("Could not notify login to observer", ex);
             }
@@ -353,7 +355,7 @@ public class SessionManager {
         this.ticketAuthenticatorWrapper = null;
         this.sessionKey = null;
         try {
-            loginObervable.notifyObservers(getUserAtClientId());
+            loginObservable.notifyObservers(getUserAtClientId());
         } catch (CouldNotPerformException ex) {
             LOGGER.warn("Could not notify logout to observer", ex);
         }
@@ -372,7 +374,7 @@ public class SessionManager {
         this.sessionKey = null;
         this.ticketAuthenticatorWrapper = null;
         try {
-            loginObervable.notifyObservers(getUserAtClientId());
+            loginObservable.notifyObservers(getUserAtClientId());
         } catch (CouldNotPerformException ex) {
             LOGGER.warn("Could not notify complete logout to observer", ex);
         }
@@ -444,19 +446,19 @@ public class SessionManager {
             Observer<String> observer = (Observable<String> source, String data) -> {
                 LOGGER.warn("Login state change while in isAuthenticated to [" + data + "]" + sessionKey);
             };
-            this.loginObervable.addObserver(observer);
+            this.loginObservable.addObserver(observer);
             byte[] before = this.sessionKey;
             TicketAuthenticatorWrapper request = AuthenticationClientHandler.initServiceServerRequest(this.sessionKey, this.ticketAuthenticatorWrapper);
             byte[] init = this.sessionKey;
             TicketAuthenticatorWrapper response = CachedAuthenticationRemote.getRemote().validateClientServerTicket(request).get();
             byte[] after = this.sessionKey;
             if (this.sessionKey == null) {
-                this.loginObervable.removeObserver(observer);
+                this.loginObservable.removeObserver(observer);
                 throw new CouldNotPerformException("Why is this happening?[" + before + ", " + init + ", " + after + "]");
             }
             response = AuthenticationClientHandler.handleServiceServerResponse(this.sessionKey, request, response);
             this.ticketAuthenticatorWrapper = response;
-            this.loginObervable.removeObserver(observer);
+            this.loginObservable.removeObserver(observer);
             return true;
         } catch (IOException | BadPaddingException ex) {
             this.logout();
@@ -808,11 +810,11 @@ public class SessionManager {
     }
 
     public void addLoginObserver(Observer<String> observer) {
-        loginObervable.addObserver(observer);
+        loginObservable.addObserver(observer);
     }
 
     public void removeLoginObserver(Observer<String> observer) {
-        loginObervable.removeObserver(observer);
+        loginObservable.removeObserver(observer);
     }
 
     public String getClientId() {
