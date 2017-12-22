@@ -21,13 +21,18 @@ package org.openbase.bco.registry.unit.test;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
+
+import com.jcraft.jsch.Session;
 import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
+
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
+
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -39,6 +44,9 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.TimeoutException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
@@ -48,7 +56,6 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 
 /**
- *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class RegistryFilteringTest {
@@ -78,17 +85,17 @@ public class RegistryFilteringTest {
     }
 
     @Before
-    public void setUp() throws CouldNotPerformException {
+    public void setUp() {
 
     }
 
     @After
-    public void tearDown() throws CouldNotPerformException {
+    public void tearDown() {
         SessionManager.getInstance().logout();
     }
 
     /**
-     * The if when access in other permission for a unitConfig is removed. The unit
+     * Test if when access in other permission for a unitConfig is removed. The unit
      * is no longer listed in the remote registry.
      *
      * @throws Exception
@@ -100,7 +107,7 @@ public class RegistryFilteringTest {
         // size before
         int size = Registries.getUnitRegistry().getDalUnitConfigs().size();
 
-        // remove acces rights for one unit
+        // remove access rights for one unit
         UnitConfig.Builder unitConfig = Registries.getUnitRegistry().getUnitConfigsByLabel("PH_Hue_E27_Device_Hell").get(0).toBuilder();
         for (UnitConfig unit : Registries.getUnitRegistry().getUnitConfigsByLabel("PH_Hue_E27_Device_Hell")) {
             if (unit.getType() == UnitType.COLORABLE_LIGHT) {
@@ -117,7 +124,7 @@ public class RegistryFilteringTest {
         assertTrue("UnitConfig can still be found in unitRegistry even though the access permission for other has been removed", !Registries.getUnitRegistry().getUnitConfigRemoteRegistry().contains(unitConfig.getId()));
     }
 
-    @Test//(timeout = 10000)
+    @Test(timeout = 10000)
     public void testPermissionsOnLogin() throws Exception {
         System.out.println("testPermissionsOnLogin");
         SessionManager.getInstance().login(MockRegistry.admin.getId(), MockRegistry.adminPassword);
@@ -126,7 +133,7 @@ public class RegistryFilteringTest {
         UnitConfig.Builder userUnitConfig = UnitConfig.newBuilder();
         UserConfig.Builder userConfig = userUnitConfig.getUserConfigBuilder();
         userUnitConfig.setType(UnitType.USER);
-        userConfig.setFirstName("Gubrush").setLastName("Threepwood").setUserName("Mighty Pirate");
+        userConfig.setFirstName("Guybrush").setLastName("Threepwood").setUserName("Mighty Pirate");
         userUnitConfig = Registries.getUserRegistry().registerUserConfig(userUnitConfig.build()).get().toBuilder();
 
         // register user in credentials store
@@ -144,7 +151,7 @@ public class RegistryFilteringTest {
         Permission.Builder ownerPermission = permissionConfig.getOwnerPermissionBuilder();
         ownerPermission.setRead(true);
         permissionConfig.setOwnerId(userUnitConfig.getId());
-        UnitConfig config = Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
+        Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
 
         // unitConfig should be removed with missing all rights and nobody logged in
         assertTrue("UnitConfig has not been removed even though other permissions have been removed", !Registries.getUnitRegistry().containsUnitConfigById(unitConfig.getId()));
@@ -153,8 +160,13 @@ public class RegistryFilteringTest {
         SessionManager.getInstance().logout();
         SessionManager.getInstance().login(userUnitConfig.getId(), password);
 
+        //TODO: needed since synchronized modification of SessionManager login observable, remove by waiting on a lock
+        while(!Registries.getUnitRegistry().containsUnitConfigById(unitConfig.getId())) {
+            Thread.sleep(50);
+        }
+
         // unitConfig should be available again
-        assertTrue("UnitConfig is not visible even though owner is now loggen in", Registries.getUnitRegistry().containsUnitConfigById(unitConfig.getId()));
+        assertTrue("UnitConfig is not visible even though owner is now logged in", Registries.getUnitRegistry().containsUnitConfigById(unitConfig.getId()));
 
         // logout to dont interfere with other tests
         SessionManager.getInstance().logout();
