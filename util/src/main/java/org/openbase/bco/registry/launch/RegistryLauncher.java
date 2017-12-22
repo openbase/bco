@@ -53,7 +53,6 @@ public class RegistryLauncher {
                 LocationRegistryLauncher.class,
                 UserRegistryLauncher.class,
                 SceneRegistryLauncher.class,
-                UserActivityRegistryLauncher.class,
                 UserActivityRegistryLauncher.class
         );
     }
