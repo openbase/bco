@@ -62,6 +62,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
 import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.jul.exception.printer.LogLevel;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -305,7 +306,7 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
                         snapshotFutureMap.put(remote, remote.recordSnapshot());
                     }
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not record snapshot of " + remote.getLabel(), ex), LOGGER);
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not record snapshot of " + remote.getLabel(), ex), LOGGER, LogLevel.WARN);
                 }
             }
 
