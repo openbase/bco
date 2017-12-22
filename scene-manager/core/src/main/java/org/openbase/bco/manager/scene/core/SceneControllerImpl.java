@@ -66,7 +66,7 @@ import rst.domotic.unit.scene.SceneDataType.SceneData;
 
 /**
  *
- * UnitConfig   
+ * UnitConfig
  */
 public class SceneControllerImpl extends AbstractExecutableBaseUnitController<SceneData, SceneData.Builder> implements SceneController {
 
@@ -82,7 +82,6 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     private final List<RemoteAction> remoteActionList;
     private final SyncObject actionListSync = new SyncObject("ActionListSync");
     private final Observer<ButtonData> buttonObserver;
-    private boolean executing = false;
 
     public SceneControllerImpl() throws org.openbase.jul.exception.InstantiationException {
         super(SceneControllerImpl.class, SceneData.newBuilder());
@@ -147,7 +146,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         }
 
         MultiException.ExceptionStack exceptionStack = null;
-        
+
         synchronized (actionListSync) {
             remoteActionList.clear();
             RemoteAction action;
@@ -171,7 +170,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
                 }
             }
         }
-        
+
         try {
             MultiException.checkAndThrow("Could not fully init units of " + this, exceptionStack);
         } catch (CouldNotPerformException ex) {
@@ -208,8 +207,6 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     protected void execute() throws CouldNotPerformException, InterruptedException {
         logger.debug("Activate Scene[" + getConfig().getLabel() + "]");
 
-        executing = true;
-
         final Map<Future<ActionFuture>, RemoteAction> executionFutureList = new HashMap<>();
 
         // dublicate actions to make sure all actions are applied.
@@ -236,7 +233,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
                 if (futureActionEntry.getKey().isDone()) {
                     continue;
                 }
-                logger.debug("Waiting for action [" + futureActionEntry.getValue().getActionDescription().getServiceStateDescription().getServiceAttributeType()+ "]");
+                logger.debug("Waiting for action [" + futureActionEntry.getValue().getActionDescription().getServiceStateDescription().getServiceAttributeType() + "]");
                 try {
                     timeout = checkStart - System.currentTimeMillis();
                     if (timeout <= 0) {
@@ -257,8 +254,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
                     futureActionEntry.getKey().cancel(true);
                 }
             }
-            executing = false;
-            setActivationState(ActivationState.State.DEACTIVE);
+            updateActivationState(ActivationState.newBuilder().setValue(ActivationState.State.DEACTIVE).build());
         }
     }
 
@@ -266,12 +262,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     protected void stop() throws CouldNotPerformException, InterruptedException {
         logger.debug("Finished scene: " + getConfig().getLabel());
     }
-
-    @Override
-    public boolean isExecuting() {
-        return executing;
-    }
-
+    
     @Override
     protected boolean isAutostartEnabled() throws CouldNotPerformException {
         return false;
