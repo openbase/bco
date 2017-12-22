@@ -42,6 +42,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Identifiable;
@@ -236,7 +237,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
         try {
             MultiException.checkAndThrow("Could not record snapshot!", exceptionStack);
         } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(ex, LoggerFactory.getLogger(Unit.class));
+            ExceptionPrinter.printHistory(ex, LoggerFactory.getLogger(Unit.class), LogLevel.WARN);
         }
         return CompletableFuture.completedFuture(snapshotBuilder.build());
     }
