@@ -207,10 +207,10 @@ public class StandbyAgent extends AbstractAgentController {
             try {
                 logger.debug("restore snapshot: " + snapshot);
 
-                locationRemote.restoreSnapshot(snapshot).get();
+                locationRemote.restoreSnapshot(snapshot);
                 snapshot = null;
 
-            } catch (ExecutionException | CouldNotPerformException ex) {
+            } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("WakeUp failed!", ex);
             }
         }
