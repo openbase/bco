@@ -36,7 +36,7 @@ public interface TemperatureStateProviderService extends ProviderService {
     public TemperatureState getTemperatureState() throws NotAvailableException;
 
     static void verifyTemperatureState(final TemperatureState temperatureState) throws VerificationFailedException {
-        if (temperatureState.hasTemperature()) {
+        if (!temperatureState.hasTemperature()) {
             throw new VerificationFailedException("Temperature value unknown!");
         }
         switch (temperatureState.getTemperatureDataUnit()) {
