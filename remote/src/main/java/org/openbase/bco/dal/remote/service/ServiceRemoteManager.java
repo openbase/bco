@@ -269,7 +269,7 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
                     unitRemoteSet.addAll(serviceRemote.getInternalUnits());
                 });
             } else {
-                // for effiecency reasons only one serviceType implemented by the unitType is regarded because the unitRemote is part of
+                // for efficiency reasons only one serviceType implemented by the unitType is regarded because the unitRemote is part of
                 // every abstractServiceRemotes internal units if the serviceType is implemented by the unitType
                 ServiceType serviceType;
                 try {

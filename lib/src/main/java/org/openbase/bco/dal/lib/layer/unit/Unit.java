@@ -10,19 +10,21 @@ package org.openbase.bco.dal.lib.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.ArrayList;
@@ -32,6 +34,7 @@ import java.util.concurrent.Future;
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3d;
 import javax.vecmath.Quat4d;
+
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
@@ -76,9 +79,8 @@ import rst.geometry.TranslationType.Translation;
 import rst.spatial.ShapeType.Shape;
 
 /**
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- *
  * @param <D> the data type of this unit used for the state synchronization.
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<String>, Configurable<String, UnitConfig>, DataProvider<D>, ServiceProvider, Service, Snapshotable<Snapshot> {
 
@@ -91,7 +93,6 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
     public UnitType getUnitType() throws NotAvailableException;
 
     /**
-     *
      * @return
      * @throws NotAvailableException
      * @deprecated please use {@code getUnitType()} instead.
@@ -103,7 +104,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
 
     /**
      * Returns the related template for this unit.
-     *
+     * <p>
      * Note: The unit template defines which services are provided by this unit.
      *
      * @return UnitTemplate the unit template of this unit.
@@ -113,7 +114,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
 
     /**
      * Returns the related template for this unit.
-     *
+     * <p>
      * Note: The unit template defines which services are provided by this unit.
      *
      * @return UnitTemplate the unit template of this unit.
@@ -127,7 +128,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
 
     /**
      * Method returns the unit shape of this unit.
-     *
+     * <p>
      * If this unit configuration does not provide any shape information the shape of the unit host will be returned.
      * In case the unit host even does not provide any shape information and the unit is a device than the shape of the device class will be used.
      *
@@ -148,7 +149,6 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
     }
 
     /**
-     * 
      * @param serviceState
      * @throws VerificationFailedException
      * @deprecated please use Services.verifyOperationServiceState(...) instead
@@ -176,18 +176,17 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
     }
 
     /**
-     * 
      * @param value
      * @throws VerificationFailedException
      * @deprecated please use Services.verifyOperationServiceStateValue(...) instead
      */
     @Deprecated
     public default void verifyOperationServiceStateValue(final Enum value) throws VerificationFailedException {
-        
+
         if (value == null) {
             throw new VerificationFailedException(new NotAvailableException("ServiceStateValue"));
         }
-        
+
         if (value.name().equals("UNKNOWN")) {
             throw new VerificationFailedException("UNKNOWN." + value.getClass().getSimpleName() + " is an invalid operation service state of " + this + "!");
         }
@@ -234,7 +233,11 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
                 exceptionStack = MultiException.push(this, ex, exceptionStack);
             }
         }
-        MultiException.checkAndThrow("Could not record snapshot!", exceptionStack);
+        try {
+            MultiException.checkAndThrow("Could not record snapshot!", exceptionStack);
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(ex, LoggerFactory.getLogger(Unit.class));
+        }
         return CompletableFuture.completedFuture(snapshotBuilder.build());
     }
 
@@ -323,7 +326,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      *
      * @return transform relative to root location
      * @throws NotAvailableException is thrown if the transformation is not available.
-     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     * @throws InterruptedException  is thrown if the thread was externally interrupted.
      * @deprecated please use {@code getRootToUnitTransform3D()} instead.
      */
     default public Transform3D getTransform3D() throws NotAvailableException, InterruptedException {
@@ -337,7 +340,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      *
      * @return transform relative to root location
      * @throws NotAvailableException is thrown if the transformation is not available.
-     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     * @throws InterruptedException  is thrown if the thread was externally interrupted.
      * @deprecated please use {@code getUnitToRootTransform3D()} instead.
      */
     @Deprecated
@@ -350,7 +353,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      *
      * @return position relative to the root location
      * @throws NotAvailableException is thrown if the transformation is not available.
-     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     * @throws InterruptedException  is thrown if the thread was externally interrupted.
      * @deprecated please use {@code getUnitPositionGlobalPoint3d()} instead.
      */
     @Deprecated
@@ -363,7 +366,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      *
      * @return position relative to the root location
      * @throws NotAvailableException is thrown if the transformation is not available.
-     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     * @throws InterruptedException  is thrown if the thread was externally interrupted.
      * @deprecated please use {@code getUnitPositionGlobal()} instead.
      */
     @Deprecated
@@ -376,7 +379,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      *
      * @return rotation relative to the root location
      * @throws NotAvailableException is thrown if the transformation is not available.
-     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     * @throws InterruptedException  is thrown if the thread was externally interrupted.
      * @deprecated please use {@code getUnitRotationGlobalQuat4d()} instead.
      */
     @Deprecated
@@ -389,7 +392,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      *
      * @return rotation relative to the root location
      * @throws NotAvailableException is thrown if the transformation is not available.
-     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     * @throws InterruptedException  is thrown if the thread was externally interrupted.
      * @deprecated please use {@code getUnitRotationGlobal()} instead.
      */
     @Deprecated
@@ -413,7 +416,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Gets the center coordinates of the unit's BoundingBox in the coordinate system of the root location as a Point3d object.
      *
      * @return center coordinates of the unit's BoundingBox relative to root location
-     * @throws NotAvailableException is thrown if the center can not be calculate.
+     * @throws NotAvailableException          is thrown if the center can not be calculate.
      * @throws java.lang.InterruptedException
      * @deprecated please use {@code getUnitBoundingBoxCenterGlobalPoint3d()} instead.
      */
@@ -624,11 +627,11 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
     }
 
     /**
-     * Add an observer which is only notified if the value for the current 
+     * Add an observer which is only notified if the value for the current
      * value of the given service type changes.
-     * 
+     *
      * @param serviceType The service type on which the observer is added.
-     * @param observer The observer which is added.
+     * @param observer    The observer which is added.
      */
     @Override
     default public void addServiceStateObserver(final ServiceType serviceType, final Observer observer) {
@@ -636,11 +639,11 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
     }
 
     /**
-     * Remove an observer which is only notified if the value for the current 
+     * Remove an observer which is only notified if the value for the current
      * value of the given service type changes.
-     * 
+     *
      * @param serviceType The service type on which the observer is removed.
-     * @param observer The observer which is removed.
+     * @param observer    The observer which is removed.
      */
     @Override
     default public void removeServiceStateObserver(final ServiceType serviceType, final Observer observer) {
@@ -650,20 +653,20 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
     /**
      * Add an observer which is only notified if the desired service type for
      * the desired service tempus changes.
-     * 
+     *
      * @param serviceTempus The service tempus on which the observer is added.
-     * @param serviceType The service type on which the observer is added.
-     * @param observer The observer which is added.
+     * @param serviceType   The service type on which the observer is added.
+     * @param observer      The observer which is added.
      */
     public void addServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer observer);
 
     /**
      * Remove an observer which is only notified if the desired service type for
      * the desired service tempus changes.
-     * 
+     *
      * @param serviceTempus The service tempus on which the observer is removed.
-     * @param serviceType The service type on which the observer is removed.
-     * @param observer The observer which is removed.
+     * @param serviceType   The service type on which the observer is removed.
+     * @param observer      The observer which is removed.
      */
     public void removeServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer observer);
 
@@ -671,9 +674,9 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Add a data observer which is only notified if data for the given
      * service tempus changes.
      * The value unknown is equivalent to listening on all changes.
-     * 
+     *
      * @param serviceTempus The service tempus on which the observer is added.
-     * @param observer The observer which is added.
+     * @param observer      The observer which is added.
      */
     public void addDataObserver(ServiceTempus serviceTempus, final Observer<D> observer);
 
@@ -681,9 +684,9 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Remove a data observer which is only notified if data for the given
      * service tempus changes.
      * The value unknown is equivalent to listening on all changes.
-     * 
+     *
      * @param serviceTempus The service tempus on which the observer is removed.
-     * @param observer The observer which is removed.
+     * @param observer      The observer which is removed.
      */
     public void removeDataObserver(ServiceTempus serviceTempus, final Observer<D> observer);
 }
