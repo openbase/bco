@@ -30,6 +30,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.schedule.AbstractSynchronizationFuture;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -76,7 +77,7 @@ public class UnitSynchronisationFuture extends AbstractSynchronizationFuture<Act
         ActionDescription actionDescription = actionFuture.getActionDescription(0);
         if (!actionDescription.hasTransactionId() || actionDescription.getTransactionId() == 0) {
             // this is for compatibility reasons with old versions
-            logger.warn("TransactionId has not been set by the controller");
+            logger.warn("TransactionId has not been set for Action["+ActionDescriptionProcessor.getDescription(actionFuture.getActionDescriptionList())+"] of "+unitRemote);
             return true;
         }
         return unitRemote.getTransactionIdByServiceType(actionDescription.getServiceStateDescription().getServiceType()) >= actionDescription.getTransactionId();
