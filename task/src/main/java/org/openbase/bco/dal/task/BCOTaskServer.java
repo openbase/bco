@@ -7,7 +7,7 @@ import org.openbase.jul.iface.VoidInitializable;
  * #%L
  * BCO DAL Task
  * %%
- * Copyright (C) 2014 - 2017 openbase.org
+ * Copyright (C) 2014 - 2018 openbase.org
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as
