@@ -16,7 +16,7 @@ import org.openbase.jul.exception.InstantiationException;
  * #%L
  * BCO Manager Agent Core
  * %%
- * Copyright (C) 2015 - 2017 openbase.org
+ * Copyright (C) 2015 - 2018 openbase.org
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as

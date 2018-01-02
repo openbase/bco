@@ -6,7 +6,7 @@ import org.openbase.jul.storage.registry.RegistryImpl;
  * #%L
  * BCO Manager Location Library
  * %%
- * Copyright (C) 2015 - 2017 openbase.org
+ * Copyright (C) 2015 - 2018 openbase.org
  * %%
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU Lesser General Public License as
