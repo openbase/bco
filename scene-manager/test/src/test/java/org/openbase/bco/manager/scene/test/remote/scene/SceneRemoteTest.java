@@ -21,25 +21,18 @@ package org.openbase.bco.manager.scene.test.remote.scene;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import org.junit.After;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertTrue;
-import static org.junit.Assert.assertEquals;
-import org.junit.Before;
-import org.junit.BeforeClass;
+
+import org.junit.*;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.remote.service.ColorStateServiceRemote;
 import org.openbase.bco.dal.remote.service.PowerStateServiceRemote;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.LightRemote;
 import org.openbase.bco.dal.remote.unit.PowerSwitchRemote;
-import org.openbase.bco.dal.remote.unit.unitgroup.UnitGroupRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.unit.scene.SceneRemote;
+import org.openbase.bco.dal.remote.unit.unitgroup.UnitGroupRemote;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.manager.location.core.LocationManagerLauncher;
 import org.openbase.bco.manager.scene.core.SceneManagerLauncher;
@@ -62,7 +55,9 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.EnablingStateType;
+import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
@@ -70,6 +65,13 @@ import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
 import rst.spatial.PlacementConfigType.PlacementConfig;
 import rst.vision.ColorType;
 import rst.vision.HSBColorType.HSBColor;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -165,103 +167,103 @@ public class SceneRemoteTest {
 
             ServiceStateDescription.Builder serviceStateDescription = ServiceStateDescription.newBuilder();
 
-//            PowerState powerState = PowerState.newBuilder().setValue(POWER_ON).build();
-//            serviceStateDescription.setServiceType(ServiceType.POWER_STATE_SERVICE);
-//            serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(powerState));
-//            serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(powerState));
-//            for (UnitConfig unitConfig : unitRegistry.getDalUnitConfigs()) {
-//                if (unitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
-//                    continue;
-//                }
-//
-//                if (unitRegistry.getSubUnitTypes(UnitType.LIGHT).contains(unitConfig.getType()) || unitConfig.getType() == UnitType.LIGHT || unitConfig.getType() == UnitType.POWER_SWITCH) {
-//                    serviceStateDescription.clearUnitId();
-//                    serviceStateDescription.setUnitId(unitConfig.getId());
-//                    serviceStateDescriptionList.add(serviceStateDescription.build());
-//                    powerStateServiceRemote.init(unitConfig);
-//                }
-//            }
-//
-//            ColorType.Color color = ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(COLOR_VALUE).build();
-//            ColorState colorState = ColorState.newBuilder().setColor(color).build();
-//            serviceStateDescription.setServiceType(ServiceType.COLOR_STATE_SERVICE);
-//            serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(colorState));
-//            serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(colorState));
-//            for (UnitConfig unitConfig : unitRegistry.getDalUnitConfigs()) {
-//                if (unitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
-//                    continue;
-//                }
-//
-//                if (unitConfig.getType() == UnitType.COLORABLE_LIGHT) {
-//                    serviceStateDescription.clearUnitId();
-//                    serviceStateDescription.setUnitId(unitConfig.getId());
-//                    serviceStateDescriptionList.add(serviceStateDescription.build());
-//                    colorStateServiceRemote.init(unitConfig);
-//                }
-//            }
-//
-//            String label = SCENE_TEST;
+            PowerState powerState = PowerState.newBuilder().setValue(POWER_ON).build();
+            serviceStateDescription.setServiceType(ServiceType.POWER_STATE_SERVICE);
+            serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(powerState));
+            serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(powerState));
+            for (UnitConfig unitConfig : unitRegistry.getDalUnitConfigs()) {
+                if (unitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
+                    continue;
+                }
+
+                if (unitRegistry.getSubUnitTypes(UnitType.LIGHT).contains(unitConfig.getType()) || unitConfig.getType() == UnitType.LIGHT || unitConfig.getType() == UnitType.POWER_SWITCH) {
+                    serviceStateDescription.clearUnitId();
+                    serviceStateDescription.setUnitId(unitConfig.getId());
+                    serviceStateDescriptionList.add(serviceStateDescription.build());
+                    powerStateServiceRemote.init(unitConfig);
+                }
+            }
+
+            ColorType.Color color = ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(COLOR_VALUE).build();
+            ColorState colorState = ColorState.newBuilder().setColor(color).build();
+            serviceStateDescription.setServiceType(ServiceType.COLOR_STATE_SERVICE);
+            serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(colorState));
+            serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(colorState));
+            for (UnitConfig unitConfig : unitRegistry.getDalUnitConfigs()) {
+                if (unitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
+                    continue;
+                }
+
+                if (unitConfig.getType() == UnitType.COLORABLE_LIGHT) {
+                    serviceStateDescription.clearUnitId();
+                    serviceStateDescription.setUnitId(unitConfig.getId());
+                    serviceStateDescriptionList.add(serviceStateDescription.build());
+                    colorStateServiceRemote.init(unitConfig);
+                }
+            }
+
+            String label = SCENE_TEST;
             PlacementConfig placementConfig = PlacementConfig.newBuilder().setLocationId(Registries.getLocationRegistry().getRootLocationConfig().getId()).build();
-//            SceneConfig sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
-//            UnitConfig unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
-//            unitRegistry.registerUnitConfig(unitConfig).get();
-//
-//            serviceStateDescriptionList.clear();
-//            TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(TEMPERATURE).setTemperatureDataUnit(TemperatureState.DataUnit.CELSIUS).build();
-//            serviceStateDescription.setServiceType(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
-//            serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(temperatureState));
-//            serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(temperatureState));
-//            serviceStateDescription.setUnitId(Registries.getLocationRegistry().getRootLocationConfig().getId());
-//            serviceStateDescriptionList.add(serviceStateDescription.build());
-//
-//            label = SCENE_ROOT_LOCATION;
-//            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
-//            unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
-//            unitRegistry.registerUnitConfig(unitConfig).get();
-//
-//            label = SCENE_ROOT_LOCATION_ALL_DEVICES_ON;
-//            LocationRemote locationRemote = Units.getUnit(Registries.getLocationRegistry().getRootLocationConfig(), true, LocationRemote.class);
-//            locationRemote.setPowerState(POWER_ON).get();
-//            locationRemote.requestData().get();
-//            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(locationRemote.recordSnapshot().get().getServiceStateDescriptionList()).build();
-//            unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
-//            unitRegistry.registerUnitConfig(unitConfig).get();
-//
-//            label = SCENE_ROOT_LOCATION_ALL_DEVICES_OFF;
-//            locationRemote.setPowerState(POWER_OFF).get();
-//            locationRemote.requestData().get();
-//            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(locationRemote.recordSnapshot().get().getServiceStateDescriptionList()).build();
-//            unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
-//            unitRegistry.registerUnitConfig(unitConfig).get();
-//
-//            label = SCENE_ROOT_LOCATION_ON;
-//            serviceStateDescriptionList.clear();
-//            serviceStateDescription.clear();
-//            serviceStateDescription.setServiceType(ServiceType.POWER_STATE_SERVICE);
-//            serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(POWER_STATE_ON));
-//            serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(POWER_STATE_ON));
-//            serviceStateDescription.setUnitId(Registries.getLocationRegistry().getRootLocationConfig().getId());
-//            serviceStateDescriptionList.add(serviceStateDescription.build());
-//            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
-//            unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
-//            unitRegistry.registerUnitConfig(unitConfig).get();
-//
-//            label = SCENE_ROOT_LOCATION_OFF;
-//            serviceStateDescriptionList.clear();
-//            serviceStateDescription.clear();
-//            serviceStateDescription.setServiceType(ServiceType.POWER_STATE_SERVICE);
-//            serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(POWER_STATE_OFF));
-//            serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(POWER_STATE_OFF));
-//            serviceStateDescription.setUnitId(Registries.getLocationRegistry().getRootLocationConfig().getId());
-//            serviceStateDescriptionList.add(serviceStateDescription.build());
-//            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
-//            unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
-//            unitRegistry.registerUnitConfig(unitConfig).get();
+            SceneConfig sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
+            UnitConfig unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
+            unitRegistry.registerUnitConfig(unitConfig).get();
+
+            serviceStateDescriptionList.clear();
+            TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(TEMPERATURE).setTemperatureDataUnit(TemperatureState.DataUnit.CELSIUS).build();
+            serviceStateDescription.setServiceType(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
+            serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(temperatureState));
+            serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(temperatureState));
+            serviceStateDescription.setUnitId(Registries.getLocationRegistry().getRootLocationConfig().getId());
+            serviceStateDescriptionList.add(serviceStateDescription.build());
+
+            label = SCENE_ROOT_LOCATION;
+            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
+            unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
+            unitRegistry.registerUnitConfig(unitConfig).get();
+
+            label = SCENE_ROOT_LOCATION_ALL_DEVICES_ON;
+            LocationRemote locationRemote = Units.getUnit(Registries.getLocationRegistry().getRootLocationConfig(), true, LocationRemote.class);
+            locationRemote.setPowerState(POWER_ON).get();
+            locationRemote.requestData().get();
+            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(locationRemote.recordSnapshot().get().getServiceStateDescriptionList()).build();
+            unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
+            unitRegistry.registerUnitConfig(unitConfig).get();
+
+            label = SCENE_ROOT_LOCATION_ALL_DEVICES_OFF;
+            locationRemote.setPowerState(POWER_OFF).get();
+            locationRemote.requestData().get();
+            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(locationRemote.recordSnapshot().get().getServiceStateDescriptionList()).build();
+            unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
+            unitRegistry.registerUnitConfig(unitConfig).get();
+
+            label = SCENE_ROOT_LOCATION_ON;
+            serviceStateDescriptionList.clear();
+            serviceStateDescription.clear();
+            serviceStateDescription.setServiceType(ServiceType.POWER_STATE_SERVICE);
+            serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(POWER_STATE_ON));
+            serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(POWER_STATE_ON));
+            serviceStateDescription.setUnitId(Registries.getLocationRegistry().getRootLocationConfig().getId());
+            serviceStateDescriptionList.add(serviceStateDescription.build());
+            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
+            unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
+            unitRegistry.registerUnitConfig(unitConfig).get();
+
+            label = SCENE_ROOT_LOCATION_OFF;
+            serviceStateDescriptionList.clear();
+            serviceStateDescription.clear();
+            serviceStateDescription.setServiceType(ServiceType.POWER_STATE_SERVICE);
+            serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(POWER_STATE_OFF));
+            serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(POWER_STATE_OFF));
+            serviceStateDescription.setUnitId(Registries.getLocationRegistry().getRootLocationConfig().getId());
+            serviceStateDescriptionList.add(serviceStateDescription.build());
+            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
+            unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
+            unitRegistry.registerUnitConfig(unitConfig).get();
 
             // Register Scene which changes a unitGroup
             String unitGroupId = registerUnitGroup();
-            ColorType.Color color = ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(GROUP_COLOR_VALUE).build();
-            ColorState colorState = ColorState.newBuilder().setColor(color).build();
+            color = ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(GROUP_COLOR_VALUE).build();
+            colorState = ColorState.newBuilder().setColor(color).build();
 
             String sceneLabel = SCENE_GROUP;
             serviceStateDescriptionList.clear();
@@ -271,8 +273,8 @@ public class SceneRemoteTest {
             serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(colorState));
             serviceStateDescription.setUnitId(unitGroupId);
             serviceStateDescriptionList.add(serviceStateDescription.build());
-            SceneConfig sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
-            UnitConfig unitConfig = UnitConfig.newBuilder().setLabel(sceneLabel).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
+            sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
+            unitConfig = UnitConfig.newBuilder().setLabel(sceneLabel).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
             unitRegistry.registerUnitConfig(unitConfig).get();
         } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
             throw new CouldNotPerformException("Could not register scene!", ex);
@@ -314,7 +316,7 @@ public class SceneRemoteTest {
      *
      * @throws Exception
      */
-    //@Test(timeout = 10000)
+    @Test(timeout = 10000)
     public void testTriggerScenePerRemote() throws Exception {
         System.out.println("testTriggerScenePerRemote");
 
@@ -335,7 +337,7 @@ public class SceneRemoteTest {
      *
      * @throws Exception
      */
-    //@Test(timeout = 10000)
+    @Test(timeout = 10000)
     public void testTriggerSceneWithLocationActionPerRemote() throws Exception {
         System.out.println("testTriggerSceneWithLocationActionPerRemote");
 
@@ -358,7 +360,7 @@ public class SceneRemoteTest {
      *
      * @throws Exception
      */
-    //@Test(timeout = 10000)
+    @Test(timeout = 10000)
     public void testTriggerUnitGroupByScene() throws Exception {
         System.out.println("testTriggerUnitGroupByScene");
 
@@ -384,7 +386,7 @@ public class SceneRemoteTest {
      *
      * @throws Exception
      */
-    //@Test(timeout = 120000)
+    @Test(timeout = 120000)
     public void testTriggerSceneWithAllDevicesOfLocationActionPerRemoteAndVerifiesUnitModification() throws Exception {
         System.out.println("testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification");
 
@@ -441,7 +443,7 @@ public class SceneRemoteTest {
      *
      * @throws Exception
      */
-    //@Test(timeout = 120000)
+    @Test(timeout = 120000)
     public void testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification() throws Exception {
         System.out.println("testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification");
 
@@ -493,7 +495,7 @@ public class SceneRemoteTest {
         }
     }
 
-    public void activateScene(String sceneLabel) throws CouldNotPerformException, InterruptedException, ExecutionException {
+    public void activateScene(final String sceneLabel) throws CouldNotPerformException, InterruptedException, ExecutionException {
         SceneRemote sceneRemote = Units.getUnitsByLabel(sceneLabel, true, Units.SCENE).get(0);
         sceneRemote.addDataObserver(notifyChangeObserver);
         sceneRemote.setActivationState(ACTIVATE).get();

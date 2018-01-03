@@ -205,7 +205,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
-        logger.debug("Activate Scene[" + getConfig().getLabel() + "]");
+        logger.info("Activate Scene[" + getConfig().getLabel() + "]");
 
         final Map<Future<ActionFuture>, RemoteAction> executionFutureList = new HashMap<>();
 
@@ -225,7 +225,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         MultiException.ExceptionStack exceptionStack = null;
 
         try {
-            logger.debug("Waiting for action finalisation...");
+            logger.info("Waiting for action finalisation...");
 
             long checkStart = System.currentTimeMillis() + ACTION_EXECUTION_TIMEOUT;
             long timeout;
@@ -233,7 +233,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
                 if (futureActionEntry.getKey().isDone()) {
                     continue;
                 }
-                logger.debug("Waiting for action [" + futureActionEntry.getValue().getActionDescription().getServiceStateDescription().getServiceAttributeType() + "]");
+                logger.info("Waiting for action [" + futureActionEntry.getValue().getActionDescription().getServiceStateDescription().getServiceAttributeType() + "]");
                 try {
                     timeout = checkStart - System.currentTimeMillis();
                     if (timeout <= 0) {
@@ -245,7 +245,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
                 }
             }
             MultiException.checkAndThrow("Could not execute all actions!", exceptionStack);
-            logger.debug("Deactivate Scene[" + getConfig().getLabel() + "] because all actions are sucessfully executed.");
+            logger.info("Deactivate Scene[" + getConfig().getLabel() + "] because all actions are sucessfully executed.");
         } catch (CouldNotPerformException | CancellationException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Scene[" + getConfig().getLabel() + "] execution failed!", ex), logger);
         } finally {
