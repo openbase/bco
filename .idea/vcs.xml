@@ -13,7 +13,6 @@
     <mapping directory="$PROJECT_DIR$/module/bco.registry" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/module/bco.registry.editor" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/module/bco.stage" vcs="Git" />
-    <mapping directory="$PROJECT_DIR$/module/jps" vcs="Git" />
     <mapping directory="$PROJECT_DIR$/module/jul" vcs="Git" />
   </component>
 </project>
