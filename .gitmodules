@@ -1,6 +1,3 @@
-[submodule "module/jps"]
-	path = module/jps
-	url = https://github.com/openbase/jps
 [submodule "module/jul"]
 	path = module/jul
 	url = https://github.com/openbase/jul.git
