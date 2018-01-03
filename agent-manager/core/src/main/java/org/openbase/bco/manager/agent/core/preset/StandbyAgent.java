@@ -21,14 +21,10 @@ package org.openbase.bco.manager.agent.core.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+
 import org.openbase.bco.dal.remote.unit.Units;
-import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
+import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -46,8 +42,14 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationDataType;
 import rst.domotic.unit.location.LocationDataType.LocationData;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class StandbyAgent extends AbstractAgentController {
@@ -56,14 +58,21 @@ public class StandbyAgent extends AbstractAgentController {
      * 15 min default standby timeout
      */
     public static final long TIMEOUT = 60000 * 15;
-//    public static final long TIMEOUT = 10000;
+    /**
+     * 60 second default timeout to record a snapshot.
+     */
+    public static final long RECORD_SNAPSHOT_TIMEOUT = 60;
+    /**
+     * 15 second default timeout to restore a snapshot.
+     */
+    public static final long RESTORE_SNAPSHOT_TIMEOUT = 15;
 
     private LocationRemote locationRemote;
     private final Timeout timeout;
     private final SyncObject standbySync = new SyncObject("StandbySync");
     private boolean standby;
     private final Observer<LocationData> locationDataObserver;
-    
+
     private Snapshot snapshot;
 
     public StandbyAgent() throws InstantiationException, CouldNotPerformException, InterruptedException {
@@ -140,7 +149,7 @@ public class StandbyAgent extends AbstractAgentController {
             try {
                 try {
                     logger.debug("Create snapshot of " + locationRemote.getLabel() + " state.");
-                    snapshot = locationRemote.recordSnapshot().get(60, TimeUnit.SECONDS);
+                    snapshot = locationRemote.recordSnapshot().get(RECORD_SNAPSHOT_TIMEOUT, TimeUnit.SECONDS);
 
                     // filter out particular units and services 
                     List<ServiceStateDescription> serviceStateDescriptionList = new ArrayList<>();
@@ -163,9 +172,9 @@ public class StandbyAgent extends AbstractAgentController {
                             continue;
                         }
 
-                        // filter rollershutter
+                        // filter roller shutter
                         if (serviceStateDescription.getUnitType().equals(UnitType.ROLLER_SHUTTER)) {
-                            logger.debug("ignore " + serviceStateDescription.getUnitId() + " because reconstructing roller shutter states are to dangerus.");
+                            logger.debug("ignore " + serviceStateDescription.getUnitId() + " because reconstructing roller shutter states are to dangerous.");
                             continue;
                         }
 
@@ -204,14 +213,21 @@ public class StandbyAgent extends AbstractAgentController {
                 return;
             }
 
+            Future restoreSnapshotFuture = null;
             try {
                 logger.debug("restore snapshot: " + snapshot);
 
-                locationRemote.restoreSnapshot(snapshot);
+                restoreSnapshotFuture = locationRemote.restoreSnapshot(snapshot);
+                restoreSnapshotFuture.get(RESTORE_SNAPSHOT_TIMEOUT, TimeUnit.SECONDS);
                 snapshot = null;
 
-            } catch (CouldNotPerformException ex) {
+            } catch (CouldNotPerformException | ExecutionException ex) {
                 throw new CouldNotPerformException("WakeUp failed!", ex);
+            } catch (TimeoutException ex) {
+                if (restoreSnapshotFuture != null) {
+                    restoreSnapshotFuture.cancel(true);
+                }
+                throw new CouldNotPerformException("WakeUp took more than " + RESTORE_SNAPSHOT_TIMEOUT + " seconds", ex);
             }
         }
     }
