@@ -79,7 +79,6 @@
         <module name="manager.util" />
         <module name="ontology" />
         <module name="ontology.lib" />
-        <module name="org.openhab.binding.rsb" />
         <module name="psc.control" />
         <module name="psc.identification" />
         <module name="psc.lib" />

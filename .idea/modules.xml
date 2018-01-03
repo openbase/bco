@@ -95,7 +95,6 @@
       <module fileurl="file://$PROJECT_DIR$/module/bco.manager/util/manager.util.iml" filepath="$PROJECT_DIR$/module/bco.manager/util/manager.util.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.ontology/ontology.iml" filepath="$PROJECT_DIR$/module/bco.ontology/ontology.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.ontology.lib/ontology.lib.iml" filepath="$PROJECT_DIR$/module/bco.ontology.lib/ontology.lib.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/openhab-binding-rsb/org.openhab.binding.rsb.iml" filepath="$PROJECT_DIR$/module/openhab-binding-rsb/org.openhab.binding.rsb.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.psc/psc.iml" filepath="$PROJECT_DIR$/module/bco.psc/psc.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.psc/control/psc.control.iml" filepath="$PROJECT_DIR$/module/bco.psc/control/psc.control.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.psc/identification/psc.identification.iml" filepath="$PROJECT_DIR$/module/bco.psc/identification/psc.identification.iml" />
