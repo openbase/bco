@@ -10,12 +10,12 @@ package org.openbase.bco.manager.scene.test.remote.scene;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -74,7 +74,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class SceneRemoteTest {
@@ -316,7 +315,7 @@ public class SceneRemoteTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 10000)
+    @Test(timeout = 30000)
     public void testTriggerScenePerRemote() throws Exception {
         System.out.println("testTriggerScenePerRemote");
 
@@ -367,13 +366,13 @@ public class SceneRemoteTest {
         UnitGroupRemote unitGroupRemote = Units.getUnitsByLabel(COLORABLE_LIGHT_GROUP, true, UnitGroupRemote.class).get(0);
 
         List<ColorableLightRemote> colorableLightRemotes = new ArrayList<>();
-        for(String memberId : unitGroupRemote.getConfig().getUnitGroupConfig().getMemberIdList()) {
+        for (String memberId : unitGroupRemote.getConfig().getUnitGroupConfig().getMemberIdList()) {
             colorableLightRemotes.add(Units.getUnit(memberId, true, ColorableLightRemote.class));
         }
         activateScene(SCENE_GROUP);
 
-        for(ColorableLightRemote colorableLightRemote : colorableLightRemotes) {
-            assertEquals("ColorState has not been set for light["+colorableLightRemote.getLabel()+"]", GROUP_COLOR_VALUE, colorableLightRemote.getColorState().getColor().getHsbColor());
+        for (ColorableLightRemote colorableLightRemote : colorableLightRemotes) {
+            assertEquals("ColorState has not been set for light[" + colorableLightRemote.getLabel() + "]", GROUP_COLOR_VALUE, colorableLightRemote.getColorState().getColor().getHsbColor());
         }
         // for the group the values can be slighlty modified
         assertEquals("Brightness in unitGroupRemote has not been set", GROUP_COLOR_VALUE.getBrightness(), unitGroupRemote.getColorState().getColor().getHsbColor().getBrightness(), 1.0);
@@ -386,12 +385,12 @@ public class SceneRemoteTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 120000)
+    @Test(timeout = 30000)
     public void testTriggerSceneWithAllDevicesOfLocationActionPerRemoteAndVerifiesUnitModification() throws Exception {
         System.out.println("testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification");
 
-        LightRemote internalLight = Units.getUnitByLabel(MockRegistry.LIGHT_LABEL, true, Units.LIGHT);
-        PowerSwitchRemote internalPowerSwitch = Units.getUnitByLabel(MockRegistry.POWER_SWITCH_LABEL, true, Units.POWER_SWITCH);
+        LightRemote internalLight = Units.getUnitsByLabel(MockRegistry.LIGHT_LABEL, true, Units.LIGHT).get(0);
+        PowerSwitchRemote internalPowerSwitch = Units.getUnitsByLabel(MockRegistry.POWER_SWITCH_LABEL, true, Units.POWER_SWITCH).get(0);
 
         internalLight.setPowerState(POWER_ON).get();
         internalPowerSwitch.setPowerState(POWER_ON).get();
@@ -413,7 +412,6 @@ public class SceneRemoteTest {
         for (int i = 0; i <= TEST_ITERATIONS; i++) {
             activateScene(SCENE_ROOT_LOCATION_ALL_DEVICES_ON);
             while (locationRemote.getPowerState().getValue() != POWER_ON) {
-                System.out.println("location was not yet switched " + POWER_ON);
                 Thread.sleep(100);
                 locationRemote.requestData();
             }
@@ -443,7 +441,7 @@ public class SceneRemoteTest {
      *
      * @throws Exception
      */
-    @Test(timeout = 120000)
+    @Test(timeout = 30000)
     public void testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification() throws Exception {
         System.out.println("testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification");
 
@@ -468,6 +466,7 @@ public class SceneRemoteTest {
 
         int TEST_ITERATIONS = 3;
         for (int i = 0; i <= TEST_ITERATIONS; i++) {
+            System.out.println("Current iteration: " + i);
             activateScene(SCENE_ROOT_LOCATION_ON);
             while (locationRemote.getPowerState().getValue() != POWER_ON) {
                 System.out.println("location was not yet switched " + POWER_ON);
