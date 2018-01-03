@@ -18,6 +18,7 @@
         <option value="$PROJECT_DIR$/module/bco.stage/pom.xml" />
         <option value="$PROJECT_DIR$/module/openhab-binding-rsb/pom.xml" />
         <option value="$PROJECT_DIR$/module/bco.ontology/pom.xml" />
+        <option value="$PROJECT_DIR$/module/bco.ontology.lib/pom.xml" />
       </list>
     </option>
   </component>
