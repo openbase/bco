@@ -41,6 +41,7 @@ import org.openbase.bco.dal.remote.unit.ButtonRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.scene.lib.SceneController;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.MultiException;
@@ -76,7 +77,10 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionDescriptionType.ActionDescription.getDefaultInstance()));
     }
 
-    private final static long ACTION_EXECUTION_TIMEOUT = 15000;
+    public static final int ACTION_REPLAY = (JPService.testMode() ? 1 : 3);
+    public static final int ACTION_EXECUTION_DELAY = 5500;
+    public static final long ACTION_EXECUTION_TIMEOUT = 15000;
+
     private final Object buttonObserverLock = new SyncObject("ButtonObserverLock");
     private final Set<ButtonRemote> buttonRemoteSet;
     private final List<RemoteAction> remoteActionList;
@@ -199,9 +203,6 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         }
         super.deactivate();
     }
-
-    public static final int ACTION_REPLAY = 3;
-    public static final int ACTION_EXECUTION_DELAY = 5500;
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
