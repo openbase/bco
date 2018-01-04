@@ -17,11 +17,15 @@ RUN mkdir -p $prefix
 RUN mkdir -p ~/.config
 ADD rsb.conf ~/.config/rsb.conf
 
+# Create MVN configuration
+RUN mkdir -p ~/.m2
+ADD mvn-settings.xml ~/.m2/settings.xml
+
 # Set the working directory to /app
 WORKDIR $prefix
 
 EXPOSE 4803
 
 RUN git clone https://github.com/openbase/bco.git bco
-RUN cd bco; ./install.sh; cd ..
+RUN cd bco; ./install.sh ; cd ..
 #CMD java -jar manager.util-1.5-SNAPSHOT.one-jar.jar
