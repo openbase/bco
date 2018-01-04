@@ -13,16 +13,21 @@ RUN echo 'export PATH="$PATH:$prefix/bin"' >> ~/.bashrc
 RUN . ~/.bashrc
 RUN mkdir -p $prefix
 
+# Set the working directory to /app
+WORKDIR $prefix
+
 # Create RSB configuration
 RUN mkdir -p ~/.config
-ADD rsb.conf ~/.config/rsb.conf
+#ADD rsb.conf ~/.config/rsb.conf
+ADD rsb.conf $prefix/
+RUN mv rsb.conf ~/.config/
 
 # Create MVN configuration
 RUN mkdir -p ~/.m2
-ADD mvn-settings.xml ~/.m2/settings.xml
+#ADD mvn-settings.xml ~/.m2/settings.xml
+ADD mvn-settings.xml $prefix/
+RUN mv mvn-settings.xml ~/.m2/settings.xml
 
-# Set the working directory to /app
-WORKDIR $prefix
 
 EXPOSE 4803
 
