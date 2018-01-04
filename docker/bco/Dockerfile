@@ -11,9 +11,9 @@ RUN . ~/.bashrc
 RUN mkdir -p $prefix
 
 # Create RSB configuration
-RUN mkdir -p ~/.conf
+RUN mkdir -p ~/.config
 ADD rsb.conf $prefix/
-RUN mv $prefix/rsb.conf ~/.conf/
+RUN mv $prefix/rsb.conf ~/.config/
 
 # Set the working directory to /app
 WORKDIR $prefix
