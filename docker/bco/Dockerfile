@@ -2,7 +2,10 @@
 FROM java:8-jre
 
 # Install git and mvn
-# RUN apt-get install git mvn
+RUN apt-get update && \
+    DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+    git \
+    maven
 
 # Setup Environment 
 ENV prefix /usr/local/bco
@@ -12,15 +15,13 @@ RUN mkdir -p $prefix
 
 # Create RSB configuration
 RUN mkdir -p ~/.config
-ADD rsb.conf $prefix/
-RUN mv $prefix/rsb.conf ~/.config/
+ADD rsb.conf ~/.config/rsb.conf
 
 # Set the working directory to /app
 WORKDIR $prefix
 
-# Add database
-ADD share $prefix/share/
-ADD var $prefix/var/
-ADD manager.util-1.5-SNAPSHOT.one-jar.jar .
+EXPOSE 4803
 
-CMD java -jar manager.util-1.5-SNAPSHOT.one-jar.jar
+RUN git clone https://github.com/openbase/bco.git bco
+RUN cd bco; ./install.sh; cd ..
+#CMD java -jar manager.util-1.5-SNAPSHOT.one-jar.jar
