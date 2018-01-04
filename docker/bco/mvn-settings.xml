@@ -14,7 +14,7 @@
                     <layout>default</layout>
                     <releases>
                         <enabled>true</enabled>
-                        <updatePolicy>interval:60</updatePolicy>
+                        <updatePolicy>always</updatePolicy>
                     </releases>
                 </repository>
                 <repository>
@@ -24,7 +24,7 @@
                     <layout>default</layout>
                     <snapshots>
                         <enabled>true</enabled>
-                        <updatePolicy>interval:10</updatePolicy>
+                        <updatePolicy>always</updatePolicy>
                     </snapshots>
                 </repository>
             </repositories>
@@ -40,11 +40,11 @@
                     <url>https://oss.sonatype.org/content/groups/public/</url>
                     <releases>
                         <enabled>true</enabled>
-                        <updatePolicy>daily</updatePolicy>
+                        <updatePolicy>always</updatePolicy>
                     </releases>
                     <snapshots>
                         <enabled>true</enabled>
-                        <updatePolicy>interval:60</updatePolicy>
+                        <updatePolicy>always</updatePolicy>
                     </snapshots>
                 </repository>
             </repositories>
