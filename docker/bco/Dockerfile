@@ -30,4 +30,4 @@ EXPOSE 4803
 
 RUN git clone https://github.com/openbase/bco.git bco
 RUN cd bco; ./install.sh --batch-mode; cd ..
-CMD bin/bco
+CMD exec bin/bco

@@ -8,7 +8,7 @@ RUN wget -q http://packages.cor-lab.de/keys/cor-lab.asc -O- | apt-key add -
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
     spread \
-    librsbspread0.15
+    librsbspread0.17
 
 # Make spread port available
 EXPOSE 4803
@@ -19,4 +19,4 @@ USER spread
 WORKDIR /home/spread
 
 # Start spread using the default configuration
-CMD spread
+CMD exec spread
