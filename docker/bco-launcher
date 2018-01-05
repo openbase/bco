@@ -14,8 +14,11 @@
 
 # default config
 NETWORK_NAME="bco-net"
-SPREAD_NAME="spread"
-BCO_NAME="bco"
+SPREAD_DOCKER_NAME="spread"
+BCO_DOCKER_NAME="bco"
+OPENHAB_DOCKER_NAME="openhab-binding-rsb"
+OPENHAB_RSB_BINDING_DOCKER_NAME="openhab-binding-rsb"
+
 
 # overwrite default config via config script
 if [ -f /etc/bco/config ]; then
@@ -25,8 +28,8 @@ fi
 function stop() {
     if (check-bco) then
         echo stop bco
-        docker stop -t 120 $BCO_NAME
-        docker rm $BCO_NAME
+        docker stop -t 120 $BCO_DOCKER_NAME
+        docker rm $BCO_DOCKER_NAME
     fi
 }
 
@@ -35,19 +38,19 @@ function shutdown() {
     stop
 
     if (check-bco) then
-        docker stop -t 120 $BCO_NAME
+        docker stop -t 120 $BCO_DOCKER_NAME
     fi
 
     if (check-spread) then
         # Somehow the spread docker does not work with any signals so just kill it
-        docker kill  $SPREAD_NAME
+        docker kill $SPREAD_DOCKER_NAME
     fi
 
     if (check-bco-container-created) then
-        docker rm $BCO_NAME
+        docker rm $BCO_DOCKER_NAME
     fi
     if (check-spread-container-created) then
-        docker rm $SPREAD_NAME
+        docker rm $SPREAD_DOCKER_NAME
     fi
 }
 
@@ -57,22 +60,32 @@ function restart() {
 }
 
 function check-spread() {
-    docker container ls | grep -q $SPREAD_NAME
+    docker container ls | grep -q $SPREAD_DOCKER_NAME
     return $?
 }
 
 function check-bco() {
-    docker container ls | grep -q $BCO_NAME
+    docker container ls | grep -q $BCO_DOCKER_NAME
+    return $?
+}
+
+function check-openhab() {
+    docker container ls | grep -q $OPENHAB_DOCKER_NAME
+    return $?
+}
+
+function check-openhab-binding-rsb() {
+    docker container ls | grep -q $OPENHAB_BINDING_RSB_DOCKER_NAME
     return $?
 }
 
 function check-spread-container-created() {
-    docker container ls -a | grep -q $SPREAD_NAME
+    docker container ls -a | grep -q $SPREAD_DOCKER_NAME
     return $?
 }
 
 function check-bco-container-created() {
-    docker container ls -a | grep -q $BCO_NAME
+    docker container ls -a | grep -q $BCO_DOCKER_NAME
     return $?
 }
 
@@ -112,9 +125,9 @@ function start() {
     # Start the spread host
     if ! (check-spread) then
         if (check-spread-container-created) then
-            docker restart $SPREAD_NAME
+            docker restart $SPREAD_DOCKER_NAME
         else
-            docker run -d --name=$SPREAD_NAME -p 4803:4803  --network=$NETWORK_NAME spread
+            docker run -d --name=$SPREAD_DOCKER_NAME -p 4803:4803  --network=$NETWORK_NAME spread
         fi
         # wait so that spread is up and running when bco is started
         sleep 2
@@ -123,9 +136,15 @@ function start() {
     # Start bco     
     if ! (check-bco) then
         if (check-bco-container-created) then
-            docker restart $BCO_NAME
+            docker restart $BCO_DOCKER_NAME
         else
-            docker run -d --name=$BCO_NAME                  --network=$NETWORK_NAME bco
+            docker run -d \
+                      --name=$BCO_DOCKER_NAME \
+                      --network=$NETWORK_NAME \
+                      -v $prefix/var:/usr/local/bco/var
+                      -v $prefix/etc:/usr/local/bco/etc:ro
+                      -v $prefix/share:/usr/local/bco/share:ro
+                      $BCO_DOCKER_NAME
         fi
     fi
 }
