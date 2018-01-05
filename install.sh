@@ -9,10 +9,18 @@ WHITE='\033[0;37m'
 
 APP_NAME='bco'
 APP_NAME=${BLUE}${APP_NAME}${NC}
+
+if [ -x "$(command -v pv)" ]; then
+    PV='| pv --line-mode -p >> /dev/null'
+else
+    PV='--quiet'
+fi
+
+
 echo -e "=== ${APP_NAME} project ${WHITE}cleanup${NC}" &&
 mvn clean --quiet $@ &&
 echo -e "=== ${APP_NAME} project ${WHITE}installation${NC}" &&
-mvn install \
+eval mvn install \
         -DassembleDirectory=${prefix} \
         -DskipTests=true \
         -Dmaven.test.skip=true \
@@ -21,8 +29,8 @@ mvn install \
         -Dlicense.skipDownloadLicenses \
         -Dlicense.skipCheckLicense=true \
         -Dmaven.license.skip=true \
-        $@ &&
-echo -e "=== ${APP_NAME} project ${WHITE} launcher installation${NC}" &&
+        $@ $PV &&
+echo -e "\r=== ${APP_NAME} project launcher ${WHITE}installation${NC}" &&
 cp docker/bco-launcher $prefix/bin/ &&
 
 echo -e "=== ${APP_NAME} was ${GREEN}successfully${NC} installed to ${WHITE}${prefix}${NC}"

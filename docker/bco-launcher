@@ -13,8 +13,10 @@
 
 
 # default config
-NETWORK_NAME=BCOnet
-SPREADHOST_NAME=spreadhost
+NETWORK_NAME="bco-net"
+SPREADHOST_NAME="spreadhost"
+SPREAD_NAME="spread"
+BCO_NAME="bco"
 
 # overwrite default config via config script
 if [ -f /etc/bco/config ]; then
@@ -101,23 +103,23 @@ function logo() {
     echo ""
     echo "          openbase.org ${YEAR}    "
     echo "                     "
-    echo "                             "
 }
 
 function bco-help() {
-    echo "========"
-    echo "BCO HELP"
-    echo "========"
-    echo ""
-    echo "The following commands are available:"
-    echo ""
-    echo "start"
-    echo "restart"
-    echo "stop"
-    echo "shutdown"
-    echo "check"
-    echo "upgrade"
-    echo "help"
+    
+    echo -e "usage:"
+    echo -e ""
+    echo -e "    bco-launcher [ start | restart | stop | shutdown | check | upgrade | help ]"
+    echo -e ""
+    echo -e "where:"
+    echo -e ""
+    echo -e "    start     - starts the bco docker setup"
+    echo -e "    restart   - restarts the bco docker setup"
+    echo -e "    stop      - stops the bco docker setup"
+    echo -e "    shutdown  - stops the bco docker setup and stops the docker middleware and network infrastructure."
+    echo -e "    check     - returns 0 if everything is up and running otherwise a number > 0 is returned"
+    echo -e "    upgrade   - stops the bco docker, upgrades the container and starts bco after success."
+    echo -e "    help      - prints this help page"
     echo ""
 }
 
@@ -137,7 +139,7 @@ while true ; do
         check) check ; shift ;;
         start) start ; shift ;;
         upgrade ) upgrade ; shift ;;
-        help|-h|--help) help ; exit 1 ;;
+        help|-h|--help) bco-help ; exit 1 ;;
         --) shift ; break ;;
         *) echo "unknown command: $1" ; echo ; bco-help ; exit 1 ;;
     esac
