@@ -26,25 +26,33 @@ fi
 function stop() {
     if (check) then
         echo stop bco
-        #do---
+        docker stop $BCO_NAME
     fi
 }
 
 function shutdown() {
-    # do
     echo shutdown
     stop
 
+    docker stop $BCO_NAME
+    docker stop $SPREAD_NAME
+    docker wait  
+    docker rm $BCO_NAME
+    docker rm $SPREAD_NAME
 }
 
 function restart() {
-    bco-stop
-    bco-start
+    stop
+    start
 }
 
 function check() {
+    return $(check-spread) && $(check-bco)
+}
+
+function check-spread() {
     docker container ls | grep $SPREAD_NAME
-    return $? && check-bco
+    return $?
 }
 
 function check-bco() {
@@ -59,23 +67,28 @@ function check-network() {
 
 
 function start() {
-    if (bco-check) then
-       echo already started! 
-    fi
-
+    
+    # Setup network infrastructure
     if ! (check-network) then
         # Create a new docker network to be able to alias hosts
         docker network create $NETWORK_NAME
     fi
 
     # Start the spread host
-    docker run -d --name=$SPREAD_NAME -p 4803:4803  --network=$NETWORK_NAME spread
-    sleep 2
-    docker run -d --name=$BCO_NAME                  --network=$NETWORK_NAME bco
+    if ! (check-spread) then
+        docker run -d --name=$SPREAD_NAME -p 4803:4803  --network=$NETWORK_NAME spread
+        sleep 2
+    fi
+
+    # Start bco     
+    if ! (check-bco) then
+        docker run -d --name=$BCO_NAME                  --network=$NETWORK_NAME bco
+    fi
+    
 }
 
 function upgrade() {
-    shutdown
+    stop
     if ! (check-bco) then
         echo ready to perform the upgrade...
     else
@@ -84,9 +97,11 @@ function upgrade() {
     fi
 
     echo start upgrade
+    
     # do update
-    echo start bco
-    # do start bco
+    # docker pull xyz
+
+    start
 }
 
 function logo() {
