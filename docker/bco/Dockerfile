@@ -5,7 +5,8 @@ FROM java:8-jre
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
     git \
-    maven
+    maven \
+    pv
 
 # Setup Environment 
 ENV prefix /usr/local/bco
@@ -27,6 +28,10 @@ ADD mvn-settings.xml $prefix/
 RUN mv mvn-settings.xml ~/.m2/settings.xml
 
 EXPOSE 4803
+
+VOLUME $prefix/var
+VOLUME $prefix/etc
+VOLUME $prefix/share
 
 RUN git clone https://github.com/openbase/bco.git bco
 RUN cd bco; ./install.sh --batch-mode; cd ..
