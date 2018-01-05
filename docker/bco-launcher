@@ -14,7 +14,6 @@
 
 # default config
 NETWORK_NAME="bco-net"
-SPREADHOST_NAME="spreadhost"
 SPREAD_NAME="spread"
 BCO_NAME="bco"
 
@@ -24,9 +23,9 @@ if [ -f /etc/bco/config ]; then
 fi
 
 function stop() {
-    if (check) then
+    if (check-bco) then
         echo stop bco
-        docker stop $BCO_NAME
+        docker stop -t 120 $BCO_NAME
     fi
 }
 
@@ -34,9 +33,14 @@ function shutdown() {
     echo shutdown
     stop
 
-    docker stop $BCO_NAME
-    docker stop $SPREAD_NAME
-    docker wait  
+    if (check-bco) then
+        docker stop -t 120 $BCO_NAME
+    fi
+
+    if (check-spread) then
+        docker stop -t 120 $SPREAD_NAME
+    fi
+
     docker rm $BCO_NAME
     docker rm $SPREAD_NAME
 }
@@ -46,23 +50,38 @@ function restart() {
     start
 }
 
-function check() {
-    return $(check-spread) && $(check-bco)
-}
-
 function check-spread() {
-    docker container ls | grep $SPREAD_NAME
+    docker container ls | grep -q $SPREAD_NAME
     return $?
 }
 
 function check-bco() {
-    docker container ls | grep $BCO_NAME
+    docker container ls | grep -q $BCO_NAME
     return $?
 }
 
 function check-network() {
-    docker network ls | grep $NETWORK_NAME
+    docker network ls | grep -q $NETWORK_NAME
     return $?
+}
+
+function check() {
+    check-spread
+    SPREAD_RUNNING=$?
+    check-bco
+    BCO_RUNNING=$?
+    if [ $SPREAD_RUNNING == 0 ] && [ $BCO_RUNNING == 0 ] 
+    then
+        echo "Running"
+        return 0
+    elif [ $SPREAD_RUNNING == 1 ] && [ $BCO_RUNNING == 1 ]
+    then
+        echo "Stopped"
+        return 1
+    else
+        echo "At least one component is not running" 
+        return 1
+    fi
 }
 
 
