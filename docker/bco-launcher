@@ -1,0 +1,145 @@
+#!/bin/bash
+
+# configure exit on error
+#set -e
+#set -o pipefail
+
+
+#!/bin/bash
+
+# configure exit on error
+#set -e
+#set -o pipefail
+
+
+# default config
+NETWORK_NAME=BCOnet
+SPREADHOST_NAME=spreadhost
+
+# overwrite default config via config script
+if [ -f /etc/bco/config ]; then
+    . /etc/bco/config
+fi
+
+function stop() {
+    if (check) then
+        echo stop bco
+        #do---
+    fi
+}
+
+function shutdown() {
+    # do
+    echo shutdown
+    stop
+
+}
+
+function restart() {
+    bco-stop
+    bco-start
+}
+
+function check() {
+    docker container ls | grep $SPREAD_NAME
+    return $? && check-bco
+}
+
+function check-bco() {
+    docker container ls | grep $BCO_NAME
+    return $?
+}
+
+function check-network() {
+    docker network ls | grep $NETWORK_NAME
+    return $?
+}
+
+
+function start() {
+    if (bco-check) then
+       echo already started! 
+    fi
+
+    if ! (check-network) then
+        # Create a new docker network to be able to alias hosts
+        docker network create $NETWORK_NAME
+    fi
+
+    # Start the spread host
+    docker run -d --name=$SPREAD_NAME -p 4803:4803  --network=$NETWORK_NAME spread
+    sleep 2
+    docker run -d --name=$BCO_NAME                  --network=$NETWORK_NAME bco
+}
+
+function upgrade() {
+    shutdown
+    if ! (check-bco) then
+        echo ready to perform the upgrade...
+    else
+        echo stop failed! Please try again...
+        return 1
+    fi
+
+    echo start upgrade
+    # do update
+    echo start bco
+    # do start bco
+}
+
+function logo() {
+    YEAR=$(date +'%Y')
+    clear
+    echo "                                 "
+    echo "                             "
+    echo "     #####    ####  #######      "
+    echo "     ##  ##  ##     ##   ##      "
+    echo "     #####   ##     ##   ##      "
+    echo "     ##  ##  ##     ##   ##      "
+    echo "     #####    ####  #######      "
+    echo "     ======================      "
+    echo ""
+    echo "          openbase.org ${YEAR}    "
+    echo "                     "
+    echo "                             "
+}
+
+function bco-help() {
+    echo "========"
+    echo "BCO HELP"
+    echo "========"
+    echo ""
+    echo "The following commands are available:"
+    echo ""
+    echo "start"
+    echo "restart"
+    echo "stop"
+    echo "shutdown"
+    echo "check"
+    echo "upgrade"
+    echo "help"
+    echo ""
+}
+
+# print logo
+logo
+
+# setup command terminator
+eval set -- "$@ --"
+
+# extract options and their arguments into variables.
+while true ; do
+    case "$1" in
+
+        stop) stop ; shift ;;
+        shutdown) shutdown ; shift ;;
+        restart) restart ; shift ;;
+        check) check ; shift ;;
+        start) start ; shift ;;
+        upgrade ) upgrade ; shift ;;
+        help|-h|--help) help ; exit 1 ;;
+        --) shift ; break ;;
+        *) echo "unknown command: $1" ; echo ; bco-help ; exit 1 ;;
+    esac
+done
+
