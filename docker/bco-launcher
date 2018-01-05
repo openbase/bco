@@ -26,7 +26,7 @@ if [ -f /etc/bco/config ]; then
 fi
 
 function stop() {
-    if (check-bco) then
+    if (check-running $BCO_DOCKER_NAME) then
         echo stop bco
         docker stop -t 120 $BCO_DOCKER_NAME
         docker rm $BCO_DOCKER_NAME
@@ -37,19 +37,30 @@ function shutdown() {
     echo shutdown
     stop
 
-    if (check-bco) then
+    if (check-running $BCO_DOCKER_NAME) then
         docker stop -t 120 $BCO_DOCKER_NAME
     fi
-
+    if (check-running "$OPENHAB_DOCKER_NAME ") then
+        docker stop -t 60 $OPENHAB_DOCKER_NAME
+    fi
+    if (check-running $OPENHAB_RSB_BINDING_DOCKER_NAME) then
+        docker kill $OPENHAB_RSB_BINDING_DOCKER_NAME
+    fi
     if (check-spread) then
         # Somehow the spread docker does not work with any signals so just kill it
         docker kill $SPREAD_DOCKER_NAME
     fi
 
-    if (check-bco-container-created) then
+    if (check-created $BCO_DOCKER_NAME) then
         docker rm $BCO_DOCKER_NAME
     fi
-    if (check-spread-container-created) then
+    if (check-created "$OPENHAB_DOCKER_NAME ") then
+        docker rm $OPENHAB_DOCKER_NAME
+    fi
+    if (check-created $OPENHAB_RSB_BINDING_DOCKER_NAME) then
+        docker rm $OPENHAB_RSB_BINDING_DOCKER_NAME
+    fi
+    if (check-created SPREAD_DOCKER_NAME) then
         docker rm $SPREAD_DOCKER_NAME
     fi
 }
@@ -59,34 +70,13 @@ function restart() {
     start
 }
 
-function check-spread() {
-    docker container ls | grep -q $SPREAD_DOCKER_NAME
+function check-running {
+    docker container ls | grep -q $1
     return $?
 }
 
-function check-bco() {
-    docker container ls | grep -q $BCO_DOCKER_NAME
-    return $?
-}
-
-function check-openhab() {
-    docker container ls | grep -q $OPENHAB_DOCKER_NAME
-    return $?
-}
-
-function check-openhab-binding-rsb() {
-    docker container ls | grep -q $OPENHAB_BINDING_RSB_DOCKER_NAME
-    return $?
-}
-
-function check-spread-container-created() {
-    docker container ls -a | grep -q $SPREAD_DOCKER_NAME
-    return $?
-}
-
-function check-bco-container-created() {
-    docker container ls -a | grep -q $BCO_DOCKER_NAME
-    return $?
+function check-created {
+    docker container ls -a | grep -q $1
 }
 
 function check-network() {
@@ -95,15 +85,19 @@ function check-network() {
 }
 
 function check() {
-    check-spread
+    check-running $SPREAD_DOCKER_NAME
     SPREAD_RUNNING=$?
-    check-bco
+    check-running $BCO_DOCKER_NAME
     BCO_RUNNING=$?
-    if [ $SPREAD_RUNNING == 0 ] && [ $BCO_RUNNING == 0 ] 
+    check-running "$OPENHAB_DOCKER_NAME "
+    OPENHAB_RUNNING=$?
+    check-running $OPENHAB_RSB_BINDING_DOCKER_NAME
+    OPENHAB_BINDING_RSB_RUNNING=$?
+    if [ $SPREAD_RUNNING == 0 ] && [ $BCO_RUNNING == 0 ] && [ $OPENHAB_RUNNING == 0 ] && [ $OPENHAB_BINDING_RSB_RUNNING == 0 ]
     then
         echo "Running"
         return 0
-    elif [ $SPREAD_RUNNING == 1 ] && [ $BCO_RUNNING == 1 ]
+    elif [ $SPREAD_RUNNING == 1 ] && [ $BCO_RUNNING == 1 ] && [ $OPENHAB_RUNNING == 1 ] && [ $OPENHAB_BINDING_RSB_RUNNING == 1 ]
     then
         echo "Stopped"
         return 1
@@ -123,8 +117,8 @@ function start() {
     fi
 
     # Start the spread host
-    if ! (check-spread) then
-        if (check-spread-container-created) then
+    if ! (check-running $SPREAD_DOCKER_NAME) then
+        if (check-created $SPREAD_DOCKER_NAME) then
             docker restart $SPREAD_DOCKER_NAME
         else
             docker run -d --name=$SPREAD_DOCKER_NAME -p 4803:4803  --network=$NETWORK_NAME spread
@@ -134,19 +128,48 @@ function start() {
     fi
 
     # Start bco     
-    if ! (check-bco) then
-        if (check-bco-container-created) then
+    if ! (check-running $BCO_DOCKER_NAME) then
+        if (check-created $BCO_DOCKER_NAME) then
             docker restart $BCO_DOCKER_NAME
         else
             docker run -d \
                       --name=$BCO_DOCKER_NAME \
                       --network=$NETWORK_NAME \
-                      -v $prefix/var:/usr/local/bco/var
-                      -v $prefix/etc:/usr/local/bco/etc:ro
-                      -v $prefix/share:/usr/local/bco/share:ro
+                      -v $prefix/var:/usr/local/bco/var \
+                      -v $prefix/etc:/usr/local/bco/etc:ro \
+                      -v $prefix/share:/usr/local/bco/share:ro \
                       $BCO_DOCKER_NAME
         fi
     fi
+
+    # Start openhab
+    if ! (check-running "$OPENHAB_DOCKER_NAME ") then
+        if (check-created "$OPENHAB_DOCKER_NAME ") then
+            docker restart $OPENHAB_DOCKER_NAME
+        else
+            docker run -d \
+                --name=$OPENHAB_DOCKER_NAME
+                --network=$NETWORK_NAME \
+                -v $prefix/var:/usr/local/bco/var \
+                -v $prefix/share/openhab/distribution/configurations:/usr/local/bco/share/openhab/distribution/configurations \
+                -v $prefix/share/openhab/distribution/addons:/usr/local/bco/share/openhab/distribution/addons \
+                $OPENHAB_DOCKER_NAME
+        fi
+    fi
+
+    # Start openhab-binding-rsb
+    if ! (check-running $OPENHAB_RSB_BINDING_DOCKER_NAME) then
+        if (check-created $OPENHAB_RSB_BINDING_DOCKER_NAME) then
+            docker restart $OPENHAB_RSB_BINDING_DOCKER_NAME
+        else
+            docker run -d \
+                      --name=$OPENHAB_RSB_BINDING_DOCKER_NAME \
+                      --network=$NETWORK_NAME \
+                      -v $prefix/share:/usr/local/bco/share \
+                      $OPENHAB_RSB_BINDING_DOCKER_NAME
+        fi
+    fi
+
 }
 
 function upgrade() {
