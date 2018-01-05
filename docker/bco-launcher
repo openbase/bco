@@ -16,7 +16,7 @@
 NETWORK_NAME="bco-net"
 SPREAD_DOCKER_NAME="spread"
 BCO_DOCKER_NAME="bco"
-OPENHAB_DOCKER_NAME="openhab-binding-rsb"
+OPENHAB_DOCKER_NAME="openhab"
 OPENHAB_RSB_BINDING_DOCKER_NAME="openhab-binding-rsb"
 
 
@@ -40,13 +40,13 @@ function shutdown() {
     if (check-running $BCO_DOCKER_NAME) then
         docker stop -t 120 $BCO_DOCKER_NAME
     fi
-    if (check-running "$OPENHAB_DOCKER_NAME ") then
+    if (check-running $OPENHAB_DOCKER_NAME) then
         docker stop -t 60 $OPENHAB_DOCKER_NAME
     fi
     if (check-running $OPENHAB_RSB_BINDING_DOCKER_NAME) then
         docker kill $OPENHAB_RSB_BINDING_DOCKER_NAME
     fi
-    if (check-spread) then
+    if (check-running $SPREAD_DOCKER_NAME) then
         # Somehow the spread docker does not work with any signals so just kill it
         docker kill $SPREAD_DOCKER_NAME
     fi
@@ -54,13 +54,13 @@ function shutdown() {
     if (check-created $BCO_DOCKER_NAME) then
         docker rm $BCO_DOCKER_NAME
     fi
-    if (check-created "$OPENHAB_DOCKER_NAME ") then
+    if (check-created $OPENHAB_DOCKER_NAME) then
         docker rm $OPENHAB_DOCKER_NAME
     fi
     if (check-created $OPENHAB_RSB_BINDING_DOCKER_NAME) then
         docker rm $OPENHAB_RSB_BINDING_DOCKER_NAME
     fi
-    if (check-created SPREAD_DOCKER_NAME) then
+    if (check-created $SPREAD_DOCKER_NAME) then
         docker rm $SPREAD_DOCKER_NAME
     fi
 }
@@ -71,12 +71,12 @@ function restart() {
 }
 
 function check-running {
-    docker container ls | grep -q $1
+    docker container ls | grep -q "$1 "
     return $?
 }
 
 function check-created {
-    docker container ls -a | grep -q $1
+    docker container ls -a | grep -q "$1 "
 }
 
 function check-network() {
@@ -89,7 +89,7 @@ function check() {
     SPREAD_RUNNING=$?
     check-running $BCO_DOCKER_NAME
     BCO_RUNNING=$?
-    check-running "$OPENHAB_DOCKER_NAME "
+    check-running $OPENHAB_DOCKER_NAME
     OPENHAB_RUNNING=$?
     check-running $OPENHAB_RSB_BINDING_DOCKER_NAME
     OPENHAB_BINDING_RSB_RUNNING=$?
@@ -142,18 +142,19 @@ function start() {
         fi
     fi
 
+    check-running $OPENHAB_DOCKER_NAME
     # Start openhab
-    if ! (check-running "$OPENHAB_DOCKER_NAME ") then
-        if (check-created "$OPENHAB_DOCKER_NAME ") then
+    if ! (check-running $OPENHAB_DOCKER_NAME) then
+        if (check-created $OPENHAB_DOCKER_NAME) then
             docker restart $OPENHAB_DOCKER_NAME
         else
             docker run -d \
-                --name=$OPENHAB_DOCKER_NAME
-                --network=$NETWORK_NAME \
-                -v $prefix/var:/usr/local/bco/var \
-                -v $prefix/share/openhab/distribution/configurations:/usr/local/bco/share/openhab/distribution/configurations \
-                -v $prefix/share/openhab/distribution/addons:/usr/local/bco/share/openhab/distribution/addons \
-                $OPENHAB_DOCKER_NAME
+                      --name=$OPENHAB_DOCKER_NAME \
+                      --network=$NETWORK_NAME \
+                      -v $prefix/var:/usr/local/bco/var \
+                      -v $prefix/share/openhab/distribution/configurations:/usr/local/bco/share/openhab/distribution/configurations \
+                      -v $prefix/share/openhab/distribution/addons:/usr/local/bco/share/openhab/distribution/addons \
+                      $OPENHAB_DOCKER_NAME
         fi
     fi
 
