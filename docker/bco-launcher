@@ -26,6 +26,7 @@ function stop() {
     if (check-bco) then
         echo stop bco
         docker stop -t 120 $BCO_NAME
+        docker rm $BCO_NAME
     fi
 }
 
@@ -38,11 +39,16 @@ function shutdown() {
     fi
 
     if (check-spread) then
-        docker stop -t 120 $SPREAD_NAME
+        # Somehow the spread docker does not work with any signals so just kill it
+        docker kill  $SPREAD_NAME
     fi
 
-    docker rm $BCO_NAME
-    docker rm $SPREAD_NAME
+    if (check-bco-container-created) then
+        docker rm $BCO_NAME
+    fi
+    if (check-spread-container-created) then
+        docker rm $SPREAD_NAME
+    fi
 }
 
 function restart() {
@@ -57,6 +63,16 @@ function check-spread() {
 
 function check-bco() {
     docker container ls | grep -q $BCO_NAME
+    return $?
+}
+
+function check-spread-container-created() {
+    docker container ls -a | grep -q $SPREAD_NAME
+    return $?
+}
+
+function check-bco-container-created() {
+    docker container ls -a | grep -q $BCO_NAME
     return $?
 }
 
@@ -95,15 +111,23 @@ function start() {
 
     # Start the spread host
     if ! (check-spread) then
-        docker run -d --name=$SPREAD_NAME -p 4803:4803  --network=$NETWORK_NAME spread
+        if (check-spread-container-created) then
+            docker restart $SPREAD_NAME
+        else
+            docker run -d --name=$SPREAD_NAME -p 4803:4803  --network=$NETWORK_NAME spread
+        fi
+        # wait so that spread is up and running when bco is started
         sleep 2
     fi
 
     # Start bco     
     if ! (check-bco) then
-        docker run -d --name=$BCO_NAME                  --network=$NETWORK_NAME bco
+        if (check-bco-container-created) then
+            docker restart $BCO_NAME
+        else
+            docker run -d --name=$BCO_NAME                  --network=$NETWORK_NAME bco
+        fi
     fi
-    
 }
 
 function upgrade() {
