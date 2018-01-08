@@ -4,6 +4,10 @@ FROM java:8-jre
 # Install git and mvn
 RUN apt-get update && \
     DEBIAN_FRONTEND=noninteractive apt-get install --no-install-recommends -y \
+    g++ \
+    gcc \
+    make \
+    cmake \
     git
 
 # Setup Environment 
@@ -20,7 +24,8 @@ RUN mkdir -p ~/.config
 ADD rsb.conf $prefix/
 RUN mv rsb.conf ~/.config/
 
-# Deplay openhab runtime
-RUN git clone https://projects.cit-ec.uni-bielefeld.de/git/lsp-csra.openhab-runtime openhab-runtime
-RUN cd openhab-runtime; ./install.sh --batch-mode; cd ..
+# Deploy openhab runtime
+ADD openhab-runtime $prefix/
+RUN ./install.sh --batch-mode; cd ..
+RUN rm -rf openhab-runtime
 CMD exec bin/openhab
