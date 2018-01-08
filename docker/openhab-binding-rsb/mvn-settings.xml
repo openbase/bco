@@ -1,0 +1,53 @@
+<?xml version="1.0"?>
+<settings>
+    <profiles>
+        <profile>				
+            <id>citec</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <repositories>
+                <repository>
+                    <id>citec-releases</id>
+                    <name>CITEC Maven Repository Server</name>
+                    <url>https://mvn.cit-ec.de/nexus/content/repositories/releases/</url>
+                    <layout>default</layout>
+                    <releases>
+                        <enabled>true</enabled>
+                        <updatePolicy>always</updatePolicy>
+                    </releases>
+                </repository>
+                <repository>
+                    <id>citec-snapshots</id>
+                    <name>CITEC Maven Repository Server</name>
+                    <url>https://mvn.cit-ec.de/nexus/content/repositories/snapshots/</url>
+                    <layout>default</layout>
+                    <snapshots>
+                        <enabled>true</enabled>
+                        <updatePolicy>always</updatePolicy>
+                    </snapshots>
+                </repository>
+            </repositories>
+        </profile>
+        <profile>
+            <id>sonatype</id>
+            <activation>
+                <activeByDefault>true</activeByDefault>
+            </activation>
+            <repositories>
+                <repository>
+                    <id>sonatype-oss-public</id>
+                    <url>https://oss.sonatype.org/content/groups/public/</url>
+                    <releases>
+                        <enabled>true</enabled>
+                        <updatePolicy>always</updatePolicy>
+                    </releases>
+                    <snapshots>
+                        <enabled>true</enabled>
+                        <updatePolicy>always</updatePolicy>
+                    </snapshots>
+                </repository>
+            </repositories>
+        </profile>
+    </profiles>
+</settings>
