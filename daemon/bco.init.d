@@ -13,7 +13,6 @@
 
 # Do NOT "set -e"
 
-# PATH should only include /usr/* if it runs after the mountnfs.sh script
 PATH=/bin:/usr/bin
 DESC="bco setup launcher daemon."
 NAME=bco-launcher
