@@ -187,7 +187,7 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
         try {
             return getServiceRemote(serviceType).hasInternalRemotes();
         } catch (NotAvailableException ex) {
-            // no service enty means the service is not available.
+            // no service entry means the service is not available.
             return false;
         }
     }
@@ -259,77 +259,79 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
         return recordSnapshot(UnitTemplateType.UnitTemplate.UnitType.UNKNOWN);
     }
 
-    public Future<SnapshotType.Snapshot> recordSnapshot(final UnitTemplateType.UnitTemplate.UnitType unitType) throws CouldNotPerformException, InterruptedException {
-        try {
-            SnapshotType.Snapshot.Builder snapshotBuilder = SnapshotType.Snapshot.newBuilder();
-            Set<UnitRemote> unitRemoteSet = new HashSet<>();
+    public Future<Snapshot> recordSnapshot(final UnitTemplateType.UnitTemplate.UnitType unitType) throws CouldNotPerformException, InterruptedException {
+        return GlobalCachedExecutorService.submit(() -> {
+            try {
+                SnapshotType.Snapshot.Builder snapshotBuilder = SnapshotType.Snapshot.newBuilder();
+                Set<UnitRemote> unitRemoteSet = new HashSet<>();
 
-            if (unitType == UnitTemplateType.UnitTemplate.UnitType.UNKNOWN) {
-                // if the type is unknown then take the snapshot for all units
-                getServiceRemoteList().stream().forEach((serviceRemote) -> {
-                    unitRemoteSet.addAll(serviceRemote.getInternalUnits());
-                });
-            } else {
-                // for efficiency reasons only one serviceType implemented by the unitType is regarded because the unitRemote is part of
-                // every abstractServiceRemotes internal units if the serviceType is implemented by the unitType
-                ServiceType serviceType;
-                try {
-                    serviceType = Registries.getUnitRegistry().getUnitTemplateByType(unitType).getServiceDescriptionList().get(0).getType();
-                } catch (IndexOutOfBoundsException ex) {
-                    // if there is not at least one serviceType for the unitType then the snapshot is empty
-                    return CompletableFuture.completedFuture(snapshotBuilder.build());
-                }
-
-                for (final AbstractServiceRemote abstractServiceRemote : getServiceRemoteList()) {
-                    if (!(serviceType == abstractServiceRemote.getServiceType())) {
-                        continue;
+                if (unitType == UnitTemplateType.UnitTemplate.UnitType.UNKNOWN) {
+                    // if the type is unknown then take the snapshot for all units
+                    getServiceRemoteList().stream().forEach((serviceRemote) -> {
+                        unitRemoteSet.addAll(serviceRemote.getInternalUnits());
+                    });
+                } else {
+                    // for efficiency reasons only one serviceType implemented by the unitType is regarded because the unitRemote is part of
+                    // every abstractServiceRemotes internal units if the serviceType is implemented by the unitType
+                    ServiceType serviceType;
+                    try {
+                        serviceType = Registries.getUnitRegistry().getUnitTemplateByType(unitType).getServiceDescriptionList().get(0).getType();
+                    } catch (IndexOutOfBoundsException ex) {
+                        // if there is not at least one serviceType for the unitType then the snapshot is empty
+                        return snapshotBuilder.build();
                     }
 
-                    Collection<UnitRemote> internalUnits = abstractServiceRemote.getInternalUnits();
-                    for (final UnitRemote unitRemote : internalUnits) {
-                        // just add units with the according type
-                        if (unitRemote.getUnitType() == unitType) {
-                            unitRemoteSet.add(unitRemote);
+                    for (final AbstractServiceRemote abstractServiceRemote : getServiceRemoteList()) {
+                        if (!(serviceType == abstractServiceRemote.getServiceType())) {
+                            continue;
+                        }
+
+                        Collection<UnitRemote> internalUnits = abstractServiceRemote.getInternalUnits();
+                        for (final UnitRemote unitRemote : internalUnits) {
+                            // just add units with the according type
+                            if (unitRemote.getUnitType() == unitType) {
+                                unitRemoteSet.add(unitRemote);
+                            }
                         }
                     }
                 }
-            }
 
-            // take the snapshot
-            final Map<UnitRemote, Future<SnapshotType.Snapshot>> snapshotFutureMap = new HashMap<UnitRemote, Future<SnapshotType.Snapshot>>();
-            for (final UnitRemote<?> remote : unitRemoteSet) {
-                try {
-                    if (UnitProcessor.isDalUnit(remote)) {
-                        if (!remote.isConnected()) {
-                            throw new NotAvailableException("Unit[" + remote.getLabel() + "] is currently not reachable!");
+                // take the snapshot
+                final Map<UnitRemote, Future<SnapshotType.Snapshot>> snapshotFutureMap = new HashMap<UnitRemote, Future<SnapshotType.Snapshot>>();
+                for (final UnitRemote<?> remote : unitRemoteSet) {
+                    try {
+                        if (UnitProcessor.isDalUnit(remote)) {
+                            if (!remote.isConnected()) {
+                                throw new NotAvailableException("Unit[" + remote.getLabel() + "] is currently not reachable!");
+                            }
+                            snapshotFutureMap.put(remote, remote.recordSnapshot());
                         }
-                        snapshotFutureMap.put(remote, remote.recordSnapshot());
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not record snapshot of " + remote.getLabel(), ex), LOGGER, LogLevel.WARN);
                     }
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not record snapshot of " + remote.getLabel(), ex), LOGGER, LogLevel.WARN);
                 }
-            }
 
-            // build snapshot
-            for (final Map.Entry<UnitRemote, Future<SnapshotType.Snapshot>> snapshotFutureEntry : snapshotFutureMap.entrySet()) {
-                try {
-                    snapshotBuilder.addAllServiceStateDescription(snapshotFutureEntry.getValue().get(5, TimeUnit.SECONDS).getServiceStateDescriptionList());
-                } catch (ExecutionException | TimeoutException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not record snapshot of " + snapshotFutureEntry.getKey().getLabel(), ex), LOGGER);
+                // build snapshot
+                for (final Map.Entry<UnitRemote, Future<SnapshotType.Snapshot>> snapshotFutureEntry : snapshotFutureMap.entrySet()) {
+                    try {
+                        snapshotBuilder.addAllServiceStateDescription(snapshotFutureEntry.getValue().get(5, TimeUnit.SECONDS).getServiceStateDescriptionList());
+                    } catch (ExecutionException | TimeoutException ex) {
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not record snapshot of " + snapshotFutureEntry.getKey().getLabel(), ex), LOGGER);
+                    }
                 }
+                return snapshotBuilder.build();
+            } catch (final CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not record snapshot!", ex);
             }
-            return CompletableFuture.completedFuture(snapshotBuilder.build());
-        } catch (final CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not record snapshot!", ex);
-        }
+        });
     }
 
     @Override
-    public Future<Void> restoreSnapshot(final SnapshotType.Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
+    public Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
         try {
-            final Map<String, org.openbase.bco.dal.lib.layer.unit.UnitRemote<?>> unitRemoteMap = new HashMap<>();
+            final Map<String, UnitRemote<?>> unitRemoteMap = new HashMap<>();
             for (AbstractServiceRemote<?, ?> serviceRemote : this.getServiceRemoteList()) {
-                for (org.openbase.bco.dal.lib.layer.unit.UnitRemote<?> unitRemote : serviceRemote.getInternalUnits()) {
+                for (UnitRemote<?> unitRemote : serviceRemote.getInternalUnits()) {
                     unitRemoteMap.put(unitRemote.getId(), unitRemote);
                 }
             }

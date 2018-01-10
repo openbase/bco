@@ -30,6 +30,7 @@ import java.lang.reflect.Method;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Future;
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3d;
@@ -196,50 +197,57 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
     @RPCMethod
     @Override
     public default Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
-        MultiException.ExceptionStack exceptionStack = null;
-        Snapshot.Builder snapshotBuilder = Snapshot.newBuilder();
-        for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
+        return GlobalCachedExecutorService.submit(() -> {
             try {
-                ServiceStateDescription.Builder serviceStateDescription = ServiceStateDescription.newBuilder().setServiceType(serviceDescription.getType()).setUnitId(getId());
+                MultiException.ExceptionStack exceptionStack = null;
+                Snapshot.Builder snapshotBuilder = Snapshot.newBuilder();
+                for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
+                    try {
+                        ServiceStateDescription.Builder serviceStateDescription = ServiceStateDescription.newBuilder().setServiceType(serviceDescription.getType()).setUnitId(getId());
 
-                // skip non operation services.
-                if (serviceDescription.getPattern() != ServiceTemplate.ServicePattern.OPERATION) {
-                    continue;
+                        // skip non operation services.
+                        if (serviceDescription.getPattern() != ServiceTemplate.ServicePattern.OPERATION) {
+                            continue;
+                        }
+
+                        // load operation service attribute by related provider service
+                        Message serviceAttribute = (Message) Services.invokeServiceMethod(serviceDescription.getType(), ServiceTemplate.ServicePattern.PROVIDER, this);
+                        //System.out.println("load[" + serviceAttribute + "] type: " + serviceAttribute.getClass().getSimpleName());
+
+                        // verify operation service state (e.g. ignore UNKNOWN service states)
+                        Services.verifyOperationServiceState(serviceAttribute);
+
+                        // fill action config
+                        final ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();
+                        try {
+                            serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(serviceAttribute));
+                        } catch (InvalidStateException ex) {
+                            // skip if serviceAttribute is empty.
+                            continue;
+                        }
+                        serviceStateDescription.setUnitId(getId());
+                        serviceStateDescription.setUnitType(getUnitTemplate().getType());
+                        serviceStateDescription.setServiceType(serviceDescription.getType());
+                        serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
+
+                        // add action config
+                        snapshotBuilder.addServiceStateDescription(serviceStateDescription.build());
+                    } catch (CouldNotPerformException | ClassCastException ex) {
+                        exceptionStack = MultiException.push(this, ex, exceptionStack);
+                    }
                 }
 
-                // load operation service attribute by related provider service
-                Message serviceAttribute = (Message) Services.invokeServiceMethod(serviceDescription.getType(), ServiceTemplate.ServicePattern.PROVIDER, this);
-                //System.out.println("load[" + serviceAttribute + "] type: " + serviceAttribute.getClass().getSimpleName());
-
-                // verify operation service state (e.g. ignore UNKNOWN service states)
-                Services.verifyOperationServiceState(serviceAttribute);
-
-                // fill action config
-                final ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();
                 try {
-                    serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(serviceAttribute));
-                } catch (InvalidStateException ex) {
-                    // skip if serviceAttribute is empty.
-                    continue;
+                    MultiException.checkAndThrow("Could not snapshot all service provider!", exceptionStack);
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(ex, LoggerFactory.getLogger(Unit.class), LogLevel.WARN);
                 }
-                serviceStateDescription.setUnitId(getId());
-                serviceStateDescription.setUnitType(getUnitTemplate().getType());
-                serviceStateDescription.setServiceType(serviceDescription.getType());
-                serviceStateDescription.setServiceType(serviceDescription.getType());
-                serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
 
-                // add action config
-                snapshotBuilder.addServiceStateDescription(serviceStateDescription.build());
-            } catch (CouldNotPerformException | ClassCastException ex) {
-                exceptionStack = MultiException.push(this, ex, exceptionStack);
+                return snapshotBuilder.build();
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not record snapshot!", ex);
             }
-        }
-        try {
-            MultiException.checkAndThrow("Could not record snapshot!", exceptionStack);
-        } catch (CouldNotPerformException ex) {
-            ExceptionPrinter.printHistory(ex, LoggerFactory.getLogger(Unit.class), LogLevel.WARN);
-        }
-        return CompletableFuture.completedFuture(snapshotBuilder.build());
+        });
     }
 
     @RPCMethod
