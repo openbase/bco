@@ -93,7 +93,7 @@ public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTes
      *
      * @throws java.lang.Exception
      */
-    @Test//(timeout = 10000)
+    @Test(timeout = 30000)
     public void testIlluminationLightSavingAgent() throws Exception {
         // TODO: turn back on when resource allocation is integrated for unit tests
         try {
