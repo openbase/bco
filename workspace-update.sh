@@ -5,7 +5,7 @@ git pull
 
 # make sure submodule projects are initiated and updated
 git $@ submodule init
-git $@ submodule update
+git $@ submodule update --remote
 
 # detect project branch
 BRANCH_NAME=$(git rev-parse --abbrev-ref HEAD)

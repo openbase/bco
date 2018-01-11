@@ -1,7 +1,7 @@
 [submodule "module/jul"]
 	path = module/jul
     url = https://github.com/openbase/jul.git
-    branch = master
+	branch = master
 [submodule "module/openhab-binding-rsb"]
 	path = module/openhab-binding-rsb
     url = https://github.com/openbase/openhab-binding-rsb.git
