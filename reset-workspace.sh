@@ -10,7 +10,7 @@ read -p "Please type y to confirm: " -n 1 -r &&
 echo &&  # new line
 if [[ ! $REPLY =~ ^[YyZz]$ ]]; then
     echo "=== Reset aborted by user..."
-    return 255
+   exit 255
 fi
 
 # reset top level project
