@@ -1,39 +1,52 @@
 [submodule "module/jul"]
 	path = module/jul
-	url = https://github.com/openbase/jul.git
+    url = https://github.com/openbase/jul.git
+    branch = master
 [submodule "module/openhab-binding-rsb"]
 	path = module/openhab-binding-rsb
-	url = https://github.com/openbase/openhab-binding-rsb.git
+    url = https://github.com/openbase/openhab-binding-rsb.git
+    branch = master
 [submodule "module/bco.authentication"]
 	path = module/bco.authentication
-	url = https://github.com/openbase/bco.authentication.git
+    url = https://github.com/openbase/bco.authentication.git
+    branch = master
 [submodule "module/bco.registry.editor"]
 	path = module/bco.registry.editor
-	url = https://github.com/openbase/bco.registry.editor.git
+    url = https://github.com/openbase/bco.registry.editor.git
+    branch = master
 [submodule "module/bco.registry"]
 	path = module/bco.registry
-	url = https://github.com/openbase/bco.registry.git
+    url = https://github.com/openbase/bco.registry.git
+    branch = master
 [submodule "module/bco.dal"]
 	path = module/bco.dal
-	url = https://github.com/openbase/bco.dal.git
+    url = https://github.com/openbase/bco.dal.git
+    branch = master
 [submodule "module/bco.psc"]
 	path = module/bco.psc
-	url = https://github.com/openbase/bco.psc.git
+    url = https://github.com/openbase/bco.psc.git
+    branch = master
 [submodule "module/bco.eveson"]
 	path = module/bco.eveson
-	url = https://github.com/openbase/bco.eveson.git
+    url = https://github.com/openbase/bco.eveson.git
+    branch = master
 [submodule "module/bco.ontology.lib"]
 	path = module/bco.ontology.lib
-	url = https://github.com/openbase/bco.ontology.lib.git
+    url = https://github.com/openbase/bco.ontology.lib.git
+    branch = master
 [submodule "module/bco.ontology"]
 	path = module/bco.ontology
-	url = https://github.com/openbase/bco.ontology.git
+    url = https://github.com/openbase/bco.ontology.git
+    branch = master
 [submodule "module/bco.manager"]
 	path = module/bco.manager
-	url = https://github.com/openbase/bco.manager.git
+    url = https://github.com/openbase/bco.manager.git
+    branch = master
 [submodule "module/bco.bcozy"]
 	path = module/bco.bcozy
-	url = https://github.com/openbase/bco.bcozy
+    url = https://github.com/openbase/bco.bcozy
+    branch = master
 [submodule "module/bco.stage"]
 	path = module/bco.stage
-	url = https://github.com/openbase/bco.stage.git
+    url = https://github.com/openbase/bco.stage.git
+    branch = master
