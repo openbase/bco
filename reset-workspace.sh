@@ -6,12 +6,12 @@
 echo "WARNING: If you continue, all project changes will be erased!!!"
 
 # await confirmation
-read -p "Please type y to confirm: " -n 1 -r &&
-echo &&  # new line
+read -p "         Please type y to confirm: " -n 1 -r &&
 if [[ ! $REPLY =~ ^[YyZz]$ ]]; then
-    echo "=== Reset aborted by user..."
-   exit 255
+    echo -e "\r         Reset aborted by user.        "
+    exit 255
 fi
+echo # new line
 
 # reset top level project
 git reset --hard
