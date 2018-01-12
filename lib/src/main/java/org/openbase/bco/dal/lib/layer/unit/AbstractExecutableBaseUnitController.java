@@ -96,14 +96,13 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
             } else {
                 if (isExecuting()) {
                     cancelExecution();
-                    result = GlobalCachedExecutorService.submit(() -> {
-                        try {
-                            stop();
-                        } catch (CouldNotPerformException ex) {
-                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not stop [" + getLabel() + "]", ex), logger);
-                        }
-                        return null;
-                    });
+                }
+                // call stop even if execution has already finished
+                // many components just register observer etc. in execute and this it is done quickly
+                try {
+                    stop();
+                } catch (InterruptedException ex) {
+
                 }
             }
         }
