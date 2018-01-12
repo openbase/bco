@@ -28,11 +28,13 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.iface.Enableable;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -119,13 +121,7 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
     }
 
     protected void updateActivationState(ActivationState activationState) throws CouldNotPerformException {
-        try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this)) {
-            Descriptors.FieldDescriptor findFieldByName = dataBuilder.getInternalBuilder().getDescriptorForType().findFieldByName(FIELD_ACTIVATION_STATE);
-            if (findFieldByName == null) {
-                throw new NotAvailableException("Field[" + FIELD_ACTIVATION_STATE + "] does not exist for type " + dataBuilder.getClass().getName());
-            }
-            dataBuilder.getInternalBuilder().setField(findFieldByName, activationState);
-        }
+        applyDataUpdate(activationState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
     }
 
     public boolean isExecuting() {
