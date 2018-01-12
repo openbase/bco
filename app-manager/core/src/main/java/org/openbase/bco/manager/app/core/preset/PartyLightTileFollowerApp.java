@@ -21,15 +21,7 @@ package org.openbase.bco.manager.app.core.preset;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.app.core.AbstractAppController;
@@ -38,12 +30,20 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.location.LocationConfigType;
 import rst.vision.HSBColorType.HSBColor;
+
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * UnitConfig
@@ -84,8 +84,6 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
         HSBColor.newBuilder().setHue(290).setSaturation(100).setBrightness(brightness).build(),
         HSBColor.newBuilder().setHue(30).setSaturation(100).setBrightness(brightness).build(),};
 
-    private Future<Void> tileFollowerFuture;
-
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
         // verify
@@ -93,23 +91,11 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
             throw new InvalidStateException("App location is not a tile!");
         }
 
-        synchronized (taskLock) {
-            // execute
-            if (tileFollowerFuture != null) {
-                return;
-            }
-            tileFollowerFuture = GlobalCachedExecutorService.submit(new TileFollower());
-        }
+        new TileFollower().call();
     }
 
     @Override
     protected void stop() {
-        synchronized (taskLock) {
-            if (tileFollowerFuture != null) {
-                tileFollowerFuture.cancel(true);
-                tileFollowerFuture = null;
-            }
-        }
     }
 
     public class TileFollower implements Callable<Void> {
@@ -143,7 +129,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
             return null;
         }
 
-        public void processRoom(final LocationRemote locationRemote, final HSBColor color) throws CouldNotPerformException, InterruptedException {
+        private void processRoom(final LocationRemote locationRemote, final HSBColor color) throws CouldNotPerformException, InterruptedException {
             logger.debug("Set " + locationRemote + " to " + color + "...");
             try {
 
