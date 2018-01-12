@@ -21,7 +21,9 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.GeneratedMessage;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
@@ -32,6 +34,7 @@ import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
 import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
@@ -56,10 +59,12 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
+import org.openbase.jul.iface.Processable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
+import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
@@ -75,11 +80,9 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
- *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- *
- * @param <S> generic definition of the overall service type for this remote.
+ * @param <S>  generic definition of the overall service type for this remote.
  * @param <ST> the corresponding state for the service type of this remote.
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractServiceRemote<S extends Service, ST extends GeneratedMessage> implements ServiceRemote<S, ST> {
 
@@ -87,6 +90,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
     private boolean active;
     private final ServiceType serviceType;
+    private long connectionPing;
     private final Class<ST> serviceDataClass;
     private final Map<String, UnitRemote> unitRemoteMap;
     private final Map<UnitType, List<S>> unitRemoteTypeMap;
@@ -100,7 +104,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     /**
      * AbstractServiceRemote constructor.
      *
-     * @param serviceType The remote service type.
+     * @param serviceType      The remote service type.
      * @param serviceDataClass The service data class.
      */
     public AbstractServiceRemote(final ServiceType serviceType, final Class<ST> serviceDataClass) {
@@ -121,7 +125,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      *
      * @return the computed server state is returned.
      * @throws CouldNotPerformException if an underlying service throws an
-     * exception
+     *                                  exception
      */
     protected abstract ST computeServiceState() throws CouldNotPerformException;
 
@@ -140,10 +144,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     }
 
     /**
-     *
      * @return the current service state
      * @throws NotAvailableException if the service state has not been set at
-     * least once.
+     *                               least once.
      * @deprecated please use getData instead.
      */
     @Override
@@ -156,10 +159,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     }
 
     /**
-     *
      * @return the current service state
      * @throws NotAvailableException if the service state data has not been set at
-     * least once.
+     *                               least once.
      */
     @Override
     public ST getData() throws NotAvailableException {
@@ -271,7 +273,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      *
      * @param config {@inheritDoc}
      * @throws InitializationException {@inheritDoc}
-     * @throws InterruptedException {@inheritDoc}
+     * @throws InterruptedException    {@inheritDoc}
      */
     @Override
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
@@ -322,9 +324,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      *
      * @param configs a set of unit configurations.
      * @throws InitializationException is thrown if the service remote could not
-     * be initialized.
-     * @throws InterruptedException is thrown if the current thread is
-     * externally interrupted.
+     *                                 be initialized.
+     * @throws InterruptedException    is thrown if the current thread is
+     *                                 externally interrupted.
      */
     @Override
     public void init(final Collection<UnitConfig> configs) throws InitializationException, InterruptedException {
@@ -348,7 +350,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * {@inheritDoc}
      *
      * @throws CouldNotPerformException {@inheritDoc}
-     * @throws InterruptedException {@inheritDoc}
+     * @throws InterruptedException     {@inheritDoc}
      */
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
@@ -369,7 +371,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * {@inheritDoc}
      *
      * @throws CouldNotPerformException {@inheritDoc}
-     * @throws InterruptedException {@inheritDoc}
+     * @throws InterruptedException     {@inheritDoc}
      */
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
@@ -604,8 +606,8 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * every remote controller.
      *
      * @throws CouldNotPerformException is thrown if any error occurs.
-     * @throws InterruptedException is thrown in case the thread is externally
-     * interrupted.
+     * @throws InterruptedException     is thrown in case the thread is externally
+     *                                  interrupted.
      */
     @Override
     public void waitForData() throws CouldNotPerformException, InterruptedException {
@@ -623,14 +625,14 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * Method blocks until an initial data message was received from every
      * remote controller or the given timeout is reached.
      *
-     * @param timeout maximal time to wait for the main controller data. After
-     * the timeout is reached a TimeoutException is thrown.
+     * @param timeout  maximal time to wait for the main controller data. After
+     *                 the timeout is reached a TimeoutException is thrown.
      * @param timeUnit the time unit of the timeout.
      * @throws CouldNotPerformException is thrown in case the any error occurs,
-     * or if the given timeout is reached. In this case a TimeoutException is
-     * thrown.
-     * @throws InterruptedException is thrown in case the thread is externally
-     * interrupted.
+     *                                  or if the given timeout is reached. In this case a TimeoutException is
+     *                                  thrown.
+     * @throws InterruptedException     is thrown in case the thread is externally
+     *                                  interrupted.
      */
     @Override
     public void waitForData(final long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
@@ -719,7 +721,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      *
      * @param maintainer the instance which currently holds the lock.
      * @throws CouldNotPerformException is thrown if the instance could not be
-     * unlocked.
+     *                                  unlocked.
      */
     @Override
     public void unlock(final Object maintainer) throws CouldNotPerformException {
@@ -734,6 +736,47 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     @Deprecated
     public void setInfrastructureFilter(final boolean enabled) {
         // TODO: just a hack, remove me later
+    }
+
+    /**
+     * {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Future<Long> ping() {
+        if (unitRemoteMap.isEmpty()) {
+            return CompletableFuture.completedFuture(0l);
+        }
+
+        final List<Future<Long>> futurePings = new ArrayList<>();
+
+        for (final UnitRemote remote : unitRemoteMap.values()) {
+            futurePings.add(remote.ping());
+        }
+
+        return GlobalCachedExecutorService.allOf(input -> {
+            try {
+                long sum = 0;
+                for (final Future<Long> future : input) {
+                    sum += future.get();
+                }
+
+                long ping = sum / input.size();
+                connectionPing = ping;
+                return ping;
+            } catch (ExecutionException ex) {
+                throw new CouldNotPerformException("Could not compute ping!", ex);
+            }
+        }, futurePings);
+    }
+
+    /**
+     * {@inheritDoc}
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Long getPing() {
+        return connectionPing;
     }
 
     /**

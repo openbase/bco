@@ -21,9 +21,11 @@ package org.openbase.bco.dal.remote.unit.unitgroup;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import java.util.Set;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.unitgroup.UnitGroup;
 import org.openbase.bco.dal.remote.service.AbstractServiceRemote;
@@ -34,6 +36,7 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.iface.provider.PingProvider;
 import org.openbase.jul.pattern.Observable;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +67,6 @@ import rst.vision.HSBColorType;
 import rst.vision.RGBColorType;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implements UnitGroup {
@@ -192,5 +194,15 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
     @Override
     public ServiceRemote getServiceRemote(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws NotAvailableException {
         return serviceRemoteManager.getServiceRemote(serviceType);
+    }
+
+    @Override
+    public Future<Long> ping() {
+        return serviceRemoteManager.ping();
+    }
+
+    @Override
+    public Long getPing() {
+        return serviceRemoteManager.getPing();
     }
 }

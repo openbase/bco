@@ -25,6 +25,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.UserPresenceStateType.UserPresenceState;
 import rst.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData;
 
@@ -36,5 +37,5 @@ public interface AuthorizationGroup extends BaseUnit<AuthorizationGroupData> {
 
     public UserPresenceState getUserPresenceState() throws NotAvailableException;
 
-    public Future<Void> setUserPresenceState(UserPresenceState userPresenceState) throws CouldNotPerformException;
+    public Future<ActionFuture> setUserPresenceState(UserPresenceState userPresenceState) throws CouldNotPerformException;
 }

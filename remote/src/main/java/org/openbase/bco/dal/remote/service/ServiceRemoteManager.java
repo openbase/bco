@@ -21,6 +21,7 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
@@ -33,6 +34,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+
 import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
@@ -46,8 +48,10 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.iface.Snapshotable;
 import org.openbase.jul.iface.provider.LabelProvider;
+import org.openbase.jul.iface.provider.PingProvider;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
@@ -67,11 +71,12 @@ import org.openbase.jul.exception.printer.LogLevel;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class ServiceRemoteManager implements Activatable, Snapshotable<Snapshot> {
+public abstract class ServiceRemoteManager implements Activatable, Snapshotable<Snapshot>, PingProvider {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceRemoteManager.class);
 
     private boolean active;
+    private long connectionPing;
     private final SyncObject serviceRemoteMapLock = new SyncObject("ServiceRemoteMapLock");
     private final ServiceRemoteFactory serviceRemoteFactory;
     private final Map<ServiceType, AbstractServiceRemote> serviceRemoteMap;
@@ -339,13 +344,54 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
             Collection<Future> futureCollection = new ArrayList<>();
             for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
                 ActionDescription actionDescription = ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build();
-
                 futureCollection.add(unitRemoteMap.get(serviceStateDescription.getUnitId()).applyAction(actionDescription));
             }
             return GlobalCachedExecutorService.allOf(futureCollection);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not record snapshot!", ex);
         }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Future<Long> ping() {
+        synchronized (serviceRemoteMapLock) {
+            if (serviceRemoteMap.isEmpty()) {
+                return CompletableFuture.completedFuture(0l);
+            }
+
+            final List<Future<Long>> futurePings = new ArrayList<>();
+
+            for (final Remote<?> remote : serviceRemoteMap.values()) {
+                futurePings.add(remote.ping());
+            }
+
+            return GlobalCachedExecutorService.allOf(input -> {
+                try {
+                    long sum = 0;
+                    for (final Future<Long> future : input) {
+                        sum += future.get();
+                    }
+                    return sum / input.size();
+                } catch (ExecutionException ex) {
+                    throw new CouldNotPerformException("Could not compute ping!", ex);
+                }
+            }, futurePings);
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     */
+    @Override
+    public Long getPing() {
+        return connectionPing;
     }
 
     public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {

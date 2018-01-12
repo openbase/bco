@@ -96,7 +96,7 @@ public class ActionRescheduler {
                                 case REJECTED:
                                     try {
                                         // rejected because the resource is blocked by someone else
-                                        // TODO: is it possible to get information about the allocaiton that currently blocks this
+                                        // TODO: is it possible to get information about the allocation that currently blocks this
                                         Thread.sleep(500);
                                     } catch (InterruptedException ex) {
                                         Thread.currentThread().interrupt();
