@@ -26,16 +26,17 @@ package org.openbase.bco.registry.lib.com.future;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.GeneratedMessage;
-import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.storage.registry.RegistryRemote;
 
+import java.util.concurrent.Future;
+
 /**
- *
- * @author pleminoq
  * @param <M>
+ * @author pleminoq
  */
 public class RegistrationFuture<M extends GeneratedMessage> extends AbstractRegistrySynchronizationFuture<M> {
 
@@ -45,6 +46,12 @@ public class RegistrationFuture<M extends GeneratedMessage> extends AbstractRegi
 
     @Override
     protected boolean check(M message, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry) throws CouldNotPerformException {
-        return remoteRegistry.contains(message);
+        // if the registered message has been filtered out verify that is contained
+        // and else verify that it is contained
+        if (remoteRegistry.getFilter() != null && !remoteRegistry.getFilter().verify(message)) {
+            return !remoteRegistry.contains(message);
+        } else {
+            return remoteRegistry.contains(message);
+        }
     }
 }

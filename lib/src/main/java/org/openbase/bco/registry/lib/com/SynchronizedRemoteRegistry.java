@@ -21,11 +21,10 @@ package org.openbase.bco.registry.lib.com;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.jul.pattern.AbstractFilter;
+
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
-import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -33,10 +32,13 @@ import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.rsb.com.RSBRemoteService;
 import org.openbase.jul.iface.Activatable;
+import org.openbase.jul.pattern.AbstractFilter;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import org.slf4j.LoggerFactory;
+
+import java.util.Map;
 
 /**
  *
@@ -203,7 +205,7 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
         }
         if (observable != null) {
             observable.addObserver(remoteRegistrySynchronizer);
-            // trigger initial synch if data is available
+            // trigger initial sync if data is available
             if (observable.isValueAvailable()) {
                 try {
                     remoteRegistrySynchronizer.update(null, observable.getValue());
@@ -213,7 +215,7 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
             }
         } else {
             remoteService.addDataObserver(remoteRegistrySynchronizer);
-            // trigger initial synch if data is available
+            // trigger initial sync if data is available
             if (remoteService.isDataAvailable()) {
                 try {
                     remoteRegistrySynchronizer.update(null, remoteService.getData());
@@ -259,14 +261,14 @@ public class SynchronizedRemoteRegistry<KEY, M extends GeneratedMessage, MB exte
         if (fieldDescriptors == null || fieldDescriptors.length == 0) {
             return getClass().getSimpleName() + "[" + (remoteService != null ? remoteService.toString() : "?") + "]";
         } else {
-            String fieldDescritorNames = "[";
-            fieldDescritorNames += fieldDescriptors[0].getName();
+            String fieldDescriptorNames = "[";
+            fieldDescriptorNames += fieldDescriptors[0].getName();
             for (int i = 1; i < fieldDescriptors.length; ++i) {
-                fieldDescritorNames += ", " + fieldDescriptors[i].getName();
+                fieldDescriptorNames += ", " + fieldDescriptors[i].getName();
             }
-            fieldDescritorNames += "]";
+            fieldDescriptorNames += "]";
 
-            return getClass().getSimpleName() + "[" + remoteService.toString() + "]" + fieldDescritorNames;
+            return getClass().getSimpleName() + "[" + remoteService.toString() + "]" + fieldDescriptorNames;
         }
     }
 

@@ -44,6 +44,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.TimeoutException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
@@ -108,12 +109,7 @@ public class RegistryFilteringTest {
         int size = Registries.getUnitRegistry().getDalUnitConfigs().size();
 
         // remove access rights for one unit
-        UnitConfig.Builder unitConfig = Registries.getUnitRegistry().getUnitConfigsByLabel("PH_Hue_E27_Device_Hell").get(0).toBuilder();
-        for (UnitConfig unit : Registries.getUnitRegistry().getUnitConfigsByLabel("PH_Hue_E27_Device_Hell")) {
-            if (unit.getType() == UnitType.COLORABLE_LIGHT) {
-                unitConfig = unit.toBuilder();
-            }
-        }
+        UnitConfig.Builder unitConfig = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("PH_Hue_E27_Device_Hell", UnitType.COLORABLE_LIGHT).get(0).toBuilder();
         PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();
         Permission.Builder otherPermission = permissionConfig.getOtherPermissionBuilder();
         otherPermission.setRead(false);

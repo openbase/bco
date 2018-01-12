@@ -26,17 +26,18 @@ package org.openbase.bco.registry.lib.com.future;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.GeneratedMessage;
-import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.storage.registry.RegistryRemote;
 
+import java.util.concurrent.Future;
+
 /**
- *
- * @author pleminoq
  * @param <M>
+ * @author pleminoq
  */
 public class UpdateFuture<M extends GeneratedMessage> extends AbstractRegistrySynchronizationFuture<M> {
 
@@ -46,7 +47,13 @@ public class UpdateFuture<M extends GeneratedMessage> extends AbstractRegistrySy
 
     @Override
     protected boolean check(M message, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry) throws CouldNotPerformException {
-        return remoteRegistry.getMessage(getId(message)).equals(message);
+        // if the updated message has been filtered out verify that is not contained anymore
+        // and else verify that the update has been synchronized
+        if (remoteRegistry.getFilter() != null && !remoteRegistry.getFilter().verify(message)) {
+            return !remoteRegistry.contains(getId(message));
+        } else {
+            return remoteRegistry.getMessage(getId(message)).equals(message);
+        }
     }
 
     private String getId(M message) {
