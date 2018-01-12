@@ -26,19 +26,20 @@ package org.openbase.bco.dal.remote.unit.future;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
+
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
-import org.openbase.jul.schedule.AbstractSynchronizationFuture;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.AbstractSynchronizationFuture;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 
+import java.util.concurrent.Future;
+
 /**
- *
  * @author pleminoq
  */
 public class UnitSynchronisationFuture extends AbstractSynchronizationFuture<ActionFuture> {
@@ -77,7 +78,7 @@ public class UnitSynchronisationFuture extends AbstractSynchronizationFuture<Act
         ActionDescription actionDescription = actionFuture.getActionDescription(0);
         if (!actionDescription.hasTransactionId() || actionDescription.getTransactionId() == 0) {
             // this is for compatibility reasons with old versions
-            logger.warn("TransactionId has not been set for Action["+ActionDescriptionProcessor.getDescription(actionFuture.getActionDescriptionList())+"] of "+unitRemote);
+            logger.warn("TransactionId has not been set for Action[" + ActionDescriptionProcessor.getDescription(actionFuture.getActionDescriptionList()) + "] of " + unitRemote);
             return true;
         }
         return unitRemote.getTransactionIdByServiceType(actionDescription.getServiceStateDescription().getServiceType()) >= actionDescription.getTransactionId();
