@@ -52,13 +52,6 @@
                         <goals>
                             <goal>assemble</goal>
                         </goals>
-                        <configuration>
-                            <descriptorRefs>
-                                <descriptorRef>jar-with-dependencies</descriptorRef>
-                            </descriptorRefs>
-                            <finalName>bco-jaci</finalName>
-                            <appendAssemblyId>false</appendAssemblyId>
-                        </configuration>
                     </execution>
                 </executions>
                 <configuration>
@@ -87,6 +80,13 @@
                         <program>
                             <mainClass>org.openbase.bco.manager.util.launch.RSBInterfacePrinter</mainClass>
                             <id>bco-print-interface-rsb</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.manager.util.launch.BCOSystemValidator</mainClass>
+                            <id>bco-validate</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>

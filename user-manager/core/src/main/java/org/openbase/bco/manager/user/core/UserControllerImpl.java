@@ -222,15 +222,12 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
         
         @Override
         public void activate() throws CouldNotPerformException, InterruptedException {
-            detectorTask = GlobalScheduledExecutorService.scheduleAtFixedRate(new Runnable() {
-                @Override
-                public void run() {
-                    try {
-                        reachable = checkIfReachable();
-                        notifyObservers(reachable);
-                    } catch (CouldNotPerformException ex) {
-                        ExceptionPrinter.printHistory("Could not inform observer about reachable state change!", ex, logger);
-                    }
+            detectorTask = GlobalScheduledExecutorService.scheduleAtFixedRate(() -> {
+                try {
+                    reachable = checkIfReachable();
+                    notifyObservers(reachable);
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not inform observer about reachable state change!", ex, logger);
                 }
             }, 0, REQUEST_PERIOD, TimeUnit.MILLISECONDS);
         }
