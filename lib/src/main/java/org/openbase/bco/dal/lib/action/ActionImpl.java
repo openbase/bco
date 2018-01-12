@@ -10,22 +10,20 @@ package org.openbase.bco.dal.lib.action;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
@@ -35,12 +33,7 @@ import org.openbase.bco.dal.lib.layer.unit.UnitAllocation;
 import org.openbase.bco.dal.lib.layer.unit.UnitAllocator;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.NotInitializedException;
-import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
@@ -51,16 +44,19 @@ import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.communicationpatterns.ResourceAllocationType;
-import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import rst.domotic.state.ActionStateType.ActionState;
 import rst.timing.IntervalType;
 
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
 /**
- *
  * * @author Divine <a href="mailto:DivineThreepwood@gmail.com">Divine</a>
  */
 public class ActionImpl implements Action {
@@ -92,7 +88,7 @@ public class ActionImpl implements Action {
 
             // verify service attribute
             Services.verifyServiceState(serviceAttribute);
-            
+
             // since its an action it has to be an operation service pattern
             this.serviceDescription = ServiceDescription.newBuilder().setType(actionDescription.getServiceStateDescription().getServiceType()).setPattern(ServicePattern.OPERATION).build();
 
@@ -242,7 +238,7 @@ public class ActionImpl implements Action {
                                 resourceAllocationBuilder.setSlot(IntervalType.Interval.getDefaultInstance());
                                 resourceAllocationBuilder.setPolicy(ResourceAllocationType.ResourceAllocation.Policy.PRESERVE);
                             }
-                            
+
                             setRequestedState();
 
                             // Execute
@@ -275,6 +271,11 @@ public class ActionImpl implements Action {
                 }
             } catch (CouldNotPerformException ex) {
                 throw new CouldNotPerformException("Could not execute action!", ex);
+            } catch (InterruptedException ex) {
+                if (JPService.debugMode()) {
+                    ExceptionPrinter.printHistory(ex, LOGGER);
+                }
+                Thread.currentThread().interrupt();
             }
         });
     }
@@ -285,7 +286,7 @@ public class ActionImpl implements Action {
             Message.Builder serviceStateBuilder = ((Message) serviceAttribute).toBuilder();
             Descriptors.FieldDescriptor fieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceStateBuilder, "responsible_action");
             serviceStateBuilder.setField(fieldDescriptor, actionDescriptionBuilder.build());
-                    
+
             // im dataBuilder serviceAttribute als requested state setzen
             Services.invokeServiceMethod(serviceDescription.getType(), serviceDescription.getPattern(), ServiceTempus.REQUESTED, dataBuilder.getInternalBuilder(), serviceStateBuilder);
         }
