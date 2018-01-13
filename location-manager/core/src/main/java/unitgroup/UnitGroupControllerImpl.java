@@ -35,6 +35,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Remote;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
@@ -44,6 +45,7 @@ import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.state.AlarmStateType.AlarmState;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
@@ -92,13 +94,13 @@ public class UnitGroupControllerImpl extends AbstractBaseUnitController<UnitGrou
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UnitGroupControllerImpl.class);
-    private final ServiceRemoteManager serviceRemoteManager;
+    private final ServiceRemoteManager<UnitGroupData> serviceRemoteManager;
 
     public UnitGroupControllerImpl() throws org.openbase.jul.exception.InstantiationException {
         super(UnitGroupControllerImpl.class, UnitGroupData.newBuilder());
-        this.serviceRemoteManager = new ServiceRemoteManager(this) {
+        this.serviceRemoteManager = new ServiceRemoteManager<UnitGroupData>(this) {
             @Override
-            protected Set<ServiceTemplateType.ServiceTemplate.ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
+            protected Set<ServiceTemplate.ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
                 return getSupportedServiceTypes();
             }
 
@@ -136,26 +138,18 @@ public class UnitGroupControllerImpl extends AbstractBaseUnitController<UnitGrou
     }
 
     @Override
-    public void waitForData(long timeout, TimeUnit timeUnit) throws NotAvailableException, InterruptedException {
-        //todo reimplement with respect to the given timeout.
-        try {
-            super.waitForData(timeout, timeUnit);
-            for (AbstractServiceRemote remote : serviceRemoteManager.getServiceRemoteList()) {
-                remote.waitForData(timeout, timeUnit);
-            }
-            updateUnitData();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("ServiceData", ex);
-        }
+    public void waitForData(long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        // super waitForData is disabled because unit remote is not a RSBRemoteService
+        // TODO: Refactor to support UnitRemotes which are not extended RSBRemoteService instances.
+        serviceRemoteManager.waitForData(timeout, timeUnit);
+        updateUnitData();
     }
 
     @Override
     public void waitForData() throws CouldNotPerformException, InterruptedException {
         // super waitForData is disabled because unit remote is not a RSBRemoteService
         // TODO: Refactor to support UnitRemotes which are not extended RSBRemoteService instances.
-        for (AbstractServiceRemote remote : serviceRemoteManager.getServiceRemoteList()) {
-            remote.waitForData();
-        }
+        serviceRemoteManager.waitForData();
         updateUnitData();
     }
 

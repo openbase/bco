@@ -27,10 +27,13 @@ import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
+import org.openbase.jps.preset.JPVerbose;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RSBRemote;
@@ -38,6 +41,8 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.pattern.Remote.ConnectionState;
+import org.openbase.jul.processing.StringProcessor;
+import org.openbase.jul.processing.StringProcessor.Alignment;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -50,10 +55,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 import static org.openbase.bco.manager.util.launch.RSBInterfacePrinter.detectParameterType;
 import static org.openbase.bco.manager.util.launch.RSBInterfacePrinter.detectReturnType;
@@ -67,9 +69,14 @@ public class BCOSystemValidator {
     protected static final Logger LOGGER = LoggerFactory.getLogger(BCOSystemValidator.class);
 
     public static final String OK = "OK";
+    public static final int STATE_RANGE = 12;
+    public static final int LABEL_RANGE = 22;
 
     public static final long DELAYED_TIME = TimeUnit.MILLISECONDS.toMillis(500);
-    public static final long REQUEST_TIMEOUT = TimeUnit.SECONDS.toMillis(10);
+    public static final long DEFAULT_UNIT_POOL_DELAY_TIME = TimeUnit.SECONDS.toMillis(3);
+    public static final long REQUEST_TIMEOUT = TimeUnit.SECONDS.toMillis(3);
+
+    private static int errorCounter = 0;
 
     public enum AnsiColor {
 
@@ -83,6 +90,7 @@ public class BCOSystemValidator {
         ANSI_PURPLE("\u001B[35m"),
         ANSI_CYAN("\u001B[36m"),
         ANSI_WHITE("\u001B[37m");
+
 
         private String color;
 
@@ -103,28 +111,12 @@ public class BCOSystemValidator {
         }
     }
 
-    public static final AnsiColor SCOPE_COLOR = AnsiColor.ANSI_GREEN;
-    public static final AnsiColor RETURN_LIMITER_COLOR = AnsiColor.ANSI_GREEN;
-    public static final AnsiColor PARAMETER_LIMITER_COLOR = AnsiColor.ANSI_RED;
-    public static final AnsiColor SUB_HEADLINE = AnsiColor.ANSI_CYAN;
-    public static final AnsiColor TYPE_LIMITER_COLOR = AnsiColor.ANSI_RED;
-    public static final AnsiColor UNIT_TYPE_COLOR = SUB_HEADLINE;
-    public static final AnsiColor REGISTRY_TYPE_COLOR = SUB_HEADLINE;
-
-    public static String colorize(String text) {
-
-        text = AnsiColor.colorizeRegex(text, "\\/", SCOPE_COLOR);
-        text = AnsiColor.colorizeRegex(text, "\\:", RETURN_LIMITER_COLOR);
-        text = AnsiColor.colorizeRegex(text, "\\)", PARAMETER_LIMITER_COLOR);
-        text = AnsiColor.colorizeRegex(text, "\\(", PARAMETER_LIMITER_COLOR);
-        text = AnsiColor.colorizeRegex(text, "\\>", TYPE_LIMITER_COLOR);
-        text = AnsiColor.colorizeRegex(text, "\\<", TYPE_LIMITER_COLOR);
-
-        return text;
+    public static void countError() {
+        ++errorCounter;
     }
 
     public static void main(String[] args) {
-
+        BCO.printLogo();
         JPService.setApplicationName("bco-validate");
         JPService.parseAndExitOnError(args);
 
@@ -134,22 +126,31 @@ public class BCOSystemValidator {
             System.out.println("==================================================");
             System.out.println();
 
-            System.out.println("Check registries:\n");
-            // initial trigger
-            Registries.getRegistries(false);
-            // wait for connection
-            Thread.sleep(1000);
+            System.out.println("=== " + AnsiColor.colorize("Check Registries", AnsiColor.ANSI_BLUE) + " ===\n");
+
             // check
             for (final RegistryRemote registry : Registries.getRegistries(false)) {
-                check(registry);
+                if (!check(registry)) {
+                    System.out.println(StringProcessor.fillWithSpaces(registry.getName(), LABEL_RANGE, Alignment.RIGHT) + "  " + AnsiColor.colorize(OK, AnsiColor.ANSI_GREEN));
+                }
             }
-
-            System.out.print("Check units\n\n");
-            Future<List<UnitRemote<?>>> futureUnits = Units.getFutureUnits(false);
-            System.out.println("Request "+check(futureUnits));
             System.out.println();
-            for (final UnitRemote<?> unit : futureUnits.get()) {
-                check(unit);
+
+            System.out.println("=== " + AnsiColor.colorize("Check Units", AnsiColor.ANSI_BLUE) + " ===\n");
+            Future<List<UnitRemote<?>>> futureUnits = Units.getFutureUnits(false);
+            System.out.println(StringProcessor.fillWithSpaces("Unit Pool", LABEL_RANGE, Alignment.RIGHT) + "  " + check(futureUnits, DEFAULT_UNIT_POOL_DELAY_TIME));
+            System.out.println();
+
+            if (!futureUnits.isDone() || futureUnits.isCancelled()) {
+                System.out.println(AnsiColor.colorize("Connection could not be established, please make sure BaseCubeOne is up and running!\n", AnsiColor.ANSI_YELLOW));
+            } else {
+                boolean printed = false;
+                for (final UnitRemote<?> unit : futureUnits.get()) {
+                    printed = check(unit) || printed;
+                }
+                if (!printed) {
+                    System.out.println(StringProcessor.fillWithSpaces("Unit Connections", LABEL_RANGE, Alignment.RIGHT) + "  " + AnsiColor.colorize(OK, AnsiColor.ANSI_GREEN));
+                }
             }
         } catch (InterruptedException ex) {
             System.out.println("killed");
@@ -160,65 +161,142 @@ public class BCOSystemValidator {
             System.exit(254);
         }
 
-        System.exit(0);
+        System.out.println();
+        System.out.println("===============================");
+        System.out.print("===  ");
+        switch (errorCounter) {
+            case 0:
+                System.out.println(AnsiColor.colorize("VALIDATION SUCCESSFUL", AnsiColor.ANSI_GREEN));
+                break;
+            default:
+                System.out.println(errorCounter + " " + AnsiColor.colorize("ERROR" + (errorCounter > 1 ? "S" : "") + " DETECTED", AnsiColor.ANSI_RED));
+                break;
+        }
+        System.out.println("===============================");
+        System.out.println();
+        System.exit(Math.min(errorCounter, 200));
     }
 
     public static String check(final Future future) {
-        try {
-            try {
-                future.get(DELAYED_TIME, TimeUnit.MILLISECONDS);
-            } catch (TimeoutException e) {
-                future.get(REQUEST_TIMEOUT, TimeUnit.MILLISECONDS);
-                return AnsiColor.colorize("DELAYED", AnsiColor.ANSI_GREEN);
-            }
-        } catch (InterruptedException e1) {
-            return AnsiColor.colorize("INTERRUPTED", AnsiColor.ANSI_YELLOW);
-        } catch (ExecutionException e1) {
-            return AnsiColor.colorize("FAILED", AnsiColor.ANSI_RED);
-        } catch (TimeoutException e1) {
-            return AnsiColor.colorize("TIMEOUT", AnsiColor.ANSI_CYAN);
-        }
-        return AnsiColor.colorize("OK", AnsiColor.ANSI_GREEN);
+        return check(future, DELAYED_TIME, null);
     }
 
-    public static void check(final Remote<?> remote) {
+    public static String check(final Future future, final long delayTime) {
+        return check(future, delayTime, null);
+    }
+
+    public static String check(final Future future, final String suffixCallable) {
+        return check(future, DELAYED_TIME, null);
+    }
+
+    public static String check(final Future future, final long delayTime, final Callable<String> suffixCallable) {
+        try {
+            try {
+                future.get(delayTime, TimeUnit.MILLISECONDS);
+            } catch (TimeoutException e) {
+                future.get(REQUEST_TIMEOUT, TimeUnit.MILLISECONDS);
+                return AnsiColor.colorize(StringProcessor.fillWithSpaces("DELAYED", STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_GREEN);
+            }
+        } catch (InterruptedException e1) {
+            countError();
+            return AnsiColor.colorize(StringProcessor.fillWithSpaces("INTERRUPTED", STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_YELLOW);
+        } catch (ExecutionException e1) {
+            countError();
+            return AnsiColor.colorize(StringProcessor.fillWithSpaces("FAILED", STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_RED);
+        } catch (TimeoutException e1) {
+            countError();
+            return AnsiColor.colorize(StringProcessor.fillWithSpaces("TIMEOUT", STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_CYAN);
+        }
+
+        String suffix;
+        try {
+            suffix = (suffixCallable != null ? suffixCallable.call() : "");
+        } catch (Exception e) {
+            suffix = "?";
+        }
+
+        return AnsiColor.colorize(StringProcessor.fillWithSpaces("OK" + suffix, STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_GREEN);
+    }
+
+    public static boolean check(final Remote<?> remote) {
+        return check(remote, DELAYED_TIME);
+    }
+
+    public static boolean check(final Remote<?> remote, final long delayTime) {
         final List<String> resultList = new ArrayList<>();
 
-        final ConnectionState connectionState = remote.getConnectionState();
-        String connectionDescription = "Connection\t\t";
-        switch (connectionState) {
-            case CONNECTED:
-                connectionDescription += AnsiColor.colorize(OK, AnsiColor.ANSI_GREEN);
-                break;
-            case DISCONNECTED:
-                connectionDescription += AnsiColor.colorize(connectionState.name(), AnsiColor.ANSI_RED);
-                break;
-            case CONNECTING:
-            case RECONNECTING:
-                connectionDescription += AnsiColor.colorize(connectionState.name(), AnsiColor.ANSI_RED);
-                break;
-            default:
-                connectionDescription += AnsiColor.colorize("UNKNOWN", AnsiColor.ANSI_RED);
-                break;
-        }
-        connectionDescription += " [" + remote + "]";
-        resultList.add(connectionDescription);
-
-        resultList.add("Data Available \t" + check(remote.getDataFuture()) + " [" + remote + "]");
+        Future futurePing = remote.ping();
 
         try {
-            resultList.add("Data Synced \t" + check(remote.requestData()) + " [" + remote + "]");
-        } catch (CouldNotPerformException e) {
-            resultList.add("Data Synced \t" + AnsiColor.colorize("CANCELED", AnsiColor.ANSI_RED) + " [" + remote + "]");
+            resultList.add(StringProcessor.fillWithSpaces("Ping", LABEL_RANGE, Alignment.RIGHT) + "  " + check(futurePing, delayTime, new Callable<String>() {
+                @Override
+                public String call() throws Exception {
+                    if (futurePing.isDone() && !futurePing.isCancelled()) {
+                        return " (" + futurePing.get() + ")";
+                    } else {
+                        return "";
+                    }
+                }
+            }));
+        } catch (Exception ex) {
+            ExceptionPrinter.printHistory(new FatalImplementationErrorException(BCOSystemValidator.class, ex), LOGGER);
         }
 
-        resultList.add("Ping \t\t\t" + check(remote.ping()) + " [" + remote + "]");
+        boolean online = futurePing.isDone() && !futurePing.isCancelled();
 
-        // only print in error case or if verbose mode is enabled.
-        for(final String result : resultList) {
-            if(!result.contains(OK) || JPService.verboseMode()) {
-                System.out.println(result);
+        if (online) {
+            final ConnectionState connectionState = remote.getConnectionState();
+            String connectionDescription = StringProcessor.fillWithSpaces("Connection", LABEL_RANGE, Alignment.RIGHT) + "  ";
+            switch (connectionState) {
+                case CONNECTED:
+                    connectionDescription += AnsiColor.colorize(StringProcessor.fillWithSpaces(OK, STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_GREEN);
+                    break;
+                case DISCONNECTED:
+                case CONNECTING:
+                    countError();
+                    connectionDescription += AnsiColor.colorize(StringProcessor.fillWithSpaces(connectionState.name(), STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_RED);
+                    break;
+                case RECONNECTING:
+                    connectionDescription += AnsiColor.colorize(StringProcessor.fillWithSpaces(connectionState.name(), STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_YELLOW);
+                    break;
+                default:
+                    connectionDescription += AnsiColor.colorize(StringProcessor.fillWithSpaces("UNKNOWN", STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_RED);
+                    countError();
+                    break;
+            }
+            resultList.add(connectionDescription);
+        }
+
+        if (online) {
+            resultList.add(StringProcessor.fillWithSpaces("Data Cache", LABEL_RANGE, Alignment.RIGHT) + "  " + check(remote.getDataFuture()));
+        } else {
+            resultList.add(StringProcessor.fillWithSpaces("Data Cache", LABEL_RANGE, Alignment.RIGHT) + "  " + (remote.isDataAvailable() ? AnsiColor.colorize(StringProcessor.fillWithSpaces("OFFLINE", STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_YELLOW) : AnsiColor.colorize(StringProcessor.fillWithSpaces("EMPTY", STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_RED)));
+        }
+
+        if (online) {
+            try {
+                resultList.add(StringProcessor.fillWithSpaces("Synchronization", LABEL_RANGE, Alignment.RIGHT) + "  " + check(remote.requestData()));
+            } catch (CouldNotPerformException e) {
+                countError();
+                resultList.add(StringProcessor.fillWithSpaces("Synchronization", LABEL_RANGE, Alignment.RIGHT) +
+                        "  " + AnsiColor.colorize(StringProcessor.fillWithSpaces("CANCELED", STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_RED));
             }
         }
+
+        // only print in error case or if verbose mode is enabled.
+        boolean printed = false;
+        for (final String result : resultList) {
+            if (!result.contains(OK) || JPService.verboseMode()) {
+                System.out.println(result + "[" + remote + "]");
+                printed = true;
+            }
+        }
+
+        // add new line separator for better overview
+        if (printed) {
+            System.out.println();
+        }
+
+        return printed;
     }
 }
