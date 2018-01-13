@@ -23,8 +23,7 @@ package org.openbase.bco.dal.remote.unit.unitgroup;
  */
 
 import java.util.Set;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.unitgroup.UnitGroup;
@@ -38,6 +37,8 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.iface.provider.PingProvider;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.schedule.FutureProcessor;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
@@ -46,6 +47,7 @@ import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.state.AlarmStateType;
 import rst.domotic.state.BlindStateType;
 import rst.domotic.state.BrightnessStateType;
@@ -62,6 +64,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.location.LocationDataType;
 import rst.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
+import rst.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData.Builder;
 import rst.vision.ColorType;
 import rst.vision.HSBColorType;
 import rst.vision.RGBColorType;
@@ -93,13 +96,13 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
     }
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UnitGroupRemote.class);
-    private final ServiceRemoteManager serviceRemoteManager;
+    private final ServiceRemoteManager<UnitGroupData> serviceRemoteManager;
 
     public UnitGroupRemote() throws InstantiationException {
         super(UnitGroupData.class);
-        this.serviceRemoteManager = new ServiceRemoteManager(this) {
+        this.serviceRemoteManager = new ServiceRemoteManager<UnitGroupData>(this) {
             @Override
-            protected Set<ServiceTemplateType.ServiceTemplate.ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
+            protected Set<ServiceTemplate.ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
                 return getSupportedServiceTypes();
             }
 
@@ -110,8 +113,19 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
         };
     }
 
+    private UnitGroupData.Builder generateBuilder() throws NotAvailableException {
+        try {
+            UnitGroupData.Builder dataBuilder = UnitGroupData.newBuilder();
+            dataBuilder.setId(getConfig().getId());
+            dataBuilder.setLabel(getConfig().getLabel());
+            return dataBuilder;
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("UnitGroupData.Builder", ex);
+        }
+    }
+
     @Override
-    public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
+    public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
         UnitConfig unitConfig = super.applyConfigUpdate(config);
         serviceRemoteManager.applyConfigUpdate(unitConfig.getUnitGroupConfig().getMemberIdList());
         return unitConfig;
@@ -137,35 +151,24 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
     }
 
     @Override
-    public void waitForData(long timeout, TimeUnit timeUnit) throws NotAvailableException, InterruptedException {
-        //todo reimplement with respect to the given timeout.
-        try {
-            super.waitForData(timeout, timeUnit);
-            for (AbstractServiceRemote remote : serviceRemoteManager.getServiceRemoteList()) {
-                remote.waitForData(timeout, timeUnit);
-            }
-            updateUnitData();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("ServiceData", ex);
-        }
+    public void waitForData(long timeout, final TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        // super waitForData is disabled because unit remote is not a RSBRemoteService
+        // TODO: Refactor to support UnitRemotes which are not extended RSBRemoteService instances.
+        serviceRemoteManager.waitForData(timeout, timeUnit);
+        updateUnitData();
     }
 
     @Override
     public void waitForData() throws CouldNotPerformException, InterruptedException {
         // super waitForData is disabled because unit remote is not a RSBRemoteService
         // TODO: Refactor to support UnitRemotes which are not extended RSBRemoteService instances.
-        for (AbstractServiceRemote remote : serviceRemoteManager.getServiceRemoteList()) {
-            remote.waitForData();
-        }
+        serviceRemoteManager.waitForData();
         updateUnitData();
     }
 
     private void updateUnitData() throws InterruptedException {
         try {
-            UnitGroupData.Builder dataBuilder = UnitGroupData.newBuilder();
-            dataBuilder.setId(getConfig().getId());
-            dataBuilder.setLabel(getConfig().getLabel());
-            applyExternalDataUpdate(serviceRemoteManager.updateBuilderWithAvailableServiceStates(dataBuilder, getDataClass(), getSupportedServiceTypes()).build());
+            applyExternalDataUpdate(serviceRemoteManager.updateBuilderWithAvailableServiceStates(generateBuilder(), getDataClass(), getSupportedServiceTypes()).build());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update current status!", ex), LOGGER, LogLevel.WARN);
         }
@@ -204,5 +207,18 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
     @Override
     public Long getPing() {
         return serviceRemoteManager.getPing();
+    }
+
+    @Override
+    public CompletableFuture<UnitGroupData> requestData() {
+        return FutureProcessor.toCompletableFuture(() -> {
+            Future<Builder> builderFuture = serviceRemoteManager.requestData(generateBuilder());
+            try {
+                applyExternalDataUpdate(builderFuture.get().build());
+                return builderFuture.get().build();
+            } catch (Exception ex) {
+                throw new CouldNotPerformException("Could not update current status!", ex);
+            }
+        });
     }
 }

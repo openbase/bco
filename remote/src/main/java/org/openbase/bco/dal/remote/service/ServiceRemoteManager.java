@@ -29,11 +29,7 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+import java.util.concurrent.*;
 
 import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -46,12 +42,15 @@ import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Activatable;
+import org.openbase.jul.iface.Processable;
 import org.openbase.jul.iface.Snapshotable;
 import org.openbase.jul.iface.provider.LabelProvider;
 import org.openbase.jul.iface.provider.PingProvider;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
+import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.processing.Processor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
@@ -67,11 +66,12 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.jul.exception.printer.LogLevel;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class ServiceRemoteManager implements Activatable, Snapshotable<Snapshot>, PingProvider {
+public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotable<Snapshot>, PingProvider, DataProvider<D> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(ServiceRemoteManager.class);
 
@@ -81,13 +81,9 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
     private final ServiceRemoteFactory serviceRemoteFactory;
     private final Map<ServiceType, AbstractServiceRemote> serviceRemoteMap;
     private final Observer serviceDataObserver;
-    private final LabelProvider responsibleInstance;
+    private final DataProvider<D> responsibleInstance;
 
-    public ServiceRemoteManager() {
-        this(null);
-    }
-
-    public ServiceRemoteManager(final LabelProvider responsibleInstance) {
+    public ServiceRemoteManager(final DataProvider<D> responsibleInstance) {
         this.responsibleInstance = responsibleInstance;
         this.serviceRemoteMap = new HashMap<>();
         this.serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
@@ -101,7 +97,7 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
         Registries.getUnitRegistry().waitForData();
         synchronized (serviceRemoteMapLock) {
             // shutdown all existing instances.
-            for (AbstractServiceRemote serviceRemote : serviceRemoteMap.values()) {
+            for (final AbstractServiceRemote serviceRemote : serviceRemoteMap.values()) {
                 serviceRemote.removeDataObserver(serviceDataObserver);
                 serviceRemote.shutdown();
             }
@@ -109,7 +105,7 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
 
             // init a new set for each supported service type.
             Map<ServiceType, Set<UnitConfig>> serviceMap = new HashMap<>();
-            for (ServiceType serviceType : ServiceType.values()) {
+            for (final ServiceType serviceType : ServiceType.values()) {
                 serviceMap.put(serviceType, new HashSet<>());
             }
 
@@ -136,7 +132,7 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
             }
 
             // initialize service remotes
-            for (ServiceType serviceType : getManagedServiceTypes()) {
+            for (final ServiceType serviceType : getManagedServiceTypes()) {
                 final AbstractServiceRemote serviceRemote = serviceRemoteFactory.newInitializedInstance(serviceType, serviceMap.get(serviceType));
                 serviceRemoteMap.put(serviceType, serviceRemote);
 
@@ -201,16 +197,15 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
         synchronized (serviceRemoteMapLock) {
             AbstractServiceRemote serviceRemote = serviceRemoteMap.get(serviceType);
             if (serviceRemote == null) {
-                String responsible;
-                try {
-                    responsible = (responsibleInstance != null ? responsibleInstance.getLabel() : "the underlying instance");
-                } catch (NotAvailableException ex) {
-                    responsible = "the underlying instance";
-                }
+                final String responsible = (responsibleInstance != null ? responsibleInstance.toString() : "the underlying instance");
                 throw new NotAvailableException("ServiceRemote", serviceType.name(), new NotSupportedException("ServiceType[" + serviceType + "]", responsible));
             }
             return serviceRemote;
         }
+    }
+
+    public <B> B updateBuilderWithAvailableServiceStates(final B builder) throws InterruptedException, CouldNotPerformException {
+        return updateBuilderWithAvailableServiceStates(builder, responsibleInstance.getDataClass(), getManagedServiceTypes());
     }
 
     public <B> B updateBuilderWithAvailableServiceStates(final B builder, final Class dataClass, final Set<ServiceType> supportedServiceTypeSet) throws InterruptedException {
@@ -264,13 +259,13 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
         return recordSnapshot(UnitTemplateType.UnitTemplate.UnitType.UNKNOWN);
     }
 
-    public Future<Snapshot> recordSnapshot(final UnitTemplateType.UnitTemplate.UnitType unitType) throws CouldNotPerformException, InterruptedException {
+    public Future<Snapshot> recordSnapshot(final UnitType unitType) throws CouldNotPerformException, InterruptedException {
         return GlobalCachedExecutorService.submit(() -> {
             try {
                 SnapshotType.Snapshot.Builder snapshotBuilder = SnapshotType.Snapshot.newBuilder();
                 Set<UnitRemote> unitRemoteSet = new HashSet<>();
 
-                if (unitType == UnitTemplateType.UnitTemplate.UnitType.UNKNOWN) {
+                if (unitType == UnitType.UNKNOWN) {
                     // if the type is unknown then take the snapshot for all units
                     getServiceRemoteList().stream().forEach((serviceRemote) -> {
                         unitRemoteSet.addAll(serviceRemote.getInternalUnits());
@@ -376,7 +371,9 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
                     for (final Future<Long> future : input) {
                         sum += future.get();
                     }
-                    return sum / input.size();
+                    long ping = sum / input.size();
+                    connectionPing = ping;
+                    return ping;
                 } catch (ExecutionException ex) {
                     throw new CouldNotPerformException("Could not compute ping!", ex);
                 }
@@ -402,4 +399,77 @@ public abstract class ServiceRemoteManager implements Activatable, Snapshotable<
 
     protected abstract void notifyServiceUpdate(final Observable source, final Object data) throws NotAvailableException, InterruptedException;
 
+    @Override
+    public boolean isDataAvailable() {
+        return responsibleInstance.isDataAvailable();
+    }
+
+    @Override
+    public Class<D> getDataClass() {
+        return responsibleInstance.getDataClass();
+    }
+
+    @Override
+    public D getData() throws NotAvailableException {
+        return responsibleInstance.getData();
+    }
+
+    @Override
+    public CompletableFuture<D> getDataFuture() {
+        return responsibleInstance.getDataFuture();
+    }
+
+    @Override
+    public void addDataObserver(final Observer<D> observer) {
+        synchronized (serviceRemoteMapLock) {
+            for (final Remote<D> remote : serviceRemoteMap.values()) {
+                remote.addDataObserver(observer);
+            }
+        }
+    }
+
+    @Override
+    public void removeDataObserver(Observer<D> observer) {
+        synchronized (serviceRemoteMapLock) {
+            for (final Remote<D> remote : serviceRemoteMap.values()) {
+                remote.removeDataObserver(observer);
+            }
+        }
+    }
+
+    @Override
+    public void waitForData() throws CouldNotPerformException, InterruptedException {
+        synchronized (serviceRemoteMapLock) {
+            for (final Remote<D> remote : serviceRemoteMap.values()) {
+                remote.waitForData();
+            }
+        }
+    }
+
+    @Override
+    public void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
+        synchronized (serviceRemoteMapLock) {
+            for (final Remote<D> remote : serviceRemoteMap.values()) {
+                remote.waitForData(timeout, timeUnit);
+            }
+        }
+    }
+
+    public <B> Future<B> requestData(final B builder) throws CouldNotPerformException {
+        synchronized (serviceRemoteMapLock) {
+            final List<Future> futureData = new ArrayList<>();
+
+            for (final Remote<?> remote : serviceRemoteMap.values()) {
+                futureData.add(remote.requestData());
+            }
+
+            return GlobalCachedExecutorService.allOf(() -> {
+                try {
+                    return updateBuilderWithAvailableServiceStates(builder);
+                } catch (CouldNotPerformException ex) {
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not generate data!", ex), LOGGER);
+                }
+            }, futureData);
+        }
+    }
 }

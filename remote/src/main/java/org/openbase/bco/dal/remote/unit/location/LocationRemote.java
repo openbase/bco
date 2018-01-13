@@ -36,6 +36,7 @@ import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.AlarmStateType;
 import rst.domotic.state.BlindStateType;
@@ -106,13 +107,13 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(PresenceStateType.PresenceState.getDefaultInstance()));
     }
 
-    private final ServiceRemoteManager serviceRemoteManager;
+    private final ServiceRemoteManager<LocationData> serviceRemoteManager;
 
     public LocationRemote() {
         super(LocationData.class);
-        this.serviceRemoteManager = new ServiceRemoteManager(this) {
+        this.serviceRemoteManager = new ServiceRemoteManager<LocationData>(this) {
             @Override
-            protected Set<ServiceTemplateType.ServiceTemplate.ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
+            protected Set<ServiceTemplate.ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException {
                 return getSupportedServiceTypes();
             }
 
