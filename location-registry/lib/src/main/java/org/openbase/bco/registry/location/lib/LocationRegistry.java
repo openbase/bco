@@ -101,7 +101,7 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
     /**
      * Method returns all location configs which are of the given location type.
      *
-     * @param locationLabel
+     * @param locationType
      * @return a list of the requested unit configs.
      * @throws CouldNotPerformException is thrown if the request fails.
      */
