@@ -46,28 +46,25 @@ public class UnitSynchronisationFuture extends AbstractSynchronizationFuture<Act
 
     private final Logger logger;
 
-    private final UnitRemote unitRemote;
-
     public UnitSynchronisationFuture(final Future<ActionFuture> internalFuture, final UnitRemote unitRemote) {
         super(internalFuture, unitRemote);
-        this.unitRemote = unitRemote;
         this.logger = LoggerFactory.getLogger(unitRemote.getClass());
     }
 
     @Override
     protected void addObserver(Observer observer) {
-        unitRemote.addDataObserver(observer);
+        dataProvider.addDataObserver(observer);
     }
 
     @Override
     protected void removeObserver(Observer observer) {
-        unitRemote.removeDataObserver(observer);
+        dataProvider.removeDataObserver(observer);
     }
 
     @Override
     protected void beforeWaitForSynchronization() throws CouldNotPerformException {
         try {
-            unitRemote.waitForData();
+            dataProvider.waitForData();
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
@@ -78,10 +75,9 @@ public class UnitSynchronisationFuture extends AbstractSynchronizationFuture<Act
         ActionDescription actionDescription = actionFuture.getActionDescription(0);
         if (!actionDescription.hasTransactionId() || actionDescription.getTransactionId() == 0) {
             // this is for compatibility reasons with old versions
-            logger.warn("TransactionId has not been set for Action[" + ActionDescriptionProcessor.getDescription(actionFuture.getActionDescriptionList()) + "] of " + unitRemote);
+            logger.warn("TransactionId has not been set for Action[" + ActionDescriptionProcessor.getDescription(actionFuture.getActionDescriptionList()) + "] of " + dataProvider);
             return true;
         }
-        return unitRemote.getTransactionIdByServiceType(actionDescription.getServiceStateDescription().getServiceType()) >= actionDescription.getTransactionId();
+        return ((UnitRemote) dataProvider).getTransactionIdByServiceType(actionDescription.getServiceStateDescription().getServiceType()) >= actionDescription.getTransactionId();
     }
-
 }
