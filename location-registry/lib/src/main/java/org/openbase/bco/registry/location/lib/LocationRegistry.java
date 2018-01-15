@@ -21,9 +21,12 @@ package org.openbase.bco.registry.location.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3d;
 import javax.vecmath.Quat4d;
@@ -48,6 +51,7 @@ import rst.domotic.state.EnablingStateType.EnablingState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitProbabilityCollectionType.UnitProbabilityCollection;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.location.LocationConfigType;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
 import rst.geometry.AxisAlignedBoundingBox3DFloatType;
 import rst.geometry.RotationType;
@@ -93,6 +97,20 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Sh
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     public List<UnitConfig> getLocationConfigsByLabel(final String locationLabel) throws CouldNotPerformException;
+
+    /**
+     * Method returns all location configs which are of the given location type.
+     *
+     * @param locationLabel
+     * @return a list of the requested unit configs.
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    default List<UnitConfig> getLocationConfigsByType(final LocationType locationType) throws CouldNotPerformException {
+        return getLocationConfigs()
+                .stream()
+                .filter(locationUnitConfig -> locationUnitConfig.getLocationConfig().getType() == locationType)
+                .collect(Collectors.toList());
+    }
 
     /**
      * Method returns all the locations which contain the given coordinate.
