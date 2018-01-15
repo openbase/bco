@@ -751,7 +751,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         final List<Future<Long>> futurePings = new ArrayList<>();
 
         for (final UnitRemote remote : unitRemoteMap.values()) {
-            futurePings.add(remote.ping());
+            if(remote.isConnected()) {
+                futurePings.add(remote.ping());
+            }
         }
 
         return GlobalCachedExecutorService.allOf(input -> {
@@ -761,7 +763,12 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                     sum += future.get();
                 }
 
-                long ping = sum / input.size();
+                long ping;
+                if (!input.isEmpty()) {
+                    ping = sum / input.size();
+                } else {
+                    ping = 0;
+                }
                 connectionPing = ping;
                 return ping;
             } catch (ExecutionException ex) {

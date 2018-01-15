@@ -362,7 +362,9 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
             final List<Future<Long>> futurePings = new ArrayList<>();
 
             for (final Remote<?> remote : serviceRemoteMap.values()) {
-                futurePings.add(remote.ping());
+                if (remote.isConnected()) {
+                    futurePings.add(remote.ping());
+                }
             }
 
             return GlobalCachedExecutorService.allOf(input -> {
@@ -371,7 +373,13 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
                     for (final Future<Long> future : input) {
                         sum += future.get();
                     }
-                    long ping = sum / input.size();
+
+                    long ping;
+                    if (!input.isEmpty()) {
+                        ping = sum / input.size();
+                    } else {
+                        ping = 0;
+                    }
                     connectionPing = ping;
                     return ping;
                 } catch (ExecutionException ex) {
