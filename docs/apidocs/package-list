@@ -1,4 +1,3 @@
-
 org.openbase.bco.dal.example
 org.openbase.bco.dal.lib.action
 org.openbase.bco.dal.lib.jp
@@ -8,6 +7,7 @@ org.openbase.bco.dal.lib.layer.service.consumer
 org.openbase.bco.dal.lib.layer.service.mock
 org.openbase.bco.dal.lib.layer.service.operation
 org.openbase.bco.dal.lib.layer.service.provider
+org.openbase.bco.dal.lib.layer.service.stream
 org.openbase.bco.dal.lib.layer.unit
 org.openbase.bco.dal.lib.layer.unit.agent
 org.openbase.bco.dal.lib.layer.unit.app
@@ -27,12 +27,15 @@ org.openbase.bco.dal.remote.action
 org.openbase.bco.dal.remote.detector
 org.openbase.bco.dal.remote.service
 org.openbase.bco.dal.remote.service.consumer
+org.openbase.bco.dal.remote.trigger
+org.openbase.bco.dal.remote.trigger.preset
 org.openbase.bco.dal.remote.unit
 org.openbase.bco.dal.remote.unit.agent
 org.openbase.bco.dal.remote.unit.app
 org.openbase.bco.dal.remote.unit.authorizationgroup
 org.openbase.bco.dal.remote.unit.connection
 org.openbase.bco.dal.remote.unit.device
+org.openbase.bco.dal.remote.unit.future
 org.openbase.bco.dal.remote.unit.location
 org.openbase.bco.dal.remote.unit.scene
 org.openbase.bco.dal.remote.unit.unitgroup
