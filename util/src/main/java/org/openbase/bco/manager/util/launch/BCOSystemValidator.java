@@ -119,8 +119,8 @@ public class BCOSystemValidator {
     public static void main(String[] args) {
         BCO.printLogo();
         JPService.setApplicationName("bco-validate");
-        JPService.registerProperty(JPDebugMode.class, true);
-        JPService.registerProperty(JPVerbose.class, true);
+        JPService.registerProperty(JPDebugMode.class);
+        JPService.registerProperty(JPVerbose.class);
         JPService.parseAndExitOnError(args);
 
         try {
@@ -165,7 +165,7 @@ public class BCOSystemValidator {
         }
 
         System.out.println();
-        System.out.println("===============================");
+        System.out.println("==============================================================");
         System.out.print("===  ");
         switch (errorCounter) {
             case 0:
@@ -175,8 +175,8 @@ public class BCOSystemValidator {
                 System.out.print(errorCounter + " " + AnsiColor.colorize("ERROR" + (errorCounter > 1 ? "S" : "") + " DETECTED", AnsiColor.ANSI_RED));
                 break;
         }
-        System.out.println(" average ping is "+((int) getGlobalPing())+" milli");
-        System.out.println("===============================");
+        System.out.println(" average ping is "+AnsiColor.colorize(Double.toString(getGlobalPing()), AnsiColor.ANSI_CYAN)+" milli");
+        System.out.println("==============================================================");
         System.out.println();
         System.exit(Math.min(errorCounter, 200));
     }
