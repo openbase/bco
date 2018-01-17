@@ -21,12 +21,10 @@ package org.openbase.bco.registry.lib.com;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessage;
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -37,10 +35,14 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.RegistryRemote;
 
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
 /**
- *
- * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  * @param <M>
+ * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
 public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> extends AbstractRegistryRemote<M> {
 
@@ -162,9 +164,22 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
                 try {
                     List messageList = new ArrayList((List) remoteRegistrySyncMap.get(remoteRegistry).getData().getField(remoteRegistryFieldDescriptorMap.get(remoteRegistry)));
                     int registryRemoteMessageCount = messageList.size();
-                    int filteredRegistryRemoteMessageCount = remoteRegistry.getFilter().filter(messageList).size();
+                    List filteredList = remoteRegistry.getFilter().filter(messageList);
+                    int filteredRegistryRemoteMessageCount = filteredList.size();
                     if (registryRemoteMessageCount != filteredRegistryRemoteMessageCount) {
                         logger.info(this + " has a been filtered for field[" + remoteRegistryFieldDescriptorMap.get(remoteRegistry).getName() + "] from " + registryRemoteMessageCount + " to " + filteredRegistryRemoteMessageCount);
+                        if (JPService.testMode()) {
+                            List diff = new ArrayList();
+                            for (Object obj : messageList) {
+                                if (!filteredList.contains(obj)) {
+                                    diff.add(obj);
+                                }
+                            }
+
+                            for (Object obj : diff) {
+                                logger.info("Filtered message:\n" + obj.toString());
+                            }
+                        }
                     }
                     int remoteRegistryMessageCount = remoteRegistry.getMessages().size();
                     if (filteredRegistryRemoteMessageCount != remoteRegistryMessageCount) {
