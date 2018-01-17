@@ -64,7 +64,6 @@ public class AuthorizationHelper {
      * @param groups     All available groups in the system, indexed by their group ID.
      * @param locations  All available locations in the system, indexed by their id.
      * @return True if the user can read from the unit, false if not.
-     * @throws CouldNotPerformException If the permissions could not be checked, probably because of invalid location information.
      */
     public static boolean canRead(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) {
         return canDo(unitConfig, userId, groups, locations, Type.READ);
@@ -79,7 +78,6 @@ public class AuthorizationHelper {
      * @param groups     All available groups in the system, indexed by their group ID.
      * @param locations  All available locations in the system, indexed by their id.
      * @return True if the user can write to the unit, false if not.
-     * @throws CouldNotPerformException If the permissions could not be checked, probably because of invalid location information.
      */
     public static boolean canWrite(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) {
         return canDo(unitConfig, userId, groups, locations, Type.WRITE);
@@ -93,7 +91,6 @@ public class AuthorizationHelper {
      * @param groups     All available groups in the system, indexed by their group ID.
      * @param locations  All available locations in the system, indexed by their id.
      * @return True if the user can access the unit, false if not.
-     * @throws CouldNotPerformException If the permissions could not be checked, probably because of invalid location information.
      */
     public static boolean canAccess(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) {
         return canDo(unitConfig, userId, groups, locations, Type.ACCESS);
