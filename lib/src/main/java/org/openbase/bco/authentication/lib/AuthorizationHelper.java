@@ -215,19 +215,23 @@ public class AuthorizationHelper {
         if (unitConfig.hasPermissionConfig()) {
             unitPermissionConfig = unitConfig.getPermissionConfig();
         }
-        // If the unit has a parent location (i.e. is not the root location), we use the PermissionConfig of the parent(s).
-        UnitConfig locationUnitConfig = getLocationUnitConfig(unitConfig.getPlacementConfig().getLocationId(), locations);
 
-        if (locationUnitConfig != null && (unitConfig.getType() != UnitType.LOCATION || !unitConfig.getLocationConfig().hasRoot() || !unitConfig.getLocationConfig().getRoot())) {
-            locationPermissionConfig = getPermissionConfig(locationUnitConfig, locations);
-        }
-
-        if (unitPermissionConfig != null || locationPermissionConfig != null) {
-            return mergePermissionConfigs(unitPermissionConfig, locationPermissionConfig);
+        try {
+            // If the unit has a parent location (i.e. is not the root location), we use the PermissionConfig of the parent(s).
+            UnitConfig locationUnitConfig = getLocationUnitConfig(unitConfig.getPlacementConfig().getLocationId(), locations);
+            if ((unitConfig.getType() != UnitType.LOCATION || !unitConfig.getLocationConfig().hasRoot() || !unitConfig.getLocationConfig().getRoot())) {
+                locationPermissionConfig = getPermissionConfig(locationUnitConfig, locations);
+            }
+            if (unitPermissionConfig != null || locationPermissionConfig != null) {
+                return mergePermissionConfigs(unitPermissionConfig, locationPermissionConfig);
+            }
+        } catch (NotAvailableException ex) {
+            // location does not exists so only use unit permissions.
+            return unitPermissionConfig;
         }
 
         try {
-            throw new NotAvailableException("PermissionConfig of Unit[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) +"]");
+            throw new NotAvailableException("PermissionConfig of Unit[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "]");
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("PermissionConfig");
         }
