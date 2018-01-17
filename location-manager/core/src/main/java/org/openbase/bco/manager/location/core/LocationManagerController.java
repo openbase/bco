@@ -44,6 +44,8 @@ import org.openbase.jul.storage.registry.ControllerRegistryImpl;
 import org.openbase.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.state.EnablingStateType.EnablingState;
+import rst.domotic.state.EnablingStateType.EnablingState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import unitgroup.UnitGroupFactoryImpl;
 
@@ -76,14 +78,14 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
 
                 @Override
                 public boolean activationCondition(final UnitConfig config) {
-                    return true;
+                    return config.getEnablingState().getValue() == State.ENABLED;
                 }
             };
             this.connectionRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, ConnectionController, UnitConfig, UnitConfig.Builder>(connectionRegistry, Registries.getLocationRegistry().getConnectionConfigRemoteRegistry(), Registries.getLocationRegistry(), connectionFactory) {
 
                 @Override
                 public boolean activationCondition(final UnitConfig config) {
-                    return true;
+                    return config.getEnablingState().getValue() == State.ENABLED;
                 }
             };
 
@@ -93,7 +95,7 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
 
                 @Override
                 public boolean activationCondition(final UnitConfig config) {
-                    return true;
+                    return config.getEnablingState().getValue() == State.ENABLED;
                 }
             };
         } catch (CouldNotPerformException ex) {
