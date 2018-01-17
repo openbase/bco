@@ -292,9 +292,7 @@ public class SceneRemoteTest {
                 }
             }
 
-            UnitConfig bla = Registries.getUnitRegistry().registerUnitConfig(unitConfig.build()).get();
-            System.out.println("Registered group [" + bla + "]");
-            return bla.getId();
+            return Registries.getUnitRegistry().registerUnitConfig(unitConfig.build()).get().getId();
         } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
             throw new CouldNotPerformException("Could not register unit groups!", ex);
         }
