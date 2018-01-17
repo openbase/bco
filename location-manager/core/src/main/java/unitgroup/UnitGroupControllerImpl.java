@@ -57,6 +57,7 @@ import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.location.LocationDataType.LocationData;
+import rst.domotic.unit.unitgroup.UnitGroupDataType;
 import rst.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
 import rst.vision.ColorType.Color;
 import rst.vision.HSBColorType.HSBColor;
@@ -72,6 +73,7 @@ import java.util.concurrent.TimeUnit;
 public class UnitGroupControllerImpl extends AbstractBaseUnitController<UnitGroupData, UnitGroupData.Builder> implements UnitGroupController {
 
     static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitGroupDataType.UnitGroupData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HSBColor.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ColorState.getDefaultInstance()));
