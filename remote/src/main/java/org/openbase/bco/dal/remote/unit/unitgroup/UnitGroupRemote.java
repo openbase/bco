@@ -63,6 +63,7 @@ import rst.domotic.state.TemperatureStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.location.LocationDataType;
+import rst.domotic.unit.unitgroup.UnitGroupDataType;
 import rst.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
 import rst.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData.Builder;
 import rst.vision.ColorType;
@@ -75,6 +76,7 @@ import rst.vision.RGBColorType;
 public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implements UnitGroup {
 
     static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitGroupDataType.UnitGroupData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(LocationDataType.LocationData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(HSBColorType.HSBColor.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ColorStateType.ColorState.getDefaultInstance()));

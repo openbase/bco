@@ -235,12 +235,12 @@ public class Units {
 
     static {
         try {
-            shutdownInitialized = true;
             unitRemoteRegistry = new RemoteControllerRegistry<>();
             Shutdownable.registerShutdownHook(new Shutdownable() {
                 @Override
                 public void shutdown() {
                     try {
+                        shutdownInitialized = true;
                         unitRemoteRegistry.getEntries().stream().parallel().forEach(((org.openbase.bco.dal.lib.layer.unit.UnitRemote unitRemote) -> {
                             try {
                                 unitRemote.unlock(unitRemoteRegistry);
@@ -374,13 +374,14 @@ public class Units {
      *                               externally interrupted.
      */
     private static UnitRemote<?> getUnitRemote(final String unitId) throws NotAvailableException, InterruptedException {
-        if(shutdownInitialized) {
-            throw new NotAvailableException("Unit not available because pool already shutdown");
-        }
-
         final boolean newInstance;
         final UnitRemote<?> unitRemote;
         try {
+
+            if(shutdownInitialized) {
+                throw new InvalidStateException("System shutdown is initialized!");
+            }
+
             UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
             try {
                 if (!unitRemoteRegistry.contains(unitId)) {
