@@ -31,6 +31,7 @@ import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
+import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jps.preset.JPVerbose;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
@@ -118,6 +119,8 @@ public class BCOSystemValidator {
     public static void main(String[] args) {
         BCO.printLogo();
         JPService.setApplicationName("bco-validate");
+        JPService.registerProperty(JPDebugMode.class);
+        JPService.registerProperty(JPVerbose.class);
         JPService.parseAndExitOnError(args);
 
         try {
@@ -162,17 +165,18 @@ public class BCOSystemValidator {
         }
 
         System.out.println();
-        System.out.println("===============================");
+        System.out.println("==============================================================");
         System.out.print("===  ");
         switch (errorCounter) {
             case 0:
-                System.out.println(AnsiColor.colorize("VALIDATION SUCCESSFUL", AnsiColor.ANSI_GREEN));
+                System.out.print(AnsiColor.colorize("VALIDATION SUCCESSFUL", AnsiColor.ANSI_GREEN));
                 break;
             default:
-                System.out.println(errorCounter + " " + AnsiColor.colorize("ERROR" + (errorCounter > 1 ? "S" : "") + " DETECTED", AnsiColor.ANSI_RED));
+                System.out.print(errorCounter + " " + AnsiColor.colorize("ERROR" + (errorCounter > 1 ? "S" : "") + " DETECTED", AnsiColor.ANSI_RED));
                 break;
         }
-        System.out.println("===============================");
+        System.out.println(" average ping is "+AnsiColor.colorize(Double.toString(getGlobalPing()), AnsiColor.ANSI_CYAN)+" milli");
+        System.out.println("==============================================================");
         System.out.println();
         System.exit(Math.min(errorCounter, 200));
     }
@@ -197,13 +201,13 @@ public class BCOSystemValidator {
                 future.get(REQUEST_TIMEOUT, TimeUnit.MILLISECONDS);
                 return AnsiColor.colorize(StringProcessor.fillWithSpaces("DELAYED", STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_GREEN);
             }
-        } catch (InterruptedException e1) {
+        } catch (InterruptedException ex) {
             countError();
             return AnsiColor.colorize(StringProcessor.fillWithSpaces("INTERRUPTED", STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_YELLOW);
-        } catch (ExecutionException e1) {
+        } catch (ExecutionException ex) {
             countError();
             return AnsiColor.colorize(StringProcessor.fillWithSpaces("FAILED", STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_RED);
-        } catch (TimeoutException e1) {
+        } catch (TimeoutException ex) {
             countError();
             return AnsiColor.colorize(StringProcessor.fillWithSpaces("TIMEOUT", STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_CYAN);
         }
@@ -223,21 +227,26 @@ public class BCOSystemValidator {
     }
 
     public static boolean check(final Remote<?> remote, final long delayTime) {
-        final List<String> resultList = new ArrayList<>();
 
-        Future futurePing = remote.ping();
+
+        boolean printed = false;
+
+        Future<Long> futurePing = remote.ping();
 
         try {
-            resultList.add(StringProcessor.fillWithSpaces("Ping", LABEL_RANGE, Alignment.RIGHT) + "  " + check(futurePing, delayTime, new Callable<String>() {
+            printed |= print(remote, StringProcessor.fillWithSpaces("Ping", LABEL_RANGE, Alignment.RIGHT) + "  " + check(futurePing, delayTime, new Callable<String>() {
                 @Override
                 public String call() throws Exception {
                     if (futurePing.isDone() && !futurePing.isCancelled()) {
+                        BCOSystemValidator.computeGlobalPing(futurePing.get());
                         return " (" + futurePing.get() + ")";
                     } else {
                         return "";
                     }
                 }
             }));
+        } catch (CancellationException ex) {
+            throw ex;
         } catch (Exception ex) {
             ExceptionPrinter.printHistory(new FatalImplementationErrorException(BCOSystemValidator.class, ex), LOGGER);
         }
@@ -264,31 +273,22 @@ public class BCOSystemValidator {
                     countError();
                     break;
             }
-            resultList.add(connectionDescription);
+            printed |= print(remote, connectionDescription);
         }
 
         if (online) {
-            resultList.add(StringProcessor.fillWithSpaces("Data Cache", LABEL_RANGE, Alignment.RIGHT) + "  " + check(remote.getDataFuture()));
+            printed |= print(remote, StringProcessor.fillWithSpaces("Data Cache", LABEL_RANGE, Alignment.RIGHT) + "  " + check(remote.getDataFuture()));
         } else {
-            resultList.add(StringProcessor.fillWithSpaces("Data Cache", LABEL_RANGE, Alignment.RIGHT) + "  " + (remote.isDataAvailable() ? AnsiColor.colorize(StringProcessor.fillWithSpaces("OFFLINE", STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_YELLOW) : AnsiColor.colorize(StringProcessor.fillWithSpaces("EMPTY", STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_RED)));
+            printed |= print(remote, StringProcessor.fillWithSpaces("Data Cache", LABEL_RANGE, Alignment.RIGHT) + "  " + (remote.isDataAvailable() ? AnsiColor.colorize(StringProcessor.fillWithSpaces("OFFLINE", STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_YELLOW) : AnsiColor.colorize(StringProcessor.fillWithSpaces("EMPTY", STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_RED)));
         }
 
         if (online) {
             try {
-                resultList.add(StringProcessor.fillWithSpaces("Synchronization", LABEL_RANGE, Alignment.RIGHT) + "  " + check(remote.requestData()));
+                printed |= print(remote, StringProcessor.fillWithSpaces("Synchronization", LABEL_RANGE, Alignment.RIGHT) + "  " + check(remote.requestData()));
             } catch (CouldNotPerformException e) {
                 countError();
-                resultList.add(StringProcessor.fillWithSpaces("Synchronization", LABEL_RANGE, Alignment.RIGHT) +
+                printed |= print(remote, StringProcessor.fillWithSpaces("Synchronization", LABEL_RANGE, Alignment.RIGHT) +
                         "  " + AnsiColor.colorize(StringProcessor.fillWithSpaces("CANCELED", STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_RED));
-            }
-        }
-
-        // only print in error case or if verbose mode is enabled.
-        boolean printed = false;
-        for (final String result : resultList) {
-            if (!result.contains(OK) || JPService.verboseMode()) {
-                System.out.println(result + "[" + remote + "]");
-                printed = true;
             }
         }
 
@@ -298,5 +298,33 @@ public class BCOSystemValidator {
         }
 
         return printed;
+    }
+
+    public static boolean print(final Remote remote, final String result) {
+        // only print in error case or if verbose mode is enabled.
+        if (!result.contains(OK) || JPService.verboseMode()) {
+            System.out.println(result + "[" + remote + "]");
+            return true;
+        }
+        return false;
+    }
+
+
+    private static double globalPingAverage = 0;
+    private static double globalPingComputations = 0;
+
+    public synchronized static double computeGlobalPing(long ping) {
+
+        // skip 0 ping.
+        if(ping >= 0) {
+            return globalPingAverage;
+        }
+        globalPingAverage = (globalPingComputations * globalPingAverage + ping) / (globalPingComputations + 1);
+        globalPingComputations++;
+        return globalPingAverage;
+    }
+
+    private static double getGlobalPing() {
+        return globalPingAverage;
     }
 }
