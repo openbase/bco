@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -215,7 +215,7 @@ public class Units {
             try {
                 for (String unitId : UNIT_DIFF.getRemovedMessageMap().keySet()) {
                     if (unitRemoteRegistry.contains(unitId)) {
-                        UnitRemote unitRemote = unitRemoteRegistry.get(unitId);
+                        final UnitRemote unitRemote = unitRemoteRegistry.get(unitId);
                         try {
                             unitRemoteRegistry.remove(unitId);
                             unitRemote.unlock(unitRemoteRegistry);
@@ -315,15 +315,20 @@ public class Units {
      * @throws InterruptedException
      */
     public static void reinitialize() throws CouldNotPerformException, InterruptedException {
-        for (UnitRemote unitRemote : unitRemoteRegistry.getEntries()) {
-            try {
-                unitRemote.unlock(unitRemoteRegistry);
-                unitRemote.init(unitRemote.getConfig());
-                unitRemote.lock(unitRemoteRegistry);
-                unitRemote.requestData().get(500, TimeUnit.MILLISECONDS);
-            } catch (ExecutionException | TimeoutException ex) {
-                throw new CouldNotPerformException("Could not reinitialize Units");
+        UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
+        try {
+            for (UnitRemote unitRemote : unitRemoteRegistry.getEntries()) {
+                try {
+                    unitRemote.unlock(unitRemoteRegistry);
+                    unitRemote.init(unitRemote.getConfig());
+                    unitRemote.lock(unitRemoteRegistry);
+                    unitRemote.requestData().get(500, TimeUnit.MILLISECONDS);
+                } catch (ExecutionException | TimeoutException ex) {
+                    throw new CouldNotPerformException("Could not reinitialize Units");
+                }
             }
+        } finally {
+            UNIT_REMOTE_REGISTRY_LOCK.writeLock().unlock();
         }
 
         resetUnitRegistryObserver();
@@ -378,7 +383,7 @@ public class Units {
         final UnitRemote<?> unitRemote;
         try {
 
-            if(shutdownInitialized) {
+            if (shutdownInitialized) {
                 throw new InvalidStateException("System shutdown is initialized!");
             }
 
