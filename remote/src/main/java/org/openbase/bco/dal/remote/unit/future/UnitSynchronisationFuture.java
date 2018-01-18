@@ -29,6 +29,7 @@ package org.openbase.bco.dal.remote.unit.future;
 
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.AbstractSynchronizationFuture;
@@ -72,6 +73,9 @@ public class UnitSynchronisationFuture extends AbstractSynchronizationFuture<Act
 
     @Override
     protected boolean check(ActionFuture actionFuture) throws CouldNotPerformException {
+        if(actionFuture.getActionDescriptionCount() == 0) {
+            throw new NotAvailableException("ActionDescription");
+        }
         ActionDescription actionDescription = actionFuture.getActionDescription(0);
         if (!actionDescription.hasTransactionId() || actionDescription.getTransactionId() == 0) {
             // this is for compatibility reasons with old versions
