@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
  * #L%
  */
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.iface.annotations.RPCMethod;
@@ -39,23 +40,23 @@ public interface BlindStateProviderService extends ProviderService {
     static void verifyBlindState(final BlindState blindState) throws VerificationFailedException {
         try {
             if (!blindState.hasMovementState() && !blindState.hasOpeningRatio()) {
-                throw new VerificationFailedException("MovementState and OpeningRatio not available!");
+                throw new VerificationFailedException("MovementState and OpeningRatio not available!", new InvalidStateException(blindState.toString()));
             }
 
             if (blindState.hasOpeningRatio() && blindState.getOpeningRatio() < 0) {
-                throw new VerificationFailedException("Opening ratio of blind state out of range with value[" + blindState.getOpeningRatio() + "]!");
+                throw new VerificationFailedException("Opening ratio of blind state out of range with value[" + blindState.getOpeningRatio() + "]!", new InvalidStateException(blindState.toString()));
             }
 
             if (blindState.hasMovementState()) {
                 switch (blindState.getMovementState()) {
                     case UNKNOWN:
-                        throw new VerificationFailedException("MovementState unknown!");
+                        throw new VerificationFailedException("MovementState unknown!", new InvalidStateException(blindState.toString()));
                     default:
                         break;
                 }
             }
         } catch (final CouldNotPerformException ex) {
-            throw new VerificationFailedException("BlindState not valid!");
+            throw new VerificationFailedException("BlindState not valid!", ex);
         }
     }
 }
