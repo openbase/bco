@@ -30,6 +30,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.RecurrenceEventFilter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.PowerStateType.PowerState.State;
@@ -58,8 +59,14 @@ public class NightLightApp extends AbstractAppController {
             this.locationMap = new HashMap<>();
             // init tile remotes
             for (final UnitConfig locationUnitConfig : Registries.getLocationRegistry(true).getLocationConfigsByType(LocationType.TILE)) {
-                LocationRemote remote = Units.getUnit(locationUnitConfig, true, Units.LOCATION);
-                locationMap.put(remote, (source, data) -> NightLightApp.this.update(remote));
+                final LocationRemote remote = Units.getUnit(locationUnitConfig, false, Units.LOCATION);
+                RecurrenceEventFilter<Void> eventFilter = new RecurrenceEventFilter<Void>() {
+                    @Override
+                    public void relay() throws Exception {
+                        NightLightApp.this.update(remote);
+                    }
+                };
+                locationMap.put(remote, (source, data) -> eventFilter.trigger());
             }
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
