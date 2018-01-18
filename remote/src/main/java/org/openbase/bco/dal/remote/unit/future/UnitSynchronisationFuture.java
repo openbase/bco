@@ -74,7 +74,7 @@ public class UnitSynchronisationFuture extends AbstractSynchronizationFuture<Act
     @Override
     protected boolean check(ActionFuture actionFuture) throws CouldNotPerformException {
         if(actionFuture.getActionDescriptionCount() == 0) {
-            throw new NotAvailableException("ActionDescription");
+            throw new NotAvailableException(((UnitRemote) dataProvider).getLabel(), "ActionDescription");
         }
         ActionDescription actionDescription = actionFuture.getActionDescription(0);
         if (!actionDescription.hasTransactionId() || actionDescription.getTransactionId() == 0) {
