@@ -52,6 +52,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.lang.reflect.Method;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -76,6 +77,8 @@ public class BCOSystemValidator {
     public static final long DELAYED_TIME = TimeUnit.MILLISECONDS.toMillis(500);
     public static final long DEFAULT_UNIT_POOL_DELAY_TIME = TimeUnit.SECONDS.toMillis(3);
     public static final long REQUEST_TIMEOUT = TimeUnit.SECONDS.toMillis(3);
+
+    public static final DecimalFormat pingFormat = new DecimalFormat("#.###");
 
     private static int errorCounter = 0;
 
@@ -175,7 +178,7 @@ public class BCOSystemValidator {
                 System.out.print(errorCounter + " " + AnsiColor.colorize("ERROR" + (errorCounter > 1 ? "S" : "") + " DETECTED", AnsiColor.ANSI_RED));
                 break;
         }
-        System.out.println(" average ping is "+AnsiColor.colorize(Double.toString(getGlobalPing()), AnsiColor.ANSI_CYAN)+" milli");
+        System.out.println(" average ping is "+AnsiColor.colorize(pingFormat.format(getGlobalPing()), AnsiColor.ANSI_CYAN)+" milli");
         System.out.println("==============================================================");
         System.out.println();
         System.exit(Math.min(errorCounter, 200));
@@ -316,7 +319,7 @@ public class BCOSystemValidator {
     public synchronized static double computeGlobalPing(long ping) {
 
         // skip 0 ping.
-        if(ping >= 0) {
+        if(ping <= 0) {
             return globalPingAverage;
         }
         globalPingAverage = (globalPingComputations * globalPingAverage + ping) / (globalPingComputations + 1);
