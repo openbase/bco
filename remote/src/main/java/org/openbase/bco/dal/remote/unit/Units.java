@@ -446,18 +446,15 @@ public class Units {
                     newInstance = false;
                     unitRemote = unitRemoteRegistry.get(unitConfig.getId());
                 }
+
+                if (newInstance && unitRemote.isEnabled()) {
+                    unitRemote.activate(unitRemoteRegistry);
+                }
+                // set sessionManager in unit remote
+                unitRemote.setSessionManager(SessionManager.getInstance());
             } finally {
                 UNIT_REMOTE_REGISTRY_LOCK.writeLock().unlock();
             }
-
-            // The activation is not synchronized by the unitRemoteRegistryLock out of performance reasons. 
-            // By this, new unit remotes can be requested independent from the activation state of other units.
-            if (newInstance && unitRemote.isEnabled()) {
-                unitRemote.activate();
-                unitRemote.lock(unitRemoteRegistry);
-            }
-            // set sessionManager in unit remote
-            unitRemote.setSessionManager(SessionManager.getInstance());
             return unitRemote;
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("UnitRemote[" + unitConfig.getId() + "]", ex);

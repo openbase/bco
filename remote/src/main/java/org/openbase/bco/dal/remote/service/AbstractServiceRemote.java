@@ -374,6 +374,25 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * @throws InterruptedException     {@inheritDoc}
      */
     @Override
+    public void activate(Object maintainer) throws InterruptedException, CouldNotPerformException {
+        if (!isLocked() || this.maintainer.equals(maintainer)) {
+            synchronized (maintainerLock) {
+                unlock(maintainer);
+                activate();
+                lock(maintainer);
+            }
+        } else {
+            throw new VerificationFailedException("[" + maintainer + "] is not the current maintainer of this remote");
+        }
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws InterruptedException     {@inheritDoc}
+     */
+    @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         verifyMaintainability();
         active = false;
