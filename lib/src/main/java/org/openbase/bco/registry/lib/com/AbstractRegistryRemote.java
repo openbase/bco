@@ -145,6 +145,7 @@ public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends
     @Override
     public void waitUntilReady() throws InterruptedException, CouldNotPerformException {
         try {
+            waitForData();
             RPCHelper.callRemoteMethod(this, Void.class).get();
         } catch (final CouldNotPerformException | ExecutionException | CancellationException ex) {
             throw new CouldNotPerformException("Could not wait until " + this + " is ready!", ex);
