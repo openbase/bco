@@ -183,7 +183,9 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
                     }
                     int remoteRegistryMessageCount = remoteRegistry.getMessages().size();
                     if (filteredRegistryRemoteMessageCount != remoteRegistryMessageCount) {
-                        logger.info("MessageCount for [" + remoteRegistry + "] is not correct. Expected[" + registryRemoteMessageCount + "] but is [" + remoteRegistryMessageCount + "]");
+                        if(JPService.testMode()){
+                            logger.info("MessageCount for [" + remoteRegistry + "] is not correct. Expected[" + registryRemoteMessageCount + "] but is [" + remoteRegistryMessageCount + "]");
+                        }
                         return false;
                     }
                 } catch (CouldNotPerformException ex) {
