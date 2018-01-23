@@ -278,7 +278,7 @@ public class ColorableLightRemoteTest extends AbstractBCODeviceManagerTest {
         System.out.println("testSetNeutralWhite");
         colorableLightRemote.setNeutralWhite().get();
         colorableLightRemote.requestData().get();
-        assertEquals("Neutral white was not set to the default value!", HSBColorToRGBColorTransformer.transform(ColorStateOperationService.DEFAULT_NEUTRAL_WHITE), colorableLightRemote.getColorState().getColor().getHsbColor());
+        assertEquals("Neutral white was not set to the default value!", ColorStateOperationService.DEFAULT_NEUTRAL_WHITE, colorableLightRemote.getColorState().getColor().getHsbColor());
     }
 
     private int powerStateObserverUpdateNumber = 0;
