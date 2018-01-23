@@ -21,9 +21,12 @@ package org.openbase.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import java.util.concurrent.Future;
+
 import static org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService.DEFAULT_NEUTRAL_WHITE;
 import static org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService.NEUTRAL_WHITE_KEY;
+
 import org.openbase.bco.dal.lib.layer.unit.ColorableLight;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -55,11 +58,12 @@ import rst.domotic.unit.dal.ColorableLightDataType;
 import rst.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
 import rst.domotic.unit.device.DeviceClassType;
 import rst.vision.ColorType;
+import rst.vision.ColorType.Color;
+import rst.vision.ColorType.Color.Type;
 import rst.vision.HSBColorType.HSBColor;
 import rst.vision.RGBColorType.RGBColor;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData> implements ColorableLight {
@@ -74,7 +78,7 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(BrightnessState.getDefaultInstance()));
     }
 
-    private ColorType.Color neutralWhite;
+    private ColorType.Color neutralWhite = DEFAULT_NEUTRAL_WHITE_COLOR;
 
     public ColorableLightRemote() {
         super(ColorableLightData.class);
@@ -147,7 +151,7 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
                     throw new NotAvailableException("NeutralWhite");
                 }
             } catch (NotAvailableException ex) {
-                neutralWhite = ColorType.Color.newBuilder().setType(ColorType.Color.Type.RGB).setRgbColor(DEFAULT_NEUTRAL_WHITE).build();
+                neutralWhite = DEFAULT_NEUTRAL_WHITE_COLOR;
             }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not find NeutralWhite!", ex), logger);

@@ -27,6 +27,7 @@ package org.openbase.bco.dal.remote.unit.future;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -38,43 +39,22 @@ import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 /**
  * @author pleminoq
  */
-public class UnitSynchronisationFuture extends AbstractSynchronizationFuture<ActionFuture> {
+public class UnitSynchronisationFuture extends AbstractSynchronizationFuture<ActionFuture, UnitRemote<?>> {
 
-    private final Logger logger;
-
-    public UnitSynchronisationFuture(final Future<ActionFuture> internalFuture, final UnitRemote unitRemote) {
+    public UnitSynchronisationFuture(final Future<ActionFuture> internalFuture, final UnitRemote<?> unitRemote) {
         super(internalFuture, unitRemote);
-        this.logger = LoggerFactory.getLogger(unitRemote.getClass());
-    }
-
-    @Override
-    protected void addObserver(Observer observer) {
-        dataProvider.addDataObserver(observer);
-    }
-
-    @Override
-    protected void removeObserver(Observer observer) {
-        dataProvider.removeDataObserver(observer);
-    }
-
-    @Override
-    protected void beforeWaitForSynchronization() throws CouldNotPerformException {
-        try {
-            dataProvider.waitForData();
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        }
     }
 
     @Override
     protected boolean check(ActionFuture actionFuture) throws CouldNotPerformException {
         if(actionFuture.getActionDescriptionCount() == 0) {
-            throw new NotAvailableException(((UnitRemote) dataProvider).getLabel(), "ActionDescription");
+            throw new NotAvailableException(dataProvider.getLabel(), "ActionDescription");
         }
         ActionDescription actionDescription = actionFuture.getActionDescription(0);
         if (!actionDescription.hasTransactionId() || actionDescription.getTransactionId() == 0) {

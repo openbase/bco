@@ -80,7 +80,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
 
     public ColorableLightController(final UnitHost unitHost, final ColorableLightData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(ColorableLightController.class, unitHost, builder);
-        this.neutralWhite = Color.newBuilder().setType(Color.Type.RGB).setRgbColor(DEFAULT_NEUTRAL_WHITE).build();
+        this.neutralWhite = ColorableLight.DEFAULT_NEUTRAL_WHITE_COLOR;
     }
 
     @Override
@@ -162,7 +162,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
                     throw new NotAvailableException("NeutralWhite");
                 }
             } catch (NotAvailableException ex) {
-                neutralWhite = Color.newBuilder().setType(Color.Type.RGB).setRgbColor(DEFAULT_NEUTRAL_WHITE).build();
+                neutralWhite = ColorableLight.DEFAULT_NEUTRAL_WHITE_COLOR;
             }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not find NeutralWhite!", ex), logger);
