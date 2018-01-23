@@ -208,32 +208,41 @@ public class AuthorizationHelper {
     }
 
     private static PermissionConfig getPermissionConfig(UnitConfig unitConfig, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) throws NotAvailableException {
-        PermissionConfig unitPermissionConfig = null;
-        PermissionConfig locationPermissionConfig = null;
-
-        // If the unit itself has a PermissionConfig, we use this one.
-        if (unitConfig.hasPermissionConfig()) {
-            unitPermissionConfig = unitConfig.getPermissionConfig();
-        }
-
         try {
-            // If the unit has a parent location (i.e. is not the root location), we use the PermissionConfig of the parent(s).
-            UnitConfig locationUnitConfig = getLocationUnitConfig(unitConfig.getPlacementConfig().getLocationId(), locations);
-            if ((unitConfig.getType() != UnitType.LOCATION || !unitConfig.getLocationConfig().hasRoot() || !unitConfig.getLocationConfig().getRoot())) {
-                locationPermissionConfig = getPermissionConfig(locationUnitConfig, locations);
+            PermissionConfig unitPermissionConfig = null;
+            PermissionConfig locationPermissionConfig = null;
+
+            // If the unit itself has a PermissionConfig, we use this one.
+            if (unitConfig.hasPermissionConfig()) {
+                unitPermissionConfig = unitConfig.getPermissionConfig();
             }
-            if (unitPermissionConfig != null || locationPermissionConfig != null) {
-                return mergePermissionConfigs(unitPermissionConfig, locationPermissionConfig);
+
+            try {
+                // If the unit has a parent location (i.e. is not the root location), we use the PermissionConfig of the parent(s).
+                UnitConfig locationUnitConfig = getLocationUnitConfig(unitConfig.getPlacementConfig().getLocationId(), locations);
+                if ((unitConfig.getType() != UnitType.LOCATION || !unitConfig.getLocationConfig().hasRoot() || !unitConfig.getLocationConfig().getRoot())) {
+                    locationPermissionConfig = getPermissionConfig(locationUnitConfig, locations);
+                }
+                if (unitPermissionConfig != null || locationPermissionConfig != null) {
+                    return mergePermissionConfigs(unitPermissionConfig, locationPermissionConfig);
+                }
+            } catch (NotAvailableException ex) {
+                // location does not exists so only use unit permissions.
             }
-        } catch (NotAvailableException ex) {
-            // location does not exists so only use unit permissions.
+
+            if (unitPermissionConfig == null) {
+                throw new NotAvailableException("UnitPermissions");
+            }
+
             return unitPermissionConfig;
-        }
-
-        try {
-            throw new NotAvailableException("PermissionConfig of Unit[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "]");
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("PermissionConfig");
+            String scope;
+            try {
+                scope = ScopeGenerator.generateStringRep(unitConfig.getScope());
+            } catch (CouldNotPerformException exx) {
+                scope = "?";
+            }
+            throw new NotAvailableException("PermissionConfig of Unit[" + scope + "]");
         }
     }
 
