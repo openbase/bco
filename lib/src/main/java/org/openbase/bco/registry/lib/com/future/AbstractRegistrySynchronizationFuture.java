@@ -41,37 +41,15 @@ import org.openbase.jul.storage.registry.RegistryRemote;
  * @author pleminoq
  * @param <M>
  */
-public abstract class AbstractRegistrySynchronizationFuture<M extends GeneratedMessage> extends AbstractSynchronizationFuture<M> {
-
-    private final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry;
+public abstract class AbstractRegistrySynchronizationFuture<M extends GeneratedMessage> extends AbstractSynchronizationFuture<M, SynchronizedRemoteRegistry<String, M, ?>> {
 
     public AbstractRegistrySynchronizationFuture(final Future<M> internalFuture, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry, final RegistryRemote registryRemote) {
-        super(internalFuture, registryRemote);
-        this.remoteRegistry = remoteRegistry;
-    }
-
-    @Override
-    protected void addObserver(Observer observer) {
-        remoteRegistry.addObserver(observer);
-    }
-
-    @Override
-    protected void removeObserver(Observer observer) {
-        remoteRegistry.removeObserver(observer);
-    }
-
-    @Override
-    protected void beforeWaitForSynchronization() throws CouldNotPerformException {
-        try {
-            remoteRegistry.waitForData();
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        }
+        super(internalFuture, remoteRegistry);
     }
 
     @Override
     protected boolean check(M message) throws CouldNotPerformException {
-        return check(message, remoteRegistry);
+        return check(message, dataProvider);
     }
 
     protected abstract boolean check(final M message, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry) throws CouldNotPerformException;
