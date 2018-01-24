@@ -26,10 +26,13 @@ import com.google.protobuf.ProtocolStringList;
 
 import java.util.Map;
 
+import jnr.ffi.annotations.In;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.StackTracePrinter;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
@@ -119,18 +122,22 @@ public class AuthorizationHelper {
     }
 
     private static boolean canDo(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations, Type type) {
-        try {
-            final UnitConfig locationUnitConfig = getLocationUnitConfig(unitConfig.getPlacementConfig().getLocationId(), locations);
-
-            boolean isRoot = unitConfig.getType() == UnitType.LOCATION && unitConfig.getLocationConfig().getRoot();
-
-            if (locationUnitConfig != null && !isRoot) {
-                if (!canRead(locationUnitConfig, userId, groups, locations)) {
+        if (!isAuthenticationUnit(unitConfig) && !isRootLocation(unitConfig, locations)) {
+            // check if the given user has read permissions for the parent location otherwise skip all further checks
+            try {
+                if (!canRead(getLocationUnitConfig(unitConfig.getPlacementConfig().getLocationId(), locations), userId, groups, locations)) {
                     return false;
                 }
+            } catch (NotAvailableException ex) {
+                String scope;
+                try {
+                    scope = ScopeGenerator.generateStringRep(unitConfig.getScope());
+                } catch (CouldNotPerformException exx) {
+                    scope = "?";
+                }
+                LOGGER.warn("PermissionConfig of Unit[" + scope + "] is denied!", ex);
+                return false;
             }
-        } catch (NotAvailableException ex) {
-            // referred location available so the check is only performed with the related unit.
         }
 
         try {
@@ -215,7 +222,7 @@ public class AuthorizationHelper {
             }
 
             // the root location should always use its own permissions to terminate the recursive permission resolution.
-            if (isRootLocation(unitConfig)) {
+            if (isRootLocation(unitConfig, locations)) {
                 if (!unitConfig.hasPermissionConfig()) {
                     throw new InvalidStateException("The root location does not provide a permission config!");
                 }
@@ -223,16 +230,14 @@ public class AuthorizationHelper {
             }
 
             // user or authentication group permissions are independent of there location referred location.
-            switch (unitConfig.getType()) {
-                case USER:
-                case AUTHORIZATION_GROUP:
-                    if (!unitConfig.hasPermissionConfig()) {
-                        throw new InvalidStateException(StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name()) + " should always provide a permission config!");
-                    }
-                    return unitConfig.getPermissionConfig();
-                default:
+            if (isAuthenticationUnit(unitConfig)) {
+                if (!unitConfig.hasPermissionConfig()) {
+                    throw new InvalidStateException(StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name()) + " should always provide a permission config!");
+                }
+                return unitConfig.getPermissionConfig();
             }
 
+            // verify needed location information
             if (locations == null || locations.isEmpty()) {
                 throw new InvalidStateException("No location information available for permission resolution!");
             }
@@ -265,14 +270,26 @@ public class AuthorizationHelper {
         }
     }
 
-    private static boolean isRootLocation(final UnitConfig unitConfig) {
-        return unitConfig.getType() == UnitType.LOCATION && unitConfig.getLocationConfig().hasRoot() && unitConfig.getLocationConfig().getRoot();
+    private static boolean isRootLocation(final UnitConfig unitConfig, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) {
+
+        // if this unit is not a location it can not be a root location
+        if (unitConfig.getType() != UnitType.LOCATION) {
+            return false;
+        }
+
+        // if no locations are available this location should be the root location
+        if (locations.isEmpty()) {
+            return true;
+        }
+
+        // is this unit a root location?
+        return unitConfig.getLocationConfig().hasRoot() && unitConfig.getLocationConfig().getRoot();
     }
 
     private static UnitConfig getRootLocationUnitConfig(final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) throws NotAvailableException {
         try {
             for (final IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> locationUnitConfig : locations.values()) {
-                if (isRootLocation(locationUnitConfig.getMessage())) {
+                if (isRootLocation(locationUnitConfig.getMessage(), locations)) {
                     return locationUnitConfig.getMessage();
                 }
             }
@@ -282,8 +299,22 @@ public class AuthorizationHelper {
         }
     }
 
+    private static boolean isAuthenticationUnit(final UnitConfig unitConfig) {
+        switch (unitConfig.getType()) {
+            case USER:
+            case AUTHORIZATION_GROUP:
+                return true;
+            default:
+                return false;
+        }
+    }
+
     private static UnitConfig getLocationUnitConfig(final String locationId, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) throws NotAvailableException {
         try {
+            if (locationId.isEmpty()) {
+                throw new NotAvailableException("locationId");
+            }
+
             if (!locations.containsKey(locationId)) {
                 LOGGER.warn("Registry does not contains requested location Entry[" + locationId + "] use root location as fallback to compute permissions.");
                 return getRootLocationUnitConfig(locations);

@@ -10,35 +10,41 @@ package org.openbase.bco.authentication.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.ByteString;
 import com.google.protobuf.GeneratedMessage;
+
 import java.io.IOException;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Map;
 import java.util.concurrent.Future;
 import javax.crypto.BadPaddingException;
+
+import org.omg.CORBA.DynAnyPackage.Invalid;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.PermissionDeniedException;
+import org.openbase.jul.exception.*;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  * Helper class which should be used to implement an authenticated service.
@@ -47,20 +53,22 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public class AuthenticatedServiceProcessor {
 
+    private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatedServiceProcessor.class);
+
     /**
      * Method used by the server which performs an authenticated action which needs write permissions.
      *
-     * @param <RECEIVE> The type of value that the server receives to perform its action,
-     * @param <RETURN> The type of value that the server responds with.
-     * @param authenticatedValue The authenticatedValue which is send with the request.
+     * @param <RECEIVE>             The type of value that the server receives to perform its action,
+     * @param <RETURN>              The type of value that the server responds with.
+     * @param authenticatedValue    The authenticatedValue which is send with the request.
      * @param authorizationGroupMap Map of authorization groups to verify if this action can be performed.
-     * @param locationMap Map of locations to verify if this action can be performed.
-     * @param internalClass Class of type RECEIVE needed to decrypt the received type.
-     * @param executable Interface defining the cation that the server performs.
-     * @param configRetrieval Interface defining which unitConfig should be used to verify the execution of the action.
+     * @param locationMap           Map of locations to verify if this action can be performed.
+     * @param internalClass         Class of type RECEIVE needed to decrypt the received type.
+     * @param executable            Interface defining the cation that the server performs.
+     * @param configRetrieval       Interface defining which unitConfig should be used to verify the execution of the action.
      * @return An AuthenticatedValue which should be send as a response.
      * @throws CouldNotPerformException If one step can not be done, e.g. ticket invalid or encryption failed.
-     * @throws InterruptedException It interrupted while checking permissions.
+     * @throws InterruptedException     It interrupted while checking permissions.
      */
     public static <RECEIVE extends GeneratedMessage, RETURN extends GeneratedMessage> AuthenticatedValue authenticatedAction(final AuthenticatedValue authenticatedValue, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> authorizationGroupMap, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locationMap, final Class<RECEIVE> internalClass, final InternalProcessable<RECEIVE, RETURN> executable, final ConfigRetrieval<RECEIVE> configRetrieval) throws CouldNotPerformException, InterruptedException {
         try {
@@ -109,6 +117,10 @@ public class AuthenticatedServiceProcessor {
                     // retrieve the unit config which is used to check for permissions 
                     UnitConfig unitConfig = configRetrieval.retrieve(message);
 
+                    if (unitConfig.getType() == UnitType.UNKNOWN) {
+                        throw new InvalidStateException("Unit type of received unit config is unknown! Reject request because message seems to be broken.");
+                    }
+
                     try {
                         if (JPService.getProperty(JPAuthentication.class).getValue()) {
                             // check for write permissions for other
@@ -138,11 +150,11 @@ public class AuthenticatedServiceProcessor {
     /**
      * Method used by the remote to request an authenticated action from a server.
      *
-     * @param <SEND> The type which is send to server for this request.
-     * @param <RESPONSE> The type with which the server should respond.
-     * @param message The message which is encrypted and send to the server.
-     * @param responseClass Class of type RESPONSE to resolve internal types.
-     * @param sessionManager The session manager from which the ticket is used if a user it logged in.
+     * @param <SEND>              The type which is send to server for this request.
+     * @param <RESPONSE>          The type with which the server should respond.
+     * @param message             The message which is encrypted and send to the server.
+     * @param responseClass       Class of type RESPONSE to resolve internal types.
+     * @param sessionManager      The session manager from which the ticket is used if a user it logged in.
      * @param internalRequestable Interface for the internal authenticated request which is called.
      * @return A future containing the response.
      * @throws CouldNotPerformException If a user is logged and a ticket for the request cannot be initialized or encryption of the send message fails.
