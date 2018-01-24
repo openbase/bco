@@ -122,6 +122,13 @@ public class AuthorizationHelper {
     }
 
     private static boolean canDo(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations, Type type) {
+
+        // BUG WORKAROUND
+        // todo remove me after fixing openbase/bco.authentication#61
+        if(unitConfig.getType() == UnitType.UNKNOWN) {
+            return true;
+        }
+
         if (!isAuthenticationUnit(unitConfig) && !isRootLocation(unitConfig, locations)) {
             // check if the given user has read permissions for the parent location otherwise skip all further checks
             try {
