@@ -239,17 +239,16 @@ public class AuthorizationHelper {
             } catch (CouldNotPerformException exx) {
                 scope = "?";
             }
-            throw new NotAvailableException("PermissionConfig of Unit[" + scope + "]");
+            throw new NotAvailableException("PermissionConfig of Unit[" + scope + "]", ex);
         }
     }
 
     private static UnitConfig getLocationUnitConfig(String locationId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) throws NotAvailableException {
         try {
-            if (locations.containsKey(locationId)) {
-                return locations.get(locationId).getMessage();
-            } else {
+            if (!locations.containsKey(locationId)) {
                 throw new InvalidStateException("Registry does not contains requested location Entry[" + locationId + "]");
             }
+            return locations.get(locationId).getMessage();
         } catch (CouldNotPerformException | NullPointerException ex) {
             // null pointer can occur if the registry is shutting down between the "contains" check and the "get".
             throw new NotAvailableException("Location[" + locationId + "]", ex);
