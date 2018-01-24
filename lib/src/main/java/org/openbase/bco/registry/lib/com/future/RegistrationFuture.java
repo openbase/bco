@@ -42,6 +42,7 @@ public class RegistrationFuture<M extends GeneratedMessage> extends AbstractRegi
 
     public RegistrationFuture(final Future<M> internalFuture, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry, final RegistryRemote registryRemote) {
         super(internalFuture, remoteRegistry, registryRemote);
+        init();
     }
 
     @Override

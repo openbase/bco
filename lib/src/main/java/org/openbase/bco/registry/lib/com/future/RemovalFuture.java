@@ -41,6 +41,7 @@ public class RemovalFuture<M extends GeneratedMessage> extends AbstractRegistryS
 
     public RemovalFuture(final Future<M> internalFuture, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry, final RegistryRemote registryRemote) {
         super(internalFuture, remoteRegistry, registryRemote);
+        init();
     }
 
     @Override

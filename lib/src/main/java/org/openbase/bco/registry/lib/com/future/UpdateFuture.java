@@ -43,10 +43,11 @@ public class UpdateFuture<M extends GeneratedMessage> extends AbstractRegistrySy
 
     public UpdateFuture(final Future<M> internalFuture, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry, final RegistryRemote registryRemote) {
         super(internalFuture, remoteRegistry, registryRemote);
+        init();
     }
 
     @Override
-    protected boolean check(M message, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry) throws CouldNotPerformException {
+    protected boolean check(final M message, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry) throws CouldNotPerformException {
         // if the updated message has been filtered out verify that is not contained anymore
         // and else verify that the update has been synchronized
         if (remoteRegistry.getFilter() != null && !remoteRegistry.getFilter().verify(message)) {
@@ -56,7 +57,7 @@ public class UpdateFuture<M extends GeneratedMessage> extends AbstractRegistrySy
         }
     }
 
-    private String getId(M message) {
+    private String getId(final M message) {
         return (String) message.getField(ProtoBufFieldProcessor.getFieldDescriptor(message.toBuilder(), "id"));
     }
 }

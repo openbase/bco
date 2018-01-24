@@ -28,6 +28,8 @@ package org.openbase.bco.registry.lib.com.future;
  */
 import org.openbase.jul.schedule.AbstractSynchronizationFuture;
 import com.google.protobuf.GeneratedMessage;
+
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -41,15 +43,18 @@ import org.openbase.jul.storage.registry.RegistryRemote;
  * @author pleminoq
  * @param <M>
  */
-public abstract class AbstractRegistrySynchronizationFuture<M extends GeneratedMessage> extends AbstractSynchronizationFuture<M, SynchronizedRemoteRegistry<String, M, ?>> {
+public abstract class AbstractRegistrySynchronizationFuture<M extends GeneratedMessage> extends AbstractSynchronizationFuture<M, RegistryRemote<?>> {
 
-    public AbstractRegistrySynchronizationFuture(final Future<M> internalFuture, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry, final RegistryRemote registryRemote) {
-        super(internalFuture, remoteRegistry);
+    private final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry;
+
+    public AbstractRegistrySynchronizationFuture(final Future<M> internalFuture, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry, final RegistryRemote<?> registryRemote) {
+        super(internalFuture, registryRemote);
+        this.remoteRegistry = remoteRegistry;
     }
 
     @Override
     protected boolean check(M message) throws CouldNotPerformException {
-        return check(message, dataProvider);
+        return check(message, remoteRegistry);
     }
 
     protected abstract boolean check(final M message, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry) throws CouldNotPerformException;
