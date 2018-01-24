@@ -79,9 +79,6 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> deviceUnitConfigRemoteRegistry;
     private UnitRegistryRemote unitRegistry;
 
-    int registryRemoteNotificationCount = 0;
-    int priorizedNotificationCount = 0;
-
     public DeviceRegistryRemote() throws InstantiationException {
         super(JPDeviceRegistryScope.class, DeviceRegistryData.class);
         try {

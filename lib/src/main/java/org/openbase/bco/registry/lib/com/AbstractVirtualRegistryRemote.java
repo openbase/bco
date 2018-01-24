@@ -10,12 +10,12 @@ package org.openbase.bco.registry.lib.com;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -28,6 +28,7 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.rsb.scope.jp.JPScope;
 import org.openbase.jul.pattern.Observable;
@@ -175,7 +176,7 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
                             logger.info(this + " has a been filtered for Field[" + remoteRegistryFieldDescriptorMap.get(remoteRegistry).getName() + "] from " + registryRemoteMessageCount + " to " + registryRemoteFilteredMessageCount);
                             for (final Object message : registryRemoteMessageList) {
                                 if (!registryRemoteFilteredMessageList.contains(message)) {
-                                    logger.info("Filtered Message[" + message.toString()+"] because permission was denied.");
+                                    logger.info("Filtered Message[" + new IdentifiableMessage((GeneratedMessage) message).generateMessageDescription() + "] because permission was denied.");
                                 }
                             }
                         }
@@ -188,12 +189,12 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
                             logger.info("MessageCount for [" + remoteRegistry + "] is not correct. Expected " + registryRemoteFilteredMessageCount + " but is " + remoteRegistryMessageCount);
                             for (Object message : registryRemoteFilteredMessageList) {
                                 if (!remoteRegistry.getMessages().contains(message)) {
-                                    logger.info("Message[" + message.toString() + "] was not synchronized from the registry remote into the internal remote registry!");
+                                    logger.info("Message[" + new IdentifiableMessage((GeneratedMessage) message).generateMessageDescription() + "] was not synchronized from the registry remote into the internal remote registry!");
                                 }
                             }
                             for (Object message : remoteRegistry.getMessages()) {
                                 if (!registryRemoteFilteredMessageList.contains(message)) {
-                                    logger.info("Message[" + message.toString() + "] was not removed form the internal remote registry!");
+                                    logger.info("Message[" + new IdentifiableMessage((GeneratedMessage) message).generateMessageDescription() + "] was not removed form the internal remote registry!");
                                 }
                             }
                         }
