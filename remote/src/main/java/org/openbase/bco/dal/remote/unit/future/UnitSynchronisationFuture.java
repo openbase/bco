@@ -49,6 +49,7 @@ public class UnitSynchronisationFuture extends AbstractSynchronizationFuture<Act
 
     public UnitSynchronisationFuture(final Future<ActionFuture> internalFuture, final UnitRemote<?> unitRemote) {
         super(internalFuture, unitRemote);
+        init();
     }
 
     @Override
