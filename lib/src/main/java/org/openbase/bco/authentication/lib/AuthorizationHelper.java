@@ -32,6 +32,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig.MapFieldEntry;
@@ -213,10 +214,6 @@ public class AuthorizationHelper {
                 throw new NotAvailableException("UnitConfig");
             }
 
-            if (locations == null || locations.isEmpty()) {
-                throw new NotAvailableException("No location information available for permission resolution!");
-            }
-
             // the root location should always use its own permissions to terminate the recursive permission resolution.
             if (isRootLocation(unitConfig)) {
                 if (!unitConfig.hasPermissionConfig()) {
@@ -225,11 +222,25 @@ public class AuthorizationHelper {
                 return unitConfig.getPermissionConfig();
             }
 
+            // user or authentication group permissions are independent of there location referred location.
+            switch (unitConfig.getType()) {
+                case USER:
+                case AUTHORIZATION_GROUP:
+                    if (!unitConfig.hasPermissionConfig()) {
+                        throw new InvalidStateException(StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name()) + " should always provide a permission config!");
+                    }
+                    return unitConfig.getPermissionConfig();
+                default:
+            }
+
+            if (locations == null || locations.isEmpty()) {
+                throw new InvalidStateException("No location information available for permission resolution!");
+            }
+
             PermissionConfig unitPermissionConfig;
 
             // resolve parent permissions
             try {
-
                 final UnitConfig locationUnitConfig = getLocationUnitConfig(unitConfig.getPlacementConfig().getLocationId(), locations);
                 unitPermissionConfig = getPermissionConfig(locationUnitConfig, locations);
             } catch (NotAvailableException ex) {
