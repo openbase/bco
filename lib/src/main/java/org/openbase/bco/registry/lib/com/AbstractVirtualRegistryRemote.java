@@ -145,46 +145,57 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
             }
         }
 
-        return super.isDataAvailable() && equalMessageCounts();
+        return super.isDataAvailable() && isVirtualRegistrySynchronized();
     }
 
-    private void waitForVirtualRegistrySync() throws CouldNotPerformException, InterruptedException {
+    private void waitForVirtualRegistrySync() throws InterruptedException {
         synchronized (virtualRegistrySyncLock) {
-            while (!equalMessageCounts()) {
+            while (!isVirtualRegistrySynchronized()) {
                 virtualRegistrySyncLock.wait();
             }
         }
     }
 
-    private boolean equalMessageCounts() {
+    public boolean isVirtualRegistrySynchronized() {
         // if not synchronized it could happen that equal message count is called from two different threads
         // which can modify the computed integers before checking
         synchronized (virtualRegistrySyncLock) {
             for (SynchronizedRemoteRegistry remoteRegistry : remoteRegistrySyncMap.keySet()) {
                 try {
-                    List messageList = new ArrayList((List) remoteRegistrySyncMap.get(remoteRegistry).getData().getField(remoteRegistryFieldDescriptorMap.get(remoteRegistry)));
-                    int registryRemoteMessageCount = messageList.size();
-                    List filteredList = remoteRegistry.getFilter().filter(messageList);
-                    int filteredRegistryRemoteMessageCount = filteredList.size();
-                    if (registryRemoteMessageCount != filteredRegistryRemoteMessageCount) {
-                        logger.info(this + " has a been filtered for field[" + remoteRegistryFieldDescriptorMap.get(remoteRegistry).getName() + "] from " + registryRemoteMessageCount + " to " + filteredRegistryRemoteMessageCount);
-                        if (JPService.testMode()) {
-                            List diff = new ArrayList();
-                            for (Object obj : messageList) {
-                                if (!filteredList.contains(obj)) {
-                                    diff.add(obj);
-                                }
-                            }
+                    final List registryRemoteMessageList = new ArrayList((List) remoteRegistrySyncMap.get(remoteRegistry).getData().getField(remoteRegistryFieldDescriptorMap.get(remoteRegistry)));
+                    final List registryRemoteFilteredMessageList = remoteRegistry.getFilter().filter(registryRemoteMessageList);
 
-                            for (Object obj : diff) {
-                                logger.info("Filtered message:\n" + obj.toString());
+                    // init counts
+                    int registryRemoteMessageCount = registryRemoteMessageList.size();
+                    int registryRemoteFilteredMessageCount = registryRemoteFilteredMessageList.size();
+
+                    // just print filtered messages in test mode
+                    if (JPService.testMode()) {
+                        if (registryRemoteMessageCount != registryRemoteFilteredMessageCount) {
+                            logger.info(this + " has a been filtered for Field[" + remoteRegistryFieldDescriptorMap.get(remoteRegistry).getName() + "] from " + registryRemoteMessageCount + " to " + registryRemoteFilteredMessageCount);
+                            for (final Object message : registryRemoteMessageList) {
+                                if (!registryRemoteFilteredMessageList.contains(message)) {
+                                    logger.info("Filtered Message[" + message.toString()+"] because permission was denied.");
+                                }
                             }
                         }
                     }
+
+                    // check if the remote registry was fully synchronized with this registry remote.
                     int remoteRegistryMessageCount = remoteRegistry.getMessages().size();
-                    if (filteredRegistryRemoteMessageCount != remoteRegistryMessageCount) {
-                        if(JPService.testMode()){
-                            logger.info("MessageCount for [" + remoteRegistry + "] is not correct. Expected[" + registryRemoteMessageCount + "] but is [" + remoteRegistryMessageCount + "]");
+                    if (registryRemoteFilteredMessageCount != remoteRegistryMessageCount) {
+                        if (JPService.testMode()) {
+                            logger.info("MessageCount for [" + remoteRegistry + "] is not correct. Expected " + registryRemoteFilteredMessageCount + " but is " + remoteRegistryMessageCount);
+                            for (Object message : registryRemoteFilteredMessageList) {
+                                if (!remoteRegistry.getMessages().contains(message)) {
+                                    logger.info("Message[" + message.toString() + "] was not synchronized from the registry remote into the internal remote registry!");
+                                }
+                            }
+                            for (Object message : remoteRegistry.getMessages()) {
+                                if (!registryRemoteFilteredMessageList.contains(message)) {
+                                    logger.info("Message[" + message.toString() + "] was not removed form the internal remote registry!");
+                                }
+                            }
                         }
                         return false;
                     }
