@@ -209,7 +209,6 @@ public class AuthorizationHelper {
 
     private static PermissionConfig getPermissionConfig(final UnitConfig unitConfig, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) throws NotAvailableException {
         try {
-
             if (unitConfig == null) {
                 throw new NotAvailableException("UnitConfig");
             }
@@ -233,7 +232,7 @@ public class AuthorizationHelper {
                 final UnitConfig locationUnitConfig = getLocationUnitConfig(unitConfig.getPlacementConfig().getLocationId(), locations);
                 unitPermissionConfig = getPermissionConfig(locationUnitConfig, locations);
             } catch (NotAvailableException ex) {
-                throw new InvalidStateException("Parent location does not provide a permission config!");
+                throw new InvalidStateException("Parent location does not provide a permission config!", ex);
             }
 
             // resolve unit permissions and merge those with the parent location permissions
