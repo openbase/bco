@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -229,6 +229,7 @@ public class AuthorizationHelper {
 
             // resolve parent permissions
             try {
+
                 final UnitConfig locationUnitConfig = getLocationUnitConfig(unitConfig.getPlacementConfig().getLocationId(), locations);
                 unitPermissionConfig = getPermissionConfig(locationUnitConfig, locations);
             } catch (NotAvailableException ex) {
@@ -257,10 +258,24 @@ public class AuthorizationHelper {
         return unitConfig.getType() == UnitType.LOCATION && unitConfig.getLocationConfig().hasRoot() && unitConfig.getLocationConfig().getRoot();
     }
 
+    private static UnitConfig getRootLocationUnitConfig(final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) throws NotAvailableException {
+        try {
+            for (final IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> locationUnitConfig : locations.values()) {
+                if (isRootLocation(locationUnitConfig.getMessage())) {
+                    return locationUnitConfig.getMessage();
+                }
+            }
+            throw new InvalidStateException("Registry does not provide a root location!");
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("RootLocation", ex);
+        }
+    }
+
     private static UnitConfig getLocationUnitConfig(final String locationId, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) throws NotAvailableException {
         try {
             if (!locations.containsKey(locationId)) {
-                throw new InvalidStateException("Registry does not contains requested location Entry[" + locationId + "]");
+                LOGGER.warn("Registry does not contains requested location Entry[" + locationId + "] use root location as fallback to compute permissions.");
+                return getRootLocationUnitConfig(locations);
             }
             return locations.get(locationId).getMessage();
         } catch (CouldNotPerformException | NullPointerException ex) {
