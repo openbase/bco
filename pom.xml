@@ -5,13 +5,45 @@
     <artifactId>bco</artifactId>
     <version>1.5-SNAPSHOT</version>
 
-    <packaging>jar</packaging>
-
     <name>BCO</name>
     <inceptionYear>2014</inceptionYear>
     <description>Smart Environment Platform</description>
     
     <url>http://basecubeone.org</url>
+
+    <organization>
+        <name>openbase.org</name>
+        <url>http://openbase.org</url>
+    </organization>
+
+    <developers>
+        <developer>
+            <id>DivineThreepwood</id>
+            <name>Marian Pohling</name>
+            <email>divine@openbase.org</email>
+            <url>https://github.com/DivineThreepwood</url>
+            <organization>openbase.org</organization>
+            <organizationUrl>https://github.com/openbase</organizationUrl>
+            <roles>
+                <role>architect</role>
+                <role>developer</role>
+            </roles>
+            <timezone>+1</timezone>
+        </developer>
+        <developer>
+            <id>pLeminoq</id>
+            <name>Tamino Huxohl</name>
+            <email>taminoh@ymail.com</email>
+            <url>https://github.com/pLeminoq</url>
+            <organization>openbase.org</organization>
+            <organizationUrl>https://github.com/openbase</organizationUrl>
+            <roles>
+                <role>architect</role>
+                <role>developer</role>
+            </roles>
+            <timezone>+1</timezone>
+        </developer>
+    </developers>
 
     <licenses>
         <license>
@@ -19,6 +51,14 @@
             <url>http://www.gnu.org/licenses/gpl.html</url>
         </license>
     </licenses>
+
+    <packaging>jar</packaging>
+
+    <scm>
+        <connection>scm:git:https://github.com/openbase/bco.git</connection>
+        <developerConnection>scm:git:https://github.com/openbase/bco.git</developerConnection>
+        <url>https://github.com/openbase/bco.git</url>
+    </scm>
 
     <build>
         <plugins>
@@ -58,6 +98,9 @@
                     </execution>
                 </executions>
                 <configuration>
+                    <binFolder>${deb.prefix.bin}</binFolder>
+                    <repositoryLayout>flat</repositoryLayout>
+                    <repositoryName>${build.lib}</repositoryName>
                     <programs>
                         <program>
                             <mainClass>org.openbase.bco.manager.util.launch.ManagerLauncher</mainClass>
@@ -90,11 +133,93 @@
                     </programs>
                 </configuration>
             </plugin>
+            <plugin>
+                <artifactId>jdeb</artifactId>
+                <groupId>org.vafer</groupId>
+                <version>1.6</version>
+                <executions>
+                    <execution>
+                        <phase>install</phase>
+                        <goals>
+                            <goal>jdeb</goal>
+                        </goals>
+                        <configuration>
+                            <verbose>false</verbose>
+                            <snapshotExpand>true</snapshotExpand>
+                            <!-- expand "SNAPSHOT" to what is in the "USER" env variable -->
+                            <snapshotEnv></snapshotEnv>
+                            <verbose>true</verbose>
+                            <controlDir>${basedir}/src/deb/control</controlDir>
+                            <dataSet>
+
+                                <!-- Install Daemon-->
+                                <data>
+                                  <src>${basedir}/src/deb/init.d</src>
+                                  <type>directory</type>
+                                  <mapper>
+                                    <type>perm</type>
+                                    <prefix>/etc/init.d</prefix>
+                                    <user>loader</user>
+                                    <group>loader</group>
+                                  </mapper>
+                                </data>
+    
+                                <!-- Copy Deps-->
+                                <data>
+                                    <src>${build.appassembler}/${build.lib}</src>
+                                    <type>directory</type>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>/${deb.prefix.lib}</prefix>
+                                        <user>loader</user>
+                                        <group>loader</group>
+                                    </mapper>
+                                </data>
+
+
+                                <!-- Copy Bins-->
+                                <data>
+                                    <src>${build.appassembler}/${deb.prefix.bin}</src>
+                                    <type>directory</type>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>/${deb.prefix.bin}</prefix>
+                                        <user>loader</user>
+                                        <group>loader</group>
+                                        <filemode>755</filemode>
+                                    </mapper>
+                                </data>
+                                
+                                <data>
+                                  <type>template</type>
+                                  <paths>
+                                    <path>etc/${project.artifactId}</path>
+                                    <!--path>var/lib/${project.artifactId}</path-->
+                                    <path>var/log/${project.artifactId}</path>
+                                    <!--path>var/run/${project.artifactId}</path-->
+                                  </paths>
+                                  <mapper>
+                                    <type>perm</type>
+                                    <user>loader</user>
+                                    <group>loader</group>
+                                  </mapper>
+                                </data>
+                            </dataSet>
+                        </configuration>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>    
 
     <properties>
         <skipTests>true</skipTests>
+        <build.appassembler>${project.build.directory}/appassembler</build.appassembler>
+        <deb.prefix>usr/share/${project.artifactId}</deb.prefix>
+        <deb.prefix.lib>${deb.prefix}/lib</deb.prefix.lib>
+        <deb.prefix.bin>usr/bin</deb.prefix.bin>
+        <build.lib>share/${project.artifactId}/${deb.prefix}/lib</build.lib>
+        <build.lib>share/${project.artifactId}/lib</build.lib>
     </properties>
 
 
