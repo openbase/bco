@@ -218,7 +218,6 @@
         <deb.prefix>usr/share/${project.artifactId}</deb.prefix>
         <deb.prefix.lib>${deb.prefix}/lib</deb.prefix.lib>
         <deb.prefix.bin>usr/bin</deb.prefix.bin>
-        <build.lib>share/${project.artifactId}/${deb.prefix}/lib</build.lib>
         <build.lib>share/${project.artifactId}/lib</build.lib>
     </properties>
 
