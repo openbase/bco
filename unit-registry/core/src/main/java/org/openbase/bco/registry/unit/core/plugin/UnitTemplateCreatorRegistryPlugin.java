@@ -25,10 +25,13 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.Registry;
 import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
+import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.Builder;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
@@ -37,7 +40,7 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
-public class UnitTemplateCreatorRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>> {
+public class UnitTemplateCreatorRegistryPlugin extends ProtobufRegistryPluginAdapter<String, UnitTemplate, Builder> {
 
     private final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> registry;
 
@@ -46,7 +49,7 @@ public class UnitTemplateCreatorRegistryPlugin extends FileRegistryPluginAdapter
     }
 
     @Override
-    public void init(Registry<String, IdentifiableMessage<String, UnitTemplate, UnitTemplate.Builder>> config) throws InitializationException, InterruptedException {
+    public void init(ProtoBufRegistry<String, UnitTemplate, Builder> config) throws InitializationException, InterruptedException {
         try {
             UnitTemplate template;
 

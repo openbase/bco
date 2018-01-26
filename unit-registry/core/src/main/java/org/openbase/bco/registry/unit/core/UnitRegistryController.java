@@ -101,15 +101,7 @@ import org.openbase.bco.registry.unit.core.consistency.unittemplate.UniteTemplat
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigUserNameConsistencyHandler;
-import org.openbase.bco.registry.unit.core.plugin.AuthorizationGroupCreationPlugin;
-import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
-import org.openbase.bco.registry.unit.core.plugin.DalUnitBoundToHostPlugin;
-import org.openbase.bco.registry.unit.core.plugin.DeviceConfigDeviceClassUnitConsistencyPlugin;
-import org.openbase.bco.registry.unit.core.plugin.LocationRemovalPlugin;
-import org.openbase.bco.registry.unit.core.plugin.PublishLocationTransformationRegistryPlugin;
-import org.openbase.bco.registry.unit.core.plugin.PublishUnitTransformationRegistryPlugin;
-import org.openbase.bco.registry.unit.core.plugin.ServiceTemplateCreatorRegistryPlugin;
-import org.openbase.bco.registry.unit.core.plugin.UnitTemplateCreatorRegistryPlugin;
+import org.openbase.bco.registry.unit.core.plugin.*;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.generator.ServiceTemplateIdGenerator;
 import org.openbase.bco.registry.unit.lib.generator.UnitConfigIdGenerator;
@@ -384,6 +376,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     protected void registerPlugins() throws CouldNotPerformException, InterruptedException {
         serviceTemplateRegistry.registerPlugin(new ServiceTemplateCreatorRegistryPlugin(serviceTemplateRegistry));
         unitTemplateRegistry.registerPlugin(new UnitTemplateCreatorRegistryPlugin(unitTemplateRegistry));
+        locationUnitConfigRegistry.registerPlugin(new RootLocationPlugin());
         try {
             if (JPService.getProperty(JPAuthentication.class).getValue()) {
                 authorizationGroupUnitConfigRegistry.registerPlugin(new AuthorizationGroupCreationPlugin(authorizationGroupUnitConfigRegistry));

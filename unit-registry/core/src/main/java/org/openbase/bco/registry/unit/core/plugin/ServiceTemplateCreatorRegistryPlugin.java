@@ -24,19 +24,19 @@ package org.openbase.bco.registry.unit.core.plugin;
 
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.openbase.jul.storage.registry.Registry;
-import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.Builder;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class ServiceTemplateCreatorRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, ServiceTemplate, ServiceTemplate.Builder>> {
+public class ServiceTemplateCreatorRegistryPlugin extends ProtobufRegistryPluginAdapter<String, ServiceTemplate, Builder> {
 
     private final ProtoBufFileSynchronizedRegistry<String, ServiceTemplate, ServiceTemplate.Builder, UnitRegistryData.Builder> registry;
 
@@ -45,7 +45,7 @@ public class ServiceTemplateCreatorRegistryPlugin extends FileRegistryPluginAdap
     }
 
     @Override
-    public void init(Registry<String, IdentifiableMessage<String, ServiceTemplate, ServiceTemplate.Builder>> config) throws InitializationException, InterruptedException {
+    public void init(ProtoBufRegistry<String, ServiceTemplate, ServiceTemplate.Builder> config) throws InitializationException, InterruptedException {
         try {
             ServiceTemplate template;
 

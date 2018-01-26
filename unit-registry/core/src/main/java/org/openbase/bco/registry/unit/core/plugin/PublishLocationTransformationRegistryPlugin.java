@@ -30,8 +30,10 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rct.transform.PoseTransformer;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.Registry;
 import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
+import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rct.Transform;
@@ -41,8 +43,9 @@ import rct.TransformerException;
 import rct.TransformerFactory;
 import rct.TransformerFactory.TransformerFactoryException;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 
-public class PublishLocationTransformationRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> {
+public class PublishLocationTransformationRegistryPlugin extends ProtobufRegistryPluginAdapter<String, UnitConfig, Builder> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -59,7 +62,7 @@ public class PublishLocationTransformationRegistryPlugin extends FileRegistryPlu
     }
 
     @Override
-    public void init(final Registry<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> registry) throws InitializationException, InterruptedException {
+    public void init(final ProtoBufRegistry<String, UnitConfig, Builder> registry) throws InitializationException, InterruptedException {
         try {
             super.init(registry);
             this.transformPublisher = transformerFactory.createTransformPublisher(registry.getName());

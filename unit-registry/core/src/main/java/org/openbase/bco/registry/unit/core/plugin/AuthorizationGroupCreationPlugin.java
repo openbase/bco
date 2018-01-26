@@ -26,18 +26,22 @@ import java.util.Set;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.storage.registry.FileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.Registry;
 import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
+import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class AuthorizationGroupCreationPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> {
+public class AuthorizationGroupCreationPlugin extends ProtobufRegistryPluginAdapter<String, UnitConfig, Builder> {
 
     public static final String ADMIN_GROUP_LABEL = "Admin";
     public static final String BCO_GROUP_LABEL = "BCO";
@@ -54,7 +58,7 @@ public class AuthorizationGroupCreationPlugin extends FileRegistryPluginAdapter<
     }
 
     @Override
-    public void init(Registry<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> registry) throws InitializationException, InterruptedException {
+    public void init(ProtoBufRegistry<String, UnitConfig, Builder> registry) throws InitializationException, InterruptedException {
         try {
             UnitConfig.Builder authorizationGoupUnitConfig = UnitConfig.newBuilder();
             authorizationGoupUnitConfig.setType(UnitType.AUTHORIZATION_GROUP);

@@ -33,6 +33,7 @@ import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.activity.UserActivityClassType.UserActivityClass;
 import rst.domotic.activity.UserActivityConfigType.UserActivityConfig;
+import rst.domotic.activity.UserActivityConfigType.UserActivityConfig.Builder;
 import rst.domotic.registry.UserActivityRegistryDataType.UserActivityRegistryData;
 
 /**
@@ -50,7 +51,7 @@ public class UserActivityConfigClassIdConsistencyHandler extends AbstractProtoBu
     }
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, UserActivityConfig, UserActivityConfig.Builder> entry, ProtoBufMessageMap<String, UserActivityConfig, UserActivityConfig.Builder> entryMap, ProtoBufRegistry<String, UserActivityConfig, UserActivityConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+    public void processData(String id, IdentifiableMessage<String, UserActivityConfig, UserActivityConfig.Builder> entry, ProtoBufMessageMap<String, UserActivityConfig, UserActivityConfig.Builder> entryMap, ProtoBufRegistry<String, UserActivityConfig, Builder> registry) throws CouldNotPerformException, EntryModification {
         if (!entry.getMessage().hasUserActivityClassId()) {
             throw new VerificationFailedException("UserActivityConfig [" + entry.getMessage() + "] has no userActivityClassId!");
         }

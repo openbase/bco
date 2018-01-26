@@ -26,10 +26,13 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.processing.StringProcessor;
+import org.openbase.jul.storage.registry.FileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.Registry;
 import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
 import rst.domotic.activity.UserActivityClassType.UserActivityClass;
+import rst.domotic.activity.UserActivityClassType.UserActivityClass.Builder;
 import rst.domotic.activity.UserActivityClassType.UserActivityClass.UserActivityType;
 import rst.domotic.registry.UserActivityRegistryDataType.UserActivityRegistryData;
 
@@ -37,16 +40,17 @@ import rst.domotic.registry.UserActivityRegistryDataType.UserActivityRegistryDat
  *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public class UserActivityClassCreatorRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UserActivityClass, UserActivityClass.Builder>> {
+public class UserActivityClassCreatorRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UserActivityClass, UserActivityClass.Builder>, ProtoBufRegistry<String, UserActivityClass, UserActivityClass.Builder>> {
 
-    private final ProtoBufFileSynchronizedRegistry<String, UserActivityClass, UserActivityClass.Builder, UserActivityRegistryData.Builder> userActivityClassRegistry;
+    private final ProtoBufRegistry<String, UserActivityClass, UserActivityClass.Builder> userActivityClassRegistry;
 
-    public UserActivityClassCreatorRegistryPlugin(ProtoBufFileSynchronizedRegistry<String, UserActivityClass, UserActivityClass.Builder, UserActivityRegistryData.Builder> userActivityClassRegistry) {
+    public UserActivityClassCreatorRegistryPlugin(ProtoBufRegistry<String, UserActivityClass, Builder> userActivityClassRegistry) {
+        // todo remove and use given registry
         this.userActivityClassRegistry = userActivityClassRegistry;
     }
 
     @Override
-    public void init(Registry<String, IdentifiableMessage<String, UserActivityClass, UserActivityClass.Builder>> registry) throws InitializationException, InterruptedException {
+    public void init(final ProtoBufRegistry<String, UserActivityClass, UserActivityClass.Builder> registry) throws InitializationException, InterruptedException {
         try {
             UserActivityClass userActivityClass;
 

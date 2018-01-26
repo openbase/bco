@@ -29,10 +29,12 @@ import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
+import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
 import rst.domotic.unit.location.TileConfigType.TileConfig;
 import rst.spatial.PlacementConfigType.PlacementConfig;
@@ -42,7 +44,7 @@ import rst.spatial.PlacementConfigType.PlacementConfig;
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class LocationRemovalPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> {
+public class LocationRemovalPlugin extends ProtobufRegistryPluginAdapter<String, UnitConfig, Builder> {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(LocationRemovalPlugin.class);
 

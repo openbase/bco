@@ -31,6 +31,7 @@ import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.Registry;
 import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
+import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.binding.BindingConfigType;
@@ -39,6 +40,7 @@ import rst.domotic.service.ServiceConfigType;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateConfigType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import rst.domotic.unit.UnitTemplateConfigType;
 import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
@@ -48,7 +50,7 @@ import rst.domotic.unit.device.DeviceConfigType;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class DeviceConfigDeviceClassUnitConsistencyPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> {
+public class DeviceConfigDeviceClassUnitConsistencyPlugin extends ProtobufRegistryPluginAdapter<String, UnitConfig, Builder> {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 

@@ -61,7 +61,6 @@ public class UserActivityRegistryController extends AbstractRegistryController<U
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserActivityClass.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UserActivityConfig.getDefaultInstance()));
     }
-    
     private final ProtoBufFileSynchronizedRegistry<String, UserActivityClass, UserActivityClass.Builder, UserActivityRegistryData.Builder> userActivityClassRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UserActivityConfig, UserActivityConfig.Builder, UserActivityRegistryData.Builder> userActivityConfigRegistry;
     
@@ -113,7 +112,8 @@ public class UserActivityRegistryController extends AbstractRegistryController<U
      */
     @Override
     protected void registerPlugins() throws CouldNotPerformException, InterruptedException {
-        userActivityClassRegistry.registerPlugin(new UserActivityClassCreatorRegistryPlugin(userActivityClassRegistry));
+        UserActivityClassCreatorRegistryPlugin userActivityClassCreatorRegistryPlugin = new UserActivityClassCreatorRegistryPlugin(userActivityClassRegistry);
+        userActivityClassRegistry.registerPlugin(userActivityClassCreatorRegistryPlugin);
     }
 
     /**

@@ -42,6 +42,7 @@ public class RootLocationExistencConsistencyHandler extends AbstractProtoBufRegi
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         if (rootLocation == null) {
             rootLocation = LocationUtils.detectRootLocation(entry.getMessage(), entryMap, this);
+            //todo pleminoq really? is here maybe something missing? =D
         }
     }
 
