@@ -21,6 +21,7 @@ package org.openbase.bco.registry.unit.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -31,8 +32,10 @@ import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
 import rst.domotic.authentication.PermissionType.Permission;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
+ * Consistency handler which generates other permissions for units without a placement and the root location.
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
@@ -44,10 +47,14 @@ public class OtherPermissionConsistencyHandler extends AbstractProtoBufRegistryC
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
 
-        // Set permissions only for the root location and for units without a location.
-        if ((!unitConfig.hasLocationConfig() || !unitConfig.getLocationConfig().getRoot())
-                && unitConfig.hasPlacementConfig() && unitConfig.getPlacementConfig().hasLocationId()) {
-            return;
+        // ignore units with a placement config
+        if (unitConfig.hasPlacementConfig() && unitConfig.getPlacementConfig().hasLocationId() && !unitConfig.getPlacementConfig().getLocationId().isEmpty()) {
+
+            // only let root location pass
+            boolean isRootLocation = unitConfig.getType() == UnitType.LOCATION && unitConfig.getLocationConfig().getRoot();
+            if (!isRootLocation) {
+                return;
+            }
         }
 
         PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();

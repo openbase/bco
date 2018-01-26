@@ -129,6 +129,7 @@ public class RegistryFilteringTest {
         UnitConfig.Builder userUnitConfig = UnitConfig.newBuilder();
         UserConfig.Builder userConfig = userUnitConfig.getUserConfigBuilder();
         userUnitConfig.setType(UnitType.USER);
+        userUnitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setRead(true).setAccess(true).setWrite(true);
         userConfig.setFirstName("Guybrush").setLastName("Threepwood").setUserName("Mighty Pirate");
         userUnitConfig = Registries.getUserRegistry().registerUserConfig(userUnitConfig.build()).get().toBuilder();
 
@@ -199,14 +200,15 @@ public class RegistryFilteringTest {
         UnitConfig.Builder userUnitConfig = UnitConfig.newBuilder();
         UserConfig.Builder userConfig = userUnitConfig.getUserConfigBuilder();
         userUnitConfig.setType(UnitType.USER);
-        userConfig.setFirstName("Admin");
-        userConfig.setLastName("Istrator");
+        userUnitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setWrite(true).setAccess(true).setRead(true);
+        userConfig.setFirstName("Le");
+        userConfig.setLastName("Chuck");
         userConfig.setUserName("Admin");
 
         SessionManager.getInstance().login(MockRegistry.admin.getId(), MockRegistry.adminPassword);
 
         try {
-            UnitConfig result = Registries.getUnitRegistry().registerUnitConfig(userUnitConfig.build()).get();
+            Registries.getUnitRegistry().registerUnitConfig(userUnitConfig.build()).get();
         } catch (InterruptedException | ExecutionException | CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
