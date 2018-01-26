@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -96,6 +96,7 @@ import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.unit.dal.RollerShutterDataType.RollerShutterData;
 import rst.rsb.ScopeType;
 
 /**
@@ -581,18 +582,21 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             Services.invokeServiceMethod(serviceType, OPERATION, ServiceTempus.LAST, internalBuilder, currentState);
 
             Message newState;
-            if (hasOperationServiceForType(serviceType)) {
+
+            // only operation service action can be remapped
+            if (hasOperationServiceForType(serviceType) && Services.hasServiceState(serviceType, ServiceTempus.REQUESTED, internalBuilder)) {
                 // if it is an operation service test if the requested state is the new current state
 
                 // test if all fields match to the last request
                 boolean equalFields = true;
+
                 Message requestedState = (Message) Services.invokeServiceMethod(serviceType, PROVIDER, ServiceTempus.REQUESTED, internalBuilder);
                 for (Descriptors.FieldDescriptor field : value.getDescriptorForType().getFields()) {
                     // ignore timestamps
                     if (field.getName().equals(TimestampProcessor.TIMESTEMP_FIELD.toLowerCase())) {
                         continue;
                     }
-                    if (value.hasField(field) && !(value.getField(field).equals(requestedState.getField(field)))) {
+                    if (value.hasField(field) && requestedState.hasField(field) && !(value.getField(field).equals(requestedState.getField(field)))) {
                         equalFields = false;
                         break;
                     }
@@ -600,6 +604,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
                 // choose with which value to update
                 if (equalFields) {
+
                     // use the requested state but update the timestamp
                     Descriptors.FieldDescriptor timestampField = ProtoBufFieldProcessor.getFieldDescriptor(value, TimestampProcessor.TIMESTEMP_FIELD.toLowerCase());
                     newState = requestedState.toBuilder().setField(timestampField, value.getField(timestampField)).build();
@@ -607,11 +612,12 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                     // clear requested state
                     Descriptors.FieldDescriptor requestedStateField = ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Services.getServiceFieldName(serviceType, ServiceTempus.REQUESTED));
                     internalBuilder.clearField(requestedStateField);
+
                 } else {
                     newState = value;
                 }
             } else {
-                // no operation service so just update the current state
+                // no operation service or no requested state, so just update the current state
                 newState = value;
             }
 
