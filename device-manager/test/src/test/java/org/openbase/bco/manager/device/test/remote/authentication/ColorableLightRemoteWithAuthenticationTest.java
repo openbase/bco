@@ -109,6 +109,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         userConfig.setUserName("UnitTestClient");
         userConfig.setFirstName("First");
         userConfig.setLastName("Last");
+        testClient.getPermissionConfigBuilder().getOtherPermissionBuilder().setWrite(true).setAccess(true).setRead(true);
         UnitConfig registered = Registries.getUserRegistry().registerUserConfig(testClient.build()).get();
         
         // register client
