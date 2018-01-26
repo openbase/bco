@@ -313,7 +313,9 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
     public void testOwnerRemoval() throws Exception {
         System.out.println("testOwnerRemoval");
         UserConfig userConfig = UserConfig.newBuilder().setUserName("owner").setFirstName("Max").setLastName("Mustermann").build();
-        UnitConfig owner = unitRegistry.registerUnitConfig(UnitConfig.newBuilder().setType(UnitType.USER).setUserConfig(userConfig).setEnablingState(EnablingState.newBuilder().setValue(EnablingState.State.ENABLED)).build()).get();
+        UnitConfig.Builder userUnitConfig = UnitConfig.newBuilder().setType(UnitType.USER).setUserConfig(userConfig).setEnablingState(EnablingState.newBuilder().setValue(EnablingState.State.ENABLED));
+        userUnitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setRead(true).setAccess(true).setWrite(true);
+        UnitConfig owner = unitRegistry.registerUnitConfig(userUnitConfig.build()).get();
 
         unitRegistry.getDeviceRegistryRemote().addDataObserver(notifyChangeObserver);
         DeviceClass clazz = deviceRegistry.registerDeviceClass(getDeviceClass("OwnerRemovalTest", "194872639127319823", "ServiceGMBH")).get();

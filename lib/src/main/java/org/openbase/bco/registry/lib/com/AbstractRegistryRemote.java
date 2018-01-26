@@ -21,14 +21,8 @@ package org.openbase.bco.registry.lib.com;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.GeneratedMessage;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -41,10 +35,13 @@ import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.*;
+
 /**
- *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <M>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends RSBRemoteService<M> implements RegistryRemote<M> {
 
@@ -106,13 +103,10 @@ public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends
      */
     @Override
     public void shutdown() {
-        try {
-            remoteRegistries.stream().forEach((remoteRegistry) -> {
-                remoteRegistry.shutdown();
-            });
-        } finally {
-            super.shutdown();
-        }
+        super.shutdown();
+        remoteRegistries.stream().forEach((remoteRegistry) -> {
+            remoteRegistry.shutdown();
+        });
     }
 
     /**
@@ -139,7 +133,7 @@ public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends
     /**
      * {@inheritDoc}
      *
-     * @throws InterruptedException {@inheritDoc}
+     * @throws InterruptedException     {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override

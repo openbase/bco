@@ -42,6 +42,8 @@ import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
+import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
+import rst.domotic.authentication.PermissionType.Permission;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
@@ -179,7 +181,7 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
         if (initialRegistrationPassword == null) {
             String errorMessage;
             if (adminConfig == null) {
-                errorMessage = "No administator is yet registered and the initial registartion password of the authenticator is not available. Please use the bco launcher for the initial start.";
+                errorMessage = "No admin is yet registered and the initial registration password of the authenticator is not available. Please use the bco launcher for the initial start.";
             } else {
                 errorMessage = "The default administrator is already registered at the registry but the authenticator already contains an administrator which is not"
                         + " registered in the registry. Please reset your credentials with --reset-credentials";
@@ -192,6 +194,10 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
         if (adminConfig == null) {
             UnitConfig.Builder unitConfig = UnitConfig.newBuilder();
             unitConfig.setType(UnitType.USER);
+
+            PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();
+            Permission.Builder otherPermission = permissionConfig.getOtherPermissionBuilder();
+            otherPermission.setRead(true).setAccess(true).setWrite(true);
 
             UserConfig.Builder userConfig = unitConfig.getUserConfigBuilder();
             userConfig.setFirstName("Initial");
@@ -259,6 +265,10 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
         if (!bcoUserAlreadyInRegistry) {
             UnitConfig.Builder unitConfig = UnitConfig.newBuilder();
             unitConfig.setType(UnitType.USER);
+
+            PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();
+            Permission.Builder otherPermission = permissionConfig.getOtherPermissionBuilder();
+            otherPermission.setRead(true).setAccess(true).setWrite(true);
 
             UserConfig.Builder userConfig = unitConfig.getUserConfigBuilder();
             userConfig.setFirstName("System");
