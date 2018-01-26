@@ -29,6 +29,8 @@ import java.util.Arrays;
 import java.util.Collection;
 import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_LABEL;
 import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKAGE;
+
+import com.google.protobuf.MessageOrBuilder;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
@@ -197,14 +199,19 @@ public class Services {
     }
 
     public static Method detectServiceMethod(final ServiceType serviceType, final ServicePattern servicePattern, final ServiceTempus serviceTempus, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
+        return detectServiceMethod(serviceType, getServicePrefix(servicePattern), serviceTempus, instanceClass, argumentClasses);
+    }
+
+    public static Method detectServiceMethod(final ServiceType serviceType, final String methodPattern, final ServiceTempus serviceTempus, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
         String messageName = "?";
         try {
-            messageName = getServicePrefix(servicePattern) + getServiceStateName(serviceType) + StringProcessor.transformUpperCaseToCamelCase(serviceTempus.name().replace(serviceTempus.CURRENT.name(), ""));
+            messageName = methodPattern + getServiceStateName(serviceType) + StringProcessor.transformUpperCaseToCamelCase(serviceTempus.name().replace(serviceTempus.CURRENT.name(), ""));
             return instanceClass.getMethod(messageName, argumentClasses);
         } catch (NoSuchMethodException | SecurityException ex) {
             throw new CouldNotPerformException("Could not detect service method[" + messageName + "]!", ex);
         }
     }
+
 
     public static Method detectServiceMethod(final ServiceDescription description, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
         return detectServiceMethod(description, ServiceTempus.CURRENT, instanceClass, argumentClasses);
@@ -333,6 +340,22 @@ public class Services {
                 break;
         }
         return result;
+    }
+
+    public static Boolean hasServiceState(final ServiceType serviceType, final ServiceTempus serviceTempus, final MessageOrBuilder instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
+        try {
+            return (Boolean) detectServiceMethod(serviceType, "has", serviceTempus, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
+        } catch (IllegalAccessException | ExceptionInInitializerError ex) {
+            throw new NotSupportedException("ServiceType[" + serviceType.name() + "] not provided by Message["+instance.getClass().getSimpleName()+"]!", instance, ex);
+        } catch (NullPointerException ex) {
+            throw new CouldNotPerformException("Invocation failed because given instance is not available!", ex);
+        } catch (InvocationTargetException ex) {
+            if (ex.getTargetException() instanceof CouldNotPerformException) {
+                throw (CouldNotPerformException) ex.getTargetException();
+            } else {
+                throw new CouldNotPerformException("Invocation failed!", ex.getTargetException());
+            }
+        }
     }
 
     public static void verifyOperationServiceState(final Message serviceState) throws VerificationFailedException {
