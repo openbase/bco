@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -112,23 +112,29 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
             // init service unit map
             for (final String unitId : unitIDList) {
 
-                // resolve unit config by unit registry
-                final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
-
-                // filter non dal units
                 try {
-                    if (!UnitConfigProcessor.isDalUnit(unitConfig)) {
-                        continue;
-                    }
-                } catch (VerificationFailedException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("UnitConfig[" + unitConfig + "] could not be verified as a dal unit!", ex), LOGGER);
-                }
 
-                // sort dal unit by service type
-                unitConfig.getServiceConfigList().stream().forEach((serviceConfig) -> {
-                    // register unit for service type. UnitConfigs are may added twice because of dublicated type of different service pattern but are filtered by the set. 
-                    serviceMap.get(serviceConfig.getServiceDescription().getType()).add(unitConfig);
-                });
+                    // resolve unit config by unit registry
+                    final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
+
+                    // filter non dal units
+                    try {
+                        if (!UnitConfigProcessor.isDalUnit(unitConfig)) {
+                            continue;
+                        }
+                    } catch (VerificationFailedException ex) {
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("UnitConfig[" + unitConfig + "] could not be verified as a dal unit!", ex), LOGGER);
+                    }
+
+                    // sort dal unit by service type
+                    unitConfig.getServiceConfigList().stream().forEach((serviceConfig) -> {
+                        // register unit for service type. UnitConfigs are may added twice because of dublicated type of different service pattern but are filtered by the set.
+                        serviceMap.get(serviceConfig.getServiceDescription().getType()).add(unitConfig);
+                    });
+
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not process unit config update of Unit[" + unitId + "]!", ex), LOGGER);
+                }
             }
 
             // initialize service remotes
