@@ -84,20 +84,10 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
     public static void setUpClass() throws Throwable {
         try {
             AbstractBCOLocationManagerTest.setUpClass();
-
             locationRemote = Units.getUnit(Registries.getLocationRegistry().getRootLocationConfig(), true, Units.LOCATION);
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
-    }
-
-    @Before
-    public void setUp() throws InitializationException, InvalidStateException {
-
-    }
-
-    @After
-    public void tearDown() throws CouldNotPerformException {
     }
 
     /**
