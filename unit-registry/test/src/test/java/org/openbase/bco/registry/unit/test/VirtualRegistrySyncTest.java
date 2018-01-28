@@ -34,6 +34,7 @@ import org.openbase.bco.registry.device.core.DeviceRegistryController;
 import org.openbase.bco.registry.location.core.LocationRegistryController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.UnitRegistryController;
+import org.openbase.bco.registry.unit.core.plugin.RootLocationPlugin;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -63,7 +64,7 @@ public class VirtualRegistrySyncTest {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(VirtualRegistrySyncTest.class);
 
-    private static final String ROOT_LOCATION_LABEL = "syncTestRoot";
+    private static final String ROOT_LOCATION_LABEL = RootLocationPlugin.DEFAULT_ROOT_LOCATION_NAME;
     private static UnitConfig ROOT_LOCATION;
 
     private static final String DEVICE_CLASS_LABEL = "syncTestDeviceClass";
@@ -173,8 +174,11 @@ public class VirtualRegistrySyncTest {
             agentRegistryThread.join();
             locationRegistryThread.join();
 
-            LocationConfig rootLocationConfig = LocationConfig.newBuilder().setRoot(true).setType(LocationConfig.LocationType.ZONE).build();
-            ROOT_LOCATION = locationRegistry.registerLocationConfig(UnitConfig.newBuilder().setLabel(ROOT_LOCATION_LABEL).setType(UnitType.LOCATION).setLocationConfig(rootLocationConfig).build()).get();
+            locationRegistry.waitUntilReady();
+            Registries.getUnitRegistry().waitForData();
+            Registries.getLocationRegistry().waitForData();
+
+            ROOT_LOCATION = locationRegistry.getRootLocationConfig();
             UnitTemplateConfig unitTemplateConfig = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).build();
             DeviceClass deviceClass = DeviceClass.newBuilder().setLabel(DEVICE_CLASS_LABEL).setCompany(DEVICE_CLASS_COMPANY).setProductNumber(DEVICE_CLASS_PRODUCT_NUMBER).addUnitTemplateConfig(unitTemplateConfig).build();
             DEVICE_CLASS = deviceRegistry.registerDeviceClass(deviceClass).get();

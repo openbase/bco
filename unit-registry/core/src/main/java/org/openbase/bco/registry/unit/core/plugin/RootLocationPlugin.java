@@ -23,9 +23,11 @@ package org.openbase.bco.registry.unit.core.plugin;
  */
 
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
 import org.slf4j.Logger;
@@ -54,8 +56,23 @@ public class RootLocationPlugin extends ProtobufRegistryPluginAdapter<String, Un
 
     public static final String DEFAULT_ROOT_LOCATION_NAME = "Home";
 
+
+    @Override
+    public void init(ProtoBufRegistry<String, UnitConfig, Builder> registry) throws InitializationException, InterruptedException {
+        super.init(registry);
+        try {
+            setupRootLocationIfNeeded();
+        } catch (RejectedException ex) {
+            throw new InitializationException(this, ex);
+        }
+    }
+
     @Override
     public void beforeConsistencyCheck() throws RejectedException {
+        setupRootLocationIfNeeded();
+    }
+
+    public void setupRootLocationIfNeeded() throws RejectedException  {
         try {
             // check if any location exist
             if (getRegistry().isEmpty()) {
