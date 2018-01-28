@@ -53,6 +53,7 @@ import org.openbase.bco.registry.unit.core.consistency.appconfig.AppLocationCons
 import org.openbase.bco.registry.unit.core.consistency.appconfig.AppScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.authorizationgroup.AuthorizationGroupConfigLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.authorizationgroup.AuthorizationGroupConfigScopeConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.authorizationgroup.AuthorizationGroupPermissionConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.authorizationgroup.AuthorziationGroupDuplicateMemberConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionLocationConsistencyHandler;
@@ -101,6 +102,7 @@ import org.openbase.bco.registry.unit.core.consistency.unittemplate.UniteTemplat
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigUserNameConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.userconfig.UserPermissionConsistencyHandler;
 import org.openbase.bco.registry.unit.core.plugin.*;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.generator.ServiceTemplateIdGenerator;
@@ -285,7 +287,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorizationGroupConfigLabelConsistencyHandler());
             authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorizationGroupConfigScopeConsistencyHandler());
             authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorziationGroupDuplicateMemberConsistencyHandler());
-            
+            authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorizationGroupPermissionConsistencyHandler());
+
             connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionLabelConsistencyHandler());
             connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionTilesConsistencyHandler(locationUnitConfigRegistry));
             connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionLocationConsistencyHandler(locationUnitConfigRegistry));
@@ -313,7 +316,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             userUnitConfigRegistry.registerConsistencyHandler(new UserConfigScopeConsistencyHandler());
             userUnitConfigRegistry.registerConsistencyHandler(new UserConfigUserNameConsistencyHandler());
             userUnitConfigRegistry.registerConsistencyHandler(new UserConfigLabelConsistencyHandler());
-            
+            userUnitConfigRegistry.registerConsistencyHandler(new UserPermissionConsistencyHandler());
+
             unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupMemberListDuplicationConsistencyHandler());
             unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupMemberExistsConsistencyHandler(agentUnitConfigRegistry, appUnitConfigRegistry, authorizationGroupUnitConfigRegistry, connectionUnitConfigRegistry, dalUnitConfigRegistry, deviceUnitConfigRegistry, locationUnitConfigRegistry, sceneUnitConfigRegistry, unitGroupUnitConfigRegistry, userUnitConfigRegistry));
             unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupServiceDescriptionServiceTemplateIdConsistencyHandler(serviceTemplateRegistry));
