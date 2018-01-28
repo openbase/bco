@@ -555,7 +555,6 @@ public class MockRegistry {
     private void registerLocations() throws CouldNotPerformException, InterruptedException {
         try {
             // Create paradise
-            LocationConfig zoneLocationConfig = LocationConfig.newBuilder().setType(LocationConfig.LocationType.ZONE).build();
             List<Vec3DDouble> paradiseVertices = new ArrayList<>();
             paradiseVertices.add(Vec3DDouble.newBuilder().setX(0).setY(0).setZ(0).build());
             paradiseVertices.add(Vec3DDouble.newBuilder().setX(0).setY(6).setZ(0).build());
@@ -563,9 +562,9 @@ public class MockRegistry {
             paradiseVertices.add(Vec3DDouble.newBuilder().setX(6).setY(0).setZ(0).build());
             Shape paradiseShape = Shape.newBuilder().addAllFloor(paradiseVertices).build();
             PlacementConfig paradisePlacement = PlacementConfig.newBuilder().setShape(paradiseShape).build();
-            paradiseLocation = locationRegistry.registerLocationConfig(UnitConfig.newBuilder().setType(UnitType.LOCATION)
-                    .setLabel("Paradise").setLocationConfig(zoneLocationConfig).setPlacementConfig(paradisePlacement).build()).get();
 
+            // rename default root location home into paradise test location.
+            paradiseLocation = locationRegistry.updateLocationConfig(locationRegistry.getRootLocationConfig().toBuilder().setLabel("Paradise").setPlacementConfig(paradisePlacement).build()).get();
             LocationConfig tileLocationConfig = LocationConfig.newBuilder().setType(LocationType.TILE).build();
             LocationConfig regionLocationConfig = LocationConfig.newBuilder().setType(LocationType.REGION).build();
 
