@@ -24,13 +24,13 @@ before_install:
 notifications:
     email:
         on_success: never
-        on_failure: change
+        on_failure: never
     slack:
         on_failure: change
         on_success: change
         rooms:
             - openbase-org:vGz7LO4CvGoGMneYkEm3ON7E#build
-            - openbase-org:vGz7LO4CvGoGMneYkEm3ON7E#bco-authentication
+            #- openbase-org:vGz7LO4CvGoGMneYkEm3ON7E#bco-authentication
 
 deploy:
   - provider: script
