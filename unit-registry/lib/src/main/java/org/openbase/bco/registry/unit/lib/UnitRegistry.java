@@ -31,6 +31,7 @@ import java.util.concurrent.Future;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.iface.Shutdownable;
@@ -157,6 +158,29 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, Shutdownab
 
     @RPCMethod
     public Boolean containsUnitGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
+
+    /**
+     * Method returns the unit matching the given alias. An alias is an unique identifiere of units.
+     *
+     * Hint: If you want to address more than one unit with an alias than create a unit group of such units and define an alias for those group.
+     *
+     * @param unitAlias the alias to identify the unit.
+     * @return the unit config referred by the alias.
+     * @throws NotAvailableException is thrown if no unit is matching the given alias.
+     * @throws CouldNotPerformException is thrown if something went wrong during the lookup.
+     */
+    @RPCMethod
+    public default UnitConfig getUnitConfigByAlias(final String unitAlias) throws CouldNotPerformException {
+        validateData();
+        for(UnitConfig unitConfig : getUnitConfigs()) {
+            for(final String alias : unitConfig.getAliasList()) {
+                if (alias.equalsIgnoreCase(unitAlias)) {
+                    return unitConfig;
+                }
+            }
+        }
+        throw new NotAvailableException("UnitConfig", "alias:"+unitAlias);
+    }
 
     /**
      * Method returns all registered units with the given label. Label resolving
