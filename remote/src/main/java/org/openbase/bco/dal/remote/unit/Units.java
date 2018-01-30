@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -489,7 +489,7 @@ public class Units {
      * phase. This synchronization is just done once and the current thread will
      * not block if the unit remote was already synchronized before. To force a
      * resynchronization call
-     * {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the
+     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
      * remote instance. Please avoid polling unit states! If you want to get
      * informed about unit config or unit data state changes, please register
      * new config or data observer on this remote instance.
@@ -526,7 +526,7 @@ public class Units {
      * phase. This synchronization is just done once and the current thread will
      * not block if the unit remote was already synchronized before. To force a
      * resynchronization call
-     * {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the
+     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
      * remote instance. Please avoid polling unit states! If you want to get
      * informed about unit config or unit data state changes, please register
      * new config or data observer on this remote instance.
@@ -615,7 +615,7 @@ public class Units {
      * The returned unit remote objects are fully synchronized with the unit controller and all states locally cached.
      * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
      * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
-     * To force a resynchronization call {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the remote instance.
+     * To force a resynchronization call {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the remote instance.
      * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
      * <p>
      * Note: Please to not use this method if you not really need all units because this method establishes a connection to each unit and the synchronization will even continue if you are not working with the remote instances anymore.
@@ -646,7 +646,7 @@ public class Units {
      * The returned unit remote objects are fully synchronized with the unit controller and all states locally cached.
      * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
      * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
-     * To force a resynchronization call {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the remote instance.
+     * To force a resynchronization call {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the remote instance.
      * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
      *
      * @param label       the label to identify the unit.
@@ -678,7 +678,7 @@ public class Units {
      * The returned unit remote object is fully synchronized with the unit controller and all states locally cached.
      * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
      * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
-     * To force a resynchronization call {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the remote instance.
+     * To force a resynchronization call {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the remote instance.
      * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
      *
      * @param label       the label to identify the unit.
@@ -715,7 +715,7 @@ public class Units {
      * The returned unit remote objects are fully synchronized with the unit controller and all states locally cached.
      * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
      * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
-     * To force a resynchronization call {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the remote instance.
+     * To force a resynchronization call {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the remote instance.
      * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
      *
      * @param label       the label to identify the unit.
@@ -742,11 +742,101 @@ public class Units {
     }
 
     /**
+     * Method establishes a connection to the unit referred by the given unit alias.
+     * The returned unit remote object is fully synchronized with the unit controller and all states locally cached.
+     * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
+     * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
+     * To force a resynchronization call {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the remote instance.
+     * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
+     *
+     * @param alias       the alias to identify the unit.
+     * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
+     * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
+     * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
+     * @throws InterruptedException  is thrown in case the thread is externally interrupted.
+     */
+    public static UnitRemote<?> getUnitByAlias(final String alias, boolean waitForData) throws NotAvailableException, InterruptedException {
+        try {
+            if (alias == null) {
+                assert false;
+                throw new NotAvailableException("UnitAlias");
+            }
+            return getUnit(getUnitRegistry().getUnitConfigByAlias(alias), waitForData);
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Unit", "alias:" + alias, ex);
+        }
+    }
+
+    /**
+     * Method establishes a connection to the unit referred by the given unit alias.
+     * The returned unit remote object is fully synchronized with the unit controller and all states locally cached.
+     * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
+     * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
+     * To force a resynchronization call {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the remote instance.
+     * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
+     *
+     * @param alias           the alias to identify the unit.
+     * @param waitForData     if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
+     * @param unitRemoteClass the unit remote class.
+     * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
+     * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
+     * @throws InterruptedException  is thrown in case the thread is externally interrupted.
+     */
+    public static <UR extends UnitRemote<?>> UR getUnitByAlias(final String alias, boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
+        try {
+            if (alias == null) {
+                assert false;
+                throw new NotAvailableException("UnitAlias");
+            }
+            return (UR) getUnit(getUnitRegistry().getUnitConfigByAlias(alias), waitForData);
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Unit", "alias:" + alias, ex);
+        }
+    }
+
+    /**
+     * Method establishes a connection to the unit referred by the given unit alias.
+     * The returned unit remote object is fully synchronized with the unit controller and all states locally cached.
+     * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
+     * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
+     * To force a resynchronization call {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the remote instance.
+     * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
+     *
+     * @param alias       the alias to identify the unit.
+     * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
+     * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
+     * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
+     * @throws InterruptedException  is thrown in case the thread is externally interrupted.
+     */
+    public static Future<UnitRemote<?>> getFutureUnitByAlias(final String alias, final boolean waitForData) throws NotAvailableException, InterruptedException {
+        return GlobalCachedExecutorService.submit(() -> getUnitByAlias(alias, waitForData));
+    }
+
+    /**
+     * Method establishes a connection to the unit referred by the given unit alias.
+     * The returned unit remote object is fully synchronized with the unit controller and all states locally cached.
+     * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
+     * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
+     * To force a resynchronization call {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the remote instance.
+     * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
+     *
+     * @param alias           the alias to identify the unit.
+     * @param waitForData     if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
+     * @param unitRemoteClass the unit remote class.
+     * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
+     * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
+     * @throws InterruptedException  is thrown in case the thread is externally interrupted.
+     */
+    public static <UR extends UnitRemote<?>> Future<UR> getFutureUnitByAlias(final String alias, final boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
+        return GlobalCachedExecutorService.submit(() -> getUnitByAlias(alias, waitForData, unitRemoteClass));
+    }
+
+    /**
      * Method establishes a connection to the unit referred by the given unit label.
      * The returned unit remote object is fully synchronized with the unit controller and all states locally cached.
      * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
      * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
-     * To force a resynchronization call {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the remote instance.
+     * To force a resynchronization call {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the remote instance.
      * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
      *
      * @param label       the label to identify the unit.
@@ -842,7 +932,7 @@ public class Units {
      * phase. This synchronization is just done once and the current thread will
      * not block if the unit remote was already synchronized before. To force a
      * resynchronization call
-     * {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the
+     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
      * remote instance. Please avoid polling unit states! If you want to get
      * informed about unit config or unit data state changes, please register
      * new config or data observer on this remote instance.
@@ -883,7 +973,7 @@ public class Units {
      * phase. This synchronization is just done once and the current thread will
      * not block if the unit remote was already synchronized before. To force a
      * resynchronization call
-     * {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the
+     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
      * remote instance. Please avoid polling unit states! If you want to get
      * informed about unit config or unit data state changes, please register
      * new config or data observer on this remote instance.
@@ -920,7 +1010,7 @@ public class Units {
      * phase. This synchronization is just done once and the current thread will
      * not block if the unit remote was already synchronized before. To force a
      * resynchronization call
-     * {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the
+     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
      * remote instance. Please avoid polling unit states! If you want to get
      * informed about unit config or unit data state changes, please register
      * new config or data observer on this remote instance.
@@ -957,7 +1047,7 @@ public class Units {
      * phase. This synchronization is just done once and the current thread will
      * not block if the unit remote was already synchronized before. To force a
      * resynchronization call
-     * {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the
+     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
      * remote instance. Please avoid polling unit states! If you want to get
      * informed about unit config or unit data state changes, please register
      * new config or data observer on this remote instance.
@@ -1005,7 +1095,7 @@ public class Units {
      * phase. This synchronization is just done once and the current thread will
      * not block if the unit remote was already synchronized before. To force a
      * resynchronization call
-     * {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the
+     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
      * remote instance. Please avoid polling unit states! If you want to get
      * informed about unit config or unit data state changes, please register
      * new config or data observer on this remote instance.
@@ -1034,7 +1124,7 @@ public class Units {
      * phase. This synchronization is just done once and the current thread will
      * not block if the unit remote was already synchronized before. To force a
      * resynchronization call
-     * {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the
+     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
      * remote instance. Please avoid polling unit states! If you want to get
      * informed about unit config or unit data state changes, please register
      * new config or data observer on this remote instance.
@@ -1107,7 +1197,7 @@ public class Units {
      * The returned unit remote objects are fully synchronized with the unit controller and all states locally cached.
      * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
      * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
-     * To force a resynchronization call {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the remote instance.
+     * To force a resynchronization call {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the remote instance.
      * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
      * <p>
      * Note: Please to not use this method if you not really need all units because this method establishes a connection to each unit and the synchronization will even continue if you are not working with the remote instances anymore.
@@ -1126,7 +1216,7 @@ public class Units {
      * The returned unit remote objects are fully synchronized with the unit controllers and all states locally cached.
      * Use the {@code waitForData} flag to block the current thread until the unit remotes are fully synchronized with the unit controller during the startup phase.
      * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
-     * To force a resynchronization call {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the remote instance.
+     * To force a resynchronization call {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the remote instance.
      * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
      *
      * @param label       the label to identify the unit.
@@ -1145,7 +1235,7 @@ public class Units {
      * The returned unit remote objects are fully synchronized with the unit controllers and all states locally cached.
      * Use the {@code waitForData} flag to block the current thread until the unit remotes are fully synchronized with the unit controller during the startup phase.
      * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
-     * To force a resynchronization call {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the remote instance.
+     * To force a resynchronization call {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the remote instance.
      * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
      *
      * @param label       the label to identify the unit.
@@ -1179,7 +1269,7 @@ public class Units {
      * The returned unit remote object is fully synchronized with the unit controller and all states locally cached.
      * Use the {@code waitForData} flag to block the current thread until the unit remote is fully synchronized with the unit controller during the startup phase.
      * This synchronization is just done once and the current thread will not block if the unit remote was already synchronized before.
-     * To force a resynchronization call {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the remote instance.
+     * To force a resynchronization call {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the remote instance.
      * Please avoid polling unit states! If you want to get informed about unit config or unit data state changes, please register new config or data observer on this remote instance.
      *
      * @param label       the label to identify the unit.
@@ -1208,7 +1298,7 @@ public class Units {
      * phase. This synchronization is just done once and the current thread will
      * not block if the unit remote was already synchronized before. To force a
      * resynchronization call
-     * {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the
+     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
      * remote instance. Please avoid polling unit states! If you want to get
      * informed about unit config or unit data state changes, please register
      * new config or data observer on this remote instance.
@@ -1263,7 +1353,7 @@ public class Units {
      * phase. This synchronization is just done once and the current thread will
      * not block if the unit remote was already synchronized before. To force a
      * resynchronization call
-     * {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the
+     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
      * remote instance. Please avoid polling unit states! If you want to get
      * informed about unit config or unit data state changes, please register
      * new config or data observer on this remote instance.
@@ -1292,7 +1382,7 @@ public class Units {
      * phase. This synchronization is just done once and the current thread will
      * not block if the unit remote was already synchronized before. To force a
      * resynchronization call
-     * {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the
+     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
      * remote instance. Please avoid polling unit states! If you want to get
      * informed about unit config or unit data state changes, please register
      * new config or data observer on this remote instance.
@@ -1321,7 +1411,7 @@ public class Units {
      * phase. This synchronization is just done once and the current thread will
      * not block if the unit remote was already synchronized before. To force a
      * resynchronization call
-     * {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the
+     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
      * remote instance. Please avoid polling unit states! If you want to get
      * informed about unit config or unit data state changes, please register
      * new config or data observer on this remote instance.
@@ -1350,7 +1440,7 @@ public class Units {
      * phase. This synchronization is just done once and the current thread will
      * not block if the unit remote was already synchronized before. To force a
      * resynchronization call
-     * {@link org.openbase.bco.dal.remote.unit.UnitRemote#requestData()} on the
+     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
      * remote instance. Please avoid polling unit states! If you want to get
      * informed about unit config or unit data state changes, please register
      * new config or data observer on this remote instance.
