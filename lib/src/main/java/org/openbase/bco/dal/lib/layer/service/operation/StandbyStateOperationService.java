@@ -21,7 +21,9 @@ package org.openbase.bco.dal.lib.layer.service.operation;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import java.util.concurrent.Future;
+
 import org.openbase.bco.dal.lib.layer.service.provider.StandbyStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.annotations.RPCMethod;
@@ -29,7 +31,6 @@ import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.StandbyStateType.StandbyState;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface StandbyStateOperationService extends OperationService, StandbyStateProviderService {
@@ -37,4 +38,7 @@ public interface StandbyStateOperationService extends OperationService, StandbyS
     @RPCMethod
     public Future<ActionFuture> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException;
 
+    public default Future<ActionFuture> setStandbyState(final StandbyState.State standbyState) throws CouldNotPerformException {
+        return setStandbyState(StandbyState.newBuilder().setValue(standbyState).build());
+    }
 }
