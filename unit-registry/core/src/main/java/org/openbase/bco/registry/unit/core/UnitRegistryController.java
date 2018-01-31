@@ -32,19 +32,7 @@ import org.openbase.bco.registry.app.remote.CachedAppRegistryRemote;
 import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
-import org.openbase.bco.registry.unit.core.consistency.BoundingBoxCleanerConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.DeviceInventoryStateConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.ExecutableUnitAutostartConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.GroupPermissionConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.OtherPermissionConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.LocationShapeConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.ServiceConfigServiceTemplateIdConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.ServiceConfigUnitIdConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.UnitConfigUnitTemplateConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.UnitEnablingStateConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.UnitPermissionCleanerConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.UnitLocationIdConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.UnitPositionCleanerConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.*;
 import org.openbase.bco.registry.unit.core.consistency.agentconfig.AgentLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.agentconfig.AgentLocationConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.agentconfig.AgentScopeConsistencyHandler;
@@ -353,6 +341,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             registerConsistencyHandler(new BoundingBoxCleanerConsistencyHandler(), UnitConfig.class);
             registerConsistencyHandler(new UnitTransformationFrameConsistencyHandler(locationUnitConfigRegistry), UnitConfig.class);
             registerConsistencyHandler(new UnitPermissionCleanerConsistencyHandler(authorizationGroupUnitConfigRegistry, locationUnitConfigRegistry), UnitConfig.class);
+            registerConsistencyHandler(new UnitAliasGenerationConsistencyHandler(), UnitConfig.class);
             try {
                 if (JPService.getProperty(JPAuthentication.class).getValue()) {
                     registerConsistencyHandler(new OtherPermissionConsistencyHandler(), UnitConfig.class);
@@ -405,6 +394,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         agentUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
         authorizationGroupUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
         unitGroupUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
+
+        registerPlugin(new UniqueAliasPlugin(), UnitConfig.class);
     }
 
     /**

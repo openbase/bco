@@ -21,21 +21,12 @@ package org.openbase.bco.registry.lib.com;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.GeneratedMessage;
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.Future;
-import java.util.concurrent.locks.ReentrantReadWriteLock;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.CouldNotTransformException;
-import org.openbase.jul.exception.FatalImplementationErrorException;
-import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -48,14 +39,18 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
-import org.openbase.jul.storage.registry.ConsistencyHandler;
-import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.openbase.jul.storage.registry.Registry;
-import org.openbase.jul.storage.registry.RegistryController;
-import org.openbase.jul.storage.registry.RemoteRegistry;
-import static org.openbase.jul.storage.registry.version.DBVersionControl.DB_CONVERTER_PACKAGE_NAME;
+import org.openbase.jul.storage.registry.*;
+import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
 import rst.rsb.ScopeType;
 import rst.rsb.ScopeType.Scope;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.Future;
+import java.util.concurrent.locks.ReentrantReadWriteLock;
+
+import static org.openbase.jul.storage.registry.version.DBVersionControl.DB_CONVERTER_PACKAGE_NAME;
 
 /**
  *
@@ -413,7 +408,17 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             if (messageClass.equals(registry.getMessageClass())) {
                 registry.registerConsistencyHandler(consistencyHandler);
             } else {
-                logger.debug("Register of " + consistencyHandler + " skipped for " + registry + " because " + messageClass.getSimpleName() + " is not compatible.");
+                logger.debug("Registration of " + consistencyHandler + " skipped for " + registry + " because " + messageClass.getSimpleName() + " is not compatible.");
+            }
+        }
+    }
+
+    protected void registerPlugin(final ProtobufRegistryPluginAdapter plugin, final Class messageClass) throws CouldNotPerformException, InterruptedException {
+        for (ProtoBufFileSynchronizedRegistry registry : registryList) {
+            if (messageClass.equals(registry.getMessageClass())) {
+                registry.registerPlugin(plugin);
+            } else {
+                logger.debug("Registration of " + plugin + " skipped for " + registry + " because " + messageClass.getSimpleName() + " is not compatible.");
             }
         }
     }

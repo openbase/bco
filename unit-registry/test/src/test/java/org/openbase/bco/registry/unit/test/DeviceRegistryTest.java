@@ -21,13 +21,7 @@ package org.openbase.bco.registry.unit.test;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import static junit.framework.TestCase.assertEquals;
-import static junit.framework.TestCase.assertTrue;
-import static junit.framework.TestCase.fail;
+
 import org.junit.Test;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -55,18 +49,30 @@ import rst.math.Vec3DDoubleType;
 import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.spatial.ShapeType;
 
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import static junit.framework.TestCase.*;
+
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class DeviceRegistryTest extends AbstractBCORegistryTest {
 
+    @Test
+    public void integerTest() {
+        System.out.println("Max int+1: " + (Integer.MAX_VALUE + 1));
+    }
+
     /**
      * Test of registerDeviceConfigWithUnits method, of class
      * DeviceRegistryImpl.
-     *
+     * <p>
      * Test if the scope and the id of a device configuration and its units is
      * set when registered.
+     *
      * @throws java.lang.Exception
      */
     @Test(timeout = 5000)
@@ -95,6 +101,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
     /**
      * Test of testRegiseredDeviceConfigWithoutLabel method, of class
      * DeviceRegistryImpl.
+     *
      * @throws java.lang.Exception
      */
     @Test(timeout = 5000)
