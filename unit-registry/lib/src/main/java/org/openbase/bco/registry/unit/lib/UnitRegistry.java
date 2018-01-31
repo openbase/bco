@@ -10,12 +10,12 @@ package org.openbase.bco.registry.unit.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -23,12 +23,14 @@ package org.openbase.bco.registry.unit.lib;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.List;
+
+import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
+import org.openbase.bco.registry.unit.lib.provider.UnitTransformationProviderRegistry;
+import org.openbase.bco.registry.lib.provider.UnitConfigCollectionProvider;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.VerificationFailedException;
@@ -45,38 +47,33 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.rsb.ScopeType.Scope;
 
-public interface UnitRegistry extends DataProvider<UnitRegistryData>, Shutdownable {
+import javax.vecmath.Point3d;
+
+public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransformationProviderRegistry<UnitRegistryData>, UnitConfigCollectionProvider, Shutdownable {
 
     @RPCMethod
     public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
-    
+
     @RPCMethod
     public Future<AuthenticatedValue> registerUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
 
     @RPCMethod
     public Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
-    
+
     @RPCMethod
     public Future<AuthenticatedValue> updateUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
 
     @RPCMethod
     public Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
-    
+
     @RPCMethod
     public Future<AuthenticatedValue> removeUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
 
     @RPCMethod
     public Boolean containsUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean containsUnitConfigById(final String unitConfigId) throws CouldNotPerformException;
-
-    @RPCMethod
-    public UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException;
-
-    public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException;
 
     public default List<UnitConfig> getUnitConfigsByServices(final ServiceType... serviceTypes) throws CouldNotPerformException {
         return getUnitConfigsByService(Arrays.asList(serviceTypes));
@@ -177,7 +174,25 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, Shutdownab
         return unitConfigs;
     }
 
-    public List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException;
+    /**
+     * Method returns a list of all globally registered units of the given {@code type}.
+     * <p>
+     * Note: The type {@code UnitType.UNKNOWN} is used as wildcard and will return a list of all registered units.
+     *
+     * @param type the unit type to filter.
+     * @return a list of unit configurations.
+     * @throws CouldNotPerformException is thrown in case something goes wrong during the request.
+     */
+    public default List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException {
+        validateData();
+        List<UnitConfig> unitConfigs = new ArrayList<>();
+        for (UnitConfig unitConfig : getUnitConfigs()) {
+            if (type == UnitType.UNKNOWN || unitConfig.getType() == type || getSubUnitTypes(type).contains(unitConfig.getType())) {
+                unitConfigs.add(unitConfig);
+            }
+        }
+        return unitConfigs;
+    }
 
     /**
      * Method returns a list of all globally registered dal units.
@@ -357,4 +372,48 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, Shutdownab
 
     @RPCMethod
     public Boolean isServiceTemplateRegistryConsistent() throws CouldNotPerformException;
+
+
+    /**
+     * The default radius used for the unit by coordinate lookup is set to 1 metre.
+     */
+    public static final double DEFAULT_RADIUS = 1d;
+
+    public default List<UnitConfig> getUnitConfigsByCoordinate(final Vec3DDouble coordinate) throws CouldNotPerformException {
+        return getUnitConfigsByCoordinate(coordinate, DEFAULT_RADIUS, UnitType.UNKNOWN);
+    }
+
+    public default List<UnitConfig> getUnitConfigsByCoordinate(final Vec3DDouble coordinate, final double radius) throws CouldNotPerformException {
+        return getUnitConfigsByCoordinate(coordinate, radius, UnitType.UNKNOWN);
+    }
+
+
+    /**
+     * Method returns a list of {@Code UnitConfig} instances sorted by the distance to the given {@coordinate} starting with the lowest one.
+     * The lookup time can be reduced by filtering the results with a {@Code UnitType} where the {@Code UnitType.UNKNOWN} is used as wildcard.
+     * The given radius can be used to limit the result as well but will not speed up the lookup.
+     *
+     * @param coordinate
+     * @param radius
+     * @param unitType
+     * @return
+     * @throws CouldNotPerformException
+     * @throws InterruptedException
+     * @throws ExecutionException
+     */
+    public default List<UnitConfig> getUnitConfigsByCoordinate(final Vec3DDouble coordinate, final double radius, final UnitType unitType) throws CouldNotPerformException {
+
+        // init
+        TreeMap<Double, UnitConfig> result = new TreeMap<>();
+        final Point3d unitPosition = new Point3d(coordinate.getX(), coordinate.getY(), coordinate.getZ());
+
+        // lookup distances
+        for (final UnitConfig unitConfig : getUnitConfigs(unitType)) {
+            final double distance = unitPosition.distance(getUnitPositionGlobalPoint3d(unitConfig));
+            if (distance <= radius) {
+                result.put(radius, unitConfig);
+            }
+        }
+        return new ArrayList<>(result.values());
+    }
 }

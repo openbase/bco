@@ -23,6 +23,8 @@ package org.openbase.bco.registry.device.lib;
  */
 import java.util.List;
 import java.util.concurrent.Future;
+
+import org.openbase.bco.registry.lib.provider.DeviceClassCollectionProvider;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.annotations.RPCMethod;
@@ -42,7 +44,7 @@ import rst.rsb.ScopeType.Scope;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 // TODO mpohling: write java doc
-public interface DeviceRegistry extends DataProvider<DeviceRegistryData>, Shutdownable {
+public interface DeviceRegistry extends DataProvider<DeviceRegistryData>, DeviceClassCollectionProvider, Shutdownable {
 
     @RPCMethod
     public Future<UnitConfig> registerDeviceConfig(final UnitConfig deviceConfig) throws CouldNotPerformException;
@@ -153,9 +155,6 @@ public interface DeviceRegistry extends DataProvider<DeviceRegistryData>, Shutdo
     public UnitTemplate getUnitTemplateById(final String unitTemplate) throws CouldNotPerformException, InterruptedException;
 
     @RPCMethod
-    public DeviceClass getDeviceClassById(final String deviceClassId) throws CouldNotPerformException, InterruptedException;
-
-    @RPCMethod
     public UnitConfig getDeviceConfigById(final String deviceConfigId) throws CouldNotPerformException, InterruptedException;
 
     /**
@@ -190,8 +189,6 @@ public interface DeviceRegistry extends DataProvider<DeviceRegistryData>, Shutdo
      */
     @Deprecated
     public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException;
-
-    public List<DeviceClass> getDeviceClasses() throws CouldNotPerformException;
 
     public List<UnitConfig> getDeviceConfigs() throws CouldNotPerformException;
 
@@ -420,7 +417,7 @@ public interface DeviceRegistry extends DataProvider<DeviceRegistryData>, Shutdo
     @Deprecated
     public List<UnitType> getSubUnitTypesOfUnitType(final UnitType type) throws CouldNotPerformException;
 
-//    /**
+    //    /**
 //     *
 //     * @throws InterruptedException
 //     * @deprecated this method has been moved to the unit registry.

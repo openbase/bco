@@ -37,5 +37,5 @@ public interface LocationRegistryProvider {
      * @return
      * @throws NotAvailableException 
      */
-    public LocationRegistry getLocationRegistry() throws NotAvailableException;
+    LocationRegistry getLocationRegistry() throws NotAvailableException;
 }

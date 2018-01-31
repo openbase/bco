@@ -108,6 +108,7 @@ import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.generator.ServiceTemplateIdGenerator;
 import org.openbase.bco.registry.unit.lib.generator.UnitConfigIdGenerator;
 import org.openbase.bco.registry.unit.lib.generator.UnitTemplateIdGenerator;
+import org.openbase.bco.registry.unit.lib.generator.UntShapeGenerator;
 import org.openbase.bco.registry.unit.lib.jp.JPAgentConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPAppConfigDatabaseDirectory;
 import org.openbase.bco.registry.unit.lib.jp.JPAuthorizationGroupConfigDatabaseDirectory;
@@ -162,6 +163,7 @@ import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
 import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 import rst.rsb.ScopeType;
+import rst.spatial.ShapeType.Shape;
 
 /**
  *
@@ -816,24 +818,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     /**
      * {@inheritDoc}
      *
-     * @param type
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException {
-        List<UnitConfig> unitConfigs = new ArrayList<>();
-        for (UnitConfig unitConfig : getUnitConfigs()) {
-            if (type == UnitType.UNKNOWN || unitConfig.getType() == type || getSubUnitTypesOfUnitType(type).contains(unitConfig.getType())) {
-                unitConfigs.add(unitConfig);
-            }
-        }
-        return unitConfigs;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
      * @param serviceType
      * @return
      * @throws CouldNotPerformException
@@ -1342,5 +1326,16 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public Boolean isServiceTemplateRegistryConsistent() throws CouldNotPerformException {
         return serviceTemplateRegistry.isConsistent();
+    }
+
+    @Override
+    public Shape getUnitShape(final UnitConfig unitConfig) throws NotAvailableException {
+        try {
+            return UntShapeGenerator.generateUnitShape(unitConfig, this, CachedDeviceRegistryRemote.getRegistry());
+        } catch (InterruptedException ex) {
+            // because registries should not throw interrupted exceptions in a future release this exception is already transformed into a NotAvailableException.
+            Thread.currentThread().interrupt();
+            throw new NotAvailableException("UnitShape", new CouldNotPerformException("Shutdown in progress"));
+        }
     }
 }
