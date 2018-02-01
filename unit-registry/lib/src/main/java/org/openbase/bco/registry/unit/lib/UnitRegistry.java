@@ -118,6 +118,11 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
     }
 
     @RPCMethod
+    default public String getUnitScopeByAlias(final String alias) throws CouldNotPerformException {
+        return ScopeGenerator.generateStringRep(getUnitConfigByAlias(alias).getScope());
+    }
+
+    @RPCMethod
     public Boolean isUnitConfigRegistryReadOnly() throws CouldNotPerformException;
 
     /**
