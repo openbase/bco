@@ -178,7 +178,7 @@ public class UnitAliasUniqueVerificationConsistencyHandler extends AbstractProto
             try {
                 // remove alias entry if alias is globally unknown.
                 if (!unitRegistry.containsUnitConfigByAlias(alias)) {
-                    logger.error("remove alias: " + alias);
+                    logger.debug("remove alias: " + alias);
                     aliasUnitIdMap.remove(alias);
                 }
             } catch (final CouldNotPerformException ex) {
