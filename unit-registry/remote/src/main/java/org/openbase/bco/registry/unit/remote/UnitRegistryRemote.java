@@ -21,16 +21,25 @@ package org.openbase.bco.registry.unit.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.ConcurrentModificationException;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
 import org.openbase.bco.authentication.lib.AuthorizationFilter;
+import org.openbase.bco.registry.unit.lib.generator.UntShapeGenerator;
+import org.openbase.jul.exception.*;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.MockUpFilter;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.com.future.RegistrationFuture;
@@ -41,10 +50,6 @@ import org.openbase.bco.registry.unit.lib.jp.JPUnitRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -66,9 +71,9 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
+import rst.spatial.ShapeType.Shape;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData> implements UnitRegistry, RegistryRemote<UnitRegistryData> {
@@ -261,7 +266,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
      * @param unitConfigId {@inheritDoc}
      * @return {@inheritDoc}
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.openbase.jul.exception.NotAvailableException    {@inheritDoc}
      */
     @Override
     public UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException, NotAvailableException {
@@ -481,18 +486,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         getUnitConfigs().parallelStream().filter((unitConfig) -> (unitConfig.getLabel().equalsIgnoreCase(unitConfigLabel))).forEach((unitConfig) -> {
             unitConfigs.add(unitConfig);
         });
-        return unitConfigs;
-    }
-
-    @Override
-    public List<UnitConfig> getUnitConfigs(final UnitTemplate.UnitType type) throws CouldNotPerformException {
-        validateData();
-        List<UnitConfig> unitConfigs = new ArrayList<>();
-        for (UnitConfig unitConfig : getUnitConfigs()) {
-            if (type == UnitTemplate.UnitType.UNKNOWN || unitConfig.getType() == type || getSubUnitTypesOfUnitType(type).contains(unitConfig.getType())) {
-                unitConfigs.add(unitConfig);
-            }
-        }
         return unitConfigs;
     }
 
@@ -979,5 +972,28 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not check consistency!", ex);
         }
+    }
+
+    @Override
+    public Shape getUnitShape(final UnitConfig unitConfig) throws NotAvailableException {
+        // todo release: switch implementation if issue # was implemented. openbase/bco.dal#81 (Remove Virtual Unit Registries)
+        // Workaround implementation until the device registry is not a virtual unit registry anymore.
+        try {
+            return RPCHelper.callRemoteMethod(unitConfig, this, Shape.class).get(5, TimeUnit.SECONDS);
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new NotAvailableException("UnitShape", ex);
+        } catch (CouldNotPerformException | ExecutionException | TimeoutException | CancellationException ex) {
+            throw new NotAvailableException("UnitShape", ex);
+        }
+
+        // new code if the device registry is not a virtual unit registry anymore.
+        //        try {
+        //            return UntShapeGenerator.generateUnitShape(unitConfig, this, CachedDeviceRegistryRemote.getRegistry());
+        //        } catch (InterruptedException ex) {
+        //            // because registries should not throw interrupted exceptions in a future release this exception is already transformed into a NotAvailableException.
+        //            Thread.currentThread().interrupt();
+        //            throw new NotAvailableException("UnitShape", new CouldNotPerformException("Shutdown in progress"));
+        //        }
     }
 }

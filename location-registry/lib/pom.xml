@@ -73,9 +73,10 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>org.openbase</groupId>
-            <artifactId>jul.extension.rct</artifactId>
-            <version>${dependency.jul.version}</version>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>registry.unit.lib</artifactId>
+            <version>${project.version}</version>
+            <type>jar</type>
         </dependency>
     </dependencies>
 

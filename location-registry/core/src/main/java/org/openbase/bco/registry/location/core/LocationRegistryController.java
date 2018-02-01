@@ -33,6 +33,7 @@ import javax.vecmath.Point3d;
 import org.apache.commons.math3.geometry.euclidean.twod.PolygonsSet;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.geometry.partitioning.Region.Location;
+import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryController;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
@@ -63,6 +64,7 @@ import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig;
 import rst.math.Vec3DDoubleType;
 import rst.rsb.ScopeType;
+import rst.spatial.ShapeType.Shape;
 import rst.tracking.PointingRay3DFloatCollectionType.PointingRay3DFloatCollection;
 import rst.tracking.PointingRay3DFloatType.PointingRay3DFloat;
 
