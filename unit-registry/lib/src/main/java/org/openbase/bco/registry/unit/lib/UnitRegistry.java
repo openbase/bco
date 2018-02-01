@@ -413,8 +413,8 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
 
 
     /**
-     * Method returns a list of {@Code UnitConfig} instances sorted by the distance to the given {@coordinate} starting with the lowest one.
-     * The lookup time can be reduced by filtering the results with a {@Code UnitType} where the {@Code UnitType.UNKNOWN} is used as wildcard.
+     * Method returns a list of {@code UnitConfig} instances sorted by the distance to the given {@code coordinate} starting with the lowest one.
+     * The lookup time can be reduced by filtering the results with a {@code UnitType} where the {@code UnitType.UNKNOWN} is used as wildcard.
      * The given radius can be used to limit the result as well but will not speed up the lookup.
      *
      * @param coordinate
@@ -422,8 +422,6 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @param unitType
      * @return
      * @throws CouldNotPerformException
-     * @throws InterruptedException
-     * @throws ExecutionException
      */
     public default List<UnitConfig> getUnitConfigsByCoordinate(final Vec3DDouble coordinate, final double radius, final UnitType unitType) throws CouldNotPerformException {
 
