@@ -30,6 +30,8 @@ import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.pattern.Observable;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
+import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType.Snapshot;
@@ -48,6 +50,7 @@ import rst.domotic.state.PowerStateType;
 import rst.domotic.state.PresenceStateType;
 import rst.domotic.state.SmokeStateType;
 import rst.domotic.state.StandbyStateType;
+import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.state.TamperStateType;
 import rst.domotic.state.TemperatureStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -185,7 +188,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     @Override
     @Deprecated
     public List<String> getNeighborLocationIds() throws CouldNotPerformException {
-        List<String> neighborIdList = new ArrayList<>();
+        final List<String> neighborIdList = new ArrayList<>();
         try {
             for (UnitConfig locationConfig : CachedLocationRegistryRemote.getRegistry().getNeighborLocations(getId())) {
                 neighborIdList.add(locationConfig.getId());
@@ -198,7 +201,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
 
     // TODO: move into interface as default implementation
     public List<LocationRemote> getNeighborLocationList(final boolean waitForData) throws CouldNotPerformException {
-        List<LocationRemote> neighborList = new ArrayList<>();
+        final List<LocationRemote> neighborList = new ArrayList<>();
         try {
             for (UnitConfig locationUnitConfig : CachedLocationRegistryRemote.getRegistry().getNeighborLocations(getId())) {
                 neighborList.add(Units.getUnit(locationUnitConfig, waitForData, LOCATION));
@@ -210,7 +213,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     }
 
     public List<LocationRemote> getChildLocationList(final boolean waitForData) throws CouldNotPerformException {
-        List<LocationRemote> childList = new ArrayList<>();
+        final List<LocationRemote> childList = new ArrayList<>();
         for (String childId : getConfig().getLocationConfig().getChildIdList()) {
             try {
                 childList.add(Units.getUnit(CachedLocationRegistryRemote.getRegistry().getLocationConfigById(childId), waitForData, LOCATION));
@@ -463,5 +466,24 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
             serviceDescriptionList.add(serviceDescription);
         }
         return serviceDescriptionList;
+    }
+
+    @Override
+    public Future<ActionFuture> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
+        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+        try {
+            return applyAction(updateActionDescription(actionDescription, standbyState).build());
+        } catch (InterruptedException ex) {
+            throw new CouldNotPerformException("Interrupted while setting StandbyState.", ex);
+        }
+    }
+
+    @Override
+    public StandbyState getStandbyState() throws NotAvailableException {
+        try {
+            return this.getData().getStandbyState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("StandbyState", ex);
+        }
     }
 }
