@@ -25,11 +25,14 @@ package org.openbase.bco.manager.location.core;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.Callable;
 import java.util.concurrent.Future;
 
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
+import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
+import org.openbase.bco.dal.remote.processing.StandbyController;
 import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
 
 import static org.openbase.bco.manager.location.core.LocationManagerController.LOGGER;
@@ -45,7 +48,9 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
+import org.openbase.jul.schedule.SyncObject;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType;
@@ -64,6 +69,8 @@ import rst.domotic.state.PresenceStateType;
 import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.state.SmokeStateType;
 import rst.domotic.state.StandbyStateType;
+import rst.domotic.state.StandbyStateType.StandbyState;
+import rst.domotic.state.StandbyStateType.StandbyState.State;
 import rst.domotic.state.TamperStateType;
 import rst.domotic.state.TemperatureStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -104,6 +111,8 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
     private final ServiceRemoteManager serviceRemoteManager;
     private final RecurrenceEventFilter unitEventFilter;
 
+    private StandbyController standbyController;
+
     public LocationControllerImpl() throws InstantiationException {
         super(LocationControllerImpl.class, LocationData.newBuilder());
         // update location data on updates from internal units at most every 100ms
@@ -140,6 +149,8 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
                 }
             }
         });
+
+        this.standbyController = new StandbyController();
     }
 
     @Override
@@ -152,6 +163,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
         }
         super.init(config);
         presenceDetector.init(this);
+        standbyController.init(this);
     }
 
     @Override
@@ -235,5 +247,44 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
             Thread.currentThread().interrupt();
         }
         return neighborIdList;
+    }
+
+    @Override
+    public Future<ActionFuture> setStandbyState(final StandbyState standbyState) {
+        logger.info("Standy["+standbyState+"]"+this);
+        return GlobalScheduledExecutorService.submit(() -> {
+            try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
+                switch (getStandbyState().getValue()) {
+                    case UNKNOWN:
+                    case RUNNING:
+                        switch (standbyState.getValue()) {
+                            case STANDBY:
+                                standbyController.standby();
+                                dataBuilder.getInternalBuilder().setStandbyState(standbyState);
+                        }
+                        break;
+                    case STANDBY:
+                        switch (standbyState.getValue()) {
+                            case RUNNING:
+                                standbyController.wakeup();
+                                dataBuilder.getInternalBuilder().setStandbyState(standbyState);
+                        }
+                }
+
+                //TODO generate proper action future
+                return null;
+            } catch (Exception ex) {
+                throw new CouldNotPerformException("Could not apply data change!", ex);
+            }
+        });
+    }
+
+    @Override
+    public StandbyState getStandbyState() throws NotAvailableException{
+        try {
+            return getData().getStandbyState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("StandbyState", ex);
+        }
     }
 }
