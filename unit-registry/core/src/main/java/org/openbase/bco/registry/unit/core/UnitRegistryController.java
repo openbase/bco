@@ -338,12 +338,14 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             registerConsistencyHandler(new UnitLocationIdConsistencyHandler(locationUnitConfigRegistry), UnitConfig.class);
             registerConsistencyHandler(new ServiceConfigUnitIdConsistencyHandler(), UnitConfig.class);
             registerConsistencyHandler(new UnitConfigUnitTemplateConsistencyHandler(unitTemplateRegistry), UnitConfig.class);
+            registerConsistencyHandler(new UnitAliasUniqueVerificationConsistencyHandler(this), UnitConfig.class);
+            registerConsistencyHandler(new UnitAliasGenerationConsistencyHandler(), UnitConfig.class);
             registerConsistencyHandler(new UnitEnablingStateConsistencyHandler(), UnitConfig.class);
             registerConsistencyHandler(new ServiceConfigServiceTemplateIdConsistencyHandler(serviceTemplateRegistry), UnitConfig.class);
             registerConsistencyHandler(new BoundingBoxCleanerConsistencyHandler(), UnitConfig.class);
             registerConsistencyHandler(new UnitTransformationFrameConsistencyHandler(locationUnitConfigRegistry), UnitConfig.class);
             registerConsistencyHandler(new UnitPermissionCleanerConsistencyHandler(authorizationGroupUnitConfigRegistry, locationUnitConfigRegistry), UnitConfig.class);
-            registerConsistencyHandler(new UnitAliasGenerationConsistencyHandler(), UnitConfig.class);
+
             try {
                 if (JPService.getProperty(JPAuthentication.class).getValue()) {
                     registerConsistencyHandler(new OtherPermissionConsistencyHandler(), UnitConfig.class);
@@ -396,8 +398,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         agentUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
         authorizationGroupUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
         unitGroupUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
-
-        registerPlugin(new UniqueAliasPlugin(), UnitConfig.class);
     }
 
     /**

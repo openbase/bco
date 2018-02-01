@@ -413,16 +413,6 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         }
     }
 
-    protected void registerPlugin(final ProtobufRegistryPluginAdapter plugin, final Class messageClass) throws CouldNotPerformException, InterruptedException {
-        for (ProtoBufFileSynchronizedRegistry registry : registryList) {
-            if (messageClass.equals(registry.getMessageClass())) {
-                registry.registerPlugin(plugin);
-            } else {
-                logger.debug("Registration of " + plugin + " skipped for " + registry + " because " + messageClass.getSimpleName() + " is not compatible.");
-            }
-        }
-    }
-
     public List<RemoteRegistry> getRemoteRegistries() {
         return remoteRegistryList;
     }

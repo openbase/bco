@@ -10,12 +10,12 @@ package org.openbase.bco.registry.unit.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -39,6 +39,7 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType;
@@ -75,6 +76,16 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
 
     @RPCMethod
     public Boolean containsUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
+
+    @RPCMethod
+    public default Boolean containsUnitConfigByAlias(final String alias) throws CouldNotPerformException {
+        try {
+            getUnitConfigByAlias(alias);
+        } catch (final NotAvailableException ex) {
+            return false;
+        }
+        return true;
+    }
 
     public default List<UnitConfig> getUnitConfigsByServices(final ServiceType... serviceTypes) throws CouldNotPerformException {
         return getUnitConfigsByService(Arrays.asList(serviceTypes));
@@ -113,6 +124,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns true if the underling registry is marked as consistent.
      *
      * @return if the UnitConfig registry is consistent
+     *
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
@@ -158,25 +170,27 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
 
     /**
      * Method returns the unit matching the given alias. An alias is an unique identifiere of units.
-     *
+     * <p>
      * Hint: If you want to address more than one unit with an alias than create a unit group of such units and define an alias for those group.
      *
      * @param unitAlias the alias to identify the unit.
+     *
      * @return the unit config referred by the alias.
-     * @throws NotAvailableException is thrown if no unit is matching the given alias.
+     *
+     * @throws NotAvailableException    is thrown if no unit is matching the given alias.
      * @throws CouldNotPerformException is thrown if something went wrong during the lookup.
      */
     @RPCMethod
     public default UnitConfig getUnitConfigByAlias(final String unitAlias) throws CouldNotPerformException {
         validateData();
-        for(UnitConfig unitConfig : getUnitConfigs()) {
-            for(final String alias : unitConfig.getAliasList()) {
+        for (UnitConfig unitConfig : getUnitConfigs()) {
+            for (final String alias : unitConfig.getAliasList()) {
                 if (alias.equalsIgnoreCase(unitAlias)) {
                     return unitConfig;
                 }
             }
         }
-        throw new NotAvailableException("UnitConfig", "alias:"+unitAlias);
+        throw new NotAvailableException("UnitConfig", "alias:" + unitAlias);
     }
 
     /**
@@ -184,7 +198,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * is done case insensitive!
      *
      * @param unitConfigLabel
+     *
      * @return
+     *
      * @throws CouldNotPerformException
      */
     public List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException;
@@ -204,7 +220,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Note: The type {@code UnitType.UNKNOWN} is used as wildcard and will return a list of all registered units.
      *
      * @param type the unit type to filter.
+     *
      * @return a list of unit configurations.
+     *
      * @throws CouldNotPerformException is thrown in case something goes wrong during the request.
      */
     public default List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException {
@@ -224,6 +242,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Base units are units of the following types: LOCATION, CONNECTION, SCENE, AGENT, APP, DEVICE, USER, AUTHORIZATION_GROUP, UNIT_GROUP
      *
      * @return a list of dal units.
+     *
      * @throws CouldNotPerformException is thrown in case something goes wrong during the request.
      */
     public List<UnitConfig> getDalUnitConfigs() throws CouldNotPerformException;
@@ -233,6 +252,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Base units are units of the following types: LOCATION, CONNECTION, SCENE, AGENT, APP, DEVICE, USER, AUTHORIZATION_GROUP, UNIT_GROUP
      *
      * @return a list of base units.
+     *
      * @throws CouldNotPerformException is thrown in case something goes wrong during the request.
      */
     public List<UnitConfig> getBaseUnitConfigs() throws CouldNotPerformException;
@@ -268,7 +288,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * given scope.
      *
      * @param scope
+     *
      * @return the unit config matching the given scope.
+     *
      * @throws CouldNotPerformException
      */
     @RPCMethod
@@ -279,7 +301,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * sub types of LIGHT.
      *
      * @param type the super type whose sub types are searched
+     *
      * @return all types of which the given type is a super type
+     *
      * @throws CouldNotPerformException
      * @deprecated please use getSubUnitTypes instead
      */
@@ -293,7 +317,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * sub types of LIGHT.
      *
      * @param type the super type whose sub types are searched
+     *
      * @return all types of which the given type is a super type
+     *
      * @throws CouldNotPerformException
      */
     public List<UnitType> getSubUnitTypes(final UnitType type) throws CouldNotPerformException;
@@ -303,7 +329,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * super types of COLORABLE_LIGHT.
      *
      * @param type the type whose super types are returned
+     *
      * @return all super types of a given unit type
+     *
      * @throws CouldNotPerformException
      */
     public List<UnitType> getSuperUnitTypes(final UnitType type) throws CouldNotPerformException;
@@ -420,7 +448,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @param coordinate
      * @param radius
      * @param unitType
+     *
      * @return
+     *
      * @throws CouldNotPerformException
      */
     public default List<UnitConfig> getUnitConfigsByCoordinate(final Vec3DDouble coordinate, final double radius, final UnitType unitType) throws CouldNotPerformException {
