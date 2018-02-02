@@ -30,7 +30,6 @@ import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
@@ -40,6 +39,7 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
+import rst.domotic.state.ActivationStateType.ActivationState.State;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -133,19 +133,32 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
     }
 
     @Override
-    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
-        super.init(config);
+    public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
+        UnitConfig unitConfig = super.applyConfigUpdate(config);
+
+        // save if the agent is active before this update
+        boolean active = getActivationState().getValue() == State.ACTIVE;
+
+        // deactivate before applying update if active
+        if (active) {
+            stop();
+        }
+
         try {
-            logger.debug("Initializing PowerStateSynchroniserAgent[" + config.getLabel() + "]");
+            logger.info("ApplyConfigUpdate for PowerStateSynchroniserAgent[" + config.getLabel() + "]");
             Registries.getUnitRegistry().waitForData();
 
             MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("PowerStateSynchroniserAgent", config.getMetaConfig());
 
+            // get source remote
             UnitConfig sourceUnitConfig = Registries.getUnitRegistry().getUnitConfigById(configVariableProvider.getValue(SOURCE_KEY));
             if (sourceUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                 throw new NotAvailableException("Source[" + ScopeGenerator.generateStringRep(sourceUnitConfig.getScope()) + "] is not enabled");
             }
             sourceRemote = Units.getUnit(sourceUnitConfig, false);
+
+            // get target remotes
+            targetRemotes.clear();
             int i = 1;
             String unitId;
             try {
@@ -165,19 +178,30 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
                 logger.debug("Found [" + i + "] target/s");
             }
 
+            // get source behavior
             try {
                 sourceBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(SOURCE_BEHAVIOUR_KEY));
             } catch (NotAvailableException ex) {
                 sourceBehaviour = DEFAULT_SOURCE_BEHAVIOR;
             }
+
+            // get target behavior
             try {
                 targetBehaviour = PowerStateSyncBehaviour.valueOf(configVariableProvider.getValue(TARGET_BEHAVIOUR_KEY));
             } catch (NotAvailableException ex) {
                 targetBehaviour = DEFAULT_TARGET_BEHAVIOR;
             }
         } catch (CouldNotPerformException ex) {
-            throw new InitializationException(this, ex);
+            throw new CouldNotPerformException("Could not apply config update for PowerStateSynchroniser[" + config.getLabel() + "]", ex);
         }
+
+
+        // reactivate if active before
+        if (active) {
+            execute();
+        }
+
+        return unitConfig;
     }
 
     /**
@@ -358,8 +382,11 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
             logger.debug("Stopping PowerStateSynchroniserAgent");
         }
 
-        sourceRemote.removeServiceStateObserver(ServiceTempus.REQUESTED, ServiceType.POWER_STATE_SERVICE, sourceRequestObserver);
-        sourceRemote.removeServiceStateObserver(ServiceTempus.CURRENT, ServiceType.POWER_STATE_SERVICE, sourceObserver);
+        if (sourceRemote != null) {
+            sourceRemote.removeServiceStateObserver(ServiceTempus.REQUESTED, ServiceType.POWER_STATE_SERVICE, sourceRequestObserver);
+            sourceRemote.removeServiceStateObserver(ServiceTempus.CURRENT, ServiceType.POWER_STATE_SERVICE, sourceObserver);
+        }
+
         targetRemotes.forEach((targetRemote) -> {
             targetRemote.removeServiceStateObserver(ServiceTempus.REQUESTED, ServiceType.POWER_STATE_SERVICE, targetRequestObserer);
             targetRemote.removeServiceStateObserver(ServiceTempus.CURRENT, ServiceType.POWER_STATE_SERVICE, targetObserver);
