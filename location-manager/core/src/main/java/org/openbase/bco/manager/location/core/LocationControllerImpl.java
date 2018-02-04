@@ -227,8 +227,13 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
     }
 
     @Override
-    public Future<ActionFuture> applyAction(final ActionDescription actionConfig) throws CouldNotPerformException, InterruptedException {
-        return serviceRemoteManager.applyAction(actionConfig);
+    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+        switch (actionDescription.getServiceStateDescription().getServiceType()) {
+            case STANDBY_STATE_SERVICE:
+                super.applyAction(actionDescription);
+            default:
+                return serviceRemoteManager.applyAction(actionDescription);
+        }
     }
 
     @Override
@@ -251,7 +256,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
 
     @Override
     public Future<ActionFuture> setStandbyState(final StandbyState standbyState) {
-        logger.info("Standy["+standbyState+"]"+this);
+        logger.info("Standy[" + standbyState + "]" + this);
         return GlobalScheduledExecutorService.submit(() -> {
             try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                 switch (getStandbyState().getValue()) {
@@ -280,7 +285,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
     }
 
     @Override
-    public StandbyState getStandbyState() throws NotAvailableException{
+    public StandbyState getStandbyState() throws NotAvailableException {
         try {
             return getData().getStandbyState();
         } catch (CouldNotPerformException ex) {
