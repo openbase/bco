@@ -10,7 +10,7 @@
     <parent>
         <groupId>org.openbase.bco</groupId>
         <artifactId>manager.location</artifactId>
-        <version>1.5-SNAPSHOT</version>
+        <version>1.6-SNAPSHOT</version>
     </parent>
     
     <url>https://github.com/openbase/bco.manager/wiki</url>
