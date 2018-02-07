@@ -226,7 +226,7 @@
         <dependency>
             <groupId>org.openbase.bco</groupId>
             <artifactId>manager.util</artifactId>
-            <version>[1.5,1.6-alpha)</version>
+            <version>[1.6,1.7-alpha)</version>
         </dependency>
     </dependencies>
 </project>
