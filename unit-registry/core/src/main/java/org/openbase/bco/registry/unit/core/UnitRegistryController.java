@@ -339,7 +339,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             registerConsistencyHandler(new ServiceConfigUnitIdConsistencyHandler(), UnitConfig.class);
             registerConsistencyHandler(new UnitConfigUnitTemplateConsistencyHandler(unitTemplateRegistry), UnitConfig.class);
             registerConsistencyHandler(new UnitAliasUniqueVerificationConsistencyHandler(this), UnitConfig.class);
-            registerConsistencyHandler(new UnitAliasGenerationConsistencyHandler(), UnitConfig.class);
+            registerConsistencyHandler(new UnitAliasGenerationConsistencyHandler(this), UnitConfig.class);
             registerConsistencyHandler(new UnitEnablingStateConsistencyHandler(), UnitConfig.class);
             registerConsistencyHandler(new ServiceConfigServiceTemplateIdConsistencyHandler(serviceTemplateRegistry), UnitConfig.class);
             registerConsistencyHandler(new BoundingBoxCleanerConsistencyHandler(), UnitConfig.class);
