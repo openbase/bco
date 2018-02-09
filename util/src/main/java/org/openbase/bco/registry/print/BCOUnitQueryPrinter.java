@@ -21,10 +21,9 @@ package org.openbase.bco.registry.print;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.List;
+
+import java.util.*;
+
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPVerbose;
@@ -32,18 +31,18 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
+import org.openbase.jul.processing.StringProcessor.Alignment;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class BCOUnitQueryPrinter {
 
     /**
      * This is a command line tool to query registry entries.
-     * 
+     * <p>
      * TODOs
      * - JPService should be used in a future release.
      * - Resolve units via raw protobuf message.
@@ -85,7 +84,7 @@ public class BCOUnitQueryPrinter {
                 resultsFound = true;
                 System.out.println("");
                 System.out.println("resolved by unit type:");
-                System.out.println(""); 
+                System.out.println("");
                 printUnits(unitConfigs);
                 System.exit(0);
             }
@@ -153,7 +152,20 @@ public class BCOUnitQueryPrinter {
                 printUnits(unitConfigs);
                 System.exit(0);
             }
-            
+
+            // print by alias
+            unitConfigs.clear();
+            unitConfigs.add(Registries.getUnitRegistry().getUnitConfigByAlias(args[0]));
+
+            if (!unitConfigs.isEmpty()) {
+                resultsFound = true;
+                System.out.println("");
+                System.out.println("resolved by alias:");
+                System.out.println("");
+                printUnits(unitConfigs);
+                System.exit(0);
+            }
+
             // print by description
             unitConfigs.clear();
             for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs()) {
@@ -191,10 +203,14 @@ public class BCOUnitQueryPrinter {
         System.out.println("Usage:   bco-registry-query ${UNIT_TYPE}");
         System.out.println("         bco-registry-query ${UNIT_LOCATION}");
         System.out.println("         bco-registry-query ${UNIT_LABEL}");
+        System.out.println("         bco-registry-query ${UNIT_ID}");
+        System.out.println("         bco-registry-query ${UNIT_ALIAS}");
         System.out.println("");
         System.out.println("Example: bco-registry-query colorablelight");
         System.out.println("         bco-registry-query livingroom");
         System.out.println("         bco-registry-query ceilinglamp");
+        System.out.println("         bco-registry-query 844a5b35-4b9c-4db2-9d22-4842db77bc95");
+        System.out.println("         bco-registry-query colorablelight-12");
         System.out.println("");
         System.out.println("Print:   ${ID} ${LABEL} @ ${LOCATION} ${SCOPE}");
         System.out.println("");
@@ -219,20 +235,24 @@ public class BCOUnitQueryPrinter {
         int maxUnitLabelLength = 0;
         int maxLocationUnitLabelLength = 0;
         int maxScopeLength = 0;
+        int maxAliasLength = 0;
         for (final UnitConfig unitConfig : unitConfigList) {
             maxUnitLabelLength = Math.max(maxUnitLabelLength, unitConfig.getLabel().length());
             maxLocationUnitLabelLength = Math.max(maxLocationUnitLabelLength, getLocationLabel(unitConfig).length());
             maxScopeLength = Math.max(maxScopeLength, ScopeGenerator.generateStringRep(unitConfig.getScope()).length());
+            maxAliasLength = Math.max(maxAliasLength, Arrays.toString(unitConfig.getAliasList().toArray()).length());
         }
 
         // print
         for (final UnitConfig unitConfig : unitConfigList) {
-            printUnit(unitConfig, maxUnitLabelLength, maxLocationUnitLabelLength, maxScopeLength);
+            printUnit(unitConfig, maxAliasLength, maxUnitLabelLength, maxLocationUnitLabelLength, maxScopeLength);
         }
     }
 
-    public static void printUnit(final UnitConfig unitConfig, final int maxUnitLabelLength, final int maxLocationUnitLabelLength, final int maxScopeLength) throws InterruptedException, CouldNotPerformException {
+    public static void printUnit(final UnitConfig unitConfig, final int maxAliasLength, final int maxUnitLabelLength, final int maxLocationUnitLabelLength, final int maxScopeLength) throws InterruptedException, CouldNotPerformException {
         System.out.println(unitConfig.getId()
+                + "  "
+                + "[ " + StringProcessor.fillWithSpaces(generateStringRep(unitConfig.getAliasList()), maxAliasLength) + " ]"
                 + "  "
                 + StringProcessor.fillWithSpaces(unitConfig.getLabel(), maxUnitLabelLength, StringProcessor.Alignment.RIGHT)
                 + " @ " + StringProcessor.fillWithSpaces(getLocationLabel(unitConfig), maxLocationUnitLabelLength)
@@ -247,5 +267,16 @@ public class BCOUnitQueryPrinter {
         } catch (CouldNotPerformException ex) {
             return "?";
         }
+    }
+
+    private static String generateStringRep(final Collection collection) {
+        String rep = "";
+        for (Iterator iterator = collection.iterator(); iterator.hasNext(); ) {
+            rep += iterator.next();
+            if (iterator.hasNext()) {
+                rep += ", ";
+            }
+        }
+        return rep;
     }
 }
