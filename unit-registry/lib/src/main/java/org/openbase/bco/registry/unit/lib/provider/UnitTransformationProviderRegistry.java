@@ -34,6 +34,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rct.GlobalTransformReceiver;
+import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -45,12 +46,13 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.geometry.AxisAlignedBoundingBox3DFloatType;
 import rst.geometry.RotationType;
 import rst.geometry.TranslationType;
+import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.spatial.ShapeType.Shape;
 
 
 public interface UnitTransformationProviderRegistry<D> extends RootLocationConfigProvider, DataProvider<D>, UnitConfigCollectionProvider {
 
-    public default UnitConfig getRootLocationConfig() throws CouldNotPerformException, NotAvailableException {
+    default UnitConfig getRootLocationConfig() throws CouldNotPerformException, NotAvailableException {
         for (UnitConfig locationConfig : getUnitConfigs(UnitType.LOCATION)) {
             if (locationConfig.getLocationConfig().hasRoot() && locationConfig.getLocationConfig().getRoot()) {
                 return locationConfig;
@@ -65,7 +67,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @param unitConfigTarget the unit where the transformation leads to.
      * @return a transformation future
      */
-    public default Future<Transform> getRootToUnitTransformationFuture(final UnitConfig unitConfigTarget) {
+    default Future<Transform> getRootToUnitTransformationFuture(final UnitConfig unitConfigTarget) {
         try {
             return getUnitTransformationFuture(getRootLocationConfig(), unitConfigTarget);
         } catch (CouldNotPerformException ex) {
@@ -79,7 +81,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @param unitConfigTarget the unit where the transformation leads to.
      * @return a transformation future
      */
-    public default Future<Transform> getUnitToRootTransformationFuture(final UnitConfig unitConfigTarget) {
+    default Future<Transform> getUnitToRootTransformationFuture(final UnitConfig unitConfigTarget) {
         try {
             return getUnitTransformationFuture(unitConfigTarget, getRootLocationConfig());
         } catch (CouldNotPerformException ex) {
@@ -96,7 +98,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @deprecated please use getUnitTransformationFuture instead because this method will be return the Transform type directly in near future.
      */
     @Deprecated
-    public default Future<Transform> getUnitTransformation(final UnitConfig unitConfigSource, final UnitConfig unitConfigTarget) {
+    default Future<Transform> getUnitTransformation(final UnitConfig unitConfigSource, final UnitConfig unitConfigTarget) {
         return getUnitTransformationFuture(unitConfigSource, unitConfigTarget);
     }
 
@@ -107,7 +109,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @param unitConfigTarget the unit where the transformation leads to.
      * @return a transformation future
      */
-    public default Future<Transform> getUnitTransformationFuture(final UnitConfig unitConfigSource, final UnitConfig unitConfigTarget) {
+    default Future<Transform> getUnitTransformationFuture(final UnitConfig unitConfigSource, final UnitConfig unitConfigTarget) {
 
         if (unitConfigSource.getEnablingState().getValue() != State.ENABLED) {
             return FutureProcessor.canceledFuture(new InvalidStateException("Source Unit[" + unitConfigSource.getLabel() + ":" + unitConfigSource.getId() + "] is disbled and does not provide any transformation!"));
@@ -147,7 +149,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @return a transformation future
      * @throws org.openbase.jul.exception.NotAvailableException
      */
-    public default Transform getRootToUnitTransformation(final UnitConfig unitConfigTarget) throws NotAvailableException {
+    default Transform getRootToUnitTransformation(final UnitConfig unitConfigTarget) throws NotAvailableException {
         try {
             return lookupUnitTransformation(getRootLocationConfig(), unitConfigTarget);
         } catch (final CouldNotPerformException ex) {
@@ -162,7 +164,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @return a transformation future
      * @throws org.openbase.jul.exception.NotAvailableException
      */
-    public default Transform getUnitToRootTransformation(final UnitConfig unitConfigTarget) throws NotAvailableException {
+    default Transform getUnitToRootTransformation(final UnitConfig unitConfigTarget) throws NotAvailableException {
         try {
             return lookupUnitTransformation(unitConfigTarget, getRootLocationConfig());
         } catch (final CouldNotPerformException ex) {
@@ -182,7 +184,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @deprecated do not use method because API changes will be applied in near future and this method will be renamed into {@code getUnitTransformation} within the next release.
      */
     @Deprecated
-    public default Transform lookupUnitTransformation(final UnitConfig unitConfigSource, final UnitConfig unitConfigTarget) throws NotAvailableException {
+    default Transform lookupUnitTransformation(final UnitConfig unitConfigSource, final UnitConfig unitConfigTarget) throws NotAvailableException {
 
         try {
             if (unitConfigSource.getEnablingState().getValue() != State.ENABLED) {
@@ -242,7 +244,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @return transform relative to root location
      * @throws NotAvailableException is thrown if the transformation is not available.
      */
-    default public Transform3D getUnitToRootTransform3D(final UnitConfig unitConfig) throws NotAvailableException {
+    default Transform3D getUnitToRootTransform3D(final UnitConfig unitConfig) throws NotAvailableException {
         try {
             return getUnitToRootTransformation(unitConfig).getTransform();
         } catch (NotAvailableException ex) {
@@ -257,12 +259,44 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @return position relative to the root location
      * @throws NotAvailableException is thrown if the transformation is not available.
      */
-    default public Point3d getUnitPositionGlobalPoint3d(final UnitConfig unitConfig) throws NotAvailableException {
+    default Point3d getUnitPositionGlobalPoint3d(final UnitConfig unitConfig) throws NotAvailableException {
+        try {
+            return new Point3d(getUnitPositionGlobalVector3d(unitConfig));
+        } catch (NotAvailableException ex) {
+            throw new NotAvailableException("GlobalPositionVector", ex);
+        }
+    }
+
+    /**
+     * Gets the position of the unit relative to the root location as a Point3d object.
+     *
+     * @param unitConfig the unit config to refer the unit.
+     * @return position relative to the root location
+     * @throws NotAvailableException is thrown if the transformation is not available.
+     */
+    @RPCMethod
+    default Vec3DDouble getUnitPositionGlobalVec3DDouble(final UnitConfig unitConfig) throws NotAvailableException {
+        try {
+            final Vector3d vec = getUnitPositionGlobalVector3d(unitConfig);
+            return Vec3DDouble.newBuilder().setX(vec.x).setY(vec.y).setZ(vec.z).build();
+        } catch (NotAvailableException ex) {
+            throw new NotAvailableException("GlobalPositionVector", ex);
+        }
+    }
+
+    /**
+     * Gets the position of the unit relative to the root location as a Vector3d object.
+     *
+     * @param unitConfig the unit config to refer the unit.
+     * @return position relative to the root location
+     * @throws NotAvailableException is thrown if the transformation is not available.
+     */
+    default Vector3d getUnitPositionGlobalVector3d(final UnitConfig unitConfig) throws NotAvailableException {
         try {
             final Transform3D transformation = getUnitToRootTransform3D(unitConfig);
             final Vector3d pos = new Vector3d();
             transformation.get(pos);
-            return new Point3d(pos);
+            return pos;
         } catch (NotAvailableException ex) {
             throw new NotAvailableException("GlobalPositionVector", ex);
         }
@@ -275,7 +309,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @return position relative to the root location
      * @throws NotAvailableException is thrown if the transformation is not available.
      */
-    default public TranslationType.Translation getUnitPositionGlobal(final UnitConfig unitConfig) throws NotAvailableException {
+    default TranslationType.Translation getUnitPositionGlobal(final UnitConfig unitConfig) throws NotAvailableException {
         try {
             final Point3d pos = getUnitPositionGlobalPoint3d(unitConfig);
             return TranslationType.Translation.newBuilder().setX(pos.x).setY(pos.y).setZ(pos.z).build();
@@ -291,7 +325,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @return rotation relative to the root location
      * @throws NotAvailableException is thrown if the transformation is not available.
      */
-    default public Quat4d getUnitRotationGlobalQuat4d(final UnitConfig unitConfig) throws NotAvailableException {
+    default Quat4d getUnitRotationGlobalQuat4d(final UnitConfig unitConfig) throws NotAvailableException {
         try {
             final Transform3D transformation = getUnitToRootTransform3D(unitConfig);
             final Quat4d quat = new Quat4d();
@@ -309,7 +343,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @return rotation relative to the root location
      * @throws NotAvailableException is thrown if the transformation is not available.
      */
-    default public RotationType.Rotation getUnitRotationGlobal(final UnitConfig unitConfig) throws NotAvailableException {
+    default RotationType.Rotation getUnitRotationGlobal(final UnitConfig unitConfig) throws NotAvailableException {
         try {
             final Quat4d quat = getUnitRotationGlobalQuat4d(unitConfig);
             return RotationType.Rotation.newBuilder().setQw(quat.w).setQx(quat.x).setQy(quat.y).setQz(quat.z).build();
@@ -325,7 +359,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @return center coordinates of the unit's BoundingBox relative to unit
      * @throws NotAvailableException is thrown if the center can not be calculate.
      */
-    default public Point3d getUnitBoundingBoxCenterPoint3d(final UnitConfig unitConfig) throws NotAvailableException {
+    default Point3d getUnitBoundingBoxCenterPoint3d(final UnitConfig unitConfig) throws NotAvailableException {
         final AxisAlignedBoundingBox3DFloatType.AxisAlignedBoundingBox3DFloat bb = getUnitShape(unitConfig).getBoundingBox();
         final TranslationType.Translation lfc = bb.getLeftFrontBottom();
 
@@ -342,7 +376,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @return center coordinates of the unit's BoundingBox relative to root location
      * @throws NotAvailableException is thrown if the center can not be calculate.
      */
-    default public Point3d getUnitBoundingBoxCenterGlobalPoint3d(final UnitConfig unitConfig) throws NotAvailableException {
+    default Point3d getUnitBoundingBoxCenterGlobalPoint3d(final UnitConfig unitConfig) throws NotAvailableException {
         try {
             final Transform3D transformation = getUnitToRootTransform3D(unitConfig);
             final Point3d center = getUnitBoundingBoxCenterPoint3d(unitConfig);
@@ -363,7 +397,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      * @return the shape representing the unit.
      * @throws NotAvailableException is thrown if the unit shape is not available or the resolution has been failed.
      */
-    default public Shape getUnitShape(final String unitId) throws NotAvailableException {
+    default Shape getUnitShape(final String unitId) throws NotAvailableException {
         try {
             return getUnitShape(getUnitConfigById(unitId));
         } catch (final CouldNotPerformException ex) {
