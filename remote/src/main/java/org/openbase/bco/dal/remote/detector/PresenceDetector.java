@@ -78,14 +78,11 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
                 try {
                     // if motion is still detected just restart the timeout.
                     if (locationDataProvider.getData().getMotionState().getValue() == MotionState.State.MOTION) {
-                        GlobalCachedExecutorService.submit(new Runnable() {
-                            @Override
-                            public void run() {
-                                try {
-                                    presenceTimeout.restart();
-                                } catch (final CouldNotPerformException ex) {
-                                    ExceptionPrinter.printHistory("Could not setup presence timeout!", ex, logger);
-                                }
+                        GlobalCachedExecutorService.submit(() -> {
+                            try {
+                                presenceTimeout.restart();
+                            } catch (final CouldNotPerformException ex) {
+                                ExceptionPrinter.printHistory("Could not setup presence timeout!", ex, logger);
                             }
                         });
                         return;
@@ -118,9 +115,11 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
         if (locationDataObserver == null) {
             throw new NotInitializedException(this);
         }
-
         active = true;
         locationDataProvider.addDataObserver(locationDataObserver);
+
+        // start initial timeout
+        presenceTimeout.start();
         updateMotionState(locationDataProvider.getData().getMotionState());
     }
 
