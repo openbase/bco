@@ -39,10 +39,8 @@ import static org.openbase.bco.manager.location.core.LocationManagerController.L
 
 import org.openbase.bco.manager.location.lib.LocationController;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
@@ -151,6 +149,12 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
         });
 
         this.standbyController = new StandbyController();
+
+        try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().setStandbyState(StandbyState.newBuilder().setValue(StandbyState.State.RUNNING).build());
+        } catch (Exception ex) {
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not apply inital service states!", ex), LOGGER, LogLevel.WARN);
+        }
     }
 
     @Override
@@ -282,6 +286,8 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
                 throw new CouldNotPerformException("Could not apply data change!", ex);
             }
         });
+
+
     }
 
     @Override
