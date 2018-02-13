@@ -24,6 +24,7 @@ package org.openbase.bco.registry.unit.core.consistency.dalunitconfig;
 import java.util.HashMap;
 import java.util.Map;
 import org.openbase.bco.registry.lib.util.DeviceConfigUtils;
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -57,6 +58,11 @@ public class DalUnitLabelConsistencyHandler extends AbstractProtoBufRegistryCons
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder dalUnitConfig = entry.getMessage().toBuilder();
+
+        // filter virtual units
+        if(UnitConfigProcessor.isVirtualUnit(dalUnitConfig)) {
+            return;
+        }
 
         if (!dalUnitConfig.hasUnitHostId() || dalUnitConfig.getUnitHostId().isEmpty()) {
             throw new NotAvailableException("unitConfig.unitHostId");

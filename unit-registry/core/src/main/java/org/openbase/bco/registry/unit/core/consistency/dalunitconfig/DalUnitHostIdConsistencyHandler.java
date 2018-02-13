@@ -21,6 +21,7 @@ package org.openbase.bco.registry.unit.core.consistency.dalunitconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -34,6 +35,7 @@ import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.jp.JPRecoverDB;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -52,6 +54,12 @@ public class DalUnitHostIdConsistencyHandler extends AbstractProtoBufRegistryCon
         UnitConfig dalUnitConfig = entry.getMessage();
 
         if (!dalUnitConfig.hasUnitHostId() || dalUnitConfig.getUnitHostId().isEmpty()) {
+
+            // generate host id for virtual units
+            if(UnitConfigProcessor.isDalUnit(dalUnitConfig)) {
+                throw new EntryModification(entry.setMessage(dalUnitConfig.toBuilder().setUnitHostId(dalUnitConfig.getId())), this);
+            }
+
             throw new VerificationFailedException("DalUnitConfig [" + dalUnitConfig + "] has no unitHostId!");
         } else {
 

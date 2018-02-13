@@ -21,6 +21,7 @@ package org.openbase.bco.registry.unit.core.consistency.dalunitconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -64,13 +65,22 @@ public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoB
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
-        UnitConfig.Builder unitConfigClone = unitConfig.clone();
+        UnitConfig.Builder dalUnitConfig = entry.getMessage().toBuilder();
+        UnitConfig.Builder unitConfigClone = dalUnitConfig.clone();
 
-        if (!unitConfig.hasUnitHostId() || unitConfig.getUnitHostId().isEmpty()) {
-            throw new NotAvailableException("unitConfig.unitHostId");
+
+        // filter virtual units
+        if(UnitConfigProcessor.isVirtualUnit(dalUnitConfig)) {
+            return;
         }
-        DeviceConfig deviceConfig = deviceRegistry.getMessage(unitConfig.getUnitHostId()).getDeviceConfig();
+
+        // todo release: by this virtual units will not by available for openhab remote control
+        // openbase/bco.dal#87 Generated openhab item id should not be based on device class and name
+
+        if (!dalUnitConfig.hasUnitHostId() || dalUnitConfig.getUnitHostId().isEmpty()) {
+            throw new NotAvailableException("dalUnitConfig.unitHostId");
+        }
+        DeviceConfig deviceConfig = deviceRegistry.getMessage(dalUnitConfig.getUnitHostId()).getDeviceConfig();
 
         if (!deviceConfig.hasDeviceClassId() || deviceConfig.getDeviceClassId().isEmpty()) {
             throw new NotAvailableException("deviceConfig.deviceClassId");
@@ -78,17 +88,17 @@ public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoB
         DeviceClass deviceClass = deviceClassRegistry.get(deviceConfig.getDeviceClassId()).getMessage();
 
         boolean modification = false;
-        unitConfig.clearServiceConfig();
+        dalUnitConfig.clearServiceConfig();
         for (ServiceConfig.Builder serviceConfig : unitConfigClone.getServiceConfigBuilderList()) {
             if (!serviceConfig.hasBindingConfig()) {
                 continue;
             }
 
             if (serviceConfig.getBindingConfig().getBindingId().equals("OPENHAB")) {
-                if(!unitConfig.getPlacementConfig().hasLocationId() || unitConfig.getPlacementConfig().getLocationId().isEmpty()) {
-                    throw new NotAvailableException("unitConfig.placementConfig.locationId");
+                if(!dalUnitConfig.getPlacementConfig().hasLocationId() || dalUnitConfig.getPlacementConfig().getLocationId().isEmpty()) {
+                    throw new NotAvailableException("dalUnitConfig.placementConfig.locationId");
                 }
-                String itemId = generateItemName(entry.getMessage(), deviceClass.getLabel(), unitConfig.clone().build(), serviceConfig.clone().build(), locationRegistry.getMessage(unitConfig.getPlacementConfig().getLocationId()));
+                String itemId = generateItemName(entry.getMessage(), deviceClass.getLabel(), dalUnitConfig.clone().build(), serviceConfig.clone().build(), locationRegistry.getMessage(dalUnitConfig.getPlacementConfig().getLocationId()));
 
                 MetaConfig metaConfig;
 
@@ -112,11 +122,11 @@ public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoB
                     modification = true;
                 }
             }
-            unitConfig.addServiceConfig(serviceConfig);
+            dalUnitConfig.addServiceConfig(serviceConfig);
         }
 
         if (modification) {
-            throw new EntryModification(entry.setMessage(unitConfig), this);
+            throw new EntryModification(entry.setMessage(dalUnitConfig), this);
         }
     }
 

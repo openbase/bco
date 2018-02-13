@@ -23,6 +23,8 @@ package org.openbase.bco.registry.unit.core.consistency.dalunitconfig;
  */
 import java.util.ArrayList;
 import java.util.List;
+
+import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -55,12 +57,17 @@ public class SyncBindingConfigDeviceClassUnitConsistencyHandler extends Abstract
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
+        UnitConfig.Builder dalUnitConfig = entry.getMessage().toBuilder();
 
-        if (!unitConfig.hasUnitHostId() || unitConfig.getUnitHostId().isEmpty()) {
-            throw new NotAvailableException("unitConfig.unitHostId");
+        // filter virtual units
+        if(UnitConfigProcessor.isVirtualUnit(dalUnitConfig)) {
+            return;
         }
-        DeviceConfig deviceConfig = deviceUnitRegistry.getMessage(unitConfig.getUnitHostId()).getDeviceConfig();
+
+        if (!dalUnitConfig.hasUnitHostId() || dalUnitConfig.getUnitHostId().isEmpty()) {
+            throw new NotAvailableException("dalUnitConfig.unitHostId");
+        }
+        DeviceConfig deviceConfig = deviceUnitRegistry.getMessage(dalUnitConfig.getUnitHostId()).getDeviceConfig();
 
         if (!deviceConfig.hasDeviceClassId() || deviceConfig.getDeviceClassId().isEmpty()) {
             throw new NotAvailableException("deviceConfig.deviceClassId");
@@ -73,8 +80,8 @@ public class SyncBindingConfigDeviceClassUnitConsistencyHandler extends Abstract
         }
 
         boolean modification = false;
-        List<ServiceConfig.Builder> serviceConfigList = new ArrayList<>(unitConfig.getServiceConfigBuilderList());
-        unitConfig.clearServiceConfig();
+        List<ServiceConfig.Builder> serviceConfigList = new ArrayList<>(dalUnitConfig.getServiceConfigBuilderList());
+        dalUnitConfig.clearServiceConfig();
         for (ServiceConfig.Builder serviceConfig : serviceConfigList) {
             BindingConfig bindingConfig;
             if (!serviceConfig.hasBindingConfig()) {
@@ -89,11 +96,11 @@ public class SyncBindingConfigDeviceClassUnitConsistencyHandler extends Abstract
                 serviceConfig.setBindingConfig(bindingConfig.toBuilder().setBindingId(bindingId).build()).build();
                 modification = true;
             }
-            unitConfig.addServiceConfig(serviceConfig);
+            dalUnitConfig.addServiceConfig(serviceConfig);
         }
 
         if (modification) {
-            throw new EntryModification(entry.setMessage(unitConfig.build()), this);
+            throw new EntryModification(entry.setMessage(dalUnitConfig.build()), this);
         }
     }
 }
