@@ -21,19 +21,26 @@ package org.openbase.bco.dal.lib.layer.unit.location;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
 import java.util.concurrent.Future;
+
+import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.dal.lib.layer.service.provider.PresenceStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import org.openbase.bco.dal.lib.layer.unit.MultiUnitServiceFusion;
+import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
+import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.iface.Snapshotable;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PresenceStateType.PresenceState;
