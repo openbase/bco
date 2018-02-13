@@ -22,8 +22,6 @@ package org.openbase.bco.registry.unit.core.plugin;
  * #L%
  */
 
-import java.util.ConcurrentModificationException;
-
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -31,23 +29,22 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.rct.GlobalTransformReceiver;
 import org.openbase.jul.extension.rct.transform.PoseTransformer;
-import org.openbase.jul.storage.registry.FileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import org.openbase.jul.storage.registry.Registry;
-import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rct.Transform;
-import rct.TransformPublisher;
-import rct.TransformType;
-import rct.TransformerException;
-import rct.TransformerFactory;
+import rct.*;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
+
+import java.util.ConcurrentModificationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -103,13 +100,35 @@ public class PublishUnitTransformationRegistryPlugin extends ProtobufRegistryPlu
                 throw new NotAvailableException("unitconfig.placementconfig.locationid");
             }
 
-            Transform transformation = PoseTransformer.transform(unitConfig.getPlacementConfig().getPosition(), locationRegistry.getMessage(unitConfig.getPlacementConfig().getLocationId()).getPlacementConfig().getTransformationFrameId(), unitConfig.getPlacementConfig().getTransformationFrameId());
+
+            final String parentLocationTransformationFrameId = locationRegistry.getMessage(unitConfig.getPlacementConfig().getLocationId()).getPlacementConfig().getTransformationFrameId();
+            Transform transformation = PoseTransformer.transform(unitConfig.getPlacementConfig().getPosition(), parentLocationTransformationFrameId, unitConfig.getPlacementConfig().getTransformationFrameId());
             transformation.setAuthority(getRegistry().getName());
 
             if (!JPService.testMode() && JPService.verboseMode()) {
                 logger.info("Publish " + locationRegistry.get(unitConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId() + " to " + unitConfig.getPlacementConfig().getTransformationFrameId());
             }
             transformPublisher.sendTransform(transformation, TransformType.STATIC);
+
+            // wait until transformation was published
+            try {
+                int maxChecks = 10;
+                for (int i = 0; i < maxChecks; i++) {
+                    try {
+                        // check if transformation was published
+                        if (transformation.getTransform().equals(GlobalTransformReceiver.getInstance().requestTransform(parentLocationTransformationFrameId, unitConfig.getPlacementConfig().getTransformationFrameId(), System.currentTimeMillis()).get(100, TimeUnit.MILLISECONDS).getTransform())) {
+                            // was published
+                            break;
+                        }
+                    } catch (TimeoutException e) {
+                        // try again if needed
+                    }
+                }
+            } catch (InterruptedException e) {
+                throw new CouldNotPerformException("Application shutdown detected!");
+            } catch (ExecutionException e) {
+                throw new CouldNotPerformException("Could not verify publication!");
+            }
         } catch (NotAvailableException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.DEBUG);
         } catch (CouldNotPerformException | TransformerException | ConcurrentModificationException | NullPointerException ex) {
@@ -123,7 +142,8 @@ public class PublishUnitTransformationRegistryPlugin extends ProtobufRegistryPlu
     }
 
     @Override
-    public void afterUpdate(IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry) throws CouldNotPerformException {
+    public void afterUpdate(IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry) throws
+            CouldNotPerformException {
         publishTransformation(entry);
     }
 
