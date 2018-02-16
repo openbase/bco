@@ -36,6 +36,7 @@
         <option value="$PROJECT_DIR$/module/bco.stage/pom.xml" />
         <option value="$PROJECT_DIR$/module/bco.ontology/pom.xml" />
         <option value="$PROJECT_DIR$/module/bco.ontology.lib/pom.xml" />
+        <option value="$PROJECT_DIR$/module/bco.app/pom.xml" />
       </list>
     </option>
   </component>

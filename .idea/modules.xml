@@ -6,6 +6,8 @@
       <module fileurl="file://$PROJECT_DIR$/module/bco.authentication/core/authentication.core.iml" filepath="$PROJECT_DIR$/module/bco.authentication/core/authentication.core.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.authentication/lib/authentication.lib.iml" filepath="$PROJECT_DIR$/module/bco.authentication/lib/authentication.lib.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.authentication/test/authentication.test.iml" filepath="$PROJECT_DIR$/module/bco.authentication/test/authentication.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.app/bco.app.iml" filepath="$PROJECT_DIR$/module/bco.app/bco.app.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.app/openhab/bco.app.openhab.iml" filepath="$PROJECT_DIR$/module/bco.app/openhab/bco.app.openhab.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.bcozy/bcozy.iml" filepath="$PROJECT_DIR$/module/bco.bcozy/bcozy.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.dal/dal.iml" filepath="$PROJECT_DIR$/module/bco.dal/dal.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.dal/example/dal.example.iml" filepath="$PROJECT_DIR$/module/bco.dal/example/dal.example.iml" />

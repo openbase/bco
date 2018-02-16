@@ -128,6 +128,8 @@
       <module name="authentication.core" target="1.8" />
       <module name="authentication.lib" target="1.8" />
       <module name="authentication.test" target="1.8" />
+      <module name="bco.app" target="1.8" />
+      <module name="bco.app.openhab" target="1.8" />
       <module name="bcozy" target="1.8" />
       <module name="dal" target="1.8" />
       <module name="dal.example" target="1.8" />

@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project version="4">
   <component name="Encoding">
+    <file url="file://$PROJECT_DIR$/module/bco.app" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.app/openhab" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.authentication" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.authentication/core" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.authentication/lib" charset="UTF-8" />
