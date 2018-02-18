@@ -110,13 +110,13 @@ public class ButtonController extends AbstractDALUnitController<ButtonData, Butt
                 ButtonState.Builder buttonState = internalBuilder.getButtonStateBuilder();
                 if (buttonState.getValue() == ButtonState.State.PRESSED || buttonState.getValue() == ButtonState.State.DOUBLE_PRESSED) {
                     if (!buttonState.hasTimestamp()) {
-                        logger.warn("State[" + buttonState.getClass().getSimpleName() + "] of " + this + " does not contain any state related timestampe!");
+                        logger.warn("State[" + buttonState.getClass().getSimpleName() + "] of " + this + " does not contain any state related timestamp!");
                         buttonState = TimestampProcessor.updateTimestampWithCurrentTime(buttonState, logger);
                     }
                     buttonState.setLastPressed(buttonState.getTimestamp());
 
                     try {
-                        if (Boolean.parseBoolean(generateVariablePool().getValue("META_CONFIG_AUTO_RESET_BUTTON_STATE"))) {
+                        if (Boolean.parseBoolean(generateVariablePool().getValue(META_CONFIG_AUTO_RESET_BUTTON_STATE))) {
                             try {
                                 triggerResetTimeout.restart();
                             } catch (CouldNotPerformException ex) {
