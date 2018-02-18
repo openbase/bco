@@ -74,8 +74,9 @@ public class OpenHABCommandExecutor {
                     throw new CouldNotPerformException("Could not extract unit id out of item name!");
                 }
                 try {
+                    System.out.println("sec["+nameSegment[4]+"] from item["+command.getItem()+"]");
                     serviceType = ServiceTemplate.ServiceType.valueOf(StringProcessor.transformToUpperCase(nameSegment[4]));
-                } catch (IndexOutOfBoundsException | NullPointerException ex) {
+                } catch (IndexOutOfBoundsException | IllegalArgumentException | NullPointerException ex) {
                     throw new CouldNotPerformException("Could not extract service type out of item name!", ex);
                 }
             } catch (CouldNotPerformException ex) {
