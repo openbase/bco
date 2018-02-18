@@ -21,35 +21,58 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.schedule.Timeout;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ButtonStateType.ButtonState;
+import rst.domotic.state.ButtonStateType.ButtonState.State;
 import rst.domotic.unit.dal.ButtonDataType.ButtonData;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class ButtonController extends AbstractDALUnitController<ButtonData, ButtonData.Builder> implements Button {
+
+    public final static String META_CONFIG_AUTO_RESET_BUTTON_STATE = "AUTO_RESET_BUTTON_STATE";
+
+    public static final long DEAULT_TRIGGER_TIMEOUT = 1500;
+    public static final ButtonState BUTTON_STATE_RELEASED = ButtonState.newBuilder().setValue(State.RELEASED).build();
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ButtonState.getDefaultInstance()));
     }
 
+    /**
+     * Timeout implementation for trigger mode
+     */
+    private final Timeout triggerResetTimeout = new Timeout(DEAULT_TRIGGER_TIMEOUT) {
+        @Override
+        public void expired() {
+            try (ClosableDataBuilder<ButtonData.Builder> dataBuilder = getDataBuilder(this)) {
+                dataBuilder.getInternalBuilder().setButtonState(BUTTON_STATE_RELEASED);
+            } catch (Exception ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not reset button state!", ex), logger);
+            }
+        }
+    };
+
     public ButtonController(final UnitHost unitHost, final ButtonData.Builder builder) throws InstantiationException, CouldNotPerformException {
         super(ButtonController.class, unitHost, builder);
     }
 
-//    public void updateButtonStateProvider(ButtonState state) throws CouldNotPerformException {
+    //    public void updateButtonStateProvider(ButtonState state) throws CouldNotPerformException {
 //        logger.debug("Apply buttonState Update[" + state + "] for " + this + ".");
 //        try (ClosableDataBuilder<ButtonData.Builder> dataBuilder = getDataBuilder(this)) {
-//            
+//
 //            ButtonState.Builder buttonState = dataBuilder.getInternalBuilder().getButtonStateBuilder();
 //
 //            // Update value
@@ -63,13 +86,13 @@ public class ButtonController extends AbstractDALUnitController<ButtonData, Butt
 //                }
 //                buttonState.setLastPressed(state.getTimestamp());
 //            }
-//            
+//
 //            dataBuilder.getInternalBuilder().setButtonState(buttonState.setTransactionId(buttonState.getTransactionId() + 1));
 //        } catch (Exception ex) {
 //            throw new CouldNotPerformException("Could not apply buttonState Update[" + state + "] for " + this + "!", ex);
 //        }
 //    }
-//    
+//
     @Override
     public ButtonState getButtonState() throws NotAvailableException {
         try {
@@ -91,9 +114,20 @@ public class ButtonController extends AbstractDALUnitController<ButtonData, Butt
                         buttonState = TimestampProcessor.updateTimestampWithCurrentTime(buttonState, logger);
                     }
                     buttonState.setLastPressed(buttonState.getTimestamp());
+
+                    try {
+                        if (Boolean.parseBoolean(generateVariablePool().getValue("META_CONFIG_AUTO_RESET_BUTTON_STATE"))) {
+                            try {
+                                triggerResetTimeout.restart();
+                            } catch (CouldNotPerformException ex) {
+                                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not trigger auto reset!", ex), logger);
+                            }
+                        }
+                    } catch (NotAvailableException ex) {
+                        // variable not available so trigger is not needed.
+                    }
                 }
                 break;
         }
     }
-
 }
