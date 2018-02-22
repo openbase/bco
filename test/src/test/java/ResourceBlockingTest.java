@@ -21,8 +21,11 @@
  */
 
 import java.util.List;
+
+import com.google.protobuf.Message;
 import org.junit.Test;
 import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.Units;
@@ -91,7 +94,7 @@ public class ResourceBlockingTest {
 //        }
     }
 
-    public ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Object serviceAttribute, final UnitRemote unitRemote) throws CouldNotPerformException {
+    public ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute, final UnitRemote unitRemote) throws CouldNotPerformException {
         // 5 minute retaining:
         actionDescription.setExecutionTimePeriod(1000 * 30);
         
@@ -105,6 +108,6 @@ public class ResourceBlockingTest {
         //TODO: update USER key with authentification
         actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel()));
 
-        return Service.upateActionDescription(actionDescription, serviceAttribute);
+        return Services.updateActionDescription(actionDescription, serviceAttribute);
     }
 }

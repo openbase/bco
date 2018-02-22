@@ -135,13 +135,16 @@ public class PresenceStateServicePanel extends AbstractServicePanel<PresenceStat
         try {
             switch (getProviderService().getPresenceState().getValue()) {
                 case ABSENT:
-                    presenceStatePanel.setBackground(Color.BLUE.darker());
+                    presenceStatePanel.setForeground(Color.LIGHT_GRAY);
+                    presenceStatePanel.setBackground(Color.BLUE.brighter());
                     break;
                 case PRESENT:
+                    presenceStatePanel.setForeground(Color.BLACK);
                     presenceStatePanel.setBackground(Color.GREEN.darker());
                     break;
                 case UNKNOWN:
-                    presenceStatePanel.setBackground(Color.GRAY);
+                    presenceStatePanel.setForeground(Color.BLACK);
+                    presenceStatePanel.setBackground(Color.ORANGE.darker());
                     break;
                 default:
                     throw new InvalidStateException("State[" + getProviderService().getPresenceState().getValue() + "] is unknown.");

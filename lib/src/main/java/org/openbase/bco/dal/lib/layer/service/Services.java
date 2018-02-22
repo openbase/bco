@@ -21,12 +21,15 @@ package org.openbase.bco.dal.lib.layer.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
+
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
+
 import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_LABEL;
 import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKAGE;
 
@@ -54,7 +57,6 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @author <a href="mailto:agatting@techfak.uni-bielefeld.de">Andreas Gatting</a>
  */
@@ -64,11 +66,12 @@ public class Services {
 
     /**
      * This method returns the service base name of the given service type.
-     *
+     * <p>
      * The base name is the service name without service suffix.
      * e.g. the base name of service PowerStateService is PowerState.
      *
      * @param serviceType the service type to extract the base name.
+     *
      * @return the service base name.
      */
     public static String getServiceBaseName(ServiceType serviceType) {
@@ -92,7 +95,9 @@ public class Services {
      * Method returns the state name of the appurtenant service.
      *
      * @param serviceType the service type which is used to generate the service name.
+     *
      * @return The state type name as string.
+     *
      * @throws org.openbase.jul.exception.NotAvailableException is thrown in case the given serviceType is null.
      */
     public static String getServiceStateName(final ServiceType serviceType) throws NotAvailableException {
@@ -111,9 +116,11 @@ public class Services {
      * Method returns the state name of the appurtenant service.
      *
      * @param template The service template.
+     *
      * @return The state type name as string.
+     *
      * @throws org.openbase.jul.exception.NotAvailableException is thrown in case the given template is null.
-     * //
+     *                                                          //
      */
     public static String getServiceStateName(final ServiceTemplate template) throws NotAvailableException {
         try {
@@ -131,7 +138,9 @@ public class Services {
      * Method returns a collection of service state values.
      *
      * @param serviceType the service type to identify the service state class.
+     *
      * @return a collection of enum values of the service state.
+     *
      * @throws NotAvailableException is thrown in case the referred service state does not contain any state values.
      */
     public static Collection<? extends Enum> getServiceStateValues(final ServiceType serviceType) throws NotAvailableException {
@@ -147,11 +156,13 @@ public class Services {
     /**
      * Method builds a new service state related to the given service type and initializes this instance with the given state value.
      *
-     * @param <SC> the service class of the service state.
-     * @param <SV> the state enum of the service.
+     * @param <SC>        the service class of the service state.
+     * @param <SV>        the state enum of the service.
      * @param serviceType the service type of the service state.
-     * @param stateValue a compatible state value related to the given service state.
+     * @param stateValue  a compatible state value related to the given service state.
+     *
      * @return a new service state initialized with the state value.
+     *
      * @throws CouldNotPerformException is thrown in case the given arguments are not compatible with each other or something else went wrong during the build.
      */
     public static <SC extends GeneratedMessage, SV extends Enum> SC buildServiceState(final ServiceType serviceType, SV stateValue) throws CouldNotPerformException {
@@ -170,7 +181,7 @@ public class Services {
     }
 
     /**
-     * @deprecated please use {@code detectServiceStateClass(final ServiceType serviceType)} instead.
+     * @deprecated please use {@code getServiceStateClass(final ServiceType serviceType)} instead.
      */
     @Deprecated
     public static Class<? extends GeneratedMessage> detectServiceDataClass(final ServiceType serviceType) throws NotAvailableException {
@@ -181,7 +192,9 @@ public class Services {
      * Method detects and returns the service state class.
      *
      * @param serviceType the given service type to resolve the class.
+     *
      * @return the service state class.
+     *
      * @throws NotAvailableException is thrown in case the class could not be detected.
      */
     public static Class<? extends GeneratedMessage> getServiceStateClass(final ServiceType serviceType) throws NotAvailableException {
@@ -277,14 +290,30 @@ public class Services {
         return classes;
     }
 
-    public static ActionDescription.Builder upateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribue, final ServiceType serviceType) throws CouldNotPerformException {
-        verifyServiceState(serviceAttribue);
+    /**
+     * @param actionDescription
+     * @param serviceAttribute
+     * @param serviceType
+     *
+     * @return
+     *
+     *
+     * @throws CouldNotPerformException
+     * @deprecated please use updateActionDescription(...) instead
+     */
+    @Deprecated
+    public static ActionDescription.Builder upateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
+        return updateActionDescription(actionDescription, serviceAttribute, serviceType);
+    }
+
+    public static ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
+        verifyServiceState(serviceAttribute);
 
         ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
         ServiceJSonProcessor jSonProcessor = new ServiceJSonProcessor();
 
-        serviceStateDescription.setServiceAttribute(jSonProcessor.serialize(serviceAttribue));
-        serviceStateDescription.setServiceAttributeType(jSonProcessor.getServiceAttributeType(serviceAttribue));
+        serviceStateDescription.setServiceAttribute(jSonProcessor.serialize(serviceAttribute));
+        serviceStateDescription.setServiceAttributeType(jSonProcessor.getServiceAttributeType(serviceAttribute));
         serviceStateDescription.setServiceType(serviceType);
 
         String description = actionDescription.getDescription();
@@ -296,14 +325,22 @@ public class Services {
         }
 
         // TODO: also replace SERVICE_ATTRIBUTE_KEY in description with a nice serviceAttribute representation
-        String serviceAttributeRepresentation = StringProcessor.formatHumanReadable(serviceAttribue.toString());
+        String serviceAttributeRepresentation = StringProcessor.formatHumanReadable(serviceAttribute.toString());
         description = description.replace(ActionDescriptionProcessor.SERVICE_ATTIBUTE_KEY, serviceAttributeRepresentation);
         actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.SERVICE_ATTIBUTE_KEY, serviceAttributeRepresentation));
         return actionDescription.setDescription(StringProcessor.removeDoubleWhiteSpaces(description));
     }
 
-    public static ActionDescription.Builder upateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribue) throws CouldNotPerformException {
-        return upateActionDescription(actionDescription, serviceAttribue, getServiceType(serviceAttribue));
+    /**
+     * @deprecated please use updateActionDescription(...) instead
+     */
+    @Deprecated
+    public static ActionDescription.Builder upateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute) throws CouldNotPerformException {
+        return updateActionDescription(actionDescription, serviceAttribute);
+    }
+
+    public static ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute) throws CouldNotPerformException {
+        return updateActionDescription(actionDescription, serviceAttribute, getServiceType(serviceAttribute));
     }
 
     public static ServiceType getServiceType(final Object serviceAttribute) throws CouldNotPerformException {
@@ -346,7 +383,7 @@ public class Services {
         try {
             return (Boolean) detectServiceMethod(serviceType, "has", serviceTempus, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
         } catch (IllegalAccessException | ExceptionInInitializerError ex) {
-            throw new NotSupportedException("ServiceType[" + serviceType.name() + "] not provided by Message["+instance.getClass().getSimpleName()+"]!", instance, ex);
+            throw new NotSupportedException("ServiceType[" + serviceType.name() + "] not provided by Message[" + instance.getClass().getSimpleName() + "]!", instance, ex);
         } catch (NullPointerException ex) {
             throw new CouldNotPerformException("Invocation failed because given instance is not available!", ex);
         } catch (InvocationTargetException ex) {
@@ -370,7 +407,7 @@ public class Services {
             try {
                 verifyOperationServiceStateValue((Enum) valueMethod.invoke(serviceState));
             } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | ClassCastException ex) {
-                ExceptionPrinter.printHistory("Operation service verification phase failed of ServiceState[ "+serviceState.getClass().getSimpleName()+"]!", ex, LOGGER);
+                ExceptionPrinter.printHistory("Operation service verification phase failed of ServiceState[ " + serviceState.getClass().getSimpleName() + "]!", ex, LOGGER);
             }
         } catch (NoSuchMethodException ex) {
             // service state does contain any value so verification is not needed.
@@ -394,7 +431,7 @@ public class Services {
             try {
                 detectServiceStateVerificationMethod(serviceState).invoke(null, serviceState);
             } catch (NotAvailableException ex) {
-                ExceptionPrinter.printHistory("Verification of ServiceState[ "+serviceState.getClass().getSimpleName()+"] skipped because verification method not supported yet.!", ex, LOGGER, LogLevel.DEBUG);
+                ExceptionPrinter.printHistory("Verification of ServiceState[ " + serviceState.getClass().getSimpleName() + "] skipped because verification method not supported yet.!", ex, LOGGER, LogLevel.DEBUG);
             } catch (InvocationTargetException ex) {
                 if (ex.getTargetException() instanceof VerificationFailedException) {
                     throw (VerificationFailedException) ex.getTargetException();

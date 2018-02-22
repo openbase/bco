@@ -144,7 +144,7 @@ public class StandbyStateServicePanel extends AbstractServicePanel<StandbyStateP
             switch (getProviderService().getStandbyState().getValue()) {
                 case STANDBY:
                     standbyStatusLabel.setForeground(Color.LIGHT_GRAY);
-                    standbyStatePanel.setBackground(Color.BLUE.lightGray);
+                    standbyStatePanel.setBackground(Color.BLUE.brighter());
                     standbyButton.setText("Wakeup");
                     break;
                 case RUNNING:

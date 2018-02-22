@@ -704,7 +704,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         }
         actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
 
-        return Services.upateActionDescription(actionDescription, serviceAttribute, serviceType);
+        return Services.updateActionDescription(actionDescription, serviceAttribute, serviceType);
     }
 
     /**

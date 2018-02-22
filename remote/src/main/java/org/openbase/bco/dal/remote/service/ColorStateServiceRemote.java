@@ -27,6 +27,7 @@ import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.ColorStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -80,7 +81,7 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
 
         try {
-            return applyAction(Service.upateActionDescription(actionDescription, colorState, getServiceType()).build());
+            return applyAction(Services.updateActionDescription(actionDescription, colorState, getServiceType()).build());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new CouldNotPerformException("Could not set colorState", ex);
@@ -94,7 +95,7 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
         serviceStateDescription.setUnitType(unitType);
         
         try {
-            return applyAction(Service.upateActionDescription(actionDescription, colorState, getServiceType()).build());
+            return applyAction(Services.updateActionDescription(actionDescription, colorState, getServiceType()).build());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new CouldNotPerformException("Could not set colorState", ex);

@@ -24,7 +24,8 @@ package org.openbase.bco.dal.remote.service;
 import java.util.Collection;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.layer.service.Service;
+
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.BrightnessStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -61,7 +62,7 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
 
         try {
-            return applyAction(Service.upateActionDescription(actionDescription, brightnessState, getServiceType()).build());
+            return applyAction(Services.updateActionDescription(actionDescription, brightnessState, getServiceType()).build());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new CouldNotPerformException("Could not set brightnessState", ex);
@@ -75,7 +76,7 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
         serviceStateDescription.setUnitType(unitType);
         
         try {
-            return applyAction(Service.upateActionDescription(actionDescription, brightnessState, getServiceType()).build());
+            return applyAction(Services.updateActionDescription(actionDescription, brightnessState, getServiceType()).build());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new CouldNotPerformException("Could not set brightnessState", ex);

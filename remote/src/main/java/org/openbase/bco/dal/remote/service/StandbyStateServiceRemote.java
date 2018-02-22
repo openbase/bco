@@ -24,7 +24,8 @@ package org.openbase.bco.dal.remote.service;
 import java.util.Collection;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.layer.service.Service;
+
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.StandbyStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -32,8 +33,6 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import org.openbase.jul.iface.Processable;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
@@ -58,7 +57,7 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
          ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
 
         try {
-            return applyAction(Service.upateActionDescription(actionDescription, standbyState, getServiceType()).build());
+            return applyAction(Services.updateActionDescription(actionDescription, standbyState, getServiceType()).build());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new CouldNotPerformException("Could not set standbyState", ex);
@@ -72,7 +71,7 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
         serviceStateDescription.setUnitType(unitType);
         
         try {
-            return applyAction(Service.upateActionDescription(actionDescription, standbyState, getServiceType()).build());
+            return applyAction(Services.updateActionDescription(actionDescription, standbyState, getServiceType()).build());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new CouldNotPerformException("Could not set standbyState", ex);

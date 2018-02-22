@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.BlindStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -117,7 +118,7 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
 
         try {
-            return applyAction(Service.upateActionDescription(actionDescription, blindState, getServiceType()).build());
+            return applyAction(Services.updateActionDescription(actionDescription, blindState, getServiceType()).build());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new CouldNotPerformException("Could not set blindState", ex);
@@ -131,7 +132,7 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
         serviceStateDescription.setUnitType(unitType);
         
         try {
-            return applyAction(Service.upateActionDescription(actionDescription, blindState, getServiceType()).build());
+            return applyAction(Services.updateActionDescription(actionDescription, blindState, getServiceType()).build());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new CouldNotPerformException("Could not set blindState", ex);

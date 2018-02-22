@@ -24,6 +24,7 @@ package org.openbase.bco.dal.remote.service;
 import java.util.Collection;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.ActivationStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.ActivationStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -94,7 +95,7 @@ public class ActivationStateServiceRemote extends AbstractServiceRemote<Activati
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
 
         try {
-            return applyAction(Service.upateActionDescription(actionDescription, activationState, getServiceType()).build());
+            return applyAction(Services.updateActionDescription(actionDescription, activationState, getServiceType()).build());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new CouldNotPerformException("Could not set activationState", ex);
@@ -108,7 +109,7 @@ public class ActivationStateServiceRemote extends AbstractServiceRemote<Activati
         serviceStateDescription.setUnitType(unitType);
         
         try {
-            return applyAction(Service.upateActionDescription(actionDescription, activationState, getServiceType()).build());
+            return applyAction(Services.updateActionDescription(actionDescription, activationState, getServiceType()).build());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new CouldNotPerformException("Could not set activationState", ex);

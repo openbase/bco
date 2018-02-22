@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.PowerStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -119,7 +120,7 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         actionDescription.setMultiResourceAllocationStrategy(MultiResourceAllocationStrategy.newBuilder().setStrategy(MultiResourceAllocationStrategy.Strategy.ALL_OR_NOTHING)).build();
         try {
-            return applyAction(Service.upateActionDescription(actionDescription, powerState, getServiceType()).build());
+            return applyAction(Services.updateActionDescription(actionDescription, powerState, getServiceType()).build());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new CouldNotPerformException("Could not set powerState", ex);
@@ -133,7 +134,7 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
         serviceStateDescription.setUnitType(unitType);
         
         try {
-            return applyAction(Service.upateActionDescription(actionDescription, powerState, getServiceType()).build());
+            return applyAction(Services.updateActionDescription(actionDescription, powerState, getServiceType()).build());
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new CouldNotPerformException("Could not set powerState", ex);

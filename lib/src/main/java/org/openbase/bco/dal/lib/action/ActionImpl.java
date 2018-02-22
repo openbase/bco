@@ -165,7 +165,7 @@ public class ActionImpl implements Action {
                             updateActionState(ActionState.State.EXECUTING);
 
                             try {
-                                Service.invokeServiceMethod(serviceDescription, unit, serviceAttribute);
+                                waitForExecution(Services.invokeServiceMethod(serviceDescription, unit, serviceAttribute));
                                 actionDescriptionBuilder.setTransactionId(unit.getTransactionIdByServiceType(actionDescriptionBuilder.getServiceStateDescription().getServiceType()));
                             } catch (CouldNotPerformException ex) {
                                 if (ex.getCause() instanceof InterruptedException) {
@@ -245,7 +245,8 @@ public class ActionImpl implements Action {
                             updateActionState(ActionState.State.EXECUTING);
 
                             try {
-                                Service.invokeServiceMethod(serviceDescription, unit, serviceAttribute);
+                                waitForExecution(Services.invokeServiceMethod(serviceDescription, unit, serviceAttribute));
+
                                 actionDescriptionBuilder.setTransactionId(unit.getTransactionIdByServiceType(actionDescriptionBuilder.getServiceStateDescription().getServiceType()));
                             } catch (CouldNotPerformException ex) {
                                 if (ex.getCause() instanceof InterruptedException) {
@@ -306,6 +307,14 @@ public class ActionImpl implements Action {
     private void updateActionState(ActionState.State state) {
         actionDescriptionBuilder.setActionState(ActionState.newBuilder().setValue(state));
         LOGGER.debug("StateUpdate[" + state.name() + "] of " + this);
+    }
+
+    private void waitForExecution(final Object result) throws ExecutionException, InterruptedException {
+        if(result instanceof Future) {
+            ((Future) result).get();
+        } else {
+            LOGGER.warn("Service["+serviceDescription.getType()+"] implementation of "+unit+" does not provide feedback about triggered operation! Just continue without feedback...");
+        }
     }
 
     @Override
