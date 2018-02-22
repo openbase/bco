@@ -50,16 +50,11 @@ public class StandbyAgent extends AbstractAgentController {
     private LocationRemote locationRemote;
     private final Timeout timeout;
     private final SyncObject standbySync = new SyncObject("StandbySync");
-    private boolean standby;
     private final Observer<LocationData> locationDataObserver;
-
 
 
     public StandbyAgent() throws InstantiationException, CouldNotPerformException, InterruptedException {
         super(StandbyAgent.class);
-
-        this.standby = false;
-
         this.timeout = new Timeout(TIMEOUT) {
 
             @Override
@@ -99,23 +94,18 @@ public class StandbyAgent extends AbstractAgentController {
 
     public void triggerPresenceChange(LocationDataType.LocationData data) throws InterruptedException {
         synchronized (standbySync) {
-            if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT)) {
+            if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.PRESENT) && timeout.isActive()) {
                 timeout.cancel();
-
-                if (standby) {
-                    try {
-                        locationRemote.setStandbyState(State.RUNNING);
-                    } catch (CouldNotPerformException ex) {
-                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify motion state change!", ex), logger);
-                    }
+                try {
+                    locationRemote.setStandbyState(State.RUNNING);
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify motion state change!", ex), logger);
                 }
-            } else if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.ABSENT)) {
-                if (!timeout.isActive()) {
-                    try {
-                        timeout.start();
-                    } catch (CouldNotPerformException ex) {
-                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not schedule presence timeout!", ex), logger);
-                    }
+            } else if (data.getPresenceState().getValue().equals(PresenceStateType.PresenceState.State.ABSENT) && !timeout.isActive()) {
+                try {
+                    timeout.start();
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not schedule presence timeout!", ex), logger);
                 }
             }
         }

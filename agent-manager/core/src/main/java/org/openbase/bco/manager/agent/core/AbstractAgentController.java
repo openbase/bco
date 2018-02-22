@@ -23,7 +23,10 @@ package org.openbase.bco.manager.agent.core;
  */
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
+
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.AbstractExecutableBaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.pattern.trigger.TriggerPool;
@@ -98,7 +101,7 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
             ResourceAllocationType.ResourceAllocation.Policy policy,
             ResourceAllocationType.ResourceAllocation.Priority priority,
             UnitRemote unitRemote,
-            Object serviceAttribute,
+            Message serviceAttribute,
             UnitTemplateType.UnitTemplate.UnitType unitType,
             ServiceTemplateType.ServiceTemplate.ServiceType serviceType,
             MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy multiResourceAllocationStrategy) throws CouldNotPerformException {
@@ -116,7 +119,7 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
         resourceAllocation.setPriority(priority);
         resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(unitRemote.getScope()));
 
-        Service.upateActionDescription(actionDescriptionBuilder, serviceAttribute, serviceType);
+        Services.updateActionDescription(actionDescriptionBuilder, serviceAttribute, serviceType);
         ServiceStateDescriptionType.ServiceStateDescription.Builder serviceStateDescription = actionDescriptionBuilder.getServiceStateDescriptionBuilder();
         serviceStateDescription.setUnitId(unitRemote.getId().toString());
         serviceStateDescription.setUnitType(unitType);
