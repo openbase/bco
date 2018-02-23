@@ -23,6 +23,7 @@ package org.openbase.bco.dal.remote.unit;
  */
 
 import com.google.protobuf.GeneratedMessage;
+import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.future.AuthenticatedActionFuture;
@@ -57,6 +58,7 @@ import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -678,6 +680,20 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
                 serviceObservable.shutdown();
             }
             unitDataObservableMap.get(serviceTempus).shutdown();
+        }
+    }
+
+    @Override
+    public Future<Void> restoreSnapshot(Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(snapshot, Void.class, getSessionManager(), this::restoreSnapshotAuthenticated);
+    }
+
+    @Override
+    public Future<AuthenticatedValue> restoreSnapshotAuthenticated(AuthenticatedValue authenticatedSnapshot) throws CouldNotPerformException {
+        try {
+            return RPCHelper.callRemoteMethod(authenticatedSnapshot, this, AuthenticatedValue.class);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not restore snapshot!", ex);
         }
     }
 }

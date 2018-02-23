@@ -24,6 +24,7 @@ package org.openbase.bco.dal.lib.layer.unit;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
+import org.openbase.bco.authentication.lib.iface.AuthenticatedSnapshotable;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
@@ -85,7 +86,7 @@ import java.util.concurrent.Future;
  * @param <D> the data type of this unit used for the state synchronization.
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<String>, Configurable<String, UnitConfig>, DataProvider<D>, ServiceProvider, Service, Snapshotable<Snapshot> {
+public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<String>, Configurable<String, UnitConfig>, DataProvider<D>, ServiceProvider, Service, AuthenticatedSnapshotable {
 
     /**
      * Returns the type of this unit.
@@ -252,18 +253,22 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
 
     @RPCMethod
     @Override
-    default Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
-        try {
-            Collection<Future> futureCollection = new ArrayList<>();
-            for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
-                ActionDescription actionDescription = ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build();
-                futureCollection.add(applyAction(actionDescription));
-            }
-            return GlobalCachedExecutorService.allOf(futureCollection);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not record snapshot!", ex);
-        }
-    }
+    Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException;
+
+//    @RPCMethod
+//    @Override
+//    default Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
+//        try {
+//            Collection<Future> futureCollection = new ArrayList<>();
+//            for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
+//                ActionDescription actionDescription = ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build();
+//                futureCollection.add(applyAction(actionDescription));
+//            }
+//            return GlobalCachedExecutorService.allOf(futureCollection);
+//        } catch (CouldNotPerformException ex) {
+//            throw new CouldNotPerformException("Could not record snapshot!", ex);
+//        }
+//    }
 
     /**
      * Gets the position of the unit relative to its parent location.

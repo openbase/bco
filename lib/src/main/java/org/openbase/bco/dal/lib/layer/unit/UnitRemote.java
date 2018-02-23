@@ -31,14 +31,21 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
+import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.pattern.ConfigurableRemote;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.Scope;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.rsb.ScopeType;
+
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.concurrent.Future;
 
 /**
  * @param <M> Message

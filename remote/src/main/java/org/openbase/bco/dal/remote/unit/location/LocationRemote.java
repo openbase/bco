@@ -35,6 +35,7 @@ import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType;
@@ -151,11 +152,6 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     @Override
     public Future<Snapshot> recordSnapshot(UnitType unitType) throws CouldNotPerformException, InterruptedException {
         return RPCHelper.callRemoteMethod(unitType, this, Snapshot.class);
-    }
-
-    @Override
-    public Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
-        return RPCHelper.callRemoteMethod(snapshot, this, Void.class);
     }
 
     @Override

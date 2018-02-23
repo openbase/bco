@@ -26,7 +26,11 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
+import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
+import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor.ConfigRetrieval;
+import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor.InternalProcessable;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
+import org.openbase.bco.authentication.lib.AuthorizationHelper.Type;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.dal.lib.action.ActionImpl;
 import org.openbase.bco.dal.lib.layer.service.Service;
@@ -53,9 +57,11 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -63,9 +69,12 @@ import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType;
+import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
+import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
@@ -75,8 +84,11 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
 
 import java.io.IOException;
+import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
@@ -645,5 +657,39 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     @Override
     public void removeDataObserver(ServiceTempus serviceTempus, Observer<D> observer) {
         unitDataObservableMap.get(serviceTempus).removeObserver(observer);
+    }
+
+    @Override
+    public Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
+        try {
+            Collection<Future> futureCollection = new ArrayList<>();
+            for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
+                ActionDescription actionDescription = ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build();
+                futureCollection.add(applyAction(actionDescription));
+            }
+            return GlobalCachedExecutorService.allOf(futureCollection);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not record snapshot!", ex);
+        }
+    }
+
+    @Override
+    public Future<AuthenticatedValue> restoreSnapshotAuthenticated(final AuthenticatedValue authenticatedSnapshot) {
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedSnapshot,
+                Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap(),
+                Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap(),
+                Snapshot.class,
+                message -> {
+                    try {
+                        restoreSnapshot(message).get();
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    } catch (ExecutionException ex) {
+                        throw new CouldNotPerformException("Could not restore snapshot", ex);
+                    }
+                    return null;
+                },
+                receive -> getConfig(),
+                Type.ACCESS));
     }
 }
