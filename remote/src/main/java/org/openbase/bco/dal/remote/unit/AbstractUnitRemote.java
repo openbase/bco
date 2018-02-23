@@ -21,32 +21,21 @@ package org.openbase.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.GeneratedMessage;
-import com.google.protobuf.Message;
-import java.io.IOException;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import javax.crypto.BadPaddingException;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
-import org.openbase.bco.authentication.lib.future.AuthenticatedActionFuture;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.future.AuthenticatedActionFuture;
 import org.openbase.bco.dal.lib.layer.service.ServiceDataFilteredObservable;
+import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.dal.lib.layer.unit.UnitDataFilteredObservable;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
+import org.openbase.bco.dal.remote.unit.future.UnitSynchronisationFuture;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.FatalImplementationErrorException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.RejectedException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.MessageObservable;
@@ -56,7 +45,6 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
-import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.FutureProcessor;
@@ -65,7 +53,6 @@ import rct.Transform;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
@@ -73,23 +60,24 @@ import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
-import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
-import org.openbase.bco.dal.lib.layer.service.Services;
-import org.openbase.bco.dal.lib.layer.unit.UnitDataFilteredObservable;
-import org.openbase.bco.dal.remote.unit.future.UnitSynchronisationFuture;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
-import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
+
+import javax.crypto.BadPaddingException;
+import java.io.IOException;
+import java.util.*;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
- *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <D> The unit data type.
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends AbstractConfigurableRemote<D, UnitConfig> implements UnitRemote<D> {
 
@@ -264,7 +252,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @throws InitializationException {@inheritDoc}
-     * @throws InterruptedException {@inheritDoc}
+     * @throws InterruptedException    {@inheritDoc}
      */
     @Override
     protected void postInit() throws InitializationException, InterruptedException {
@@ -337,7 +325,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * @param config {@inheritDoc}
      * @return {@inheritDoc}
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws java.lang.InterruptedException {@inheritDoc}
+     * @throws java.lang.InterruptedException                      {@inheritDoc}
      */
     @Override
     public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
@@ -398,7 +386,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     /**
      * {@inheritDoc}
      *
-     * @throws InterruptedException {@inheritDoc}
+     * @throws InterruptedException     {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -416,7 +404,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @throws CouldNotPerformException {@inheritDoc}
-     * @throws InterruptedException {@inheritDoc}
+     * @throws InterruptedException     {@inheritDoc}
      */
     @Override
     public void waitForData() throws CouldNotPerformException, InterruptedException {
@@ -427,9 +415,9 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     /**
      * {@inheritDoc}
      *
-     * @param timeout {@inheritDoc}
+     * @param timeout  {@inheritDoc}
      * @param timeUnit {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws CouldNotPerformException       {@inheritDoc}
      * @throws java.lang.InterruptedException {@inheritDoc}
      */
     @Override
@@ -538,7 +526,6 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     }
 
     /**
-     *
      * @return
      * @throws NotAvailableException
      * @deprecated please use getParentLocationConfig() instead.
@@ -558,7 +545,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      *
      * @param waitForData flag defines if the method should block until the remote is fully synchronized.
      * @return a location remote instance.
-     * @throws NotAvailableException is thrown if the location remote is currently not available.
+     * @throws NotAvailableException          is thrown if the location remote is currently not available.
      * @throws java.lang.InterruptedException is thrown if the current was externally interrupted.
      */
     public LocationRemote getParentLocationRemote(final boolean waitForData) throws NotAvailableException, InterruptedException {
@@ -602,7 +589,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * @param actionDescription {@inheritDoc}
      * @return {@inheritDoc}
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws java.lang.InterruptedException {@inheritDoc}
+     * @throws java.lang.InterruptedException                      {@inheritDoc}
      */
     @Override
     public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException, RejectedException {
@@ -629,7 +616,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
             }
         }
 
-        // then, after relog or incase unit was already or never authenticated
+        // then, after relog or in case unit was already or never authenticated
         if (this.isAuthenticated()) {
             try {
                 TicketAuthenticatorWrapper wrapper = AuthenticationClientHandler.initServiceServerRequest(this.sessionManager.getSessionKey(), this.sessionManager.getTicketAuthenticatorWrapper());
@@ -660,63 +647,16 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      *
      * @return {@inheritDoc}
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws java.lang.InterruptedException {@inheritDoc}
+     * @throws java.lang.InterruptedException                      {@inheritDoc}
      */
     @Override
     public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
         return RPCHelper.callRemoteMethod(this, Snapshot.class);
     }
 
-    /**
-     * Use if serviceType cannot be resolved from serviceAttribute. E.g. AlarmState.
-     *
-     * @param actionDescription
-     * @param serviceAttribute
-     * @param serviceType
-     * @return
-     * @throws CouldNotPerformException
-     */
-    protected ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
-        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
-        ResourceAllocation.Builder resourceAllocation = actionDescription.getResourceAllocationBuilder();
-
-        serviceStateDescription.setUnitId(getId());
-        resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(getScope()));
-
-        actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
-        try {
-            String username = "";
-            if (sessionManager.getUserId() != null) {
-                username += Registries.getUnitRegistry().getUnitConfigById(sessionManager.getUserId()).getUserConfig().getUserName();
-            }
-            if (sessionManager.getClientId() != null) {
-                if (!username.isEmpty()) {
-                    username += "@";
-                }
-                username += Registries.getUnitRegistry().getUnitConfigById(sessionManager.getClientId()).getUserConfig().getUserName();
-            }
-            if (username.isEmpty()) {
-                username = "Other";
-            }
-            actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.AUTHORITY_KEY, username));
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        }
-        actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
-
-        return Services.updateActionDescription(actionDescription, serviceAttribute, serviceType);
-    }
-
-    /**
-     * Default version.
-     *
-     * @param actionDescription
-     * @param serviceAttribute
-     * @return
-     * @throws CouldNotPerformException
-     */
-    protected ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute) throws CouldNotPerformException {
-        return updateActionDescription(actionDescription, serviceAttribute, Services.getServiceType(serviceAttribute));
+    @Override
+    public SessionManager getSessionManager() {
+        return sessionManager;
     }
 
     @Override

@@ -22,28 +22,17 @@ package org.openbase.bco.dal.lib.layer.service;
  * #L%
  */
 
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
-
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Arrays;
-import java.util.Collection;
-
-import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_LABEL;
-import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKAGE;
-
 import com.google.protobuf.MessageOrBuilder;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.FatalImplementationErrorException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.NotSupportedException;
-import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
@@ -55,6 +44,14 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
+
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Arrays;
+import java.util.Collection;
+
+import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_LABEL;
+import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKAGE;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -71,7 +68,6 @@ public class Services {
      * e.g. the base name of service PowerStateService is PowerState.
      *
      * @param serviceType the service type to extract the base name.
-     *
      * @return the service base name.
      */
     public static String getServiceBaseName(ServiceType serviceType) {
@@ -95,9 +91,7 @@ public class Services {
      * Method returns the state name of the appurtenant service.
      *
      * @param serviceType the service type which is used to generate the service name.
-     *
      * @return The state type name as string.
-     *
      * @throws org.openbase.jul.exception.NotAvailableException is thrown in case the given serviceType is null.
      */
     public static String getServiceStateName(final ServiceType serviceType) throws NotAvailableException {
@@ -116,9 +110,7 @@ public class Services {
      * Method returns the state name of the appurtenant service.
      *
      * @param template The service template.
-     *
      * @return The state type name as string.
-     *
      * @throws org.openbase.jul.exception.NotAvailableException is thrown in case the given template is null.
      *                                                          //
      */
@@ -138,9 +130,7 @@ public class Services {
      * Method returns a collection of service state values.
      *
      * @param serviceType the service type to identify the service state class.
-     *
      * @return a collection of enum values of the service state.
-     *
      * @throws NotAvailableException is thrown in case the referred service state does not contain any state values.
      */
     public static Collection<? extends Enum> getServiceStateValues(final ServiceType serviceType) throws NotAvailableException {
@@ -160,9 +150,7 @@ public class Services {
      * @param <SV>        the state enum of the service.
      * @param serviceType the service type of the service state.
      * @param stateValue  a compatible state value related to the given service state.
-     *
      * @return a new service state initialized with the state value.
-     *
      * @throws CouldNotPerformException is thrown in case the given arguments are not compatible with each other or something else went wrong during the build.
      */
     public static <SC extends GeneratedMessage, SV extends Enum> SC buildServiceState(final ServiceType serviceType, SV stateValue) throws CouldNotPerformException {
@@ -192,9 +180,7 @@ public class Services {
      * Method detects and returns the service state class.
      *
      * @param serviceType the given service type to resolve the class.
-     *
      * @return the service state class.
-     *
      * @throws NotAvailableException is thrown in case the class could not be detected.
      */
     public static Class<? extends GeneratedMessage> getServiceStateClass(final ServiceType serviceType) throws NotAvailableException {
@@ -294,10 +280,7 @@ public class Services {
      * @param actionDescription
      * @param serviceAttribute
      * @param serviceType
-     *
      * @return
-     *
-     *
      * @throws CouldNotPerformException
      * @deprecated please use updateActionDescription(...) instead
      */
@@ -306,6 +289,18 @@ public class Services {
         return updateActionDescription(actionDescription, serviceAttribute, serviceType);
     }
 
+    /**
+     * Update an action description according to the given service information.
+     * This includes serializing the service attribute and replacing some keys if the action description has been
+     * generated by the ActionDescriptionProcessor.
+     *
+     * @param actionDescription the action description that will be updated
+     * @param serviceAttribute  the service attribute that will be applied by this action
+     * @param serviceType       the service type according to the service attribute
+     * @return the updated action description
+     * @throws CouldNotPerformException if the service attribute cannot be verified or if the service attribute cannot
+     *                                  be serialized
+     */
     public static ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
         verifyServiceState(serviceAttribute);
 
@@ -339,6 +334,18 @@ public class Services {
         return updateActionDescription(actionDescription, serviceAttribute);
     }
 
+    /**
+     * Update an action description according to the given service information.
+     * This includes serializing the service attribute and replacing some keys if the action description has been
+     * generated by the ActionDescriptionProcessor.
+     * This method tries to resolve the service type for the service attribute automatically.
+     *
+     * @param actionDescription the action description that will be updated
+     * @param serviceAttribute  the service attribute that will be applied by this action
+     * @return the updated action description
+     * @throws CouldNotPerformException if the service attribute cannot be verified or if the service attribute cannot
+     *                                  be serialized of if the service type cannot be resolved by the attribute
+     */
     public static ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute) throws CouldNotPerformException {
         return updateActionDescription(actionDescription, serviceAttribute, getServiceType(serviceAttribute));
     }
@@ -354,12 +361,28 @@ public class Services {
         }
     }
 
-    public static ActionDescription getResponsibleAction(final Message serviceState) throws NotAvailableException {
+    public static ActionDescription getResponsibleAction(final MessageOrBuilder serviceState) throws NotAvailableException {
         try {
-            return (ActionDescription) serviceState.getClass().getMethod("getResponsibleAction").invoke(serviceState);
-        } catch (IllegalAccessException | IllegalArgumentException | InvocationTargetException | NoSuchMethodException | SecurityException ex) {
+            return (ActionDescription) serviceState.getField(getResponsibleActionField(serviceState));
+        } catch (NotAvailableException ex) {
             throw new NotAvailableException("ActionDescription", ex);
         }
+    }
+
+    public static boolean hasResponsibleAction(final MessageOrBuilder serviceState) throws NotAvailableException {
+        return serviceState.hasField(getResponsibleActionField(serviceState));
+    }
+
+    public static void clearResponsibleAction(final Message.Builder serviceState) throws NotAvailableException {
+        serviceState.clearField(getResponsibleActionField(serviceState));
+    }
+
+    private static FieldDescriptor getResponsibleActionField(final MessageOrBuilder serviceState) throws NotAvailableException {
+        FieldDescriptor fieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
+        if (fieldDescriptor == null) {
+            throw new NotAvailableException("responsible action for " + serviceState.getClass().getSimpleName());
+        }
+        return fieldDescriptor;
     }
 
     public static String getServiceFieldName(final ServiceType serviceType, final ServiceTempus serviceTempus) {

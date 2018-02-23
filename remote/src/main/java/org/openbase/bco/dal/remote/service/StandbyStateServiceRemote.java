@@ -21,9 +21,6 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.StandbyStateOperationServiceCollection;
@@ -42,8 +39,11 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
+import java.util.Collection;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStateOperationService, StandbyState> implements StandbyStateOperationServiceCollection {
@@ -54,7 +54,7 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
 
     @Override
     public Future<ActionFuture> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
-         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
 
         try {
             return applyAction(Services.updateActionDescription(actionDescription, standbyState, getServiceType()).build());
@@ -69,7 +69,7 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
         serviceStateDescription.setUnitType(unitType);
-        
+
         try {
             return applyAction(Services.updateActionDescription(actionDescription, standbyState, getServiceType()).build());
         } catch (InterruptedException ex) {

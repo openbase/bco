@@ -25,19 +25,6 @@ package org.openbase.bco.dal.lib.layer.unit;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
-
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.Future;
-
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
@@ -52,14 +39,8 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.NotSupportedException;
-import org.openbase.jul.exception.PermissionDeniedException;
-import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -80,24 +61,26 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType;
+import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
-
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.CONSUMER;
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER;
-
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
-import rst.domotic.unit.dal.RollerShutterDataType.RollerShutterData;
 import rst.rsb.ScopeType;
+
+import java.io.IOException;
+import java.util.*;
+import java.util.Map.Entry;
+import java.util.concurrent.Future;
+
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
+import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.PROVIDER;
 
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
@@ -439,16 +422,12 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     @Override
     public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         try {
-            if (!actionDescription.hasDescription() && actionDescription.getDescription().isEmpty()) {
+            if (!actionDescription.hasDescription() || actionDescription.getDescription().isEmpty()) {
                 // Fallback print in case the description is not available. 
                 // Please make sure all action descriptions provide a description.
-                logger.info("Apply action on " + this);
+                logger.info("Action[" + actionDescription.getServiceStateDescription().getServiceType() + ", " + actionDescription.getServiceStateDescription().getServiceAttribute() + "] for unit[" + ScopeGenerator.generateStringRep(getScope()) + "] is without a description");
             } else {
-                if (!actionDescription.hasDescription() || actionDescription.getDescription().isEmpty()) {
-                    logger.info("Action[" + actionDescription.getServiceStateDescription().getServiceType() + ", " + actionDescription.getServiceStateDescription().getServiceAttribute() + "] for unit[" + ScopeGenerator.generateStringRep(getScope()) + "] is without a description");
-                } else {
-                    logger.info(actionDescription.getDescription());
-                }
+                logger.info(actionDescription.getDescription());
             }
             logger.info("================");
 
@@ -612,7 +591,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                     // clear requested state
                     Descriptors.FieldDescriptor requestedStateField = ProtoBufFieldProcessor.getFieldDescriptor(internalBuilder, Services.getServiceFieldName(serviceType, ServiceTempus.REQUESTED));
                     internalBuilder.clearField(requestedStateField);
-
                 } else {
                     newState = value;
                 }

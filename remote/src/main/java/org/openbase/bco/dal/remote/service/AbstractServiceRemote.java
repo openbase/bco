@@ -35,13 +35,16 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
+import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
 import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.MultiUnitServiceFusion;
 import org.openbase.bco.dal.lib.layer.unit.UnitAllocation;
 import org.openbase.bco.dal.lib.layer.unit.UnitAllocator;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
+import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
@@ -506,17 +509,18 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             }
 
             if (!JPService.getProperty(JPResourceAllocation.class).getValue()) {
-                List<Future> actionFutureList = new ArrayList<>();
+                final List<Future> actionFutureList = new ArrayList<>();
+                final Message serviceAttribute = new ServiceJSonProcessor().deserialize(actionDescription.getServiceStateDescription().getServiceAttribute(), actionDescription.getServiceStateDescription().getServiceAttributeType());
                 for (final UnitRemote unitRemote : getInternalUnits(actionDescription.getServiceStateDescription().getUnitType())) {
                     ActionDescription.Builder unitActionDescription = ActionDescription.newBuilder(actionDescription);
+
+                    unitRemote.updateActionDescription(unitActionDescription, serviceAttribute);
+
                     ActionReference.Builder actionReference = ActionReference.newBuilder();
                     actionReference.setActionId(actionDescription.getId());
                     actionReference.setAuthority(actionDescription.getActionAuthority());
                     actionReference.setServiceStateDescription(actionDescription.getServiceStateDescription());
                     unitActionDescription.addActionChain(actionReference);
-
-                    ServiceStateDescription.Builder serviceStateDescription = unitActionDescription.getServiceStateDescriptionBuilder();
-                    serviceStateDescription.setUnitId((String) unitRemote.getId());
 
                     actionFutureList.add(unitRemote.applyAction(unitActionDescription.build()));
                 }
@@ -528,10 +532,10 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                         /*
                          * For units which control other units themselves, e.g. locations, do not list the unit itself
                          * but all units it controls. Because the resource allocation has to allocate all these units at the
-                         * same time and all units would themselve again try to allocate themselves a token is used in the
+                         * same time and all units would themselves again try to allocate themselves a token is used in the
                          * ResourceAllocation. But when an allocation has a token all following requests will just return the
                          * state of this allocation so that this token cannot be used to allocate more resources. That is why
-                         * they all have to be allocated at the same time. Futhermore the allocation is done hierarchically. So
+                         * they all have to be allocated at the same time. Furthermore the allocation is done hierarchically. So
                          * an allocation for a location blocks everything else going on in that location and maybe not only the
                          * homeautomation.
                          */

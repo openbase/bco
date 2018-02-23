@@ -22,39 +22,30 @@ package org.openbase.bco.dal.remote.service;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.*;
-
+import com.google.protobuf.Message;
+import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.FatalImplementationErrorException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.NotSupportedException;
-import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.iface.Activatable;
-import org.openbase.jul.iface.Processable;
 import org.openbase.jul.iface.Snapshotable;
-import org.openbase.jul.iface.provider.LabelProvider;
 import org.openbase.jul.iface.provider.PingProvider;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.pattern.provider.DataProvider;
-import org.openbase.jul.processing.Processor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
+import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType;
@@ -64,9 +55,11 @@ import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
-import org.openbase.bco.dal.lib.layer.service.Services;
-import org.openbase.jul.exception.printer.LogLevel;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import java.util.*;
+import java.util.concurrent.*;
+import java.util.concurrent.TimeoutException;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -344,10 +337,26 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
                 }
             }
 
-            Collection<Future> futureCollection = new ArrayList<>();
+            final ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();
+            final Collection<Future> futureCollection = new ArrayList<>();
             for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
-                ActionDescription actionDescription = ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build();
-                futureCollection.add(unitRemoteMap.get(serviceStateDescription.getUnitId()).applyAction(actionDescription));
+                final UnitRemote unitRemote = unitRemoteMap.get(serviceStateDescription.getUnitId());
+
+                ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+
+                // TODO: discuss if the responsible action shall be moved to the action chain, if yes a snapshot could already contain a list
+                // of action descriptions which are initialized accordingly, this way the deserialization does not have to be done here
+                // Furthermore restoring a snapshot itself should be have an action description which is the cause
+                Message.Builder serviceAttribute = serviceJSonProcessor.deserialize(serviceStateDescription.getServiceAttribute(), serviceStateDescription.getServiceAttributeType()).toBuilder();
+                if (Services.hasResponsibleAction(serviceAttribute)) {
+                    ActionDescription responsibleAction = Services.getResponsibleAction(serviceAttribute);
+                    Services.clearResponsibleAction(serviceAttribute);
+
+                    ActionDescriptionProcessor.updateActionChain(actionDescription, responsibleAction);
+                }
+                unitRemote.updateActionDescription(actionDescription, serviceAttribute.build());
+
+                futureCollection.add(unitRemote.applyAction(actionDescription.build()));
             }
             return GlobalCachedExecutorService.allOf(futureCollection);
         } catch (CouldNotPerformException ex) {

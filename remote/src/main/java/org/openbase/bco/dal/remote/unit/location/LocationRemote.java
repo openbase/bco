@@ -168,7 +168,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         serviceStateDescription.setUnitId(getId());
 
         actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
-        //TODO: update USER key with authentification
+        //TODO: update USER key with authentication
         actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
         
         return actionDescription;

@@ -21,20 +21,19 @@ package org.openbase.bco.dal.lib.layer.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
+
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
+import org.openbase.jul.extension.rst.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.schedule.FutureProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -53,11 +52,10 @@ import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 import rst.vision.ColorType.Color;
 import rst.vision.HSBColorType.HSBColor;
 import rst.vision.RGBColorType.RGBColor;
-import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
-import org.openbase.jul.extension.rst.transform.HSBColorToRGBColorTransformer;
+
+import java.util.concurrent.Future;
 
 /**
- *
  * * @author Tamino Huxohl
  * * @author Marian Pohling
  */
@@ -174,7 +172,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
         return setColor(neutralWhite);
     }
 
-//    public void updatePowerStateProvider(final PowerState value) throws CouldNotPerformException {
+    //    public void updatePowerStateProvider(final PowerState value) throws CouldNotPerformException {
 //        logger.debug("Apply powerState Update[" + value + "] for " + this + ".");
 //
 //        try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
@@ -213,7 +211,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
         }
     }
 
-//    public void updateColorStateProvider(final ColorState colorState) throws CouldNotPerformException {
+    //    public void updateColorStateProvider(final ColorState colorState) throws CouldNotPerformException {
 //        logger.debug("Apply colorState Update[" + colorState + "] for " + this + ".");
 //
 //        try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
@@ -250,7 +248,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
         }
     }
 
-//    public void updateBrightnessStateProvider(BrightnessState brightnessState) throws CouldNotPerformException {
+    //    public void updateBrightnessStateProvider(BrightnessState brightnessState) throws CouldNotPerformException {
 //        logger.debug("Apply brightnessState Update[" + brightnessState + "] for " + this + ".");
 //
 //        try (ClosableDataBuilder<ColorableLightData.Builder> dataBuilder = getDataBuilder(this)) {
@@ -294,8 +292,7 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
     protected void applyDataUpdate(ColorableLightData.Builder internalBuilder, ServiceType serviceType) {
         switch (serviceType) {
             case COLOR_STATE_SERVICE:
-                BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(internalBuilder.getColorState().getColor().getHsbColor().getBrightness()).build();
-                internalBuilder.setBrightnessState(brightnessState);
+                internalBuilder.getBrightnessStateBuilder().setBrightness(internalBuilder.getColorState().getColor().getHsbColor().getBrightness());
                 internalBuilder.getPowerStateBuilder().setValue(PowerState.State.ON);
                 break;
             case BRIGHTNESS_STATE_SERVICE:
