@@ -136,7 +136,8 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
 
         this.standbyController = new StandbyController();
 
-        try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
+        // do not notify because not initialized yet
+        try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this, false)) {
             dataBuilder.getInternalBuilder().setStandbyState(StandbyState.newBuilder().setValue(StandbyState.State.RUNNING).build());
         } catch (Exception ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not apply initial service states!", ex), LOGGER, LogLevel.WARN);
