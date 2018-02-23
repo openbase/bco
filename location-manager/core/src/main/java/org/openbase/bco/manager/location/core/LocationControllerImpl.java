@@ -22,25 +22,17 @@ package org.openbase.bco.manager.location.core;
  * #L%
  */
 
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Set;
-import java.util.concurrent.Callable;
-import java.util.concurrent.Future;
-
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
-import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
 import org.openbase.bco.dal.remote.processing.StandbyController;
 import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
-
-import static org.openbase.bco.manager.location.core.LocationManagerController.LOGGER;
-
 import org.openbase.bco.manager.location.lib.LocationController;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.*;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
@@ -48,7 +40,6 @@ import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
-import org.openbase.jul.schedule.SyncObject;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionDescriptionType;
@@ -56,21 +47,9 @@ import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.AlarmStateType;
-import rst.domotic.state.BlindStateType;
-import rst.domotic.state.BrightnessStateType;
-import rst.domotic.state.ColorStateType;
-import rst.domotic.state.MotionStateType;
-import rst.domotic.state.PowerConsumptionStateType;
-import rst.domotic.state.PowerStateType;
-import rst.domotic.state.PresenceStateType;
+import rst.domotic.state.*;
 import rst.domotic.state.PresenceStateType.PresenceState;
-import rst.domotic.state.SmokeStateType;
-import rst.domotic.state.StandbyStateType;
 import rst.domotic.state.StandbyStateType.StandbyState;
-import rst.domotic.state.StandbyStateType.StandbyState.State;
-import rst.domotic.state.TamperStateType;
-import rst.domotic.state.TemperatureStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationDataType;
@@ -78,6 +57,13 @@ import rst.domotic.unit.location.LocationDataType.LocationData;
 import rst.vision.ColorType;
 import rst.vision.HSBColorType;
 import rst.vision.RGBColorType;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Set;
+import java.util.concurrent.Future;
+
+import static org.openbase.bco.manager.location.core.LocationManagerController.LOGGER;
 
 /**
  * UnitConfig
@@ -153,7 +139,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
         try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
             dataBuilder.getInternalBuilder().setStandbyState(StandbyState.newBuilder().setValue(StandbyState.State.RUNNING).build());
         } catch (Exception ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not apply inital service states!", ex), LOGGER, LogLevel.WARN);
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not apply initial service states!", ex), LOGGER, LogLevel.WARN);
         }
     }
 
@@ -234,7 +220,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
     public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         switch (actionDescription.getServiceStateDescription().getServiceType()) {
             case STANDBY_STATE_SERVICE:
-                super.applyAction(actionDescription);
+                return super.applyAction(actionDescription);
             default:
                 return serviceRemoteManager.applyAction(actionDescription);
         }
@@ -260,7 +246,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
 
     @Override
     public Future<ActionFuture> setStandbyState(final StandbyState standbyState) {
-        logger.info("Standy[" + standbyState + "]" + this);
+        logger.info("Standby[" + standbyState.getValue() + "]" + this);
         return GlobalScheduledExecutorService.submit(() -> {
             try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this)) {
                 switch (getStandbyState().getValue()) {
@@ -269,6 +255,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
                         switch (standbyState.getValue()) {
                             case STANDBY:
                                 standbyController.standby();
+                                //TODO: should standby state not be set as a feedback of internal units going in standby
                                 dataBuilder.getInternalBuilder().setStandbyState(standbyState);
                         }
                         break;

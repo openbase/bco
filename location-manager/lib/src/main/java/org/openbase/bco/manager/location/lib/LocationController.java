@@ -27,11 +27,11 @@ import rst.domotic.unit.location.LocationDataType.LocationData;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public interface LocationController extends org.openbase.bco.dal.lib.layer.unit.location.Location, MessageController<LocationData, LocationData.Builder> {
 
-    public void init(final UnitConfig config) throws InitializationException, InterruptedException;
+    void init(final UnitConfig config) throws InitializationException, InterruptedException;
 }
