@@ -140,7 +140,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
         try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this, false)) {
             dataBuilder.getInternalBuilder().setStandbyState(StandbyState.newBuilder().setValue(StandbyState.State.RUNNING).build());
         } catch (Exception ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not apply initial service states!", ex), LOGGER, LogLevel.WARN);
+            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not apply initial standby service states!", ex), LOGGER, LogLevel.WARN);
         }
     }
 
