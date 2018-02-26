@@ -49,38 +49,21 @@ import java.util.concurrent.TimeoutException;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class PublishUnitTransformationRegistryPlugin extends ProtobufRegistryPluginAdapter<String, UnitConfig, Builder> {
-
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+public class PublishUnitTransformationRegistryPlugin extends AbstractUnitTransformationRegistryPlugin {
 
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry;
 
-    private TransformerFactory transformerFactory;
-    private TransformPublisher transformPublisher;
-
     public PublishUnitTransformationRegistryPlugin(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry) throws org.openbase.jul.exception.InstantiationException {
+        super();
         try {
             this.locationRegistry = locationRegistry;
-            this.transformerFactory = TransformerFactory.getInstance();
         } catch (Exception ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);
         }
     }
 
     @Override
-    public void init(final ProtoBufRegistry<String, UnitConfig, Builder> registry) throws InitializationException, InterruptedException {
-        try {
-            super.init(registry);
-            this.transformPublisher = transformerFactory.createTransformPublisher(registry.getName());
-            for (IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry : registry.getEntries()) {
-                publishTransformation(entry);
-            }
-        } catch (CouldNotPerformException | TransformerFactory.TransformerFactoryException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    public void publishTransformation(IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry) {
+    protected void publishTransformation(IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry) {
         try {
             UnitConfig unitConfig = entry.getMessage();
 
@@ -100,61 +83,21 @@ public class PublishUnitTransformationRegistryPlugin extends ProtobufRegistryPlu
                 throw new NotAvailableException("unitconfig.placementconfig.locationid");
             }
 
-
             final String parentLocationTransformationFrameId = locationRegistry.getMessage(unitConfig.getPlacementConfig().getLocationId()).getPlacementConfig().getTransformationFrameId();
-            Transform transformation = PoseTransformer.transform(unitConfig.getPlacementConfig().getPosition(), parentLocationTransformationFrameId, unitConfig.getPlacementConfig().getTransformationFrameId());
-            transformation.setAuthority(getRegistry().getName());
 
-            if (!JPService.testMode() && JPService.verboseMode()) {
-                logger.info("Publish " + locationRegistry.get(unitConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId() + " to " + unitConfig.getPlacementConfig().getTransformationFrameId());
-            }
+            // Create the rct transform object with source and target frames
+            Transform transformation = PoseTransformer.transform(unitConfig.getPlacementConfig().getPosition(), parentLocationTransformationFrameId, unitConfig.getPlacementConfig().getTransformationFrameId());
+
+            // publish the transform object
+            transformation.setAuthority(getRegistry().getName());
             transformPublisher.sendTransform(transformation, TransformType.STATIC);
 
-            // wait until transformation was published
-            try {
-                int maxChecks = 10;
-                for (int i = 0; i < maxChecks; i++) {
-                    try {
-                        // check if transformation was published
-                        if (transformation.getTransform().equals(GlobalTransformReceiver.getInstance().requestTransform(parentLocationTransformationFrameId, unitConfig.getPlacementConfig().getTransformationFrameId(), System.currentTimeMillis()).get(100, TimeUnit.MILLISECONDS).getTransform())) {
-                            // was published
-                            break;
-                        }
-                    } catch (TimeoutException e) {
-                        // try again if needed
-                    }
-                }
-            } catch (InterruptedException e) {
-                throw new CouldNotPerformException("Application shutdown detected!");
-            } catch (ExecutionException e) {
-                throw new CouldNotPerformException("Could not verify publication!");
-            }
+            // verify transformation
+            verifyPublication(transformation, parentLocationTransformationFrameId, unitConfig.getPlacementConfig().getTransformationFrameId());
         } catch (NotAvailableException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.DEBUG);
         } catch (CouldNotPerformException | TransformerException | ConcurrentModificationException | NullPointerException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.WARN);
-        }
-    }
-
-    @Override
-    public void afterRegister(IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry) {
-        publishTransformation(entry);
-    }
-
-    @Override
-    public void afterUpdate(IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry) throws
-            CouldNotPerformException {
-        publishTransformation(entry);
-    }
-
-    @Override
-    public void shutdown() {
-        if (transformPublisher != null) {
-            try {
-                transformPublisher.shutdown();
-            } catch (Exception ex) {
-                logger.warn("Could not shutdown transformation publisher");
-            }
         }
     }
 }

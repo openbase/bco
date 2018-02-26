@@ -21,70 +21,30 @@ package org.openbase.bco.registry.unit.core.plugin;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.ConcurrentModificationException;
+
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rct.transform.PoseTransformer;
-import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import org.openbase.jul.storage.registry.Registry;
-import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
-import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rct.Transform;
-import rct.TransformPublisher;
 import rct.TransformType;
 import rct.TransformerException;
-import rct.TransformerFactory;
-import rct.TransformerFactory.TransformerFactoryException;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 
-public class PublishLocationTransformationRegistryPlugin extends ProtobufRegistryPluginAdapter<String, UnitConfig, Builder> {
+import java.util.ConcurrentModificationException;
 
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
+public class PublishLocationTransformationRegistryPlugin extends AbstractUnitTransformationRegistryPlugin {
 
-    private TransformerFactory transformerFactory;
-    private TransformPublisher transformPublisher;
-
-    public PublishLocationTransformationRegistryPlugin() throws org.openbase.jul.exception.InstantiationException {
-        try {
-            logger.debug("create location transformation publisher");
-            this.transformerFactory = TransformerFactory.getInstance();
-        } catch (Exception ex) {
-            throw new org.openbase.jul.exception.InstantiationException(this, ex);
-        }
+    public PublishLocationTransformationRegistryPlugin() throws InstantiationException {
+        super();
     }
 
     @Override
-    public void init(final ProtoBufRegistry<String, UnitConfig, Builder> registry) throws InitializationException, InterruptedException {
-        try {
-            super.init(registry);
-            this.transformPublisher = transformerFactory.createTransformPublisher(registry.getName());
-            for (IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry : registry.getEntries()) {
-                publishtransformation(entry);
-            }
-        } catch (CouldNotPerformException | TransformerFactoryException ex) {
-            throw new InitializationException(this, ex);
-        }
-    }
-
-    @Override
-    public void afterRegister(final IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry) {
-        publishtransformation(entry);
-    }
-
-    @Override
-    public void afterUpdate(final IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry) throws CouldNotPerformException {
-        publishtransformation(entry);
-    }
-
-    private synchronized void publishtransformation(final IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry) {
+    protected synchronized void publishTransformation(final IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry) {
         try {
             UnitConfig locationConfig = entry.getMessage();
 
@@ -113,31 +73,22 @@ public class PublishLocationTransformationRegistryPlugin extends ProtobufRegistr
                 throw new NotAvailableException("locationconfig.placementconfig.locationid");
             }
 
-            if (!JPService.testMode() && JPService.verboseMode()) {
-                logger.info("Publish " + getRegistry().get(locationConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId() + " to " + locationConfig.getPlacementConfig().getTransformationFrameId());
-            }
+            final String parentLocationTransformationFrameId = getRegistry().get(locationConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId();
 
             // Create the rct transform object with source and target frames
-            Transform transformation = PoseTransformer.transform(locationConfig.getPlacementConfig().getPosition(), getRegistry().get(locationConfig.getPlacementConfig().getLocationId()).getMessage().getPlacementConfig().getTransformationFrameId(), locationConfig.getPlacementConfig().getTransformationFrameId());
+            Transform transformation = PoseTransformer.transform(locationConfig.getPlacementConfig().getPosition(), parentLocationTransformationFrameId, locationConfig.getPlacementConfig().getTransformationFrameId());
 
             // Publish the transform object
             transformation.setAuthority(getRegistry().getName());
             transformPublisher.sendTransform(transformation, TransformType.STATIC);
+
+            // verify transformation
+            verifyPublication(transformation, parentLocationTransformationFrameId, locationConfig.getPlacementConfig().getTransformationFrameId());
+
         } catch (NotAvailableException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.DEBUG);
         } catch (CouldNotPerformException | TransformerException | ConcurrentModificationException | NullPointerException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not publish transformation of " + entry + "!", ex), logger, LogLevel.WARN);
-        }
-    }
-
-    @Override
-    public void shutdown() {
-        if (transformPublisher != null) {
-            try {
-                transformPublisher.shutdown();
-            } catch (Exception ex) {
-                logger.warn("Could not shutdown transformation publisher");
-            }
         }
     }
 }
