@@ -476,7 +476,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
      * @return {@inheritDoc}
      */
     @Override
-    public Boolean isReady() throws InterruptedException {
+    public Boolean isReady() {
         return registryList.stream().noneMatch((registry) -> (!registry.isReady()));
     }
 
