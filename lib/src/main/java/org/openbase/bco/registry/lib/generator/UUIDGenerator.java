@@ -23,19 +23,31 @@ package org.openbase.bco.registry.lib.generator;
  */
 
 import com.google.protobuf.GeneratedMessage;
-import java.util.UUID;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdGenerator;
 
+import java.util.UUID;
+
+import static org.openbase.jul.iface.provider.LabelProvider.TYPE_FIELD_LABEL;
+
 /**
+ * @param <M>
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- * @param <M>
  */
 public class UUIDGenerator<M extends GeneratedMessage> implements IdGenerator<String, M> {
 
     @Override
-    public String generateId(final M message) throws CouldNotPerformException {
+    public String generateId(final M message) {
+        // in case we are performing a unit test let's generate a human readable uuid.
+        if (JPService.testMode()) {
+            if (message.getDescriptorForType().findFieldByName(TYPE_FIELD_LABEL) != null) {
+                if (message.hasField(message.getDescriptorForType().findFieldByName(TYPE_FIELD_LABEL))) {
+                    return message.getField(message.getDescriptorForType().findFieldByName(TYPE_FIELD_LABEL)) + ":"+ UUID.randomUUID().toString();
+                }
+            }
+        }
         return UUID.randomUUID().toString();
     }
 }
