@@ -941,7 +941,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     public List<UnitConfig> getUnitGroupConfigsByUnitType(final UnitType type) throws CouldNotPerformException {
         List<UnitConfig> unitConfigList = new ArrayList<>();
         for (UnitConfig unitGroupUnitConfig : unitGroupUnitConfigRegistry.getMessages()) {
-            if (unitGroupUnitConfig.getType() == type || getSubUnitTypesOfUnitType(type).contains(unitGroupUnitConfig.getType())) {
+            if (unitGroupUnitConfig.getType() == type || getSubUnitTypes(type).contains(unitGroupUnitConfig.getType())) {
                 unitConfigList.add(unitGroupUnitConfig);
             }
         }
