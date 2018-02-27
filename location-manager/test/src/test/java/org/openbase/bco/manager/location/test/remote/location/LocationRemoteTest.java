@@ -165,29 +165,33 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
             }
         }
 
-        double temperature = 21;
+        double temperature = 18;
+        double targetTemperature = 21;
         TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(temperature).build();
+        TemperatureState targetTemperatureState = TemperatureState.newBuilder().setTemperature(targetTemperature).build();
         for (TemperatureSensorController temperatureSensor : temperatureSensorList) {
-            temperatureSensor.applyDataUpdate(temperatureState);
+            temperatureSensor.applyDataUpdate(temperatureState, ServiceType.TEMPERATURE_STATE_SERVICE);
         }
         for (TemperatureControllerController temperatureController : temperatureControllerList) {
-            temperatureController.applyDataUpdate(temperatureState);
+            temperatureController.applyDataUpdate(temperatureState, ServiceType.TEMPERATURE_STATE_SERVICE);
+            temperatureController.applyDataUpdate(targetTemperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
         }
-        System.out.println("ping");
         locationRemote.ping().get();
-        System.out.println("ping done");
-        System.out.println("request data of " + ScopeGenerator.generateStringRep(locationRemote.getScope()));
-        System.out.println("got data: " + locationRemote.requestData().get().getTemperatureState().getTemperature());
         while (locationRemote.getTemperatureState().getTemperature() != temperature) {
             System.out.println("current temp: " + locationRemote.getTemperatureState().getTemperature() + " waiting for: " + temperature);
             Thread.sleep(10);
         }
         Assert.assertEquals("Temperature of the location has not been updated!", temperature, locationRemote.getTemperatureState().getTemperature(), 0.01);
+        while (locationRemote.getTargetTemperatureState().getTemperature() != targetTemperature) {
+            System.out.println("current target temp: " + locationRemote.getTargetTemperatureState().getTemperature() + " waiting for: " + targetTemperature);
+            Thread.sleep(10);
+        }
+        Assert.assertEquals("TargetTemperature of the location has not been updated!", targetTemperature, locationRemote.getTargetTemperatureState().getTemperature(), 0.01);
 
         System.out.println("PowerConsumptionSensors: " + powerConsumptionSensorList.size());
         PowerConsumptionState powerConsumptionState = PowerConsumptionState.newBuilder().setVoltage(240).setConsumption(10).setCurrent(1).build();
         for (PowerConsumptionSensorController powerConsumptionSensor : powerConsumptionSensorList) {
-            powerConsumptionSensor.applyDataUpdate(powerConsumptionState);
+            powerConsumptionSensor.applyDataUpdate(powerConsumptionState, ServiceType.POWER_CONSUMPTION_STATE_SERVICE);
             System.out.println("Updated powerConsumptionState of [" + powerConsumptionSensor.toString() + "] to [" + powerConsumptionSensor.getPowerConsumptionState() + "]");
         }
 
@@ -325,7 +329,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
                 return;
             }
 
-            motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(MotionState.newBuilder().setValue(MotionState.State.MOTION).build()));
+            motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(MotionState.newBuilder().setValue(MotionState.State.MOTION).build()), ServiceType.MOTION_STATE_SERVICE);
 
             while (locationRemote.getPresenceState().getValue() != PresenceState.State.PRESENT) {
                 System.out.println("Waiting for locationRemote presenceState update!");
@@ -333,7 +337,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
             }
             Assert.assertEquals("PresenceState of location has not been updated!", PresenceState.State.PRESENT, locationRemote.getPresenceState().getValue());
 
-            motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(MotionState.newBuilder().setValue(MotionState.State.NO_MOTION).build()));
+            motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(MotionState.newBuilder().setValue(MotionState.State.NO_MOTION).build()), ServiceType.MOTION_STATE_SERVICE);
 
             Thread.sleep(PresenceDetector.PRESENCE_TIMEOUT);
             while (locationRemote.getPresenceState().getValue() != PresenceState.State.ABSENT) {
@@ -370,7 +374,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
 
             double illuminance = 50000.0;
             for (LightSensorController lightSensorController : lightSensorControllerList) {
-                lightSensorController.applyDataUpdate(IlluminanceState.newBuilder().setIlluminance(illuminance).build());
+                lightSensorController.applyDataUpdate(IlluminanceState.newBuilder().setIlluminance(illuminance).build(), ServiceType.ILLUMINANCE_STATE_SERVICE);
             }
 
             while (locationRemote.getIlluminanceState().getIlluminance() != illuminance) {
@@ -381,7 +385,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
 
             illuminance = 10000.0;
             for (LightSensorController lightSensorController : lightSensorControllerList) {
-                lightSensorController.applyDataUpdate(IlluminanceState.newBuilder().setIlluminance(illuminance).build());
+                lightSensorController.applyDataUpdate(IlluminanceState.newBuilder().setIlluminance(illuminance).build(), ServiceType.ILLUMINANCE_STATE_SERVICE);
             }
 
             while (locationRemote.getIlluminanceState().getIlluminance() != illuminance) {
