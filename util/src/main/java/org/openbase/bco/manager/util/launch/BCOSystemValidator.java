@@ -22,24 +22,16 @@ package org.openbase.bco.manager.util.launch;
  * #L%
  */
 
-import com.google.protobuf.GeneratedMessage;
-import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
-import org.openbase.bco.dal.remote.unit.UnitRemoteFactoryImpl;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.registry.lib.BCO;
-import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jps.preset.JPVerbose;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rsb.com.RSBRemote;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.pattern.Remote;
 import org.openbase.jul.pattern.Remote.ConnectionState;
 import org.openbase.jul.processing.StringProcessor;
@@ -47,73 +39,27 @@ import org.openbase.jul.processing.StringProcessor.Alignment;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
-import java.lang.reflect.Method;
 import java.text.DecimalFormat;
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.*;
-
-import static org.openbase.bco.manager.util.launch.RSBInterfacePrinter.detectParameterType;
-import static org.openbase.bco.manager.util.launch.RSBInterfacePrinter.detectReturnType;
-import static org.openbase.bco.manager.util.launch.RSBInterfacePrinter.transformToRSTTypeName;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class BCOSystemValidator {
 
-    protected static final Logger LOGGER = LoggerFactory.getLogger(BCOSystemValidator.class);
-
     public static final String OK = "OK";
     public static final int STATE_RANGE = 12;
     public static final int LABEL_RANGE = 22;
-
     public static final long DELAYED_TIME = TimeUnit.MILLISECONDS.toMillis(500);
     public static final long DEFAULT_UNIT_POOL_DELAY_TIME = TimeUnit.SECONDS.toMillis(3);
     public static final long REQUEST_TIMEOUT = TimeUnit.SECONDS.toMillis(3);
-
     public static final DecimalFormat pingFormat = new DecimalFormat("#.###");
-
+    protected static final Logger LOGGER = LoggerFactory.getLogger(BCOSystemValidator.class);
     private static int errorCounter = 0;
-
-    public enum AnsiColor {
-
-        // todo: move to jul
-        ANSI_RESET("\u001B[0m"),
-        ANSI_BLACK("\u001B[30m"),
-        ANSI_RED("\u001B[31m"),
-        ANSI_GREEN("\u001B[32m"),
-        ANSI_YELLOW("\u001B[33m"),
-        ANSI_BLUE("\u001B[34m"),
-        ANSI_PURPLE("\u001B[35m"),
-        ANSI_CYAN("\u001B[36m"),
-        ANSI_WHITE("\u001B[37m");
-
-
-        private String color;
-
-        private AnsiColor(String color) {
-            this.color = color;
-        }
-
-        public String getColor() {
-            return color;
-        }
-
-        public static String colorize(final String text, final AnsiColor color) {
-            return color.getColor() + text + ANSI_RESET.getColor();
-        }
-
-        public static String colorizeRegex(final String text, final String regex, final AnsiColor color) {
-            return text.replaceAll(regex, colorize(regex, color));
-        }
-    }
+    private static double globalPingAverage = 0;
+    private static double globalPingComputations = 0;
 
     public static void countError() {
         ++errorCounter;
@@ -144,11 +90,22 @@ public class BCOSystemValidator {
 
             System.out.println("=== " + AnsiColor.colorize("Check Units", AnsiColor.ANSI_BLUE) + " ===\n");
             Future<List<UnitRemote<?>>> futureUnits = Units.getFutureUnits(false);
-            System.out.println(StringProcessor.fillWithSpaces("Unit Pool", LABEL_RANGE, Alignment.RIGHT) + "  " + check(futureUnits, DEFAULT_UNIT_POOL_DELAY_TIME));
+
+            for (int i = 0; i < 5; i++) {
+                if (futureUnits.isDone()) {
+                    break;
+                }
+                System.out.println(StringProcessor.fillWithSpaces("Unit Pool", LABEL_RANGE, Alignment.RIGHT) + "  " + check(futureUnits, DEFAULT_UNIT_POOL_DELAY_TIME));
+            }
             System.out.println();
 
-            if (!futureUnits.isDone() || futureUnits.isCancelled()) {
+            if (futureUnits.isCancelled()) {
                 System.out.println(AnsiColor.colorize("Connection could not be established, please make sure BaseCubeOne is up and running!\n", AnsiColor.ANSI_YELLOW));
+                try {
+                    futureUnits.get();
+                } catch (ExecutionException | CancellationException ex) {
+                    ExceptionPrinter.printHistory("Error Details", ex, System.err);
+                }
             } else {
                 boolean printed = false;
                 for (final UnitRemote<?> unit : futureUnits.get()) {
@@ -178,7 +135,7 @@ public class BCOSystemValidator {
                 System.out.print(errorCounter + " " + AnsiColor.colorize("ERROR" + (errorCounter > 1 ? "S" : "") + " DETECTED", AnsiColor.ANSI_RED));
                 break;
         }
-        System.out.println(" average ping is "+AnsiColor.colorize(pingFormat.format(getGlobalPing()), AnsiColor.ANSI_CYAN)+" milli");
+        System.out.println(" average ping is " + AnsiColor.colorize(pingFormat.format(getGlobalPing()), AnsiColor.ANSI_CYAN) + " milli");
         System.out.println("==============================================================");
         System.out.println();
         System.exit(Math.min(errorCounter, 200));
@@ -312,14 +269,10 @@ public class BCOSystemValidator {
         return false;
     }
 
-
-    private static double globalPingAverage = 0;
-    private static double globalPingComputations = 0;
-
     public synchronized static double computeGlobalPing(long ping) {
 
         // skip 0 ping.
-        if(ping <= 0) {
+        if (ping <= 0) {
             return globalPingAverage;
         }
         globalPingAverage = (globalPingComputations * globalPingAverage + ping) / (globalPingComputations + 1);
@@ -329,5 +282,38 @@ public class BCOSystemValidator {
 
     private static double getGlobalPing() {
         return globalPingAverage;
+    }
+
+    public enum AnsiColor {
+
+        // todo: move to jul
+        ANSI_RESET("\u001B[0m"),
+        ANSI_BLACK("\u001B[30m"),
+        ANSI_RED("\u001B[31m"),
+        ANSI_GREEN("\u001B[32m"),
+        ANSI_YELLOW("\u001B[33m"),
+        ANSI_BLUE("\u001B[34m"),
+        ANSI_PURPLE("\u001B[35m"),
+        ANSI_CYAN("\u001B[36m"),
+        ANSI_WHITE("\u001B[37m");
+
+
+        private String color;
+
+        private AnsiColor(String color) {
+            this.color = color;
+        }
+
+        public static String colorize(final String text, final AnsiColor color) {
+            return color.getColor() + text + ANSI_RESET.getColor();
+        }
+
+        public static String colorizeRegex(final String text, final String regex, final AnsiColor color) {
+            return text.replaceAll(regex, colorize(regex, color));
+        }
+
+        public String getColor() {
+            return color;
+        }
     }
 }
