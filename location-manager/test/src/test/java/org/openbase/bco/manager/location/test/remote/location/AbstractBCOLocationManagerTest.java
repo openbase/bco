@@ -27,6 +27,7 @@ import org.junit.BeforeClass;
 import org.openbase.bco.dal.test.AbstractBCOTest;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.manager.location.core.LocationManagerLauncher;
+import org.openbase.bco.manager.user.core.UserManagerLauncher;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,7 @@ public class AbstractBCOLocationManagerTest extends AbstractBCOTest {
 
     protected static DeviceManagerLauncher deviceManagerLauncher;
     protected static LocationManagerLauncher locationManagerLauncher;
+    protected static UserManagerLauncher userManagerLauncher;
 
     @BeforeClass
     public static void setUpClass() throws Throwable {
@@ -49,6 +51,9 @@ public class AbstractBCOLocationManagerTest extends AbstractBCOTest {
 
             deviceManagerLauncher = new DeviceManagerLauncher();
             deviceManagerLauncher.launch();
+
+            userManagerLauncher = new UserManagerLauncher();
+            userManagerLauncher.launch();
 
             locationManagerLauncher = new LocationManagerLauncher();
             locationManagerLauncher.launch();
@@ -60,6 +65,9 @@ public class AbstractBCOLocationManagerTest extends AbstractBCOTest {
     @AfterClass
     public static void tearDownClass() throws Throwable {
         try {
+            if (userManagerLauncher != null) {
+                userManagerLauncher.shutdown();
+            }
             if (deviceManagerLauncher != null) {
                 deviceManagerLauncher.shutdown();
             }
