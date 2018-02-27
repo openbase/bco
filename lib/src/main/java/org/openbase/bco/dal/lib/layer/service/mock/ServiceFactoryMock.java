@@ -68,92 +68,92 @@ public class ServiceFactoryMock implements ServiceFactory {
     }
 
     @Override
-    public <UNIT extends BrightnessStateOperationService & Unit> BrightnessStateOperationService newBrightnessService(final UNIT unit) throws org.openbase.jul.exception.InstantiationException {
+    public <UNIT extends BrightnessStateOperationService & Unit> BrightnessStateOperationService newBrightnessService(final UNIT unit) {
         return new BrightnessStateOperationService() {
 
             @Override
             public BrightnessState getBrightnessState() throws NotAvailableException {
-                return ((BrightnessStateOperationService) unit).getBrightnessState();
+                return unit.getBrightnessState();
             }
 
             @Override
             public Future<ActionFuture> setBrightnessState(BrightnessState state) throws CouldNotPerformException {
-                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
+                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.BRIGHTNESS_STATE_SERVICE);
             }
         };
     }
 
     @Override
-    public <UNIT extends ColorStateOperationService & Unit> ColorStateOperationService newColorService(final UNIT unit) throws org.openbase.jul.exception.InstantiationException {
+    public <UNIT extends ColorStateOperationService & Unit> ColorStateOperationService newColorService(final UNIT unit) {
         return new ColorStateOperationService() {
 
             @Override
             public ColorState getColorState() throws NotAvailableException {
-                return ((ColorStateOperationService) unit).getColorState();
+                return unit.getColorState();
             }
 
             @Override
             public Future<ActionFuture> setColorState(ColorState state) throws CouldNotPerformException {
-                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
+                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.COLOR_STATE_SERVICE);
             }
         };
     }
 
     @Override
-    public <UNIT extends PowerStateOperationService & Unit> PowerStateOperationService newPowerService(final UNIT unit) throws org.openbase.jul.exception.InstantiationException {
+    public <UNIT extends PowerStateOperationService & Unit> PowerStateOperationService newPowerService(final UNIT unit) {
         return new PowerStateOperationService() {
 
             @Override
             public PowerState getPowerState() throws NotAvailableException {
-                return ((PowerStateOperationService) unit).getPowerState();
+                return unit.getPowerState();
             }
 
             @Override
             public Future<ActionFuture> setPowerState(PowerState state) throws CouldNotPerformException {
-                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
+                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.POWER_STATE_SERVICE);
             }
         };
     }
 
     @Override
-    public <UNIT extends BlindStateOperationService & Unit> BlindStateOperationService newShutterService(final UNIT unit) throws org.openbase.jul.exception.InstantiationException {
+    public <UNIT extends BlindStateOperationService & Unit> BlindStateOperationService newShutterService(final UNIT unit) {
         return new BlindStateOperationService() {
 
             @Override
             public BlindState getBlindState() throws NotAvailableException {
-                return ((BlindStateOperationService) unit).getBlindState();
+                return unit.getBlindState();
             }
 
             @Override
             public Future<ActionFuture> setBlindState(BlindState state) throws CouldNotPerformException {
-                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
+                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.BLIND_STATE_SERVICE);
             }
         };
     }
 
     @Override
-    public <UNIT extends StandbyStateOperationService & Unit> StandbyStateOperationService newStandbyService(final UNIT unit) throws org.openbase.jul.exception.InstantiationException {
+    public <UNIT extends StandbyStateOperationService & Unit> StandbyStateOperationService newStandbyService(final UNIT unit) {
         return new StandbyStateOperationService() {
 
             @Override
             public StandbyStateType.StandbyState getStandbyState() throws NotAvailableException {
-                return ((StandbyStateOperationService) unit).getStandbyState();
+                return unit.getStandbyState();
             }
 
             @Override
             public Future<ActionFuture> setStandbyState(StandbyStateType.StandbyState state) throws CouldNotPerformException {
-                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit);
+                return update(TimestampProcessor.updateTimestampWithCurrentTime(state), unit, ServiceType.STANDBY_STATE_SERVICE);
             }
         };
     }
 
     @Override
-    public <UNIT extends TargetTemperatureStateOperationService & Unit> TargetTemperatureStateOperationService newTargetTemperatureService(final UNIT unit) throws org.openbase.jul.exception.InstantiationException {
+    public <UNIT extends TargetTemperatureStateOperationService & Unit> TargetTemperatureStateOperationService newTargetTemperatureService(final UNIT unit) {
         return new TargetTemperatureStateOperationService() {
 
             @Override
             public TemperatureState getTargetTemperatureState() throws NotAvailableException {
-                return ((TargetTemperatureStateOperationService) unit).getTargetTemperatureState();
+                return unit.getTargetTemperatureState();
             }
 
             @Override
@@ -163,9 +163,9 @@ public class ServiceFactoryMock implements ServiceFactory {
         };
     }
     
-    private static Future<ActionFuture> update(final Object argument, final Unit unit) throws CouldNotPerformException {
-        return update(argument, unit, Services.getServiceType(argument));
-    }
+//    private static Future<ActionFuture> update(final Object argument, final Unit unit) throws CouldNotPerformException {
+//        return update(argument, unit, Services.getServiceType(argument));
+//    }
 
     private static Future<ActionFuture> update(final Object argument, final Unit unit, final ServiceType serviceType) throws CouldNotPerformException {
         try {

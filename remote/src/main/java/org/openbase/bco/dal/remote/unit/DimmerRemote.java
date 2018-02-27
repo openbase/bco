@@ -1,6 +1,5 @@
 package org.openbase.bco.dal.remote.unit;
 
-import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.unit.Dimmer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -11,9 +10,12 @@ import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.dal.DimmerDataType.DimmerData;
+
+import java.util.concurrent.Future;
 
 /*
  * #%L
@@ -36,8 +38,8 @@ import rst.domotic.unit.dal.DimmerDataType.DimmerData;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class DimmerRemote extends AbstractUnitRemote<DimmerData> implements Dimmer {
@@ -56,7 +58,7 @@ public class DimmerRemote extends AbstractUnitRemote<DimmerData> implements Dimm
     public Future<ActionFuture> setPowerState(PowerState powerState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return applyAction(updateActionDescription(actionDescription, powerState).build());
+            return applyAction(updateActionDescription(actionDescription, powerState, ServiceType.POWER_STATE_SERVICE).build());
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting powerState.", ex);
         }
@@ -75,7 +77,7 @@ public class DimmerRemote extends AbstractUnitRemote<DimmerData> implements Dimm
     public Future<ActionFuture> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return applyAction(updateActionDescription(actionDescription, brightnessState).build());
+            return applyAction(updateActionDescription(actionDescription, brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE).build());
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting brightnessState.", ex);
         }

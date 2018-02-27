@@ -37,6 +37,7 @@ import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -67,7 +68,7 @@ public class ResourceBlockingTest {
         resourceAllocation1.setPolicy(ResourceAllocation.Policy.PRESERVE);
         PowerState.Builder powerState = PowerState.newBuilder();
         powerState.setValue(PowerState.State.ON);
-        updateActionDescription(powerAction, powerState.build(), remote);
+        updateActionDescription(powerAction, powerState.build(), ServiceType.POWER_STATE_SERVICE, remote);
         
         ActionDescription.Builder powerActionHigh = powerAction.clone();
         ResourceAllocation.Builder resourceAllocation = powerActionHigh.getResourceAllocationBuilder();
@@ -94,7 +95,7 @@ public class ResourceBlockingTest {
 //        }
     }
 
-    public ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute, final UnitRemote unitRemote) throws CouldNotPerformException {
+    public ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute, final ServiceType serviceType, final UnitRemote unitRemote) throws CouldNotPerformException {
         // 5 minute retaining:
         actionDescription.setExecutionTimePeriod(1000 * 30);
         
@@ -105,9 +106,9 @@ public class ResourceBlockingTest {
         resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(unitRemote.getScope()));
 
         actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel()));
-        //TODO: update USER key with authentification
+        //TODO: update USER key with authentication
         actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel()));
 
-        return Services.updateActionDescription(actionDescription, serviceAttribute);
+        return Services.updateActionDescription(actionDescription, serviceAttribute, serviceType);
     }
 }

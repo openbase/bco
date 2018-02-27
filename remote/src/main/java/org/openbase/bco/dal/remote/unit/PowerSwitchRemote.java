@@ -32,6 +32,7 @@ import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.dal.PowerSwitchDataType.PowerSwitchData;
 
@@ -54,7 +55,7 @@ public class PowerSwitchRemote extends AbstractUnitRemote<PowerSwitchData> imple
     public Future<ActionFuture> setPowerState(final PowerState powerState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return applyAction(updateActionDescription(actionDescription, powerState).build());
+            return applyAction(updateActionDescription(actionDescription, powerState, ServiceType.POWER_STATE_SERVICE).build());
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting powerState.", ex);
         }

@@ -61,7 +61,9 @@ public class TargetTemperatureStateServiceRemote extends AbstractServiceRemote<T
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
 
         try {
-            return applyAction(Services.updateActionDescription(actionDescription, temperatureState, getServiceType()).build());
+            ActionDescription build = Services.updateActionDescription(actionDescription, temperatureState, getServiceType()).build();
+            System.out.println("generated ActionDescription: "+build);
+            return applyAction(build);
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
             throw new CouldNotPerformException("Could not set temperatureState", ex);

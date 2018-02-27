@@ -472,7 +472,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     public Future<ActionFuture> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return applyAction(updateActionDescription(actionDescription, standbyState).build());
+            return applyAction(updateActionDescription(actionDescription, standbyState, ServiceType.STANDBY_STATE_SERVICE).build());
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting StandbyState.", ex);
         }

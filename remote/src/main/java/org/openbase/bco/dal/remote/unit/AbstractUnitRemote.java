@@ -680,4 +680,22 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
             unitDataObservableMap.get(serviceTempus).shutdown();
         }
     }
+
+    /**
+     * Method prints a class instance representation.
+     *
+     * @return the class string representation.
+     */
+    @Override
+    public String toString() {
+        try {
+            return getClass().getSimpleName() + "[scope:" + ScopeGenerator.generateStringRep(scope) + "]";
+        } catch (CouldNotPerformException ex) {
+            try {
+                return getClass().getSimpleName() + "[label:" + getLabel() + "]";
+            } catch (CouldNotPerformException exx) {
+                return super.toString();
+            }
+        }
+    }
 }

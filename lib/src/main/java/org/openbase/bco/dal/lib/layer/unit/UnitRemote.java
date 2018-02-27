@@ -151,20 +151,20 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, Configu
         return Services.updateActionDescription(actionDescription, serviceAttribute, serviceType);
     }
 
-    /**
-     * Update an action description according to the configuration of this unit remote.
-     * The action description should be generated using the ActionDescriptionProcessor.
-     * This method will set the service state description according to the service attribute and service type
-     * and replace several keys in the description to make is human readable.
-     * This method tries to automatically resolve the service type for a given service attribute.
-     *
-     * @param actionDescription the action description which will be updated
-     * @param serviceAttribute  the service attribute that will be applied by this action
-     * @return the updated action description
-     * @throws CouldNotPerformException if accessing the unit registry fails or if the service attribute cannot be
-     *                                  verified or serialized or if the service type cannot be resolved
-     */
-    default ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute) throws CouldNotPerformException {
-        return updateActionDescription(actionDescription, serviceAttribute, Services.getServiceType(serviceAttribute));
-    }
+//    /**
+//     * Update an action description according to the configuration of this unit remote.
+//     * The action description should be generated using the ActionDescriptionProcessor.
+//     * This method will set the service state description according to the service attribute and service type
+//     * and replace several keys in the description to make is human readable.
+//     * This method tries to automatically resolve the service type for a given service attribute.
+//     *
+//     * @param actionDescription the action description which will be updated
+//     * @param serviceAttribute  the service attribute that will be applied by this action
+//     * @return the updated action description
+//     * @throws CouldNotPerformException if accessing the unit registry fails or if the service attribute cannot be
+//     *                                  verified or serialized or if the service type cannot be resolved
+//     */
+//    default ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute) throws CouldNotPerformException {
+//        return updateActionDescription(actionDescription, serviceAttribute, Services.getServiceType(serviceAttribute));
+//    }
 }

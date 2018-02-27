@@ -312,7 +312,7 @@ public class Services {
         serviceStateDescription.setServiceType(serviceType);
 
         String description = actionDescription.getDescription();
-        description = description.replace(ActionDescriptionProcessor.SERVICE_TYPE_KEY, serviceType.name());
+        description = description.replace(ActionDescriptionProcessor.SERVICE_TYPE_KEY, StringProcessor.transformToCamelCase(serviceType.name()));
 
         // update authority if available
         if (actionDescription.hasActionAuthority() && actionDescription.getActionAuthority().hasAuthority()) {
@@ -327,7 +327,7 @@ public class Services {
     }
 
     /**
-     * @deprecated please use updateActionDescription(...) instead
+     * @deprecated Deprecated and broken since there is no bidirectional mapping between services arguments and service states!
      */
     @Deprecated
     public static ActionDescription.Builder upateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute) throws CouldNotPerformException {
@@ -345,11 +345,23 @@ public class Services {
      * @return the updated action description
      * @throws CouldNotPerformException if the service attribute cannot be verified or if the service attribute cannot
      *                                  be serialized of if the service type cannot be resolved by the attribute
+     * @deprecated Deprecated and broken since there is no bidirectional mapping between services arguments and service states!
      */
+    @Deprecated
     public static ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute) throws CouldNotPerformException {
         return updateActionDescription(actionDescription, serviceAttribute, getServiceType(serviceAttribute));
     }
 
+    /**
+     * Please to not use this method anymore!!!
+     * Those is broken and not possible at all since there is no bidirectional mapping between services arguments and service states!
+     *
+     * @param serviceAttribute
+     * @return
+     * @throws CouldNotPerformException
+     * @deprecated Deprecated and broken since there is no bidirectional mapping between services arguments and service states!
+     */
+    @Deprecated
     public static ServiceType getServiceType(final Object serviceAttribute) throws CouldNotPerformException {
         //TODO: this does not work for serviceTypes like smokeAlarmStateService since the serviceAttribute is an AlarmState
 
