@@ -32,6 +32,7 @@ import org.openbase.bco.dal.remote.unit.RollerShutterRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
 
 /**
@@ -83,7 +84,7 @@ public class RollerShutterRemoteTest extends AbstractBCODeviceManagerTest {
     public void testGetShutterState() throws Exception {
         System.out.println("getShutterState");
         BlindState state = BlindState.newBuilder().setMovementState(BlindState.MovementState.UP).build();
-        ((RollerShutterController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(rollerShutterRemote.getId())).applyDataUpdate(state);
+        ((RollerShutterController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(rollerShutterRemote.getId())).applyDataUpdate(state, ServiceType.BLIND_STATE_SERVICE);
         rollerShutterRemote.requestData().get();
         assertEquals("Shutter has not been set in time!", rollerShutterRemote.getBlindState().getMovementState(), state.getMovementState());
     }

@@ -32,6 +32,7 @@ import org.openbase.bco.dal.remote.unit.DimmableLightRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.PowerStateType.PowerState;
 
@@ -92,7 +93,7 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
     public void testGetPower() throws Exception {
         System.out.println("getPowerState");
         PowerState state = PowerState.newBuilder().setValue(PowerState.State.OFF).build();
-        ((DimmableLightController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dimmableLightRemote.getId())).applyDataUpdate(state);
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dimmableLightRemote.getId()).applyDataUpdate(state, ServiceType.POWER_STATE_SERVICE);
         dimmableLightRemote.requestData().get();
         assertEquals("Power has not been set in time!", state.getValue(), dimmableLightRemote.getPowerState().getValue());
     }
@@ -122,7 +123,7 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
         System.out.println("getBrightness");
         Double brightness = 70.0d;
         BrightnessState brightnessState = BrightnessState.newBuilder().setBrightness(brightness).build();
-        ((DimmableLightController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dimmableLightRemote.getId())).applyDataUpdate(brightnessState);
+        ((DimmableLightController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dimmableLightRemote.getId())).applyDataUpdate(brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE);
         dimmableLightRemote.requestData().get();
         assertEquals("Dimm has not been set in time!", brightnessState.getBrightness(), dimmableLightRemote.getBrightnessState().getBrightness(), 0.1);
     }

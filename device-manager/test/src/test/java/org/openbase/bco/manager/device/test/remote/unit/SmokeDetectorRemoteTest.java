@@ -94,7 +94,7 @@ public class SmokeDetectorRemoteTest extends AbstractBCODeviceManagerTest {
     public void testGetSmokeState() throws Exception {
         System.out.println("getSmokeState");
         SmokeState smokeState = SmokeState.newBuilder().setValue(SmokeState.State.SOME_SMOKE).setSmokeLevel(13d).build();
-        ((SmokeDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(smokeDetectorRemote.getId())).applyDataUpdate(smokeState);
+        ((SmokeDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(smokeDetectorRemote.getId())).applyDataUpdate(smokeState, ServiceType.SMOKE_STATE_SERVICE);
         smokeDetectorRemote.requestData().get();
         Assert.assertEquals("The getter for the smoke state returns the wrong value!", smokeState.getValue(), smokeDetectorRemote.getSmokeState().getValue());
     }

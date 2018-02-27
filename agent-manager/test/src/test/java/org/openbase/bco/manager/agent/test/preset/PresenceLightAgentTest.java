@@ -42,6 +42,7 @@ import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.slf4j.LoggerFactory;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.MotionStateType.MotionState;
@@ -126,7 +127,7 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         motionDetectorRemote.waitForData();
 
         // create intial values with no_motion and lights off
-        motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(NO_MOTION));
+        motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(NO_MOTION), ServiceType.MOTION_STATE_SERVICE);
         motionDetectorStateAwaiter.waitForState((MotionDetectorData data) -> data.getMotionState().getValue() == MotionState.State.NO_MOTION);
         locationRemote.setPowerState(OFF).get();
         locationStateAwaiter.waitForState((LocationData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
@@ -137,7 +138,7 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         assertEquals("Initial PowerState of Location[" + locationRemote.getLabel() + "] is not OFF", PowerState.State.OFF, locationRemote.getPowerState().getValue());
 
         // test if on motion the lights are turned on
-        motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(MOTION));
+        motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(MOTION), ServiceType.MOTION_STATE_SERVICE);
         motionDetectorStateAwaiter.waitForState((MotionDetectorData data) -> data.getMotionState().getValue() == MotionState.State.MOTION);
         locationStateAwaiter.waitForState((LocationData data) -> data.getPresenceState().getValue() == PresenceState.State.PRESENT);
         colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.ON);
@@ -149,7 +150,7 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         //assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has not switched to ON", PowerState.State.ON, locationRemote.getPowerState().getValue());
 
         // test if the lights stay on on no motion
-        motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(NO_MOTION));
+        motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(NO_MOTION), ServiceType.MOTION_STATE_SERVICE);
         motionDetectorStateAwaiter.waitForState((MotionDetectorData data) -> data.getMotionState().getValue() == MotionState.State.NO_MOTION);
         locationStateAwaiter.waitForState((LocationData data) -> data.getPresenceState().getValue() == PresenceState.State.ABSENT);
         colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.ON);

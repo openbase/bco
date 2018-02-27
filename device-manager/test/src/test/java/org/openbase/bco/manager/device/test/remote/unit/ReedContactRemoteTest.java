@@ -77,7 +77,7 @@ public class ReedContactRemoteTest extends AbstractBCODeviceManagerTest {
     public void testGetReedSwitchState() throws Exception {
         System.out.println("getReedSwitchState");
         ContactState state = ContactState.newBuilder().setValue(ContactState.State.OPEN).build();
-        ((ReedContactController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(reedContactRemote.getId())).applyDataUpdate(state);
+        ((ReedContactController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(reedContactRemote.getId())).applyDataUpdate(state, ServiceType.CONTACT_STATE_SERVICE);
         reedContactRemote.requestData().get();
         Assert.assertEquals("The getter for the reed switch state returns the wrong value!", state.getValue(), reedContactRemote.getContactState().getValue());
     }

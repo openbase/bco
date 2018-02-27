@@ -37,6 +37,7 @@ import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.extension.rst.processing.TimestampJavaTimeTransform;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.Stopwatch;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.TamperStateType.TamperState;
 
 /**
@@ -81,7 +82,7 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
     public void testGetTamperState() throws Exception {
         System.out.println("getTamperState");
         TamperState tamperState = TimestampProcessor.updateTimestampWithCurrentTime(TamperState.newBuilder().setValue(TamperState.State.TAMPER)).build();
-        ((TamperDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId())).applyDataUpdate(tamperState);
+        ((TamperDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId())).applyDataUpdate(tamperState, ServiceType.TAMPER_STATE_SERVICE);
         tamperDetectorRemote.requestData().get();
         assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
     }
@@ -99,7 +100,7 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
 
         stopwatch.start();
         TamperState tamperState = TimestampProcessor.updateTimestampWithCurrentTime(TamperState.newBuilder().setValue(TamperState.State.TAMPER)).build();
-        ((TamperDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId())).applyDataUpdate(tamperState);
+        ((TamperDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId())).applyDataUpdate(tamperState, ServiceType.TAMPER_STATE_SERVICE);
         stopwatch.stop();
         tamperDetectorRemote.requestData().get();
         assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
@@ -112,7 +113,7 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
 
         stopwatch.start();
         tamperState = TimestampProcessor.updateTimestampWithCurrentTime(TamperState.newBuilder().setValue(TamperState.State.NO_TAMPER)).build();
-        ((TamperDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId())).applyDataUpdate(tamperState);
+        ((TamperDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(tamperDetectorRemote.getId())).applyDataUpdate(tamperState, ServiceType.TAMPER_STATE_SERVICE);
         stopwatch.stop();
         tamperDetectorRemote.requestData().get();
         assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());

@@ -42,6 +42,7 @@ import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.slf4j.LoggerFactory;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.MotionStateType.MotionState;
@@ -91,7 +92,7 @@ public class AbsenceEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
      *
      * @throws java.lang.Exception
      */
-    @Test//(timeout = 10000)
+    @Test(timeout = 10000)
     public void testAbsenceEnergySavingAgent() throws Exception {
         // TODO: turn back on when resource allocation is integrated for unit tests
         try {
@@ -108,8 +109,8 @@ public class AbsenceEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         UnitConfig config = registerAgent();
         agent = Units.getUnit(config, true, Units.AGENT);
         agent.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()).get();
-        UnitStateAwaiter<AgentData, AgentRemote> agentStateAwaiter = new UnitStateAwaiter(agent);
-        agentStateAwaiter.waitForState((AgentData data) -> data.getActivationState().getValue() == ActivationState.State.ACTIVE);
+        UnitStateAwaiter<AgentData, AgentRemote> UnitStateAwaiter = new UnitStateAwaiter(agent);
+        UnitStateAwaiter.waitForState((AgentData data) -> data.getActivationState().getValue() == ActivationState.State.ACTIVE);
 
         // It can take some time until the execute() method of the agent has finished
         // TODO: enable to acces controller instances via remoteRegistry to check and wait for the execution of the agent
@@ -129,7 +130,7 @@ public class AbsenceEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         motionDetectorRemote.waitForData();
 
         // create intial values with motion and lights on
-        motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(MOTION));
+        motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(MOTION), ServiceType.MOTION_STATE_SERVICE);
         motionDetectorStateAwaiter.waitForState((MotionDetectorData data) -> data.getMotionState().getValue() == MotionState.State.MOTION);
         locationStateAwaiter.waitForState((LocationData data) -> data.getPresenceState().getValue() == PresenceState.State.PRESENT);
         locationRemote.setPowerState(ON).get();
@@ -142,7 +143,7 @@ public class AbsenceEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         assertEquals("PowerState of ColorableLight[" + colorableLightRemote.getLabel() + "] has not switched to OFF", PowerState.State.ON, colorableLightRemote.getPowerState().getValue());
 
         // test if on no motion the lights are turned off
-        motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(NO_MOTION));
+        motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(NO_MOTION), ServiceType.MOTION_STATE_SERVICE);
         motionDetectorStateAwaiter.waitForState((MotionDetectorData data) -> data.getMotionState().getValue() == MotionState.State.NO_MOTION);
         locationStateAwaiter.waitForState((LocationData data) -> data.getPresenceState().getValue() == PresenceState.State.ABSENT);
         colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
@@ -154,7 +155,7 @@ public class AbsenceEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         //assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has not switched to OFF", PowerState.State.OFF, locationRemote.getPowerState().getValue());
 
         // test if the lights stay off on new motion
-        motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(MOTION));
+        motionDetectorController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(MOTION), ServiceType.MOTION_STATE_SERVICE);
         motionDetectorStateAwaiter.waitForState((MotionDetectorData data) -> data.getMotionState().getValue() == MotionState.State.MOTION);
         locationStateAwaiter.waitForState((LocationData data) -> data.getPresenceState().getValue() == PresenceState.State.PRESENT);
         colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.OFF);

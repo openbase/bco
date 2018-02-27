@@ -34,6 +34,7 @@ import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BatteryStateType.BatteryState;
 
 /**
@@ -80,7 +81,7 @@ public class BatteryRemoteTest extends AbstractBCODeviceManagerTest {
             System.out.println("getBatteryLevel");
             double level = 34.0;
             BatteryState state = BatteryState.newBuilder().setLevel(level).build();
-            ((BatteryController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(batteryRemote.getId())).applyDataUpdate(state);
+            ((BatteryController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(batteryRemote.getId())).applyDataUpdate(state, ServiceType.BATTERY_STATE_SERVICE);
             batteryRemote.requestData().get();
             assertEquals("The getter for the battery level returns the wrong value!", state.getLevel(), batteryRemote.getBatteryState().getLevel(), 0.1);
             assertEquals("The battery state has not been updated according to the level!", BatteryState.State.OK, batteryRemote.getData().getBatteryState().getValue());
@@ -88,7 +89,7 @@ public class BatteryRemoteTest extends AbstractBCODeviceManagerTest {
             BatteryState lastState = batteryRemote.getBatteryState();
             level = 9.5;
             state = BatteryState.newBuilder().setLevel(level).setValue(BatteryState.State.INSUFFICIENT).build();
-            ((BatteryController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(batteryRemote.getId())).applyDataUpdate(state);
+            ((BatteryController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(batteryRemote.getId())).applyDataUpdate(state, ServiceType. BATTERY_STATE_SERVICE);
             batteryRemote.requestData().get();
             assertEquals("The getter for the battery level returns the wrong value!", state.getLevel(), batteryRemote.getBatteryState().getLevel(), 0.1);
             assertEquals("The battery state value has not been updated correctly!", state.getValue(), batteryRemote.getData().getBatteryState().getValue());
