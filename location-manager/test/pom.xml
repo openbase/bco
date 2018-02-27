@@ -70,26 +70,37 @@
             <groupId>org.openbase.bco</groupId>
             <artifactId>manager.location.lib</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.openbase.bco</groupId>
             <artifactId>manager.location.core</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.openbase.bco</groupId>
             <artifactId>manager.location.remote</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.openbase.bco</groupId>
             <artifactId>manager.device.core</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
+        </dependency>
+        <dependency>
+            <groupId>org.openbase.bco</groupId>
+            <artifactId>manager.user.core</artifactId>
+            <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.openbase.bco</groupId>
             <artifactId>manager.device.remote</artifactId>
             <version>${project.version}</version>
+            <scope>test</scope>
         </dependency>
         <dependency>
             <groupId>org.openbase.bco</groupId>
