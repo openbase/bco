@@ -84,12 +84,12 @@ public abstract class AbstractUnitTransformationRegistryPlugin extends ProtobufR
                     // try again if needed
                 }
             }
-//            if (!JPService.testMode() && JPService.verboseMode()) {
+            if (!JPService.testMode() && JPService.verboseMode()) {
                 logger.info("Published " + targetFrame + " to " + sourceFrame);
-//            }
-        } catch (InterruptedException e) {
+            }
+        } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Application shutdown detected!");
-        } catch (ExecutionException e) {
+        } catch (ExecutionException ex) {
             throw new CouldNotPerformException("Could not verify publication!");
         }
     }
