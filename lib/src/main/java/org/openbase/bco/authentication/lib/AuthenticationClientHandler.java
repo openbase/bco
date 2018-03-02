@@ -21,19 +21,20 @@ package org.openbase.bco.authentication.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.io.IOException;
-import java.util.ArrayList;
-import java.util.List;
-import javax.crypto.BadPaddingException;
+
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.AuthenticatorType.Authenticator;
+import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
 import rst.timing.TimestampType.Timestamp;
 
+import javax.crypto.BadPaddingException;
+import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *
  * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
 public class AuthenticationClientHandler {
@@ -43,16 +44,15 @@ public class AuthenticationClientHandler {
      * Decrypts the TicketGrantingServer (TGS) session key with client's hashed password
      * Creates an Authenticator containing the clientID and current timestamp encrypted with the TGS session key
      *
-     * @param id Identifier of the client or user
-     * @param userKey hashed password or private key of user
+     * @param id        Identifier of the client or user
+     * @param userKey   hashed password or private key of user
      * @param clientKey private key of the client
-     * @param wrapper TicketSessionKeyWrapper containing the TicketGrantingTicket and TGS session key
+     * @param wrapper   TicketSessionKeyWrapper containing the TicketGrantingTicket and TGS session key
      * @return Returns a list of objects containing:
      * 1. An TicketAuthenticatorWrapperWrapper containing both the TicketGrantingTicket and Authenticator
      * 2. A SessionKey representing the TGS session key
-     *
      * @throws BadPaddingException If the decryption of the session key fails, probably because the entered key was wrong.
-     * @throws IOException If de- or encryption fail because of a general I/O error.
+     * @throws IOException         If de- or encryption fail because of a general I/O error.
      */
     public static List<Object> handleKeyDistributionCenterResponse(String id, byte[] userKey, byte[] clientKey, TicketSessionKeyWrapper wrapper) throws IOException, BadPaddingException {
         byte[] ticketGrantingServiceSessionKey = wrapper.getSessionKey().toByteArray();
@@ -89,16 +89,15 @@ public class AuthenticationClientHandler {
      * Decrypts the TicketGrantingServer (TGS) session key with client's hashed password
      * Creates an Authenticator containing the clientID and current timestamp encrypted with the TGS session key
      *
-     * @param id Identifier of the client or user
-     * @param key hashed password or private key of user respectively
-     * @param isUser true if ticket was requested for a user. This is important for the decryption method to be chosen.
+     * @param id      Identifier of the client or user
+     * @param key     hashed password or private key of user respectively
+     * @param isUser  true if ticket was requested for a user. This is important for the decryption method to be chosen.
      * @param wrapper TicketSessionKeyWrapper containing the TicketGrantingTicket and TGS session key
      * @return Returns a list of objects containing:
      * 1. An TicketAuthenticatorWrapperWrapper containing both the TicketGrantingTicket and Authenticator
      * 2. A SessionKey representing the TGS session key
-     *
      * @throws BadPaddingException If the decryption of the session key fails, probably because the entered key was wrong.
-     * @throws IOException If de- or encryption fail because of a general I/O error.
+     * @throws IOException         If de- or encryption fail because of a general I/O error.
      */
     public static List<Object> handleKeyDistributionCenterResponse(String id, byte[] key, boolean isUser, TicketSessionKeyWrapper wrapper) throws IOException, BadPaddingException {
         if (isUser) {
@@ -113,14 +112,13 @@ public class AuthenticationClientHandler {
      * Decrypts the ServiceServer (SS) session key with TGS session key
      * Creates an Authenticator containing the clientID and empty timestamp encrypted with the SS session key
      *
-     * @param clientID Identifier of the client - must be present in client database
+     * @param clientID                        Identifier of the client - must be present in client database
      * @param ticketGrantingServiceSessionKey TGS session key provided by handleKDCResponse()
-     * @param wrapper TicketSessionKeyWrapper containing the ClientServerTicket and SS session key
+     * @param wrapper                         TicketSessionKeyWrapper containing the ClientServerTicket and SS session key
      * @return Returns a list of objects containing:
      * 1. An TicketAuthenticatorWrapperWrapper containing both the ClientServerTicket and Authenticator
      * 2. A SessionKey representing the SS session key
-     *
-     * @throws IOException If de- or encryption fail because of a general I/O error.
+     * @throws IOException         If de- or encryption fail because of a general I/O error.
      * @throws BadPaddingException If the decryption of the service server session key fails because of an incorrect key.
      */
     public static List<Object> handleTicketGrantingServiceResponse(String clientID, byte[] ticketGrantingServiceSessionKey, TicketSessionKeyWrapper wrapper) throws IOException, BadPaddingException {
@@ -149,11 +147,10 @@ public class AuthenticationClientHandler {
      * Initializes a ServiceServer request by setting the current timestamp in the authenticator.
      *
      * @param serviceServerSessionKey SS session key provided by handleTGSResponse()
-     * @param wrapper TicketAuthenticatorWrapper wrapper that contains both encrypted Authenticator and CST
+     * @param wrapper                 TicketAuthenticatorWrapper wrapper that contains both encrypted Authenticator and CST
      * @return Returns a wrapper class containing both the CST and modified Authenticator
-     *
      * @throws BadPaddingException If the decryption of the Authenticator fails.
-     * @throws IOException If de- or encryption fail because of a general I/O error.
+     * @throws IOException         If de- or encryption fail because of a general I/O error.
      */
     public static TicketAuthenticatorWrapper initServiceServerRequest(byte[] serviceServerSessionKey, TicketAuthenticatorWrapper wrapper) throws IOException, BadPaddingException {
         // decrypt authenticator
@@ -175,12 +172,11 @@ public class AuthenticationClientHandler {
      * Compares timestamps of both Authenticators with each other
      *
      * @param serviceServerSessionKey SS session key provided by handleTGSResponse()
-     * @param lastWrapper Last TicketAuthenticatorWrapper provided by either handleTGSResponse() or handleSSResponse()
-     * @param currentWrapper Current TicketAuthenticatorWrapper provided by (Remote?)
+     * @param lastWrapper             Last TicketAuthenticatorWrapper provided by either handleTGSResponse() or handleSSResponse()
+     * @param currentWrapper          Current TicketAuthenticatorWrapper provided by (Remote?)
      * @return Returns an TicketAuthenticatorWrapperWrapper containing both the CST and Authenticator
-     *
-     * @throws RejectedException If the timestamps do not match.
-     * @throws IOException If the decryption of the Authenticators using the SSSessionKey fails.
+     * @throws RejectedException   If the timestamps do not match.
+     * @throws IOException         If the decryption of the Authenticators using the SSSessionKey fails.
      * @throws BadPaddingException if an incorrect key is used
      */
     public static TicketAuthenticatorWrapper handleServiceServerResponse(final byte[] serviceServerSessionKey, final TicketAuthenticatorWrapper lastWrapper, final TicketAuthenticatorWrapper currentWrapper) throws RejectedException, IOException, BadPaddingException {
@@ -198,7 +194,7 @@ public class AuthenticationClientHandler {
      * Validate if the timestamps are equal.
      * Compares now + 1 == then, because server adds +1 to authenticator's timestamp.
      *
-     * @param now the first timestamp
+     * @param now  the first timestamp
      * @param then the second timestamp
      * @throws RejectedException thrown if the timestamps have a different time
      */
