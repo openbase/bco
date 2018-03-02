@@ -126,7 +126,7 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
                     });
 
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not process unit config update of Unit[" + unitId + "]!", ex), LOGGER);
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not process unit config update of Unit[" + unitId + "] for " + responsibleInstance + "!", ex), LOGGER);
                 }
             }
 
@@ -341,6 +341,9 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
             final Collection<Future> futureCollection = new ArrayList<>();
             for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
                 final UnitRemote unitRemote = unitRemoteMap.get(serviceStateDescription.getUnitId());
+                if (unitRemote == null) {
+                    throw new CouldNotPerformException("Snapshot contains unit[" + serviceStateDescription.getUnitId() + "] which is not handled by service remote manager");
+                }
 
                 ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
 
@@ -354,7 +357,7 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
 
                     ActionDescriptionProcessor.updateActionChain(actionDescription, responsibleAction);
                 }
-                unitRemote.updateActionDescription(actionDescription, serviceAttribute.build());
+                unitRemote.updateActionDescription(actionDescription, serviceAttribute.build(), serviceStateDescription.getServiceType());
 
                 futureCollection.add(unitRemote.applyAction(actionDescription.build()));
             }

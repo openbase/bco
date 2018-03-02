@@ -33,6 +33,7 @@ import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.EmphasisStateType.EmphasisState;
 import rst.domotic.unit.agent.AgentDataType.AgentData;
@@ -58,7 +59,7 @@ public class AgentRemote extends AbstractUnitRemote<AgentData> implements Agent 
         logger.info("Calling remote setActivationState to [" + activationState.getValue() + "] for agent");
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return applyAction(updateActionDescription(actionDescription, activationState).build());
+            return applyAction(updateActionDescription(actionDescription, activationState, ServiceType.ACTIVATION_STATE_SERVICE).build());
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting activationState.", ex);
         }
@@ -73,7 +74,7 @@ public class AgentRemote extends AbstractUnitRemote<AgentData> implements Agent 
     public Future<ActionFuture> setEmphasisState(EmphasisState emphasisState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return applyAction(updateActionDescription(actionDescription, emphasisState).build());
+            return applyAction(updateActionDescription(actionDescription, emphasisState, ServiceType.EMPHASIS_STATE_SERVICE).build());
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting emphasisState.", ex);
         }

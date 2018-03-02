@@ -150,8 +150,13 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     }
 
     @Override
-    public Future<Snapshot> recordSnapshot(UnitType unitType) throws CouldNotPerformException, InterruptedException {
-        return RPCHelper.callRemoteMethod(unitType, this, Snapshot.class);
+    public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
+        return serviceRemoteManager.recordSnapshot();
+    }
+
+    @Override
+    public Future<Snapshot> recordSnapshot(final UnitType unitType) throws CouldNotPerformException, InterruptedException {
+        return serviceRemoteManager.recordSnapshot(unitType);
     }
 
     @Override
@@ -468,7 +473,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     public Future<ActionFuture> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return applyAction(updateActionDescription(actionDescription, standbyState).build());
+            return applyAction(updateActionDescription(actionDescription, standbyState, ServiceType.STANDBY_STATE_SERVICE).build());
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting StandbyState.", ex);
         }

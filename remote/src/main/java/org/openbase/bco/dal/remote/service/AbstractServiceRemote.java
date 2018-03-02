@@ -514,7 +514,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                 for (final UnitRemote unitRemote : getInternalUnits(actionDescription.getServiceStateDescription().getUnitType())) {
                     ActionDescription.Builder unitActionDescription = ActionDescription.newBuilder(actionDescription);
 
-                    unitRemote.updateActionDescription(unitActionDescription, serviceAttribute);
+                    unitRemote.updateActionDescription(unitActionDescription, serviceAttribute, actionDescription.getServiceStateDescription().getServiceType());
 
                     ActionReference.Builder actionReference = ActionReference.newBuilder();
                     actionReference.setActionId(actionDescription.getId());

@@ -45,7 +45,7 @@ public interface UnitController<D extends GeneratedMessage, DB extends D.Builder
      * @throws InitializationException is throw if any error occurs during the initialization phase.
      * @throws InterruptedException is thrown if the current thread was externally interrupted.
      */
-    public void init(final UnitConfig config) throws InitializationException, InterruptedException;
+    void init(final UnitConfig config) throws InitializationException, InterruptedException;
 
     /**
      * Applies the given service state update for this unit.
@@ -54,15 +54,16 @@ public interface UnitController<D extends GeneratedMessage, DB extends D.Builder
      * @param serviceArgument
      * @throws CouldNotPerformException
      */
-    public void applyDataUpdate(final Object serviceArgument, final ServiceType serviceType) throws CouldNotPerformException;
+    void applyDataUpdate(final Object serviceArgument, final ServiceType serviceType) throws CouldNotPerformException;
 
-    /**
-     * Applies the given service update for this unit by trying to resolve the service type from it automatically.
-     *
-     * @param serviceArgument
-     * @throws CouldNotPerformException
-     */
-    public default void applyDataUpdate(final Object serviceArgument) throws CouldNotPerformException {
-        applyDataUpdate(serviceArgument, Services.getServiceType(serviceArgument));
-    }
+//    /**
+//     * Applies the given service update for this unit by trying to resolve the service type from it automatically.
+//     *
+//     * @param serviceArgument
+//     * @throws CouldNotPerformException
+//     * @deprecated Deprecated and broken since there is no bidirectional mapping between services arguments and service states!
+//     */
+//    default void applyDataUpdate(final Object serviceArgument) throws CouldNotPerformException {
+//        applyDataUpdate(serviceArgument, Services.getServiceType(serviceArgument));
+//    }
 }

@@ -47,6 +47,7 @@ import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceConfigType;
 import rst.domotic.service.ServiceTemplateConfigType;
 import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType;
 import rst.domotic.state.ColorStateType.ColorState;
@@ -162,7 +163,7 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
     public Future<ActionFutureType.ActionFuture> setColorState(final ColorState colorState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return applyAction(updateActionDescription(actionDescription, colorState).build());
+            return applyAction(updateActionDescription(actionDescription, colorState, ServiceType.COLOR_STATE_SERVICE).build());
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting colorState.", ex);
         }
@@ -177,7 +178,7 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
     public Future<ActionFuture> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return applyAction(updateActionDescription(actionDescription, brightnessState).build());
+            return applyAction(updateActionDescription(actionDescription, brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE).build());
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting brightnessState.", ex);
         }
@@ -196,7 +197,7 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
     public Future<ActionFuture> setPowerState(PowerState powerState) throws CouldNotPerformException {
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return applyAction(updateActionDescription(actionDescription, powerState).build());
+            return applyAction(updateActionDescription(actionDescription, powerState, ServiceType.POWER_STATE_SERVICE).build());
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting powerState.", ex);
         }

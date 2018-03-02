@@ -595,7 +595,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      */
     @Override
     public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException, RejectedException {
-        ActionDescription initializedActionDescription = initializeRequest(actionDescription);
+        final ActionDescription initializedActionDescription = initializeRequest(actionDescription);
         return new UnitSynchronisationFuture(new AuthenticatedActionFuture(RPCHelper.callRemoteMethod(initializedActionDescription, this, ActionFuture.class), initializedActionDescription.getActionAuthority().getTicketAuthenticatorWrapper(), this.sessionManager), this);
     }
 
@@ -644,18 +644,6 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         return sessionManager != null && sessionManager.isAuthenticated();
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @return {@inheritDoc}
-     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws java.lang.InterruptedException                      {@inheritDoc}
-     */
-    @Override
-    public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
-        return RPCHelper.callRemoteMethod(this, Snapshot.class);
-    }
-
     @Override
     public SessionManager getSessionManager() {
         return sessionManager;
@@ -694,6 +682,24 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
             return RPCHelper.callRemoteMethod(authenticatedSnapshot, this, AuthenticatedValue.class);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not restore snapshot!", ex);
+        }
+    }
+
+    /**
+     * Method prints a class instance representation.
+     *
+     * @return the class string representation.
+     */
+    @Override
+    public String toString() {
+        try {
+            return getClass().getSimpleName() + "[scope:" + ScopeGenerator.generateStringRep(scope) + "]";
+        } catch (CouldNotPerformException ex) {
+            try {
+                return getClass().getSimpleName() + "[label:" + getLabel() + "]";
+            } catch (CouldNotPerformException exx) {
+                return super.toString();
+            }
         }
     }
 }
