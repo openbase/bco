@@ -25,11 +25,8 @@ package org.openbase.bco.dal.lib.layer.unit;
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
-import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
-import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
-import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor.ConfigRetrieval;
-import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor.InternalProcessable;
-import org.openbase.bco.authentication.lib.AuthorizationHelper;
+import org.openbase.bco.authentication.lib.*;
+import org.openbase.bco.authentication.lib.AuthenticatedServerManager.TicketEvaluationWrapper;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.Type;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.dal.lib.action.ActionImpl;
@@ -57,7 +54,6 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
-import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
@@ -71,6 +67,7 @@ import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
+import rst.domotic.authentication.AuthenticatorType.Authenticator;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -83,11 +80,10 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
 
+import javax.crypto.BadPaddingException;
 import java.io.IOException;
-import java.io.Serializable;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -661,6 +657,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     @Override
     public Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
+//        return internalRestoreSnapshot(snapshot, null);
         try {
             Collection<Future> futureCollection = new ArrayList<>();
             for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
@@ -673,23 +670,63 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
+    protected Future<Void> internalRestoreSnapshot(final Snapshot snapshot, final TicketEvaluationWrapper ticketEvaluationWrapper) throws CouldNotPerformException, InterruptedException {
+        return restoreSnapshot(snapshot);
+        //TODO: implementation has to be fixed like in ServiceRemoteManager
+        //        try {
+//            Collection<Future<ActionFuture>> futureCollection = new ArrayList<>();
+//            for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
+//                ActionDescription.Builder actionDescription = ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription);
+//
+//                if (ticketEvaluationWrapper != null) {
+//                    actionDescription.getActionAuthorityBuilder().setTicketAuthenticatorWrapper(ticketEvaluationWrapper.getTicketAuthenticatorWrapper());
+//                }
+//
+//                futureCollection.add(applyAction(actionDescription.build()));
+//            }
+//            return GlobalCachedExecutorService.allOf(input -> {
+//                if (ticketEvaluationWrapper != null) {
+//                    try {
+//                        for (Future<ActionFuture> actionFuture : input) {
+//                            AuthenticationClientHandler.handleServiceServerResponse(ticketEvaluationWrapper.getSessionKey(), ticketEvaluationWrapper.getTicketAuthenticatorWrapper(), actionFuture.get().getTicketAuthenticatorWrapper());
+//                        }
+//                    } catch (IOException | BadPaddingException ex) {
+//                        throw new CouldNotPerformException("Could not validate response because it could not be decrypted", ex);
+//                    } catch (ExecutionException ex) {
+//                        throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
+//                    }
+//                }
+//                return null;
+//            }, futureCollection);
+//        } catch (CouldNotPerformException ex) {
+//            throw new CouldNotPerformException("Could not record snapshot!", ex);
+//        }
+    }
+
     @Override
     public Future<AuthenticatedValue> restoreSnapshotAuthenticated(final AuthenticatedValue authenticatedSnapshot) {
-        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedSnapshot,
-                Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap(),
-                Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap(),
-                Snapshot.class,
-                message -> {
-                    try {
-                        restoreSnapshot(message).get();
-                    } catch (InterruptedException ex) {
-                        Thread.currentThread().interrupt();
-                    } catch (ExecutionException ex) {
-                        throw new CouldNotPerformException("Could not restore snapshot", ex);
-                    }
-                    return null;
-                },
-                receive -> getConfig(),
-                Type.ACCESS));
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedSnapshot, Snapshot.class, (snapshot, ticketEvaluationWrapper) -> {
+            try {
+                // check for write permissions
+                if (!AuthorizationHelper.canDo(getConfig(),
+                        ticketEvaluationWrapper.getUserId(),
+                        Registries.getUnitRegistry().getAgentUnitConfigRemoteRegistry().getEntryMap(),
+                        Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap(),
+                        Type.ACCESS)) {
+                    throw new PermissionDeniedException("User[" + ticketEvaluationWrapper.getUserId() + "] has not rights to register a unitConfig");
+                }
+
+                try {
+//                    internalRestoreSnapshot(snapshot, ticketEvaluationWrapper).get();
+                    restoreSnapshot(snapshot).get();
+                } catch (ExecutionException ex) {
+                    throw new CouldNotPerformException("Could not restore snapshot authenticated", ex);
+                }
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+
+            return null;
+        }));
     }
 }
