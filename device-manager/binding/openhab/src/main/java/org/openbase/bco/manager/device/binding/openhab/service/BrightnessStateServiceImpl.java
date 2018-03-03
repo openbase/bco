@@ -53,6 +53,9 @@ public class BrightnessStateServiceImpl<UNIT extends BrightnessStateOperationSer
 
     @Override
     public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
-        return executeCommand(OpenHABCommandFactory.newPercentCommand(brightnessState.getBrightness()));
+        lastCommand = OpenHABCommandFactory.newPercentCommand(brightnessState.getBrightness());
+        final Future future = executeCommand(lastCommand);
+        repeatLastCommand();
+        return future;
     }
 }

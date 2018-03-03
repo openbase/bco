@@ -21,7 +21,7 @@ package org.openbase.bco.manager.device.binding.openhab.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
+
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.bco.manager.device.binding.openhab.DeviceBindingOpenHABImpl;
@@ -30,29 +30,33 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.NotSupportedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.openhab.binding.interfaces.OpenHABRemote;
 import org.openbase.jul.processing.StringProcessor;
+import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.binding.openhab.OpenhabCommandType;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
 /**
+ * @param <ST> related service type
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- * @param <ST> related service type
  */
 public abstract class OpenHABService<ST extends Service & Unit<?>> implements Service {
 
-    private OpenHABRemote openHABRemote;
-
-    private final Logger logger = LoggerFactory.getLogger(getClass());
-
     protected final ST unit;
+    private final Logger logger = LoggerFactory.getLogger(getClass());
     private final String itemName;
     private final ServiceTemplate.ServiceType serviceType;
     private final ServiceConfig config;
+    protected OpenhabCommandType.OpenhabCommand.Builder lastCommand;
+    private OpenHABRemote openHABRemote;
 
     public OpenHABService(final ST unit) throws InstantiationException {
         try {
@@ -105,5 +109,19 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
 
         logger.debug("Execute command: Setting item [" + this.itemName + "] to [" + command.getType().toString() + "]");
         return openHABRemote.postCommand(command.setItem(itemName).build());
+    }
+
+    /**
+     * Method repeats the given command in 5 seconds.
+     * Make sure the last command is always stored into the {@code lastCommand} variable.
+     */
+    public void repeatLastCommand() {
+        GlobalScheduledExecutorService.schedule(() -> {
+            try {
+                executeCommand(lastCommand);
+            } catch (Exception ex) {
+                ExceptionPrinter.printHistory("Could not repeat openhab command!", ex, logger);
+            }
+        }, 5, TimeUnit.SECONDS);
     }
 }

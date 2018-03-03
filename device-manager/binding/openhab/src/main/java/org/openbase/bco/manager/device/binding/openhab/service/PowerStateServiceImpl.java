@@ -53,6 +53,9 @@ public class PowerStateServiceImpl<ST extends PowerStateOperationService & Unit<
 
     @Override
     public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
-        return executeCommand(OpenHABCommandFactory.newOnOffCommand(state.getValue()));
+        lastCommand = OpenHABCommandFactory.newOnOffCommand(state.getValue()) ;
+        final Future future = executeCommand(lastCommand);
+        repeatLastCommand();
+        return future;
     }
 }
