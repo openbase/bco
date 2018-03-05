@@ -61,9 +61,6 @@ public class CachedDeviceRegistryRemote {
 
     public synchronized static void reinitialize() throws InterruptedException, CouldNotPerformException {
         try {
-            if (shutdown) {
-                throw new InvalidStateException("Remote service is shutting down!");
-            }
             getRegistry().reinit(REMOTE_LOCK);
             getRegistry().requestData().get(10, TimeUnit.SECONDS);
         } catch (ExecutionException | TimeoutException | CouldNotPerformException | CancellationException ex) {
@@ -104,17 +101,11 @@ public class CachedDeviceRegistryRemote {
     }
 
     public static void waitForData() throws InterruptedException, CouldNotPerformException {
-        if (registryRemote == null) {
-            getRegistry();
-        }
-        registryRemote.waitForData();
+        getRegistry().waitForData();
     }
 
     public static void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
-        if (registryRemote == null) {
-            getRegistry();
-        }
-        registryRemote.waitForData(timeout, timeUnit);
+        getRegistry().waitForData(timeout, timeUnit);
     }
 
     /**
