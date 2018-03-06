@@ -42,14 +42,10 @@ public class CachedAuthenticationRemote {
     private static boolean shutdown = false;
 
     static {
-        Runtime.getRuntime().addShutdownHook(new Thread() {
-
-            @Override
-            public void run() {
-                shutdown = true;
-                shutdown();
-            }
-        });
+        Runtime.getRuntime().addShutdownHook(new Thread(() -> {
+            shutdown = true;
+            shutdown();
+        }));
     }
 
     /**
