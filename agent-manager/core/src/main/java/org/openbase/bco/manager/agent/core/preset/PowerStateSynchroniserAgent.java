@@ -10,12 +10,12 @@ package org.openbase.bco.manager.agent.core.preset;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -25,6 +25,7 @@ package org.openbase.bco.manager.agent.core.preset;
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
+import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.bco.registry.remote.Registries;
@@ -36,16 +37,24 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import rst.domotic.state.ActivationStateType.ActivationState.State;
+import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
+//import org.openbase.jul.exception.TimeoutException;
 
 /**
  * Agent that synchronizes the behavior of different units with a power source.
@@ -97,6 +106,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
     private final List<UnitRemote> targetRemotes = new ArrayList<>();
     private UnitRemote sourceRemote;
     private PowerStateSyncBehaviour sourceBehaviour, targetBehaviour;
+    private final Map<UnitRemote, Observer> unitRemoteColorObserverMap = new HashMap<>();
 
     public PowerStateSynchroniserAgent() throws CouldNotPerformException {
         super(PowerStateSynchroniserAgent.class);
@@ -252,6 +262,30 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
         }
     }
 
+    private void handleTargetColorStateUpdate(final ColorState colorState, final UnitRemote colorableLightRemote) throws CouldNotPerformException {
+        synchronized (AGENT_LOCK) {
+            // if the color state changes turn source on before
+            if (getPowerState(sourceRemote).getValue() != PowerState.State.ON) {
+                final Future future = setPowerState(sourceRemote, ON);
+                GlobalCachedExecutorService.submit(() -> {
+                    try {
+                        // wait for source remote to go on
+                        future.get(5, TimeUnit.SECONDS);
+
+                        // apply colorState again
+                        Services.invokeOperationServiceMethod(ServiceType.COLOR_STATE_SERVICE, colorableLightRemote, colorState);
+                    } catch (InterruptedException ex) {
+                        Thread.currentThread().interrupt();
+                    } catch (Exception ex) {
+                        ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not set color state after turning on source", ex), logger);
+                    }
+
+                });
+                setPowerState(sourceRemote, ON);
+            }
+        }
+    }
+
     /**
      * Method accumulates the target power states and returns if this requires a change for the source.
      *
@@ -337,8 +371,8 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
         }
     }
 
-    private void setPowerState(final UnitRemote remote, final PowerState powerState) throws CouldNotPerformException {
-        Services.invokeOperationServiceMethod(ServiceType.POWER_STATE_SERVICE, remote, powerState);
+    private Future setPowerState(final UnitRemote remote, final PowerState powerState) throws CouldNotPerformException {
+        return (Future) Services.invokeOperationServiceMethod(ServiceType.POWER_STATE_SERVICE, remote, powerState);
     }
 
     private PowerState getPowerState(final Object object) throws CouldNotPerformException {
@@ -361,6 +395,9 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
             }
             targetRemote.addServiceStateObserver(ServiceTempus.REQUESTED, ServiceType.POWER_STATE_SERVICE, targetRequestObserer);
             targetRemote.addServiceStateObserver(ServiceTempus.CURRENT, ServiceType.POWER_STATE_SERVICE, targetObserver);
+            if (targetRemote instanceof ColorableLightRemote) {
+                targetRemote.addServiceStateObserver(ServiceTempus.REQUESTED, ServiceType.COLOR_STATE_SERVICE, unitRemoteColorObserverMap.put(targetRemote, (source, data) -> handleTargetColorStateUpdate((ColorState) data, targetRemote)));
+            }
             handleTargetPowerStateUpdate(getPowerState(targetRemote.getData()).getValue());
         }
 
@@ -386,6 +423,11 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
             sourceRemote.removeServiceStateObserver(ServiceTempus.REQUESTED, ServiceType.POWER_STATE_SERVICE, sourceRequestObserver);
             sourceRemote.removeServiceStateObserver(ServiceTempus.CURRENT, ServiceType.POWER_STATE_SERVICE, sourceObserver);
         }
+
+        for (UnitRemote unitRemote : unitRemoteColorObserverMap.keySet()) {
+            unitRemote.removeServiceStateObserver(ServiceTempus.REQUESTED, ServiceType.COLOR_STATE_SERVICE, unitRemoteColorObserverMap.get(unitRemote));
+        }
+        unitRemoteColorObserverMap.clear();
 
         targetRemotes.forEach((targetRemote) -> {
             targetRemote.removeServiceStateObserver(ServiceTempus.REQUESTED, ServiceType.POWER_STATE_SERVICE, targetRequestObserer);

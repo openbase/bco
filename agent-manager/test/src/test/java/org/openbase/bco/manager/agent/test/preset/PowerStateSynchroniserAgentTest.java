@@ -38,9 +38,11 @@ import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.pattern.Observable;
+import org.openbase.jul.pattern.Observer;
 import org.slf4j.LoggerFactory;
 import rst.configuration.EntryType.Entry;
 import rst.configuration.MetaConfigType.MetaConfig;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.PowerStateType.PowerState;
@@ -51,6 +53,7 @@ import rst.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
 import rst.domotic.unit.dal.DimmerDataType.DimmerData;
 import rst.domotic.unit.dal.PowerSwitchDataType.PowerSwitchData;
 import rst.spatial.PlacementConfigType.PlacementConfig;
+import rst.vision.HSBColorType.HSBColor;
 
 /**
  *
@@ -86,7 +89,7 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
      *
      * @throws java.lang.Exception
      */
-    @Test//(timeout = 10000)
+    @Test(timeout = 10000)
     public void testPowerStateSyncAgent() throws Exception {
         System.out.println("testPowerStateSyncAgent");
 
@@ -97,7 +100,7 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
         agent.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()).get();
 
         // It can take some time until the execute() method of the agent has finished
-        // TODO: enable to acces controller instances via remoteRegistry to check and wait for the execution of the agent
+        // TODO: enable to access controller instances via remoteRegistry to check and wait for the execution of the agent
         //Thread.sleep(500);
         Registries.waitForData();
 
@@ -158,6 +161,22 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
         assertEquals("AmbientLight[Target] has not been turned on", PowerState.State.ON, colorableLightRemote.getPowerState().getValue());
         assertEquals("PowerPlug[Target] should still be off", PowerState.State.OFF, powerSwitchRemote.getPowerState().getValue());
         assertEquals("Dimmer[Source] has not been turned on as a reaction", PowerState.State.ON, dimmerRemote.getPowerState().getValue());
+
+        dimmerRemote.setPowerState(OFF).get();
+        dimmerStateAwaiter.waitForState((DimmerData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+        colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+        powerSwitchStateAwaiter.waitForState((PowerSwitchData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
+
+        assertEquals("Dimmer[Source] has not been turned off", PowerState.State.OFF, dimmerRemote.getPowerState().getValue());
+        assertEquals("AmbientLight[Target] has not been turned off as a reaction", PowerState.State.OFF, colorableLightRemote.getPowerState().getValue());
+        assertEquals("PowerPlug[Target] has not been turned off as a reaction", PowerState.State.OFF, powerSwitchRemote.getPowerState().getValue());
+
+        LOGGER.info("Test by color");
+        colorableLightRemote.setColor(HSBColor.newBuilder().setSaturation(100).setHue(20).setBrightness(100).build()).get();
+
+        colorableLightStateAwaiter.waitForState((ColorableLightData data) -> data.getPowerState().getValue() == PowerState.State.ON);
+        dimmerStateAwaiter.waitForState((DimmerData data) -> data.getPowerState().getValue() == PowerState.State.ON);
+        powerSwitchStateAwaiter.waitForState((PowerSwitchData data) -> data.getPowerState().getValue() == PowerState.State.OFF);
     }
 
     private UnitConfig registerAgent() throws CouldNotPerformException, InterruptedException, ExecutionException {
