@@ -10,12 +10,12 @@ package org.openbase.bco.authentication.lib.com;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -28,6 +28,7 @@ import org.openbase.bco.authentication.lib.iface.AuthenticatedRequestable;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RSBRemoteService;
+import org.openbase.jul.pattern.Observer;
 import rsb.Event;
 import rsb.Handler;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
@@ -35,8 +36,15 @@ import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthentic
 import java.util.concurrent.Future;
 
 public abstract class AbstractAuthenticatedRemoteService<M extends GeneratedMessage> extends RSBRemoteService<M> {
+
+    private final Observer<String> loginObserver;
+
     public AbstractAuthenticatedRemoteService(Class<M> dataClass) {
         super(dataClass);
+        this.setMessageProcessor(new AuthenticatedMessageProcessor<>(dataClass));
+
+        this.loginObserver = (source, data) -> requestData();
+        SessionManager.getInstance().addLoginObserver(this.loginObserver);
     }
 
     @Override
@@ -59,8 +67,8 @@ public abstract class AbstractAuthenticatedRemoteService<M extends GeneratedMess
         @Override
         public void internalNotify(Event event) {
             try {
-                logger.debug("Internal notification: " + event.toString());
-                if (SessionManager.getInstance().isLoggedIn()) {
+                logger.debug("Internal notification while logged in[" + SessionManager.getInstance().isLoggedIn() + "]");
+                if (event.getData() != null && SessionManager.getInstance().isLoggedIn()) {
                     requestData();
                 } else {
                     applyEventUpdate(event);
