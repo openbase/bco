@@ -23,6 +23,7 @@ package org.openbase.bco.registry.lib.com;
  */
 
 import com.google.protobuf.GeneratedMessage;
+import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedCommunicationService;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.*;
@@ -30,7 +31,6 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rsb.scope.jp.JPScope;
@@ -40,7 +40,6 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.*;
-import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
 import rst.rsb.ScopeType;
 import rst.rsb.ScopeType.Scope;
 
@@ -58,7 +57,7 @@ import static org.openbase.jul.storage.registry.version.DBVersionControl.DB_CONV
  * @param <M>
  * @param <MB>
  */
-public abstract class AbstractRegistryController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> implements RegistryController<M>, Launchable<Scope> {
+public abstract class AbstractRegistryController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends AbstractAuthenticatedCommunicationService<M, MB> implements RegistryController<M>, Launchable<Scope> {
 
     public static final boolean SPARSELY_REGISTRY_DATA_FILTERED = true;
     public static final boolean SPARSELY_REGISTRY_DATA_NOTIFIED = false;
@@ -491,4 +490,9 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     protected abstract void syncRegistryFlags() throws CouldNotPerformException, InterruptedException;
 
     protected abstract void registerRemoteRegistries() throws CouldNotPerformException;
+
+    @Override
+    protected M filterDataForUser(MB dataBuilder, String userId) throws CouldNotPerformException {
+        return (M) dataBuilder.build();
+    }
 }

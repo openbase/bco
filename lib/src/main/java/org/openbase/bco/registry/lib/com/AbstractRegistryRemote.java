@@ -23,13 +23,13 @@ package org.openbase.bco.registry.lib.com;
  */
 
 import com.google.protobuf.GeneratedMessage;
+import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedRemoteService;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.com.RSBRemoteService;
 import org.openbase.jul.extension.rsb.scope.jp.JPScope;
 import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.storage.registry.RegistryRemote;
@@ -43,7 +43,7 @@ import java.util.concurrent.*;
  * @param <M>
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends RSBRemoteService<M> implements RegistryRemote<M> {
+public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends AbstractAuthenticatedRemoteService<M> implements RegistryRemote<M> {
 
     private final Class<? extends JPScope> jpScopePropery;
     private final List<RemoteRegistry> remoteRegistries;
