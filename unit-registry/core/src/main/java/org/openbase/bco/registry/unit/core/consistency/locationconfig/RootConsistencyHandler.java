@@ -79,7 +79,7 @@ public class RootConsistencyHandler extends AbstractProtoBufRegistryConsistencyH
             throw new EntryModification(entry, this);
         }
 
-        // check if root field is avaible
+        // check if root field is available
         if (!locationConfig.hasRoot()) {
             locationConfig.setRoot(false);
             throw new EntryModification(entry.setMessage(locationUnitConfig), this);
