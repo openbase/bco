@@ -29,6 +29,7 @@ import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.TimeoutException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.Logger;
@@ -204,7 +205,8 @@ public class RegistryFilteringTest {
     }
 
     /**
-     * Test if a unit id is removed from a location if the user has no read permissions for the unit.
+     * Test if units are filtered accordingly if a user has no permissions, only read permissions, only access permissions
+     * or both permissions.
      *
      * @throws Exception
      */
@@ -212,15 +214,64 @@ public class RegistryFilteringTest {
     public void testLocationFiltering() throws Exception {
         System.out.println("testLocationFiltering");
 
-        // get a unit
-        UnitConfig.Builder unitConfig = Registries.getUnitRegistry().getDalUnitConfigs().get(0).toBuilder();
-        // save location
-        String locationId = unitConfig.getPlacementConfig().getLocationId();
-        // remove all permissions for unit
-        unitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setRead(false);
+        // get a root location
+        UnitConfig.Builder unitConfig = Registries.getUnitRegistry().getRootLocationConfig().toBuilder();
+        // remove read and access permissions
+        unitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setRead(false).setAccess(false);
         Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
-        // test if still contained in location
-        Registries.getUnitRegistry().requestData().get();
-        assertTrue(!Registries.getUnitRegistry().getUnitConfigById(locationId).getLocationConfig().getUnitIdList().contains(unitConfig.getId()));
+
+        // test if location does not contain unit ids and child ids anymore anymore
+        assertTrue("Unit id list of root location has not been filtered without access and read permissions", Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getUnitIdList().isEmpty());
+        assertTrue("Child id list of root location has not been filtered without access and read permissions", Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getChildIdList().isEmpty());
+        // test if unit configuration cannot be read anymore
+        try {
+            Registries.getUnitRegistry().getUnitConfigById(unitConfig.getLocationConfig().getUnitId(0));
+            assertTrue("Unit configuration can still be seen even though other has no read and access permissions on its location", false);
+        } catch (NotAvailableException ex) {
+            // this should happen
+        }
+
+        // give only access permissions
+        unitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setAccess(true).setRead(false);
+        Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
+
+        // test if unit ids and child ids are back
+        assertTrue("Unit id list of root location not available with access permissions", Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getUnitIdCount() == unitConfig.getLocationConfig().getUnitIdCount());
+        assertTrue("Child id list of root location not available with access permissions", Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getChildIdCount() == unitConfig.getLocationConfig().getChildIdCount());
+        // test if unit configurations are still not available
+        try {
+            Registries.getUnitRegistry().getUnitConfigById(unitConfig.getLocationConfig().getUnitId(0));
+            assertTrue("Unit configuration can still be seen even though other has no read permissions on its location", false);
+        } catch (NotAvailableException ex) {
+            // this should happen
+        }
+
+        // give only read permissions
+        unitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setAccess(false).setRead(true);
+        Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
+
+        // test if unit ids and child ids are back
+        assertTrue("Unit id list of root location not available with read permissions", Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getUnitIdCount() == unitConfig.getLocationConfig().getUnitIdCount());
+        assertTrue("Child id list of root location not available with read permissions", Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getChildIdCount() == unitConfig.getLocationConfig().getChildIdCount());
+        // test if unit configurations are still not available
+        try {
+            Registries.getUnitRegistry().getUnitConfigById(unitConfig.getLocationConfig().getUnitId(0));
+        } catch (NotAvailableException ex) {
+            assertTrue("Unit configuration cannot be seen even though other has read permissions on its location", false);
+        }
+
+        // give both permissions
+        unitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setAccess(true).setRead(true);
+        Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
+
+        // test if unit ids and child ids are back
+        assertTrue("Unit id list of root location not available with access and read permissions", Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getUnitIdCount() == unitConfig.getLocationConfig().getUnitIdCount());
+        assertTrue("Child id list of root location not available with access and read permissions", Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getChildIdCount() == unitConfig.getLocationConfig().getChildIdCount());
+        // test if unit configurations are still not available
+        try {
+            Registries.getUnitRegistry().getUnitConfigById(unitConfig.getLocationConfig().getUnitId(0));
+        } catch (NotAvailableException ex) {
+            assertTrue("Unit configuration cannot be seen even though other has read and access permissions on its location", false);
+        }
     }
 }
