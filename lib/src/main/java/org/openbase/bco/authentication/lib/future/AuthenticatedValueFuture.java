@@ -21,32 +21,34 @@ package org.openbase.bco.authentication.lib.future;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.ByteString;
 import com.google.protobuf.GeneratedMessage;
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.concurrent.Future;
-import javax.crypto.BadPaddingException;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
+import javax.crypto.BadPaddingException;
+import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.concurrent.Future;
+
 /**
  * An AuthenticatedFuture which has an internal Future with an authenticated value and returns a generated message.
  *
- * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  * @param <RETURN> The type of the generated message which is returned.
+ * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class AuthenticatedValueFuture<RETURN extends GeneratedMessage> extends AuthenticatedFuture<RETURN, AuthenticatedValue> {
+public class AuthenticatedValueFuture<RETURN> extends AuthenticatedFuture<RETURN, AuthenticatedValue> {
 
     /**
      * Create a new AuthenticatedValueFuture with the default session manager.
      *
-     * @param internalFuture The internal future.
-     * @param returnValueClass Class of type RETURN.
+     * @param internalFuture             The internal future.
+     * @param returnValueClass           Class of type RETURN.
      * @param ticketAuthenticatorWrapper The ticket used for the request.
      */
     public AuthenticatedValueFuture(final Future<AuthenticatedValue> internalFuture, final Class<RETURN> returnValueClass, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper) {
@@ -56,10 +58,10 @@ public class AuthenticatedValueFuture<RETURN extends GeneratedMessage> extends A
     /**
      * Create a new AuthenticatedValueFuture
      *
-     * @param internalFuture The internal future.
-     * @param returnValueClass Class of type RETURN.
+     * @param internalFuture             The internal future.
+     * @param returnValueClass           Class of type RETURN.
      * @param ticketAuthenticatorWrapper The ticket used for the request.
-     * @param sessionManager Session manager that is used to verify the response.
+     * @param sessionManager             Session manager that is used to verify the response.
      */
     public AuthenticatedValueFuture(final Future<AuthenticatedValue> internalFuture, final Class<RETURN> returnValueClass, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper, final SessionManager sessionManager) {
         super(internalFuture, returnValueClass, ticketAuthenticatorWrapper, sessionManager);
@@ -95,8 +97,15 @@ public class AuthenticatedValueFuture<RETURN extends GeneratedMessage> extends A
                 }
             } else {
                 try {
-                    Method parseFrom = getReturnClass().getMethod("parseFrom", ByteString.class);
-                    return (RETURN) parseFrom.invoke(null, authenticatedValue.getValue());
+                    if (authenticatedValue.hasValue() && !authenticatedValue.getValue().isEmpty()) {
+                        if (!GeneratedMessage.class.isAssignableFrom(getReturnClass())) {
+                            throw new CouldNotPerformException("AuthenticatedValue has a value but the client method did not expect one");
+                        }
+
+                        Method parseFrom = getReturnClass().getMethod("parseFrom", ByteString.class);
+                        return (RETURN) parseFrom.invoke(null, authenticatedValue.getValue());
+                    }
+                    return null;
                 } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                     throw new CouldNotPerformException("Could not invoke parseFrom method on [" + getReturnClass().getSimpleName() + "]", ex);
                 }

@@ -24,27 +24,28 @@ package org.openbase.bco.authentication.lib;
 
 import com.google.protobuf.ByteString;
 import com.google.protobuf.GeneratedMessage;
-
-import java.io.IOException;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.Map;
-import java.util.concurrent.Future;
-import javax.crypto.BadPaddingException;
-
-import org.omg.CORBA.DynAnyPackage.Invalid;
+import org.openbase.bco.authentication.lib.AuthorizationHelper.Type;
 import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
-import org.openbase.jul.exception.*;
-import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import javax.crypto.BadPaddingException;
+import java.io.IOException;
+import java.io.Serializable;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.Map;
+import java.util.concurrent.Future;
 
 /**
  * Helper class which should be used to implement an authenticated service.
@@ -56,23 +57,23 @@ public class AuthenticatedServiceProcessor {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthenticatedServiceProcessor.class);
 
     /**
-     * Method used by the server which performs an authenticated action which needs write permissions.
+     * Method used by the server which performs an authenticated action.
      *
-     * @param <RECEIVE>             The type of value that the server receives to perform its action,
-     * @param <RETURN>              The type of value that the server responds with.
-     * @param authenticatedValue    The authenticatedValue which is send with the request.
-     * @param authorizationGroupMap Map of authorization groups to verify if this action can be performed.
-     * @param locationMap           Map of locations to verify if this action can be performed.
-     * @param internalClass         Class of type RECEIVE needed to decrypt the received type.
-     * @param executable            Interface defining the cation that the server performs.
-     * @param configRetrieval       Interface defining which unitConfig should be used to verify the execution of the action.
+     * @param <RECEIVE>          The type of value that the server receives to perform its action,
+     * @param <RETURN>           The type of value that the server responds with.
+     * @param authenticatedValue The authenticatedValue which is send with the request.
+     * @param internalClass      Class of type RECEIVE needed to decrypt the received type.
+     * @param executable         Interface defining the cation that the server performs.
      * @return An AuthenticatedValue which should be send as a response.
      * @throws CouldNotPerformException If one step can not be done, e.g. ticket invalid or encryption failed.
      * @throws InterruptedException     It interrupted while checking permissions.
      */
-    public static <RECEIVE extends GeneratedMessage, RETURN extends GeneratedMessage> AuthenticatedValue authenticatedAction(final AuthenticatedValue authenticatedValue, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> authorizationGroupMap, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locationMap, final Class<RECEIVE> internalClass, final InternalProcessable<RECEIVE, RETURN> executable, final ConfigRetrieval<RECEIVE> configRetrieval) throws CouldNotPerformException, InterruptedException {
+    public static <RECEIVE extends Serializable, RETURN extends Serializable> AuthenticatedValue authenticatedAction(
+            final AuthenticatedValue authenticatedValue,
+            final Class<RECEIVE> internalClass,
+            final InternalIdentifiedProcessable<RECEIVE, RETURN> executable) throws CouldNotPerformException, InterruptedException {
         try {
-            // start to build the reponse
+            // start to build the response
             AuthenticatedValue.Builder response = AuthenticatedValue.newBuilder();
             if (authenticatedValue.hasTicketAuthenticatorWrapper()) {
                 try {
@@ -89,19 +90,12 @@ public class AuthenticatedServiceProcessor {
 
                     // decrypt the send type from the AuthenticatedValue
                     RECEIVE decrypted = EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), ticketEvaluationWrapper.getSessionKey(), internalClass);
-                    // retrieve the unit config which is used to check for permissions
-                    UnitConfig unitConfig = configRetrieval.retrieve(decrypted);
-
-                    // check for write permissions
-                    if (!AuthorizationHelper.canWrite(unitConfig, ticketEvaluationWrapper.getUserId(), authorizationGroupMap, locationMap)) {
-                        throw new PermissionDeniedException("User[" + ticketEvaluationWrapper.getUserId() + "] has not rights to register a unitConfig");
-                    }
 
                     // execute the action of the server
-                    RETURN result = executable.process(decrypted);
+                    RETURN result = executable.process(decrypted, ticketEvaluationWrapper);
                     // encrypt the result and add it to the response
                     response.setValue(EncryptionHelper.encryptSymmetric(result, ticketEvaluationWrapper.getSessionKey()));
-                    // add updated ticket to reponse
+                    // add updated ticket to response
                     response.setTicketAuthenticatorWrapper(ticketEvaluationWrapper.getTicketAuthenticatorWrapper());
                 } catch (IOException | BadPaddingException ex) {
                     throw new CouldNotPerformException("Encryption/Decryption of internal value has failed", ex);
@@ -109,34 +103,28 @@ public class AuthenticatedServiceProcessor {
             } else {
                 // ticket no available so request without login
                 try {
-                    // when not logged in the received value is not encrypted but just send as a byte string
-                    // so get the received message by calling parseFrom which is supported by every message
-                    Method parseFrom = internalClass.getMethod("parseFrom", ByteString.class);
-                    RECEIVE message = (RECEIVE) parseFrom.invoke(null, authenticatedValue.getValue());
+                    RECEIVE message = null;
 
-                    // retrieve the unit config which is used to check for permissions 
-                    UnitConfig unitConfig = configRetrieval.retrieve(message);
-
-// todo enable again after fixing openbase/bco.authentication#61
-//                    if (unitConfig.getType() == UnitType.UNKNOWN) {
-//                        throw new InvalidStateException("Unit type of received unit config is unknown! Reject request because message seems to be broken.");
-//                    }
-
-                    try {
-                        if (JPService.getProperty(JPAuthentication.class).getValue()) {
-                            // check for write permissions for other
-                            if (!AuthorizationHelper.canWrite(unitConfig, null, null, locationMap)) {
-                                throw new PermissionDeniedException("Other has not rights to perform this action");
-                            }
+                    if (authenticatedValue.hasValue() && !authenticatedValue.getValue().isEmpty()) {
+                        if (!GeneratedMessage.class.isAssignableFrom(internalClass)) {
+                            throw new CouldNotPerformException("Authenticated value has a value but the method implemented by the server did not expect one");
                         }
-                    } catch (JPNotAvailableException ex) {
-                        throw new CouldNotPerformException("Could not check JPEnableAuthentication property", ex);
+                        // when not logged in the received value is not encrypted but just send as a byte string
+                        // so get the received message by calling parseFrom which is supported by every message
+                        Method parseFrom = internalClass.getMethod("parseFrom", ByteString.class);
+                        message = (RECEIVE) parseFrom.invoke(null, authenticatedValue.getValue());
                     }
 
                     // execute the action of the server
-                    RETURN result = executable.process(message);
-                    // add result as a byte string to the response
-                    response.setValue(result.toByteString());
+                    RETURN result = executable.process(message, null);
+                    if (result != null) {
+                        if (!(result instanceof GeneratedMessage)) {
+                            throw new CouldNotPerformException("Result[" + result + "] of authenticated action is not a message or not null and therefore not supported");
+                        }
+
+                        // add result as a byte string to the response
+                        response.setValue(((GeneratedMessage) result).toByteString());
+                    }
                 } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
                     throw new CouldNotPerformException("Could not invoke parseFrom method on [" + internalClass.getSimpleName() + "]", ex);
                 }
@@ -146,6 +134,77 @@ public class AuthenticatedServiceProcessor {
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not execute authenticated action", ex);
         }
+    }
+
+    /**
+     * Method used by the server which performs an authenticated action.
+     *
+     * @param <RECEIVE>             The type of value that the server receives to perform its action,
+     * @param <RETURN>              The type of value that the server responds with.
+     * @param authenticatedValue    The authenticatedValue which is send with the request.
+     * @param authorizationGroupMap Map of authorization groups to verify if this action can be performed.
+     * @param locationMap           Map of locations to verify if this action can be performed.
+     * @param internalClass         Class of type RECEIVE needed to decrypt the received type.
+     * @param executable            Interface defining the cation that the server performs.
+     * @param configRetrieval       Interface defining which unitConfig should be used to verify the execution of the action.
+     * @param authorizationType     The type of authorization which are performed (read, write or access).
+     * @return An AuthenticatedValue which should be send as a response.
+     * @throws CouldNotPerformException If one step can not be done, e.g. ticket invalid or encryption failed.
+     * @throws InterruptedException     It interrupted while checking permissions.
+     */
+    public static <RECEIVE extends Serializable, RETURN extends Serializable> AuthenticatedValue authenticatedAction(
+            final AuthenticatedValue authenticatedValue,
+            final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> authorizationGroupMap,
+            final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locationMap,
+            final Class<RECEIVE> internalClass,
+            final InternalProcessable<RECEIVE, RETURN> executable,
+            final ConfigRetrieval<RECEIVE> configRetrieval,
+            final AuthorizationHelper.Type authorizationType) throws CouldNotPerformException, InterruptedException {
+        return AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, internalClass, (InternalIdentifiedProcessable<RECEIVE, Serializable>) (message, ticketEvaluationWrapper) -> {
+            try {
+                if (JPService.getProperty(JPAuthentication.class).getValue()) {
+                    UnitConfig unitConfig = configRetrieval.retrieve(message);
+                    if (unitConfig.getType() == UnitType.UNKNOWN) {
+                        throw new InvalidStateException("Unit type of received unit config is unknown! Reject request because message seems to be broken.");
+                    }
+
+                    String userId = ticketEvaluationWrapper == null ? null : ticketEvaluationWrapper.getUserId();
+                    // check for write permissions
+                    if (!AuthorizationHelper.canDo(unitConfig, userId, authorizationGroupMap, locationMap, authorizationType)) {
+                        throw new PermissionDeniedException("User[" + ticketEvaluationWrapper.getUserId() + "] has not rights to register a unitConfig");
+                    }
+                }
+            } catch (JPNotAvailableException ex) {
+                throw new CouldNotPerformException("Could not check JPEnableAuthentication property", ex);
+            }
+
+            return executable.process(message);
+        });
+    }
+
+    /**
+     * Method used by the server which performs an authenticated action which needs write permissions.
+     *
+     * @param <RECEIVE>             The type of value that the server receives to perform its action,
+     * @param <RETURN>              The type of value that the server responds with.
+     * @param authenticatedValue    The authenticatedValue which is send with the request.
+     * @param authorizationGroupMap Map of authorization groups to verify if this action can be performed.
+     * @param locationMap           Map of locations to verify if this action can be performed.
+     * @param internalClass         Class of type RECEIVE needed to decrypt the received type.
+     * @param executable            Interface defining the cation that the server performs.
+     * @param configRetrieval       Interface defining which unitConfig should be used to verify the execution of the action.
+     * @return An AuthenticatedValue which should be send as a response.
+     * @throws CouldNotPerformException If one step can not be done, e.g. ticket invalid or encryption failed.
+     * @throws InterruptedException     It interrupted while checking permissions.
+     */
+    public static <RECEIVE extends Serializable, RETURN extends Serializable> AuthenticatedValue authenticatedAction(
+            final AuthenticatedValue authenticatedValue,
+            final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> authorizationGroupMap,
+            final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locationMap,
+            final Class<RECEIVE> internalClass,
+            final InternalProcessable<RECEIVE, RETURN> executable,
+            final ConfigRetrieval<RECEIVE> configRetrieval) throws CouldNotPerformException, InterruptedException {
+        return authenticatedAction(authenticatedValue, authorizationGroupMap, locationMap, internalClass, executable, configRetrieval, Type.WRITE);
     }
 
     /**
@@ -160,7 +219,11 @@ public class AuthenticatedServiceProcessor {
      * @return A future containing the response.
      * @throws CouldNotPerformException If a user is logged and a ticket for the request cannot be initialized or encryption of the send message fails.
      */
-    public static <SEND extends GeneratedMessage, RESPONSE extends GeneratedMessage> Future<RESPONSE> requestAuthenticatedAction(final SEND message, final Class<RESPONSE> responseClass, final SessionManager sessionManager, final InternalRequestable internalRequestable) throws CouldNotPerformException {
+    public static <SEND extends Serializable, RESPONSE> Future<RESPONSE> requestAuthenticatedAction(
+            final SEND message,
+            final Class<RESPONSE> responseClass,
+            final SessionManager sessionManager,
+            final InternalRequestable internalRequestable) throws CouldNotPerformException {
         if (sessionManager.isLoggedIn()) {
             // check if login is still valid
             sessionManager.isAuthenticated();
@@ -190,9 +253,15 @@ public class AuthenticatedServiceProcessor {
                 throw new CouldNotPerformException("Could not request authenticated Action!", ex);
             }
         } else {
-            // no one is logged in so do not encrypt but convert message to a byte string
+            // no one is logged in so do not encrypt but convert message to a byte string, only if there is a parameter
             AuthenticatedValue.Builder authenticateValue = AuthenticatedValue.newBuilder();
-            authenticateValue.setValue(message.toByteString());
+            if (message != null) {
+                if (!(message instanceof GeneratedMessage)) {
+                    throw new CouldNotPerformException("Could not convert [" + message + "] to byte string");
+                }
+
+                authenticateValue.setValue(((GeneratedMessage) message).toByteString());
+            }
             // perform the internal request
             Future<AuthenticatedValue> future = internalRequestable.request(authenticateValue.build());
             // wrap the response in an authenticated value future
@@ -200,16 +269,31 @@ public class AuthenticatedServiceProcessor {
         }
     }
 
-    public interface InternalProcessable<RECEIVE extends GeneratedMessage, RETURN extends GeneratedMessage> {
+    public interface InternalProcessable<RECEIVE, RETURN> {
 
         /**
-         * The process an authenticated value executes for a request.
+         * Process which is executed for the call of an authenticated method.
+         * When this interface is implemented the authorization is also already done.
          *
          * @param message the message which is received by the request.
          * @return A message which is the result of the process.
          * @throws CouldNotPerformException If the process cannot be executed.
          */
-        public RETURN process(final RECEIVE message) throws CouldNotPerformException;
+        RETURN process(final RECEIVE message) throws CouldNotPerformException;
+    }
+
+    public interface InternalIdentifiedProcessable<RECEIVE, RETURN> {
+
+        /**
+         * Process which is executed for the call of an authenticated method.
+         * When this is called the authorization of the user has already been done.
+         *
+         * @param message                 the parameter with which the process is called
+         * @param ticketEvaluationWrapper ticket evaluation wrapper for which is already authenticated
+         * @return the result of this process which is send back to the user
+         * @throws CouldNotPerformException if the process cannot be executed
+         */
+        RETURN process(final RECEIVE message, final AuthenticatedServerManager.TicketEvaluationWrapper ticketEvaluationWrapper) throws CouldNotPerformException;
     }
 
     public interface InternalRequestable {
@@ -221,18 +305,18 @@ public class AuthenticatedServiceProcessor {
          * @return A future containing the authenticated value which is the response from the server.
          * @throws CouldNotPerformException If the request cannot be done.
          */
-        public Future<AuthenticatedValue> request(AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+        Future<AuthenticatedValue> request(AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
     }
 
-    public interface ConfigRetrieval<M extends GeneratedMessage> {
+    public interface ConfigRetrieval<RECEIVE> {
 
         /**
          * Provides a UnitConfig, using the decrypted value from the AuthenticatedValue.
          *
-         * @param message Decrypted object that might lead to the UnitConfig.
+         * @param receive Decrypted object that might lead to the UnitConfig.
          * @return UnitConfig that allows to decide whether the user has the permission to perform an action.
          * @throws CouldNotPerformException
          */
-        public UnitConfig retrieve(final M message) throws CouldNotPerformException;
+        UnitConfig retrieve(final RECEIVE receive) throws CouldNotPerformException;
     }
 }
