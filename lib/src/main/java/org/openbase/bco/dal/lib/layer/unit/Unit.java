@@ -83,6 +83,7 @@ import java.util.concurrent.Future;
 
 /**
  * @param <D> the data type of this unit used for the state synchronization.
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<String>, Configurable<String, UnitConfig>, DataProvider<D>, ServiceProvider, Service, Snapshotable<Snapshot> {
@@ -91,12 +92,14 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Returns the type of this unit.
      *
      * @return UnitType the unit type defining which unit template is provided by this unit.
+     *
      * @throws NotAvailableException is thrown if the unit type is currently not available.
      */
     UnitType getUnitType() throws NotAvailableException;
 
     /**
      * @return
+     *
      * @throws NotAvailableException
      * @deprecated please use {@code getUnitType()} instead.
      */
@@ -111,6 +114,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Note: The unit template defines which services are provided by this unit.
      *
      * @return UnitTemplate the unit template of this unit.
+     *
      * @throws NotAvailableException in case the unit template is not available.
      */
     UnitTemplate getUnitTemplate() throws NotAvailableException;
@@ -121,6 +125,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Note: The unit template defines which services are provided by this unit.
      *
      * @return UnitTemplate the unit template of this unit.
+     *
      * @throws NotAvailableException in case the unit template is not available.
      * @deprecated please use {@code getUnitTemplate()} instead.
      */
@@ -136,6 +141,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * In case the unit host even does not provide any shape information and the unit is a device than the shape of the device class will be used.
      *
      * @return the shape representing the unit.
+     *
      * @throws NotAvailableException is thrown if the unit shape is not available or the resolution has been failed.
      */
     default Shape getUnitShape() throws NotAvailableException {
@@ -153,6 +159,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
 
     /**
      * @param serviceState
+     *
      * @throws VerificationFailedException
      * @deprecated please use Services.verifyOperationServiceState(...) instead
      */
@@ -180,6 +187,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
 
     /**
      * @param value
+     *
      * @throws VerificationFailedException
      * @deprecated please use Services.verifyOperationServiceStateValue(...) instead
      */
@@ -269,6 +277,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Gets the position of the unit relative to its parent location.
      *
      * @return relative position
+     *
      * @throws NotAvailableException is thrown if the config is not available.
      * @deprecated please use {@code getUnitPosition()} instead.
      */
@@ -281,6 +290,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Gets the rotation of the unit relative to its parent location.
      *
      * @return relative rotation
+     *
      * @throws NotAvailableException is thrown if the config is not available.
      * @deprecated please use {@code getUnitRotation()} instead.
      */
@@ -293,6 +303,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Gets the local position of the unit relative to its parent location.
      *
      * @return relative position
+     *
      * @throws NotAvailableException is thrown if the unit config or parts of it are not available.
      */
     default TranslationType.Translation getUnitPosition() throws NotAvailableException {
@@ -314,6 +325,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Gets the local rotation of the unit relative to its parent location.
      *
      * @return relative rotation
+     *
      * @throws NotAvailableException is thrown if the unit config or parts of it are not available.
      */
     default RotationType.Rotation getUnitRotation() throws NotAvailableException {
@@ -334,6 +346,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Gets the Transform3D of the transformation from root to unit coordinate system.
      *
      * @return transform relative to root location
+     *
      * @throws NotAvailableException is thrown if the transformation is not available.
      * @throws InterruptedException  is thrown if the thread was externally interrupted.
      * @deprecated please use {@code getRootToUnitTransform3D()} instead.
@@ -348,6 +361,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * and thereby the inverse transformation to the one returned by getTransform3D().
      *
      * @return transform relative to root location
+     *
      * @throws NotAvailableException is thrown if the transformation is not available.
      * @throws InterruptedException  is thrown if the thread was externally interrupted.
      * @deprecated please use {@code getUnitToRootTransform3D()} instead.
@@ -361,6 +375,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Gets the position of the unit relative to the root location as a Point3d object.
      *
      * @return position relative to the root location
+     *
      * @throws NotAvailableException is thrown if the transformation is not available.
      * @throws InterruptedException  is thrown if the thread was externally interrupted.
      * @deprecated please use {@code getUnitPositionGlobalPoint3d()} instead.
@@ -374,6 +389,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Gets the position of the unit relative to the root location as a Translation object.
      *
      * @return position relative to the root location
+     *
      * @throws NotAvailableException is thrown if the transformation is not available.
      * @throws InterruptedException  is thrown if the thread was externally interrupted.
      * @deprecated please use {@code getUnitPositionGlobal()} instead.
@@ -387,6 +403,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Gets the rotation of the unit relative to the root location as a Quat4d object.
      *
      * @return rotation relative to the root location
+     *
      * @throws NotAvailableException is thrown if the transformation is not available.
      * @throws InterruptedException  is thrown if the thread was externally interrupted.
      * @deprecated please use {@code getUnitRotationGlobalQuat4d()} instead.
@@ -400,6 +417,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Gets the rotation of the unit relative to the root location as a Rotation object.
      *
      * @return rotation relative to the root location
+     *
      * @throws NotAvailableException is thrown if the transformation is not available.
      * @throws InterruptedException  is thrown if the thread was externally interrupted.
      * @deprecated please use {@code getUnitRotationGlobal()} instead.
@@ -413,6 +431,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Gets the center coordinates of the unit's BoundingBox in the unit coordinate system as a Point3d object.
      *
      * @return center coordinates of the unit's BoundingBox relative to unit
+     *
      * @throws NotAvailableException is thrown if the center can not be calculate.
      * @deprecated please use {@code getUnitBoundingBoxCenterPoint3d()} instead.
      */
@@ -425,6 +444,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Gets the center coordinates of the unit's BoundingBox in the coordinate system of the root location as a Point3d object.
      *
      * @return center coordinates of the unit's BoundingBox relative to root location
+     *
      * @throws NotAvailableException          is thrown if the center can not be calculate.
      * @throws java.lang.InterruptedException
      * @deprecated please use {@code getUnitBoundingBoxCenterGlobalPoint3d()} instead.
@@ -464,6 +484,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Method returns the transformation leading from the root location to this unit.
      *
      * @return the transformation
+     *
      * @throws org.openbase.jul.exception.NotAvailableException
      */
     default Transform getRootToUnitTransformation() throws NotAvailableException {
@@ -478,6 +499,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Method returns the transformation leading from the unit to the root location.
      *
      * @return the transformation
+     *
      * @throws org.openbase.jul.exception.NotAvailableException
      */
     default Transform getUnitToRootTransformation() throws NotAvailableException {
@@ -492,6 +514,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Gets the Transform3D of the transformation from root to unit coordinate system.
      *
      * @return transform relative to root location
+     *
      * @throws NotAvailableException is thrown if the transformation is not available.
      */
     default Transform3D getRootToUnitTransform3D() throws NotAvailableException {
@@ -508,6 +531,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * and thereby the inverse transformation to the one returned by getTransform3D().
      *
      * @return transform relative to root location
+     *
      * @throws NotAvailableException is thrown if the transformation is not available.
      */
     default Transform3D getUnitToRootTransform3D() throws NotAvailableException {
@@ -522,6 +546,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Gets the position of the unit relative to the root location as a Point3d object.
      *
      * @return position relative to the root location
+     *
      * @throws NotAvailableException is thrown if the transformation is not available.
      */
     default Point3d getUnitPositionGlobalPoint3d() throws NotAvailableException {
@@ -536,6 +561,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Gets the position of the unit relative to the root location as a Translation object.
      *
      * @return position relative to the root location
+     *
      * @throws NotAvailableException is thrown if the transformation is not available.
      */
     default Translation getUnitPositionGlobal() throws NotAvailableException {
@@ -550,6 +576,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Gets the rotation of the unit relative to the root location as a Quat4d object.
      *
      * @return rotation relative to the root location
+     *
      * @throws NotAvailableException is thrown if the transformation is not available.
      */
     default Quat4d getUnitRotationGlobalQuat4d() throws NotAvailableException {
@@ -564,6 +591,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Gets the rotation of the unit relative to the root location as a Rotation object.
      *
      * @return rotation relative to the root location
+     *
      * @throws NotAvailableException is thrown if the transformation is not available.
      */
     default Rotation getUnitRotationGlobal() throws NotAvailableException {
@@ -578,6 +606,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Gets the center coordinates of the unit's BoundingBox in the unit coordinate system as a Point3d object.
      *
      * @return center coordinates of the unit's BoundingBox relative to unit
+     *
      * @throws NotAvailableException is thrown if the center can not be calculate.
      */
     default Point3d getUnitBoundingBoxCenterPoint3d() throws NotAvailableException {
@@ -588,6 +617,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Gets the center coordinates of this unit's BoundingBox in the coordinate system of the root location as a Point3d object.
      *
      * @return center coordinates of this unit's BoundingBox relative to root location
+     *
      * @throws NotAvailableException is thrown if the center can not be calculate.
      */
     default Point3d getUnitBoundingBoxCenterGlobalPoint3d() throws NotAvailableException {
@@ -602,6 +632,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Do not use this method! Use Registries.getLocationRegistry() instead!
      *
      * @return
+     *
      * @throws org.openbase.jul.exception.NotAvailableException
      * @deprecated Do not use this method! Use Registries.getLocationRegistry() instead!
      */
@@ -625,7 +656,9 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Get the transaction id of a service state in the data of this unit.
      *
      * @param serviceType
+     *
      * @return
+     *
      * @throws CouldNotPerformException
      */
     default long getTransactionIdByServiceType(ServiceType serviceType) throws CouldNotPerformException {
@@ -717,6 +750,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Returns true if this unit is a dal unit.
      *
      * @return is true if this unit is a dal unit.
+     *
      * @throws CouldNotPerformException is throw if the check could not be performed.
      */
     default boolean isDalUnit() throws CouldNotPerformException {
@@ -727,6 +761,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * Returns true if this unit is a base unit.
      *
      * @return is true if this unit is a base unit.
+     *
      * @throws CouldNotPerformException is throw if the check could not be performed.
      */
     default boolean isBaseUnit() throws CouldNotPerformException {
@@ -741,6 +776,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * * ServiceConfig (protobuf fields)
      *
      * @return a key - value pair pool providing all related variable of this unit including the service variables.
+     *
      * @throws NotAvailableException is thrown if the variable pool is not available e.g. because the unit is not compatible with the given service type..
      */
     default VariableProvider generateVariablePool(final ServiceType serviceType) throws NotAvailableException {
@@ -760,6 +796,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * * ServiceConfig (protobuf fields)
      *
      * @return a key - value pair pool providing all related variable of this unit including the service variables.
+     *
      * @throws NotAvailableException is thrown if the variable pool is not available.
      */
     default VariableProvider generateVariablePool(final ServiceConfig serviceConfig) throws NotAvailableException {
@@ -770,6 +807,27 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
         configPool.register(new MetaConfigVariableProvider("ServiceMetaConfig", serviceConfig.getMetaConfig()));
         configPool.register(new ProtobufVariableProvider(serviceConfig));
         return configPool;
+    }
+
+    /**
+     * Method return the host unit config of this config if available.
+     * Mainly dal units are providing host units. A host unit (device/app) is the unit which introduces dal units (light, motiondetector) to the system.
+     * Example: A light can be introduced by a physical device like a Philip Hue. In this case the Philip Hue Device config is returned as host unit config.
+     *
+     * @return the app or device config of this dal unit.
+     *
+     * @throws NotAvailableException is thrown if this unit does not provide a host unit or something else went wrong during resolution.
+     */
+    default UnitConfig getHostUnitConfig() throws NotAvailableException {
+        try {
+            return Registries.getUnitRegistry().getUnitConfigById(getConfig().getUnitHostId());
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("HostUnitConfig", ex);
+        } catch (InterruptedException ex) {
+            // will be removed later
+            ex.printStackTrace();
+            throw new NotAvailableException("HostUnitConfig", ex);
+        }
     }
 
     /**
@@ -785,6 +843,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * *
      *
      * @return a key - value pair pool providing all related variable of this unit.
+     *
      * @throws NotAvailableException is thrown if the variable pool is not available.
      */
     default VariableProvider generateVariablePool() throws NotAvailableException {
@@ -797,19 +856,21 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
 
                 // HostConfigMetaConfig
                 try {
-                    UnitConfig hostUnitConfig = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId());
+                    UnitConfig hostUnitConfig = getHostUnitConfig();
                     configPool.register(new MetaConfigVariableProvider("HostConfigMetaConfig", hostUnitConfig.getMetaConfig()));
-
+                    configPool.register(new ProtobufVariableProvider(hostUnitConfig));
                     switch (hostUnitConfig.getType()) {
                         case DEVICE:
                             final DeviceClass deviceClass = Registries.getDeviceRegistry().getDeviceClassById(hostUnitConfig.getDeviceConfig().getDeviceClassId());
                             configPool.register(new MetaConfigVariableProvider("DeviceBindingConfig", deviceClass.getBindingConfig().getMetaConfig()));
                             configPool.register(new MetaConfigVariableProvider("DeviceClassMetaConfig", deviceClass.getMetaConfig()));
+                            configPool.register(new ProtobufVariableProvider(deviceClass));
                             break;
                         case APP:
                             final AppClass appClass = Registries.getAppRegistry().getAppClassById(hostUnitConfig.getAppConfig().getAppClassId());
                             configPool.register(new MetaConfigVariableProvider("AppBindingConfig", appClass.getBindingConfig().getMetaConfig()));
                             configPool.register(new MetaConfigVariableProvider("AppClassMetaConfig", appClass.getMetaConfig()));
+                            configPool.register(new ProtobufVariableProvider(appClass));
                             break;
                     }
                 } catch (InterruptedException e) {

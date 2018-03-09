@@ -43,7 +43,7 @@ public class ButtonController extends AbstractDALUnitController<ButtonData, Butt
 
     public final static String META_CONFIG_AUTO_RESET_BUTTON_STATE = "AUTO_RESET_BUTTON_STATE";
 
-    public static final long DEAULT_TRIGGER_TIMEOUT = 1500;
+    public static final long DEAULT_TRIGGER_TIMEOUT = 300;
     public static final ButtonState BUTTON_STATE_RELEASED = ButtonState.newBuilder().setValue(State.RELEASED).build();
 
     static {
