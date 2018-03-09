@@ -25,7 +25,8 @@ package org.openbase.bco.authentication.lib;
 import com.google.protobuf.ByteString;
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.Type;
-import org.openbase.bco.authentication.lib.future.AuthenticatedValueFuture;
+import org.openbase.bco.authentication.lib.future.AuthenticatedSynchronizationFuture;
+import org.openbase.bco.authentication.lib.future.AuthenticationFuture;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -33,6 +34,8 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.PermissionDeniedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.rsb.com.TransactionIdProvider;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
@@ -71,6 +74,7 @@ public class AuthenticatedServiceProcessor {
     public static <RECEIVE extends Serializable, RETURN extends Serializable> AuthenticatedValue authenticatedAction(
             final AuthenticatedValue authenticatedValue,
             final Class<RECEIVE> internalClass,
+            final TransactionIdProvider transactionIdProvider,
             final InternalIdentifiedProcessable<RECEIVE, RETURN> executable) throws CouldNotPerformException, InterruptedException {
         try {
             // start to build the response
@@ -93,6 +97,9 @@ public class AuthenticatedServiceProcessor {
 
                     // execute the action of the server
                     RETURN result = executable.process(decrypted, ticketEvaluationWrapper);
+                    // set transaction id in response
+                    response.setTransactionId(transactionIdProvider.getTransactionId());
+
                     // encrypt the result and add it to the response
                     response.setValue(EncryptionHelper.encryptSymmetric(result, ticketEvaluationWrapper.getSessionKey()));
                     // add updated ticket to response
@@ -117,6 +124,8 @@ public class AuthenticatedServiceProcessor {
 
                     // execute the action of the server
                     RETURN result = executable.process(message, null);
+                    // set transaction id in response
+                    response.setTransactionId(transactionIdProvider.getTransactionId());
                     if (result != null) {
                         if (!(result instanceof GeneratedMessage)) {
                             throw new CouldNotPerformException("Result[" + result + "] of authenticated action is not a message or not null and therefore not supported");
@@ -157,10 +166,11 @@ public class AuthenticatedServiceProcessor {
             final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> authorizationGroupMap,
             final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locationMap,
             final Class<RECEIVE> internalClass,
+            final TransactionIdProvider transactionIdProvider,
             final InternalProcessable<RECEIVE, RETURN> executable,
             final ConfigRetrieval<RECEIVE> configRetrieval,
             final AuthorizationHelper.Type authorizationType) throws CouldNotPerformException, InterruptedException {
-        return AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, internalClass, (InternalIdentifiedProcessable<RECEIVE, Serializable>) (message, ticketEvaluationWrapper) -> {
+        return AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, internalClass, transactionIdProvider, (InternalIdentifiedProcessable<RECEIVE, Serializable>) (message, ticketEvaluationWrapper) -> {
             try {
                 if (JPService.getProperty(JPAuthentication.class).getValue()) {
                     UnitConfig unitConfig = configRetrieval.retrieve(message);
@@ -171,7 +181,7 @@ public class AuthenticatedServiceProcessor {
                     String userId = ticketEvaluationWrapper == null ? null : ticketEvaluationWrapper.getUserId();
                     // check for write permissions
                     if (!AuthorizationHelper.canDo(unitConfig, userId, authorizationGroupMap, locationMap, authorizationType)) {
-                        throw new PermissionDeniedException("User[" + ticketEvaluationWrapper.getUserId() + "] has not rights to register a unitConfig");
+                        throw new PermissionDeniedException("User[" + userId + "] has no rights to register a unitConfig");
                     }
                 }
             } catch (JPNotAvailableException ex) {
@@ -202,9 +212,10 @@ public class AuthenticatedServiceProcessor {
             final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> authorizationGroupMap,
             final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locationMap,
             final Class<RECEIVE> internalClass,
+            final TransactionIdProvider transactionIdProvider,
             final InternalProcessable<RECEIVE, RETURN> executable,
             final ConfigRetrieval<RECEIVE> configRetrieval) throws CouldNotPerformException, InterruptedException {
-        return authenticatedAction(authenticatedValue, authorizationGroupMap, locationMap, internalClass, executable, configRetrieval, Type.WRITE);
+        return authenticatedAction(authenticatedValue, authorizationGroupMap, locationMap, internalClass, transactionIdProvider, executable, configRetrieval, Type.WRITE);
     }
 
     /**
@@ -219,10 +230,11 @@ public class AuthenticatedServiceProcessor {
      * @return A future containing the response.
      * @throws CouldNotPerformException If a user is logged and a ticket for the request cannot be initialized or encryption of the send message fails.
      */
-    public static <SEND extends Serializable, RESPONSE> Future<RESPONSE> requestAuthenticatedAction(
+    public static <SEND extends Serializable, RESPONSE, REMOTE extends DataProvider<?> & TransactionIdProvider> Future<RESPONSE> requestAuthenticatedAction(
             final SEND message,
             final Class<RESPONSE> responseClass,
             final SessionManager sessionManager,
+            final REMOTE remote,
             final InternalRequestable internalRequestable) throws CouldNotPerformException {
         if (sessionManager.isLoggedIn()) {
             // check if login is still valid
@@ -245,7 +257,8 @@ public class AuthenticatedServiceProcessor {
                     // perform the internal request
                     Future<AuthenticatedValue> future = internalRequestable.request(authenticatedValue.build());
                     // wrap the response in an authenticated value future
-                    return new AuthenticatedValueFuture<>(future, responseClass, ticketAuthenticatorWrapper, sessionManager);
+                    return new AuthenticatedSynchronizationFuture<>(new AuthenticationFuture<>(future, responseClass, ticketAuthenticatorWrapper, sessionManager), remote);
+//                    return new AuthenticatedValueFuture<>(future, responseClass, ticketAuthenticatorWrapper, sessionManager);
                 } catch (IOException | BadPaddingException ex) {
                     throw new CouldNotPerformException("Could not initialize service server request", ex);
                 }
@@ -265,7 +278,8 @@ public class AuthenticatedServiceProcessor {
             // perform the internal request
             Future<AuthenticatedValue> future = internalRequestable.request(authenticateValue.build());
             // wrap the response in an authenticated value future
-            return new AuthenticatedValueFuture<>(future, responseClass, null, sessionManager);
+//            return new AuthenticatedValueFuture<>(future, responseClass, null, sessionManager);
+            return new AuthenticatedSynchronizationFuture<>(new AuthenticationFuture<>(future, responseClass, null, sessionManager), remote);
         }
     }
 
