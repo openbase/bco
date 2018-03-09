@@ -60,8 +60,6 @@ import java.util.logging.Logger;
  */
 public class SceneControllerImpl extends AbstractExecutableBaseUnitController<SceneData, SceneData.Builder> implements SceneController {
 
-    public static final int ACTION_REPLAY = (JPService.testMode() ? 1 : 3);
-    public static final int ACTION_EXECUTION_DELAY = 5500;
     public static final long ACTION_EXECUTION_TIMEOUT = 15000;
 
     static {
@@ -199,19 +197,11 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
 
         final Map<Future<ActionFuture>, RemoteAction> executionFutureList = new HashMap<>();
 
-//        // dublicate actions to make sure all actions are applied.
-//        for (int i = 0; i < ACTION_REPLAY; i++) {
         synchronized (actionListSync) {
             for (final RemoteAction action : remoteActionList) {
                 executionFutureList.put(action.execute(), action);
             }
         }
-//            // only wait if another interation is following.
-//            if (i + 1 < ACTION_REPLAY) {
-//                Thread.sleep(ACTION_EXECUTION_DELAY);
-//            }
-//        }
-
         MultiException.ExceptionStack exceptionStack = null;
 
         try {
