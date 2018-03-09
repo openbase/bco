@@ -21,10 +21,10 @@ package org.openbase.bco.manager.device.binding.openhab.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
-import org.openbase.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
+
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
+import org.openbase.bco.manager.device.binding.openhab.execution.OpenHABCommandFactory;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -33,17 +33,22 @@ import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.PowerStateType.PowerState;
 
+import java.util.concurrent.Future;
+
 /**
+ * @param <ST> Related service type.
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- * @param <ST> Related service type.
  */
 public class PowerStateServiceImpl<ST extends PowerStateOperationService & Unit<?>> extends OpenHABService<ST> implements org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(PowerStateServiceImpl.class);
 
+    private final boolean autoRepeat;
+
     public PowerStateServiceImpl(final ST unit) throws InstantiationException {
         super(unit);
+        this.autoRepeat = ServiceFactoryTools.detectAutoRepeat(unit);
     }
 
     @Override
@@ -53,9 +58,11 @@ public class PowerStateServiceImpl<ST extends PowerStateOperationService & Unit<
 
     @Override
     public Future<ActionFuture> setPowerState(final PowerState state) throws CouldNotPerformException {
-        lastCommand = OpenHABCommandFactory.newOnOffCommand(state.getValue()) ;
+        lastCommand = OpenHABCommandFactory.newOnOffCommand(state.getValue());
         final Future future = executeCommand(lastCommand);
-        repeatLastCommand();
+        if (autoRepeat) {
+            repeatLastCommand();
+        }
         return future;
     }
 }

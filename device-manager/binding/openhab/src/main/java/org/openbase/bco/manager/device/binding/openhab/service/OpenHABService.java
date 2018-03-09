@@ -50,6 +50,17 @@ import java.util.concurrent.TimeUnit;
  */
 public abstract class OpenHABService<ST extends Service & Unit<?>> implements Service {
 
+    /**
+     * first Repeat delay in milliseconds
+     */
+    public static final int ACTION_EXECUTION_REPEAT_DELAY_1 = 3000;
+
+    /**
+     * second Repeat delay in milliseconds
+     */
+    public static final int ACTION_EXECUTION_REPEAT_DELAY_2 = 10000;
+    public static final long ACTION_EXECUTION_TIMEOUT = 15000;
+
     protected final ST unit;
     private final Logger logger = LoggerFactory.getLogger(getClass());
     private final String itemName;
@@ -116,12 +127,28 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
      * Make sure the last command is always stored into the {@code lastCommand} variable.
      */
     public void repeatLastCommand() {
+
+        // this is just a bug workaround because the philip hues are sometimes skip events.
+        // So to make sure they are controlled like expected we repeat the command twice.
+
+        // init repeat 1
         GlobalScheduledExecutorService.schedule(() -> {
             try {
-                executeCommand(lastCommand);
+                executeCommand(lastCommand).get(ACTION_EXECUTION_TIMEOUT, TimeUnit.SECONDS);
+                logger.info("repeat successfully command[" + lastCommand + "]");
             } catch (Exception ex) {
                 ExceptionPrinter.printHistory("Could not repeat openhab command!", ex, logger);
             }
-        }, 5, TimeUnit.SECONDS);
+        }, ACTION_EXECUTION_REPEAT_DELAY_1, TimeUnit.MILLISECONDS);
+
+        // init repeat 2
+        GlobalScheduledExecutorService.schedule(() -> {
+            try {
+                executeCommand(lastCommand).get(ACTION_EXECUTION_TIMEOUT, TimeUnit.SECONDS);
+                logger.info("repeat successfully command[" + lastCommand + "]");
+            } catch (Exception ex) {
+                ExceptionPrinter.printHistory("Could not repeat openhab command!", ex, logger);
+            }
+        }, ACTION_EXECUTION_REPEAT_DELAY_2, TimeUnit.MILLISECONDS);
     }
 }
