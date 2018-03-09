@@ -1288,8 +1288,10 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
     @Override
     protected UnitRegistryData filterDataForUser(final UnitRegistryData.Builder dataBuilder, final String userId) throws CouldNotPerformException {
-        // Create a filter which removes all unit configs from a list without read permissions by the user
-        final ListFilter<UnitConfig> readFilter = unitConfig -> AuthorizationHelper.canRead(unitConfig, userId, authorizationGroupUnitConfigRegistry.getEntryMap(), locationUnitConfigRegistry.getEntryMap());
+        // Create a filter which removes all unit configs from a list without read permissions its location by the user
+        final ListFilter<UnitConfig> readFilter = unitConfig -> AuthorizationHelper.canRead(getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()), userId, authorizationGroupUnitConfigRegistry.getEntryMap(), locationUnitConfigRegistry.getEntryMap());
+        // Create a filter which removes unit ids if the user does have access permissions for them
+        final ListFilter<String> readFilterByUnitId = unitId -> AuthorizationHelper.canAccess(getUnitConfigById(unitId), userId, authorizationGroupUnitConfigRegistry.getEntryMap(), locationUnitConfigRegistry.getEntryMap());
 
         // iterate over all fields of unit registry data
         for (FieldDescriptor fieldDescriptor : dataBuilder.getAllFields().keySet()) {
@@ -1305,6 +1307,26 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
             // copy list, filter it and set as new list for the field
             dataBuilder.setField(fieldDescriptor, readFilter.filter(new ArrayList<>((List<UnitConfig>) dataBuilder.getField(fieldDescriptor))));
+        }
+
+        // for all locations which are left filter unit ids and child ids
+        for(final UnitConfig.Builder locationUnitConfig : dataBuilder.getLocationUnitConfigBuilderList()) {
+            final LocationConfig.Builder locationConfig = locationUnitConfig.getLocationConfigBuilder();
+            final List<String> filteredUnitIdList = readFilterByUnitId.filter(new ArrayList<>(locationConfig.getUnitIdList()));
+            locationConfig.clearUnitId();
+            locationConfig.addAllUnitId(filteredUnitIdList);
+
+            final List<String> filteredChildIdList = readFilterByUnitId.filter(new ArrayList<>(locationConfig.getChildIdList()));
+            locationConfig.clearChildId();
+            locationConfig.addAllChildId(filteredChildIdList);
+        }
+
+        // for all connections which are left filter unit ids
+        for(final UnitConfig.Builder connectionUnitConfig : dataBuilder.getConnectionUnitConfigBuilderList()) {
+            final ConnectionConfig.Builder connectionConfig = connectionUnitConfig.getConnectionConfigBuilder();
+            final List<String> filteredUnitIdList = readFilterByUnitId.filter(new ArrayList<>(connectionConfig.getUnitIdList()));
+            connectionConfig.clearUnitId();
+            connectionConfig.addAllTileId(filteredUnitIdList);
         }
 
         return dataBuilder.build();

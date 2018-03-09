@@ -22,20 +22,7 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-
-import com.jcraft.jsch.Session;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
@@ -44,10 +31,6 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.TimeoutException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
@@ -55,6 +38,12 @@ import rst.domotic.authentication.PermissionType.Permission;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
+
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
@@ -158,7 +147,7 @@ public class RegistryFilteringTest {
         SessionManager.getInstance().login(userUnitConfig.getId(), password);
 
         //TODO: needed since synchronized modification of SessionManager login observable, remove by waiting on a lock
-        while(!Registries.getUnitRegistry().containsUnitConfigById(unitConfig.getId())) {
+        while (!Registries.getUnitRegistry().containsUnitConfigById(unitConfig.getId())) {
             Thread.sleep(50);
         }
 
@@ -212,5 +201,26 @@ public class RegistryFilteringTest {
         } catch (InterruptedException | ExecutionException | CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
+    }
+
+    /**
+     * Test if a unit id is removed from a location if the user has no read permissions for the unit.
+     *
+     * @throws Exception
+     */
+    @Test(timeout = 10000)
+    public void testLocationFiltering() throws Exception {
+        System.out.println("testLocationFiltering");
+
+        // get a unit
+        UnitConfig.Builder unitConfig = Registries.getUnitRegistry().getDalUnitConfigs().get(0).toBuilder();
+        // save location
+        String locationId = unitConfig.getPlacementConfig().getLocationId();
+        // remove all permissions for unit
+        unitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setRead(false);
+        Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
+        // test if still contained in location
+        Registries.getUnitRegistry().requestData().get();
+        assertTrue(!Registries.getUnitRegistry().getUnitConfigById(locationId).getLocationConfig().getUnitIdList().contains(unitConfig.getId()));
     }
 }
