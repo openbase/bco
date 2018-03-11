@@ -139,11 +139,11 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
         synchronized (repeatLastCommandMonitor) {
 
             // cancel still running tasks
-            if (!repeatCommandTasks[REPEAT_TASK_1].isDone()) {
+            if (repeatCommandTasks[REPEAT_TASK_1] != null && !repeatCommandTasks[REPEAT_TASK_1].isDone()) {
                 // cancel if still scheduled but do to cancel if already executing.
                 repeatCommandTasks[REPEAT_TASK_1].cancel(false);
             }
-            if (!repeatCommandTasks[REPEAT_TASK_2].isDone()) {
+            if (repeatCommandTasks[REPEAT_TASK_2] != null && !repeatCommandTasks[REPEAT_TASK_2].isDone()) {
                 // cancel if still scheduled but do to cancel if already executing.
                 repeatCommandTasks[REPEAT_TASK_2].cancel(false);
             }
