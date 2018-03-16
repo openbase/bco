@@ -462,6 +462,12 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         RPCHelper.registerInterface(UnitRegistry.class, this, server);
     }
 
+    @Override
+    public void notifyChange() throws CouldNotPerformException, InterruptedException {
+        updateTransactionId();
+        super.notifyChange();
+    }
+
     private ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> getUnitConfigRegistry(final UnitType unitType) {
         switch (unitType) {
             case AUTHORIZATION_GROUP:
@@ -490,7 +496,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
-            updateTransactionId();
             UnitConfig result = getUnitConfigRegistry(unitConfig.getType()).register(unitConfig);
             return result;
         });
@@ -502,7 +507,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
                 UnitConfig.class,
                 this,
                 (UnitConfig unitConfig) -> {
-                    updateTransactionId();
                     UnitConfig result = getUnitConfigRegistry(unitConfig.getType()).register(unitConfig);
                     return result;
                 },
@@ -563,7 +567,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
-            updateTransactionId();
             UnitConfig result = getUnitConfigRegistry(unitConfig.getType()).update(unitConfig);
             return result;
         });
@@ -574,7 +577,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, getAuthorizationGroupUnitConfigRegistry().getEntryMap(), getLocationUnitConfigRegistry().getEntryMap(), UnitConfig.class,
                 this,
                 (UnitConfig unitConfig) -> {
-                    updateTransactionId();
                     UnitConfig result = getUnitConfigRegistry(unitConfig.getType()).update(unitConfig);
                     return result;
                 },
@@ -585,7 +587,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
-            updateTransactionId();
             UnitConfig result = getUnitConfigRegistry(unitConfig.getType()).remove(unitConfig);
             return result;
         });
@@ -597,7 +598,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             return AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, getAuthorizationGroupUnitConfigRegistry().getEntryMap(), getLocationUnitConfigRegistry().getEntryMap(), UnitConfig.class,
                     this,
                     (UnitConfig unitConfig) -> {
-                        updateTransactionId();
                         UnitConfig result = getUnitConfigRegistry(unitConfig.getType()).remove(unitConfig);
                         return result;
                     },

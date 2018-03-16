@@ -231,8 +231,8 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
                 }
             }
 
-            // cancel in case the registry which was still busy also notfies
-            // this way notification only takes place once
+            // cancel in case the registry which was still busy also notifies
+            // this way notifications only take place once
             if (notifyChangeFuture != null && !notifyChangeFuture.isDone()) {
                 notifyChangeFuture.cancel(true);
             }
