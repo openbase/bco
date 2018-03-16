@@ -60,6 +60,6 @@ public class UnitSynchronisationFuture extends AbstractSynchronizationFuture<Act
             return true;
         }
 
-        return dataProvider.getLatestTransactionId() >= actionDescription.getTransactionId();
+        return dataProvider.getTransactionId() >= actionDescription.getTransactionId();
     }
 }

@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -459,7 +459,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 return;
             }
         } catch (JPNotAvailableException ex) {
-            throw new CouldNotPerformException("Could not check JPEncableAuthentication property", ex);
+            throw new CouldNotPerformException("Could not check JPEnableAuthentication property", ex);
         }
 
         // If there is no TicketAuthenticationWrapper, check permissions without userId and groups.
@@ -604,10 +604,12 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             // verify the service state
             Services.verifyServiceState(newState);
 
+            updateTransactionId();
+
             // update the action description
             Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(newState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
             ActionDescription actionDescription = (ActionDescription) newState.getField(descriptor);
-            actionDescription = actionDescription.toBuilder().setTransactionId(generateTransactionId()).build();
+            actionDescription = actionDescription.toBuilder().setTransactionId(getTransactionId()).build();
             newState = newState.toBuilder().setField(descriptor, actionDescription).build();
 
             // update the current state
@@ -656,7 +658,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 // user has read permissions so send everything
                 return (D) dataBuilder.build();
             } else {
-                // TODO: user has no read permissions so filter all service states, maybe more
+                // filter all service states
                 for (final FieldDescriptor fieldDescriptor : dataBuilder.getDescriptorForType().getFields()) {
                     if (fieldDescriptor.getType() == Type.MESSAGE) {
                         dataBuilder.clearField(fieldDescriptor);

@@ -22,17 +22,11 @@ package org.openbase.bco.dal.remote.unit;
  * #L%
  */
 
-import java.util.concurrent.Future;
-
-import static org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService.DEFAULT_NEUTRAL_WHITE;
-import static org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService.NEUTRAL_WHITE_KEY;
-
 import org.openbase.bco.dal.lib.layer.unit.ColorableLight;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
@@ -59,10 +53,10 @@ import rst.domotic.unit.dal.ColorableLightDataType;
 import rst.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
 import rst.domotic.unit.device.DeviceClassType;
 import rst.vision.ColorType;
-import rst.vision.ColorType.Color;
-import rst.vision.ColorType.Color.Type;
 import rst.vision.HSBColorType.HSBColor;
 import rst.vision.RGBColorType.RGBColor;
+
+import java.util.concurrent.Future;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>

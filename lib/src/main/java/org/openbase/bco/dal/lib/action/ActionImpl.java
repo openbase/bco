@@ -166,7 +166,7 @@ public class ActionImpl implements Action {
 
                             try {
                                 waitForExecution(Services.invokeServiceMethod(serviceDescription, unit, serviceAttribute));
-                                actionDescriptionBuilder.setTransactionId(unit.getTransactionIdByServiceType(actionDescriptionBuilder.getServiceStateDescription().getServiceType()));
+                                actionDescriptionBuilder.setTransactionId(unit.getTransactionId());
                             } catch (CouldNotPerformException ex) {
                                 if (ex.getCause() instanceof InterruptedException) {
                                     updateActionState(ActionState.State.ABORTED);
@@ -247,7 +247,7 @@ public class ActionImpl implements Action {
                             try {
                                 waitForExecution(Services.invokeServiceMethod(serviceDescription, unit, serviceAttribute));
 
-                                actionDescriptionBuilder.setTransactionId(unit.getTransactionIdByServiceType(actionDescriptionBuilder.getServiceStateDescription().getServiceType()));
+                                actionDescriptionBuilder.setTransactionId(unit.getTransactionId());
                             } catch (CouldNotPerformException ex) {
                                 if (ex.getCause() instanceof InterruptedException) {
                                     updateActionState(ActionState.State.ABORTED);
