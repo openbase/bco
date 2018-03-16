@@ -21,13 +21,8 @@ package org.openbase.bco.manager.device.test;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.ExecutionException;
+
 import org.junit.After;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.Test;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
@@ -49,6 +44,14 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ExecutionException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -226,7 +229,7 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
 
                 System.out.println("GetColorRemote1");
                 ColorableLightRemote colorableLightRemote1 = Units.getUnit(colorableLightConfig1, true, ColorableLightRemote.class);
-                System.out.println("GetColorRemote1");
+                System.out.println("GetColorRemote2");
                 ColorableLightRemote colorableLightRemote2 = Units.getUnit(colorableLightConfig2, true, ColorableLightRemote.class);
                 System.out.println("GetPowerRemote");
                 PowerSwitchRemote powerSwitchRemote = Units.getUnit(powerSwitchConfig, true, PowerSwitchRemote.class);
