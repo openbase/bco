@@ -29,11 +29,12 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.Event;
 import rsb.Handler;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 
-import java.util.concurrent.Future;
+import java.util.concurrent.*;
 
 public class AbstractAuthenticatedConfigurableRemote<M extends GeneratedMessage, CONFIG extends GeneratedMessage> extends AbstractConfigurableRemote<M, CONFIG> {
 
@@ -64,12 +65,31 @@ public class AbstractAuthenticatedConfigurableRemote<M extends GeneratedMessage,
 
     private class AuthenticatedUpdateHandler implements Handler {
 
+        Future task = null;
+
         @Override
         public void internalNotify(Event event) {
             try {
                 logger.debug("Internal notification while logged in[" + SessionManager.getInstance().isLoggedIn() + "]");
                 if (event.getData() != null && SessionManager.getInstance().isLoggedIn()) {
-                    requestData();
+                    final Future requestTask = requestData();
+                    //TODO: see https://github.com/openbase/bco.dal/issues/99, if this is the way to go also implement for AbstractAuthenticatedRemote
+                    if (task == null) {
+                        task = GlobalCachedExecutorService.submit((Callable<Void>) () -> {
+                            try {
+                                requestTask.get(10, TimeUnit.SECONDS);
+                                requestData();
+                                task = null;
+                            } catch (InterruptedException e) {
+                                Thread.currentThread().interrupt();
+                            } catch (ExecutionException | TimeoutException ex) {
+                                ExceptionPrinter.printHistory(new CouldNotPerformException("Request data failed", ex), logger);
+                            } catch (CouldNotPerformException ex) {
+                                ExceptionPrinter.printHistory("Could not request data", ex, logger);
+                            }
+                            return null;
+                        });
+                    }
                 } else {
                     applyEventUpdate(event);
                 }
