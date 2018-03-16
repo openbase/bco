@@ -20,15 +20,7 @@
  * #L%
  */
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
@@ -39,10 +31,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.EnablingStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.geometry.PoseType;
 
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UnitTransformationTest extends AbstractBCOManagerTest {
@@ -72,6 +68,7 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
 
     @Test
     public void testUnitTransformation() throws Exception {
+        System.out.println("testUnitTransformation");
         try {
             Registries.waitUntilReady();
             Registries.waitForData();
@@ -90,11 +87,11 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
 
             // verify child unit positions are updated and published
             lightUnitConfig = Registries.getUnitRegistry().getUnitConfigById(lightUnitConfig.getId());
-            System.out.println(lightUnitConfig);
+//            System.out.println(lightUnitConfig);
             Registries.getUnitRegistry().waitUntilReady();
 
             // sleep to wait for rct sync
-            // todo: sleep is actiually to long!
+            // todo: sleep is actually to long!
             Thread.sleep(500);
 
             Assert.assertEquals("Positions are not synchronized!", lightUnitConfig.getPlacementConfig().getPosition(), hostUnitConfig.getPlacementConfig().getPosition());
@@ -105,28 +102,32 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
             verifyTransformations();
 
             for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs()) {
+                if ((unitConfig.getType() == UnitType.USER || unitConfig.getType() == UnitType.AUTHORIZATION_GROUP) && unitConfig.getLabel().equals("Admin")) {
+                    // no permissions for change of admin user or group
+                    continue;
+                }
 
-                // System.out.println("setup transformation of " + unitConfig.getLabel());
+//                System.out.println("setup transformation of " + unitConfig.getLabel() + ", " + unitConfig.getType().name());
                 final UnitConfig.Builder unitConfigBuilder = unitConfig.toBuilder();
                 unitConfigBuilder.getPlacementConfigBuilder().setPosition(pose);
                 unitConfig = Registries.getUnitRegistry().updateUnitConfig(unitConfigBuilder.build()).get();
-                // System.out.println("request modified transformation of " + unitConfig.getLabel());
+//                System.out.println("request modified transformation of " + unitConfig.getLabel());
 
                 if (!unitConfig.getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED)) {
-                    // System.out.println("filter disabled unit " + unitConfig.getLabel());
+//                    System.out.println("filter disabled unit " + unitConfig.getLabel());
                     continue;
                 }
 
                 // request new transformation...
                 try {
-                    // System.out.println("waiting for transformation of " + unitConfig.getLabel());
+//                    System.out.println("waiting for transformation of " + unitConfig.getLabel());
                     Units.getRootToUnitTransformationFuture(unitConfig).get(5000, TimeUnit.MILLISECONDS);
                 } catch (TimeoutException ex) {
                     LOGGER.error("transformation of " + unitConfig.getLabel() + " NOT AVAILABLE!");
                     Units.getRootToUnitTransformationFuture(unitConfig).get();
                 }
 
-                // System.out.println("transformation of" + unitConfig.getLabel() + " is available.");
+//                System.out.println("transformation of" + unitConfig.getLabel() + " is available.");
             }
             // System.out.println("finished.");
         } catch (Exception ex) {
