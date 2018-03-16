@@ -66,29 +66,33 @@ public class AbstractAuthenticatedConfigurableRemote<M extends GeneratedMessage,
     private class AuthenticatedUpdateHandler implements Handler {
 
         Future task = null;
+        Future requestTask = null;
 
         @Override
         public void internalNotify(Event event) {
             try {
                 logger.debug("Internal notification while logged in[" + SessionManager.getInstance().isLoggedIn() + "]");
                 if (event.getData() != null && SessionManager.getInstance().isLoggedIn()) {
-                    final Future requestTask = requestData();
                     //TODO: see https://github.com/openbase/bco.dal/issues/99, if this is the way to go also implement for AbstractAuthenticatedRemote
-                    if (task == null) {
-                        task = GlobalCachedExecutorService.submit((Callable<Void>) () -> {
-                            try {
-                                requestTask.get(10, TimeUnit.SECONDS);
-                                requestData();
-                                task = null;
-                            } catch (InterruptedException e) {
-                                Thread.currentThread().interrupt();
-                            } catch (ExecutionException | TimeoutException ex) {
-                                ExceptionPrinter.printHistory(new CouldNotPerformException("Request data failed", ex), logger);
-                            } catch (CouldNotPerformException ex) {
-                                ExceptionPrinter.printHistory("Could not request data", ex, logger);
-                            }
-                            return null;
-                        });
+                    if (requestTask != null && !requestTask.isDone()) {
+                        if (task == null) {
+                            task = GlobalCachedExecutorService.submit((Callable<Void>) () -> {
+                                try {
+                                    requestTask.get(10, TimeUnit.SECONDS);
+                                    requestData();
+                                    task = null;
+                                } catch (InterruptedException e) {
+                                    Thread.currentThread().interrupt();
+                                } catch (ExecutionException | TimeoutException ex) {
+                                    ExceptionPrinter.printHistory(new CouldNotPerformException("Request data failed", ex), logger);
+                                } catch (CouldNotPerformException ex) {
+                                    ExceptionPrinter.printHistory("Could not request data", ex, logger);
+                                }
+                                return null;
+                            });
+                        }
+                    } else {
+                        requestTask = requestData();
                     }
                 } else {
                     applyEventUpdate(event);
