@@ -710,13 +710,17 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     public Future<AuthenticatedValue> restoreSnapshotAuthenticated(final AuthenticatedValue authenticatedSnapshot) {
         return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedSnapshot, Snapshot.class, this, (snapshot, ticketEvaluationWrapper) -> {
             try {
-                // check for write permissions
-                if (!AuthorizationHelper.canDo(getConfig(),
-                        ticketEvaluationWrapper.getUserId(),
-                        Registries.getUnitRegistry().getAgentUnitConfigRemoteRegistry().getEntryMap(),
-                        Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap(),
-                        Type.ACCESS)) {
-                    throw new PermissionDeniedException("User[" + ticketEvaluationWrapper.getUserId() + "] has not rights to register a unitConfig");
+                if(JPService.getProperty(JPAuthentication.class).getValue()) {
+                    final String userId = ticketEvaluationWrapper == null ? null : ticketEvaluationWrapper.getUserId();
+
+                    // check for write permissions
+                    if (!AuthorizationHelper.canDo(getConfig(),
+                            userId,
+                            Registries.getUnitRegistry().getAgentUnitConfigRemoteRegistry().getEntryMap(),
+                            Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap(),
+                            Type.ACCESS)) {
+                        throw new PermissionDeniedException("User[" + userId + "] has not rights to register a unitConfig");
+                    }
                 }
 
                 try {
@@ -727,6 +731,8 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 }
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
+            } catch (JPNotAvailableException ex) {
+                throw new CouldNotPerformException("Could not check JPEnableAuthentication property", ex);
             }
 
             return null;
