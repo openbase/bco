@@ -256,9 +256,8 @@ public class AuthenticatedServiceProcessor {
                     }
                     // perform the internal request
                     Future<AuthenticatedValue> future = internalRequestable.request(authenticatedValue.build());
-                    // wrap the response in an authenticated value future
+                    // wrap the response in an authenticated synchronization future
                     return new AuthenticatedSynchronizationFuture<>(new AuthenticationFuture<>(future, responseClass, ticketAuthenticatorWrapper, sessionManager), remote);
-//                    return new AuthenticatedValueFuture<>(future, responseClass, ticketAuthenticatorWrapper, sessionManager);
                 } catch (IOException | BadPaddingException ex) {
                     throw new CouldNotPerformException("Could not initialize service server request", ex);
                 }
@@ -277,8 +276,7 @@ public class AuthenticatedServiceProcessor {
             }
             // perform the internal request
             Future<AuthenticatedValue> future = internalRequestable.request(authenticateValue.build());
-            // wrap the response in an authenticated value future
-//            return new AuthenticatedValueFuture<>(future, responseClass, null, sessionManager);
+            // wrap the response in an authenticated synchronization future
             return new AuthenticatedSynchronizationFuture<>(new AuthenticationFuture<>(future, responseClass, null, sessionManager), remote);
         }
     }
