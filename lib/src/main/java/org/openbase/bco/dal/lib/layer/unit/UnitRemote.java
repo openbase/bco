@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -31,21 +31,14 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
-import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.pattern.ConfigurableRemote;
-import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.Scope;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.rsb.ScopeType;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.concurrent.Future;
 
 /**
  * @param <M> Message
@@ -130,6 +123,10 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, Configu
     default ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
         ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
         ResourceAllocation.Builder resourceAllocation = actionDescription.getResourceAllocationBuilder();
+
+        if (!actionDescription.hasDescription() || actionDescription.getDescription().isEmpty()) {
+            actionDescription.setDescription(ActionDescriptionProcessor.GENERIC_ACTION_DESCSRIPTION);
+        }
 
         serviceStateDescription.setUnitId(getId());
         resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(getScope()));
