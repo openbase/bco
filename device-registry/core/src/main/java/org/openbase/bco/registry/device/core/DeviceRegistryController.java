@@ -23,6 +23,8 @@ package org.openbase.bco.registry.device.core;
  */
 import java.util.List;
 import java.util.concurrent.Future;
+
+import org.openbase.bco.registry.device.core.consistency.DeviceClassRequiredFieldConsistencyHandler;
 import org.openbase.bco.registry.device.core.consistency.UnitTemplateConfigIdConsistencyHandler;
 import org.openbase.bco.registry.device.core.consistency.UnitTemplateConfigLabelConsistencyHandler;
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
@@ -94,6 +96,7 @@ public class DeviceRegistryController extends AbstractVirtualRegistryController<
     protected void registerConsistencyHandler() throws CouldNotPerformException {
         deviceClassRegistry.registerConsistencyHandler(new UnitTemplateConfigIdConsistencyHandler());
         deviceClassRegistry.registerConsistencyHandler(new UnitTemplateConfigLabelConsistencyHandler());
+        deviceClassRegistry.registerConsistencyHandler(new DeviceClassRequiredFieldConsistencyHandler());
     }
     
     @Override
