@@ -60,10 +60,10 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
         super.setUp();
 
         try {
-            deviceClass = super.registerDeviceClass(getDeviceClass("Label", "Product Number", "Company", unitTypes));
+            deviceClass = super.registerDeviceClass(generateDeviceClass("Label", "Product Number", "Company", unitTypes));
             PlacementConfig placement = generatePlacementConfig();
             Pose position = placement.getPosition();
-            deviceUnitConfig = unitRegistry.registerUnitConfig(getDeviceUnitConfig("Label", "Serial Number", deviceClass).toBuilder().setPlacementConfig(placement).build()).get();
+            deviceUnitConfig = unitRegistry.registerUnitConfig(generateDeviceUnitConfig("Label", "Serial Number", deviceClass).toBuilder().setPlacementConfig(placement).build()).get();
             getUpdatedConfigs();
 
             unitRegistry.updateUnitConfig(lightOne.toBuilder().setPlacementConfig(generatePlacementConfig()).build()).get();

@@ -21,9 +21,14 @@ package org.openbase.bco.registry.unit.core.consistency.deviceconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import java.util.HashMap;
 import java.util.Map;
+
+import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
+import org.openbase.bco.registry.unit.core.consistency.connectionconfig.BaseUnitLabelConsistencyHandler;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -31,109 +36,47 @@ import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import org.openbase.jul.storage.registry.Registry;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.device.DeviceClassType;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class DeviceLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
+public class DeviceLabelConsistencyHandler extends BaseUnitLabelConsistencyHandler {
 
-    private final Map<String, String> labelConsistencyMap;
+    private final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry;
 
-    public DeviceLabelConsistencyHandler() {
-        this.labelConsistencyMap = new HashMap<>();
+    public DeviceLabelConsistencyHandler() throws InstantiationException {
+        super();
+        try {
+            this.deviceClassRegistry = CachedDeviceRegistryRemote.getRegistry().getDeviceClassRemoteRegistry();
+        } catch (final CouldNotPerformException | InterruptedException ex) {
+            // remove InterruptedException in bco 2.0 release
+            throw new InstantiationException(this, ex);
+        }
     }
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        UnitConfig deviceConfig = entry.getMessage();
-
-        // update label
-        if (!deviceConfig.hasLabel() | deviceConfig.getLabel().isEmpty()) {
-            entry.setMessage(deviceConfig.toBuilder().setLabel(generateDeviceLabel(deviceConfig)));
-            throw new EntryModification(entry, this);
-        }
-
-        // verify label
-        checkUniqueness(deviceConfig);
-    }
-
-    private void checkUniqueness(final UnitConfig config) throws CouldNotPerformException {
+    public String generateDefaultLabel(final UnitConfig unitConfig) throws CouldNotPerformException {
         try {
-
-            if (!config.hasId()) {
-                throw new NotAvailableException("deviceconfig.id");
+            if (unitConfig == null) {
+                throw new NotAvailableException("UnitConfig");
             }
 
-            if (!config.hasLabel()) {
-                throw new NotAvailableException("deviceconfig.label");
+            if (!unitConfig.hasDeviceConfig()) {
+                throw new NotAvailableException("UnitConfig.DeviceConfig");
             }
 
-            if (config.getLabel().isEmpty()) {
-                throw new NotAvailableException("deviceconfig.label");
+            if (!unitConfig.getDeviceConfig().hasDeviceClassId() || unitConfig.getDeviceConfig().getDeviceClassId().isEmpty()) {
+                throw new NotAvailableException("UnitConfig.DeviceConfig.DeviceClass");
             }
 
-            String deviceKey = generateKey(config);
-
-            if (labelConsistencyMap.containsKey(deviceKey)) {
-                if (!config.getId().equals(labelConsistencyMap.get(deviceKey))) {
-                    throw new VerificationFailedException("Device[" + config.getId() + "] and Device[" + labelConsistencyMap.get(deviceKey) + "] are registerted with equal Label[" + config.getLabel() + "] on the same Location[" + config.getPlacementConfig().getLocationId() + "] which is not allowed!");
-                }
-            }
-
-            labelConsistencyMap.put(generateKey(config), config.getId());
-
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not check deviceconfig uniqueness of " + config + "!", ex);
+            final DeviceClass deviceClass = deviceClassRegistry.get(unitConfig.getDeviceConfig().getDeviceClassId()).getMessage();
+            return deviceClass.getCompany() + " " + deviceClass.getLabel() + " " + super.generateDefaultLabel(unitConfig);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not generate unit label!", ex);
         }
-    }
-
-    private String generateDeviceLabel(final UnitConfig config) throws CouldNotPerformException {
-        try {
-
-            if (config == null) {
-                throw new NotAvailableException("deviceconfig");
-            }
-            if (!config.hasId()) {
-                throw new NotAvailableException("deviceconfig.id");
-            }
-            if (config.getId().isEmpty()) {
-                throw new NotAvailableException("Field deviceconfig.id is empty!");
-            }
-            return config.getId();
-        } catch (Exception ex) {
-            throw new CouldNotPerformException("Could not gernerate unit label!", ex);
-        }
-    }
-
-    private String generateKey(UnitConfig config) throws NotAvailableException {
-
-        if (!config.hasId()) {
-            throw new NotAvailableException("deviceconfig.id");
-        }
-
-        if (!config.hasLabel()) {
-            throw new NotAvailableException("deviceconfig.label");
-        }
-
-        if (config.getLabel().isEmpty()) {
-            throw new NotAvailableException("field deviceconfig.label is empty");
-        }
-
-        if (!config.hasPlacementConfig()) {
-            throw new NotAvailableException("deviceconfig.placementconfig");
-        }
-
-        if (!config.getPlacementConfig().hasLocationId() || config.getPlacementConfig().getLocationId().isEmpty()) {
-            throw new NotAvailableException("deviceconfig.placementconfig.locationid");
-        }
-
-        return config.getPlacementConfig().getLocationId() + "_" + config.getLabel();
-    }
-
-    @Override
-    public void reset() {
-        labelConsistencyMap.clear();
     }
 }

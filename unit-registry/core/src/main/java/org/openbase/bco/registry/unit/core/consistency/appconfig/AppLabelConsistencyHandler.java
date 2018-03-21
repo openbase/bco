@@ -23,6 +23,8 @@ package org.openbase.bco.registry.unit.core.consistency.appconfig;
  */
 import java.util.HashMap;
 import java.util.Map;
+
+import javafx.beans.DefaultProperty;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -37,6 +39,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
+@Deprecated
 public class AppLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     private final Map<String, UnitConfig> appMap;
