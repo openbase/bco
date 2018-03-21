@@ -27,6 +27,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
@@ -37,36 +38,45 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class ConnectionLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
+public class BaseUnitLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
-    private final Map<String, UnitConfig> connectionMap;
+    private final Map<String, UnitConfig> baseUnitMap;
 
-    public ConnectionLabelConsistencyHandler() {
-        this.connectionMap = new HashMap<>();
+    public BaseUnitLabelConsistencyHandler() {
+        this.baseUnitMap = new HashMap<>();
     }
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        UnitConfig connectionUnitConfig = entry.getMessage();
+        final UnitConfig unitConfig = entry.getMessage();
 
-        if (!connectionUnitConfig.hasLabel() || connectionUnitConfig.getLabel().isEmpty()) {
-            throw new NotAvailableException("connection.label");
+        if (!unitConfig.hasLabel() || unitConfig.getLabel().isEmpty()) {
+            throw new EntryModification(entry.setMessage(unitConfig.toBuilder().setLabel(generateDefaultLabel(unitConfig))), this);
         }
 
-        if (!connectionUnitConfig.hasPlacementConfig() || !connectionUnitConfig.getPlacementConfig().hasLocationId() || connectionUnitConfig.getPlacementConfig().getLocationId().isEmpty()) {
-            throw new NotAvailableException("connection.placement.locationId");
+        if (!unitConfig.hasPlacementConfig() || !unitConfig.getPlacementConfig().hasLocationId() || unitConfig.getPlacementConfig().getLocationId().isEmpty()) {
+            throw new NotAvailableException("baseunit.placement.locationId");
         }
 
-        String key = connectionUnitConfig.getLabel() + connectionUnitConfig.getPlacementConfig().getLocationId();
-        if (!connectionMap.containsKey(key)) {
-            connectionMap.put(key, connectionUnitConfig);
-        } else {
-            throw new InvalidStateException("Connection [" + connectionUnitConfig + "] and connection [" + connectionMap.get(key) + "] are registered with the same label at the same location");
+        String key = unitConfig.getLabel() + unitConfig.getPlacementConfig().getLocationId();
+
+        if (baseUnitMap.containsKey(key)) {
+            final String typeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name());
+            throw new InvalidStateException(typeName+"[" + unitConfig.getAlias(0) + "] and "+typeName+"[" + baseUnitMap.get(key).getAlias(0) + "] are registered with the same label and type at the same location.");
         }
+
+        baseUnitMap.put(key, unitConfig);
+    }
+
+    public String generateDefaultLabel(final UnitConfig unitConfig) throws CouldNotPerformException {
+        if (unitConfig.getAliasCount() < 1) {
+            throw new InvalidStateException("Alias not provided by Unit[" + unitConfig.getId() + "]!");
+        }
+        return unitConfig.getAlias(0);
     }
 
     @Override
     public void reset() {
-        connectionMap.clear();
+        baseUnitMap.clear();
     }
 }

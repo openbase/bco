@@ -43,7 +43,7 @@ import org.openbase.bco.registry.unit.core.consistency.authorizationgroup.Author
 import org.openbase.bco.registry.unit.core.consistency.authorizationgroup.AuthorizationGroupConfigScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.authorizationgroup.AuthorizationGroupPermissionConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.authorizationgroup.AuthorziationGroupDuplicateMemberConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionLabelConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.connectionconfig.BaseUnitLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionLocationConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionTilesConsistencyHandler;
@@ -262,14 +262,14 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
             //TODO: should be activated but fails in the current db version since agentClasses have just been introduced
             //agentUnitConfigRegistry.registerConsistencyHandler(new AgentConfigAgentClassIdConsistencyHandler(agentClassRegistry));
-            agentUnitConfigRegistry.registerConsistencyHandler(new AgentLabelConsistencyHandler());
+            agentUnitConfigRegistry.registerConsistencyHandler(new BaseUnitLabelConsistencyHandler());
             agentUnitConfigRegistry.registerConsistencyHandler(new AgentLocationConsistencyHandler(locationUnitConfigRegistry));
             agentUnitConfigRegistry.registerConsistencyHandler(new AgentScopeConsistencyHandler(locationUnitConfigRegistry, CachedAgentRegistryRemote.getRegistry().getAgentClassRemoteRegistry()));
             agentUnitConfigRegistry.registerConsistencyHandler(new ExecutableUnitAutostartConsistencyHandler());
 
             //TODO: should be activated but fails in the current db version since appClasses have just been introduced
             //appConfigRegistry.registerConsistencyHandler(new AppConfigAppClassIdConsistencyHandler(appClassRegistry));
-            appUnitConfigRegistry.registerConsistencyHandler(new AppLabelConsistencyHandler());
+            appUnitConfigRegistry.registerConsistencyHandler(new BaseUnitLabelConsistencyHandler());
             appUnitConfigRegistry.registerConsistencyHandler(new AppLocationConsistencyHandler(locationUnitConfigRegistry));
             appUnitConfigRegistry.registerConsistencyHandler(new AppScopeConsistencyHandler(locationUnitConfigRegistry, CachedAppRegistryRemote.getRegistry().getAppClassRemoteRegistry()));
             appUnitConfigRegistry.registerConsistencyHandler(new ExecutableUnitAutostartConsistencyHandler());
@@ -279,14 +279,14 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorziationGroupDuplicateMemberConsistencyHandler());
             authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorizationGroupPermissionConsistencyHandler());
 
-            connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionLabelConsistencyHandler());
+            connectionUnitConfigRegistry.registerConsistencyHandler(new BaseUnitLabelConsistencyHandler());
             connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionTilesConsistencyHandler(locationUnitConfigRegistry));
             connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionLocationConsistencyHandler(locationUnitConfigRegistry));
             connectionUnitConfigRegistry.registerConsistencyHandler(new ConnectionScopeConsistencyHandler(locationUnitConfigRegistry));
             
             dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitEnablingStateConsistencyHandler(deviceUnitConfigRegistry));
             dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitHostIdConsistencyHandler(deviceUnitConfigRegistry));
-            dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitLabelConsistencyHandler(CachedDeviceRegistryRemote.getRegistry().getDeviceClassRemoteRegistry(), deviceUnitConfigRegistry));
+            dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitLabelConsistencyHandler(deviceUnitConfigRegistry, appUnitConfigRegistry));
             dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitLocationIdConsistencyHandler(locationUnitConfigRegistry, deviceUnitConfigRegistry));
             dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitScopeConsistencyHandler(locationUnitConfigRegistry));
             dalUnitConfigRegistry.registerConsistencyHandler(new SyncBindingConfigDeviceClassUnitConsistencyHandler(CachedDeviceRegistryRemote.getRegistry().getDeviceClassRemoteRegistry(), deviceUnitConfigRegistry));
@@ -323,7 +323,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             locationUnitConfigRegistry.registerConsistencyHandler(new LocationParentConsistencyHandler());
             locationUnitConfigRegistry.registerConsistencyHandler(new RootLocationExistencConsistencyHandler());
             locationUnitConfigRegistry.registerConsistencyHandler(new LocationLoopConsistencyHandler());
-            locationUnitConfigRegistry.registerConsistencyHandler(new ChildWithSameLabelConsistencyHandler());
+            locationUnitConfigRegistry.registerConsistencyHandler(new BaseUnitLabelConsistencyHandler());
             locationUnitConfigRegistry.registerConsistencyHandler(new LocationScopeConsistencyHandler());
             locationUnitConfigRegistry.registerConsistencyHandler(new LocationUnitIdConsistencyHandler(agentUnitConfigRegistry, appUnitConfigRegistry, authorizationGroupUnitConfigRegistry, connectionUnitConfigRegistry, dalUnitConfigRegistry, deviceUnitConfigRegistry, sceneUnitConfigRegistry, unitGroupUnitConfigRegistry, userUnitConfigRegistry));
             locationUnitConfigRegistry.registerConsistencyHandler(new LocationTypeConsistencyHandler());

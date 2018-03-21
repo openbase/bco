@@ -94,13 +94,13 @@ public abstract class AbstractBCORegistryTest {
         }
     }
     
-    protected UnitConfig getDeviceUnitConfig(String label, String serialNumber, DeviceClass clazz) {
+    protected UnitConfig generateDeviceUnitConfig(String label, String serialNumber, DeviceClass clazz) {
         InventoryState inventoryState = InventoryState.newBuilder().setValue(InventoryStateType.InventoryState.State.IN_STOCK).build();
         DeviceConfig deviceConfig = DeviceConfig.newBuilder().setDeviceClassId(clazz.getId()).setSerialNumber(serialNumber).setInventoryState(inventoryState).build();
         return UnitConfig.newBuilder().setType(UnitType.DEVICE).setLabel(label).setDeviceConfig(deviceConfig).build();
     }
 
-    protected DeviceClass getDeviceClass(String label, String productNumber, String company, UnitType... unitTypes) throws CouldNotPerformException {
+    protected DeviceClass generateDeviceClass(String label, String productNumber, String company, UnitType... unitTypes) throws CouldNotPerformException {
         DeviceClass.Builder deviceClass = DeviceClass.newBuilder().setLabel(label).setProductNumber(productNumber).setCompany(company);
         deviceClass.setBindingConfig(BindingConfig.newBuilder().setBindingId("OPENHAB"));
         for (UnitType unitType : unitTypes) {

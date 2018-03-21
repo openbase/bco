@@ -39,10 +39,10 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public class AuthorizationGroupConfigLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
-    private final Map<String, UnitConfig> authorizatoinGroupMap;
+    private final Map<String, UnitConfig> authorizationGroupMap;
 
     public AuthorizationGroupConfigLabelConsistencyHandler() {
-        this.authorizatoinGroupMap = new HashMap<>();
+        this.authorizationGroupMap = new HashMap<>();
     }
 
     @Override
@@ -50,18 +50,21 @@ public class AuthorizationGroupConfigLabelConsistencyHandler extends AbstractPro
         UnitConfig authorizationGroupUnitConfig = entry.getMessage();
 
         if (!authorizationGroupUnitConfig.hasLabel() || authorizationGroupUnitConfig.getLabel().isEmpty()) {
-            throw new NotAvailableException("authorizationGroup.label");
+            if (authorizationGroupUnitConfig.getAliasCount() <= 1) {
+                throw new InvalidStateException("Alias not provided by Unit[" + authorizationGroupUnitConfig.getId() + "]!");
+            }
+            throw new EntryModification(entry.setMessage(authorizationGroupUnitConfig.toBuilder().setLabel(authorizationGroupUnitConfig.getAlias(0))), this);
         }
 
-        if (!authorizatoinGroupMap.containsKey(authorizationGroupUnitConfig.getLabel())) {
-            authorizatoinGroupMap.put(authorizationGroupUnitConfig.getLabel(), authorizationGroupUnitConfig);
+        if (!authorizationGroupMap.containsKey(authorizationGroupUnitConfig.getLabel())) {
+            authorizationGroupMap.put(authorizationGroupUnitConfig.getLabel(), authorizationGroupUnitConfig);
         } else {
-            throw new InvalidStateException("AuthorizationGroup [" + authorizationGroupUnitConfig + "] and authorizationGroup [" + authorizatoinGroupMap.get(authorizationGroupUnitConfig.getLabel()) + "] are registered with the same label!");
+            throw new InvalidStateException("AuthorizationGroup [" + authorizationGroupUnitConfig + "] and authorizationGroup [" + authorizationGroupMap.get(authorizationGroupUnitConfig.getLabel()) + "] are registered with the same label!");
         }
     }
 
     @Override
     public void reset() {
-        authorizatoinGroupMap.clear();
+        authorizationGroupMap.clear();
     }
 }
