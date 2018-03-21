@@ -43,6 +43,7 @@ import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.ButtonStateType.ButtonState;
+import rst.domotic.state.ButtonStateType.ButtonState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.dal.ButtonDataType.ButtonData;
@@ -79,6 +80,12 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
         this.buttonRemoteSet = new HashSet<>();
         this.remoteActionList = new ArrayList<>();
         this.buttonObserver = (final Observable<ButtonData> source, ButtonData data) -> {
+
+            // skip initial button state synchronization during system startup
+            if(data.getButtonStateLast().getValue().equals(State.UNKNOWN)) {
+                return;
+            }
+
             if (data.getButtonState().getValue().equals(ButtonState.State.PRESSED)) {
                 setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build());
             }
