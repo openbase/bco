@@ -23,11 +23,15 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 
 import com.google.protobuf.Descriptors;
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
-import org.openbase.bco.authentication.lib.*;
+import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager.TicketEvaluationWrapper;
+import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
+import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.Type;
+import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableController;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.dal.lib.action.ActionImpl;
 import org.openbase.bco.dal.lib.layer.service.Service;
@@ -47,7 +51,6 @@ import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
-import org.openbase.jul.extension.rsb.com.AbstractConfigurableController;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
@@ -67,7 +70,6 @@ import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import rst.domotic.authentication.AuthenticatorType.Authenticator;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -80,7 +82,6 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
 
-import javax.crypto.BadPaddingException;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
@@ -95,7 +96,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePat
  * @param <DB> the builder used to build the unit data instance.
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
+public abstract class AbstractUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionFuture.getDefaultInstance()));
@@ -465,7 +466,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 return;
             }
         } catch (JPNotAvailableException ex) {
-            throw new CouldNotPerformException("Could not check JPEncableAuthentication property", ex);
+            throw new CouldNotPerformException("Could not check JPEnableAuthentication property", ex);
         }
 
         // If there is no TicketAuthenticationWrapper, check permissions without userId and groups.
@@ -610,10 +611,12 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             // verify the service state
             Services.verifyServiceState(newState);
 
+            updateTransactionId();
+
             // update the action description
             Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(newState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
             ActionDescription actionDescription = (ActionDescription) newState.getField(descriptor);
-            actionDescription = actionDescription.toBuilder().setTransactionId(generateTransactionId()).build();
+            actionDescription = actionDescription.toBuilder().setTransactionId(getTransactionId()).build();
             newState = newState.toBuilder().setField(descriptor, actionDescription).build();
 
             // update the current state
@@ -705,7 +708,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     @Override
     public Future<AuthenticatedValue> restoreSnapshotAuthenticated(final AuthenticatedValue authenticatedSnapshot) {
-        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedSnapshot, Snapshot.class, (snapshot, ticketEvaluationWrapper) -> {
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedSnapshot, Snapshot.class, this, (snapshot, ticketEvaluationWrapper) -> {
             try {
                 // check for write permissions
                 if (!AuthorizationHelper.canDo(getConfig(),
@@ -728,5 +731,25 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
             return null;
         }));
+    }
+
+    protected D filterDataForUser(DB dataBuilder, String userId) throws CouldNotPerformException {
+        try {
+            if (AuthorizationHelper.canRead(getConfig(), userId, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap(), Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap())) {
+                // user has read permissions so send everything
+                return (D) dataBuilder.build();
+            } else {
+                // filter all service states
+                for (final FieldDescriptor fieldDescriptor : dataBuilder.getDescriptorForType().getFields()) {
+                    if (fieldDescriptor.getType() == FieldDescriptor.Type.MESSAGE) {
+                        dataBuilder.clearField(fieldDescriptor);
+                    }
+                }
+                return (D) dataBuilder.build();
+            }
+        } catch (InterruptedException ex) {
+            Thread.currentThread().interrupt();
+            throw new CouldNotPerformException("Could not filter data for user because interrupted while accessing the registry", ex);
+        }
     }
 }

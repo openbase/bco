@@ -26,6 +26,8 @@ import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableRemote;
+import org.openbase.bco.authentication.lib.com.AuthenticatedGenericMessageProcessor;
 import org.openbase.bco.authentication.lib.future.AuthenticatedActionFuture;
 import org.openbase.bco.dal.lib.layer.service.ServiceDataFilteredObservable;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -41,7 +43,6 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.protobuf.processing.GenericMessageProcessor;
-import org.openbase.jul.extension.rsb.com.AbstractConfigurableRemote;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
@@ -81,7 +82,7 @@ import java.util.concurrent.TimeUnit;
  * @param <D> The unit data type.
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends AbstractConfigurableRemote<D, UnitConfig> implements UnitRemote<D> {
+public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends AbstractAuthenticatedConfigurableRemote<D, UnitConfig> implements UnitRemote<D> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActionFuture.getDefaultInstance()));
@@ -260,7 +261,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     protected void postInit() throws InitializationException, InterruptedException {
         super.postInit();
         try {
-            this.setMessageProcessor(new GenericMessageProcessor<>(getDataClass()));
+            this.setMessageProcessor(new AuthenticatedGenericMessageProcessor<>(getDataClass()));
 
             if (!initialized) {
                 Registries.getUnitRegistry().addDataObserver(unitRegistryObserver);
@@ -675,7 +676,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
 
     @Override
     public Future<Void> restoreSnapshot(Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
-        return AuthenticatedServiceProcessor.requestAuthenticatedAction(snapshot, Void.class, getSessionManager(), this::restoreSnapshotAuthenticated);
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(snapshot, Void.class, getSessionManager(), this, this::restoreSnapshotAuthenticated);
     }
 
     @Override
