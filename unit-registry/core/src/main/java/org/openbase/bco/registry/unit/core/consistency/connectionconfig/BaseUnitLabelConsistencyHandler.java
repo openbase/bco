@@ -50,7 +50,10 @@ public class ConnectionLabelConsistencyHandler extends AbstractProtoBufRegistryC
         UnitConfig connectionUnitConfig = entry.getMessage();
 
         if (!connectionUnitConfig.hasLabel() || connectionUnitConfig.getLabel().isEmpty()) {
-            throw new NotAvailableException("connection.label");
+            if (connectionUnitConfig.getAliasCount() <= 1) {
+                throw new InvalidStateException("Alias not provided by Unit[" + connectionUnitConfig.getId() + "]!");
+            }
+            throw new EntryModification(entry.setMessage(connectionUnitConfig.toBuilder().setLabel(connectionUnitConfig.getAlias(0))), this);
         }
 
         if (!connectionUnitConfig.hasPlacementConfig() || !connectionUnitConfig.getPlacementConfig().hasLocationId() || connectionUnitConfig.getPlacementConfig().getLocationId().isEmpty()) {
