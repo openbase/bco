@@ -42,7 +42,6 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.MessageObservable;
-import org.openbase.jul.extension.protobuf.processing.GenericMessageProcessor;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
@@ -595,11 +594,21 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * @throws java.lang.InterruptedException                      {@inheritDoc}
      */
     @Override
-    public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException, RejectedException {
-        if (!actionDescription.hasActionAuthority() || !actionDescription.getActionAuthority().hasTicketAuthenticatorWrapper()) {
-            actionDescription = initializeRequest(actionDescription);
+    public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionFuture.class, this.getSessionManager(), this, this::applyActionAuthenticated);
+//        if (!actionDescription.hasActionAuthority() || !actionDescription.getActionAuthority().hasTicketAuthenticatorWrapper()) {
+//            actionDescription = initializeRequest(actionDescription);
+//        }
+//        return new UnitSynchronisationFuture(new AuthenticatedActionFuture(RPCHelper.callRemoteMethod(actionDescription, this, ActionFuture.class), actionDescription.getActionAuthority().getTicketAuthenticatorWrapper(), this.sessionManager), this);
+    }
+
+    @Override
+    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+        try {
+            return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not apply action!", ex);
         }
-        return new UnitSynchronisationFuture(new AuthenticatedActionFuture(RPCHelper.callRemoteMethod(actionDescription, this, ActionFuture.class), actionDescription.getActionAuthority().getTicketAuthenticatorWrapper(), this.sessionManager), this);
     }
 
     private ActionDescription initializeRequest(final ActionDescription actionDescription) throws CouldNotPerformException {

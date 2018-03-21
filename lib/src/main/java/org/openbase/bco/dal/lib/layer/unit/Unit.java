@@ -52,6 +52,7 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.LoggerFactory;
 import rct.Transform;
 import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -249,20 +250,9 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
     @Override
     Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException;
 
-//    @RPCMethod
-//    @Override
-//    default Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
-//        try {
-//            Collection<Future> futureCollection = new ArrayList<>();
-//            for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
-//                ActionDescription actionDescription = ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build();
-//                futureCollection.add(applyAction(actionDescription));
-//            }
-//            return GlobalCachedExecutorService.allOf(futureCollection);
-//        } catch (CouldNotPerformException ex) {
-//            throw new CouldNotPerformException("Could not record snapshot!", ex);
-//        }
-//    }
+    @RPCMethod
+    Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException, InterruptedException;
+
 
     /**
      * Gets the position of the unit relative to its parent location.
