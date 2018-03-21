@@ -41,9 +41,12 @@ import rst.domotic.state.BrightnessStateType.BrightnessState;
 public class BrightnessStateServiceImpl<UNIT extends BrightnessStateOperationService & Unit<?>> extends OpenHABService<UNIT> implements BrightnessStateOperationService {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(BrightnessStateServiceImpl.class);
+
+    private final boolean autoRepeat;
     
     public BrightnessStateServiceImpl(final UNIT unit) throws InstantiationException {
         super(unit);
+        this.autoRepeat = ServiceFactoryTools.detectAutoRepeat(unit);
     }
 
     @Override
@@ -53,6 +56,11 @@ public class BrightnessStateServiceImpl<UNIT extends BrightnessStateOperationSer
 
     @Override
     public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
-        return executeCommand(OpenHABCommandFactory.newPercentCommand(brightnessState.getBrightness()));
+        lastCommand = OpenHABCommandFactory.newPercentCommand(brightnessState.getBrightness());
+        final Future future = executeCommand(lastCommand);
+        if (autoRepeat) {
+            repeatLastCommand();
+        }
+        return future;
     }
 }
