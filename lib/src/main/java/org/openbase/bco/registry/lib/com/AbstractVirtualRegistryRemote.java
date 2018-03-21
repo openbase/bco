@@ -138,6 +138,8 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
         return isDataAvailable() && super.isReady();
     }
 
+    private boolean virtualRegistryInitiallySynchronized = false;
+
     @Override
     public boolean isDataAvailable() {
         for (RegistryRemote registryRemote : registryRemotes) {
@@ -146,7 +148,11 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
             }
         }
 
-        return super.isDataAvailable() && isVirtualRegistrySynchronized();
+        // release TODO:
+        // workaround, should be removed in release scrab
+        virtualRegistryInitiallySynchronized = virtualRegistryInitiallySynchronized || isVirtualRegistrySynchronized();
+
+        return super.isDataAvailable() && virtualRegistryInitiallySynchronized;
     }
 
     private void waitForVirtualRegistrySync() throws InterruptedException {
