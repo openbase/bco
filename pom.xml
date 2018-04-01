@@ -102,7 +102,7 @@
                     <repositoryLayout>flat</repositoryLayout>
                     <repositoryName>${build.lib}</repositoryName>
                     <programs>
-                        <program>
+                       <program>
                             <mainClass>org.openbase.bco.manager.util.launch.ManagerLauncher</mainClass>
                             <id>bco-manager</id>
                             <platforms>
@@ -126,6 +126,69 @@
                         <program>
                             <mainClass>org.openbase.bco.manager.util.launch.RSBInterfacePrinter</mainClass>
                             <id>bco-print-interface-rsb</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.dal.visual.DalVisualRemote</mainClass>
+                            <id>bco-visual-remote</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.registry.launch.RegistryLauncher</mainClass>
+                            <id>bco-registry</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.registry.print.BCORegistryPrinter</mainClass>
+                            <id>bco-print-registry</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.registry.print.BCOUnitQueryPrinter</mainClass>
+                            <id>bco-query</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.psc.util.PSCLauncher</mainClass>
+                            <id>bco-psc</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.psc.util.CreateKinectLauncher</mainClass>
+                            <id>bco-psc-create-kinect</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.psc.util.UpdateKinectLauncher</mainClass>
+                            <id>bco-psc-update-kinect</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.psc.sm.SkeletonMergingLauncher</mainClass>
+                            <id>bco-psc-skeleton-merging</id>
+                            <platforms>
+                                <platform>unix</platform>
+                            </platforms>
+                        </program>
+                        <program>
+                            <mainClass>org.openbase.bco.psc.re.RayExtractorLauncher</mainClass>
+                            <id>bco-psc-ray-extractor</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
