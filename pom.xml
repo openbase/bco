@@ -3,7 +3,7 @@
 
     <groupId>org.openbase</groupId>
     <artifactId>bco</artifactId>
-    <version>1.5-SNAPSHOT</version>
+    <version>1.6-SNAPSHOT</version>
 
     <name>BCO</name>
     <inceptionYear>2014</inceptionYear>
@@ -89,18 +89,18 @@
                         <goals>
                             <goal>assemble</goal>
                         </goals>
-                        <configuration>
-                            <descriptorRefs>
-                                <descriptorRef>jar-with-dependencies</descriptorRef>
-                            </descriptorRefs>
-                            <appendAssemblyId>false</appendAssemblyId>
-                        </configuration>
+                        <!--<configuration>-->
+                            <!--<descriptorRefs>-->
+                                <!--<descriptorRef>jar-with-dependencies</descriptorRef>-->
+                            <!--</descriptorRefs>-->
+                            <!--<appendAssemblyId>false</appendAssemblyId>-->
+                        <!--</configuration>-->
                     </execution>
                 </executions>
                 <configuration>
                     <binFolder>${deb.prefix.bin}</binFolder>
                     <repositoryLayout>flat</repositoryLayout>
-                    <repositoryName>${build.lib}</repositoryName>
+                    <repositoryName>${appassembler.repo.name}</repositoryName>
                     <programs>
                        <program>
                             <mainClass>org.openbase.bco.manager.util.launch.ManagerLauncher</mainClass>
@@ -229,7 +229,7 @@
     
                                 <!-- Copy Deps-->
                                 <data>
-                                    <src>${build.appassembler}/${build.lib}</src>
+                                    <src>${build.appassembler}/${appassembler.repo.name}</src>
                                     <type>directory</type>
                                     <mapper>
                                         <type>perm</type>
@@ -251,6 +251,20 @@
                                         <group>loader</group>
                                         <filemode>755</filemode>
                                     </mapper>
+                                </data>
+
+                                <!-- Link Bins -->
+                                <data>
+                                  <type>link</type>
+                                  <linkName>/usr/bin/bco</linkName>
+                                  <linkTarget>/${deb.prefix.bin}/bco</linkTarget>
+                                  <symlink>true</symlink>
+                                </data>
+                                <data>
+                                  <type>link</type>
+                                  <linkName>/usr/bin/bco-openhab</linkName>
+                                  <linkTarget>/${deb.prefix.bin}/bco-openhab</linkTarget>
+                                  <symlink>true</symlink>
                                 </data>
                                 
                                 <data>
@@ -278,10 +292,10 @@
     <properties>
         <skipTests>true</skipTests>
         <build.appassembler>${project.build.directory}/appassembler</build.appassembler>
-        <deb.prefix>usr/share/${project.artifactId}</deb.prefix>
+        <deb.prefix>opt/openbase/${project.artifactId}</deb.prefix>
         <deb.prefix.lib>${deb.prefix}/lib</deb.prefix.lib>
-        <deb.prefix.bin>usr/bin</deb.prefix.bin>
-        <build.lib>share/${project.artifactId}/lib</build.lib>
+        <deb.prefix.bin>${deb.prefix}/bin</deb.prefix.bin>
+        <appassembler.repo.name>lib</appassembler.repo.name>
     </properties>
 
 
