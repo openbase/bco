@@ -60,7 +60,9 @@
     <file url="file://$PROJECT_DIR$/module/bco.manager/user-manager/test" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.manager/util" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.ontology" charset="UTF-8" />
-    <file url="file://$PROJECT_DIR$/module/bco.ontology.lib" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.ontology/lib" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.ontology/owl" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.ontology/visual" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.psc" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.psc/control" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.psc/identification" charset="UTF-8" />

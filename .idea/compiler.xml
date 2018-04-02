@@ -9,6 +9,9 @@
         <module name="authentication.core" />
         <module name="authentication.lib" />
         <module name="authentication.test" />
+        <module name="bco.ontology.lib" />
+        <module name="bco.ontology.owl" />
+        <module name="bco.ontology.visual" />
         <module name="bcozy" />
         <module name="dal.example" />
         <module name="dal.lib" />
@@ -77,8 +80,6 @@
         <module name="manager.user.remote" />
         <module name="manager.user.test" />
         <module name="manager.util" />
-        <module name="ontology" />
-        <module name="ontology.lib" />
         <module name="psc.control" />
         <module name="psc.identification" />
         <module name="psc.lib" />
@@ -130,6 +131,9 @@
       <module name="authentication.test" target="1.8" />
       <module name="bco.app" target="1.8" />
       <module name="bco.app.openhab" target="1.8" />
+      <module name="bco.ontology.lib" target="1.8" />
+      <module name="bco.ontology.owl" target="1.8" />
+      <module name="bco.ontology.visual" target="1.8" />
       <module name="bcozy" target="1.8" />
       <module name="dal" target="1.8" />
       <module name="dal.example" target="1.8" />
@@ -219,7 +223,6 @@
       <module name="manager.user.test" target="1.8" />
       <module name="manager.util" target="1.8" />
       <module name="ontology" target="1.8" />
-      <module name="ontology.lib" target="1.8" />
       <module name="org.openhab.binding.rsb" target="1.8" />
       <module name="psc" target="1.5" />
       <module name="psc.control" target="1.8" />
