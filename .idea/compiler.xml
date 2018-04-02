@@ -131,6 +131,7 @@
       <module name="authentication.test" target="1.8" />
       <module name="bco.app" target="1.8" />
       <module name="bco.app.openhab" target="1.8" />
+      <module name="bco.ontology" target="1.8" />
       <module name="bco.ontology.lib" target="1.8" />
       <module name="bco.ontology.owl" target="1.8" />
       <module name="bco.ontology.visual" target="1.8" />

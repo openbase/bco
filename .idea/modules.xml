@@ -6,6 +6,7 @@
       <module fileurl="file://$PROJECT_DIR$/module/bco.authentication/core/authentication.core.iml" filepath="$PROJECT_DIR$/module/bco.authentication/core/authentication.core.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.authentication/lib/authentication.lib.iml" filepath="$PROJECT_DIR$/module/bco.authentication/lib/authentication.lib.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.authentication/test/authentication.test.iml" filepath="$PROJECT_DIR$/module/bco.authentication/test/authentication.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.ontology/bco.ontology.iml" filepath="$PROJECT_DIR$/module/bco.ontology/bco.ontology.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.ontology/lib/bco.ontology.lib.iml" filepath="$PROJECT_DIR$/module/bco.ontology/lib/bco.ontology.lib.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.ontology/owl/bco.ontology.owl.iml" filepath="$PROJECT_DIR$/module/bco.ontology/owl/bco.ontology.owl.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.ontology/visual/bco.ontology.visual.iml" filepath="$PROJECT_DIR$/module/bco.ontology/visual/bco.ontology.visual.iml" />
