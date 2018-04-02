@@ -39,7 +39,7 @@ import org.openbase.jul.exception.InstantiationException;
  */
 public class OntologyTrigger extends org.openbase.jul.pattern.trigger.AbstractTrigger {
 
-    // TODO: move to ontology
+    // release TODO: move to ontology
     private Trigger trigger;
     private final Observer<ActivationState.State> triggerObserver;
 
