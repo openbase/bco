@@ -7,7 +7,7 @@ ORANGE='\033[0;33m'
 BLUE='\033[0;34m'
 WHITE='\033[0;37m'
 
-APP_NAME='bco-authenticator'
+APP_NAME='bco-authentication'
 APP_NAME=${BLUE}${APP_NAME}${NC}
 echo -e "=== ${APP_NAME} project ${WHITE}cleanup${NC}" &&
 mvn clean --quiet $@ &&
