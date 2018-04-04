@@ -203,7 +203,7 @@
         <dependency.bco.registry.version>${dependency.bco.version}</dependency.bco.registry.version>
         <dependency.bco.dal.version>${dependency.bco.version}</dependency.bco.dal.version>
         <dependency.bco.authentication.version>${dependency.bco.version}</dependency.bco.authentication.version>
-        <dependency.bco.ontology.version>[1.6,1.7-SNAPSHOT)</dependency.bco.ontology.version>
+        <dependency.bco.ontology.version>1.6-SNAPSHOT</dependency.bco.ontology.version>
         <!--<dependency.bco.ontology.version>${dependency.bco.version}</dependency.bco.ontology.version>-->
         <dependency.org.codehaus.mojo.license-maven-plugin.version>1.10</dependency.org.codehaus.mojo.license-maven-plugin.version>
     </properties>
