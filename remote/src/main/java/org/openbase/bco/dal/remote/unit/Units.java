@@ -209,20 +209,12 @@ public class Units {
     private static final Observer<UnitRegistryData> UNIT_REGISTRY_OBSERVER = new Observer<UnitRegistryData>() {
         @Override
         public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
-            UNIT_DIFF.diff(data.getDalUnitConfigList());
-
             UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
+            UNIT_DIFF.diff(Registries.getUnitRegistry().getUnitConfigs());
             try {
                 for (String unitId : UNIT_DIFF.getRemovedMessageMap().keySet()) {
                     if (unitRemoteRegistry.contains(unitId)) {
-                        final UnitRemote unitRemote = unitRemoteRegistry.get(unitId);
-                        try {
-                            unitRemoteRegistry.remove(unitId);
-                            unitRemote.unlock(unitRemoteRegistry);
-                            unitRemote.shutdown();
-                        } catch (CouldNotPerformException ex) {
-                            ExceptionPrinter.printHistory("Could not properly shutdown " + unitRemote, ex, LOGGER);
-                        }
+                        removeUnitRemote(unitRemoteRegistry.get(unitId));
                     }
                 }
             } finally {
@@ -264,6 +256,9 @@ public class Units {
 
             try {
                 Registries.getUnitRegistry().addDataObserver(UNIT_REGISTRY_OBSERVER);
+                if(Registries.getUnitRegistry().isDataAvailable()) {
+                    UNIT_DIFF.diff(Registries.getUnitRegistry().getUnitConfigs());
+                }
             } catch (InterruptedException ex) {
                 throw new CouldNotPerformException("Could not add observer to unit registry", ex);
             }
@@ -292,19 +287,23 @@ public class Units {
             UNIT_REMOTE_REGISTRY_LOCK.writeLock().lock();
             try {
                 for (UnitRemote unitRemote : new ArrayList<>(unitRemoteRegistry.getEntries())) {
-                    try {
-                        unitRemoteRegistry.remove(unitRemote);
-                        unitRemote.unlock(unitRemoteRegistry);
-                        unitRemote.shutdown();
-                    } catch (CouldNotPerformException ex) {
-                        ExceptionPrinter.printHistory("Could not properly shutdown " + unitRemote, ex, LOGGER);
-                    }
+                    removeUnitRemote(unitRemote);
                 }
             } finally {
                 UNIT_REMOTE_REGISTRY_LOCK.writeLock().unlock();
             }
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not reset Units!", ex);
+        }
+    }
+
+    private static void removeUnitRemote(final UnitRemote unitRemote) {
+        try {
+            unitRemoteRegistry.remove(unitRemote);
+            unitRemote.unlock(unitRemoteRegistry);
+            unitRemote.shutdown();
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory("Could not properly shutdown " + unitRemote, ex, LOGGER);
         }
     }
 
