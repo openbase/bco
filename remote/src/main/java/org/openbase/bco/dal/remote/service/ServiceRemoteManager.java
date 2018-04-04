@@ -53,6 +53,7 @@ import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.EnablingStateType.EnablingState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -104,15 +105,13 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
 
             // init service unit map
             for (final String unitId : unitIDList) {
-
                 try {
-
                     // resolve unit config by unit registry
                     final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
 
-                    // filter non dal units
+                    // filter non dal units and disabled units
                     try {
-                        if (!UnitConfigProcessor.isDalUnit(unitConfig)) {
+                        if (!UnitConfigProcessor.isDalUnit(unitConfig) || unitConfig.getEnablingState().getValue() == State.DISABLED) {
                             continue;
                         }
                     } catch (VerificationFailedException ex) {
@@ -121,10 +120,9 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
 
                     // sort dal unit by service type
                     unitConfig.getServiceConfigList().stream().forEach((serviceConfig) -> {
-                        // register unit for service type. UnitConfigs are may added twice because of dublicated type of different service pattern but are filtered by the set.
+                        // register unit for each service type. UnitConfigs can be added twice because of duplicated types with different service patterns but are filtered by the set.
                         serviceMap.get(serviceConfig.getServiceDescription().getType()).add(unitConfig);
                     });
-
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Could not process unit config update of Unit[" + unitId + "] for "+responsibleInstance+"!", ex), LOGGER);
                 }
