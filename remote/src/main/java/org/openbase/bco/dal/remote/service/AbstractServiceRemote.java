@@ -23,18 +23,6 @@ package org.openbase.bco.dal.remote.service;
  */
 
 import com.google.protobuf.GeneratedMessage;
-
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
 import org.openbase.bco.dal.lib.layer.service.Service;
@@ -44,30 +32,20 @@ import org.openbase.bco.dal.lib.layer.unit.MultiUnitServiceFusion;
 import org.openbase.bco.dal.lib.layer.unit.UnitAllocation;
 import org.openbase.bco.dal.lib.layer.unit.UnitAllocator;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
-import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.FatalImplementationErrorException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.MultiException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.NotSupportedException;
-import org.openbase.jul.exception.ShutdownException;
-import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
-import org.openbase.jul.iface.Processable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote;
-import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
@@ -79,8 +57,15 @@ import rst.domotic.action.ActionReferenceType.ActionReference;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActionStateType.ActionState;
+import rst.domotic.state.EnablingStateType.EnablingState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import java.util.*;
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  * @param <S>  generic definition of the overall service type for this remote.
@@ -96,9 +81,11 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     private long connectionPing;
     private final Class<ST> serviceDataClass;
     private final Map<String, UnitRemote> unitRemoteMap;
+    private final Map<String, UnitRemote> disabledUnitRemoteMap;
     private final Map<UnitType, List<S>> unitRemoteTypeMap;
     private final Map<String, S> serviceMap;
     private final Observer dataObserver;
+    private final Observer unitConfigObserver;
     protected final ObservableImpl<ST> serviceStateObservable = new ObservableImpl<>();
     private final SyncObject syncObject = new SyncObject("ServiceStateComputationLock");
     private final SyncObject maintainerLock = new SyncObject("MaintainerLock");
@@ -115,9 +102,40 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         this.serviceDataClass = serviceDataClass;
         this.unitRemoteMap = new HashMap<>();
         this.unitRemoteTypeMap = new HashMap<>();
+        this.disabledUnitRemoteMap = new HashMap<>();
         this.serviceMap = new HashMap<>();
-        this.dataObserver = (Observer) (Observable source, Object data) -> {
+        this.dataObserver = (Observable source, Object data) -> {
             updateServiceState();
+        };
+        this.unitConfigObserver = (source, data) -> {
+            final UnitConfig unitConfig = (UnitConfig) data;
+            if (unitRemoteMap.containsKey(unitConfig.getId()) && unitConfig.getEnablingState().getValue() == State.DISABLED) {
+                // unit was enabled and is now disabled
+                final UnitRemote unitRemote = unitRemoteMap.remove(unitConfig.getId());
+
+                // remove unit from maps
+                serviceMap.remove(unitConfig.getId());
+                unitRemoteTypeMap.get(unitConfig.getType()).remove(unitRemote);
+                for (UnitType superType : Registries.getUnitRegistry().getSuperUnitTypes(unitRemote.getUnitType())) {
+                    unitRemoteTypeMap.get(superType).remove(unitRemote);
+                }
+            } else if (disabledUnitRemoteMap.containsKey(unitConfig.getId()) && unitConfig.getEnablingState().getValue() == State.ENABLED) {
+                // unit was disabled and is now enabled
+                final UnitRemote unitRemote = disabledUnitRemoteMap.remove(unitConfig.getId());
+
+                // add unit maps
+                try {
+                    serviceMap.put(unitConfig.getId(), (S) unitRemote);
+                    unitRemoteTypeMap.get(unitRemote.getUnitType()).add((S) unitRemote);
+                    for (UnitType superType : Registries.getUnitRegistry().getSuperUnitTypes(unitRemote.getUnitType())) {
+                        unitRemoteTypeMap.get(superType).add((S) unitRemote);
+                    }
+                } catch (ClassCastException ex) {
+                    throw new NotSupportedException("ServiceInterface[" + serviceType.name() + "]", unitRemote, "Remote does not implement the service interface!", ex);
+                }
+
+                unitRemoteMap.put(unitConfig.getId(), unitRemote);
+            }
         };
         this.serviceStateObservable.setExecutorService(GlobalCachedExecutorService.getInstance().getExecutorService());
     }
@@ -274,46 +292,56 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     /**
      * {@inheritDoc}
      *
-     * @param config {@inheritDoc}
+     * @param unitConfig {@inheritDoc}
      * @throws InitializationException {@inheritDoc}
      * @throws InterruptedException    {@inheritDoc}
      */
     @Override
-    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
+    public void init(final UnitConfig unitConfig) throws InitializationException, InterruptedException {
         try {
-            verifyMaintainability();
-            if (!verifyServiceCompatibility(config, serviceType)) {
-                throw new NotSupportedException("UnitTemplate[" + serviceType.name() + "]", config.getLabel());
+            if (unitRemoteMap.containsKey(unitConfig.getId()) || disabledUnitRemoteMap.containsKey(unitConfig.getId())) {
+                // skip duplicated units
+                return;
             }
 
-            UnitRemote remote = Units.getUnit(config, false);
+            verifyMaintainability();
 
-            if (!unitRemoteTypeMap.containsKey(remote.getUnitType())) {
-                unitRemoteTypeMap.put(remote.getUnitType(), new ArrayList());
-                for (UnitType superType : Registries.getUnitRegistry().getSuperUnitTypes(remote.getUnitType())) {
+            if (!verifyServiceCompatibility(unitConfig, serviceType)) {
+                throw new NotSupportedException("UnitTemplate[" + serviceType.name() + "]", unitConfig.getLabel());
+            }
+
+            final UnitRemote unitRemote = Units.getUnit(unitConfig, false);
+
+            if (!unitRemoteTypeMap.containsKey(unitRemote.getUnitType())) {
+                unitRemoteTypeMap.put(unitRemote.getUnitType(), new ArrayList());
+                for (UnitType superType : Registries.getUnitRegistry().getSuperUnitTypes(unitRemote.getUnitType())) {
                     if (!unitRemoteTypeMap.containsKey(superType)) {
                         unitRemoteTypeMap.put(superType, new ArrayList<>());
                     }
                 }
             }
 
-            try {
-                serviceMap.put(config.getId(), (S) remote);
-                unitRemoteTypeMap.get(remote.getUnitType()).add((S) remote);
-                for (UnitType superType : Registries.getUnitRegistry().getSuperUnitTypes(remote.getUnitType())) {
-                    unitRemoteTypeMap.get(superType).add((S) remote);
-                }
-            } catch (ClassCastException ex) {
-                throw new NotSupportedException("ServiceInterface[" + serviceType.name() + "]", remote, "Remote does not implement the service interface!", ex);
+            unitRemote.addConfigObserver(unitConfigObserver);
+
+            if (unitConfig.getEnablingState().getValue() == State.DISABLED) {
+                disabledUnitRemoteMap.put(unitConfig.getId(), unitRemote);
+                return;
             }
 
-            unitRemoteMap.put(config.getId(), remote);
+            try {
+                serviceMap.put(unitConfig.getId(), (S) unitRemote);
+                unitRemoteTypeMap.get(unitRemote.getUnitType()).add((S) unitRemote);
+                for (UnitType superType : Registries.getUnitRegistry().getSuperUnitTypes(unitRemote.getUnitType())) {
+                    unitRemoteTypeMap.get(superType).add((S) unitRemote);
+                }
+            } catch (ClassCastException ex) {
+                throw new NotSupportedException("ServiceInterface[" + serviceType.name() + "]", unitRemote, "Remote does not implement the service interface!", ex);
+            }
+
+            unitRemoteMap.put(unitConfig.getId(), unitRemote);
 
             if (active) {
-                if (!remote.isEnabled()) {
-                    logger.warn("Using a disabled " + remote + " in " + this + " is not recommended and should be avoided!");
-                }
-                remote.addDataObserver(dataObserver);
+                unitRemote.addDataObserver(dataObserver);
             }
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
@@ -359,12 +387,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     public void activate() throws CouldNotPerformException, InterruptedException {
         verifyMaintainability();
         active = true;
-        unitRemoteMap.values().stream().map((remote) -> {
-            if (!remote.isEnabled()) {
-                logger.warn("Using a disabled " + remote + " in " + this + " is not recommended and should be avoided!");
-            }
-            return remote;
-        }).forEach((remote) -> {
+        unitRemoteMap.values().stream().forEach((remote) -> {
             remote.addDataObserver(dataObserver);
         });
         updateServiceState();
@@ -399,7 +422,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     public void deactivate() throws CouldNotPerformException, InterruptedException {
         verifyMaintainability();
         active = false;
-        unitRemoteMap.values().stream().forEach((remote) -> {
+        unitRemoteMap.values().stream().forEach(remote -> {
             remote.removeDataObserver(dataObserver);
         });
     }
@@ -412,6 +435,8 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         try {
             verifyMaintainability();
             deactivate();
+            unitRemoteMap.values().stream().forEach(remote -> remote.removeConfigObserver(unitConfigObserver));
+            disabledUnitRemoteMap.values().stream().forEach(remote -> remote.removeConfigObserver(unitConfigObserver));
         } catch (CouldNotPerformException | InterruptedException ex) {
             ExceptionPrinter.printHistory(new ShutdownException(this, ex), logger);
         }
@@ -429,8 +454,23 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
     @Override
     public void removeUnit(UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
-        unitRemoteMap.get(unitConfig.getId()).removeDataObserver(dataObserver);
-        unitRemoteMap.remove(unitConfig.getId());
+        UnitRemote unitRemote;
+        if (unitRemoteMap.containsKey(unitConfig.getId())) {
+            unitRemote = unitRemoteMap.remove(unitConfig.getId());
+
+            serviceMap.remove(unitConfig.getId());
+            unitRemoteTypeMap.get(unitConfig.getType()).remove(unitRemote);
+            for (UnitType superType : Registries.getUnitRegistry().getSuperUnitTypes(unitRemote.getUnitType())) {
+                unitRemoteTypeMap.get(superType).remove(unitRemote);
+            }
+        } else if (disabledUnitRemoteMap.containsKey(unitConfig.getId())) {
+            unitRemote = disabledUnitRemoteMap.remove(unitConfig.getId());
+        } else {
+            throw new NotAvailableException("UnitConfig[" + ScopeGenerator.generateStringRep(unitConfig.getScope()) + "]");
+        }
+
+        unitRemote.removeDataObserver(dataObserver);
+        unitRemote.removeConfigObserver(unitConfigObserver);
     }
 
     /**
@@ -763,6 +803,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
     /**
      * {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
@@ -774,7 +815,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         final List<Future<Long>> futurePings = new ArrayList<>();
 
         for (final UnitRemote remote : unitRemoteMap.values()) {
-            if(remote.isConnected()) {
+            if (remote.isConnected()) {
                 futurePings.add(remote.ping());
             }
         }
@@ -802,6 +843,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
     /**
      * {@inheritDoc}
+     *
      * @return {@inheritDoc}
      */
     @Override
