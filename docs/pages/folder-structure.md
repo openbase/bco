@@ -12,39 +12,40 @@ The following folders are used by bco:
 
 ### Binaries
 
-/usr/bin
+``/usr/bin``
 
 Here you find all bco binaries.
 
 ### Libaries
 
-/usr/share/maven-repo
+``/usr/share/maven-repo``
 
 Is used for storing internal as well as external java libaries used by bco.
 
 ### Shared Data
 
-/usr/share
+``/usr/share``
 
 Is used for storing database templates and other shared system resources like images or audio files.
 
 ## BCO Home
 
-BCO_HOME = ~/.config/bco
+``~/.config/bco``
 
 This folder is used for storing variable data used by bco. This includes the registry database as well as the credential store.
+The bco home path can be additionally referred by the global system variable ``BCO_HOME``. If defined those will be used instead of the default path.
 
 ### BCO Registry DB
 
-~/.config/bco/var/registry
+``~/.config/bco/var/registry``
 
-This path is based on the BCO_HOME variable and refers to the bco registry db.
+This path is based on the ``BCO_HOME`` variable and refers to the bco registry db.
 
 ### Credential Store
 
-~/.config/bco/var/credentials
+``~/.config/bco/var/credentials``
 
-This path points to the credential store used by the bco authentication
+This path is also based on the ``BCO_HOME`` and points to the credential store used by the bco authentication.
 
 ## Outdated
 
