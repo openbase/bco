@@ -55,15 +55,4 @@ public interface UnitController<D extends GeneratedMessage, DB extends D.Builder
      * @throws CouldNotPerformException
      */
     void applyDataUpdate(final Object serviceArgument, final ServiceType serviceType) throws CouldNotPerformException;
-
-//    /**
-//     * Applies the given service update for this unit by trying to resolve the service type from it automatically.
-//     *
-//     * @param serviceArgument
-//     * @throws CouldNotPerformException
-//     * @deprecated Deprecated and broken since there is no bidirectional mapping between services arguments and service states!
-//     */
-//    default void applyDataUpdate(final Object serviceArgument) throws CouldNotPerformException {
-//        applyDataUpdate(serviceArgument, Services.getServiceType(serviceArgument));
-//    }
 }
