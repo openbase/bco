@@ -21,24 +21,15 @@ package org.openbase.bco.registry.lib.launch;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
-import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
-import org.openbase.jul.storage.registry.RemoteRegistry;
 
 /**
- *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <L>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractRegistryLauncher<L extends AbstractRegistryController> extends AbstractLauncher<L> {
 
@@ -47,41 +38,9 @@ public abstract class AbstractRegistryLauncher<L extends AbstractRegistryControl
     }
 
     @Override
-    public void verify() throws VerificationFailedException, InterruptedException {
-
-        MultiException.ExceptionStack exceptionStack = null;
-        List<RemoteRegistry> remoteRegistries = getLaunchable().getRemoteRegistries();
-
-        outer:
-        while (true) {
-            if (Thread.interrupted()) {
-                throw new InterruptedException();
-            }
-            // wait if the registries is handling any stuf.
-            for (final RemoteRegistry registry : remoteRegistries) {
-                if (registry.isBusy() || registry.isNotificationInProgess() || !registry.isValueAvailable()) {
-                    try {
-                        registry.waitUntilReadyFuture().get(10, TimeUnit.SECONDS);
-                    } catch (ExecutionException | TimeoutException ex) {
-                        logger.info(registry + " still not ready yet, observation continued...");
-                    }
-                    continue outer;
-                }
-            }
-            break outer;
-        }
-
-        // check if registries are consistent
-        for (final RemoteRegistry registry : remoteRegistries) {
-            if (!registry.isConsistent()) {
-                exceptionStack = MultiException.push(getLaunchable(), new VerificationFailedException(registry.getName() + " started in read only mode!", new InvalidStateException("Registry not consistent!")), exceptionStack);
-            }
-        }
-
-        try {
-            MultiException.checkAndThrow(JPService.getApplicationName() + " started in fallback mode!", exceptionStack);
-        } catch (CouldNotPerformException ex) {
-            throw new VerificationFailedException(ex);
+    public void verify() throws VerificationFailedException {
+        if (!getLaunchable().isConsistent()) {
+            throw new VerificationFailedException(getLaunchable().getClass().getSimpleName() + " is inconsistent");
         }
     }
 }

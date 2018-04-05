@@ -480,6 +480,15 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
         return registryList.stream().noneMatch((registry) -> (!registry.isReady()));
     }
 
+    public Boolean isConsistent() {
+        for(ProtoBufFileSynchronizedRegistry registry : registryList) {
+            if(!registry.isConsistent()) {
+                return false;
+            }
+        }
+        return true;
+    }
+
     protected abstract void registerConsistencyHandler() throws CouldNotPerformException;
 
     protected abstract void registerPlugins() throws CouldNotPerformException, InterruptedException;
