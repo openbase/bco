@@ -21,10 +21,7 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.layer.service.Service;
+
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.PowerStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
@@ -33,6 +30,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
@@ -48,8 +46,11 @@ import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
+import java.util.Collection;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
+
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOperationService, PowerState> implements PowerStateOperationServiceCollection {
@@ -63,7 +64,7 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
 
     /**
      * Constructor creates a new service remote.
-     *
+     * <p>
      * Note: This remote instance totally ignores infrastructure units.
      */
     public PowerStateServiceRemote() {
@@ -72,7 +73,7 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
 
     /**
      * Constructor creates a new service remote.
-     *
+     * <p>
      * Note: This remote instance totally ignores infrastructure units.
      *
      * @param filterInfrastructureUnits this flag defines if units which are marked as infrastructure are filtered by this instance.
@@ -91,7 +92,11 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
                 final MetaConfigPool metaConfigPool = new MetaConfigPool();
                 metaConfigPool.register(new MetaConfigVariableProvider("UnitConfig", config.getMetaConfig()));
                 if (config.hasUnitHostId() && !config.getUnitHostId().isEmpty()) {
-                    metaConfigPool.register(new MetaConfigVariableProvider("UnitHost", Registries.getUnitRegistry().getUnitConfigById(config.getUnitHostId()).getMetaConfig()));
+                    try {
+                        metaConfigPool.register(new MetaConfigVariableProvider("UnitHost", Registries.getUnitRegistry().getUnitConfigById(config.getUnitHostId()).getMetaConfig()));
+                    } catch (NotAvailableException ex) {
+                        logger.warn("Could not check host of unit[" + ScopeGenerator.generateStringRep(config.getScope()) + "] for infrastructure filter because its not available");
+                    }
                 }
 
                 try {
@@ -132,7 +137,7 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
         serviceStateDescription.setUnitType(unitType);
-        
+
         try {
             return applyAction(Services.updateActionDescription(actionDescription, powerState, getServiceType()).build());
         } catch (InterruptedException ex) {

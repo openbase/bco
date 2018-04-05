@@ -22,17 +22,11 @@ package org.openbase.bco.dal.remote.unit;
  * #L%
  */
 
-import java.util.concurrent.Future;
-
-import static org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService.DEFAULT_NEUTRAL_WHITE;
-import static org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService.NEUTRAL_WHITE_KEY;
-
 import org.openbase.bco.dal.lib.layer.unit.ColorableLight;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
@@ -59,10 +53,10 @@ import rst.domotic.unit.dal.ColorableLightDataType;
 import rst.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
 import rst.domotic.unit.device.DeviceClassType;
 import rst.vision.ColorType;
-import rst.vision.ColorType.Color;
-import rst.vision.ColorType.Color.Type;
 import rst.vision.HSBColorType.HSBColor;
 import rst.vision.RGBColorType.RGBColor;
+
+import java.util.concurrent.Future;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -107,29 +101,38 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
                 configPool.register(new MetaConfigVariableProvider("ServiceConfig", colorStateServiceConfig.getMetaConfig()));
             }
 
-            // add meta config of device
-            UnitConfigType.UnitConfig deviceUnitConfig = Registries.getUnitRegistry(true).getUnitConfigById(config.getUnitHostId());
-            configPool.register(new MetaConfigVariableProvider("DeviceUnitConfig", deviceUnitConfig.getMetaConfig()));
+            try {
+                // add meta config of device
+                UnitConfigType.UnitConfig deviceUnitConfig = Registries.getUnitRegistry(true).getUnitConfigById(config.getUnitHostId());
+                configPool.register(new MetaConfigVariableProvider("DeviceUnitConfig", deviceUnitConfig.getMetaConfig()));
 
-            // add meta config of device class
-            Registries.getDeviceRegistry().waitForData();
-            DeviceClassType.DeviceClass deviceClass = Registries.getDeviceRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
-            configPool.register(new MetaConfigVariableProvider("DeviceClass", deviceClass.getMetaConfig()));
+                try {
+                    // add meta config of device class
+                    Registries.getDeviceRegistry().waitForData();
+                    DeviceClassType.DeviceClass deviceClass = Registries.getDeviceRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
+                    configPool.register(new MetaConfigVariableProvider("DeviceClass", deviceClass.getMetaConfig()));
 
-            // add meta config of service template config in unit template of deviceClass
-            ServiceTemplateConfigType.ServiceTemplateConfig colorStateServiceTemplateConfig = null;
-            for (UnitTemplateConfigType.UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
-                if (unitTemplateConfig.getId().equals(config.getUnitTemplateConfigId())) {
-                    for (ServiceTemplateConfigType.ServiceTemplateConfig serviceTempalteConfig : unitTemplateConfig.getServiceTemplateConfigList()) {
-                        if (serviceTempalteConfig.getServiceType() == ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE) {
-                            colorStateServiceTemplateConfig = serviceTempalteConfig;
+
+                    // add meta config of service template config in unit template of deviceClass
+                    ServiceTemplateConfigType.ServiceTemplateConfig colorStateServiceTemplateConfig = null;
+                    for (UnitTemplateConfigType.UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
+                        if (unitTemplateConfig.getId().equals(config.getUnitTemplateConfigId())) {
+                            for (ServiceTemplateConfigType.ServiceTemplateConfig serviceTempalteConfig : unitTemplateConfig.getServiceTemplateConfigList()) {
+                                if (serviceTempalteConfig.getServiceType() == ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE) {
+                                    colorStateServiceTemplateConfig = serviceTempalteConfig;
+                                }
+                            }
+                            break;
                         }
                     }
-                    break;
+                    if (colorStateServiceTemplateConfig != null) {
+                        configPool.register(new MetaConfigVariableProvider("ServiceTemplateConfig", colorStateServiceTemplateConfig.getMetaConfig()));
+                    }
+                } catch (NotAvailableException ex) {
+                    logger.warn("Could not check deviceClass of device[" + ScopeGenerator.generateStringRep(deviceUnitConfig.getScope()) + "] for neutral white because its not available");
                 }
-            }
-            if (colorStateServiceTemplateConfig != null) {
-                configPool.register(new MetaConfigVariableProvider("ServiceTemplateConfig", colorStateServiceTemplateConfig.getMetaConfig()));
+            } catch (NotAvailableException ex) {
+                logger.warn("Could not check host of colorableLight[" + ScopeGenerator.generateStringRep(config.getScope()) + "] for neutral white because its not available");
             }
 
             try {

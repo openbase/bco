@@ -21,9 +21,8 @@ package org.openbase.bco.dal.remote.trigger;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import com.google.protobuf.GeneratedMessage;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -39,12 +38,14 @@ import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+
 /**
- *
- * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
- * @param <UR> UnitRemote
- * @param <DT> DataType
+ * @param <UR>  UnitRemote
+ * @param <DT>  DataType
  * @param <STE> StateTypeEnum
+ * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo Michalski</a>
  */
 public class GenericBCOTrigger<UR extends AbstractUnitRemote, DT extends GeneratedMessage, STE extends Enum<STE>> extends AbstractTrigger {
 
@@ -106,7 +107,9 @@ public class GenericBCOTrigger<UR extends AbstractUnitRemote, DT extends Generat
         unitRemote.addDataObserver(dataObserver);
         unitRemote.addConnectionStateObserver(connectionObserver);
         active = true;
-        verifyCondition((DT) unitRemote.getData());
+        if (unitRemote.isDataAvailable()) {
+            verifyCondition((DT) unitRemote.getData());
+        }
     }
 
     @Override
