@@ -23,6 +23,8 @@ package org.openbase.bco.manager.agent.core.preset;
  */
 
 import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
+import org.openbase.bco.dal.lib.layer.service.ServiceStateObserver;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
@@ -107,7 +109,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
     private final List<UnitRemote> targetRemotes = new ArrayList<>();
     private UnitRemote sourceRemote;
     private PowerStateSyncBehaviour sourceBehaviour, targetBehaviour;
-    private final Map<UnitRemote, Observer> unitRemoteColorObserverMap = new HashMap<>();
+    private final Map<UnitRemote, ServiceStateObserver> unitRemoteColorObserverMap = new HashMap<>();
 
     public PowerStateSynchroniserAgent() throws CouldNotPerformException {
         super(PowerStateSynchroniserAgent.class);
@@ -424,7 +426,12 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
             targetRemote.addServiceStateObserver(ServiceTempus.REQUESTED, ServiceType.POWER_STATE_SERVICE, targetRequestObserer);
             targetRemote.addServiceStateObserver(ServiceTempus.CURRENT, ServiceType.POWER_STATE_SERVICE, targetObserver);
             if (targetRemote instanceof ColorableLightRemote) {
-                unitRemoteColorObserverMap.put(targetRemote, (source, data) -> handleTargetColorStateUpdate((ColorState) data, targetRemote));
+                unitRemoteColorObserverMap.put(targetRemote, new ServiceStateObserver(true) {
+                    @Override
+                    public void updateServiceData(Observable<Message> source, Message data) throws Exception {
+                        handleTargetColorStateUpdate((ColorState) data, targetRemote);
+                    }
+                });
                 targetRemote.addServiceStateObserver(ServiceTempus.CURRENT, ServiceType.COLOR_STATE_SERVICE, unitRemoteColorObserverMap.get(targetRemote));
                 targetRemote.addServiceStateObserver(ServiceTempus.REQUESTED, ServiceType.COLOR_STATE_SERVICE, unitRemoteColorObserverMap.get(targetRemote));
             }
