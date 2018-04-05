@@ -29,6 +29,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.schedule.SyncObject;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -80,12 +81,13 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
 
     private double brightness = 50;
     private HSBColor[] colors = {
-        HSBColor.newBuilder().setHue(0).setSaturation(100).setBrightness(brightness).build(),
-        HSBColor.newBuilder().setHue(290).setSaturation(100).setBrightness(brightness).build(),
-        HSBColor.newBuilder().setHue(30).setSaturation(100).setBrightness(brightness).build(),};
+            HSBColor.newBuilder().setHue(0).setSaturation(100).setBrightness(brightness).build(),
+            HSBColor.newBuilder().setHue(290).setSaturation(100).setBrightness(brightness).build(),
+            HSBColor.newBuilder().setHue(30).setSaturation(100).setBrightness(brightness).build(),};
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
+        logger.debug("Execute PartyLightTileFollowerApp[" + getLabel() + "]");
         // verify
         if (!Registries.getLocationRegistry().getLocationConfigById(getConfig().getPlacementConfig().getLocationId()).getLocationConfig().getType().equals(LocationConfigType.LocationConfig.LocationType.TILE)) {
             throw new InvalidStateException("App location is not a tile!");
@@ -117,7 +119,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
                     colorIndex = ++colorIndex % colors.length;
                     processedLocations.clear();
 
-                    // select inital room
+                    // select initial room
                     locationRemote = locationRemoteMap.get(getConfig().getPlacementConfig().getLocationId());
 
                     processRoom(locationRemote, colors[colorIndex]);
@@ -126,6 +128,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Skip animation run!", ex), logger);
                 }
             }
+
             return null;
         }
 
@@ -145,7 +148,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
                     Thread.sleep(2000);
                 }
 
-                // mark as prcessed        
+                // mark as processed
                 processedLocations.add(locationRemote.getId());
 
                 // process neighbors
