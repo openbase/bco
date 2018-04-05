@@ -22,12 +22,10 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import com.google.protobuf.Descriptors;
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.iface.Enableable;
 import org.openbase.jul.processing.StringProcessor;
@@ -75,13 +73,17 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
             throw new InvalidStateException("Unknown is not a valid state!");
         }
 
-        Future<ActionFuture> result = null;
         synchronized (executionLock) {
+            // filter events that do not change anything
+            if (activation.getValue() == getActivationState().getValue()) {
+                return CompletableFuture.completedFuture(null);
+            }
+
             if (activation.getValue() == ActivationState.State.ACTIVE) {
 
                 // filter duplicated execution
                 if (isExecuting()) {
-                    return executionFuture;
+                    return CompletableFuture.completedFuture(null);
                 }
 
                 executionFuture = GlobalCachedExecutorService.submit(() -> {
@@ -92,7 +94,6 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
                     }
                     return null;
                 });
-                result = executionFuture;
             } else {
                 if (isExecuting()) {
                     cancelExecution();
@@ -102,25 +103,18 @@ public abstract class AbstractExecutableBaseUnitController<D extends GeneratedMe
                 try {
                     stop();
                 } catch (InterruptedException ex) {
-
+                    Thread.currentThread().interrupt();
                 }
+            }
+
+            try {
+                applyDataUpdate(activation.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
+            } catch (CouldNotPerformException ex) {
+                throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToCamelCase(activation.getValue().name()) + " " + this, ex);
             }
         }
 
-        try {
-            updateActivationState(activation);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not " + StringProcessor.transformUpperCaseToCamelCase(activation.getValue().name()) + " " + this, ex);
-        }
-
-        if (result == null) {
-            return CompletableFuture.completedFuture(null);
-        }
-        return result;
-    }
-
-    protected void updateActivationState(ActivationState activationState) throws CouldNotPerformException {
-        applyDataUpdate(activationState.toBuilder().setTimestamp(TimestampProcessor.getCurrentTimestamp()).build(), ServiceType.ACTIVATION_STATE_SERVICE);
+        return CompletableFuture.completedFuture(null);
     }
 
     public boolean isExecuting() {
