@@ -75,20 +75,20 @@ public class NearFieldLightAgent extends AbstractResourceAllocationAgent {
     public void init(final UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
         try {
             super.init(config);
-            locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), true, Units.LOCATION);
-            neighborRemotes = locationRemote.getNeighborLocationList(true);
+            locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
+            neighborRemotes = locationRemote.getNeighborLocationList(false);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException("LocationRemote not available", ex);
         }
 
         try {
-            for (LocationRemote neigborRemote : neighborRemotes) {
-                if (locationRemote.hasDirectConnection(neigborRemote.getId(), ConnectionType.PASSAGE, true)) {
-                    GenericBCOTrigger<LocationRemote, LocationData, PresenceState.State> trigger = new GenericBCOTrigger<>(neigborRemote, PresenceState.State.PRESENT, ServiceType.PRESENCE_STATE_SERVICE);
+            for (LocationRemote neighborRemote : neighborRemotes) {
+                if (locationRemote.hasDirectConnection(neighborRemote.getId(), ConnectionType.PASSAGE, true)) {
+                    GenericBCOTrigger<LocationRemote, LocationData, PresenceState.State> trigger = new GenericBCOTrigger<>(neighborRemote, PresenceState.State.PRESENT, ServiceType.PRESENCE_STATE_SERVICE);
                     agentTriggerHolder.addTrigger(trigger, TriggerPool.TriggerOperation.OR);
                 } else {
-                    for (ConnectionRemote relatedConnection : locationRemote.getDirectConnectionList(neigborRemote.getId(), true)) {
-                        NeighborConnectionPresenceTrigger trigger = new NeighborConnectionPresenceTrigger(neigborRemote, relatedConnection);
+                    for (ConnectionRemote relatedConnection : locationRemote.getDirectConnectionList(neighborRemote.getId(), false)) {
+                        NeighborConnectionPresenceTrigger trigger = new NeighborConnectionPresenceTrigger(neighborRemote, relatedConnection);
                         agentTriggerHolder.addTrigger(trigger, TriggerPool.TriggerOperation.OR);
                     }
                 }

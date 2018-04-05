@@ -82,7 +82,7 @@ public class TemperatureControllerAgent extends AbstractResourceAllocationAgent 
             super.init(config);
 
             try {
-                locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), true, Units.LOCATION);
+                locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
             } catch (NotAvailableException ex) {
                 throw new InitializationException("LocationRemote not available.", ex);
             }

@@ -26,9 +26,7 @@ import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.agent.core.AbstractAgentController;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.schedule.Timeout;
@@ -53,12 +51,12 @@ public class StandbyAgent extends AbstractAgentController {
     private final Observer<LocationData> locationDataObserver;
 
 
-    public StandbyAgent() throws InstantiationException, CouldNotPerformException, InterruptedException {
+    public StandbyAgent() throws CouldNotPerformException {
         super(StandbyAgent.class);
         this.timeout = new Timeout(TIMEOUT) {
 
             @Override
-            public void expired() throws InterruptedException {
+            public void expired() {
                 try {
                     locationRemote.setStandbyState(State.STANDBY);
                 } catch (CouldNotPerformException ex) {
@@ -67,24 +65,21 @@ public class StandbyAgent extends AbstractAgentController {
             }
         };
 
-        this.locationDataObserver = new Observer<LocationData>() {
-            @Override
-            public void update(Observable<LocationDataType.LocationData> source, LocationDataType.LocationData data) throws Exception {
-                triggerPresenceChange(data);
-            }
-        };
+        this.locationDataObserver = (source, data) -> triggerPresenceChange(data);
     }
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
-        locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), true, Units.LOCATION);
+        locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
         locationRemote.addDataObserver(locationDataObserver);
-        locationRemote.waitForData();
-        triggerPresenceChange(locationRemote.getData());
+//        locationRemote.waitForData();
+        if(locationRemote.isDataAvailable()) {
+            triggerPresenceChange(locationRemote.getData());
+        }
     }
 
     @Override
-    protected void stop() throws CouldNotPerformException, InterruptedException {
+    protected void stop() {
         if (locationRemote != null) {
             locationRemote.removeDataObserver(locationDataObserver);
             locationRemote = null;

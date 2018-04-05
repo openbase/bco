@@ -84,12 +84,12 @@ public class HeaterEnergySavingAgent extends AbstractResourceAllocationAgent {
             super.init(config);
 
             try {
-                locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), true, Units.LOCATION);
+                locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
             } catch (NotAvailableException ex) {
                 throw new InitializationException("LocationRemote not available.", ex);
             }
 
-            for (ConnectionRemote connectionRemote : locationRemote.getConnectionList(true)) {
+            for (ConnectionRemote connectionRemote : locationRemote.getConnectionList(false)) {
                 if (connectionRemote.getConfig().getConnectionConfig().getType().equals(ConnectionConfigType.ConnectionConfig.ConnectionType.WINDOW)) {
                     try {
                         GenericBCOTrigger<ConnectionRemote, ConnectionData, WindowState.State> trigger = new GenericBCOTrigger(connectionRemote, triggerState, ServiceType.WINDOW_STATE_SERVICE);

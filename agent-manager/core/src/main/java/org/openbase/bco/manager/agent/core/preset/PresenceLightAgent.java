@@ -78,7 +78,7 @@ public class PresenceLightAgent extends AbstractResourceAllocationAgent {
     public void init(final UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
         try {
-            locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), true, Units.LOCATION);
+            locationRemote = Units.getUnit(getConfig().getPlacementConfig().getLocationId(), false, Units.LOCATION);
         } catch (NotAvailableException ex) {
             throw new InitializationException("LocationRemote not available.", ex);
         }
