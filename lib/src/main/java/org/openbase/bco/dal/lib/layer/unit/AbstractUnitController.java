@@ -425,7 +425,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             if (!actionDescription.hasDescription() || actionDescription.getDescription().isEmpty()) {
                 // Fallback print in case the description is not available. 
                 // Please make sure all action descriptions provide a description.
-                logger.info("Action[" + actionDescription.getServiceStateDescription().getServiceType() + ", " + actionDescription.getServiceStateDescription().getServiceAttribute() + "] for unit[" + ScopeGenerator.generateStringRep(getScope()) + "] is without a description");
+                logger.info("Action[" + actionDescription.getServiceStateDescription().getServiceType() + "] for unit[" + ScopeGenerator.generateStringRep(getScope()) + "] is without a description");
             } else {
                 logger.info(actionDescription.getDescription());
             }

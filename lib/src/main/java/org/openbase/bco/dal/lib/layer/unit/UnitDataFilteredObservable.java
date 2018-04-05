@@ -58,9 +58,7 @@ public class UnitDataFilteredObservable<M extends Message> extends AbstractObser
 
         this.unit = dataProvider;
         this.serviceTempus = serviceTempus;
-        this.setHashGenerator((M value) -> {
-            return removeUnwantedServiceTempus(value.toBuilder()).build().hashCode();
-        });
+        this.setHashGenerator((M value) -> removeUnwantedServiceTempus(value.toBuilder()).build().hashCode());
 
         this.fieldsToKeep = new HashSet<>();
         this.unitTemplate = unitTemplate;
@@ -112,7 +110,7 @@ public class UnitDataFilteredObservable<M extends Message> extends AbstractObser
     }
 
     private synchronized Message.Builder removeUnwantedServiceTempus(final Message.Builder builder) {
-        // if unkown keep everything
+        // if unknown keep everything
         if(serviceTempus == ServiceTempus.UNKNOWN) {
             return builder;
         }

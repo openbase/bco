@@ -709,6 +709,9 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
     /**
      * Add an observer which is only notified if the desired service type for
      * the desired service tempus changes.
+     * The service data notified can be empty. If you want to filter these updates
+     * you can use the ServiceStateObserver. Empty updates are left in because when
+     * observing requested states this can indicate that it is taken over as the current state.
      *
      * @param serviceTempus The service tempus on which the observer is added.
      * @param serviceType   The service type on which the observer is added.
