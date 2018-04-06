@@ -311,7 +311,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
             if (!getConfig().hasPlacementConfig()) {
                 throw new NotAvailableException("PlacementConfig");
             }
-            //release todo: rename PlacementConfig position into pose.
+            //todo release : rename PlacementConfig position into pose.
             if (!getConfig().getPlacementConfig().hasPosition()) {
                 throw new NotAvailableException("Position");
             }
@@ -639,7 +639,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
     @Deprecated
     default LocationRegistry getLocationRegistry() throws NotAvailableException {
         // method is only needed because the registry is still throwing a InterruptedException which will removed in a future release.
-        // release todo: can be removed later on
+        // todo release: can be removed later on
         try {
             try {
                 return CachedLocationRegistryRemote.getRegistry();

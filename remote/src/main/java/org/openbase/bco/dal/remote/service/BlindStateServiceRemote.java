@@ -21,10 +21,7 @@ package org.openbase.bco.dal.remote.service;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.Collection;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.layer.service.Service;
+
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.BlindStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationService;
@@ -41,6 +38,10 @@ import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import java.util.Collection;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
  *
@@ -72,13 +73,12 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
         return getData();
     }
 
-    // TODO: das filtern nach dem unit typen fehlt noch...
     @Override
     public BlindState getBlindState(UnitType unitType) throws NotAvailableException {
-        int serviceNumber = getBlindStateOperationServices().size(), stop = 0, down = 0, up = 0;
+        int serviceNumber = getServices(unitType).size(), stop = 0, down = 0, up = 0;
         long timestamp = 0;
         float openingRatioAverage = 0;
-        for (BlindStateOperationService service : getBlindStateOperationServices()) {
+        for (BlindStateOperationService service : getServices(unitType)) {
             if (!((UnitRemote) service).isDataAvailable()) {
                 serviceNumber--;
                 continue;
@@ -101,16 +101,16 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
         }
 
         openingRatioAverage /= serviceNumber;
-        BlindState.MovementState mostOccurences;
+        BlindState.MovementState mostOccurrences;
         if (stop >= up && stop >= down) {
-            mostOccurences = BlindState.MovementState.STOP;
+            mostOccurrences = BlindState.MovementState.STOP;
         } else if (up >= stop && up >= down) {
-            mostOccurences = BlindState.MovementState.UP;
+            mostOccurrences = BlindState.MovementState.UP;
         } else {
-            mostOccurences = BlindState.MovementState.DOWN;
+            mostOccurrences = BlindState.MovementState.DOWN;
         }
 
-        return TimestampProcessor.updateTimestamp(timestamp, BlindState.newBuilder().setMovementState(mostOccurences).setOpeningRatio(openingRatioAverage), TimeUnit.MICROSECONDS, logger).build();
+        return TimestampProcessor.updateTimestamp(timestamp, BlindState.newBuilder().setMovementState(mostOccurrences).setOpeningRatio(openingRatioAverage), TimeUnit.MICROSECONDS, logger).build();
     }
 
     @Override

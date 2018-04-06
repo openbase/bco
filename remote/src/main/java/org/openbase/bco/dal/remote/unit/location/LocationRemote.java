@@ -158,6 +158,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         return RPCHelper.callRemoteMethod(snapshot, this, Void.class);
     }
 
+    //TODO release2.0: LocationRemote should use applyActionMethod of AbstractUnitRemote, this should work when every communication service has a transaction id
     @Override
     public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         return RPCHelper.callRemoteMethod(updateActionDescription(actionDescription.toBuilder()).build(), this, ActionFuture.class);
@@ -168,7 +169,8 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         serviceStateDescription.setUnitId(getId());
 
         actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
-        //TODO: update USER key with authentication
+        //TODO: update USER key with authentication, should not be needed anymore in release 2.0 because the location remote
+        // should use the applyAction method of the AbstractUnitRemote which does it.
         actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
         
         return actionDescription;

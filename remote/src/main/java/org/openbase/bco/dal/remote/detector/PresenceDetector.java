@@ -148,7 +148,6 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
     }
 
     private synchronized void updatePresenceState(final PresenceStateOrBuilder presenceState) throws CouldNotPerformException {
-
         // TODO?
         // so wird das timeout durch das erste present setzten des detectors selbst nochmal restarted...
         // vorher nach motion state filtern (inklusive lastMotion) und wenn gleich das presence update skippen?

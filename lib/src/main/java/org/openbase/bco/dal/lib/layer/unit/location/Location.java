@@ -48,8 +48,7 @@ import java.util.concurrent.Future;
 public interface Location extends BaseUnit<LocationData>, PresenceStateProviderService, Snapshotable<Snapshot>, MultiUnitServiceFusion {
 
     /**
-     * TODO: Will return controller/remotes in the final implementation. Waiting for a
-     * remote pool...
+     * TODO release: is not used anymore and can be removed
      *
      * @return
      * @throws CouldNotPerformException
