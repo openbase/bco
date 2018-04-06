@@ -24,6 +24,7 @@ package org.openbase.bco.authentication.lib.jp;
 
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
+import org.openbase.jps.exception.JPValidationException;
 import org.openbase.jps.preset.AbstractJPDirectory;
 import org.openbase.jps.preset.JPPrefix;
 import org.openbase.jps.tools.FileHandler;
@@ -57,6 +58,15 @@ public class JPBCOShareDirectory extends AbstractJPDirectory {
     @Override
     protected File getPropertyDefaultValue() {
         return new File(DEFAULT_PATH);
+    }
+
+    @Override
+    public void validate() throws JPValidationException {
+        if (JPService.testMode()) {
+            setAutoCreateMode(FileHandler.AutoMode.On);
+            setExistenceHandling(FileHandler.ExistenceHandling.Must);
+        }
+        super.validate();
     }
 
     @Override
