@@ -79,7 +79,7 @@ public class BCORegistryLoader {
                 LOGGER.info("Create new registry db at " + databaseFile.getAbsolutePath() + " based on " + dbTemplate.getAbsolutePath() + ".");
                 FileUtils.copyDirectory(dbTemplate, databaseFile);
             } catch (IOException ex) {
-                throw new CouldNotPerformException("Could not copy datebase from template!", ex);
+                throw new CouldNotPerformException("Could not copy database from template!", ex);
             }
         } catch (final CouldNotPerformException | JPServiceException ex) {
             throw new CouldNotPerformException("Could not generate new database!", ex);

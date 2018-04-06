@@ -26,7 +26,6 @@ import org.openbase.bco.registry.lib.jp.JPBCODatabaseDirectory;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.storage.registry.jp.AbstractJPDatabaseDirectory;
-import org.openbase.jul.storage.registry.jp.JPInitializeDB;
 
 import java.io.File;
 
@@ -50,10 +49,5 @@ public class JPAuthorizationGroupConfigDatabaseDirectory extends AbstractJPDatab
     @Override
     protected File getPropertyDefaultValue() {
         return new File("authorization-group-config-db");
-    }
-
-    @Override
-    public String getDescription() {
-        return "Specifies the authorization group config database directory. Use  " + JPInitializeDB.COMMAND_IDENTIFIERS[0] + " to auto create database directories.";
     }
 }

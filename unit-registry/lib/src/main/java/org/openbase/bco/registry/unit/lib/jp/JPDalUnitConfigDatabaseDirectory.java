@@ -26,12 +26,10 @@ import org.openbase.bco.registry.lib.jp.JPBCODatabaseDirectory;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.storage.registry.jp.AbstractJPLocalDatabaseDirectory;
-import org.openbase.jul.storage.registry.jp.JPInitializeDB;
 
 import java.io.File;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class JPDalUnitConfigDatabaseDirectory extends AbstractJPLocalDatabaseDirectory {
@@ -50,10 +48,5 @@ public class JPDalUnitConfigDatabaseDirectory extends AbstractJPLocalDatabaseDir
     @Override
     protected File getPropertyDefaultValue() {
         return new File("dal-unit-config-db");
-    }
-
-    @Override
-    public String getDescription() {
-        return "Specifies the dal unit config database directory. Use  " + JPInitializeDB.COMMAND_IDENTIFIERS[0] + " to auto create database directories.";
     }
 }

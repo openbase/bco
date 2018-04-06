@@ -25,18 +25,12 @@ package org.openbase.bco.registry.agent.lib.jp;
 import org.openbase.bco.registry.lib.jp.JPBCODatabaseDirectory;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
-import org.openbase.jps.exception.JPServiceException;
-import org.openbase.jps.exception.JPValidationException;
-import org.openbase.jps.tools.FileHandler;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.storage.registry.jp.AbstractJPDatabaseDirectory;
-import org.openbase.jul.storage.registry.jp.JPInitializeDB;
+
 import java.io.File;
 
 /**
- *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class JPAgentClassDatabaseDirectory extends AbstractJPDatabaseDirectory {
 
@@ -44,6 +38,7 @@ public class JPAgentClassDatabaseDirectory extends AbstractJPDatabaseDirectory {
 
     public JPAgentClassDatabaseDirectory() {
         super(COMMAND_IDENTIFIERS);
+        registerDependingProperty(JPBCODatabaseDirectory.class);
     }
 
     @Override
@@ -54,23 +49,5 @@ public class JPAgentClassDatabaseDirectory extends AbstractJPDatabaseDirectory {
     @Override
     protected File getPropertyDefaultValue() {
         return new File("agent-class-db");
-    }
-
-    @Override
-    public void validate() throws JPValidationException {
-        try {
-            if (JPService.getProperty(JPInitializeDB.class).getValue()) {
-                setAutoCreateMode(FileHandler.AutoMode.On);
-                setExistenceHandling(FileHandler.ExistenceHandling.Must);
-            }
-        } catch (JPServiceException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
-        }
-        super.validate();
-    }
-
-    @Override
-    public String getDescription() {
-        return "Specifies the agent class database directory. Use  " + JPInitializeDB.COMMAND_IDENTIFIERS[0] + " to auto create database directories.";
     }
 }

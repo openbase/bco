@@ -49,6 +49,9 @@ public class JPBCODatabaseDirectory extends AbstractJPDirectory {
 
     public JPBCODatabaseDirectory() {
         super(COMMAND_IDENTIFIERS, EXISTENCE_HANDLING, AUTO_MODE);
+        registerDependingProperty(JPBCOVarDirectory.class);
+        registerDependingProperty(JPVarDirectory.class);
+        registerDependingProperty(JPShareDirectory.class);
     }
 
     @Override

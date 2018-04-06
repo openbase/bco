@@ -21,12 +21,12 @@ package org.openbase.bco.registry.agent.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentClassDatabaseDirectory;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.registry.lib.launch.AbstractRegistryLauncher;
-import static org.openbase.jul.pattern.launch.AbstractLauncher.main;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jps.preset.JPForce;
@@ -36,17 +36,20 @@ import org.openbase.jul.extension.rsb.com.jp.JPRSBPort;
 import org.openbase.jul.extension.rsb.com.jp.JPRSBTransport;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPlugin;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
-import org.openbase.jul.storage.registry.jp.JPInitializeDB;
 import org.openbase.jul.storage.registry.jp.JPRecoverDB;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class AgentRegistryLauncher extends AbstractRegistryLauncher<AgentRegistryController> {
 
     public AgentRegistryLauncher() throws org.openbase.jul.exception.InstantiationException {
         super(AgentRegistry.class, AgentRegistryController.class);
+    }
+
+    public static void main(String args[]) throws Throwable {
+        BCO.printLogo();
+        main(args, AgentRegistry.class, AgentRegistryLauncher.class);
     }
 
     @Override
@@ -56,7 +59,6 @@ public class AgentRegistryLauncher extends AbstractRegistryLauncher<AgentRegistr
         JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPRecoverDB.class);
-        JPService.registerProperty(JPInitializeDB.class);
         JPService.registerProperty(JPAgentClassDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
@@ -64,11 +66,6 @@ public class AgentRegistryLauncher extends AbstractRegistryLauncher<AgentRegistr
         JPService.registerProperty(JPRSBHost.class);
         JPService.registerProperty(JPRSBPort.class);
         JPService.registerProperty(JPRSBTransport.class);
-    }
-
-    public static void main(String args[]) throws Throwable {
-        BCO.printLogo();
-        main(args, AgentRegistry.class, AgentRegistryLauncher.class);
     }
 
 }

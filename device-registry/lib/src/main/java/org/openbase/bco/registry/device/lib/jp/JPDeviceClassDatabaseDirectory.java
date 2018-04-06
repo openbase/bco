@@ -26,7 +26,7 @@ import org.openbase.bco.registry.lib.jp.JPBCODatabaseDirectory;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.storage.registry.jp.AbstractJPDatabaseDirectory;
-import org.openbase.jul.storage.registry.jp.JPInitializeDB;
+
 import java.io.File;
 
 /**
@@ -49,10 +49,5 @@ public class JPDeviceClassDatabaseDirectory extends AbstractJPDatabaseDirectory 
     @Override
     protected File getPropertyDefaultValue() {
         return new File("device-class-db");
-    }
-
-    @Override
-    public String getDescription() {
-        return "Specifies the device class database directory. Use  " + JPInitializeDB.COMMAND_IDENTIFIERS[0] + " to auto create database directories.";
     }
 }

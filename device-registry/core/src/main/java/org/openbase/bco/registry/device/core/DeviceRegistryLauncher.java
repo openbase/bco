@@ -21,6 +21,7 @@ package org.openbase.bco.registry.device.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceClassDatabaseDirectory;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
@@ -36,17 +37,20 @@ import org.openbase.jul.extension.rsb.com.jp.JPRSBPort;
 import org.openbase.jul.extension.rsb.com.jp.JPRSBTransport;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPlugin;
 import org.openbase.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
-import org.openbase.jul.storage.registry.jp.JPInitializeDB;
 import org.openbase.jul.storage.registry.jp.JPRecoverDB;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class DeviceRegistryLauncher extends AbstractRegistryLauncher<DeviceRegistryController> {
 
     public DeviceRegistryLauncher() throws InstantiationException {
         super(DeviceRegistry.class, DeviceRegistryController.class);
+    }
+
+    public static void main(String args[]) throws Throwable {
+        BCO.printLogo();
+        main(args, DeviceRegistry.class, DeviceRegistryLauncher.class);
     }
 
     @Override
@@ -56,7 +60,6 @@ public class DeviceRegistryLauncher extends AbstractRegistryLauncher<DeviceRegis
         JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);
         JPService.registerProperty(JPRecoverDB.class);
-        JPService.registerProperty(JPInitializeDB.class);
         JPService.registerProperty(JPDeviceClassDatabaseDirectory.class);
         JPService.registerProperty(JPGitRegistryPlugin.class);
         JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
@@ -64,10 +67,5 @@ public class DeviceRegistryLauncher extends AbstractRegistryLauncher<DeviceRegis
         JPService.registerProperty(JPRSBHost.class);
         JPService.registerProperty(JPRSBPort.class);
         JPService.registerProperty(JPRSBTransport.class);
-    }
-
-    public static void main(String args[]) throws Throwable {
-        BCO.printLogo();
-        main(args, DeviceRegistry.class, DeviceRegistryLauncher.class);
     }
 }

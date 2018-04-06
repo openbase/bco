@@ -26,7 +26,7 @@ import org.openbase.bco.registry.lib.jp.JPBCODatabaseDirectory;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.storage.registry.jp.AbstractJPDatabaseDirectory;
-import org.openbase.jul.storage.registry.jp.JPInitializeDB;
+
 import java.io.File;
 
 /**
@@ -49,10 +49,5 @@ public class JPAgentConfigDatabaseDirectory extends AbstractJPDatabaseDirectory 
     @Override
     protected File getPropertyDefaultValue() {
         return new File("agent-config-db");
-    }
-
-    @Override
-    public String getDescription() {
-        return "Specifies the agent config database directory. Use  " + JPInitializeDB.COMMAND_IDENTIFIERS[0] + " to auto create database directories.";
     }
 }
