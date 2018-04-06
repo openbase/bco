@@ -300,21 +300,17 @@ public class SelectorPanel extends javax.swing.JPanel {
                     // selection has not been changed.
                     return;
                 }
-                statusPanel.setStatus("Load new remote control " + unitConfigHolder + "...", StatusPanel.StatusType.INFO, executeSingleTask(new Callable<Void>() {
-
-                    @Override
-                    public Void call() throws Exception {
-                        try {
-                            unitConfigComboBox.setForeground(Color.BLACK);
-                            unitConfigObservable.notifyObservers(selectedUnitConfig);
-                            scopeTextField.setText(ScopeGenerator.generateStringRep(selectedUnitConfig.getScope()));
-                        } catch (MultiException ex) {
-                            unitConfigComboBox.setForeground(Color.RED);
-                            statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger));
-                        }
-                        updateButtonStates();
-                        return null;
+                statusPanel.setStatus("Load new remote control " + unitConfigHolder + "...", StatusPanel.StatusType.INFO, executeSingleTask((Callable<Void>) () -> {
+                    try {
+                        unitConfigComboBox.setForeground(Color.BLACK);
+                        unitConfigObservable.notifyObservers(selectedUnitConfig);
+                        scopeTextField.setText(ScopeGenerator.generateStringRep(selectedUnitConfig.getScope()));
+                    } catch (MultiException ex) {
+                        unitConfigComboBox.setForeground(Color.RED);
+                        statusPanel.setError(ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger));
                     }
+                    updateButtonStates();
+                    return null;
                 }));
 
                 loadedUnitConfig = selectedUnitConfig;

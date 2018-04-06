@@ -21,19 +21,15 @@ package org.openbase.bco.dal.visual.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.awt.Component;
-import java.util.concurrent.Future;
-import javax.swing.JComponent;
+
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.visual.util.StatusPanel;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.EnumNotSupportedException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote.ConnectionState;
@@ -43,14 +39,17 @@ import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType;
 
+import javax.swing.*;
+import java.awt.*;
+import java.util.concurrent.Future;
+
 /**
- *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <PS>
  * @param <CS>
  * @param <OS>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractServicePanel<PS extends ProviderService, CS extends ConsumerService, OS extends OperationService> extends javax.swing.JPanel {
+public abstract class AbstractServicePanel<PS extends ProviderService, CS extends ConsumerService, OS extends OperationService> extends javax.swing.JPanel implements Shutdownable {
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
@@ -271,6 +270,14 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
         }
     }
 
+    @Override
+    public void shutdown() {
+        if (this.unitRemote != null) {
+            unitRemote.removeDataObserver(dataObserver);
+            unitRemote.removeConnectionStateObserver(connectionStateObserver);
+        }
+    }
+
     private void setServiceConfig(final ServiceConfig serviceConfig) throws CouldNotPerformException {
         try {
             try {
@@ -321,12 +328,12 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 41, Short.MAX_VALUE)
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGap(0, 41, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGap(0, 38, Short.MAX_VALUE)
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGap(0, 38, Short.MAX_VALUE)
         );
     }// </editor-fold>//GEN-END:initComponents
 
