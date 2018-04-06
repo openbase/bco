@@ -68,14 +68,12 @@ public class SceneManagerController implements SceneManager, Launchable<Void>, V
     }
 
     @Override
-    public void init() throws InitializationException, InterruptedException {
+    public void init() throws {
         // This has to stay. Else do not implement VoidInitializable. 
     }
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        //TODO: why is this necessary
-        Registries.waitForData();
         SystemLogin.loginBCOUser();
         sceneRegistrySynchronizer.activate();
     }

@@ -88,8 +88,6 @@ public class UserManagerController implements UserManager, Launchable<Void>, Voi
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        Registries.getUserRegistry().waitForData();
-
         SystemLogin.loginBCOUser();
 
         userRegistrySynchronizer.activate();

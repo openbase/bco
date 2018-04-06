@@ -21,13 +21,13 @@ package org.openbase.bco.manager.app.core;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.bco.manager.app.lib.AppController;
 import org.openbase.bco.manager.app.lib.AppFactory;
 import org.openbase.bco.manager.app.lib.AppManager;
 import org.openbase.bco.registry.login.SystemLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.storage.registry.ControllerRegistryImpl;
@@ -68,13 +68,12 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
     }
 
     @Override
-    public void init() throws InitializationException, InterruptedException {
+    public void init() {
+        // this has to stay, else do not implement VoidInitializ
     }
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        //TODO: why is this necessary
-        Registries.waitForData();
         SystemLogin.loginBCOUser();
         appRegistrySynchronizer.activate();
     }

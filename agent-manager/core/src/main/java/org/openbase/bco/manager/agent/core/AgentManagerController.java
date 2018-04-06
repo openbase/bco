@@ -24,17 +24,12 @@ package org.openbase.bco.manager.agent.core;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  *
  */
-import java.util.concurrent.TimeUnit;
-import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.jp.JPAuthentication;
+
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.bco.manager.agent.lib.AgentFactory;
 import org.openbase.bco.manager.agent.lib.AgentManager;
 import org.openbase.bco.registry.login.SystemLogin;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.iface.Launchable;
@@ -45,6 +40,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+
+import java.util.concurrent.TimeUnit;
 
 public class AgentManagerController implements AgentManager, Launchable<Void>, VoidInitializable {
 
@@ -73,14 +70,12 @@ public class AgentManagerController implements AgentManager, Launchable<Void>, V
     }
 
     @Override
-    public void init() throws InitializationException, InterruptedException {
+    public void init() {
+        // this has to stay, else do not implement VoidInitializable
     }
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        // TODO: pleminoq: let us analyse why this wait For Datta is needed. Without the sychnchronizer sync task is interrupted. And why is this never happening in the unit tests???
-        Registries.waitForData();
-
         SystemLogin.loginBCOUser();
 
         agentRegistrySynchronizer.activate();

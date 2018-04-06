@@ -145,8 +145,6 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
         active = true;
-        // TODO: pleminoq: let us analyse why this wait For data is needed. Without the sychnchronizer sync task is interrupted. And why is this never happening in the unit tests???
-        Registries.getUnitRegistry().waitForData();
         SystemLogin.loginBCOUser();
         deviceRegistrySynchronizer.activate();
         unitSimulationManager.activate();

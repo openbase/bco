@@ -103,9 +103,6 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
-        // TODO: pleminoq: let us analyse why this waitForData is needed. Without the sychnchronizer sync task is interrupted. And why is this never happening in the unit tests???
-        Registries.getLocationRegistry().waitForData();
-
         SystemLogin.loginBCOUser();
 
         locationRegistrySynchronizer.activate();
