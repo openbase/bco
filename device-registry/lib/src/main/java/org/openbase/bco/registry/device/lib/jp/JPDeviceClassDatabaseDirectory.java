@@ -22,10 +22,10 @@ package org.openbase.bco.registry.device.lib.jp;
  * #L%
  */
 
+import org.openbase.bco.registry.lib.jp.JPBCODatabaseDirectory;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.storage.registry.jp.AbstractJPDatabaseDirectory;
-import org.openbase.jul.storage.registry.jp.JPDatabaseDirectory;
 import org.openbase.jul.storage.registry.jp.JPInitializeDB;
 import java.io.File;
 
@@ -43,7 +43,7 @@ public class JPDeviceClassDatabaseDirectory extends AbstractJPDatabaseDirectory 
 
     @Override
     public File getParentDirectory() throws JPNotAvailableException {
-        return JPService.getProperty(JPDatabaseDirectory.class).getValue();
+        return JPService.getProperty(JPBCODatabaseDirectory.class).getValue();
     }
 
     @Override

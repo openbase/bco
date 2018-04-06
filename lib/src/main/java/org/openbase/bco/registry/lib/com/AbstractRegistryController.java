@@ -40,7 +40,6 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.*;
-import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
 import rst.rsb.ScopeType;
 import rst.rsb.ScopeType.Scope;
 
@@ -53,40 +52,36 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
 import static org.openbase.jul.storage.registry.version.DBVersionControl.DB_CONVERTER_PACKAGE_NAME;
 
 /**
- *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  * @param <M>
  * @param <MB>
+ *
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractRegistryController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> implements RegistryController<M>, Launchable<Scope> {
 
     public static final boolean SPARSELY_REGISTRY_DATA_FILTERED = true;
     public static final boolean SPARSELY_REGISTRY_DATA_NOTIFIED = false;
-
-    protected ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
-
     private final SyncObject CHANGE_NOTIFIER = new SyncObject("WaitUntilReadySync");
-
     private final List<RemoteRegistry> remoteRegistryList;
     private final List<ProtoBufFileSynchronizedRegistry> registryList;
     private final Class<? extends JPScope> jpScopePropery;
     private final boolean filterSparselyRegistryData;
-
     private final List<Registry> lockedRegistries;
     private final Random randomJitter;
     private final ReentrantReadWriteLock lock;
-
+    protected ProtoBufJSonFileProvider protoBufJSonFileProvider = new ProtoBufJSonFileProvider();
     private Future notifyChangeFuture;
 
     /**
      * Constructor creates a new RegistryController based on the given scope and publishing registry data of the given builder.
-     *
+     * <p>
      * Node: By default this constructor filters sparsely registry data.
      * If you want to publish data of internal registries even if other internal registries are not ready
      * yet, use can use the other constructor of this class and set the filterSparselyRegistryData flag to false.
      *
      * @param jpScopePropery the scope which is used for registry communication and data publishing.
-     * @param builder the builder to build the registry data message.
+     * @param builder        the builder to build the registry data message.
+     *
      * @throws InstantiationException
      */
     public AbstractRegistryController(final Class<? extends JPScope> jpScopePropery, MB builder) throws InstantiationException {
@@ -96,9 +91,10 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     /**
      * Constructor creates a new RegistryController based on the given scope and publishing registry data of the given builder.
      *
-     * @param jpScopePropery the scope which is used for registry communication and data publishing.
-     * @param builder the builder to build the registry data message.
+     * @param jpScopePropery             the scope which is used for registry communication and data publishing.
+     * @param builder                    the builder to build the registry data message.
      * @param filterSparselyRegistryData if this flag is true the registry data is only published if non of the internal registries is busy.
+     *
      * @throws InstantiationException
      */
     public AbstractRegistryController(final Class<? extends JPScope> jpScopePropery, MB builder, final boolean filterSparselyRegistryData) throws InstantiationException {
@@ -459,7 +455,6 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
 
     /**
      * {@inheritDoc}
-     *
      */
     @Override
     public Future<Void> waitUntilReadyFuture() {
