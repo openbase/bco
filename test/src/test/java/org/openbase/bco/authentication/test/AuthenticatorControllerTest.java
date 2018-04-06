@@ -21,24 +21,14 @@ package org.openbase.bco.authentication.test;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.authentication.mock.MockCredentialStore;
-import java.util.List;
-import java.util.concurrent.ExecutionException;
-import javax.crypto.BadPaddingException;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import static org.junit.Assert.fail;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.openbase.bco.authentication.core.AuthenticatorController;
-import org.openbase.bco.authentication.mock.MockClientStore;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
 import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.jp.JPInitializeCredentials;
+import org.openbase.bco.authentication.mock.MockClientStore;
+import org.openbase.bco.authentication.mock.MockCredentialStore;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -47,6 +37,12 @@ import rst.domotic.authentication.AuthenticatorType;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.authentication.TicketSessionKeyWrapperType.TicketSessionKeyWrapper;
+
+import javax.crypto.BadPaddingException;
+import java.util.List;
+import java.util.concurrent.ExecutionException;
+
+import static org.junit.Assert.fail;
 
 /**
  *
@@ -64,7 +60,6 @@ public class AuthenticatorControllerTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
-        JPService.registerProperty(JPInitializeCredentials.class);
 
         authenticatorController = new AuthenticatorController(new MockCredentialStore());
         authenticatorController.init();

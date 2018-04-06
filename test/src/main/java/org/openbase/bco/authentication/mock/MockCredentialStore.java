@@ -46,13 +46,12 @@ public class MockCredentialStore extends CredentialStore {
 
     public static final KeyPair SERVICE_SERVER_KEY_PAIR = EncryptionHelper.generateKeyPair();
 
-    public MockCredentialStore() {
+    public MockCredentialStore() throws InitializationException {
         super("mock_server_store.json");
     }
     
     @Override
     public void init() throws InitializationException {
-        credentials = new HashMap<>();
         this.setCredentials(ADMIN_ID, ADMIN_PASSWORD_HASH);
         this.setCredentials(USER_ID, USER_PASSWORD_HASH);
         this.setCredentials(SERVICE_SERVER_ID, SERVICE_SERVER_KEY_PAIR.getPublic().getEncoded());

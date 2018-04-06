@@ -22,22 +22,18 @@ package org.openbase.bco.authentication.test;
  * #L%
  */
 
-import org.junit.After;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertArrayEquals;
-import static org.junit.Assert.fail;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
-import org.openbase.bco.authentication.lib.EncryptionHelper;
+import org.junit.*;
 import org.openbase.bco.authentication.lib.CredentialStore;
+import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
-import org.openbase.bco.authentication.lib.jp.JPInitializeCredentials;
 import org.openbase.bco.authentication.lib.jp.JPResetCredentials;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
+
+import static org.junit.Assert.assertArrayEquals;
+import static org.junit.Assert.fail;
 
 /**
  *
@@ -54,7 +50,6 @@ public class CredentialStoreTest {
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
         JPService.registerProperty(JPResetCredentials.class);
-        JPService.registerProperty(JPInitializeCredentials.class);
         JPService.registerProperty(JPCredentialsDirectory.class);
     }
 

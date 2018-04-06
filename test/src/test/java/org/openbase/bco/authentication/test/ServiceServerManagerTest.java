@@ -22,23 +22,15 @@ package org.openbase.bco.authentication.test;
  * #L%
  */
 
-import org.junit.After;
-import org.junit.AfterClass;
-import static org.junit.Assert.assertTrue;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.openbase.bco.authentication.core.AuthenticatorController;
-import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
-import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
-import org.openbase.bco.authentication.lib.EncryptionHelper;
-import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
-import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.jp.JPInitializeCredentials;
+import org.openbase.bco.authentication.lib.*;
 import org.openbase.jps.core.JPService;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
+
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -56,7 +48,6 @@ public class ServiceServerManagerTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
-        JPService.registerProperty(JPInitializeCredentials.class);
 
         authenticatorController = new AuthenticatorController();
         authenticatorController.init();

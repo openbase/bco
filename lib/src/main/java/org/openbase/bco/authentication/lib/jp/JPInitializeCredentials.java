@@ -29,7 +29,9 @@ import org.openbase.jps.preset.JPInitialize;
 /**
  *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
+ * release todo: remove me
  */
+@Deprecated
 public class JPInitializeCredentials extends AbstractJPBoolean {
 
     public final static String[] COMMAND_IDENTIFIERS = {"--init-credentials"};

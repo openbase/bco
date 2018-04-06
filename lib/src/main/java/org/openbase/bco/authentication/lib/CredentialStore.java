@@ -21,18 +21,8 @@ package org.openbase.bco.authentication.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.io.File;
-import java.io.IOException;
-import java.nio.file.Files;
-import java.nio.file.attribute.PosixFilePermission;
-import java.util.AbstractMap.SimpleEntry;
-import java.util.ArrayList;
-import java.util.Base64;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Set;
+
 import org.openbase.bco.authentication.lib.jp.JPCredentialsDirectory;
-import org.openbase.bco.authentication.lib.jp.JPInitializeCredentials;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -41,10 +31,16 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFileProcessor;
-import org.openbase.jul.iface.Shutdownable;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.LoginCredentialsCollectionType.LoginCredentialsCollection;
 import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
+
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
+import java.nio.file.attribute.PosixFilePermission;
+import java.util.AbstractMap.SimpleEntry;
+import java.util.*;
 
 /**
  * This class provides access to the storage of login credentials.
@@ -53,34 +49,36 @@ import rst.domotic.authentication.LoginCredentialsType.LoginCredentials;
  * Romankiewicz</a>
  */
 public class CredentialStore {
-    
+
     public static final String SERVICE_SERVER_ID = "serviceServer";
-    
+
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CredentialStore.class);
-    
+    protected final HashMap<String, LoginCredentials> credentials;
     private final String filename;
-    
-    protected HashMap<String, LoginCredentials> credentials;
-    
-    private File file;
+    private final File file;
     private final Base64.Encoder encoder;
     private final Base64.Decoder decoder;
-    
-    private ProtoBufFileProcessor<LoginCredentialsCollection, LoginCredentialsCollection, LoginCredentialsCollection.Builder> fileProcessor;
-    
-    public CredentialStore(final String filename) {
-        this.filename = filename;
-        encoder = Base64.getEncoder();
-        decoder = Base64.getDecoder();
+
+    private final ProtoBufFileProcessor<LoginCredentialsCollection, LoginCredentialsCollection, LoginCredentialsCollection.Builder> fileProcessor;
+
+    public CredentialStore(final String filename) throws InitializationException {
+        try {
+            this.filename = filename;
+            this.file = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), filename);
+            this.credentials = new HashMap<>();
+            this.fileProcessor = new ProtoBufFileProcessor<>(LoginCredentialsCollection.newBuilder());
+            this.encoder = Base64.getEncoder();
+            this.decoder = Base64.getDecoder();
+        } catch (JPNotAvailableException ex) {
+            throw new InitializationException(this, ex);
+        }
     }
-    
+
     public void init() throws InitializationException {
         try {
-            this.fileProcessor = new ProtoBufFileProcessor<>(LoginCredentialsCollection.newBuilder());
-            this.file = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), filename);
             this.loadStore();
             this.setStorePermissions();
-        } catch (JPNotAvailableException | CouldNotPerformException | IOException ex) {
+        } catch (CouldNotPerformException ex) {
             throw new InitializationException(CredentialStore.class, ex);
         }
     }
@@ -91,16 +89,15 @@ public class CredentialStore {
      * @throws CouldNotPerformException If the deserialization fails.
      */
     private void loadStore() throws CouldNotPerformException {
-        try {
-            if (!file.exists() && JPService.getProperty(JPInitializeCredentials.class).getValue()) {
-                credentials = new HashMap<>();
-                saveStore();
-            }
-        } catch (JPNotAvailableException ex) {
-            throw new CouldNotPerformException("Initialize credential property not available!", ex);
+        // create empty store if not available
+        if (!file.exists()) {
+            saveStore();
         }
-        
-        credentials = new HashMap<>();
+
+        // clear existing entries.
+        credentials.clear();
+
+        // load new ones out of the credential store.
         LoginCredentialsCollection collection = fileProcessor.deserialize(file);
         collection.getElementList().forEach((entry) -> {
             credentials.put(entry.getId(), entry);
@@ -112,10 +109,12 @@ public class CredentialStore {
      */
     protected void saveStore() {
         try {
+            // extract credentials
             LoginCredentialsCollection collection = LoginCredentialsCollection.newBuilder()
                     .addAllElement(credentials.values())
                     .build();
-            
+
+            // save into store
             fileProcessor.serialize(collection, file);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
@@ -127,12 +126,15 @@ public class CredentialStore {
      *
      * @throws IOException
      */
-    private void setStorePermissions() throws IOException {
-        Set<PosixFilePermission> perms = new HashSet<>();
-        perms.add(PosixFilePermission.OWNER_READ);
-        perms.add(PosixFilePermission.OWNER_WRITE);
-        
-        Files.setPosixFilePermissions(file.toPath(), perms);
+    private void setStorePermissions() throws CouldNotPerformException {
+        try {
+            Set<PosixFilePermission> perms = new HashSet<>();
+            perms.add(PosixFilePermission.OWNER_READ);
+            perms.add(PosixFilePermission.OWNER_WRITE);
+            Files.setPosixFilePermissions(file.toPath(), perms);
+        } catch (IOException ex) {
+            throw new CouldNotPerformException("Could not setup store permissions!", ex);
+        }
     }
 
     /**
@@ -160,6 +162,7 @@ public class CredentialStore {
      * Determines if there is an entry with given id.
      *
      * @param id the id to check
+     *
      * @return true if existent, false otherwise
      */
     public boolean hasEntry(String id) {
@@ -197,9 +200,11 @@ public class CredentialStore {
      * Get the encrypted login credentials for a given user.
      *
      * @param userId ID of the user whose credentials should be retrieved.
+     *
      * @return The encrypted credentials, if they could be found.
+     *
      * @throws NotAvailableException If the user does not exist in the
-     * credentials storage.
+     *                               credentials storage.
      */
     public byte[] getCredentials(String userId) throws NotAvailableException {
         if (!credentials.containsKey(userId)) {
@@ -213,7 +218,7 @@ public class CredentialStore {
      * in the storage for this user, it will be replaced. Otherwise, a new entry
      * will be created.
      *
-     * @param userId ID of the user to modify.
+     * @param userId      ID of the user to modify.
      * @param credentials New encrypted credentials.
      */
     public void setCredentials(String userId, byte[] credentials) {
@@ -227,9 +232,9 @@ public class CredentialStore {
     /**
      * Adds new credentials to the store.
      *
-     * @param id id of client or user
+     * @param id          id of client or user
      * @param credentials password, public or private key
-     * @param admin admin flag
+     * @param admin       admin flag
      */
     public void addCredentials(String id, byte[] credentials, boolean admin) {
         LoginCredentials loginCredentials = LoginCredentials.newBuilder()
@@ -237,7 +242,7 @@ public class CredentialStore {
                 .setCredentials(encoder.encodeToString(credentials))
                 .setAdmin(admin)
                 .build();
-        
+
         this.credentials.put(id, loginCredentials);
         this.saveStore();
     }
@@ -246,24 +251,27 @@ public class CredentialStore {
      * Tells whether a given user has administrator permissions.
      *
      * @param userId ID of the user whose credentials should be retrieved.
+     *
      * @return Boolean value indicating whether the user has administrator
      * permissions.
+     *
      * @throws NotAvailableException If the user does not exist in the
-     * credentials storage.
+     *                               credentials storage.
      */
     public boolean isAdmin(String userId) throws NotAvailableException {
         if (!credentials.containsKey(userId)) {
             return false;
         }
-        
+
         return credentials.get(userId).getAdmin();
     }
 
     /**
      * Changes the admin flag of an entry.
      *
-     * @param userId user to change flag of
+     * @param userId  user to change flag of
      * @param isAdmin boolean whether user is admin or not
+     *
      * @throws NotAvailableException Throws if there is no user given userId
      */
     public void setAdmin(String userId, boolean isAdmin) throws NotAvailableException {
@@ -276,12 +284,11 @@ public class CredentialStore {
         this.credentials.put(userId, loginCredentials);
         this.saveStore();
     }
-    
+
     public void shutdown() {
         if (JPService.testMode()) {
             credentials.clear();
-        }        
-        
+        }
         saveStore();
     }
 }

@@ -29,7 +29,6 @@ import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedCommunicationService;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedRemoteService;
-import org.openbase.bco.authentication.lib.jp.JPInitializeCredentials;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -68,7 +67,6 @@ public class AuthenticatedCommunicationTest {
     @BeforeClass
     public static void setUpClass() throws Exception {
         JPService.setupJUnitTestMode();
-        JPService.registerProperty(JPInitializeCredentials.class);
 
         authenticatorController = new AuthenticatorController();
         authenticatorController.init();
