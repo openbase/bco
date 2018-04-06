@@ -103,22 +103,14 @@ public class JPBCODatabaseDirectory extends AbstractJPDirectory {
     public void validate() throws JPValidationException {
         super.validate();
 
-        try {
-            BCORegistryLoader.prepareRegistry(getValue());
-        } catch (CouldNotPerformException ex) {
-            throw new JPValidationException(ex);
+        // during tests the registry generation is skipped because the mock registry is handling the db initialization.
+        if (!JPService.testMode()) {
+            try {
+                BCORegistryLoader.prepareRegistry(getValue());
+            } catch (CouldNotPerformException ex) {
+                throw new JPValidationException(ex);
+            }
         }
-    }
-
-    @Override
-    protected void loadAction() {
-        super.loadAction();
-    }
-
-    @Override
-    protected void addArgument(String arg) {
-
-        super.addArgument(arg);
     }
 
     @Override
