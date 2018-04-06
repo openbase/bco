@@ -21,8 +21,6 @@ package org.openbase.bco.manager.location.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.manager.location.lib.ConnectionController;
 import org.openbase.bco.manager.location.lib.ConnectionFactory;
 import org.openbase.bco.manager.location.lib.LocationController;
@@ -32,9 +30,6 @@ import org.openbase.bco.manager.location.lib.unitgroup.UnitGroupController;
 import org.openbase.bco.manager.location.lib.unitgroup.UnitGroupFactory;
 import org.openbase.bco.registry.login.SystemLogin;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
-import org.openbase.jps.core.JPService;
-import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.iface.Launchable;
@@ -44,10 +39,8 @@ import org.openbase.jul.storage.registry.ControllerRegistryImpl;
 import org.openbase.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.EnablingStateType.EnablingState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import unitgroup.UnitGroupFactoryImpl;
 
 /**
  *

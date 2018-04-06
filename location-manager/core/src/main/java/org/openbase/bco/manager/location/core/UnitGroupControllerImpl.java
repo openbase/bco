@@ -1,4 +1,4 @@
-package unitgroup;
+package org.openbase.bco.manager.location.core;
 
 /*-
  * #%L
