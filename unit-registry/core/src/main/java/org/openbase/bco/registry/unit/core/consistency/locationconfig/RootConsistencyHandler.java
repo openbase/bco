@@ -61,7 +61,7 @@ public class RootConsistencyHandler extends AbstractProtoBufRegistryConsistencyH
                 // verify that global root node exists which is not this location.
                 UnitConfig globalRootLocation = LocationUtils.getRootLocation(entryMap);
                 if (globalRootLocation.getId().equals(locationUnitConfig.getId())) {
-                    throw new NotAvailableException("valid root node");
+                    throw new NotAvailableException("valid root location");
                 }
             } catch (NotAvailableException ex) {
                 // no parent node found or given one is invalid.
@@ -79,7 +79,7 @@ public class RootConsistencyHandler extends AbstractProtoBufRegistryConsistencyH
             throw new EntryModification(entry, this);
         }
 
-        // check if root field is avaible
+        // check if root field is available
         if (!locationConfig.hasRoot()) {
             locationConfig.setRoot(false);
             throw new EntryModification(entry.setMessage(locationUnitConfig), this);

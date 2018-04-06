@@ -49,7 +49,8 @@ public class AgentScopeConsistencyHandler extends AbstractProtoBufRegistryConsis
     private final Registry<String, IdentifiableMessage<String, AgentClass, AgentClass.Builder>> agentClassRegistry;
     private final Map<String, UnitConfig> agentMap;
 
-    public AgentScopeConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry, final Registry<String, IdentifiableMessage<String, AgentClass, AgentClass.Builder>> agentClassRegistry) {
+    public AgentScopeConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry,
+                                        final Registry<String, IdentifiableMessage<String, AgentClass, AgentClass.Builder>> agentClassRegistry) {
         this.locationRegistry = locationRegistry;
         this.agentClassRegistry = agentClassRegistry;
         this.agentMap = new TreeMap<>();

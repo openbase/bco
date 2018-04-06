@@ -21,10 +21,12 @@ package org.openbase.bco.registry.unit.core.consistency.dalunitconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
@@ -33,20 +35,26 @@ import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.jp.JPRecoverDB;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class DalUnitHostIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitDeviceConfigRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitAppConfigRegistry;
 
-    public DalUnitHostIdConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitDeviceConfigRegistry) {
+    public DalUnitHostIdConsistencyHandler(
+            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitDeviceConfigRegistry,
+            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitAppConfigRegistry) {
         this.unitDeviceConfigRegistry = unitDeviceConfigRegistry;
+        this.unitAppConfigRegistry = unitAppConfigRegistry;
     }
 
     @Override
@@ -56,24 +64,37 @@ public class DalUnitHostIdConsistencyHandler extends AbstractProtoBufRegistryCon
         if (!dalUnitConfig.hasUnitHostId() || dalUnitConfig.getUnitHostId().isEmpty()) {
 
             // generate host id for virtual units
-            if(UnitConfigProcessor.isDalUnit(dalUnitConfig)) {
+            if (UnitConfigProcessor.isDalUnit(dalUnitConfig)) {
                 throw new EntryModification(entry.setMessage(dalUnitConfig.toBuilder().setUnitHostId(dalUnitConfig.getId())), this);
             }
 
             throw new VerificationFailedException("DalUnitConfig [" + dalUnitConfig + "] has no unitHostId!");
         } else {
-
-            // TODO: this should be implemented for app hosts as well. Currently there are only devices supported!
-            // throws a could not perform exception if the unit host is not registered
-            
-            // skip unit host check if device registry is maybe currently registering this unit.
-            if (unitDeviceConfigRegistry.isBusyByCurrentThread()) {
+            // skip unit host check if device or app registry is maybe currently registering this unit.
+            if (unitDeviceConfigRegistry.isBusyByCurrentThread() || unitAppConfigRegistry.isBusyByCurrentThread()) {
                 return;
             }
 
-            UnitConfig unitHostConfig = unitDeviceConfigRegistry.get(dalUnitConfig.getUnitHostId()).getMessage();
-            if (!unitHostConfig.getDeviceConfig().getUnitIdList().contains(dalUnitConfig.getId())) {
+            // retrieve the config of the unit host
+            UnitConfig unitHostConfig;
+            if (unitDeviceConfigRegistry.contains(dalUnitConfig.getUnitHostId())) {
+                unitHostConfig = unitDeviceConfigRegistry.get(dalUnitConfig.getUnitHostId()).getMessage();
+            } else if (unitAppConfigRegistry.contains(dalUnitConfig.getUnitHostId())) {
+                unitHostConfig = unitAppConfigRegistry.get(dalUnitConfig.getUnitHostId()).getMessage();
+            } else {
+                throw new NotAvailableException("Host of DalUnitConfig [" + dalUnitConfig + "] does not exist");
+            }
 
+            // retrieve the units the host knows about
+            List<String> hostUnitIdList = new ArrayList<>();
+            if(unitHostConfig.getType() == UnitType.DEVICE) {
+                hostUnitIdList = unitHostConfig.getDeviceConfig().getUnitIdList();
+            } else if(unitHostConfig.getType() == UnitType.APP) {
+                hostUnitIdList = unitHostConfig.getAppConfig().getUnitIdList();
+            }
+
+            // check if the host knows this unit
+            if (!hostUnitIdList.contains(dalUnitConfig.getId())) {
                 try {
                     if (JPService.getProperty(JPRecoverDB.class).getValue()) {
                         if (!registry.isSandbox()) {

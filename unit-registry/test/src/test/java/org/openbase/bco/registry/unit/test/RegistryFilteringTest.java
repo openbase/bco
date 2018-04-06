@@ -52,6 +52,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
 import rst.domotic.authentication.PermissionType.Permission;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
@@ -157,7 +158,8 @@ public class RegistryFilteringTest {
         SessionManager.getInstance().logout();
         SessionManager.getInstance().login(userUnitConfig.getId(), password);
 
-        //TODO: needed since synchronized modification of SessionManager login observable, remove by waiting on a lock
+        //TODO release2.0: needed since synchronized modification of SessionManager login observable, remove by waiting on a lock
+        // this should be done in release 2.0 where the controller notifies different updates depending on whose logged in
         while(!Registries.getUnitRegistry().containsUnitConfigById(unitConfig.getId())) {
             Thread.sleep(50);
         }
@@ -165,7 +167,7 @@ public class RegistryFilteringTest {
         // unitConfig should be available again
         assertTrue("UnitConfig is not visible even though owner is now logged in", Registries.getUnitRegistry().containsUnitConfigById(unitConfig.getId()));
 
-        // logout to dont interfere with other tests
+        // logout to avoid interference with other tests
         SessionManager.getInstance().logout();
     }
 

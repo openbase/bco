@@ -26,43 +26,33 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.processing.StringProcessor;
-import org.openbase.jul.storage.registry.FileSynchronizedRegistry;
-import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import org.openbase.jul.storage.registry.Registry;
 import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
 import rst.domotic.activity.UserActivityClassType.UserActivityClass;
-import rst.domotic.activity.UserActivityClassType.UserActivityClass.Builder;
 import rst.domotic.activity.UserActivityClassType.UserActivityClass.UserActivityType;
-import rst.domotic.registry.UserActivityRegistryDataType.UserActivityRegistryData;
 
 /**
- *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
 public class UserActivityClassCreatorRegistryPlugin extends FileRegistryPluginAdapter<String, IdentifiableMessage<String, UserActivityClass, UserActivityClass.Builder>, ProtoBufRegistry<String, UserActivityClass, UserActivityClass.Builder>> {
 
-    private final ProtoBufRegistry<String, UserActivityClass, UserActivityClass.Builder> userActivityClassRegistry;
-
-    public UserActivityClassCreatorRegistryPlugin(ProtoBufRegistry<String, UserActivityClass, Builder> userActivityClassRegistry) {
-        // todo remove and use given registry
-        this.userActivityClassRegistry = userActivityClassRegistry;
+    public UserActivityClassCreatorRegistryPlugin() {
     }
 
     @Override
-    public void init(final ProtoBufRegistry<String, UserActivityClass, UserActivityClass.Builder> registry) throws InitializationException, InterruptedException {
+    public void init(final ProtoBufRegistry<String, UserActivityClass, UserActivityClass.Builder> userActivityClassregistry) throws InitializationException, InterruptedException {
         try {
             UserActivityClass userActivityClass;
 
             // create missing unit template
-            if (userActivityClassRegistry.size() <= UserActivityType.values().length - 1) {
+            if (userActivityClassregistry.size() <= UserActivityType.values().length - 1) {
                 for (UserActivityType userActivityType : UserActivityType.values()) {
                     if (userActivityType == UserActivityType.UNKNOWN) {
                         continue;
                     }
                     userActivityClass = UserActivityClass.newBuilder().setType(userActivityType).setLabel(StringProcessor.transformUpperCaseToCamelCase(userActivityType.name())).build();
-                    if (!containsUnitTemplateByType(userActivityType)) {
-                        userActivityClassRegistry.register(userActivityClass);
+                    if (!containsUnitTemplateByType(userActivityType, userActivityClassregistry)) {
+                        userActivityClassregistry.register(userActivityClass);
                     }
                 }
             }
@@ -71,7 +61,7 @@ public class UserActivityClassCreatorRegistryPlugin extends FileRegistryPluginAd
         }
     }
 
-    private boolean containsUnitTemplateByType(UserActivityType type) throws CouldNotPerformException {
+    private boolean containsUnitTemplateByType(final UserActivityType type, final ProtoBufRegistry<String, UserActivityClass, UserActivityClass.Builder> userActivityClassRegistry) throws CouldNotPerformException {
         for (UserActivityClass userActivityClass : userActivityClassRegistry.getMessages()) {
             if (userActivityClass.getType() == type) {
                 return true;

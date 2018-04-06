@@ -112,8 +112,7 @@ public class UserActivityRegistryController extends AbstractRegistryController<U
      */
     @Override
     protected void registerPlugins() throws CouldNotPerformException, InterruptedException {
-        UserActivityClassCreatorRegistryPlugin userActivityClassCreatorRegistryPlugin = new UserActivityClassCreatorRegistryPlugin(userActivityClassRegistry);
-        userActivityClassRegistry.registerPlugin(userActivityClassCreatorRegistryPlugin);
+        userActivityClassRegistry.registerPlugin(new UserActivityClassCreatorRegistryPlugin());
     }
 
     /**

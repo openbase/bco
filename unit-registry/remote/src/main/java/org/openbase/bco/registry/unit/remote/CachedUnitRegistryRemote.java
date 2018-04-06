@@ -69,7 +69,7 @@ public class CachedUnitRegistryRemote {
         }
     }
 
-    // release todo: remove InterruptedException for all getRegistry() methods. 
+    // todo release: remove InterruptedException for all getRegistry() methods.
 
     /**
      * @return
