@@ -47,6 +47,7 @@ public class JPBCOShareDirectory extends AbstractJPDirectory {
      */
     public JPBCOShareDirectory() {
         super(COMMAND_IDENTIFIERS, EXISTENCE_HANDLING, AUTO_MODE);
+        registerDependingProperty(JPPrefix.class);
     }
 
     @Override

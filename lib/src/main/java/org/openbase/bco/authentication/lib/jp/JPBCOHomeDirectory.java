@@ -50,6 +50,8 @@ public class JPBCOHomeDirectory extends AbstractJPDirectory {
      */
     public JPBCOHomeDirectory() {
         super(COMMAND_IDENTIFIERS, EXISTENCE_HANDLING, AUTO_MODE);
+        registerDependingProperty(JPTmpDirectory.class);
+        registerDependingProperty(JPLocalUserPrefix.class);
     }
 
     @Override

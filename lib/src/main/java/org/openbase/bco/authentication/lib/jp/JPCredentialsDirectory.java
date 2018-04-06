@@ -26,7 +26,6 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.exception.JPValidationException;
 import org.openbase.jps.preset.AbstractJPDirectory;
-import org.openbase.jps.preset.JPHelp;
 import org.openbase.jps.tools.FileHandler;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -46,6 +45,8 @@ public class JPCredentialsDirectory extends AbstractJPDirectory {
 
     public JPCredentialsDirectory() {
         super(COMMAND_IDENTIFIERS, EXISTENCE_HANDLING, AUTO_MODE);
+        registerDependingProperty(JPBCOVarDirectory.class);
+        registerDependingProperty(JPResetCredentials.class);
     }
 
     @Override
