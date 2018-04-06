@@ -59,4 +59,6 @@ This path is based on the ``$BCO_HOME`` variable and points to the credential st
 
 ## Individual Configuration
 
-The system variables``$BCO_HOME`` and ``$PREFIX`` can be used to overwrite the bco home and prefix locations. This as well as the other paths can be additioanlly overwritten via command line arguments. For this have a closer look at the help page provided by each shipped bco binary e.g ``bco --help``. One example could be to alternate the registry db location via ``bco --db /my/own/db``.
+The system variables``$BCO_HOME`` and ``$PREFIX`` can be used to overwrite the bco home and prefix locations. This as well as the other paths can be additioanlly overwritten via command line arguments. For this have a closer look at the help page provided by each shipped bco binary e.g ``bco --help``. 
+
+One example could be to alternate the registry db location via ``bco --db /my/own/db``.
