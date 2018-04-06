@@ -68,7 +68,7 @@ public class SceneManagerController implements SceneManager, Launchable<Void>, V
     }
 
     @Override
-    public void init() throws {
+    public void init() {
         // This has to stay. Else do not implement VoidInitializable. 
     }
 
