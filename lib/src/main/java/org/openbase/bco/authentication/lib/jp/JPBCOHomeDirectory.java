@@ -27,7 +27,6 @@ import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.AbstractJPDirectory;
 import org.openbase.jps.preset.JPLocalUserPrefix;
-import org.openbase.jps.preset.JPPrefix;
 import org.openbase.jps.preset.JPTmpDirectory;
 import org.openbase.jps.tools.FileHandler;
 import org.openbase.jul.exception.FatalImplementationErrorException;
@@ -78,14 +77,16 @@ public class JPBCOHomeDirectory extends AbstractJPDirectory {
             return new File(systemDefinedHome);
         }
 
-        // use prefix system variable if exist and if default value is overwritten.
-        try {
-            if (JPService.getProperty(JPPrefix.class).getValue().exists() && !JPService.getProperty(JPPrefix.class).getValueType().equals(ValueType.PropertyDefault)) {
-                return JPService.getProperty(JPPrefix.class).getValue();
-            }
-        } catch (JPNotAvailableException ex) {
-            // could not detect prefix
-        }
+
+        // bco home should not be based on system prefix.
+//        // use prefix system variable if exist and if default value is overwritten.
+//        try {
+//            if (JPService.getProperty(JPPrefix.class).getValue().exists() && !JPService.getProperty(JPPrefix.class).getValueType().equals(ValueType.PropertyDefault)) {
+//                return JPService.getProperty(JPPrefix.class).getValue();
+//            }
+//        } catch (JPNotAvailableException ex) {
+//            // could not detect prefix
+//        }
 
         // use default instead.
         return new File(DEFAULT_PATH);
