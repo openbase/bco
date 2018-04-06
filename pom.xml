@@ -101,7 +101,7 @@
                 <configuration>
                     <binFolder>${deb.prefix.bin}</binFolder>
                     <repositoryLayout>flat</repositoryLayout>
-                    <repositoryName>${appassembler.repo.name}</repositoryName>
+                    <repositoryName>${build.appassembler.repo.name}</repositoryName>
                     <programs>
                         <program>
                             <mainClass>org.openbase.bco.manager.util.launch.BCOLauncher</mainClass>
@@ -283,29 +283,28 @@
                             <goal>jdeb</goal>
                         </goals>
                         <configuration>
-                            <verbose>false</verbose>
                             <snapshotExpand>true</snapshotExpand>
                             <!-- expand "SNAPSHOT" to what is in the "USER" env variable -->
                             <snapshotEnv></snapshotEnv>
                             <verbose>true</verbose>
-                            <controlDir>${basedir}/src/deb/control</controlDir>
+                            <controlDir>${basedir}/src/main/deb/control</controlDir>
                             <dataSet>
 
-                                <!-- Install Daemon-->
-                                <data>
-                                    <src>${basedir}/src/deb/init.d</src>
-                                    <type>directory</type>
-                                    <mapper>
-                                        <type>perm</type>
-                                        <prefix>/etc/init.d</prefix>
-                                        <user>loader</user>
-                                        <group>loader</group>
-                                    </mapper>
-                                </data>
+                                <!--&lt;!&ndash; Install Daemon&ndash;&gt;-->
+                                <!--<data>-->
+                                    <!--<src>${basedir}/src/deb/init.d</src>-->
+                                    <!--<type>directory</type>-->
+                                    <!--<mapper>-->
+                                        <!--<type>perm</type>-->
+                                        <!--<prefix>/etc/init.d</prefix>-->
+                                        <!--<user>loader</user>-->
+                                        <!--<group>loader</group>-->
+                                    <!--</mapper>-->
+                                <!--</data>-->
 
                                 <!-- Copy Deps-->
                                 <data>
-                                    <src>${build.appassembler}/${appassembler.repo.name}</src>
+                                    <src>${build.appassembler}/${build.appassembler.repo.name}</src>
                                     <type>directory</type>
                                     <mapper>
                                         <type>perm</type>
@@ -329,156 +328,30 @@
                                     </mapper>
                                 </data>
 
-                                <!-- Link Bins -->
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bco</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bco</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bco-authenticator</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bco-authenticator</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bco-binding-openhab-config-generator</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bco-binding-openhab-config-generator</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bco-binding-openhab-habmin-zwave-config-updater</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bco-binding-openhab-habmin-zwave-config-updater</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bco-eveson</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bco-eveson</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bco-manager</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bco-manager</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bco-manager-device-fallback</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bco-manager-device-fallback</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bco-ontology-manager</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bco-ontology-manager</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bco-openhab</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bco-openhab</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bco-print-interface-rsb</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bco-print-interface-rsb</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bco-print-registry</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bco-print-registry</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bco-psc</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bco-psc</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bco-psc-create-kinect</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bco-psc-create-kinect</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bco-psc-update-kinect</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bco-psc-update-kinect</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bco-query</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bco-query</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bco-registry</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bco-registry</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bco-registry-editor</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bco-registry-editor</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bco-scene-editor</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bco-scene-editor</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bco-stage</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bco-stage</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bco-task-server</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bco-task-server</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bco-validate</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bco-validate</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bco-visual-remote</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bco-visual-remote</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-                                <data>
-                                    <type>link</type>
-                                    <linkName>/usr/bin/bcozy</linkName>
-                                    <linkTarget>/${deb.prefix.bin}/bcozy</linkTarget>
-                                    <symlink>true</symlink>
-                                </data>
-
+                                <!-- Create Config/Template Folders-->
                                 <data>
                                     <type>template</type>
                                     <paths>
                                         <path>etc/${project.artifactId}</path>
+                                        <path>${deb.prefix.share}</path>
                                         <!--path>var/lib/${project.artifactId}</path-->
                                         <path>var/log/${project.artifactId}</path>
                                         <!--path>var/run/${project.artifactId}</path-->
                                     </paths>
                                     <mapper>
                                         <type>perm</type>
+                                        <user>loader</user>
+                                        <group>loader</group>
+                                    </mapper>
+                                </data>
+
+                                <!-- Copy Templates-->
+                                <data>
+                                    <src>${project.basedir}/src/main/template</src>
+                                    <type>directory</type>
+                                    <mapper>
+                                        <type>perm</type>
+                                        <prefix>${deb.prefix.share}/template</prefix>
                                         <user>loader</user>
                                         <group>loader</group>
                                     </mapper>
@@ -494,10 +367,11 @@
     <properties>
         <skipTests>true</skipTests>
         <build.appassembler>${project.build.directory}/appassembler</build.appassembler>
-        <deb.prefix>opt/openbase/${project.artifactId}</deb.prefix>
-        <deb.prefix.lib>${deb.prefix}/lib</deb.prefix.lib>
+        <build.appassembler.repo.name>share/bco/lib</build.appassembler.repo.name>
+        <deb.prefix>usr</deb.prefix>
+        <deb.prefix.lib>${deb.prefix}/${build.appassembler.repo.name}</deb.prefix.lib>
         <deb.prefix.bin>${deb.prefix}/bin</deb.prefix.bin>
-        <appassembler.repo.name>lib</appassembler.repo.name>
+        <deb.prefix.share>${deb.prefix}/share/${project.artifactId}</deb.prefix.share>
     </properties>
 
 
