@@ -77,18 +77,6 @@ public class JPBCOHomeDirectory extends AbstractJPDirectory {
             return new File(systemDefinedHome);
         }
 
-
-        // bco home should not be based on system prefix.
-//        // use prefix system variable if exist and if default value is overwritten.
-//        try {
-//            if (JPService.getProperty(JPPrefix.class).getValue().exists() && !JPService.getProperty(JPPrefix.class).getValueType().equals(ValueType.PropertyDefault)) {
-//                return JPService.getProperty(JPPrefix.class).getValue();
-//            }
-//        } catch (JPNotAvailableException ex) {
-//            // could not detect prefix
-//        }
-
-        // use default instead.
         return new File(DEFAULT_PATH);
     }
 
