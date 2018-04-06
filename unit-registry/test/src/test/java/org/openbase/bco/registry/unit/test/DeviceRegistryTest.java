@@ -420,44 +420,40 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         assertEquals("The location id in the inventory state has not been set for an installed device!", locationRegistry.getRootLocationConfig().getId(), testLocationIdInInventoryStateDevice.getDeviceConfig().getInventoryState().getLocationId());
     }
 
-    //TODO: think of a new way to break the registry to test this... 
     /**
      * Test if when breaking an existing device the sandbox registers it and
      * does not modify the real registry.
      *
      * @throws java.lang.Exception
      */
-//    //@Test(timeout = 5000)
-//    public void testSandbox() throws Exception {
-//        BindingConfig bindingConfig = BindingConfig.newBuilder().setBindingId("SINACT").build();
-//        UnitTemplateConfig unitTemplateConfig = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).build();
-//        DeviceClass clazz = deviceRegistry.registerDeviceClass(generateDeviceClass("SandboxTestLabel", "SandboxTestPNR", "SanboxCompany").toBuilder().setBindingConfig(bindingConfig).addUnitTemplateConfig(unitTemplateConfig).build()).get();
-//
-//        UnitConfig sandboxDeviceConfig = deviceRegistry.registerDeviceConfig(generateDeviceUnitConfig("SandboxTestDeviceLabel", "SandboxTestSNR", clazz)).get();
-//        assertTrue(deviceRegistry.containsDeviceConfig(sandboxDeviceConfig));
-//
-//        UnitConfig.Builder sandboxDeviveConfigBuilder = sandboxDeviceConfig.toBuilder();
-//        UnitConfig original = UnitConfig.newBuilder(sandboxDeviceConfig).build();
-//        List<String> unitIds = new ArrayList(sandboxDeviveConfigBuilder.getDeviceConfig().getUnitIdList());
-//        sandboxDeviveConfigBuilder.clearUnitConfig();
-//        for (UnitConfig unitConfig : units) {
-//            if (!unitConfig.getLabel().equals(unitLabel)) {
-//                sandboxDeviveConfigBuilder.addUnitConfig(unitConfig.toBuilder().setLabel(unitLabel));
-//            } else {
-//                sandboxDeviveConfigBuilder.addUnitConfig(unitConfig);
-//            }
-//        }
-//        sandboxDeviceConfig = sandboxDeviveConfigBuilder.build();
-//
-//        try {
-//            ExceptionPrinter.setBeQuit(Boolean.TRUE);
-//            deviceRegistry.updateDeviceConfig(sandboxDeviceConfig).get();
-//            fail("No exception thrown after updating a device with 2 units in the same location with the same label");
-//        } catch (Exception ex) {
-//        } finally {
-//            ExceptionPrinter.setBeQuit(Boolean.FALSE); 
-//        }
-//
-//        assertEquals("DeviceConfig has been although the sandbox has rejected an update", original, deviceRegistry.getDeviceConfigById(sandboxDeviceConfig.getId()));
-//    }
+    @Test(timeout = 5000)
+    public void testRegistrationErrorHandling() throws Exception {
+        System.out.println("testRegistrationErrorHandling");
+
+        // register a device class
+        unitRegistry.getDeviceRegistryRemote().addDataObserver(notifyChangeObserver);
+        DeviceClass clazz = deviceRegistry.registerDeviceClass(generateDeviceClass("testRegistrationErrorHandling", "asdgsdr131423", "ServiceGMBH")).get();
+        waitForDeviceClass(clazz);
+        unitRegistry.getDeviceRegistryRemote().removeDataObserver(notifyChangeObserver);
+
+        final String label = "testRegistrationErrorHandlingDevice";
+        // register a device
+        UnitConfig.Builder deviceUnitConfig = generateDeviceUnitConfig(label, "asdfdsgaer3", clazz).toBuilder();
+        deviceUnitConfig.getDeviceConfigBuilder().setInventoryState(InventoryState.newBuilder().setValue(InventoryState.State.INSTALLED));
+        deviceRegistry.registerDeviceConfig(deviceUnitConfig.build()).get();
+
+        // register a second device with a different label
+        UnitConfig newDeviceUnitConfig = deviceRegistry.registerDeviceConfig(deviceUnitConfig.setLabel("secondLabel").build()).get();
+
+        try {
+            ExceptionPrinter.setBeQuit(Boolean.TRUE);
+            deviceRegistry.updateDeviceConfig(newDeviceUnitConfig.toBuilder().setLabel(label).build()).get();
+            fail("No exception thrown after updating a device with to have the same label as another");
+        } catch (Exception ex) {
+        } finally {
+            ExceptionPrinter.setBeQuit(Boolean.FALSE);
+        }
+
+        assertEquals("DeviceConfig has been changed event though the update has been rejected", newDeviceUnitConfig, deviceRegistry.getDeviceConfigById(newDeviceUnitConfig.getId()));
+    }
 }

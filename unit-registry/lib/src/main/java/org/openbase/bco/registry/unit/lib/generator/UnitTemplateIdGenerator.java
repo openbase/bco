@@ -31,23 +31,4 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate;
  */
 public class UnitTemplateIdGenerator extends UUIDGenerator<UnitTemplate> {
 
-    // TODO Consistency Handler needed to make sure only one unit template per enum value is registered.
-    
-    // Legency generation
-    //    @Override
-    //    public String generateId(final UnitTemplate message) throws CouldNotPerformException {
-    //        String id;
-    //        try {
-    //            if (!message.hasType()) {
-    //                throw new InvalidStateException("Field [UnitType] is missing!");
-    //            }
-    //            return generateId(message.getType());
-    //        } catch (CouldNotPerformException ex) {
-    //            throw new CouldNotPerformException("Could not generate id!", ex);
-    //        }
-    //    }
-    //
-    //    public String generateId(final UnitTemplate.UnitType type) {
-    //        return StringProcessor.transformToIdString(type.name());
-//    }
 }

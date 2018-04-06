@@ -54,7 +54,6 @@ import static org.openbase.jul.storage.registry.version.DBVersionControl.DB_CONV
 /**
  * @param <M>
  * @param <MB>
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractRegistryController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> implements RegistryController<M>, Launchable<Scope> {
@@ -79,28 +78,27 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
      * If you want to publish data of internal registries even if other internal registries are not ready
      * yet, use can use the other constructor of this class and set the filterSparselyRegistryData flag to false.
      *
-     * @param jpScopePropery the scope which is used for registry communication and data publishing.
-     * @param builder        the builder to build the registry data message.
-     *
+     * @param jpScopeProperty the scope which is used for registry communication and data publishing.
+     * @param builder         the builder to build the registry data message.
      * @throws InstantiationException
      */
-    public AbstractRegistryController(final Class<? extends JPScope> jpScopePropery, MB builder) throws InstantiationException {
-        this(jpScopePropery, builder, SPARSELY_REGISTRY_DATA_FILTERED);
+    public AbstractRegistryController(final Class<? extends JPScope> jpScopeProperty, MB builder) throws InstantiationException {
+        this(jpScopeProperty, builder, SPARSELY_REGISTRY_DATA_FILTERED);
     }
 
     /**
      * Constructor creates a new RegistryController based on the given scope and publishing registry data of the given builder.
      *
-     * @param jpScopePropery             the scope which is used for registry communication and data publishing.
+     * @param jpScopeProperty            the scope which is used for registry communication and data publishing.
      * @param builder                    the builder to build the registry data message.
      * @param filterSparselyRegistryData if this flag is true the registry data is only published if non of the internal registries is busy.
      *
      * @throws InstantiationException
      */
-    public AbstractRegistryController(final Class<? extends JPScope> jpScopePropery, MB builder, final boolean filterSparselyRegistryData) throws InstantiationException {
+    public AbstractRegistryController(final Class<? extends JPScope> jpScopeProperty, MB builder, final boolean filterSparselyRegistryData) throws InstantiationException {
         super(builder);
         this.filterSparselyRegistryData = filterSparselyRegistryData;
-        this.jpScopePropery = jpScopePropery;
+        this.jpScopePropery = jpScopeProperty;
 
         this.registryList = new ArrayList<>();
         this.remoteRegistryList = new ArrayList<>();
@@ -268,6 +266,10 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
                     Thread.currentThread().interrupt();
                 } catch (CouldNotPerformException ex) {
                     logger.warn("Could not notify change", ex);
+                } finally {
+                    synchronized (CHANGE_NOTIFIER) {
+                        CHANGE_NOTIFIER.notifyAll();
+                    }
                 }
             });
         }
@@ -285,7 +287,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
                 for (Registry registry : getRegistries()) {
                     try {
                         if (registry.tryLockRegistry()) {
-                            // if succesfully locked add to list
+                            // if successfully locked add to list
                             lockedRegistries.add(registry);
                         } else {
                             // if one could not be locked break
@@ -298,11 +300,11 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
                     }
                 }
 
-                // return if succesfully locked all registries
+                // return if successfully locked all registries
                 if (success) {
                     return;
                 }
-                // unlock all if not succesfully locked
+                // unlock all if not successfully locked
                 unlockInternalRegistries();
             }
 
@@ -376,7 +378,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     private void performInitialConsistencyCheck() throws CouldNotPerformException, InterruptedException {
         for (final ProtoBufFileSynchronizedRegistry registry : registryList) {
             try {
-                logger.debug("Trigger inital consistency check of " + registry + " with " + registry.getEntries().size() + " entries.");
+                logger.debug("Trigger initial consistency check of " + registry + " with " + registry.getEntries().size() + " entries.");
                 registry.checkConsistency();
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger);
@@ -387,6 +389,11 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
 
     protected void registerDependency(Registry dependency, Class messageClass) throws CouldNotPerformException {
         for (ProtoBufFileSynchronizedRegistry registry : registryList) {
+            if (messageClass.equals(registry.getMessageClass())) {
+                registry.registerDependency(dependency);
+            } else {
+                logger.debug("Registration of dependency " + dependency + " skipped for " + registry + " because " + messageClass.getSimpleName() + " is not compatible.");
+            }
             registry.registerDependency(dependency);
         }
     }
@@ -404,7 +411,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
             if (messageClass.equals(registry.getMessageClass())) {
                 registry.registerConsistencyHandler(consistencyHandler);
             } else {
-                logger.debug("Registration of " + consistencyHandler + " skipped for " + registry + " because " + messageClass.getSimpleName() + " is not compatible.");
+                logger.debug("Registration of " + consistencyHandler.getClass().getSimpleName() + " skipped for " + registry + " because " + messageClass.getSimpleName() + " is not compatible.");
             }
         }
     }
@@ -458,7 +465,6 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
      */
     @Override
     public Future<Void> waitUntilReadyFuture() {
-        //todo maybe think about a better strategy instead just polling.
         return GlobalCachedExecutorService.submit(() -> {
             waitUntilReady();
             return null;
@@ -473,6 +479,20 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     @Override
     public Boolean isReady() {
         return registryList.stream().noneMatch((registry) -> (!registry.isReady()));
+    }
+
+    /**
+     * Test if at least one local registry is inconsistent.
+     *
+     * @return true if all managed registries are consistent and else false
+     */
+    public Boolean isConsistent() {
+        for (ProtoBufFileSynchronizedRegistry registry : registryList) {
+            if (!registry.isConsistent()) {
+                return false;
+            }
+        }
+        return true;
     }
 
     protected abstract void registerConsistencyHandler() throws CouldNotPerformException;

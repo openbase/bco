@@ -148,7 +148,7 @@ public abstract class AbstractVirtualRegistryRemote<M extends GeneratedMessage> 
             }
         }
 
-        // release TODO:
+        // TODO release:
         // workaround, should be removed in release scrab
         virtualRegistryInitiallySynchronized = virtualRegistryInitiallySynchronized || isVirtualRegistrySynchronized();
 

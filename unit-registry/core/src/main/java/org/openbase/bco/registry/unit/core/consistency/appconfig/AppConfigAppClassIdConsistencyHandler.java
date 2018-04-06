@@ -25,11 +25,9 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
-import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import org.openbase.jul.storage.registry.*;
 import rst.domotic.unit.app.AppClassType.AppClass;
+import rst.domotic.unit.app.AppClassType.AppClass.Builder;
 import rst.domotic.unit.app.AppConfigType.AppConfig;
 import rst.domotic.registry.AppRegistryDataType.AppRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -40,9 +38,9 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public class AppConfigAppClassIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
-    private final ProtoBufFileSynchronizedRegistry<String, AppClass, AppClass.Builder, AppRegistryData.Builder> appClassRegistry;
+    private final Registry<String, IdentifiableMessage<String, AppClass, Builder>> appClassRegistry;
 
-    public AppConfigAppClassIdConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, AppClass, AppClass.Builder, AppRegistryData.Builder> appClassRegistry) {
+    public AppConfigAppClassIdConsistencyHandler(final Registry<String, IdentifiableMessage<String, AppClass, Builder>> appClassRegistry) {
         this.appClassRegistry = appClassRegistry;
     }
 

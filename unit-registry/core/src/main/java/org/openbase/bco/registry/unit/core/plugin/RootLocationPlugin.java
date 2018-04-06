@@ -39,7 +39,9 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
 import rst.domotic.unit.location.TileConfigType.TileConfig;
+import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.spatial.PlacementConfigType.PlacementConfig;
+import rst.spatial.ShapeType.Shape;
 
 import java.util.HashSet;
 import java.util.List;
@@ -88,8 +90,16 @@ public class RootLocationPlugin extends ProtobufRegistryPluginAdapter<String, Un
                 .setType(UnitType.LOCATION)
                 .setLabel(DEFAULT_ROOT_LOCATION_NAME)
                 .setLocationConfig(LocationConfig.newBuilder()
-                        .setType(LocationConfig.LocationType.ZONE)
-                        .build()
-                ).build();
+                        .setType(LocationType.ZONE)
+                        .build())
+                .setPlacementConfig(PlacementConfig.newBuilder()
+                        .setShape(Shape.newBuilder()
+                                .addFloor(Vec3DDouble.newBuilder().setX(0).setY(0).setZ(0).build())
+                                .addFloor(Vec3DDouble.newBuilder().setX(1).setY(0).setZ(0).build())
+                                .addFloor(Vec3DDouble.newBuilder().setX(1).setY(1).setZ(0).build())
+                                .addFloor(Vec3DDouble.newBuilder().setX(0).setY(1).setZ(0).build())
+                                .build())
+                        .build())
+                .build();
     }
 }

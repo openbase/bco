@@ -182,7 +182,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         super.activate();
     }
 
-    // todo: sync unitConfigRemoteRegistry
     public SynchronizedRemoteRegistry<String, UnitTemplate, UnitTemplate.Builder> getUnitTemplateRemoteRegistry() {
         return unitTemplateRemoteRegistry;
     }

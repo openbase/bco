@@ -25,11 +25,9 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
-import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import org.openbase.jul.storage.registry.*;
 import rst.domotic.unit.agent.AgentClassType.AgentClass;
+import rst.domotic.unit.agent.AgentClassType.AgentClass.Builder;
 import rst.domotic.unit.agent.AgentConfigType.AgentConfig;
 import rst.domotic.registry.AgentRegistryDataType.AgentRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -40,9 +38,9 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public class AgentConfigAgentClassIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
-    private final ProtoBufFileSynchronizedRegistry<String, AgentClass, AgentClass.Builder, AgentRegistryData.Builder> agentClassRegistry;
+    private final Registry<String, IdentifiableMessage<String, AgentClass, Builder>> agentClassRegistry;
 
-    public AgentConfigAgentClassIdConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, AgentClass, AgentClass.Builder, AgentRegistryData.Builder> agentClassRegistry) {
+    public AgentConfigAgentClassIdConsistencyHandler(final Registry<String, IdentifiableMessage<String, AgentClass, Builder>> agentClassRegistry) {
         this.agentClassRegistry = agentClassRegistry;
     }
 

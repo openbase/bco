@@ -31,18 +31,21 @@ import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
+ * Consistency handler that validates once per consistency check if their is only one valid root location
  *
  @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class RootLocationExistencConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
+public class RootLocationExistenceConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     private UnitConfig rootLocation;
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+
+        // rootLocation is saved to only make this check once per consistency process
         if (rootLocation == null) {
+            // method validates if there is only one root location an if not tries to compute a valid one
             rootLocation = LocationUtils.detectRootLocation(entry.getMessage(), entryMap, this);
-            //todo pleminoq really? is here maybe something missing? =D
         }
     }
 
