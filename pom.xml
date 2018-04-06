@@ -292,14 +292,14 @@
 
                                 <!--&lt;!&ndash; Install Daemon&ndash;&gt;-->
                                 <!--<data>-->
-                                    <!--<src>${basedir}/src/deb/init.d</src>-->
-                                    <!--<type>directory</type>-->
-                                    <!--<mapper>-->
-                                        <!--<type>perm</type>-->
-                                        <!--<prefix>/etc/init.d</prefix>-->
-                                        <!--<user>loader</user>-->
-                                        <!--<group>loader</group>-->
-                                    <!--</mapper>-->
+                                <!--<src>${basedir}/src/deb/init.d</src>-->
+                                <!--<type>directory</type>-->
+                                <!--<mapper>-->
+                                <!--<type>perm</type>-->
+                                <!--<prefix>/etc/init.d</prefix>-->
+                                <!--<user>loader</user>-->
+                                <!--<group>loader</group>-->
+                                <!--</mapper>-->
                                 <!--</data>-->
 
                                 <!-- Copy Deps-->
@@ -347,13 +347,17 @@
 
                                 <!-- Copy Templates-->
                                 <data>
-                                    <src>${project.basedir}/src/main/template</src>
-                                    <type>directory</type>
+                                    <src>${project.basedir}/src/main/template/db.tar.gz</src>
+                                    <type>archive</type>
+                                    <!--<includes>...</includes>-->
+                                    <!--<excludes>...</excludes>-->
                                     <mapper>
                                         <type>perm</type>
-                                        <prefix>${deb.prefix.share}/template</prefix>
-                                        <user>loader</user>
-                                        <group>loader</group>
+                                        <strip>1</strip>
+                                        <prefix>${deb.prefix.share}/template/db</prefix>
+                                        <user>root</user>
+                                        <group>root</group>
+                                        <!--<filemode>600</filemode>-->
                                     </mapper>
                                 </data>
                             </dataSet>
