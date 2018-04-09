@@ -22,7 +22,6 @@
         </license>
     </licenses>
 
-
     <build>
         <plugins>
             <plugin>
@@ -102,6 +101,14 @@
                     </execution>
                 </executions>
             </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>2.20.1</version>
+                <configuration>
+                    <skipTests>${skipTests}</skipTests>
+                </configuration>
+            </plugin>
         </plugins>
     </build>
 
@@ -117,19 +124,6 @@
             <version>4.10</version>
             <scope>test</scope>
         </dependency>
-        
-        <!--        <dependency>
-            hue binding
-            <groupId>com.syncleus.philipshue</groupId>
-            <artifactId>hue-local</artifactId>
-            <version>1.8.1.0</version>
-        </dependency>
-        <dependency>
-            hue binding
-            <groupId>com.syncleus.philipshue</groupId>
-            <artifactId>hue-resources</artifactId>
-            <version>1.8.1.0</version>
-        </dependency>-->
         <dependency>
             <!-- for openhab binding habmin zwave config gen -->
             <groupId>com.io7m.xom</groupId>
