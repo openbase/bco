@@ -22,21 +22,20 @@ package org.openbase.bco.registry.lib.com;
  * #L%
  */
 
-import org.openbase.jul.pattern.MockUpFilter;
-import org.openbase.jul.pattern.AbstractFilter;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
-
-import java.util.ArrayList;
-import java.util.List;
-
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.pattern.AbstractFilter;
+import org.openbase.jul.pattern.MockUpFilter;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import org.slf4j.LoggerFactory;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @param <M>
@@ -97,7 +96,13 @@ public class RemoteRegistrySynchronizer<M extends GeneratedMessage> implements O
                     entryList.add((M) data.getRepeatedField(fieldDescriptor, i));
                 }
             }
-            remoteRegistry.notifyRegistryUpdate(filter.filter(entryList));
+
+//            final int initialSize = entryList.size();
+//            final int sizeBefore = remoteRegistry.getMessages().size();
+            final List<M> filteredList = this.filter.filter(entryList);
+            remoteRegistry.notifyRegistryUpdate(filteredList);
+//            LOGGER.info("triggered for: " + remoteRegistry + " from [" + initialSize + ", " + filteredList.size() + " | " + sizeBefore + ", "+remoteRegistry.getMessages().size()+"]");
+//            remoteRegistry.notifyRegistryUpdate(this.filter.filter(entryList));
         } catch (CouldNotPerformException | IndexOutOfBoundsException | ClassCastException | NullPointerException ex) {
             ExceptionPrinter.printHistory("Registry synchronization failed!", ex, LOGGER);
         }

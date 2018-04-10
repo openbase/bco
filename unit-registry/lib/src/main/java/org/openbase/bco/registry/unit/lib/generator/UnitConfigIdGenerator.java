@@ -21,13 +21,22 @@ package org.openbase.bco.registry.unit.lib.generator;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.bco.registry.lib.generator.UUIDGenerator;
+import org.openbase.jps.core.JPService;
+import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
- *
- @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UnitConfigIdGenerator extends UUIDGenerator<UnitConfig> {
-    
+
+    @Override
+    public String generateId(UnitConfig message) {
+        if (JPService.testMode()) {
+            return StringProcessor.transformUpperCaseToCamelCase(message.getType().name()) + ":" + super.generateId(message);
+        }
+        return super.generateId(message);
+    }
 }
