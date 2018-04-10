@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -86,9 +86,11 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     private final Map<String, S> serviceMap;
     private final Observer dataObserver;
     private final Observer unitConfigObserver;
+    private final Observer connectionStateObserver;
     protected final ObservableImpl<ST> serviceStateObservable = new ObservableImpl<>();
     private final SyncObject syncObject = new SyncObject("ServiceStateComputationLock");
     private final SyncObject maintainerLock = new SyncObject("MaintainerLock");
+    private final SyncObject connectionStateLock = new SyncObject("ConnectionStateLock");
     protected Object maintainer;
 
     /**
@@ -123,7 +125,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                 // unit was disabled and is now enabled
                 final UnitRemote unitRemote = disabledUnitRemoteMap.remove(unitConfig.getId());
 
-                // add unit maps
+                // add unit to maps
                 try {
                     serviceMap.put(unitConfig.getId(), (S) unitRemote);
                     unitRemoteTypeMap.get(unitRemote.getUnitType()).add((S) unitRemote);
@@ -135,6 +137,11 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                 }
 
                 unitRemoteMap.put(unitConfig.getId(), unitRemote);
+            }
+        };
+        this.connectionStateObserver = (source, data) -> {
+            synchronized (connectionStateLock) {
+                connectionStateLock.notifyAll();
             }
         };
         this.serviceStateObservable.setExecutorService(GlobalCachedExecutorService.getInstance().getExecutorService());
@@ -342,6 +349,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
             if (active) {
                 unitRemote.addDataObserver(dataObserver);
+                unitRemote.addConnectionStateObserver(connectionStateObserver);
             }
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
@@ -389,6 +397,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         active = true;
         unitRemoteMap.values().stream().forEach((remote) -> {
             remote.addDataObserver(dataObserver);
+            remote.addConnectionStateObserver(connectionStateObserver);
         });
         updateServiceState();
     }
@@ -424,6 +433,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         active = false;
         unitRemoteMap.values().stream().forEach(remote -> {
             remote.removeDataObserver(dataObserver);
+            remote.removeConnectionStateObserver(connectionStateObserver);
         });
     }
 
@@ -470,6 +480,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         }
 
         unitRemote.removeDataObserver(dataObserver);
+        unitRemote.removeConnectionStateObserver(connectionStateObserver);
         unitRemote.removeConfigObserver(unitConfigObserver);
     }
 
@@ -862,5 +873,29 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             return getClass().getSimpleName() + "[serviceType: ? ]";
         }
         return getClass().getSimpleName() + "[serviceType:" + serviceType.name() + "]";
+    }
+
+    @Override
+    public void waitForConnectionState(ConnectionState connectionState, long timeout) throws InterruptedException, TimeoutException {
+        synchronized (connectionStateLock) {
+            if (connectionState == getConnectionState()) {
+                return;
+            }
+
+            final long startingTime = System.currentTimeMillis();
+            long timeWaited = 0;
+            while (connectionState != getConnectionState()) {
+                if (timeout > 0) {
+                    connectionStateLock.wait(timeout - timeWaited);
+
+                    timeWaited = System.currentTimeMillis() - startingTime;
+                    if (timeout - timeWaited <= 0) {
+                        throw new TimeoutException();
+                    }
+                } else {
+                    connectionState.wait();
+                }
+            }
+        }
     }
 }
