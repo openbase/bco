@@ -105,6 +105,8 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     private long transactionId = 0;
 
+    private String classDescription = "";
+
     public AbstractUnitController(final Class unitClass, final DB builder) throws InstantiationException {
         super(builder);
         this.serviceList = new ArrayList<>();
@@ -267,6 +269,12 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             logger.trace("Unit config change check failed because config is not available yet.");
         }
 
+        try {
+            classDescription = getClass().getSimpleName() + "[" + config.getType() + "[" + config.getLabel() + "]]";
+        } catch (NullPointerException ex) {
+            classDescription = getClass().getSimpleName() + "[?]";
+        }
+
         template = Registries.getUnitRegistry(true).getUnitTemplateByType(config.getType());
 
         // register service observable which are not handled yet.
@@ -325,11 +333,11 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     public String getLabel() throws NotAvailableException {
         try {
             UnitConfig tmpConfig = getConfig();
-            if (!tmpConfig.hasId()) {
+            if (!tmpConfig.hasLabel()) {
                 throw new NotAvailableException("unitconfig.label");
             }
 
-            if (tmpConfig.getId().isEmpty()) {
+            if (tmpConfig.getLabel().isEmpty()) {
                 throw new InvalidStateException("unitconfig.label is empty");
             }
             return getConfig().getLabel();
@@ -507,11 +515,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     @Override
     public String toString() {
-        try {
-            return getClass().getSimpleName() + "[" + getConfig().getType() + "[" + getLabel() + "]]";
-        } catch (NotAvailableException | NullPointerException ex) {
-            return getClass().getSimpleName() + "[?]";
-        }
+        return classDescription;
     }
 
     @Override
