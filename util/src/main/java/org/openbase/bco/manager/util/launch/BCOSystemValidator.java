@@ -26,6 +26,7 @@ import org.apache.commons.collections.comparators.BooleanComparator;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.registry.lib.BCO;
+import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
@@ -55,8 +56,8 @@ public class BCOSystemValidator {
     public static final int STATE_RANGE = 12;
     public static final int LABEL_RANGE = 22;
     public static final long DELAYED_TIME = TimeUnit.MILLISECONDS.toMillis(500);
-    public static final long DEFAULT_UNIT_POOL_DELAY_TIME = TimeUnit.SECONDS.toMillis(3);
-    public static final long REQUEST_TIMEOUT = TimeUnit.SECONDS.toMillis(3);
+    public static final long DEFAULT_UNIT_POOL_DELAY_TIME = TimeUnit.SECONDS.toMillis(5);
+    public static final long REQUEST_TIMEOUT = TimeUnit.SECONDS.toMillis(10);
     public static final DecimalFormat pingFormat = new DecimalFormat("#.###");
     protected static final Logger LOGGER = LoggerFactory.getLogger(BCOSystemValidator.class);
     private static int errorCounter = 0;
@@ -82,9 +83,13 @@ public class BCOSystemValidator {
 
             System.out.println("=== " + AnsiColor.colorize("Check Registries", AnsiColor.ANSI_BLUE) + " ===\n");
 
+            final BooleanComparator trueFirstBooleanComparator = new BooleanComparator(true);
+            final BooleanComparator falseFirstBooleanComparator = new BooleanComparator(false);
             // check
-            for (final RegistryRemote registry : Registries.getRegistries(false)) {
-                if (!check(registry)) {
+            List<RegistryRemote> registries = Registries.getRegistries(false);
+            registries.sort((registryRemote, t1) -> falseFirstBooleanComparator.compare(registryRemote instanceof AbstractVirtualRegistryRemote, t1 instanceof AbstractVirtualRegistryRemote));
+            for (final RegistryRemote registry : registries) {
+                if (!check(registry, TimeUnit.SECONDS.toMillis(2))) {
                     System.out.println(StringProcessor.fillWithSpaces(registry.getName(), LABEL_RANGE, Alignment.RIGHT) + "  " + AnsiColor.colorize(OK, AnsiColor.ANSI_GREEN));
                 }
             }
@@ -93,12 +98,7 @@ public class BCOSystemValidator {
             System.out.println("=== " + AnsiColor.colorize("Check Units", AnsiColor.ANSI_BLUE) + " ===\n");
             Future<List<UnitRemote<?>>> futureUnits = Units.getFutureUnits(false);
 
-            for (int i = 0; i < 5; i++) {
-                if (futureUnits.isDone()) {
-                    break;
-                }
-                System.out.println(StringProcessor.fillWithSpaces("Unit Pool", LABEL_RANGE, Alignment.RIGHT) + "  " + check(futureUnits, DEFAULT_UNIT_POOL_DELAY_TIME));
-            }
+            System.out.println(StringProcessor.fillWithSpaces("Unit Pool", LABEL_RANGE, Alignment.RIGHT) + "  " + check(futureUnits, DEFAULT_UNIT_POOL_DELAY_TIME));
             System.out.println();
 
             if (futureUnits.isCancelled()) {
@@ -110,10 +110,9 @@ public class BCOSystemValidator {
                 }
             } else {
                 boolean printed = false;
-                final BooleanComparator booleanComparator = new BooleanComparator(true);
                 TreeSet<UnitRemote<?>> unitSet = new TreeSet<>((unitRemote, t1) -> {
                     try {
-                        return booleanComparator.compare(unitRemote.isDalUnit(), t1.isDalUnit());
+                        return trueFirstBooleanComparator.compare(unitRemote.isDalUnit(), t1.isDalUnit());
                     } catch (CouldNotPerformException ex) {
                         LOGGER.warn("Could not compare unit[" + unitRemote + "] and unit[" + t1 + "]", ex);
                         return 0;
@@ -206,15 +205,12 @@ public class BCOSystemValidator {
         Future<Long> futurePing = remote.ping();
 
         try {
-            printed |= print(remote, StringProcessor.fillWithSpaces("Ping", LABEL_RANGE, Alignment.RIGHT) + "  " + check(futurePing, delayTime, new Callable<String>() {
-                @Override
-                public String call() throws Exception {
-                    if (futurePing.isDone() && !futurePing.isCancelled()) {
-                        BCOSystemValidator.computeGlobalPing(futurePing.get());
-                        return " (" + futurePing.get() + ")";
-                    } else {
-                        return "";
-                    }
+            printed |= print(remote, StringProcessor.fillWithSpaces("Ping", LABEL_RANGE, Alignment.RIGHT) + "  " + check(futurePing, delayTime, () -> {
+                if (futurePing.isDone() && !futurePing.isCancelled()) {
+                    BCOSystemValidator.computeGlobalPing(futurePing.get());
+                    return " (" + futurePing.get() + ")";
+                } else {
+                    return "";
                 }
             }));
         } catch (CancellationException ex) {
@@ -226,6 +222,16 @@ public class BCOSystemValidator {
         boolean online = futurePing.isDone() && !futurePing.isCancelled();
 
         if (online) {
+            // ping does not cause the connection state to be connected, this is done by a data update, therefore wait a bit for the connection state
+            try {
+                remote.waitForConnectionState(ConnectionState.CONNECTED, delayTime);
+            } catch (org.openbase.jul.exception.TimeoutException ex) {
+                // just continue and print error for next step
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(ex, LOGGER);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
             final ConnectionState connectionState = remote.getConnectionState();
             String connectionDescription = StringProcessor.fillWithSpaces("Connection", LABEL_RANGE, Alignment.RIGHT) + "  ";
             switch (connectionState) {
@@ -249,14 +255,14 @@ public class BCOSystemValidator {
         }
 
         if (online) {
-            printed |= print(remote, StringProcessor.fillWithSpaces("Data Cache", LABEL_RANGE, Alignment.RIGHT) + "  " + check(remote.getDataFuture()));
+            printed |= print(remote, StringProcessor.fillWithSpaces("Data Cache", LABEL_RANGE, Alignment.RIGHT) + "  " + check(remote.getDataFuture(), delayTime));
         } else {
             printed |= print(remote, StringProcessor.fillWithSpaces("Data Cache", LABEL_RANGE, Alignment.RIGHT) + "  " + (remote.isDataAvailable() ? AnsiColor.colorize(StringProcessor.fillWithSpaces("OFFLINE", STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_YELLOW) : AnsiColor.colorize(StringProcessor.fillWithSpaces("EMPTY", STATE_RANGE, Alignment.LEFT), AnsiColor.ANSI_RED)));
         }
 
         if (online) {
             try {
-                printed |= print(remote, StringProcessor.fillWithSpaces("Synchronization", LABEL_RANGE, Alignment.RIGHT) + "  " + check(remote.requestData()));
+                printed |= print(remote, StringProcessor.fillWithSpaces("Synchronization", LABEL_RANGE, Alignment.RIGHT) + "  " + check(remote.requestData(), delayTime));
             } catch (CouldNotPerformException e) {
                 countError();
                 printed |= print(remote, StringProcessor.fillWithSpaces("Synchronization", LABEL_RANGE, Alignment.RIGHT) +
