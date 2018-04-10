@@ -10,18 +10,19 @@ package org.openbase.bco.manager.util.launch;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
+import org.apache.commons.collections.comparators.BooleanComparator;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.registry.lib.BCO;
@@ -42,6 +43,7 @@ import org.slf4j.LoggerFactory;
 
 import java.text.DecimalFormat;
 import java.util.List;
+import java.util.TreeSet;
 import java.util.concurrent.*;
 
 /**
@@ -108,7 +110,17 @@ public class BCOSystemValidator {
                 }
             } else {
                 boolean printed = false;
-                for (final UnitRemote<?> unit : futureUnits.get()) {
+                final BooleanComparator booleanComparator = new BooleanComparator(true);
+                TreeSet<UnitRemote<?>> unitSet = new TreeSet<>((unitRemote, t1) -> {
+                    try {
+                        return booleanComparator.compare(unitRemote.isDalUnit(), t1.isDalUnit());
+                    } catch (CouldNotPerformException ex) {
+                        LOGGER.warn("Could not compare unit[" + unitRemote + "] and unit[" + t1 + "]", ex);
+                        return 0;
+                    }
+                });
+                unitSet.addAll(futureUnits.get());
+                for (final UnitRemote<?> unit : unitSet) {
                     printed = check(unit) || printed;
                 }
                 if (!printed) {
