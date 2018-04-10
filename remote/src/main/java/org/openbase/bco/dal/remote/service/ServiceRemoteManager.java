@@ -107,7 +107,13 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
             for (final String unitId : unitIDList) {
                 try {
                     // resolve unit config by unit registry
-                    final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
+                    UnitConfig unitConfig;
+                    try {
+                        unitConfig = Registries.getUnitRegistry().getUnitConfigById(unitId);
+                    } catch (NotAvailableException ex) {
+                        LOGGER.warn("Unit[" + unitId + "] not available for [" + responsibleInstance + "]");
+                        continue;
+                    }
 
                     // filter non dal units and disabled units
                     try {
@@ -124,7 +130,7 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
                         serviceMap.get(serviceConfig.getServiceDescription().getType()).add(unitConfig);
                     });
                 } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not process unit config update of Unit[" + unitId + "] for "+responsibleInstance+"!", ex), LOGGER);
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not process unit config update of Unit[" + unitId + "] for " + responsibleInstance + "!", ex), LOGGER);
                 }
             }
 
