@@ -1,33 +1,76 @@
 package org.openbase.bco.app.openhab;
 
-import com.google.gson.Gson;
-import com.google.gson.GsonBuilder;
-import org.eclipse.smarthome.io.rest.core.item.EnrichedItemDTO;
-
-import javax.ws.rs.client.Client;
-import javax.ws.rs.client.ClientBuilder;
-import javax.ws.rs.client.Invocation;
-import javax.ws.rs.client.WebTarget;
-import javax.ws.rs.core.Response;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 public class TestClient {
 
+    public static final Logger LOGGER = LoggerFactory.getLogger(TestClient.class);
+
     public static void main(String[] args) {
-        Client client = ClientBuilder.newClient();
-        WebTarget webTarget = client.target("http://localhost:8080/rest");
+//        try {
+//            List<DiscoveryResultDTO> thingsFromInbox = OpenHABRestCommunicator.getInstance().getThingsFromInbox();
+//            LOGGER.info("Things in inbox[" + thingsFromInbox.size() + "]");
+//            DiscoveryResultDTO thing = thingsFromInbox.get(0);
+//            LOGGER.info(thing.thingTypeUID + ", " + ", " + thing.label + ", " + thing.thingUID);
+//
+//            thing.label = "Motion Sensor Test";
+//
+//            OpenHABRestCommunicator.getInstance().approve(thing);
+//
+//
+////            for (final EnrichedThingDTO thing : OpenHABRestCommunicator.getInstance().getThings()) {
+//////                System.out.println("Thing: " + thing.thingTypeUID);
+//////
+//////                try {
+//////                    registerDeviceForThing(thing);
+//////                } catch (CouldNotPerformException ex) {
+//////                    ExceptionPrinter.printHistory(ex, LOGGER);
+//////                }
+////                if (thing.label.startsWith("Motion")) {
+//////                    thing.label = "Motion Sensor";
+//////                    thing.location = "Home";
+//////
+//////                    OpenHABRestCommunicator.getInstance().updateThing(thing);
+////
+////                    OpenHABRestCommunicator.getInstance().deleteThing(thing.UID);
+////                }
+////            }
+//        } catch (CouldNotPerformException ex) {
+//            ExceptionPrinter.printHistory(ex, LOGGER);
+//        }
 
-        WebTarget thingsWebTarget = webTarget.path("items/MotionDetectorAlarm");
-        Invocation.Builder invocationBuilder = thingsWebTarget.request();
+//        try {
+//            EnrichedThingDTO thingOne = OpenHABRestCommunicator.getInstance().getThings().get(0);
+//            EnrichedThingDTO thingTwo = OpenHABRestCommunicator.getInstance().getThings().get(0);
+//
+//            IdentifiableEnrichedThingDTO one = new IdentifiableEnrichedThingDTO(thingOne);
+//            IdentifiableEnrichedThingDTO two = new IdentifiableEnrichedThingDTO(thingTwo);
+//
+//            System.out.println(one.equals(two));
+//
+//            thingOne.label = "test";
+//
+//            System.out.println(one.equals(two));
+//        } catch (CouldNotPerformException ex) {
+//            ExceptionPrinter.printHistory(ex, LOGGER);
+//        }
+//
+//        System.exit(0);
+//        EnrichedItemDTO enrichedItemDTO = gson.fromJson(res, EnrichedItemDTO.class);
+//
+//        System.out.println("Parsed item: [" + enrichedItemDTO.link + ", " + enrichedItemDTO.state + ", "+enrichedItemDTO.name+"]");
 
-        Response response = invocationBuilder.get();
-
-        System.out.println("Response status: " + response.getStatus());
-        String res = response.readEntity(String.class);
-        System.out.println("Response: " + res);
-
-        Gson gson = new GsonBuilder().create();
-        EnrichedItemDTO enrichedItemDTO = gson.fromJson(res, EnrichedItemDTO.class);
-
-        System.out.println("Parsed item: [" + enrichedItemDTO.link + ", " + enrichedItemDTO.state + ", "+enrichedItemDTO.name+"]");
+        try {
+            OpenHABConfigSynchronizer openHABConfigSynchronizer = new OpenHABConfigSynchronizer();
+            openHABConfigSynchronizer.init();
+            openHABConfigSynchronizer.activate();
+        } catch (CouldNotPerformException ex) {
+            ExceptionPrinter.printHistory(ex, LOGGER);
+        }
     }
+
+
 }

@@ -149,7 +149,7 @@
                         <executions>
                             <execution>
                                 <id>sign-artifacts</id>
-                                <phase>verify</phase>
+                                <phase>filter</phase>
                                 <goals>
                                     <goal>sign</goal>
                                 </goals>
