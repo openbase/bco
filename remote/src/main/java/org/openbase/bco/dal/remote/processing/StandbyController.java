@@ -58,6 +58,11 @@ public class StandbyController<C extends StandbyStateOperationService & Snapshot
      */
     public static final long RESTORE_SNAPSHOT_TIMEOUT = 15;
 
+    /**
+     * 15 seconds timeout to turn off the controller.
+     */
+    public static final long TURN_OFF_TIMEOUT = 15;
+
     private Snapshot snapshot;
     private C controller;
     private Logger logger;
@@ -117,7 +122,16 @@ public class StandbyController<C extends StandbyStateOperationService & Snapshot
                 ExceptionPrinter.printHistory("Could not create snapshot!", ex, logger);
             }
             logger.info("Switch off all devices in the " + controller.getLabel());
-            controller.setPowerState(PowerStateType.PowerState.State.OFF);
+            Future turnOffFuture = null;
+            try {
+                turnOffFuture = controller.setPowerState(PowerStateType.PowerState.State.OFF);
+                turnOffFuture.get(TURN_OFF_TIMEOUT, TimeUnit.SECONDS);
+            } catch (TimeoutException ex) {
+                turnOffFuture.cancel(true);
+                throw new CouldNotPerformException("Turning off all internal units took more than " + TURN_OFF_TIMEOUT + " seconds");
+            } catch (ExecutionException ex) {
+                throw new CouldNotPerformException("Could not turn off all internal units", ex);
+            }
             logger.info(controller.getLabel() + " is now standby.");
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Standby failed!", ex);
@@ -143,9 +157,7 @@ public class StandbyController<C extends StandbyStateOperationService & Snapshot
         } catch (CouldNotPerformException | ExecutionException ex) {
             throw new CouldNotPerformException("WakeUp failed!", ex);
         } catch (TimeoutException ex) {
-            if (restoreSnapshotFuture != null) {
-                restoreSnapshotFuture.cancel(true);
-            }
+            restoreSnapshotFuture.cancel(true);
             throw new CouldNotPerformException("WakeUp took more than " + RESTORE_SNAPSHOT_TIMEOUT + " seconds", ex);
         }
     }
