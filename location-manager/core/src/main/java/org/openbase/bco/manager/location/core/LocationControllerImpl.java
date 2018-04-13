@@ -27,7 +27,10 @@ import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
 import org.openbase.bco.dal.remote.processing.StandbyController;
 import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
+import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.location.lib.LocationController;
+import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -50,6 +53,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.*;
 import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.state.StandbyStateType.StandbyState;
+import rst.domotic.state.StandbyStateType.StandbyState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationDataType;
@@ -63,6 +67,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.Future;
 
+import static org.openbase.bco.dal.remote.unit.Units.LOCATION;
 import static org.openbase.bco.manager.location.core.LocationManagerController.LOGGER;
 
 /**
@@ -256,8 +261,11 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
                     case RUNNING:
                         switch (standbyState.getValue()) {
                             case STANDBY:
+                                for(LocationRemote childLocation : getChildLocationList(false)) {
+                                    childLocation.waitForMiddleware();
+                                    childLocation.setStandbyState(State.STANDBY).get();
+                                }
                                 standbyController.standby();
-                                //TODO: should standby state not be set as a feedback of internal units going in standby
                                 dataBuilder.getInternalBuilder().setStandbyState(standbyState);
                         }
                         break;
@@ -265,6 +273,10 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
                         switch (standbyState.getValue()) {
                             case RUNNING:
                                 standbyController.wakeup();
+                                for(LocationRemote childLocation : getChildLocationList(false)) {
+                                    childLocation.waitForMiddleware();
+                                    childLocation.setStandbyState(State.RUNNING).get();
+                                }
                                 dataBuilder.getInternalBuilder().setStandbyState(standbyState);
                         }
                 }
@@ -286,5 +298,17 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("StandbyState", ex);
         }
+    }
+
+    public List<LocationRemote> getChildLocationList(final boolean waitForData) throws CouldNotPerformException {
+        final List<LocationRemote> childList = new ArrayList<>();
+        for (String childId : getConfig().getLocationConfig().getChildIdList()) {
+            try {
+                childList.add(Units.getUnit(CachedLocationRegistryRemote.getRegistry().getLocationConfigById(childId), waitForData, LOCATION));
+            } catch (InterruptedException ex) {
+                throw new CouldNotPerformException("Could not get all child locations!", ex);
+            }
+        }
+        return childList;
     }
 }
