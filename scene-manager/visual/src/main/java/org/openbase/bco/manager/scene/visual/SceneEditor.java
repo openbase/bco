@@ -21,13 +21,6 @@ package org.openbase.bco.manager.scene.visual;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.awt.Component;
-import java.lang.reflect.InvocationTargetException;
-import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
-import java.util.List;
-import javax.swing.JComponent;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.visual.service.AbstractServicePanel;
@@ -48,6 +41,14 @@ import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
+
+import javax.swing.*;
+import java.awt.*;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
+import java.util.ArrayList;
+import java.util.Collection;
+import java.util.List;
 
 /**
  *
@@ -189,7 +190,7 @@ public class SceneEditor extends javax.swing.JFrame {
         for (GenericUnitPanel genericUnitPanel : unitPanelList) {
             RemovableGenericUnitPanel removableUnitPanel = (RemovableGenericUnitPanel) genericUnitPanel;
             GenericUnitPanel unitPanel = removableUnitPanel.getGenericUnitPanel();
-            List<JComponent> componentList = unitPanel.getComponentList();
+            Collection<JComponent> componentList = unitPanel.getComponentList();
             for (JComponent component : componentList) {
                 AbstractServicePanel panel = null;
                 for (Component com : component.getComponents()) {
