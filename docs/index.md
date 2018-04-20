@@ -163,7 +163,7 @@ bcomfy
 
 Define where to install the bco distribution via the prefix variable.
 ```
-echo 'export prefix="/usr/local/bco"' >> ~/.bashrc
+echo 'export prefix="$HOME/local/bco"' >> ~/.bashrc
 ```
 Add the ```bin``` folder to your global ```$PATH``` variable to support direct binary execution.
 ```
