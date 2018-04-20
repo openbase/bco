@@ -45,7 +45,9 @@ import rst.tracking.PointingRay3DFloatCollectionType.PointingRay3DFloatCollectio
 import rst.tracking.PointingRay3DFloatType.PointingRay3DFloat;
 
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
@@ -531,5 +533,21 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Un
                 default:
                     throw new NotSupportedException(type.name(), this);
         }
+    }
+    
+    /**
+     * Method generates a list of service types supported by the given location.
+     * @param locationId the location to filter the types.
+     * @return a list of supported service types.
+     * @throws NotAvailableException is thrown in case the list could not be computed.
+     */
+    default Set<ServiceType> getServiceTypesByLocation(final String locationId) throws CouldNotPerformException {
+        final Set<ServiceType> serviceTypeSet = new HashSet<>();
+        for (final UnitConfig unitConfig : getUnitConfigsByLocation(locationId)) {
+            for(final ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                serviceTypeSet.add(serviceConfig.getServiceDescription().getType());
+            }
+        }
+        return serviceTypeSet;
     }
 }
