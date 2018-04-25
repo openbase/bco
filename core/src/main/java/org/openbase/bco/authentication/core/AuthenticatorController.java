@@ -153,11 +153,7 @@ public class AuthenticatorController implements AuthenticationService, Launchabl
                     outputStream.write(keyPair.getPrivate().getEncoded());
                     outputStream.flush();
                 }
-                Set<PosixFilePermission> perms = new HashSet<>();
-                perms.add(PosixFilePermission.OWNER_READ);
-                perms.add(PosixFilePermission.OWNER_WRITE);
-
-                Files.setPosixFilePermissions(privateKeyFile.toPath(), perms);
+                CredentialStore.protectFile(privateKeyFile);
             } catch (JPNotAvailableException ex) {
                 throw new CouldNotPerformException("Could not load property.", ex);
             } catch (IOException ex) {

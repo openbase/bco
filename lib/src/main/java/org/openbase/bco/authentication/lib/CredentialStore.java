@@ -55,7 +55,7 @@ public class CredentialStore {
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(CredentialStore.class);
     protected final HashMap<String, LoginCredentials> credentials;
     private final String filename;
-    private final File file;
+    private final File credentialFile;
     private final Base64.Encoder encoder;
     private final Base64.Decoder decoder;
 
@@ -64,7 +64,7 @@ public class CredentialStore {
     public CredentialStore(final String filename) throws InitializationException {
         try {
             this.filename = filename;
-            this.file = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), filename);
+            this.credentialFile = new File(JPService.getProperty(JPCredentialsDirectory.class).getValue(), filename);
             this.credentials = new HashMap<>();
             this.fileProcessor = new ProtoBufFileProcessor<>(LoginCredentialsCollection.newBuilder());
             this.encoder = Base64.getEncoder();
@@ -90,7 +90,7 @@ public class CredentialStore {
      */
     private void loadStore() throws CouldNotPerformException {
         // create empty store if not available
-        if (!file.exists()) {
+        if (!credentialFile.exists()) {
             saveStore();
         }
 
@@ -98,7 +98,7 @@ public class CredentialStore {
         credentials.clear();
 
         // load new ones out of the credential store.
-        LoginCredentialsCollection collection = fileProcessor.deserialize(file);
+        LoginCredentialsCollection collection = fileProcessor.deserialize(credentialFile);
         collection.getElementList().forEach((entry) -> {
             credentials.put(entry.getId(), entry);
         });
@@ -115,25 +115,38 @@ public class CredentialStore {
                     .build();
 
             // save into store
-            fileProcessor.serialize(collection, file);
+            fileProcessor.serialize(collection, credentialFile);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, LOGGER, LogLevel.ERROR);
         }
     }
 
-    /**
-     * Sets the permissions to UNIX 600.
-     *
-     * @throws IOException
-     */
+
     private void setStorePermissions() throws CouldNotPerformException {
+        protectFile(credentialFile);
+    }
+
+    /**
+     * Sets the permissions to UNIX 600 so only the owner has permission to read and to write to this protected file.
+     *
+     * @throws CouldNotPerformException is thrown if the file could not be protected.
+     */
+    public static void protectFile(final File file) throws CouldNotPerformException {
         try {
             Set<PosixFilePermission> perms = new HashSet<>();
             perms.add(PosixFilePermission.OWNER_READ);
             perms.add(PosixFilePermission.OWNER_WRITE);
-            Files.setPosixFilePermissions(file.toPath(), perms);
+            try {
+                Files.setPosixFilePermissions(file.toPath(), perms);
+            } catch (UnsupportedOperationException ex) {
+                // apply windows fallback
+                System.out.println("Apply windows permission fallback for "+ file.getAbsolutePath());
+                file.setReadable(true, true);
+                file.setWritable(true, true);
+                file.setExecutable(true, true);
+            }
         } catch (IOException ex) {
-            throw new CouldNotPerformException("Could not setup store permissions!", ex);
+            throw new CouldNotPerformException("Could not protect "+file.getAbsolutePath(), ex);
         }
     }
 
