@@ -1,9 +1,10 @@
 package org.openbase.bco.app.openhab.diff;
 
+import org.apache.commons.lang.builder.EqualsBuilder;
+import org.apache.commons.lang.builder.HashCodeBuilder;
 import org.eclipse.smarthome.io.rest.core.thing.EnrichedThingDTO;
-import org.openbase.jul.iface.Identifiable;
 
-public class IdentifiableEnrichedThingDTO extends AbstractIdentifiableDTO<EnrichedThingDTO> implements Identifiable<String> {
+public class IdentifiableEnrichedThingDTO implements AbstractIdentifiableDTO<EnrichedThingDTO> {
 
     private final EnrichedThingDTO enrichedThingDTO;
 
@@ -27,34 +28,23 @@ public class IdentifiableEnrichedThingDTO extends AbstractIdentifiableDTO<Enrich
             return false;
         }
 
-        //TODO: apache equalsbuilder
-        //TODO: verify that label is never null in openhab
         IdentifiableEnrichedThingDTO compared = (IdentifiableEnrichedThingDTO) o;
-        return this.getDTO().label.equals(compared.getDTO().label) && compare(this.getDTO().location, compared.getDTO().location);
+        EqualsBuilder equalsBuilder = new EqualsBuilder();
+        equalsBuilder.append(this.getDTO().UID, compared.getDTO().UID);
+        equalsBuilder.append(this.getDTO().thingTypeUID, compared.getDTO().thingTypeUID);
+        equalsBuilder.append(this.getDTO().label, compared.getDTO().label);
+        equalsBuilder.append(this.getDTO().location, compared.getDTO().location);
+        return equalsBuilder.isEquals();
     }
 
     @Override
     public int hashCode() {
-        //TODO: apache hashbuilder
-
-
-        return super.hashCode();
-    }
-
-    private boolean compare(String a, String b) {
-        if (a == null && b == null) {
-            return true;
-        }
-
-        if (a == null) {
-            return false;
-        }
-
-        if (b == null) {
-            return false;
-        }
-
-        return a.equals(b);
+        HashCodeBuilder hashCodeBuilder = new HashCodeBuilder();
+        hashCodeBuilder.append(this.getDTO().UID);
+        hashCodeBuilder.append(this.getDTO().thingTypeUID);
+        hashCodeBuilder.append(this.getDTO().label);
+        hashCodeBuilder.append(this.getDTO().location);
+        return hashCodeBuilder.toHashCode();
     }
 }
 

@@ -1,6 +1,9 @@
 package org.openbase.bco.app.openhab;
 
+import org.eclipse.smarthome.core.items.dto.ItemDTO;
+import org.eclipse.smarthome.core.thing.dto.ChannelDTO;
 import org.eclipse.smarthome.core.thing.dto.ThingDTO;
+import org.eclipse.smarthome.core.thing.link.dto.ItemChannelLinkDTO;
 import org.eclipse.smarthome.io.rest.core.thing.EnrichedThingDTO;
 import org.openbase.bco.app.openhab.diff.IdentifiableEnrichedThingDTO;
 import org.openbase.bco.registry.remote.Registries;
@@ -9,7 +12,7 @@ import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.protobuf.ListDiff;
+import org.openbase.jul.extension.protobuf.ListDiffImpl;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
@@ -24,6 +27,7 @@ import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
 
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
@@ -31,17 +35,18 @@ import java.util.concurrent.TimeUnit;
 public class OpenHABConfigSynchronizer {
 
     public static String THING_UID_KEY = "OPENHAB_THING_UID";
+    public static String OPENHAB_THING_TYPE_UID_KEY = "OPENHAB_THING_TYPE_UID";
 
     private final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final ListDiff<String, IdentifiableEnrichedThingDTO> thingDiff;
+    private final ListDiffImpl<String, IdentifiableEnrichedThingDTO> thingDiff;
 
     private final Runnable restPollingService;
 
     private boolean initialSync;
 
     public OpenHABConfigSynchronizer() {
-        this.thingDiff = new ListDiff<>();
+        this.thingDiff = new ListDiffImpl<>();
         this.restPollingService = new Runnable() {
             @Override
             public void run() {
@@ -57,7 +62,7 @@ public class OpenHABConfigSynchronizer {
 
     public void activate() throws CouldNotPerformException {
         try {
-            GlobalScheduledExecutorService.scheduleAtFixedRate(restPollingService, 30, 30, TimeUnit.SECONDS);
+            GlobalScheduledExecutorService.scheduleAtFixedRate(restPollingService, 15, 15, TimeUnit.SECONDS);
         } catch (NotAvailableException ex) {
             // NotAvailableException is only thrown if runnable is null which is not the case here
             new FatalImplementationErrorException(this, ex);
@@ -88,15 +93,15 @@ public class OpenHABConfigSynchronizer {
             MultiException.ExceptionStack newExceptionStack = null;
             for (IdentifiableEnrichedThingDTO identifiableNewThing : thingDiff.getNewValueMap().values()) {
                 final EnrichedThingDTO newThing = identifiableNewThing.getDTO();
-                if (initialSync) {
-                    try {
-                        getDeviceForThing(newThing);
-                        logger.info("Device for thing[" + newThing + "] has been found and should be updated");
-                        continue;
-                    } catch (NotAvailableException ex) {
-                        // do nothing because device will be registered
-                    }
-                }
+//                if (initialSync) {
+//                    try {
+//                        getDeviceForThing(newThing);
+//                        logger.info("Device for thing[" + newThing + "] has been found and should be updated");
+//                        continue;
+//                    } catch (NotAvailableException ex) {
+//                        // do nothing because device will be registered
+//                    }
+//                }
 
                 try {
                     registerDeviceForThing(newThing);
@@ -168,7 +173,13 @@ public class OpenHABConfigSynchronizer {
 
     private void registerDeviceForThing(final ThingDTO thingDTO) throws CouldNotPerformException {
         try {
-            DeviceClass deviceClass = getDeviceClassByThing(thingDTO);
+            DeviceClass deviceClass;
+            try {
+                deviceClass = getDeviceClassByThing(thingDTO);
+            } catch (NotAvailableException ex) {
+                // currently ignore all wrong devices
+                return;
+            }
 
             UnitConfig.Builder unitConfig = UnitConfig.newBuilder();
             unitConfig.setType(UnitType.DEVICE);
@@ -181,6 +192,8 @@ public class OpenHABConfigSynchronizer {
                 //TODO: add locations flat under root location if not available
                 deviceConfig.getInventoryStateBuilder().setLocationId(locationId);
                 unitConfig.getPlacementConfigBuilder().setLocationId(locationId);
+            } else {
+                logger.info("Thing has no location defined so it will be added at the root location");
             }
 
             // add thing uid to meta config to have a mapping between thing and device
@@ -188,7 +201,10 @@ public class OpenHABConfigSynchronizer {
 
             unitConfig.setLabel(thingDTO.label);
             try {
-                Registries.getUnitRegistry().registerUnitConfig(unitConfig.build()).get();
+                UnitConfig deviceUnitConfig = Registries.getUnitRegistry().registerUnitConfig(unitConfig.build()).get();
+                logger.info("Successfully registered device[" + deviceUnitConfig.getLabel() + "] for thing[" + thingDTO.UID + "]");
+
+                registerItems(thingDTO, Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(0)));
             } catch (ExecutionException ex) {
                 throw new CouldNotPerformException("Could not register device for thing[" + thingDTO.thingTypeUID + "]", ex);
             }
@@ -197,36 +213,80 @@ public class OpenHABConfigSynchronizer {
         }
     }
 
+    private void registerItems(final ThingDTO thingDTO, final UnitConfig dalUnitConfig) throws CouldNotPerformException {
+        logger.info("Register item for unit[" + dalUnitConfig.getLabel() + ", " + dalUnitConfig.getType().name() + "]");
+
+        ItemDTO itemDTO = new ItemDTO();
+        itemDTO.label = dalUnitConfig.getLabel();
+        itemDTO.category = "ColorLight";
+        itemDTO.type = "Color";
+        //TODO: item names can only contain underscores but no minuses
+        itemDTO.name = dalUnitConfig.getAlias(0).replaceAll("-", "_");
+
+        itemDTO = OpenHABRestCommunicator.getInstance().registerItem(itemDTO);
+
+        logger.info("Successfully registered item[" + itemDTO.name + "] for dal unit");
+
+        for (final ChannelDTO channelDTO : thingDTO.channels) {
+            if (!channelDTO.label.equals("Color")) {
+                continue;
+            }
+
+            logger.info("Found channel[" + channelDTO.uid + "] for color");
+
+            ItemChannelLinkDTO itemChannelLinkDTO = new ItemChannelLinkDTO(itemDTO.name, channelDTO.uid, new HashMap<>());
+            logger.info("Created item channel link");
+            OpenHABRestCommunicator.getInstance().registerItemChannelLink(itemChannelLinkDTO);
+            logger.info("Successfully created link between item[" + itemChannelLinkDTO.itemName + "] and channel[" + itemChannelLinkDTO.channelUID + "]");
+        }
+    }
+
     private DeviceClass getDeviceClassByThing(final ThingDTO thingDTO) throws CouldNotPerformException {
-        final String[] thingTypeUIDSplit = thingDTO.thingTypeUID.split(":");
-        if (thingTypeUIDSplit.length != 2) {
-            throw new CouldNotPerformException("Could not parse thingTypeUID[" + thingDTO.thingTypeUID + "]. Does not match known pattern binding:deviceInfo");
-        }
+        if (thingDTO.thingTypeUID.equals("hue:0210")) {
+            System.out.println("Found hue: " + thingDTO.UID);
 
-        // String binding = split[0];
-        final String deviceInfo = thingTypeUIDSplit[1];
-        final String[] deviceInfoSplit = deviceInfo.split("_");
-        if (deviceInfoSplit.length < 2) {
-            throw new CouldNotPerformException("Could not parse deviceInfo[" + deviceInfo + "]. Does not match known pattern company_productNumber_...");
-        }
-
-        final String company = deviceInfoSplit[0];
-        final String productNumber = deviceInfoSplit[1];
-
-        try {
-            for (final DeviceClass deviceClass : Registries.getDeviceRegistry().getDeviceClasses()) {
-                if (deviceClass.getCompany().equalsIgnoreCase(company)) {
-                    //TODO: this mapping has to be done in the meta config of the device class, this could be a fallback
-                    if (deviceClass.getProductNumber().replace("-", "").equalsIgnoreCase(productNumber)) {
+            try {
+                for (final DeviceClass deviceClass : Registries.getDeviceRegistry().getDeviceClasses()) {
+                    if (deviceClass.getLabel().equals("Philips Hue E27 Gen3")) {
+                        System.out.println("Found matching device class: " + deviceClass.getLabel());
                         return deviceClass;
                     }
                 }
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new CouldNotPerformException("Interrupted", ex);
             }
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new CouldNotPerformException("Interrupted", ex);
         }
-        throw new NotAvailableException("Device from company[" + company + "] with productNumber[" + productNumber + "]");
+        throw new NotAvailableException("Device for thing[" + thingDTO.UID + "]");
+//        final String[] thingTypeUIDSplit = thingDTO.thingTypeUID.split(":");
+//        if (thingTypeUIDSplit.length != 2) {
+//            throw new CouldNotPerformException("Could not parse thingTypeUID[" + thingDTO.thingTypeUID + "]. Does not match known pattern binding:deviceInfo");
+//        }
+//
+//        // String binding = split[0];
+//        final String deviceInfo = thingTypeUIDSplit[1];
+//        final String[] deviceInfoSplit = deviceInfo.split("_");
+//        if (deviceInfoSplit.length < 2) {
+//            throw new CouldNotPerformException("Could not parse deviceInfo[" + deviceInfo + "]. Does not match known pattern company_productNumber_...");
+//        }
+//
+//        final String company = deviceInfoSplit[0];
+//        final String productNumber = deviceInfoSplit[1];
+//
+//        try {
+//            for (final DeviceClass deviceClass : Registries.getDeviceRegistry().getDeviceClasses()) {
+//                if (deviceClass.getCompany().equalsIgnoreCase(company)) {
+//                    //TODO: this mapping has to be done in the meta config of the device class, this could be a fallback
+//                    if (deviceClass.getProductNumber().replace("-", "").equalsIgnoreCase(productNumber)) {
+//                        return deviceClass;
+//                    }
+//                }
+//            }
+//        } catch (InterruptedException ex) {
+//            Thread.currentThread().interrupt();
+//            throw new CouldNotPerformException("Interrupted", ex);
+//        }
+//        throw new NotAvailableException("Device from company[" + company + "] with productNumber[" + productNumber + "]");
     }
 
     /**
