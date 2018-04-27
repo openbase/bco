@@ -1,4 +1,4 @@
-package org.openbase.bco.app.openhab.service;
+package org.openbase.bco.app.openhab.manager.service;
 
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.operation.*;

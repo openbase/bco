@@ -1,6 +1,6 @@
-package org.openbase.bco.app.openhab.service;
+package org.openbase.bco.app.openhab.manager.service;
 
-import org.openbase.bco.app.openhab.transform.OpenHABColorStateTransformer;
+import org.openbase.bco.app.openhab.manager.transform.OpenHABColorStateTransformer;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;

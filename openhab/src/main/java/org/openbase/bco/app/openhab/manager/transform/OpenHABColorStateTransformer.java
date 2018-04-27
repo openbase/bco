@@ -1,4 +1,4 @@
-package org.openbase.bco.app.openhab.transform;
+package org.openbase.bco.app.openhab.manager.transform;
 
 import org.eclipse.smarthome.core.library.types.DecimalType;
 import org.eclipse.smarthome.core.library.types.HSBType;

@@ -1,11 +1,12 @@
-package org.openbase.bco.app.openhab;
+package org.openbase.bco.app.openhab.manager;
 
 import org.eclipse.smarthome.core.library.types.HSBType;
-import org.openbase.bco.app.openhab.service.OpenHABServiceFactory;
-import org.openbase.bco.app.openhab.transform.OpenHABColorStateTransformer;
+import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
+import org.openbase.bco.app.openhab.manager.service.OpenHABServiceFactory;
+import org.openbase.bco.app.openhab.manager.transform.OpenHABColorStateTransformer;
+import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemHelper;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.manager.device.core.DeviceManagerController;
-import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
@@ -16,11 +17,15 @@ import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ColorStateType.ColorState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
+import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ScheduledFuture;
 import java.util.concurrent.TimeUnit;
 
@@ -49,13 +54,30 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
                 for (Entry<String, String> entry : states.entrySet()) {
                     logger.info("Update for item[" + entry.getKey() + "] to state[" + entry.getValue() + "]");
 
-                    String alias = entry.getKey().replaceAll("_", "-");
                     for (UnitController<?, ?> unitController : deviceManagerController.getUnitControllerRegistry().getEntries()) {
-                        if (unitController.getConfig().getAlias(0).equals(alias)) {
-                            logger.info("Found according unit[" + unitController.getLabel() + "]");
+                        final UnitConfig unitConfig = unitController.getConfig();
+                        final Set<ServiceType> serviceTypeSet = new HashSet<>();
+                        for (final ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                            if (serviceTypeSet.contains(serviceConfig.getServiceDescription().getType())) {
+                                continue;
+                            }
+                            serviceTypeSet.add(serviceConfig.getServiceDescription().getType());
 
-                            ColorState colorState = OpenHABColorStateTransformer.transform(HSBType.valueOf(entry.getValue()));
-                            unitController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(colorState), ServiceType.COLOR_STATE_SERVICE);
+                            String itemName = OpenHABItemHelper.generateItemName(unitConfig, serviceConfig.getServiceDescription().getType());
+                            if (itemName.equals(entry.getKey())) {
+                                logger.info("Found according unit[" + unitController.getLabel() + "] with service[" + serviceConfig.getServiceDescription().getType() + "]");
+
+                                switch (serviceConfig.getServiceDescription().getType()) {
+                                    case COLOR_STATE_SERVICE:
+                                        ColorState colorState = OpenHABColorStateTransformer.transform(HSBType.valueOf(entry.getValue()));
+                                        unitController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(colorState), ServiceType.COLOR_STATE_SERVICE);
+                                        break;
+                                    case POWER_STATE_SERVICE:
+                                        break;
+                                    case BRIGHTNESS_STATE_SERVICE:
+                                        break;
+                                }
+                            }
                         }
                     }
                 }

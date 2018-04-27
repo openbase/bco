@@ -1,4 +1,4 @@
-package org.openbase.bco.app.openhab.diff;
+package org.openbase.bco.app.openhab.registry.diff;
 
 import org.apache.commons.lang.builder.EqualsBuilder;
 import org.apache.commons.lang.builder.HashCodeBuilder;

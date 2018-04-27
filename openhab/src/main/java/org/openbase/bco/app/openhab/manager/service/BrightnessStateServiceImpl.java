@@ -1,4 +1,4 @@
-package org.openbase.bco.app.openhab.service;
+package org.openbase.bco.app.openhab.manager.service;
 
 import org.eclipse.smarthome.core.library.types.PercentType;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;

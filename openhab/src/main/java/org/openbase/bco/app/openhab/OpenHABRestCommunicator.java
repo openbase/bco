@@ -31,6 +31,8 @@ public class OpenHABRestCommunicator {
     public static final String ITEMS_TARGET = "items";
     public static final String LINKS_TARGET = "links";
     public static final String THINGS_TARGET = "things";
+    public static final String INBOX_TARGET = "inbox";
+    public static final String APPROVE_TARGET = "approve";
 
     private static OpenHABRestCommunicator instance = null;
 
@@ -147,49 +149,19 @@ public class OpenHABRestCommunicator {
     }
 
     public List<ItemChannelLinkDTO> getItemChannelLinks() throws CouldNotPerformException {
-        try {
-            JsonElement itemChannelLinks = jsonParser.parse(get(LINKS_TARGET));
-            if (itemChannelLinks.isJsonArray()) {
-                return jsonArrayToTypedList(itemChannelLinks.getAsJsonArray(), ItemChannelLinkDTO.class);
-            } else {
-                throw new CouldNotPerformException("Response for query does not match expected type jsonArray");
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not request current item channel links from openHAB", ex);
-        }
+        return jsonElementToTypedList(jsonParser.parse(get(LINKS_TARGET)), ItemChannelLinkDTO.class);
     }
 
     // ==========================================================================================================================================
     // DISCOVERY
     // ==========================================================================================================================================
 
-    public void approve(final DiscoveryResultDTO discoveryResultDTO) throws CouldNotPerformException {
-        approve(discoveryResultDTO.thingUID, discoveryResultDTO.label);
-    }
-
     public void approve(final String thingUID, final String label) throws CouldNotPerformException {
-        try {
-            final WebTarget webTarget = baseWebTarget.path("inbox/" + thingUID + "/approve");
-            final Response response = webTarget.request().post(Entity.entity(label, MediaType.TEXT_PLAIN_TYPE));
-
-            validateResponse(response);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not approve thing[" + thingUID + "] with label[" + label + "]", ex);
-        }
+        post(INBOX_TARGET + SEPARATOR + thingUID + SEPARATOR + APPROVE_TARGET, label, MediaType.TEXT_PLAIN_TYPE);
     }
 
-    public List<DiscoveryResultDTO> getThingsFromInbox() throws CouldNotPerformException {
-        try {
-            JsonElement things = jsonParser.parse(get("inbox"));
-            System.out.println(things.toString());
-            if (things.isJsonArray()) {
-                return jsonArrayToTypedList(things.getAsJsonArray(), DiscoveryResultDTO.class);
-            } else {
-                throw new CouldNotPerformException("Response for query does not match expected type jsonArray");
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not request inbox from openHAB", ex);
-        }
+    public List<DiscoveryResultDTO> getDiscoveryResults() throws CouldNotPerformException {
+        return jsonElementToTypedList(jsonParser.parse(get(INBOX_TARGET)), DiscoveryResultDTO.class);
     }
 
     // ==========================================================================================================================================
@@ -260,7 +232,7 @@ public class OpenHABRestCommunicator {
     }
 
     private String postJson(final String target, final Object value) throws CouldNotPerformException {
-        post(target, gson.toJson(value), MediaType.APPLICATION_JSON_TYPE);
+        return post(target, gson.toJson(value), MediaType.APPLICATION_JSON_TYPE);
     }
 
     private String post(final String target, final String value, final MediaType mediaType) throws CouldNotPerformException {
