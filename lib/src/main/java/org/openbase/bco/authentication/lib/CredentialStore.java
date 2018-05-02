@@ -140,7 +140,6 @@ public class CredentialStore {
                 Files.setPosixFilePermissions(file.toPath(), perms);
             } catch (UnsupportedOperationException ex) {
                 // apply windows fallback
-                System.out.println("Apply windows permission fallback for "+ file.getAbsolutePath());
                 file.setReadable(true, true);
                 file.setWritable(true, true);
                 file.setExecutable(true, true);
