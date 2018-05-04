@@ -43,6 +43,7 @@ import org.slf4j.LoggerFactory;
 import rst.domotic.state.MotionStateType.MotionState;
 import rst.domotic.state.MotionStateType.MotionStateOrBuilder;
 import rst.domotic.state.PresenceStateType.PresenceState;
+import rst.domotic.state.PresenceStateType.PresenceState.State;
 import rst.domotic.state.PresenceStateType.PresenceStateOrBuilder;
 import rst.domotic.unit.location.LocationDataType.LocationData;
 
@@ -152,9 +153,9 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
         // so wird das timeout durch das erste present setzten des detectors selbst nochmal restarted...
         // vorher nach motion state filtern (inklusive lastMotion) und wenn gleich das presence update skippen?
         // update Timestemp and reset timer
-        if (presenceState.getValue() == PresenceState.State.PRESENT && this.presenceState.getLastPresence() != presenceState.getLastPresence()) {
+        if (presenceState.getValue() == PresenceState.State.PRESENT && this.presenceState.getTimestamp() != presenceState.getTimestamp()) {
             presenceTimeout.restart();
-            this.presenceState.getLastPresenceBuilder().setTime(Math.max(this.presenceState.getLastPresence().getTime(), presenceState.getLastPresence().getTime()));
+            this.presenceState.getTimestampBuilder().setTime(Math.max(this.presenceState.getTimestamp().getTime(), presenceState.getTimestamp().getTime()));
         }
 
         // filter non state changes
@@ -163,7 +164,7 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
         }
 
         // update value
-        TimestampProcessor.updateTimestampWithCurrentTime(presenceState, logger);
+        TimestampProcessor.updateTimestampWithCurrentTime(this.presenceState, logger);
         this.presenceState.setValue(presenceState.getValue());
 
         // notify
@@ -182,7 +183,7 @@ public class PresenceDetector implements Manageable<DataProvider<LocationData>>,
         }
 
         if (motionState.getValue() == MotionState.State.MOTION) {
-            updatePresenceState(PresenceState.newBuilder().setValue(PresenceState.State.PRESENT).setLastPresence(motionState.getLastMotion()));
+            updatePresenceState(TimestampProcessor.updateTimestampWithCurrentTime(PresenceState.newBuilder().setValue(State.PRESENT).build()));
         }
     }
 
