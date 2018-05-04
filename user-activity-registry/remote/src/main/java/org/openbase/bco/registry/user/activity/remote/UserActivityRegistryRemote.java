@@ -21,9 +21,7 @@ package org.openbase.bco.registry.user.activity.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Future;
+
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.user.activity.lib.UserActivityRegistry;
@@ -39,13 +37,16 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.pattern.Remote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.registry.UserActivityRegistryDataType.UserActivityRegistryData;
 import rst.domotic.activity.UserActivityClassType.UserActivityClass;
 import rst.domotic.activity.UserActivityClassType.UserActivityClass.UserActivityType;
 import rst.domotic.activity.UserActivityConfigType.UserActivityConfig;
+import rst.domotic.registry.UserActivityRegistryDataType.UserActivityRegistryData;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Future;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UserActivityRegistryRemote extends AbstractRegistryRemote<UserActivityRegistryData> implements UserActivityRegistry, Remote<UserActivityRegistryData> {
@@ -235,4 +236,8 @@ public class UserActivityRegistryRemote extends AbstractRegistryRemote<UserActiv
         return userActivityConfigList;
     }
 
+    @Override
+    public Boolean isConsistent() throws CouldNotPerformException {
+        return isUserActivityClassRegistryConsistent() && isUserActivityConfigRegistryConsistent();
+    }
 }

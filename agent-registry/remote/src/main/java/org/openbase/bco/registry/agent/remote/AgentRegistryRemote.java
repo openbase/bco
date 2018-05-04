@@ -21,13 +21,11 @@ package org.openbase.bco.registry.agent.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Future;
+
+import org.openbase.bco.authentication.lib.AuthorizationFilter;
 import org.openbase.bco.registry.agent.lib.AgentRegistry;
 import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
-import org.openbase.bco.authentication.lib.AuthorizationFilter;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.com.future.RegistrationFuture;
 import org.openbase.bco.registry.lib.com.future.RemovalFuture;
@@ -37,11 +35,8 @@ import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.FatalImplementationErrorException;
-import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.storage.registry.RegistryRemote;
@@ -53,8 +48,11 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.agent.AgentClassType.AgentClass;
 import rst.domotic.unit.agent.AgentConfigType.AgentConfig;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Future;
+
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class AgentRegistryRemote extends AbstractVirtualRegistryRemote<AgentRegistryData> implements AgentRegistry, RegistryRemote<AgentRegistryData> {
@@ -76,8 +74,8 @@ public class AgentRegistryRemote extends AbstractVirtualRegistryRemote<AgentRegi
         super(JPAgentRegistryScope.class, AgentRegistryData.class);
         try {
             authorizationFilter = new AuthorizationFilter();
-            
-            agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(),this, authorizationFilter, AgentRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER);
+
+            agentUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, authorizationFilter, AgentRegistryData.AGENT_UNIT_CONFIG_FIELD_NUMBER);
             agentClassRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, AgentRegistryData.AGENT_CLASS_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
@@ -87,7 +85,7 @@ public class AgentRegistryRemote extends AbstractVirtualRegistryRemote<AgentRegi
     /**
      * {@inheritDoc }
      *
-     * @throws InterruptedException {@inheritDoc }
+     * @throws InterruptedException     {@inheritDoc }
      * @throws CouldNotPerformException {@inheritDoc }
      */
     @Override
@@ -314,5 +312,10 @@ public class AgentRegistryRemote extends AbstractVirtualRegistryRemote<AgentRegi
     public AgentClass getAgentClassById(String agentClassId) throws CouldNotPerformException {
         validateData();
         return agentClassRemoteRegistry.getMessage(agentClassId);
+    }
+
+    @Override
+    public Boolean isConsistent() throws CouldNotPerformException {
+        return isAgentClassRegistryConsistent() && isAgentConfigRegistryConsistent();
     }
 }

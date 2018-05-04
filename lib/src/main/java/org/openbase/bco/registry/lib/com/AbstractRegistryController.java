@@ -486,6 +486,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
      *
      * @return true if all managed registries are consistent and else false
      */
+    @Override
     public Boolean isConsistent() {
         for (ProtoBufFileSynchronizedRegistry registry : registryList) {
             if (!registry.isConsistent()) {

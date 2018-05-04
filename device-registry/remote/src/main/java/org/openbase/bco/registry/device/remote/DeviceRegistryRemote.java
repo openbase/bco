@@ -21,13 +21,11 @@ package org.openbase.bco.registry.device.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Future;
+
+import org.openbase.bco.authentication.lib.AuthorizationFilter;
 import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
-import org.openbase.bco.authentication.lib.AuthorizationFilter;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.com.future.RegistrationFuture;
 import org.openbase.bco.registry.lib.com.future.RemovalFuture;
@@ -37,11 +35,8 @@ import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.FatalImplementationErrorException;
-import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.storage.registry.RegistryRemote;
@@ -59,8 +54,11 @@ import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
 import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
 import rst.rsb.ScopeType;
 
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Future;
+
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRegistryData> implements DeviceRegistry, RegistryRemote<DeviceRegistryData> {
@@ -83,7 +81,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
         super(JPDeviceRegistryScope.class, DeviceRegistryData.class);
         try {
             authorizationFilter = new AuthorizationFilter();
-            
+
             deviceClassRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, DeviceRegistryData.DEVICE_CLASS_FIELD_NUMBER);
             deviceUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, authorizationFilter, DeviceRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
@@ -94,7 +92,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
     /**
      * {@inheritDoc }
      *
-     * @throws InterruptedException {@inheritDoc }
+     * @throws InterruptedException     {@inheritDoc }
      * @throws CouldNotPerformException {@inheritDoc }
      */
     @Override
@@ -168,7 +166,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
      * @param unitTemplateId {@inheritDoc}
      * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
-     * @throws NotAvailableException {@inheritDoc}
+     * @throws NotAvailableException    {@inheritDoc}
      */
     @Override
     public UnitTemplate getUnitTemplateById(String unitTemplateId) throws CouldNotPerformException, NotAvailableException {
@@ -181,7 +179,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
      * @param deviceClassId {@inheritDoc}
      * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
-     * @throws NotAvailableException {@inheritDoc}
+     * @throws NotAvailableException    {@inheritDoc}
      */
     @Override
     public DeviceClass getDeviceClassById(String deviceClassId) throws CouldNotPerformException, NotAvailableException {
@@ -195,7 +193,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
      * @param deviceConfigId {@inheritDoc}
      * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
-     * @throws NotAvailableException {@inheritDoc}
+     * @throws NotAvailableException    {@inheritDoc}
      */
     @Override
     public UnitConfig getDeviceConfigById(String deviceConfigId) throws CouldNotPerformException, NotAvailableException {
@@ -209,7 +207,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
      * @param unitConfigId {@inheritDoc}
      * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
-     * @throws NotAvailableException {@inheritDoc}
+     * @throws NotAvailableException    {@inheritDoc}
      */
     @Override
     public UnitConfig getUnitConfigById(String unitConfigId) throws CouldNotPerformException, NotAvailableException {
@@ -394,7 +392,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
      *
      * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
-     * @throws NotAvailableException {@inheritDoc}
+     * @throws NotAvailableException    {@inheritDoc}
      */
     @Override
     public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException, NotAvailableException {
@@ -418,7 +416,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
      *
      * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
-     * @throws NotAvailableException {@inheritDoc}
+     * @throws NotAvailableException    {@inheritDoc}
      */
     @Override
     public List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException, NotAvailableException {
@@ -435,7 +433,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
      * @param serviceType {@inheritDoc}
      * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
-     * @throws NotAvailableException {@inheritDoc}
+     * @throws NotAvailableException    {@inheritDoc}
      */
     @Override
     public List<ServiceConfig> getServiceConfigs(final ServiceType serviceType) throws CouldNotPerformException, NotAvailableException {
@@ -455,7 +453,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
      *
      * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
-     * @throws NotAvailableException {@inheritDoc}
+     * @throws NotAvailableException    {@inheritDoc}
      */
     @Override
     public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException, NotAvailableException {
@@ -467,7 +465,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
      *
      * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
-     * @throws NotAvailableException {@inheritDoc}
+     * @throws NotAvailableException    {@inheritDoc}
      */
     @Override
     public List<DeviceClass> getDeviceClasses() throws CouldNotPerformException, NotAvailableException {
@@ -480,7 +478,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
      *
      * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
-     * @throws NotAvailableException {@inheritDoc}
+     * @throws NotAvailableException    {@inheritDoc}
      */
     @Override
     public List<UnitConfig> getDeviceConfigs() throws CouldNotPerformException, NotAvailableException {
@@ -696,7 +694,7 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
     /**
      * {@inheritDoc}
      *
-     * @param type {@inheritDoc}
+     * @param type         {@inheritDoc}
      * @param serviceTypes {@inheritDoc}
      * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
@@ -782,5 +780,11 @@ public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRe
     @Override
     public Boolean isUnitGroupConfigRegistryConsistent() throws CouldNotPerformException {
         return unitRegistry.isUnitGroupConfigRegistryConsistent();
+    }
+
+    @Override
+    public Boolean isConsistent() throws CouldNotPerformException {
+        return isDeviceClassRegistryConsistent()
+                && isDeviceConfigRegistryConsistent();
     }
 }

@@ -21,14 +21,11 @@ package org.openbase.bco.registry.app.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.List;
-import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
+
+import org.openbase.bco.authentication.lib.AuthorizationFilter;
 import org.openbase.bco.registry.app.lib.AppRegistry;
 import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
-import org.openbase.bco.authentication.lib.AuthorizationFilter;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.com.future.RegistrationFuture;
 import org.openbase.bco.registry.lib.com.future.RemovalFuture;
@@ -38,24 +35,24 @@ import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.FatalImplementationErrorException;
-import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import static org.openbase.jul.extension.rsb.com.RSBRemoteService.DATA_WAIT_TIMEOUT;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.unit.app.AppClassType.AppClass;
 import rst.domotic.registry.AppRegistryDataType.AppRegistryData;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.app.AppClassType.AppClass;
+
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.Future;
+import java.util.concurrent.TimeUnit;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class AppRegistryRemote extends AbstractVirtualRegistryRemote<AppRegistryData> implements AppRegistry, RegistryRemote<AppRegistryData> {
@@ -76,7 +73,7 @@ public class AppRegistryRemote extends AbstractVirtualRegistryRemote<AppRegistry
         super(JPAppRegistryScope.class, AppRegistryData.class);
         try {
             authorizationFilter = new AuthorizationFilter();
-            
+
             appUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, authorizationFilter, AppRegistryData.APP_UNIT_CONFIG_FIELD_NUMBER);
             appClassRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, AppRegistryData.APP_CLASS_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
@@ -87,7 +84,7 @@ public class AppRegistryRemote extends AbstractVirtualRegistryRemote<AppRegistry
     /**
      * {@inheritDoc }
      *
-     * @throws InterruptedException {@inheritDoc }
+     * @throws InterruptedException     {@inheritDoc }
      * @throws CouldNotPerformException {@inheritDoc }
      */
     @Override
@@ -314,5 +311,10 @@ public class AppRegistryRemote extends AbstractVirtualRegistryRemote<AppRegistry
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not check consistency!", ex);
         }
+    }
+
+    @Override
+    public Boolean isConsistent() throws CouldNotPerformException {
+        return isAppClassRegistryConsistent() && isAppConfigRegistryConsistent();
     }
 }

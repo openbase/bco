@@ -21,10 +21,9 @@ package org.openbase.bco.registry.scene.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.List;
-import java.util.concurrent.Future;
-import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
+
 import org.openbase.bco.authentication.lib.AuthorizationFilter;
+import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.com.future.RegistrationFuture;
 import org.openbase.bco.registry.lib.com.future.RemovalFuture;
@@ -36,23 +35,22 @@ import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.FatalImplementationErrorException;
-import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.pattern.Remote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
 import rst.domotic.registry.SceneRegistryDataType.SceneRegistryData;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
+
+import java.util.List;
+import java.util.concurrent.Future;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class SceneRegistryRemote extends AbstractVirtualRegistryRemote<SceneRegistryData> implements SceneRegistry, Remote<SceneRegistryData> {
@@ -81,7 +79,7 @@ public class SceneRegistryRemote extends AbstractVirtualRegistryRemote<SceneRegi
     /**
      * {@inheritDoc }
      *
-     * @throws InterruptedException {@inheritDoc }
+     * @throws InterruptedException     {@inheritDoc }
      * @throws CouldNotPerformException {@inheritDoc }
      */
     @Override
@@ -144,7 +142,7 @@ public class SceneRegistryRemote extends AbstractVirtualRegistryRemote<SceneRegi
      * @param sceneUnitConfigId {@inheritDoc}
      * @return {@inheritDoc}
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.openbase.jul.exception.NotAvailableException    {@inheritDoc}
      */
     @Override
     public UnitConfig getSceneConfigById(String sceneUnitConfigId) throws CouldNotPerformException, NotAvailableException {
@@ -213,9 +211,14 @@ public class SceneRegistryRemote extends AbstractVirtualRegistryRemote<SceneRegi
     public Boolean isSceneConfigRegistryConsistent() throws CouldNotPerformException {
         try {
             validateData();
-            return getData().getSceneUnitConfigRegistryReadOnly();
+            return getData().getSceneUnitConfigRegistryConsistent();
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not check consistency!", ex);
         }
+    }
+
+    @Override
+    public Boolean isConsistent() throws CouldNotPerformException {
+        return isSceneConfigRegistryConsistent();
     }
 }

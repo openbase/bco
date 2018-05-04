@@ -21,21 +21,12 @@ package org.openbase.bco.registry.location.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-import java.util.stream.Collectors;
-import javax.media.j3d.Transform3D;
-import javax.vecmath.Point3d;
+
 import org.apache.commons.math3.geometry.euclidean.twod.PolygonsSet;
 import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
 import org.apache.commons.math3.geometry.partitioning.Region.Location;
-import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
 import org.openbase.bco.authentication.lib.AuthorizationFilter;
-import org.openbase.jul.pattern.MockUpFilter;
+import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.com.future.RegistrationFuture;
 import org.openbase.bco.registry.lib.com.future.RemovalFuture;
@@ -47,13 +38,11 @@ import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.FatalImplementationErrorException;
-import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.pattern.MockUpFilter;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -71,8 +60,17 @@ import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.tracking.PointingRay3DFloatCollectionType.PointingRay3DFloatCollection;
 import rst.tracking.PointingRay3DFloatType;
 
+import javax.media.j3d.Transform3D;
+import javax.vecmath.Point3d;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+import java.util.stream.Collectors;
+
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<LocationRegistryData> implements LocationRegistry, RegistryRemote<LocationRegistryData> {
@@ -95,7 +93,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
         super(JPLocationRegistryScope.class, LocationRegistryData.class);
         try {
             authorizationFilter = new AuthorizationFilter();
-            
+
             this.locationUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, new MockUpFilter(), LocationRegistryData.LOCATION_UNIT_CONFIG_FIELD_NUMBER);
             this.connectionUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, authorizationFilter, LocationRegistryData.CONNECTION_UNIT_CONFIG_FIELD_NUMBER);
         } catch (CouldNotPerformException ex) {
@@ -106,7 +104,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
     /**
      * {@inheritDoc }
      *
-     * @throws InterruptedException {@inheritDoc }
+     * @throws InterruptedException     {@inheritDoc }
      * @throws CouldNotPerformException {@inheritDoc }
      */
     @Override
@@ -297,7 +295,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
      * {@inheritDoc}
      *
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.openbase.jul.exception.NotAvailableException    {@inheritDoc}
      */
     @Override
     public List<UnitConfig> getLocationConfigs() throws CouldNotPerformException, NotAvailableException {
@@ -352,7 +350,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
      * {@inheritDoc}
      *
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.openbase.jul.exception.NotAvailableException    {@inheritDoc}
      */
     @Override
     public List<UnitConfig> getUnitConfigsByLocation(final UnitType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
@@ -376,7 +374,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
      * {@inheritDoc}
      *
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.openbase.jul.exception.NotAvailableException    {@inheritDoc}
      */
     @Override
     public List<UnitConfig> getUnitConfigsByLocationLabel(final UnitType unitType, final String locationLabel) throws CouldNotPerformException {
@@ -393,7 +391,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
      * {@inheritDoc}
      *
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.openbase.jul.exception.NotAvailableException    {@inheritDoc}
      */
     @Override
     public List<UnitConfig> getUnitConfigsByLocation(final ServiceType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
@@ -419,7 +417,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
      * {@inheritDoc}
      *
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.openbase.jul.exception.NotAvailableException    {@inheritDoc}
      */
     @Override
     public List<ServiceConfig> getServiceConfigsByLocation(final String locationId) throws CouldNotPerformException, NotAvailableException {
@@ -434,7 +432,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
      * {@inheritDoc}
      *
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.openbase.jul.exception.NotAvailableException    {@inheritDoc}
      */
     @Override
     public UnitConfig getRootLocationConfig() throws CouldNotPerformException, NotAvailableException {
@@ -558,7 +556,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
      * {@inheritDoc}
      *
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.openbase.jul.exception.NotAvailableException    {@inheritDoc}
      */
     @Override
     public List<UnitConfig> getConnectionConfigs() throws CouldNotPerformException {
@@ -585,7 +583,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
      * {@inheritDoc}
      *
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.openbase.jul.exception.NotAvailableException    {@inheritDoc}
      */
     @Override
     public List<UnitConfig> getUnitConfigsByConnection(UnitType type, String connectionConfigId) throws CouldNotPerformException, NotAvailableException {
@@ -609,7 +607,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
      * {@inheritDoc}
      *
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.openbase.jul.exception.NotAvailableException    {@inheritDoc}
      */
     @Override
     public List<UnitConfig> getUnitConfigsByConnection(ServiceType type, String connectionConfigId) throws CouldNotPerformException, NotAvailableException {
@@ -635,7 +633,7 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
      * {@inheritDoc}
      *
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
+     * @throws org.openbase.jul.exception.NotAvailableException    {@inheritDoc}
      */
     @Override
     public List<ServiceConfig> getServiceConfigsByConnection(String connectionConfigId) throws CouldNotPerformException {
@@ -757,5 +755,10 @@ public class LocationRegistryRemote extends AbstractVirtualRegistryRemote<Locati
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not compute unit intersection!", ex);
         }
+    }
+
+    @Override
+    public Boolean isConsistent() throws CouldNotPerformException {
+        return isLocationConfigRegistryConsistent() && isConnectionConfigRegistryConsistent();
     }
 }
