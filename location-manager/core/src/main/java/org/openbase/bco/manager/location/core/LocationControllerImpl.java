@@ -278,6 +278,13 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
                                     childLocation.setStandbyState(State.RUNNING).get();
                                 }
                                 dataBuilder.getInternalBuilder().setStandbyState(standbyState);
+                            case STANDBY:
+                                // already in standby but the command is send again
+                                // make sure that all children are in standby
+                                for(LocationRemote childLocation : getChildLocationList(false)) {
+                                    childLocation.waitForMiddleware();
+                                    childLocation.setStandbyState(State.STANDBY).get();
+                                }
                         }
                 }
 
