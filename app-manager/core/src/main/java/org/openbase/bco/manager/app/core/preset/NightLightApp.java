@@ -35,6 +35,7 @@ import org.openbase.jul.schedule.RecurrenceEventFilter;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.PowerStateType.PowerState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -72,17 +73,18 @@ public class NightLightApp extends AbstractAppController {
 
     public static void update(final LocationRemote location) {
         try {
-            System.out.println("update: " + location.getLabel());
             switch (location.getPresenceState().getValue()) {
                 case PRESENT:
                     if (!location.getColor().getHsbColor().equals(COLOR_ORANGE)) {
-                        System.out.println("Nightmode: switch orange " + location.getLabel() + " because of present state.");
+                        System.out.println("ColorsDiffer[" + location.getColor().getHsbColor() + "]");
+//                        System.out.println("Nightmode: switch location " + location.getLabel() + " to orange because of present state].");
                         location.setColor(COLOR_ORANGE);
                     }
                     break;
                 case ABSENT:
                     if (location.getPowerState(UnitType.LIGHT).getValue() == State.ON) {
-                        System.out.println("Nightmode: switch off " + location.getLabel() + " because of absent state.");
+                        System.out.println("Location power State[" + location.getPowerState().getValue() + ". " + location.getPowerState(UnitType.LIGHT).getValue() + "]");
+//                        System.out.println("Nightmode: switch off " + location.getLabel() + " because of absent state.");
                         location.setPowerState(State.OFF, UnitType.LIGHT);
                     }
                     break;
@@ -140,7 +142,7 @@ public class NightLightApp extends AbstractAppController {
 
                     final LocationRemote remote = Units.getUnit(locationUnitConfig, false, Units.LOCATION);
 
-                    final RecurrenceEventFilter<Void> eventFilter = new RecurrenceEventFilter<Void>(10000) {
+                    final RecurrenceEventFilter<Void> eventFilter = new RecurrenceEventFilter<Void>(1000) {
                         @Override
                         public void relay() throws Exception {
                             update(remote);
@@ -155,7 +157,7 @@ public class NightLightApp extends AbstractAppController {
 
                 if (getActivationState().getValue() == ActivationState.State.ACTIVE) {
                     locationMap.forEach((remote, observer) -> {
-                        remote.addDataObserver(observer);
+                        remote.addServiceStateObserver(ServiceType.PRESENCE_STATE_SERVICE, observer);
                         update(remote);
                     });
                 }
