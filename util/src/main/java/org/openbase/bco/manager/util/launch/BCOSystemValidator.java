@@ -90,7 +90,11 @@ public class BCOSystemValidator {
             registries.sort((registryRemote, t1) -> falseFirstBooleanComparator.compare(registryRemote instanceof AbstractVirtualRegistryRemote, t1 instanceof AbstractVirtualRegistryRemote));
             for (final RegistryRemote registry : registries) {
                 if (!check(registry, TimeUnit.SECONDS.toMillis(2))) {
-                    System.out.println(StringProcessor.fillWithSpaces(registry.getName(), LABEL_RANGE, Alignment.RIGHT) + "  " + AnsiColor.colorize(OK, AnsiColor.ANSI_GREEN));
+                    if (registry.isConsistent()) {
+                        System.out.println(StringProcessor.fillWithSpaces(registry.getName(), LABEL_RANGE, Alignment.RIGHT) + "  " + AnsiColor.colorize(OK, AnsiColor.ANSI_GREEN));
+                    } else {
+                        System.out.println(StringProcessor.fillWithSpaces(registry.getName(), LABEL_RANGE, Alignment.RIGHT) + "  " + AnsiColor.colorize("INCONSISTENT", AnsiColor.ANSI_RED));
+                    }
                 }
             }
             System.out.println();
