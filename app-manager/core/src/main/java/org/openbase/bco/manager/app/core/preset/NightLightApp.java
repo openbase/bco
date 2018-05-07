@@ -10,12 +10,12 @@ package org.openbase.bco.manager.app.core.preset;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -33,11 +33,13 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.RecurrenceEventFilter;
 import org.openbase.jul.schedule.SyncObject;
+import org.openbase.jul.schedule.Timeout;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.PowerStateType.PowerState.State;
+import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
@@ -48,6 +50,7 @@ import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
 import java.util.Map;
+import java.util.concurrent.TimeUnit;
 
 /**
  * UnitConfig
@@ -64,27 +67,41 @@ public class NightLightApp extends AbstractAppController {
 
     public NightLightApp() throws InstantiationException, InterruptedException {
         super(NightLightApp.class);
-//        try {
         this.locationMap = new HashMap<>();
-//        } catch (CouldNotPerformException ex) {
-//            throw new InstantiationException(this, ex);
-//        }
     }
 
-    public static void update(final LocationRemote location) {
+    public static void update(final LocationRemote location, final Timeout timeout) {
         try {
-            switch (location.getPresenceState().getValue()) {
+
+            // init present state with main location.
+            PresenceState.State presentState = location.getPresenceState().getValue();
+            for (final LocationRemote neighbor : location.getNeighborLocationList(true)) {
+
+                // break if any present person is detected.
+                if (presentState == PresenceState.State.PRESENT) {
+                    break;
+                }
+
+                // if not unknown apply state of neighbor
+                if (neighbor.getPresenceState().getValue() != PresenceState.State.UNKNOWN) {
+                    presentState = neighbor.getPresenceState().getValue();
+                }
+            }
+
+            switch (presentState) {
                 case PRESENT:
-                    if (!location.getColor().getHsbColor().equals(COLOR_ORANGE)) {
-                        System.out.println("ColorsDiffer[" + location.getColor().getHsbColor() + "]");
-//                        System.out.println("Nightmode: switch location " + location.getLabel() + " to orange because of present state].");
+                    if (timeout != null) {
+                        timeout.restart();
+                    }
+                    if (location.getPowerState(UnitType.COLORABLE_LIGHT).getValue() != State.ON || !isColorReached(location.getColor().getHsbColor(), COLOR_ORANGE)) {
+                    // System.out.println("Nightmode: switch location " + location.getLabel() + " to orange because of present state].");
                         location.setColor(COLOR_ORANGE);
                     }
                     break;
                 case ABSENT:
-                    if (location.getPowerState(UnitType.LIGHT).getValue() == State.ON) {
-                        System.out.println("Location power State[" + location.getPowerState().getValue() + ". " + location.getPowerState(UnitType.LIGHT).getValue() + "]");
-//                        System.out.println("Nightmode: switch off " + location.getLabel() + " because of absent state.");
+                    if (location.getPowerState(UnitType.LIGHT).getValue() == State.ON && (timeout == null || timeout.isExpired() || !timeout.isActive())) {
+                        // System.out.println("Location power State[" + location.getPowerState().getValue() + ". " + location.getPowerState(UnitType.LIGHT).getValue() + "]");
+                        // System.out.println("Nightmode: switch off " + location.getLabel() + " because of absent state.");
                         location.setPowerState(State.OFF, UnitType.LIGHT);
                     }
                     break;
@@ -92,6 +109,16 @@ public class NightLightApp extends AbstractAppController {
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not switch light in night mode!", ex, LOGGER);
         }
+    }
+
+    private static boolean isColorReached(final HSBColor hsbColorA, final HSBColor hsbColorB) {
+        return withinMargin(hsbColorA.getHue(), hsbColorB.getHue(), 10)
+                && withinMargin(hsbColorA.getSaturation(), hsbColorB.getSaturation(), 5)
+                && withinMargin(hsbColorA.getBrightness(), hsbColorB.getBrightness(), 5);
+    }
+
+    private static boolean withinMargin(double a, double b, double margin) {
+        return Math.abs(a - b) < margin;
     }
 
     @Override
@@ -123,42 +150,46 @@ public class NightLightApp extends AbstractAppController {
                 // clear tile remotes
                 locationMap.clear();
 
-                System.out.println("load locations:");
                 // load tile remotes
                 remoteLocationLoop:
                 for (final UnitConfig locationUnitConfig : Registries.getLocationRegistry(true).getLocationConfigsByType(LocationType.TILE)) {
 
                     // check if location was excluded
                     if (excludedLocations.contains(locationUnitConfig.getId())) {
-                        System.out.println("exclude locations: " + locationUnitConfig.getLabel());
+                        // System.out.println("exclude locations: " + locationUnitConfig.getLabel());
                         continue remoteLocationLoop;
                     }
                     for (String alias : locationUnitConfig.getAliasList()) {
                         if (excludedLocations.contains(alias)) {
-                            System.out.println("exclude locations: " + locationUnitConfig.getLabel());
+                            // System.out.println("exclude locations: " + locationUnitConfig.getLabel());
                             continue remoteLocationLoop;
                         }
                     }
 
                     final LocationRemote remote = Units.getUnit(locationUnitConfig, false, Units.LOCATION);
 
+                    final Timeout nightModeTimeout;
+                    nightModeTimeout = new Timeout(10, TimeUnit.MINUTES) {
+                        @Override
+                        public void expired() throws InterruptedException {
+                            update(remote, this);
+                        }
+                    };
+
+
                     final RecurrenceEventFilter<Void> eventFilter = new RecurrenceEventFilter<Void>(1000) {
                         @Override
                         public void relay() throws Exception {
-                            update(remote);
+                            update(remote, nightModeTimeout);
                         }
                     };
-                    System.out.println("create observer for locations: " + locationUnitConfig.getLabel());
-                    if (locationMap.containsKey(remote)) {
-                        System.out.println("location " + remote.getLabel() + "already registered!");
-                    }
                     locationMap.put(remote, (source, data) -> eventFilter.trigger());
                 }
 
                 if (getActivationState().getValue() == ActivationState.State.ACTIVE) {
                     locationMap.forEach((remote, observer) -> {
                         remote.addServiceStateObserver(ServiceType.PRESENCE_STATE_SERVICE, observer);
-                        update(remote);
+                        update(remote, null);
                     });
                 }
             }
@@ -183,7 +214,14 @@ public class NightLightApp extends AbstractAppController {
         synchronized (locationMapLock) {
             locationMap.forEach((remote, observer) -> {
                 remote.addDataObserver(observer);
-                update(remote);
+                try {
+                    for (LocationRemote neighbor : remote.getNeighborLocationList(false)) {
+                        neighbor.addDataObserver(observer);
+                    }
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not register observer on neighbor locations.", ex, LOGGER);
+                }
+                update(remote, null);
             });
         }
     }
@@ -193,6 +231,13 @@ public class NightLightApp extends AbstractAppController {
         synchronized (locationMapLock) {
             locationMap.forEach((remote, observer) -> {
                 remote.removeDataObserver(observer);
+                try {
+                    for (LocationRemote neighbor : remote.getNeighborLocationList(false)) {
+                        neighbor.removeDataObserver(observer);
+                    }
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not remove observer from neighbor locations.", ex, LOGGER);
+                }
             });
         }
     }
