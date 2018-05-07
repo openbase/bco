@@ -117,6 +117,7 @@ public abstract class AbstractRegistryRemote<M extends GeneratedMessage> extends
      */
     @Override
     public Boolean isReady() throws InterruptedException {
+        // todo release: "is" method should not block and return an InterruptedException
         try {
             if (!isConnected()) {
                 return false;
