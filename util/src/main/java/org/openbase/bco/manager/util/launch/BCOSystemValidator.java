@@ -43,8 +43,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.text.DecimalFormat;
-import java.util.List;
-import java.util.TreeSet;
+import java.util.*;
 import java.util.concurrent.*;
 
 /**
@@ -114,7 +113,8 @@ public class BCOSystemValidator {
                 }
             } else {
                 boolean printed = false;
-                TreeSet<UnitRemote<?>> unitSet = new TreeSet<>((unitRemote, t1) -> {
+                final List<UnitRemote<?>> unitList = new ArrayList<>(futureUnits.get());
+                unitList.sort((unitRemote, t1) -> {
                     try {
                         return trueFirstBooleanComparator.compare(unitRemote.isDalUnit(), t1.isDalUnit());
                     } catch (CouldNotPerformException ex) {
@@ -122,8 +122,7 @@ public class BCOSystemValidator {
                         return 0;
                     }
                 });
-                unitSet.addAll(futureUnits.get());
-                for (final UnitRemote<?> unit : unitSet) {
+                for (final UnitRemote<?> unit : unitList) {
                     printed = check(unit) || printed;
                 }
                 if (!printed) {
