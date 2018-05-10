@@ -1,15 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.openbase.bco</groupId>
-    <artifactId>manager.util</artifactId>
+    <groupId>org.openbase</groupId>
+    <artifactId>bco.manager.util</artifactId>
     <packaging>jar</packaging>
 
     <name>BCO Manager Utility</name>
     
     <parent>
-        <groupId>org.openbase.bco</groupId>
-        <artifactId>manager</artifactId>
+        <groupId>org.openbase</groupId>
+        <artifactId>bco.manager</artifactId>
         <version>1.6-SNAPSHOT</version>
     </parent>
     
@@ -124,70 +124,70 @@
     <dependencies>
         <!-- registries -->
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.util</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.util</artifactId>
             <version>${dependency.bco.registry.version}</version>
         </dependency>
         <!-- manager -->
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>manager.agent.core</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.manager.agent.core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>manager.app.core</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.manager.app.core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>manager.device.core</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.manager.device.core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>manager.location.core</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.manager.location.core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>manager.scene.core</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.manager.scene.core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>manager.user.core</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.manager.user.core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <!-- manager bindings -->
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>manager.app.binding.openhab</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.manager.app.binding.openhab</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>manager.agent.binding.openhab</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.manager.agent.binding.openhab</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>manager.location.binding.openhab</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.manager.location.binding.openhab</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>manager.scene.binding.openhab</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.manager.scene.binding.openhab</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>manager.device.binding.openhab</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.manager.device.binding.openhab</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>dal.test</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.dal.test</artifactId>
             <version>${dependency.bco.dal.version}</version>
             <scope>test</scope>
         </dependency>

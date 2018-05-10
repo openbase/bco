@@ -2,16 +2,16 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/maven-v4_0_0.xsd">
     <modelVersion>4.0.0</modelVersion>
     
-    <groupId>org.openbase.bco</groupId>
-    <artifactId>manager.device.binding</artifactId>
+    <groupId>org.openbase</groupId>
+    <artifactId>bco.manager.device.binding</artifactId>
     <name>BCO Manager Device Bindings</name>
     <description>DeviceManager Binding Collection</description>
     
     <packaging>pom</packaging>
     
     <parent>
-        <groupId>org.openbase.bco</groupId>
-        <artifactId>manager.device</artifactId>
+        <groupId>org.openbase</groupId>
+        <artifactId>bco.manager.device</artifactId>
         <version>1.6-SNAPSHOT</version>
     </parent>
     

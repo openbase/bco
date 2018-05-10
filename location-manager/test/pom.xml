@@ -1,15 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.openbase.bco</groupId>
-    <artifactId>manager.location.test</artifactId>
+    <groupId>org.openbase</groupId>
+    <artifactId>bco.manager.location.test</artifactId>
     <packaging>jar</packaging>
 
     <name>BCO Manager Location Test</name>
     
     <parent>
-        <groupId>org.openbase.bco</groupId>
-        <artifactId>manager.location</artifactId>
+        <groupId>org.openbase</groupId>
+        <artifactId>bco.manager.location</artifactId>
         <version>1.6-SNAPSHOT</version>
     </parent>
     
@@ -71,44 +71,44 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>manager.location.lib</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.manager.location.lib</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>manager.location.core</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.manager.location.core</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>manager.location.remote</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.manager.location.remote</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>manager.device.core</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.manager.device.core</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>manager.user.core</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.manager.user.core</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>manager.device.remote</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.manager.device.remote</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>dal.test</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.dal.test</artifactId>
             <version>${dependency.bco.dal.version}</version>
             <scope>test</scope>
         </dependency>

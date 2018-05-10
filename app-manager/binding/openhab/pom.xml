@@ -1,15 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.openbase.bco</groupId>
-    <artifactId>manager.app.binding.openhab</artifactId>
+    <groupId>org.openbase</groupId>
+    <artifactId>bco.manager.app.binding.openhab</artifactId>
     <packaging>jar</packaging>
 
     <name>BCO Manager App Binding OpenHAB</name>
     
     <parent>
-        <groupId>org.openbase.bco</groupId>
-        <artifactId>manager.app.binding</artifactId>
+        <groupId>org.openbase</groupId>
+        <artifactId>bco.manager.app.binding</artifactId>
         <version>1.6-SNAPSHOT</version>
     </parent>    
     
@@ -103,8 +103,8 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>manager.app.remote</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.manager.app.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

@@ -1,15 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.openbase.bco</groupId>
-    <artifactId>manager.scene.visual</artifactId>
+    <groupId>org.openbase</groupId>
+    <artifactId>bco.manager.scene.visual</artifactId>
     <packaging>jar</packaging>
 
     <name>BCO Manager Scene Visualisation</name>
     
     <parent>
-        <groupId>org.openbase.bco</groupId>
-        <artifactId>manager.scene</artifactId>
+        <groupId>org.openbase</groupId>
+        <artifactId>bco.manager.scene</artifactId>
         <version>1.6-SNAPSHOT</version>
     </parent>    
     
@@ -132,13 +132,13 @@
     
     <dependencies>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>dal.visual</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.dal.visual</artifactId>
             <version>${dependency.bco.dal.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>manager.scene.remote</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.manager.scene.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
     </dependencies>
