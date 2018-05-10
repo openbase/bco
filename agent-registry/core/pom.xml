@@ -1,15 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.openbase.bco</groupId>
-    <artifactId>registry.agent.core</artifactId>
+    <groupId>org.openbase</groupId>
+    <artifactId>bco.registry.agent.core</artifactId>
     <packaging>jar</packaging>
 
     <name>BCO Registry Agent Core</name>
     
     <parent>
-        <groupId>org.openbase.bco</groupId>
-        <artifactId>registry.agent</artifactId>
+        <groupId>org.openbase</groupId>
+        <artifactId>bco.registry.agent</artifactId>
         <version>1.6-SNAPSHOT</version>
     </parent>
     
@@ -80,13 +80,13 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.unit.remote</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.unit.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.agent.lib</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.agent.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>

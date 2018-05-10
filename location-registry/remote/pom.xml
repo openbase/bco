@@ -1,15 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.openbase.bco</groupId>
-    <artifactId>registry.location.remote</artifactId>
+    <groupId>org.openbase</groupId>
+    <artifactId>bco.registry.location.remote</artifactId>
     <packaging>jar</packaging>
 
     <name>BCO Registry Location Remote</name>
     
     <parent>
-        <groupId>org.openbase.bco</groupId>
-        <artifactId>registry.location</artifactId>
+        <groupId>org.openbase</groupId>
+        <artifactId>bco.registry.location</artifactId>
         <version>1.6-SNAPSHOT</version>
     </parent>    
     
@@ -55,14 +55,14 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.location.lib</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.location.lib</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.unit.remote</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.unit.remote</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>

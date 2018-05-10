@@ -1,15 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.openbase.bco</groupId>
-    <artifactId>registry.unit.core</artifactId>
+    <groupId>org.openbase</groupId>
+    <artifactId>bco.registry.unit.core</artifactId>
     <packaging>jar</packaging>
 
     <name>BCO Registry Unit Core</name>
     
     <parent>
-        <groupId>org.openbase.bco</groupId>
-        <artifactId>registry.unit</artifactId>
+        <groupId>org.openbase</groupId>
+        <artifactId>bco.registry.unit</artifactId>
         <version>1.6-SNAPSHOT</version>
     </parent>
     
@@ -80,28 +80,28 @@
 
     <dependencies>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.unit.lib</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.unit.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.device.remote</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.device.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.location.remote</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.location.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.app.remote</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.app.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.agent.remote</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.agent.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
@@ -130,8 +130,8 @@
             <version>${dependency.jul.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>authentication.core</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.authentication.core</artifactId>
             <version>${dependency.bco.authentication.version}</version>
         </dependency>
     </dependencies>

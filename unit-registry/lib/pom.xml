@@ -1,15 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.openbase.bco</groupId>
-    <artifactId>registry.unit.lib</artifactId>
+    <groupId>org.openbase</groupId>
+    <artifactId>bco.registry.unit.lib</artifactId>
     <packaging>jar</packaging>
 
     <name>BCO Registry Unit Library</name>
     
     <parent>
-        <groupId>org.openbase.bco</groupId>
-        <artifactId>registry.unit</artifactId>
+        <groupId>org.openbase</groupId>
+        <artifactId>bco.registry.unit</artifactId>
         <version>1.6-SNAPSHOT</version>
     </parent>    
     
@@ -61,8 +61,8 @@
             <type>jar</type>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.lib</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.lib</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>

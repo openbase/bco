@@ -1,15 +1,15 @@
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
     <modelVersion>4.0.0</modelVersion>
 
-    <groupId>org.openbase.bco</groupId>
-    <artifactId>registry.device.test</artifactId>
+    <groupId>org.openbase</groupId>
+    <artifactId>bco.registry.device.test</artifactId>
     <packaging>jar</packaging>
 
     <name>BCO Registry Device Test</name>
     
     <parent>
-        <groupId>org.openbase.bco</groupId>
-        <artifactId>registry.device</artifactId>
+        <groupId>org.openbase</groupId>
+        <artifactId>bco.registry.device</artifactId>
         <version>1.6-SNAPSHOT</version>
     </parent>
     
@@ -66,29 +66,29 @@
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.device.lib</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.device.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.device.core</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.device.core</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.device.remote</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.device.remote</artifactId>
             <version>${project.version}</version>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.location.core</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.location.core</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
         <dependency>
-            <groupId>org.openbase.bco</groupId>
-            <artifactId>registry.user.core</artifactId>
+            <groupId>org.openbase</groupId>
+            <artifactId>bco.registry.user.core</artifactId>
             <version>${project.version}</version>
             <scope>test</scope>
         </dependency>
