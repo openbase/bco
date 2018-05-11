@@ -27,12 +27,12 @@ import java.util.concurrent.Future;
 import org.openbase.bco.registry.device.core.consistency.DeviceClassRequiredFieldConsistencyHandler;
 import org.openbase.bco.registry.device.core.consistency.UnitTemplateConfigIdConsistencyHandler;
 import org.openbase.bco.registry.device.core.consistency.UnitTemplateConfigLabelConsistencyHandler;
-import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.lib.generator.DeviceClassIdGenerator;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceClassDatabaseDirectory;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryController;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
+import org.openbase.bco.registry.lib.provider.DeviceClassCollectionProvider;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
@@ -45,6 +45,8 @@ import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.iface.Launchable;
+import org.openbase.jul.iface.Shutdownable;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
@@ -65,7 +67,7 @@ import rst.rsb.ScopeType;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class DeviceRegistryController extends AbstractVirtualRegistryController<DeviceRegistryData, DeviceRegistryData.Builder, UnitRegistryData> implements DeviceRegistry, Launchable<ScopeType.Scope> {
+public class DeviceRegistryController extends AbstractVirtualRegistryController<DeviceRegistryData, DeviceRegistryData.Builder, UnitRegistryData> implements Launchable<ScopeType.Scope>, DataProvider<DeviceRegistryData>, DeviceClassCollectionProvider, Shutdownable {
     
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistryData.getDefaultInstance()));

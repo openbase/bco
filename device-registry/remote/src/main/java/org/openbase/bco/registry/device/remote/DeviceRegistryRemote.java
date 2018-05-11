@@ -23,13 +23,13 @@ package org.openbase.bco.registry.device.remote;
  */
 
 import org.openbase.bco.authentication.lib.AuthorizationFilter;
-import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractVirtualRegistryRemote;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.lib.com.future.RegistrationFuture;
 import org.openbase.bco.registry.lib.com.future.RemovalFuture;
 import org.openbase.bco.registry.lib.com.future.UpdateFuture;
+import org.openbase.bco.registry.lib.provider.DeviceClassCollectionProvider;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jps.core.JPService;
@@ -39,6 +39,8 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.iface.Shutdownable;
+import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -61,7 +63,7 @@ import java.util.concurrent.Future;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRegistryData> implements DeviceRegistry, RegistryRemote<DeviceRegistryData> {
+public class DeviceRegistryRemote extends AbstractVirtualRegistryRemote<DeviceRegistryData> implements RegistryRemote<DeviceRegistryData>, DataProvider<DeviceRegistryData>, DeviceClassCollectionProvider, Shutdownable {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(DeviceRegistryData.getDefaultInstance()));

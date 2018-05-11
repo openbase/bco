@@ -33,7 +33,6 @@ import org.openbase.bco.registry.app.core.AppRegistryLauncher;
 import org.openbase.bco.registry.app.lib.AppRegistry;
 import org.openbase.bco.registry.app.remote.CachedAppRegistryRemote;
 import org.openbase.bco.registry.device.core.DeviceRegistryLauncher;
-import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.openbase.bco.registry.location.core.LocationRegistryLauncher;
 import org.openbase.bco.registry.location.lib.LocationRegistry;

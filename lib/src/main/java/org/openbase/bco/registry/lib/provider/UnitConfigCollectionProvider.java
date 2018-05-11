@@ -31,13 +31,27 @@ import java.util.List;
 
 public interface UnitConfigCollectionProvider {
 
-    public List<UnitConfig> getUnitConfigs() throws CouldNotPerformException;
+    /**
+     * Method returns all registered unit configs.
+     *
+     * @return the unit configs stored in this registry.
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    List<UnitConfig> getUnitConfigs() throws CouldNotPerformException;
 
     @RPCMethod
-    public Boolean containsUnitConfigById(final String unitConfigId) throws CouldNotPerformException;
+    Boolean containsUnitConfigById(final String unitConfigId) throws CouldNotPerformException;
 
+    /**
+     * Method returns the unit config which is registered with the given
+     * unit id.
+     *
+     * @param unitConfigId
+     * @return the requested unit config.
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
     @RPCMethod
-    public UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException;
+    UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException;
 
     /**
      * Method returns a list of all globally registered units of the given {@code type}.
@@ -48,5 +62,5 @@ public interface UnitConfigCollectionProvider {
      * @return a list of unit configurations.
      * @throws CouldNotPerformException is thrown in case something goes wrong during the request.
      */
-    public List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException;
+    List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException;
 }

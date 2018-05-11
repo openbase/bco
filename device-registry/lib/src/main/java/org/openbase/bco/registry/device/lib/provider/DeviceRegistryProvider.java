@@ -22,7 +22,6 @@ package org.openbase.bco.registry.device.lib.provider;
  * #L%
  */
 
-import org.openbase.bco.registry.device.lib.DeviceRegistry;
 import org.openbase.jul.exception.NotAvailableException;
 
 /**

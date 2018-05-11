@@ -24,13 +24,9 @@ package org.openbase.bco.registry.unit.lib;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 
-import java.util.*;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
-
+import org.openbase.bco.registry.lib.provider.UnitConfigCollectionProvider;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.unit.lib.provider.UnitTransformationProviderRegistry;
-import org.openbase.bco.registry.lib.provider.UnitConfigCollectionProvider;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -39,7 +35,6 @@ import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.pattern.provider.DataProvider;
-import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType;
@@ -53,9 +48,18 @@ import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.rsb.ScopeType.Scope;
 
 import javax.vecmath.Point3d;
+import java.util.*;
+import java.util.concurrent.Future;
 
 public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransformationProviderRegistry<UnitRegistryData>, UnitConfigCollectionProvider, Shutdownable {
 
+    /**
+     * This method registers the given unit config in the registry.
+     *
+     * @param unitConfig the unit config to register.
+     * @return the registered unit config with all applied consistency changes.
+     * @throws CouldNotPerformException is thrown if the entry already exists or results in an inconsistent registry
+     */
     @RPCMethod
     public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
 
@@ -202,11 +206,13 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Method returns all registered units with the given label. Label resolving
      * is done case insensitive!
      *
-     * @param unitConfigLabel
+     * Note: PLEASE DO NOT USE THIS METHOD TO REQUEST DEVICES FOR THE CONTROLLING PURPOSE BECAUSE LABELS ARE NOT A STABLE IDENTIFIER! USE ID OR ALIAS INSTEAD!
      *
-     * @return
+     * @param unitConfigLabel the label to identify a set of units.
      *
-     * @throws CouldNotPerformException
+     * @returna list of the requested unit configs.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
      */
     public List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException;
 
@@ -300,22 +306,6 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      */
     @RPCMethod
     public UnitConfig getUnitConfigByScope(final Scope scope) throws CouldNotPerformException;
-
-    /**
-     * Get all sub types of a unit type. E.g. COLORABLE_LIGHT and DIMMABLE_LIGHT are
-     * sub types of LIGHT.
-     *
-     * @param type the super type whose sub types are searched
-     *
-     * @return all types of which the given type is a super type
-     *
-     * @throws CouldNotPerformException
-     * @deprecated please use getSubUnitTypes instead
-     */
-    @Deprecated
-    public default List<UnitType> getSubUnitTypesOfUnitType(final UnitType type) throws CouldNotPerformException {
-        return getSubUnitTypes(type);
-    }
 
     /**
      * Get all sub types of a unit type. E.g. COLORABLE_LIGHT and DIMMABLE_LIGHT are
@@ -473,4 +463,16 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
         }
         return new ArrayList<>(result.values());
     }
+
+    /**
+     * Retrieves a user ID according to a given user name.
+     * If multiple users happen to have the same user name, the first one is returned.
+     *
+     * @param userName
+     * @return User ID
+     * @throws CouldNotPerformException
+     * @throws NotAvailableException If no user with the given user name could be found.
+     */
+    @RPCMethod
+    public String getUserIdByUserName(final String userName) throws CouldNotPerformException, NotAvailableException;
 }

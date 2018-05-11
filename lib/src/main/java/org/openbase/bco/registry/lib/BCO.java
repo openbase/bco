@@ -28,6 +28,8 @@ import java.util.Calendar;
  */
 public interface BCO {
 
+    //todo release: move to low level project authentication
+
     public static final String CURRENT_YEAR = Integer.toString(Calendar.getInstance().get(Calendar.YEAR));
     public static final String BCO_LOGO_ASCI_ARTS
             = "                                 \n"

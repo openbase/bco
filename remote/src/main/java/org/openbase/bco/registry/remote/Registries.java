@@ -74,9 +74,8 @@ public class Registries {
      *
      * @return the remote registry instance.
      * @throws NotAvailableException
-     * @throws InterruptedException is thrown if thread is externally interrupted.
      */
-    public static UnitRegistryRemote getUnitRegistry() throws NotAvailableException, InterruptedException {
+    public static UnitRegistryRemote getUnitRegistry() throws NotAvailableException {
         return CachedUnitRegistryRemote.getRegistry();
     }
 
@@ -85,9 +84,8 @@ public class Registries {
      *
      * @return the remote registry instance.
      * @throws NotAvailableException
-     * @throws InterruptedException is thrown if thread is externally interrupted.
      */
-    public static AgentRegistryRemote getAgentRegistry() throws NotAvailableException, InterruptedException {
+    public static AgentRegistryRemote getAgentRegistry() throws NotAvailableException {
         return CachedAgentRegistryRemote.getRegistry();
     }
 
@@ -96,9 +94,8 @@ public class Registries {
      *
      * @return the remote registry instance.
      * @throws NotAvailableException
-     * @throws InterruptedException is thrown if thread is externally interrupted.
      */
-    public static AppRegistryRemote getAppRegistry() throws NotAvailableException, InterruptedException {
+    public static AppRegistryRemote getAppRegistry() throws NotAvailableException {
         return CachedAppRegistryRemote.getRegistry();
     }
 
@@ -109,7 +106,7 @@ public class Registries {
      * @throws NotAvailableException
      * @throws InterruptedException is thrown if thread is externally interrupted.
      */
-    public static DeviceRegistryRemote getDeviceRegistry() throws NotAvailableException, InterruptedException {
+    public static DeviceRegistryRemote getDeviceRegistry() throws NotAvailableException {
         return CachedDeviceRegistryRemote.getRegistry();
     }
 
@@ -120,7 +117,7 @@ public class Registries {
      * @throws NotAvailableException
      * @throws InterruptedException is thrown if thread is externally interrupted.
      */
-    public static LocationRegistryRemote getLocationRegistry() throws NotAvailableException, InterruptedException {
+    public static LocationRegistryRemote getLocationRegistry() throws NotAvailableException {
         return CachedLocationRegistryRemote.getRegistry();
     }
 
@@ -131,7 +128,7 @@ public class Registries {
      * @throws NotAvailableException
      * @throws InterruptedException is thrown if thread is externally interrupted.
      */
-    public static SceneRegistryRemote getSceneRegistry() throws NotAvailableException, InterruptedException {
+    public static SceneRegistryRemote getSceneRegistry() throws NotAvailableException {
         return CachedSceneRegistryRemote.getRegistry();
     }
     
@@ -142,7 +139,7 @@ public class Registries {
      * @throws NotAvailableException
      * @throws InterruptedException is thrown if thread is externally interrupted.
      */
-    public static UserActivityRegistryRemote getUserActivityRegistry() throws NotAvailableException, InterruptedException {
+    public static UserActivityRegistryRemote getUserActivityRegistry() throws NotAvailableException {
         return CachedUserActivityRegistryRemote.getRegistry();
     }
 
@@ -153,7 +150,7 @@ public class Registries {
      * @throws NotAvailableException
      * @throws InterruptedException is thrown if thread is externally interrupted.
      */
-    public static UserRegistryRemote getUserRegistry() throws NotAvailableException, InterruptedException {
+    public static UserRegistryRemote getUserRegistry() throws NotAvailableException {
         return CachedUserRegistryRemote.getRegistry();
     }
 

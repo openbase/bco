@@ -57,38 +57,6 @@ import java.util.stream.Collectors;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface LocationRegistry extends DataProvider<LocationRegistryData>, UnitTransformationProviderRegistry<LocationRegistryData>, Shutdownable {
-
-    /**
-     * This method registers the given location config in the registry.
-     *
-     * @param locationConfig the location config registered
-     * @return the registered location config
-     * @throws CouldNotPerformException is thrown if the entry already exists or results in an inconsistent registry
-     */
-    @RPCMethod
-    Future<UnitConfig> registerLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException;
-
-    /**
-     * Method returns the location config which is registered with the given
-     * location id.
-     *
-     * @param locationId
-     * @return the requested unit config.
-     * @throws CouldNotPerformException is thrown if the request fails.
-     */
-    @RPCMethod
-    UnitConfig getLocationConfigById(final String locationId) throws CouldNotPerformException;
-
-    /**
-     * Method returns all location configs which are assigned to the given
-     * label. Label resolving is done case insensitive!
-     *
-     * @param locationLabel
-     * @return a list of the requested unit configs.
-     * @throws CouldNotPerformException is thrown if the request fails.
-     */
-    List<UnitConfig> getLocationConfigsByLabel(final String locationLabel) throws CouldNotPerformException;
-
     /**
      * Method returns all location configs which are of the given location type.
      *
@@ -171,15 +139,6 @@ public interface LocationRegistry extends DataProvider<LocationRegistryData>, Un
      */
     @RPCMethod
     Future<UnitConfig> removeLocationConfig(final UnitConfig locationConfig) throws CouldNotPerformException;
-
-    /**
-     * Method returns all registered location configs.
-     *
-     * @return the location configs stored in this registry.
-     * @throws CouldNotPerformException is thrown if the request fails.
-     * @throws NotAvailableException
-     */
-    List<UnitConfig> getLocationConfigs() throws CouldNotPerformException;
 
     /**
      * Method returns all unit configurations which are direct or recursive related to the given location id.
