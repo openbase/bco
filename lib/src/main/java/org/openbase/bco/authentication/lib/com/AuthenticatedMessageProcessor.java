@@ -45,22 +45,30 @@ public class AuthenticatedMessageProcessor<M extends GeneratedMessage> extends S
     public M process(GeneratedMessage input) throws CouldNotPerformException, InterruptedException {
         if (input instanceof AuthenticatedValue) {
             AuthenticatedValue authenticatedValue = (AuthenticatedValue) input;
-            if (SessionManager.getInstance().isLoggedIn()) {
-                try {
-                    return super.process(EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), getDataClass()));
-                } catch (BadPaddingException | IOException ex) {
-                    throw new CouldNotPerformException("Decrypting result in of authenticated value failed!", ex);
-                }
-            } else {
-                try {
-                    Method parseFrom = getDataClass().getMethod("parseFrom", ByteString.class);
-                    return super.process((M) parseFrom.invoke(null, authenticatedValue.getValue()));
-                } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                    throw new CouldNotPerformException("Could not invoke parseFrom method on [" + getDataClass().getSimpleName() + "]", ex);
-                }
-            }
+            return super.process(getDataFromAuthenticatedValue(authenticatedValue, getDataClass()));
         } else {
             return super.process(input);
+        }
+    }
+
+    public static <M extends GeneratedMessage> M getDataFromAuthenticatedValue(final AuthenticatedValue authenticatedValue, final Class<M> dataClass) throws CouldNotPerformException {
+        return getDataFromAuthenticatedValue(authenticatedValue, SessionManager.getInstance(), dataClass);
+    }
+
+    public static <M extends GeneratedMessage> M getDataFromAuthenticatedValue(final AuthenticatedValue authenticatedValue, final SessionManager sessionManager, final Class<M> dataClass) throws CouldNotPerformException {
+        if (SessionManager.getInstance().isLoggedIn()) {
+            try {
+                return EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), dataClass);
+            } catch (BadPaddingException | IOException ex) {
+                throw new CouldNotPerformException("Decrypting result of authenticated value failed!", ex);
+            }
+        } else {
+            try {
+                Method parseFrom = dataClass.getMethod("parseFrom", ByteString.class);
+                return (M) parseFrom.invoke(null, authenticatedValue.getValue());
+            } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                throw new CouldNotPerformException("Could not invoke parseFrom method on [" + dataClass.getSimpleName() + "]", ex);
+            }
         }
     }
 }

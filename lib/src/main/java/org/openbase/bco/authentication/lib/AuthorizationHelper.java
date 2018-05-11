@@ -23,16 +23,9 @@ package org.openbase.bco.authentication.lib;
  */
 
 import com.google.protobuf.ProtocolStringList;
-
-import java.util.Map;
-
-import jnr.ffi.annotations.In;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.StackTracePrinter;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
@@ -43,7 +36,7 @@ import rst.domotic.authentication.PermissionType.Permission;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
-import javax.xml.stream.events.NotationDeclaration;
+import java.util.Map;
 
 /**
  * Helper class to determine the permissions for a given user on a given permission configuration.
@@ -56,7 +49,7 @@ public class AuthorizationHelper {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AuthorizationHelper.class);
 
-    private enum Type {
+    public enum Type {
         READ,
         WRITE,
         ACCESS
@@ -121,13 +114,13 @@ public class AuthorizationHelper {
                 .build();
     }
 
-    private static boolean canDo(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations, Type type) {
+    public static boolean canDo(UnitConfig unitConfig, String userId, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups, Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations, Type type) {
 
         // BUG WORKAROUND
         // todo remove me after fixing openbase/bco.authentication#61
-        if(unitConfig.getType() == UnitType.UNKNOWN) {
-            return true;
-        }
+//        if(unitConfig.getType() == UnitType.UNKNOWN) {
+//            return true;
+//        }
 
         if (!isAuthenticationUnit(unitConfig) && !isRootLocation(unitConfig, locations)) {
             // check if the given user has read permissions for the parent location otherwise skip all further checks
