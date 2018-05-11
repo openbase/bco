@@ -27,8 +27,8 @@ import org.openbase.bco.registry.agent.remote.AgentRegistryRemote;
 import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
 import org.openbase.bco.registry.app.remote.AppRegistryRemote;
 import org.openbase.bco.registry.app.remote.CachedAppRegistryRemote;
-import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
-import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
+import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
+import org.openbase.bco.registry.clazz.remote.ClassRegistryRemote;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import org.openbase.bco.registry.scene.remote.CachedSceneRegistryRemote;
@@ -106,8 +106,8 @@ public class Registries {
      * @throws NotAvailableException
      * @throws InterruptedException is thrown if thread is externally interrupted.
      */
-    public static DeviceRegistryRemote getDeviceRegistry() throws NotAvailableException {
-        return CachedDeviceRegistryRemote.getRegistry();
+    public static ClassRegistryRemote getDeviceRegistry() throws NotAvailableException {
+        return CachedClassRegistryRemote.getRegistry();
     }
 
     /**
@@ -207,11 +207,11 @@ public class Registries {
      * @throws NotAvailableException
      * @throws InterruptedException is thrown if thread is externally interrupted.
      */
-    public static DeviceRegistryRemote getDeviceRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
+    public static ClassRegistryRemote getDeviceRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
         if (waitForData) {
-            CachedDeviceRegistryRemote.getRegistry().waitForData();
+            CachedClassRegistryRemote.getRegistry().waitForData();
         }
-        return CachedDeviceRegistryRemote.getRegistry();
+        return CachedClassRegistryRemote.getRegistry();
     }
 
     /**
@@ -286,7 +286,7 @@ public class Registries {
         CachedUnitRegistryRemote.shutdown();
         CachedAgentRegistryRemote.shutdown();
         CachedAppRegistryRemote.shutdown();
-        CachedDeviceRegistryRemote.shutdown();
+        CachedClassRegistryRemote.shutdown();
         CachedLocationRegistryRemote.shutdown();
         CachedSceneRegistryRemote.shutdown();
         CachedUserRegistryRemote.shutdown();
@@ -303,7 +303,7 @@ public class Registries {
         CachedUnitRegistryRemote.waitForData();
         CachedAgentRegistryRemote.waitForData();
         CachedAppRegistryRemote.waitForData();
-        CachedDeviceRegistryRemote.waitForData();
+        CachedClassRegistryRemote.waitForData();
         CachedLocationRegistryRemote.waitForData();
         CachedSceneRegistryRemote.waitForData();
         CachedUserRegistryRemote.waitForData();
@@ -315,7 +315,7 @@ public class Registries {
             return CachedUnitRegistryRemote.getRegistry().isDataAvailable()
                     && CachedAgentRegistryRemote.getRegistry().isDataAvailable()
                     && CachedAppRegistryRemote.getRegistry().isDataAvailable()
-                    && CachedDeviceRegistryRemote.getRegistry().isDataAvailable()
+                    && CachedClassRegistryRemote.getRegistry().isDataAvailable()
                     && CachedLocationRegistryRemote.getRegistry().isDataAvailable()
                     && CachedSceneRegistryRemote.getRegistry().isDataAvailable()
                     && CachedUserRegistryRemote.getRegistry().isDataAvailable()
@@ -338,7 +338,7 @@ public class Registries {
         CachedUnitRegistryRemote.reinitialize();
         CachedAgentRegistryRemote.reinitialize();
         CachedAppRegistryRemote.reinitialize();
-        CachedDeviceRegistryRemote.reinitialize();
+        CachedClassRegistryRemote.reinitialize();
         CachedLocationRegistryRemote.reinitialize();
         CachedSceneRegistryRemote.reinitialize();
         CachedUserRegistryRemote.reinitialize();
@@ -357,7 +357,7 @@ public class Registries {
         CachedUnitRegistryRemote.waitUntilReady();
         CachedAgentRegistryRemote.waitUntilReady();
         CachedAppRegistryRemote.waitUntilReady();
-        CachedDeviceRegistryRemote.waitUntilReady();
+        CachedClassRegistryRemote.waitUntilReady();
         CachedLocationRegistryRemote.waitUntilReady();
         CachedSceneRegistryRemote.waitUntilReady();
         CachedUserRegistryRemote.waitUntilReady();

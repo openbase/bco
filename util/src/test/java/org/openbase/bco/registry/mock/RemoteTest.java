@@ -27,7 +27,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
+import org.openbase.bco.registry.clazz.remote.ClassRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Remote;
@@ -77,12 +77,12 @@ public class RemoteTest {
     @Test(timeout = 15000)
     public void testRestartingDeviceRegistryRemotes() throws Exception {
         System.out.println("testRestartingDeviceRegistryRemotes");
-        DeviceRegistryRemote deviceRemoteAlwaysOn = new DeviceRegistryRemote();
+        ClassRegistryRemote deviceRemoteAlwaysOn = new ClassRegistryRemote();
         deviceRemoteAlwaysOn.init();
         deviceRemoteAlwaysOn.activate();
         deviceRemoteAlwaysOn.waitForConnectionState(Remote.ConnectionState.CONNECTED);
 
-        DeviceRegistryRemote deviceRemoteToggle = new DeviceRegistryRemote();
+        ClassRegistryRemote deviceRemoteToggle = new ClassRegistryRemote();
         deviceRemoteToggle.init();
         deviceRemoteToggle.activate();
         deviceRemoteToggle.waitForConnectionState(Remote.ConnectionState.CONNECTED);

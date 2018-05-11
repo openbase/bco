@@ -175,6 +175,12 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
         return unitTemplateRemoteRegistry.getMessage(unitTemplateId);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException {
         validateData();
@@ -223,35 +229,76 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
         return getData().getUnitTemplateRegistryConsistent();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param serviceTemplate {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Future<ServiceTemplate> updateServiceTemplate(ServiceTemplate serviceTemplate) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(this, ServiceTemplate.class);
+        return RPCHelper.callRemoteMethod(serviceTemplate,this, ServiceTemplate.class);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param serviceTemplate {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Boolean containsServiceTemplate(ServiceTemplate serviceTemplate) throws CouldNotPerformException {
         validateData();
         return serviceTemplateRemoteRegistry.contains(serviceTemplate);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param serviceTemplateId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Boolean containsServiceTemplateById(String serviceTemplateId) throws CouldNotPerformException {
         validateData();
         return serviceTemplateRemoteRegistry.contains(serviceTemplateId);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param serviceTemplateId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public ServiceTemplate getServiceTemplateById(String serviceTemplateId) throws CouldNotPerformException {
         validateData();
         return serviceTemplateRemoteRegistry.getMessage(serviceTemplateId);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public List<ServiceTemplate> getServiceTemplates() throws CouldNotPerformException {
         validateData();
         return serviceTemplateRemoteRegistry.getMessages();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param serviceType {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public ServiceTemplate getServiceTemplateByType(ServiceType serviceType) throws CouldNotPerformException {
         validateData();
@@ -263,47 +310,100 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
         throw new NotAvailableException("ServiceTemplate with type [" + serviceType + "]");
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Boolean isServiceTemplateRegistryReadOnly() throws CouldNotPerformException {
         validateData();
         return getData().getServiceTemplateRegistryReadOnly();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Boolean isServiceTemplateRegistryConsistent() throws CouldNotPerformException {
         validateData();
         return getData().getServiceTemplateRegistryConsistent();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param activityTemplate {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Future<ActivityTemplate> updateActivityTemplate(ActivityTemplate activityTemplate) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(this, ActivityTemplate.class);
+        return RPCHelper.callRemoteMethod(activityTemplate,this, ActivityTemplate.class);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param activityTemplate {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Boolean containsActivityTemplate(ActivityTemplate activityTemplate) throws CouldNotPerformException {
         validateData();
         return activityTemplateRemoteRegistry.contains(activityTemplate);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param activityTemplateId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Boolean containsActivityTemplateById(String activityTemplateId) throws CouldNotPerformException {
         validateData();
         return activityTemplateRemoteRegistry.contains(activityTemplateId);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param activityTemplateId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public ActivityTemplate getActivityTemplateById(String activityTemplateId) throws CouldNotPerformException {
         validateData();
         return activityTemplateRemoteRegistry.getMessage(activityTemplateId);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public List<ActivityTemplate> getActivityTemplates() throws CouldNotPerformException {
         validateData();
         return activityTemplateRemoteRegistry.getMessages();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param activityType {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public ActivityTemplate getActivityTemplateByType(ActivityType activityType) throws CouldNotPerformException {
         validateData();
@@ -315,18 +415,36 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
         throw new NotAvailableException("ActivityTemplate with type [" + activityType + "]");
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Boolean isActivityTemplateRegistryReadOnly() throws CouldNotPerformException {
         validateData();
         return getData().getActivityTemplateRegistryReadOnly();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Boolean isActivityTemplateRegistryConsistent() throws CouldNotPerformException {
         validateData();
         return getData().getServiceTemplateRegistryConsistent();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Boolean isConsistent() throws CouldNotPerformException {
         return isActivityTemplateRegistryConsistent()

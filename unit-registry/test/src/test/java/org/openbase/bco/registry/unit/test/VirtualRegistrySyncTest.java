@@ -30,7 +30,7 @@ import org.junit.Test;
 import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.registry.agent.core.AgentRegistryController;
 import org.openbase.bco.registry.app.core.AppRegistryController;
-import org.openbase.bco.registry.device.core.DeviceRegistryController;
+import org.openbase.bco.registry.ClassRegistryController;
 import org.openbase.bco.registry.location.core.LocationRegistryController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.UnitRegistryController;
@@ -53,7 +53,6 @@ import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
-import rst.domotic.unit.location.LocationConfigType.LocationConfig;
 import rst.spatial.PlacementConfigType.PlacementConfig;
 
 /**
@@ -72,7 +71,7 @@ public class VirtualRegistrySyncTest {
     private static final String DEVICE_CLASS_PRODUCT_NUMBER = "12344321";
     private static DeviceClass DEVICE_CLASS;
 
-    private static DeviceRegistryController deviceRegistry;
+    private static ClassRegistryController deviceRegistry;
     private static UnitRegistryController unitRegistry;
     private static AppRegistryController appRegistry;
     private static AgentRegistryController agentRegistry;
@@ -90,7 +89,7 @@ public class VirtualRegistrySyncTest {
             authenticatorController.activate();
             authenticatorController.waitForActivation();
 
-            deviceRegistry = new DeviceRegistryController();
+            deviceRegistry = new ClassRegistryController();
             unitRegistry = new UnitRegistryController();
             appRegistry = new AppRegistryController();
             agentRegistry = new AgentRegistryController();

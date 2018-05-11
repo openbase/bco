@@ -25,8 +25,7 @@ package org.openbase.bco.registry.unit.core.consistency.dalunitconfig;
 import java.util.HashMap;
 import java.util.Map;
 
-import org.openbase.bco.registry.app.remote.CachedAppRegistryRemote;
-import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
+import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.bco.registry.lib.util.DeviceConfigUtils;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -42,7 +41,6 @@ import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.Registry;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.app.AppClassType.AppClass;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 
 /**
@@ -57,7 +55,7 @@ public class DalUnitLabelConsistencyHandler extends AbstractProtoBufRegistryCons
 
     public DalUnitLabelConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry, final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> appRegistry) throws InstantiationException {
         try {
-            this.deviceClassRegistry = CachedDeviceRegistryRemote.getRegistry().getDeviceClassRemoteRegistry();
+            this.deviceClassRegistry = CachedClassRegistryRemote.getRegistry().getDeviceClassRemoteRegistry();
             this.deviceRegistry = deviceRegistry;
             this.appRegistry = appRegistry;
             this.oldUnitHostLabelMap = new HashMap<>();

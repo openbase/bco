@@ -37,6 +37,9 @@ import org.openbase.jul.extension.rsb.com.jp.JPRSBHost;
 import org.openbase.jul.extension.rsb.com.jp.JPRSBPort;
 import org.openbase.jul.extension.rsb.com.jp.JPRSBTransport;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
+import org.openbase.jul.storage.registry.jp.JPGitRegistryPlugin;
+import org.openbase.jul.storage.registry.jp.JPGitRegistryPluginRemoteURL;
+import org.openbase.jul.storage.registry.jp.JPRecoverDB;
 
 /**
  *
@@ -57,6 +60,9 @@ public class TemplateRegistryLauncher extends AbstractRegistryLauncher<TemplateR
         JPService.registerProperty(JPReadOnly.class);
         JPService.registerProperty(JPForce.class);
         JPService.registerProperty(JPDebugMode.class);
+        JPService.registerProperty(JPRecoverDB.class);
+        JPService.registerProperty(JPGitRegistryPlugin.class);
+        JPService.registerProperty(JPGitRegistryPluginRemoteURL.class);
 
         JPService.registerProperty(JPRSBHost.class);
         JPService.registerProperty(JPRSBPort.class);

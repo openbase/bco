@@ -34,7 +34,7 @@ import org.junit.Test;
 import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.registry.agent.core.AgentRegistryController;
 import org.openbase.bco.registry.app.core.AppRegistryController;
-import org.openbase.bco.registry.device.core.DeviceRegistryController;
+import org.openbase.bco.registry.ClassRegistryController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.UnitRegistryController;
 import org.openbase.jps.core.JPService;
@@ -62,7 +62,7 @@ public class LocationRegistryTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(LocationRegistryTest.class);
 
     private static UnitRegistryController unitRegistry;
-    private static DeviceRegistryController deviceRegistry;
+    private static ClassRegistryController deviceRegistry;
     private static AppRegistryController appRegistry;
     private static AgentRegistryController agentRegistry;
     private static AuthenticatorController authenticatorController;
@@ -83,7 +83,7 @@ public class LocationRegistryTest {
 
             try {
                 unitRegistry = new UnitRegistryController();
-                deviceRegistry = new DeviceRegistryController();
+                deviceRegistry = new ClassRegistryController();
                 appRegistry = new AppRegistryController();
                 agentRegistry = new AgentRegistryController();
 

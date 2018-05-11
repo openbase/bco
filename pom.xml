@@ -184,7 +184,7 @@
     </profiles>
     
     <modules>
-        <module>device-registry</module>
+        <module>class-registry</module>
         <module>location-registry</module>
         <module>template-registry</module>
         <module>agent-registry</module>

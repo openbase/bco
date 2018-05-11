@@ -32,8 +32,8 @@ import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
 import org.openbase.bco.registry.app.core.AppRegistryLauncher;
 import org.openbase.bco.registry.app.lib.AppRegistry;
 import org.openbase.bco.registry.app.remote.CachedAppRegistryRemote;
-import org.openbase.bco.registry.device.core.DeviceRegistryLauncher;
-import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
+import org.openbase.bco.registry.device.core.ClassRegistryLauncher;
+import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.bco.registry.location.core.LocationRegistryLauncher;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
@@ -144,7 +144,7 @@ public class MockRegistry {
     private static AuthenticatorLauncher authenticatorLauncher;
     private static AuthenticatorController authenticatorController;
 
-    private static DeviceRegistryLauncher deviceRegistryLauncher;
+    private static ClassRegistryLauncher classRegistryLauncher;
     private static LocationRegistryLauncher locationRegistryLauncher;
     private static AgentRegistryLauncher agentRegistryLauncher;
     private static AppRegistryLauncher appRegistryLauncher;
@@ -330,9 +330,9 @@ public class MockRegistry {
             }));
             registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
-                    deviceRegistryLauncher = new DeviceRegistryLauncher();
-                    deviceRegistryLauncher.launch();
-                    deviceRegistry = deviceRegistryLauncher.getLaunchable();
+                    classRegistryLauncher = new ClassRegistryLauncher();
+                    classRegistryLauncher.launch();
+                    deviceRegistry = classRegistryLauncher.getLaunchable();
                 } catch (CouldNotPerformException | InterruptedException ex) {
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
                 }
@@ -481,8 +481,8 @@ public class MockRegistry {
             userRegistryLauncher.shutdown();
         }
 
-        if (deviceRegistryLauncher != null) {
-            deviceRegistryLauncher.shutdown();
+        if (classRegistryLauncher != null) {
+            classRegistryLauncher.shutdown();
         }
 
         if (agentRegistryLauncher != null) {
@@ -512,7 +512,7 @@ public class MockRegistry {
         CachedSceneRegistryRemote.shutdown();
         CachedUserRegistryRemote.shutdown();
 
-        CachedDeviceRegistryRemote.shutdown();
+        CachedClassRegistryRemote.shutdown();
         CachedAgentRegistryRemote.shutdown();
         CachedAppRegistryRemote.shutdown();
 
