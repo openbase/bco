@@ -1,8 +1,8 @@
-package org.openbase.bco.registry.unit.core.dbconvert;
+package org.openbase.bco.registry.template.core.dbconvert;
 
-/*
+/*-
  * #%L
- * BCO Registry Unit Core
+ * BCO Registry Template Core
  * %%
  * Copyright (C) 2014 - 2018 openbase.org
  * %%
@@ -21,16 +21,18 @@ package org.openbase.bco.registry.unit.core.dbconvert;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
-import java.io.File;
-import java.util.HashMap;
-import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.storage.registry.version.AbstractDBVersionConverter;
 import org.openbase.jul.storage.registry.version.DBVersionControl;
+
+import java.io.File;
+import java.util.HashMap;
+import java.util.Map;
 
 /**
  *

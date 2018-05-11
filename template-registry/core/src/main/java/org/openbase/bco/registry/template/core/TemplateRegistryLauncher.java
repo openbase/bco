@@ -2,7 +2,7 @@ package org.openbase.bco.registry.template.core;
 
 /*
  * #%L
- * BCO Registry Scene Core
+ * BCO Registry Template Core
  * %%
  * Copyright (C) 2014 - 2018 openbase.org
  * %%

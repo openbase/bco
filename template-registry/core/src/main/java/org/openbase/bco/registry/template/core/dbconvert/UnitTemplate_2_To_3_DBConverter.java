@@ -1,13 +1,8 @@
-/*
- * To change this license header, choose License Headers in Project Properties.
- * To change this template file, choose Tools | Templates
- * and open the template in the editor.
- */
-package org.openbase.bco.registry.unit.core.dbconvert;
+package org.openbase.bco.registry.template.core.dbconvert;
 
 /*-
  * #%L
- * BCO Registry Unit Core
+ * BCO Registry Template Core
  * %%
  * Copyright (C) 2014 - 2018 openbase.org
  * %%
@@ -26,15 +21,17 @@ package org.openbase.bco.registry.unit.core.dbconvert;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import java.io.File;
-import java.util.Map;
-import org.openbase.bco.registry.unit.lib.generator.UnitConfigIdGenerator;
+import org.openbase.bco.registry.lib.generator.UUIDGenerator;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.storage.registry.version.AbstractGlobalDBVersionConverter;
 import org.openbase.jul.storage.registry.version.DBVersionControl;
 import org.openbase.jul.storage.registry.version.DatabaseEntryDescriptor;
+
+import java.io.File;
+import java.util.Map;
 
 /**
  *
@@ -43,10 +40,8 @@ import org.openbase.jul.storage.registry.version.DatabaseEntryDescriptor;
 public class UnitTemplate_2_To_3_DBConverter extends AbstractGlobalDBVersionConverter {
 
     private static final String DEVICE_CLASS_DB_ID = "device-class-db";
-    private static final String DAL_UNIT_CONFIG_DB_ID = "dal-unit-config-db";
 
     private static final String LIGHT_SENSOR_TYPE = "LIGHT_SENSOR";
-    private static final String BRIGHTNESS_SENSOR_TYPE = "BRIGHTNESS_SENSOR";
     private static final String ILLUMINANCE_STATE_TYPE = "ILLUMINANCE_STATE_SERVICE";
     private static final String PROVIDER_PATTERN = "PROVIDER";
 
@@ -54,18 +49,16 @@ public class UnitTemplate_2_To_3_DBConverter extends AbstractGlobalDBVersionConv
     private static final String ID_FIELD = "id";
     private static final String PATTERN_FIELD = "pattern";
     private static final String SERVICE_TEMPLATE_FIELD = "service_template";
-    private static final String SERVICE_CONFIG_FIELD = "service_config";
-    private static final String UNIT_TEMPLATE_CONFIG_ID_FIELD = "unit_template_config_id";
 
     private boolean init;
-    private final UnitConfigIdGenerator idGenerator;
+    private final UUIDGenerator idGenerator;
     private int deviceClassDBVersion = 0;
     private static final int LEAST_DEVICE_CLASS_VERSION = 2;
 
     public UnitTemplate_2_To_3_DBConverter(DBVersionControl versionControl) {
         super(versionControl);
         init = false;
-        idGenerator = new UnitConfigIdGenerator();
+        idGenerator = new UUIDGenerator();
     }
 
     @Override

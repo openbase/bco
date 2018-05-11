@@ -1,8 +1,8 @@
-package org.openbase.bco.registry.scene.remote;
+package org.openbase.bco.registry.template.remote;
 
 /*
  * #%L
- * BCO Registry Scene Remote
+ * BCO Registry Template Remote
  * %%
  * Copyright (C) 2014 - 2018 openbase.org
  * %%
@@ -39,13 +39,13 @@ import org.slf4j.LoggerFactory;
  *
  * @author <a href="mailto:mpohling@cit-ec.uni-bielefeld.de">Divine Threepwood</a>
  */
-public class CachedSceneRegistryRemote {
+public class CachedTemplateRegistryRemote {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(CachedSceneRegistryRemote.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CachedTemplateRegistryRemote.class);
 
-    private static final SyncObject REMOTE_LOCK = new SyncObject("CachedSceneRegistryRemoteLock");
+    private static final SyncObject REMOTE_LOCK = new SyncObject("CachedTemplateRegistryRemoteLock");
 
-    private static SceneRegistryRemote registryRemote;
+    private static TemplateRegistryRemote registryRemote;
     private static boolean shutdown = false;
 
     static {
@@ -60,7 +60,7 @@ public class CachedSceneRegistryRemote {
             getRegistry().reinit(REMOTE_LOCK);
             getRegistry().requestData().get(10, TimeUnit.SECONDS);
         } catch (ExecutionException | TimeoutException | CouldNotPerformException | CancellationException ex) {
-            throw new CouldNotPerformException("Could not reinitialize " + CachedSceneRegistryRemote.class.getSimpleName() + "!", ex);
+            throw new CouldNotPerformException("Could not reinitialize " + CachedTemplateRegistryRemote.class.getSimpleName() + "!", ex);
         }
     }
 
@@ -69,7 +69,7 @@ public class CachedSceneRegistryRemote {
      * @return @throws InterruptedException
      * @throws NotAvailableException
      */
-    public synchronized static SceneRegistryRemote getRegistry() throws InterruptedException, NotAvailableException {
+    public synchronized static TemplateRegistryRemote getRegistry() throws NotAvailableException {
         try {
             if (shutdown) {
                 throw new InvalidStateException("Remote service is shutting down!");
@@ -77,7 +77,7 @@ public class CachedSceneRegistryRemote {
 
             if (registryRemote == null) {
                 try {
-                    registryRemote = new SceneRegistryRemote();
+                    registryRemote = new TemplateRegistryRemote();
                     registryRemote.init();
                     registryRemote.activate();
                     registryRemote.lock(REMOTE_LOCK);
@@ -137,7 +137,7 @@ public class CachedSceneRegistryRemote {
                 try {
                     registryRemote.unlock(REMOTE_LOCK);
                 } catch (final CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory(new FatalImplementationErrorException("Internal remote was locked by an external instance!", CachedSceneRegistryRemote.class, ex), LOGGER);
+                    ExceptionPrinter.printHistory(new FatalImplementationErrorException("Internal remote was locked by an external instance!", CachedTemplateRegistryRemote.class, ex), LOGGER);
                 }
                 registryRemote.shutdown();
                 registryRemote = null;

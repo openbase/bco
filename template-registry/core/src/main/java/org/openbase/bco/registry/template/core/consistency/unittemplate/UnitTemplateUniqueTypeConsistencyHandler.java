@@ -1,8 +1,8 @@
-package org.openbase.bco.registry.unit.core.consistency.unittemplate;
+package org.openbase.bco.registry.template.core.consistency.unittemplate;
 
 /*-
  * #%L
- * BCO Registry Unit Core
+ * BCO Registry Template Core
  * %%
  * Copyright (C) 2014 - 2018 openbase.org
  * %%

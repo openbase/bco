@@ -2,7 +2,7 @@ package org.openbase.bco.registry.template.core;
 
 /*
  * #%L
- * BCO Registry Scene Core
+ * BCO Registry Template Core
  * %%
  * Copyright (C) 2014 - 2018 openbase.org
  * %%
@@ -10,12 +10,12 @@ package org.openbase.bco.registry.template.core;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -24,6 +24,13 @@ package org.openbase.bco.registry.template.core;
 
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
 import org.openbase.bco.registry.lib.generator.UUIDGenerator;
+import org.openbase.bco.registry.template.core.consistency.activitytemplate.ActivityTemplateUniqueTypeConsistencyHandler;
+import org.openbase.bco.registry.template.core.consistency.servicetemplate.ServiceTemplateUniqueTypeConsistencyHandler;
+import org.openbase.bco.registry.template.core.consistency.unittemplate.UnitTemplateUniqueTypeConsistencyHandler;
+import org.openbase.bco.registry.template.core.consistency.unittemplate.UniteTemplateServiceTemplateConsistencyHandler;
+import org.openbase.bco.registry.template.core.plugin.ActivityTemplateCreatorRegistryPlugin;
+import org.openbase.bco.registry.template.core.plugin.ServiceTemplateCreatorRegistryPlugin;
+import org.openbase.bco.registry.template.core.plugin.UnitTemplateCreatorRegistryPlugin;
 import org.openbase.bco.registry.template.lib.TemplateRegistry;
 import org.openbase.bco.registry.template.lib.jp.JPActivityTemplateDatabaseDirectory;
 import org.openbase.bco.registry.template.lib.jp.JPServiceTemplateDatabaseDirectory;
@@ -44,10 +51,8 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.activity.ActivityTemplateType.ActivityTemplate;
 import rst.domotic.activity.ActivityTemplateType.ActivityTemplate.ActivityType;
 import rst.domotic.registry.TemplateRegistryDataType.TemplateRegistryData;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
@@ -118,6 +123,10 @@ public class TemplateRegistryController extends AbstractRegistryController<Templ
      */
     @Override
     protected void registerConsistencyHandler() throws CouldNotPerformException {
+        activityTemplateRemoteRegistry.registerConsistencyHandler(new ActivityTemplateUniqueTypeConsistencyHandler());
+
+        serviceTemplateRemoteRegistry.registerConsistencyHandler(new ServiceTemplateUniqueTypeConsistencyHandler());
+
         unitTemplateRemoteRegistry.registerConsistencyHandler(new UnitTemplateUniqueTypeConsistencyHandler());
         unitTemplateRemoteRegistry.registerConsistencyHandler(new UniteTemplateServiceTemplateConsistencyHandler(serviceTemplateRemoteRegistry));
     }
@@ -130,6 +139,7 @@ public class TemplateRegistryController extends AbstractRegistryController<Templ
      */
     @Override
     protected void registerPlugins() throws CouldNotPerformException, InterruptedException {
+        activityTemplateRemoteRegistry.registerPlugin(new ActivityTemplateCreatorRegistryPlugin(activityTemplateRemoteRegistry));
         serviceTemplateRemoteRegistry.registerPlugin(new ServiceTemplateCreatorRegistryPlugin(serviceTemplateRemoteRegistry));
         unitTemplateRemoteRegistry.registerPlugin(new UnitTemplateCreatorRegistryPlugin(unitTemplateRemoteRegistry));
     }
@@ -154,6 +164,10 @@ public class TemplateRegistryController extends AbstractRegistryController<Templ
 
         setDataField(TemplateRegistryData.UNIT_TEMPLATE_REGISTRY_READ_ONLY_FIELD_NUMBER, unitTemplateRemoteRegistry.isReadOnly());
         setDataField(TemplateRegistryData.UNIT_TEMPLATE_REGISTRY_CONSISTENT_FIELD_NUMBER, unitTemplateRemoteRegistry.isConsistent());
+    }
+
+    @Override
+    protected void registerRemoteRegistries() throws CouldNotPerformException {
     }
 
     @Override

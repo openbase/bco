@@ -1,8 +1,8 @@
-package org.openbase.bco.registry.unit.core.dbconvert;
+package org.openbase.bco.registry.template.core.dbconvert;
 
-/*
+/*-
  * #%L
- * BCO Registry Unit Core
+ * BCO Registry Template Core
  * %%
  * Copyright (C) 2014 - 2018 openbase.org
  * %%
@@ -23,12 +23,13 @@ package org.openbase.bco.registry.unit.core.dbconvert;
  */
 
 import com.google.gson.JsonObject;
-import java.io.File;
-import java.util.Map;
-import org.openbase.bco.registry.unit.lib.generator.UnitTemplateIdGenerator;
+import org.openbase.bco.registry.lib.generator.UUIDGenerator;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.storage.registry.version.AbstractDBVersionConverter;
 import org.openbase.jul.storage.registry.version.DBVersionControl;
+
+import java.io.File;
+import java.util.Map;
 
 /**
  *
@@ -38,11 +39,11 @@ public class UnitTemplate_1_To_2_DBConverter extends AbstractDBVersionConverter 
 
     private static final String ID_FIELD = "id";
 
-    private final UnitTemplateIdGenerator idGenerator;
+    private final UUIDGenerator idGenerator;
 
     public UnitTemplate_1_To_2_DBConverter(DBVersionControl versionControl) {
         super(versionControl);
-        idGenerator = new UnitTemplateIdGenerator();
+        idGenerator = new UUIDGenerator();
     }
 
     @Override

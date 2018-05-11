@@ -1,8 +1,8 @@
-package org.openbase.bco.registry.unit.core.consistency.unittemplate;
+package org.openbase.bco.registry.template.core.consistency.unittemplate;
 
 /*-
  * #%L
- * BCO Registry Unit Core
+ * BCO Registry Template Core
  * %%
  * Copyright (C) 2014 - 2018 openbase.org
  * %%
@@ -24,6 +24,8 @@ package org.openbase.bco.registry.unit.core.consistency.unittemplate;
 
 import java.util.ArrayList;
 import java.util.List;
+
+import org.openbase.bco.registry.template.lib.TemplateRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -32,6 +34,7 @@ import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHand
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import rst.domotic.registry.TemplateRegistryDataType.TemplateRegistryData;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -44,9 +47,9 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate;
  */
 public class UniteTemplateServiceTemplateConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitTemplate, UnitTemplate.Builder> {
 
-    private final ProtoBufFileSynchronizedRegistry<String, ServiceTemplate, ServiceTemplate.Builder, UnitRegistryData.Builder> serviceTemplateRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, ServiceTemplate, ServiceTemplate.Builder, TemplateRegistryData.Builder> serviceTemplateRegistry;
 
-    public UniteTemplateServiceTemplateConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, ServiceTemplate, ServiceTemplate.Builder, UnitRegistryData.Builder> serviceTemplateRegistry) {
+    public UniteTemplateServiceTemplateConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, ServiceTemplate, ServiceTemplate.Builder, TemplateRegistryData.Builder> serviceTemplateRegistry) {
         this.serviceTemplateRegistry = serviceTemplateRegistry;
     }
 

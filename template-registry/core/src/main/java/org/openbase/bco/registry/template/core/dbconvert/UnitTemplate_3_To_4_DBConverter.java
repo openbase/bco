@@ -1,8 +1,8 @@
-package org.openbase.bco.registry.unit.core.dbconvert;
+package org.openbase.bco.registry.template.core.dbconvert;
 
 /*-
  * #%L
- * BCO Registry Unit Core
+ * BCO Registry Template Core
  * %%
  * Copyright (C) 2014 - 2018 openbase.org
  * %%
@@ -24,12 +24,13 @@ package org.openbase.bco.registry.unit.core.dbconvert;
 
 import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
-import java.io.File;
-import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.storage.registry.version.AbstractGlobalDBVersionConverter;
 import org.openbase.jul.storage.registry.version.DBVersionControl;
 import org.openbase.jul.storage.registry.version.DatabaseEntryDescriptor;
+
+import java.io.File;
+import java.util.Map;
 
 /**
  *
@@ -51,7 +52,7 @@ public class UnitTemplate_3_To_4_DBConverter extends AbstractGlobalDBVersionConv
             outdatedDBEntry.remove(SERVICE_TEMPLATE_FIELD);
             outdatedDBEntry.add(SERVICE_DESCRIPTION_FIELD, serviceTemplate);
         }
-        
+
         return outdatedDBEntry;
     }
 }
