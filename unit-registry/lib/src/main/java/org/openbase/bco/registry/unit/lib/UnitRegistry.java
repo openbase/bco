@@ -45,6 +45,8 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitProbabilityCollectionType.UnitProbabilityCollection;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.agent.AgentClassType.AgentClass;
+import rst.domotic.unit.app.AppClassType.AppClass;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
 import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.rsb.ScopeType.Scope;
@@ -927,7 +929,6 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      */
     List<ServiceConfig> getServiceConfigsByConnection(final String connectionConfigId) throws CouldNotPerformException;
 
-
     /**
      * Method returns all neighbor tiles for a tile. If the given locationId
      * does not belong to a tile, the could not perform exception is thrown.
@@ -976,5 +977,13 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
             throw new NotAvailableException("UnitShape", new CouldNotPerformException("Shutdown in progress"));
         }
     }
+
+    List<UnitConfig> getAgentUnitConfigsByAgentClass(final AgentClass agentClass) throws CouldNotPerformException;
+
+    List<UnitConfig> getAgentUnitConfigsByAgentClassId(final String agentClassId) throws CouldNotPerformException;
+
+    List<UnitConfig> getAppUnitConfigsByAppClass(final AppClass appClass) throws CouldNotPerformException, InterruptedException;
+
+    List<UnitConfig> getAppUnitConfigsByAppClassId(final String appClassId) throws CouldNotPerformException, InterruptedException;
 
 }

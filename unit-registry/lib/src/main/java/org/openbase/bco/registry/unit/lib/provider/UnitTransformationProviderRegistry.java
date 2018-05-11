@@ -22,12 +22,6 @@ package org.openbase.bco.registry.unit.lib.provider;
  * #L%
  */
 
-import java.util.concurrent.Future;
-import javax.media.j3d.Transform3D;
-import javax.vecmath.Point3d;
-import javax.vecmath.Quat4d;
-import javax.vecmath.Vector3d;
-
 import org.openbase.bco.registry.lib.provider.RootLocationConfigProvider;
 import org.openbase.bco.registry.lib.provider.UnitConfigCollectionProvider;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -48,6 +42,12 @@ import rst.geometry.RotationType;
 import rst.geometry.TranslationType;
 import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.spatial.ShapeType.Shape;
+
+import javax.media.j3d.Transform3D;
+import javax.vecmath.Point3d;
+import javax.vecmath.Quat4d;
+import javax.vecmath.Vector3d;
+import java.util.concurrent.Future;
 
 
 public interface UnitTransformationProviderRegistry<D> extends RootLocationConfigProvider, DataProvider<D>, UnitConfigCollectionProvider {
@@ -94,12 +94,42 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      *
      * @param unitConfigSource the unit used as transformation base.
      * @param unitConfigTarget the unit where the transformation leads to.
-     * @return a transformation future
-     * @deprecated please use getUnitTransformationFuture instead because this method will be return the Transform type directly in near future.
+     * @return a transformation
+     * @throws CouldNotPerformException is thrown in case something went wrong.
      */
-    @Deprecated
-    default Future<Transform> getUnitTransformation(final UnitConfig unitConfigSource, final UnitConfig unitConfigTarget) {
-        return getUnitTransformationFuture(unitConfigSource, unitConfigTarget);
+    default Transform getUnitTransformation(final UnitConfig unitConfigSource, final UnitConfig unitConfigTarget) throws CouldNotPerformException {
+        try {
+            if (unitConfigSource.getEnablingState().getValue() != State.ENABLED) {
+                throw new InvalidStateException("Source Unit[" + unitConfigSource.getLabel() + ":" + unitConfigSource.getId() + "] is disbled and does not provide any transformation!");
+            }
+
+            if (unitConfigTarget.getEnablingState().getValue() != State.ENABLED) {
+                throw new InvalidStateException("Target Unit[" + unitConfigTarget.getLabel() + ":" + unitConfigTarget.getId() + "] is disbled and does not provide any transformation!");
+            }
+
+            if (!unitConfigSource.hasPlacementConfig() || !unitConfigSource.getPlacementConfig().hasPosition()) {
+                throw new InvalidStateException("Source Unit[" + unitConfigSource.getLabel() + ":" + unitConfigSource.getId() + "] does not provide any position!");
+            }
+
+            if (!unitConfigTarget.hasPlacementConfig() || !unitConfigTarget.getPlacementConfig().hasPosition()) {
+                throw new InvalidStateException("Target Unit[" + unitConfigTarget.getLabel() + ":" + unitConfigTarget.getId() + "] does not provide any position!");
+            }
+
+            if (!unitConfigSource.getPlacementConfig().hasTransformationFrameId() || unitConfigSource.getPlacementConfig().getTransformationFrameId().isEmpty()) {
+                throw new InvalidStateException("Source Unit[" + unitConfigSource.getLabel() + ":" + unitConfigSource.getId() + "] does not provide yet a transformation frame id!");
+            }
+
+            if (!unitConfigTarget.getPlacementConfig().hasTransformationFrameId() || unitConfigTarget.getPlacementConfig().getTransformationFrameId().isEmpty()) {
+                throw new InvalidStateException("Target Unit[" + unitConfigTarget.getLabel() + ":" + unitConfigTarget.getId() + "] does not provide yet a transformation frame id!");
+            }
+
+            return GlobalTransformReceiver.getInstance().lookupTransform(
+                    unitConfigTarget.getPlacementConfig().getTransformationFrameId(),
+                    unitConfigSource.getPlacementConfig().getTransformationFrameId(),
+                    System.currentTimeMillis());
+        } catch (final CouldNotPerformException | TransformerException ex) {
+            throw new NotAvailableException("UnitTransformation", ex);
+        }
     }
 
     /**
@@ -151,7 +181,7 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      */
     default Transform getRootToUnitTransformation(final UnitConfig unitConfigTarget) throws NotAvailableException {
         try {
-            return lookupUnitTransformation(getRootLocationConfig(), unitConfigTarget);
+            return getUnitTransformation(getRootLocationConfig(), unitConfigTarget);
         } catch (final CouldNotPerformException ex) {
             throw new NotAvailableException("UnitTransformation", ex);
         }
@@ -166,56 +196,8 @@ public interface UnitTransformationProviderRegistry<D> extends RootLocationConfi
      */
     default Transform getUnitToRootTransformation(final UnitConfig unitConfigTarget) throws NotAvailableException {
         try {
-            return lookupUnitTransformation(unitConfigTarget, getRootLocationConfig());
+            return getUnitTransformation(unitConfigTarget, getRootLocationConfig());
         } catch (final CouldNotPerformException ex) {
-            throw new NotAvailableException("UnitTransformation", ex);
-        }
-    }
-
-    // todo release: refactor into getUnitTransformation(...) which is currently blocked because it returns an future type in this api version.
-
-    /**
-     * Method returns the transformation between the given unit A and the given unit B.
-     *
-     * @param unitConfigSource the unit used as transformation base.
-     * @param unitConfigTarget the unit where the transformation leads to.
-     * @return a transformation future
-     * @throws org.openbase.jul.exception.NotAvailableException
-     * @deprecated do not use method because API changes will be applied in near future and this method will be renamed into {@code getUnitTransformation} within the next release.
-     */
-    @Deprecated
-    default Transform lookupUnitTransformation(final UnitConfig unitConfigSource, final UnitConfig unitConfigTarget) throws NotAvailableException {
-
-        try {
-            if (unitConfigSource.getEnablingState().getValue() != State.ENABLED) {
-                throw new InvalidStateException("Source Unit[" + unitConfigSource.getLabel() + ":" + unitConfigSource.getId() + "] is disbled and does not provide any transformation!");
-            }
-
-            if (unitConfigTarget.getEnablingState().getValue() != State.ENABLED) {
-                throw new InvalidStateException("Target Unit[" + unitConfigTarget.getLabel() + ":" + unitConfigTarget.getId() + "] is disbled and does not provide any transformation!");
-            }
-
-            if (!unitConfigSource.hasPlacementConfig() || !unitConfigSource.getPlacementConfig().hasPosition()) {
-                throw new InvalidStateException("Source Unit[" + unitConfigSource.getLabel() + ":" + unitConfigSource.getId() + "] does not provide any position!");
-            }
-
-            if (!unitConfigTarget.hasPlacementConfig() || !unitConfigTarget.getPlacementConfig().hasPosition()) {
-                throw new InvalidStateException("Target Unit[" + unitConfigTarget.getLabel() + ":" + unitConfigTarget.getId() + "] does not provide any position!");
-            }
-
-            if (!unitConfigSource.getPlacementConfig().hasTransformationFrameId() || unitConfigSource.getPlacementConfig().getTransformationFrameId().isEmpty()) {
-                throw new InvalidStateException("Source Unit[" + unitConfigSource.getLabel() + ":" + unitConfigSource.getId() + "] does not provide yet a transformation frame id!");
-            }
-
-            if (!unitConfigTarget.getPlacementConfig().hasTransformationFrameId() || unitConfigTarget.getPlacementConfig().getTransformationFrameId().isEmpty()) {
-                throw new InvalidStateException("Target Unit[" + unitConfigTarget.getLabel() + ":" + unitConfigTarget.getId() + "] does not provide yet a transformation frame id!");
-            }
-
-            return GlobalTransformReceiver.getInstance().lookupTransform(
-                    unitConfigTarget.getPlacementConfig().getTransformationFrameId(),
-                    unitConfigSource.getPlacementConfig().getTransformationFrameId(),
-                    System.currentTimeMillis());
-        } catch (final CouldNotPerformException | TransformerException ex) {
             throw new NotAvailableException("UnitTransformation", ex);
         }
     }
