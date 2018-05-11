@@ -37,6 +37,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ProtobufVariableProvider;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
+import org.openbase.jul.extension.rsb.com.TransactionIdProvider;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
@@ -86,7 +87,7 @@ import java.util.concurrent.Future;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<String>, Configurable<String, UnitConfig>, DataProvider<D>, ServiceProvider, Service, Snapshotable<Snapshot> {
+public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<String>, Configurable<String, UnitConfig>, DataProvider<D>, ServiceProvider, Service, Snapshotable<Snapshot>, TransactionIdProvider {
 
     /**
      * Returns the type of this unit.
@@ -650,36 +651,6 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException(LocationRegistry.class);
         }
-    }
-
-    /**
-     * Get the transaction id of a service state in the data of this unit.
-     *
-     * @param serviceType
-     *
-     * @return
-     *
-     * @throws CouldNotPerformException
-     */
-    default long getTransactionIdByServiceType(ServiceType serviceType) throws CouldNotPerformException {
-        Message serviceState = (Message) Services.invokeProviderServiceMethod(serviceType, getData());
-        Descriptors.FieldDescriptor fieldDescriptor = ProtoBufFieldProcessor.getFieldDescriptor(serviceState, "responsible_action");
-        ActionDescription actionDescription = (ActionDescription) serviceState.getField(fieldDescriptor);
-        return actionDescription.getTransactionId();
-    }
-
-    default long getLatestTransactionId() throws CouldNotPerformException {
-        long latestTransactionId = -1;
-        for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
-            if (serviceDescription.getPattern() != ServicePattern.OPERATION) {
-                continue;
-            }
-            latestTransactionId = Math.max(latestTransactionId, getTransactionIdByServiceType(serviceDescription.getType()));
-        }
-        if (latestTransactionId == -1) {
-            throw new NotAvailableException("transaction id");
-        }
-        return latestTransactionId;
     }
 
     /**
