@@ -22,40 +22,25 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-
-import com.jcraft.jsch.Session;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+import org.junit.*;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.TimeoutException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
-import org.openbase.jul.pattern.Observable;
-import org.openbase.jul.pattern.Observer;
-import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
-import rst.domotic.authentication.PermissionType.Permission;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
+
+import java.util.concurrent.ExecutionException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
@@ -96,105 +81,6 @@ public class RegistryFilteringTest {
         SessionManager.getInstance().logout();
     }
 
-    /**
-     * Test if when access in other permission for a unitConfig is removed. The unit
-     * is no longer listed in the remote registry.
-     *
-     * @throws Exception
-     */
-    @Test(timeout = 10000)
-    public void testWithOtherPermission() throws Exception {
-        System.out.println("testWithOtherPermission");
-
-        // size before
-        int size = Registries.getUnitRegistry().getDalUnitConfigs().size();
-
-        // remove access rights for one unit
-        UnitConfig.Builder unitConfig = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("PH_Hue_E27_Device_Hell", UnitType.COLORABLE_LIGHT).get(0).toBuilder();
-        PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();
-        Permission.Builder otherPermission = permissionConfig.getOtherPermissionBuilder();
-        otherPermission.setRead(false);
-        Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
-
-        // test if the unitConfig cannot be seen anymore
-        assertEquals("Size has not been reduced as a consequence", size - 1, Registries.getUnitRegistry().getDalUnitConfigs().size());
-        assertTrue("UnitConfig can still be found in unitRegistry even though the access permission for other has been removed", !Registries.getUnitRegistry().getUnitConfigRemoteRegistry().contains(unitConfig.getId()));
-    }
-
-    @Test(timeout = 10000)
-    public void testPermissionsOnLogin() throws Exception {
-        System.out.println("testPermissionsOnLogin");
-        SessionManager.getInstance().login(MockRegistry.admin.getId(), MockRegistry.adminPassword);
-
-        // Register a user
-        UnitConfig.Builder userUnitConfig = UnitConfig.newBuilder();
-        UserConfig.Builder userConfig = userUnitConfig.getUserConfigBuilder();
-        userUnitConfig.setType(UnitType.USER);
-        userUnitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setRead(true).setAccess(true).setWrite(true);
-        userConfig.setFirstName("Guybrush").setLastName("Threepwood").setUserName("Mighty Pirate");
-        userUnitConfig = Registries.getUserRegistry().registerUserConfig(userUnitConfig.build()).get().toBuilder();
-
-        // register user in credentials store
-        String password = "Elaine";
-        SessionManager.getInstance().registerUser(userUnitConfig.getId(), password, false);
-        // log admin out because else the following test will not be performed with other permissions
-        SessionManager.getInstance().logout();
-
-        // get unitConfig, remove other permission and add user permission
-        UnitConfig.Builder unitConfig = Registries.getUnitRegistry().getDalUnitConfigs().get(0).toBuilder();
-        PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();
-        Permission.Builder otherPermission = permissionConfig.getOtherPermissionBuilder();
-        otherPermission.setAccess(false).setRead(false).setWrite(true);
-        Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
-        Permission.Builder ownerPermission = permissionConfig.getOwnerPermissionBuilder();
-        ownerPermission.setRead(true);
-        permissionConfig.setOwnerId(userUnitConfig.getId());
-        Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
-
-        // unitConfig should be removed with missing all rights and nobody logged in
-        assertTrue("UnitConfig has not been removed even though other permissions have been removed", !Registries.getUnitRegistry().containsUnitConfigById(unitConfig.getId()));
-
-        // login
-        SessionManager.getInstance().logout();
-        SessionManager.getInstance().login(userUnitConfig.getId(), password);
-
-        //TODO release2.0: needed since synchronized modification of SessionManager login observable, remove by waiting on a lock
-        // this should be done in release 2.0 where the controller notifies different updates depending on whose logged in
-        while(!Registries.getUnitRegistry().containsUnitConfigById(unitConfig.getId())) {
-            Thread.sleep(50);
-        }
-
-        // unitConfig should be available again
-        assertTrue("UnitConfig is not visible even though owner is now logged in", Registries.getUnitRegistry().containsUnitConfigById(unitConfig.getId()));
-
-        // logout to avoid interference with other tests
-        SessionManager.getInstance().logout();
-    }
-
-    @Test(timeout = 10000)
-    public void testWaitForDataOnVirtualRegistryRemote() throws Exception {
-        System.out.println("testWaitForDataOnVirtualRegistryRemote");
-
-        Registries.getUserRegistry().waitForData(2, TimeUnit.SECONDS);
-        int userCount = Registries.getUserRegistry().getUserConfigs().size();
-
-        UnitConfig.Builder userUnitConfig = Registries.getUserRegistry().getUserConfigs().get(0).toBuilder();
-        PermissionConfig.Builder permissionConfig = userUnitConfig.getPermissionConfigBuilder();
-        Permission.Builder otherPermission = permissionConfig.getOtherPermissionBuilder();
-        otherPermission.setRead(false);
-
-        Registries.getUserRegistry().updateUserConfig(userUnitConfig.build()).get();
-
-        assertTrue("No data available anymore", Registries.getUserRegistry().isDataAvailable());
-        assertTrue("User has not been removed", !Registries.getUserRegistry().containsUserConfigById(userUnitConfig.getId()));
-        assertEquals("User count does not match", userCount - 1, Registries.getUserRegistry().getUserConfigs().size());
-        try {
-            Registries.getUserRegistry().waitForData(2, TimeUnit.SECONDS);
-        } catch (TimeoutException ex) {
-            Assert.fail("WaitForData did not return in time!");
-        }
-    }
-
     @Test(timeout = 10000)
     public void testRegisteringWhileLoggedIn() throws Exception {
         System.out.println("testRegisteringWhileLoggedIn");
@@ -208,11 +94,92 @@ public class RegistryFilteringTest {
         userConfig.setUserName("Admin");
 
         SessionManager.getInstance().login(MockRegistry.admin.getId(), MockRegistry.adminPassword);
-
         try {
             Registries.getUnitRegistry().registerUnitConfig(userUnitConfig.build()).get();
         } catch (InterruptedException | ExecutionException | CouldNotPerformException ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
+    }
+
+    /**
+     * Test if units are filtered accordingly if a user has no permissions, only read permissions,
+     * or read and access permissions.
+     *
+     * @throws Exception
+     */
+    @Test(timeout = 10000)
+    public void testUnitFiltering() throws Exception {
+        System.out.println("testUnitFiltering");
+
+        // get a location with at least one unit and at least one child
+
+        UnitConfig.Builder unitConfig = null;
+        for (UnitConfig locationUnitConfig : Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getMessages()) {
+            // skip root location
+            if (locationUnitConfig.getLocationConfig().getRoot()) {
+                continue;
+            }
+
+            if (locationUnitConfig.getLocationConfig().getChildIdCount() > 0 && locationUnitConfig.getLocationConfig().getUnitIdCount() > 0) {
+                unitConfig = locationUnitConfig.toBuilder();
+                break;
+            }
+        }
+        if (unitConfig == null) {
+            throw new NotAvailableException("test location");
+        }
+        LOGGER.info("Found suitable test location[" + unitConfig.getLabel() + "]");
+        // remove read and access permissions
+        unitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setRead(false).setAccess(false);
+        Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
+
+        // test if location does not contain unit ids and child ids anymore anymore
+        assertTrue("Unit id list of location has not been filtered without access and read permissions", Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getUnitIdList().isEmpty());
+        assertTrue("Child id list of location has not been filtered without access and read permissions", Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getChildIdList().isEmpty());
+        // test if unit configuration cannot be read anymore
+        try {
+            Registries.getUnitRegistry().getUnitConfigById(unitConfig.getLocationConfig().getUnitId(0));
+            assertTrue("Unit configuration can still be seen even though other has no read and access permissions on its location", false);
+        } catch (NotAvailableException ex) {
+            // this should happen
+        }
+
+        // give only read permissions
+        unitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setAccess(false).setRead(true);
+        Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
+
+        // test if unit ids and child ids are back
+        assertEquals("Unit id list of location not available with read permissions",
+                unitConfig.getLocationConfig().getUnitIdCount(),
+                Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getUnitIdCount());
+        assertEquals("Child id list of location not available with read permissions",
+                unitConfig.getLocationConfig().getChildIdCount(),
+                Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getChildIdCount());
+        // test if unit configurations are still not available
+        try {
+            Registries.getUnitRegistry().getUnitConfigById(unitConfig.getLocationConfig().getUnitId(0));
+        } catch (NotAvailableException ex) {
+            assertTrue("Unit configuration cannot be seen even though other has read permissions on its location", false);
+        }
+
+        // give only access permissions
+        unitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setAccess(true).setRead(false);
+        Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();
+
+        assertTrue("Location does not provide read permission while providing access permissions", Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getPermissionConfig().getOtherPermission().getRead());
+
+        // test if unit ids and child ids are back
+        assertEquals("Unit id list of location not available with access permissions",
+                unitConfig.getLocationConfig().getUnitIdCount(),
+                Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getUnitIdCount());
+        assertEquals("Child id list of location not available with access permissions",
+                unitConfig.getLocationConfig().getChildIdCount(),
+                Registries.getUnitRegistry().getUnitConfigById(unitConfig.getId()).getLocationConfig().getChildIdCount());
+        // test if unit configurations are still not available
+        try {
+            Registries.getUnitRegistry().getUnitConfigById(unitConfig.getLocationConfig().getUnitId(0));
+        } catch (NotAvailableException ex) {
+            assertTrue("Unit configuration cannot be seen even though other has read and access permissions on its location", false);
         }
     }
 }

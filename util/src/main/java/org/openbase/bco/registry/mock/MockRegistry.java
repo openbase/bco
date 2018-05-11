@@ -21,15 +21,7 @@ package org.openbase.bco.registry.mock;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.Arrays;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.Future;
+
 import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.authentication.core.AuthenticatorLauncher;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
@@ -46,31 +38,6 @@ import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
 import org.openbase.bco.registry.location.core.LocationRegistryLauncher;
 import org.openbase.bco.registry.location.lib.LocationRegistry;
 import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.ACTIVATION_SOS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.ACTIVATION_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.BATTERY_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.BLIND_SOS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.BLIND_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.BRIGHTNESS_SOS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.BRIGHTNESS_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.BUTTON_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.COLOR_SOS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.COLOR_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.CONTACT_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.HANDLE_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.ILLUMINANCE_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.MOTION_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.POWER_CONSUMPTION_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.POWER_SOS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.POWER_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.SMOKE_ALARM_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.SMOKE_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.STANDBY_SOS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.STANDBY_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.TAMPER_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.TARGET_TEMPERATURE_SOS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.TARGET_TEMPERATURE_SPS;
-import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.TEMPERATURE_SPS;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.scene.core.SceneRegistryLauncher;
 import org.openbase.bco.registry.scene.lib.SceneRegistry;
@@ -89,7 +56,6 @@ import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.pattern.Observable;
@@ -97,7 +63,6 @@ import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.LoggerFactory;
-import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
 import rst.domotic.binding.BindingConfigType.BindingConfig;
 import rst.domotic.service.ServiceConfigType;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
@@ -127,8 +92,13 @@ import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.spatial.PlacementConfigType.PlacementConfig;
 import rst.spatial.ShapeType.Shape;
 
+import java.util.*;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Future;
+
+import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription.*;
+
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class MockRegistry {

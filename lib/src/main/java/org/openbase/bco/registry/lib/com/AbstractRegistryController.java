@@ -23,6 +23,7 @@ package org.openbase.bco.registry.lib.com;
  */
 
 import com.google.protobuf.GeneratedMessage;
+import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedCommunicationService;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.*;
@@ -30,7 +31,6 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.com.RSBCommunicationService;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rsb.scope.jp.JPScope;
@@ -56,7 +56,7 @@ import static org.openbase.jul.storage.registry.version.DBVersionControl.DB_CONV
  * @param <MB>
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractRegistryController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends RSBCommunicationService<M, MB> implements RegistryController<M>, Launchable<Scope> {
+public abstract class AbstractRegistryController<M extends GeneratedMessage, MB extends M.Builder<MB>> extends AbstractAuthenticatedCommunicationService<M, MB> implements RegistryController<M>, Launchable<Scope> {
 
     public static final boolean SPARSELY_REGISTRY_DATA_FILTERED = true;
     public static final boolean SPARSELY_REGISTRY_DATA_NOTIFIED = false;
@@ -226,8 +226,8 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
                 }
             }
 
-            // cancel in case the registry which was still busy also notfies
-            // this way notification only takes place once
+            // cancel in case the registry which was still busy also notifies
+            // this way notifications only take place once
             if (notifyChangeFuture != null && !notifyChangeFuture.isDone()) {
                 notifyChangeFuture.cancel(true);
             }
@@ -507,4 +507,9 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     protected abstract void syncRegistryFlags() throws CouldNotPerformException, InterruptedException;
 
     protected abstract void registerRemoteRegistries() throws CouldNotPerformException;
+
+    @Override
+    protected M filterDataForUser(MB dataBuilder, String userId) throws CouldNotPerformException {
+        return (M) dataBuilder.build();
+    }
 }
