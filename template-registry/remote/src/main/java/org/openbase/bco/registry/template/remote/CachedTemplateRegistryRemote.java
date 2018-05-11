@@ -87,12 +87,12 @@ public class CachedTemplateRegistryRemote {
                         registryRemote.shutdown();
                         registryRemote = null;
                     }
-                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not start cached scene registry remote!", ex), LOGGER);
+                    throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Could not start cached template registry remote!", ex), LOGGER);
                 }
             }
             return registryRemote;
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("cached scene registry", ex);
+            throw new NotAvailableException("cached template registry", ex);
         }
     }
 

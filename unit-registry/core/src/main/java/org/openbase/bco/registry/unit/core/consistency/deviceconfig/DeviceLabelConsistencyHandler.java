@@ -22,23 +22,14 @@ package org.openbase.bco.registry.unit.core.consistency.deviceconfig;
  * #L%
  */
 
-import java.util.HashMap;
-import java.util.Map;
-
-import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
+import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.bco.registry.unit.core.consistency.connectionconfig.BaseUnitLabelConsistencyHandler;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
-import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.Registry;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.device.DeviceClassType;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 
 /**
@@ -51,7 +42,7 @@ public class DeviceLabelConsistencyHandler extends BaseUnitLabelConsistencyHandl
     public DeviceLabelConsistencyHandler() throws InstantiationException {
         super();
         try {
-            this.deviceClassRegistry = CachedDeviceRegistryRemote.getRegistry().getDeviceClassRemoteRegistry();
+            this.deviceClassRegistry = CachedClassRegistryRemote.getRegistry().getDeviceClassRemoteRegistry();
         } catch (final CouldNotPerformException | InterruptedException ex) {
             // remove InterruptedException in bco 2.0 release
             throw new InstantiationException(this, ex);

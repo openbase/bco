@@ -28,8 +28,8 @@ import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
 import org.openbase.bco.registry.app.remote.CachedAppRegistryRemote;
-import org.openbase.bco.registry.device.remote.CachedDeviceRegistryRemote;
-import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
+import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
+import org.openbase.bco.registry.clazz.remote.ClassRegistryRemote;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
 import org.openbase.bco.registry.lib.jp.JPBCODatabaseDirectory;
 import org.openbase.bco.registry.unit.core.consistency.*;
@@ -254,12 +254,12 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitLabelConsistencyHandler(deviceUnitConfigRegistry, appUnitConfigRegistry));
             dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitLocationIdConsistencyHandler(locationUnitConfigRegistry, deviceUnitConfigRegistry));
             dalUnitConfigRegistry.registerConsistencyHandler(new DalUnitScopeConsistencyHandler(locationUnitConfigRegistry));
-            dalUnitConfigRegistry.registerConsistencyHandler(new SyncBindingConfigDeviceClassUnitConsistencyHandler(CachedDeviceRegistryRemote.getRegistry().getDeviceClassRemoteRegistry(), deviceUnitConfigRegistry));
-            dalUnitConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistencyHandler(CachedDeviceRegistryRemote.getRegistry().getDeviceClassRemoteRegistry(), locationUnitConfigRegistry, deviceUnitConfigRegistry));
-            dalUnitConfigRegistry.registerConsistencyHandler(new UnitBoundToHostConsistencyHandler(CachedDeviceRegistryRemote.getRegistry().getDeviceClassRemoteRegistry(), deviceUnitConfigRegistry));
+            dalUnitConfigRegistry.registerConsistencyHandler(new SyncBindingConfigDeviceClassUnitConsistencyHandler(CachedClassRegistryRemote.getRegistry().getDeviceClassRemoteRegistry(), deviceUnitConfigRegistry));
+            dalUnitConfigRegistry.registerConsistencyHandler(new OpenhabServiceConfigItemIdConsistencyHandler(CachedClassRegistryRemote.getRegistry().getDeviceClassRemoteRegistry(), locationUnitConfigRegistry, deviceUnitConfigRegistry));
+            dalUnitConfigRegistry.registerConsistencyHandler(new UnitBoundToHostConsistencyHandler(CachedClassRegistryRemote.getRegistry().getDeviceClassRemoteRegistry(), deviceUnitConfigRegistry));
 
-            deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceBoundToHostConsistencyHandler(CachedDeviceRegistryRemote.getRegistry().getDeviceClassRemoteRegistry()));
-            deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassIdConsistencyHandler(CachedDeviceRegistryRemote.getRegistry().getDeviceClassRemoteRegistry()));
+            deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceBoundToHostConsistencyHandler(CachedClassRegistryRemote.getRegistry().getDeviceClassRemoteRegistry()));
+            deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceConfigDeviceClassIdConsistencyHandler(CachedClassRegistryRemote.getRegistry().getDeviceClassRemoteRegistry()));
             deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceConfigLocationIdForInstalledDevicesConsistencyHandler());
             deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceInventoryStateConsistencyHandler());
             deviceUnitConfigRegistry.registerConsistencyHandler(new DeviceEnablingStateConsistencyHandler());
@@ -279,7 +279,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupUnitTypeConsistencyHandler(unitTemplateRegistry));
             unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupMemberListTypesConsistencyHandler(agentUnitConfigRegistry, appUnitConfigRegistry, authorizationGroupUnitConfigRegistry, connectionUnitConfigRegistry, dalUnitConfigRegistry, deviceUnitConfigRegistry, locationUnitConfigRegistry, sceneUnitConfigRegistry, unitGroupUnitConfigRegistry, userUnitConfigRegistry, unitTemplateRegistry));
             unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupScopeConsistencyHandler(locationUnitConfigRegistry));
-            unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupPlacementConfigConsistencyHandler(unitConfigRegistryList, locationUnitConfigRegistry, CachedDeviceRegistryRemote.getRegistry().getDeviceClassRemoteRegistry()));
+            unitGroupUnitConfigRegistry.registerConsistencyHandler(new UnitGroupPlacementConfigConsistencyHandler(unitConfigRegistryList, locationUnitConfigRegistry, CachedClassRegistryRemote.getRegistry().getDeviceClassRemoteRegistry()));
 
             locationUnitConfigRegistry.registerConsistencyHandler(new LocationPlacementConfigConsistencyHandler());
             locationUnitConfigRegistry.registerConsistencyHandler(new LocationPositionConsistencyHandler());
@@ -350,7 +350,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             ExceptionPrinter.printHistory("Could not load " + JPAuthentication.class.getSimpleName(), ex, LOGGER, LogLevel.WARN);
         }
 
-        deviceUnitConfigRegistry.registerPlugin(new DeviceConfigDeviceClassUnitConsistencyPlugin(CachedDeviceRegistryRemote.getRegistry().getDeviceClassRemoteRegistry(), dalUnitConfigRegistry, deviceUnitConfigRegistry));
+        deviceUnitConfigRegistry.registerPlugin(new DeviceConfigDeviceClassUnitConsistencyPlugin(CachedClassRegistryRemote.getRegistry().getDeviceClassRemoteRegistry(), dalUnitConfigRegistry, deviceUnitConfigRegistry));
 
         dalUnitConfigRegistry.registerPlugin(new DalUnitBoundToHostPlugin(deviceUnitConfigRegistry));
         locationUnitConfigRegistry.registerPlugin(new LocationRemovalPlugin(unitConfigRegistryList, locationUnitConfigRegistry, connectionUnitConfigRegistry));
@@ -387,7 +387,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
             deviceUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
             deviceUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
-            deviceUnitConfigRegistry.registerDependency(CachedDeviceRegistryRemote.getRegistry().getDeviceClassRemoteRegistry());
+            deviceUnitConfigRegistry.registerDependency(CachedClassRegistryRemote.getRegistry().getDeviceClassRemoteRegistry());
 
             unitGroupUnitConfigRegistry.registerDependency(agentUnitConfigRegistry);
             unitGroupUnitConfigRegistry.registerDependency(appUnitConfigRegistry);
@@ -398,7 +398,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             unitGroupUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
             unitGroupUnitConfigRegistry.registerDependency(sceneUnitConfigRegistry);
             unitGroupUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
-            unitGroupUnitConfigRegistry.registerDependency(CachedDeviceRegistryRemote.getRegistry().getDeviceClassRemoteRegistry());
+            unitGroupUnitConfigRegistry.registerDependency(CachedClassRegistryRemote.getRegistry().getDeviceClassRemoteRegistry());
 
             locationUnitConfigRegistry.registerDependency(agentUnitConfigRegistry);
             locationUnitConfigRegistry.registerDependency(appUnitConfigRegistry);
@@ -1207,9 +1207,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * @deprecated get your own instance via the registry pool.
      */
     @Deprecated
-    public DeviceRegistryRemote getDeviceRegistryRemote() {
+    public ClassRegistryRemote getDeviceRegistryRemote() {
         try {
-            return CachedDeviceRegistryRemote.getRegistry();
+            return CachedClassRegistryRemote.getRegistry();
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         } catch (NotAvailableException ex) {
@@ -1312,7 +1312,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public Shape getUnitShape(final UnitConfig unitConfig) throws NotAvailableException {
         try {
-            return UntShapeGenerator.generateUnitShape(unitConfig, this, CachedDeviceRegistryRemote.getRegistry());
+            return UntShapeGenerator.generateUnitShape(unitConfig, this, CachedClassRegistryRemote.getRegistry());
         } catch (InterruptedException ex) {
             // because registries should not throw interrupted exceptions in a future release this exception is already transformed into a NotAvailableException.
             Thread.currentThread().interrupt();

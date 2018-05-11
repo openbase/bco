@@ -26,7 +26,7 @@ import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.registry.device.core.DeviceRegistryController;
+import org.openbase.bco.registry.ClassRegistryController;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.unit.core.UnitRegistryController;
@@ -52,7 +52,7 @@ public class UnitGroupRegistryTest {
     private static MockRegistry mockRegistry;
 
     private static UnitRegistryController unitRegistry;
-    private static DeviceRegistryController deviceRegistry;
+    private static ClassRegistryController deviceRegistry;
 
     private static UnitConfigType.UnitConfig LOCATION;
 

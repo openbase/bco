@@ -28,7 +28,7 @@ import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.openbase.bco.registry.device.core.DeviceRegistryController;
+import org.openbase.bco.registry.ClassRegistryController;
 import org.openbase.bco.registry.location.core.LocationRegistryController;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
@@ -64,7 +64,7 @@ public abstract class AbstractBCORegistryTest {
     protected MockRegistry mockRegistry;
 
     protected UnitRegistryController unitRegistry;
-    protected DeviceRegistryController deviceRegistry;
+    protected ClassRegistryController deviceRegistry;
     protected LocationRegistryController locationRegistry;
 
     @BeforeClass
@@ -78,7 +78,7 @@ public abstract class AbstractBCORegistryTest {
             mockRegistry = MockRegistryHolder.newMockRegistry();
 
             unitRegistry = (UnitRegistryController) MockRegistry.getUnitRegistry();
-            deviceRegistry = (DeviceRegistryController) MockRegistry.getDeviceRegistry();
+            deviceRegistry = (ClassRegistryController) MockRegistry.getDeviceRegistry();
             locationRegistry = (LocationRegistryController) MockRegistry.getLocationRegistry();
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
