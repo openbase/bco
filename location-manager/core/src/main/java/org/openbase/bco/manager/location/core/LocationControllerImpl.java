@@ -22,6 +22,7 @@ package org.openbase.bco.manager.location.core;
  * #L%
  */
 
+import org.openbase.bco.authentication.lib.AuthenticatedServerManager.TicketEvaluationWrapper;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.AbstractBaseUnitController;
 import org.openbase.bco.dal.remote.detector.PresenceDetector;
@@ -221,6 +222,11 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
     @Override
     public Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
         return serviceRemoteManager.restoreSnapshot(snapshot);
+    }
+
+    @Override
+    protected Future<Void> internalRestoreSnapshot(Snapshot snapshot, TicketEvaluationWrapper ticketEvaluationWrapper) throws CouldNotPerformException, InterruptedException {
+        return serviceRemoteManager.restoreSnapshotAuthenticated(snapshot, ticketEvaluationWrapper);
     }
 
     @Override
