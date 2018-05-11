@@ -73,7 +73,6 @@ public class AbstractAuthenticatedConfigurableRemote<M extends GeneratedMessage,
             try {
                 logger.debug("Internal notification while logged in[" + SessionManager.getInstance().isLoggedIn() + "]");
                 if (event.getData() != null && SessionManager.getInstance().isLoggedIn()) {
-                    //TODO: see https://github.com/openbase/bco.dal/issues/99, if this is the way to go also implement for AbstractAuthenticatedRemote
                     if (requestTask != null && !requestTask.isDone()) {
                         if (task == null) {
                             task = GlobalCachedExecutorService.submit((Callable<Void>) () -> {

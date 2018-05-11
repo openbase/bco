@@ -39,8 +39,6 @@ import java.lang.reflect.Method;
 
 public class AuthenticatedMessageProcessor<M extends GeneratedMessage> extends SimpleMessageProcessor<M> {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticatedMessageProcessor.class);
-
     public AuthenticatedMessageProcessor(Class<M> dataClass) {
         super(dataClass);
     }
@@ -60,9 +58,15 @@ public class AuthenticatedMessageProcessor<M extends GeneratedMessage> extends S
     }
 
     public static <M extends GeneratedMessage> M getDataFromAuthenticatedValue(final AuthenticatedValue authenticatedValue, final SessionManager sessionManager, final Class<M> dataClass) throws CouldNotPerformException {
-        if (SessionManager.getInstance().isLoggedIn()) {
+        if (authenticatedValue.hasTicketAuthenticatorWrapper()) {
+            final byte[] sessionKey = SessionManager.getInstance().getSessionKey();
+            if(sessionKey == null) {
+                // user has logged out while the request was running
+                throw new CouldNotPerformException("Could not decrypt authenticated message");
+            }
+
             try {
-                return EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), SessionManager.getInstance().getSessionKey(), dataClass);
+                return EncryptionHelper.decryptSymmetric(authenticatedValue.getValue(), sessionKey, dataClass);
             } catch (BadPaddingException | IOException ex) {
                 throw new CouldNotPerformException("Decrypting result of authenticated value failed!", ex);
             }
@@ -71,7 +75,6 @@ public class AuthenticatedMessageProcessor<M extends GeneratedMessage> extends S
                 Method parseFrom = dataClass.getMethod("parseFrom", ByteString.class);
                 return (M) parseFrom.invoke(null, authenticatedValue.getValue());
             } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
-                LOGGER.info("Received [" + authenticatedValue.getValue() + "] for data class [" + dataClass + "]");
                 throw new CouldNotPerformException("Could not invoke parseFrom method on [" + dataClass.getSimpleName() + "]", ex);
             }
         }
