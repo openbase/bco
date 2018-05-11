@@ -22,8 +22,8 @@ package org.openbase.bco.dal.lib.layer.unit;
  * #L%
  */
 
-import com.google.protobuf.Descriptors;
 import com.google.protobuf.Message;
+import org.openbase.bco.authentication.lib.iface.AuthenticatedSnapshotable;
 import org.openbase.bco.dal.lib.layer.service.Service;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
@@ -36,14 +36,12 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ProtobufVariableProvider;
-import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.rsb.com.TransactionIdProvider;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.iface.Configurable;
 import org.openbase.jul.iface.Identifiable;
-import org.openbase.jul.iface.Snapshotable;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.iface.provider.LabelProvider;
 import org.openbase.jul.pattern.Observer;
@@ -53,13 +51,12 @@ import org.openbase.jul.schedule.FutureProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.LoggerFactory;
 import rct.Transform;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -78,8 +75,6 @@ import javax.vecmath.Point3d;
 import javax.vecmath.Quat4d;
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
-import java.util.ArrayList;
-import java.util.Collection;
 import java.util.concurrent.Future;
 
 /**
@@ -87,7 +82,7 @@ import java.util.concurrent.Future;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<String>, Configurable<String, UnitConfig>, DataProvider<D>, ServiceProvider, Service, Snapshotable<Snapshot>, TransactionIdProvider {
+public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<String>, Configurable<String, UnitConfig>, DataProvider<D>, ServiceProvider, Service, AuthenticatedSnapshotable, TransactionIdProvider {
 
     /**
      * Returns the type of this unit.
@@ -261,18 +256,11 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
 
     @RPCMethod
     @Override
-    default Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
-        try {
-            Collection<Future> futureCollection = new ArrayList<>();
-            for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
-                ActionDescription actionDescription = ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build();
-                futureCollection.add(applyAction(actionDescription));
-            }
-            return GlobalCachedExecutorService.allOf(futureCollection);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not record snapshot!", ex);
-        }
-    }
+    Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException;
+
+    @RPCMethod
+    Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException, InterruptedException;
+
 
     /**
      * Gets the position of the unit relative to its parent location.

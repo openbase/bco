@@ -24,11 +24,15 @@ package org.openbase.bco.dal.lib.layer.unit;
 
 import com.google.protobuf.Descriptors;
 import com.google.protobuf.Descriptors.FieldDescriptor;
-import com.google.protobuf.Descriptors.FieldDescriptor.Type;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
+import com.sun.org.apache.bcel.internal.generic.RETURN;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
+import org.openbase.bco.authentication.lib.AuthenticatedServerManager.TicketEvaluationWrapper;
+import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
+import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor.InternalIdentifiedProcessable;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
+import org.openbase.bco.authentication.lib.AuthorizationHelper.Type;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableController;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.dal.lib.action.ActionImpl;
@@ -58,6 +62,7 @@ import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.processing.StringProcessor;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -65,9 +70,12 @@ import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType;
+import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
+import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
@@ -79,6 +87,8 @@ import rst.rsb.ScopeType;
 import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
+import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern.OPERATION;
@@ -449,61 +459,80 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
     }
 
-    /**
-     * Verifies the authority by verifying its internal TicketAuthenticationWrapper with the authenticator and updates the given {@code ticketAuthenticatorWrapperBuilder}.
-     * It the authenticator has no TicketAuthenticationWrapper, the given {@code ticketAuthenticatorWrapperBuilder} is just not updated.
-     *
-     * @param actionAuthority                   the authority verified
-     * @param ticketAuthenticatorWrapperBuilder the ticketAuthenticator to update.
-     * @throws VerificationFailedException                          if someone is logged in but the verification with the authenticator fails
-     * @throws org.openbase.jul.exception.PermissionDeniedException is thrown in case the authority has no permission for the related action.
-     * @throws java.lang.InterruptedException
-     */
-    public void verifyAndUpdateAuthority(final ActionAuthority actionAuthority, final TicketAuthenticatorWrapper.Builder ticketAuthenticatorWrapperBuilder) throws VerificationFailedException, PermissionDeniedException, InterruptedException, CouldNotPerformException {
-
-        // check if authentication is enabled
-        try {
-            if (!JPService.getProperty(JPAuthentication.class).getValue()) {
-                return;
-            }
-        } catch (JPNotAvailableException ex) {
-            throw new CouldNotPerformException("Could not check JPEnableAuthentication property", ex);
-        }
-
-        // If there is no TicketAuthenticationWrapper, check permissions without userId and groups.
-        if (!actionAuthority.hasTicketAuthenticatorWrapper()) {
+    @Override
+    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) {
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, ActionDescription.class, this, (actionDescription, ticketEvaluationWrapper) -> {
             try {
-                Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations = Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap();
+                verifyAccessPermission(ticketEvaluationWrapper);
 
-                if (!AuthorizationHelper.canAccess(getConfig(), null, null, locations)) {
-                    throw new PermissionDeniedException("You have no permission to execute this action.");
+                try {
+                    applyAction(actionDescription).get();
+                } catch (ExecutionException ex) {
+                    throw new CouldNotPerformException("Could not restore snapshot authenticated", ex);
                 }
-                return;
-            } catch (NotAvailableException ex) {
-                throw new VerificationFailedException("Verifying authority failed", ex);
-            }
-        }
-
-        try {
-            TicketAuthenticatorWrapper wrapper = actionAuthority.getTicketAuthenticatorWrapper();
-            AuthenticatedServerManager.TicketEvaluationWrapper validatedTicketWrapper = AuthenticatedServerManager.getInstance().evaluateClientServerTicket(wrapper);
-            Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups = Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap();
-            Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations = Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap();
-
-            if (!AuthorizationHelper.canAccess(getConfig(), validatedTicketWrapper.getUserId(), groups, locations)) {
-                throw new PermissionDeniedException("You have no permission to execute this action.");
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
             }
 
-            // update current ticketAuthenticatorWrapperBuilder
-            ticketAuthenticatorWrapperBuilder.setAuthenticator(validatedTicketWrapper.getTicketAuthenticatorWrapper().getAuthenticator());
-            ticketAuthenticatorWrapperBuilder.setTicket(validatedTicketWrapper.getTicketAuthenticatorWrapper().getTicket());
-        } catch (IOException | CouldNotPerformException ex) {
-            throw new VerificationFailedException("Verifying authority failed", ex);
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(new VerificationFailedException("Interrupted while verifrying authority", ex), logger);
-        }
+            return null;
+        }));
     }
+
+//    /**
+//     * Verifies the authority by verifying its internal TicketAuthenticationWrapper with the authenticator and updates the given {@code ticketAuthenticatorWrapperBuilder}.
+//     * It the authenticator has no TicketAuthenticationWrapper, the given {@code ticketAuthenticatorWrapperBuilder} is just not updated.
+//     *
+//     * @param actionAuthority                   the authority verified
+//     * @param ticketAuthenticatorWrapperBuilder the ticketAuthenticator to update.
+//     * @throws VerificationFailedException                          if someone is logged in but the verification with the authenticator fails
+//     * @throws org.openbase.jul.exception.PermissionDeniedException is thrown in case the authority has no permission for the related action.
+//     * @throws java.lang.InterruptedException
+//     */
+//    public void verifyAndUpdateAuthority(final ActionAuthority actionAuthority, final TicketAuthenticatorWrapper.Builder ticketAuthenticatorWrapperBuilder) throws VerificationFailedException, PermissionDeniedException, InterruptedException, CouldNotPerformException {
+//
+//        // check if authentication is enabled
+//        try {
+//            if (!JPService.getProperty(JPAuthentication.class).getValue()) {
+//                return;
+//            }
+//        } catch (JPNotAvailableException ex) {
+//            throw new CouldNotPerformException("Could not check JPEnableAuthentication property", ex);
+//        }
+//
+//        // If there is no TicketAuthenticationWrapper, check permissions without userId and groups.
+//        if (!actionAuthority.hasTicketAuthenticatorWrapper()) {
+//            try {
+//                Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations = Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap();
+//
+//                if (!AuthorizationHelper.canAccess(getConfig(), null, null, locations)) {
+//                    throw new PermissionDeniedException("You have no permission to execute this action.");
+//                }
+//                return;
+//            } catch (NotAvailableException ex) {
+//                throw new VerificationFailedException("Verifying authority failed", ex);
+//            }
+//        }
+//
+//        try {
+//            TicketAuthenticatorWrapper wrapper = actionAuthority.getTicketAuthenticatorWrapper();
+//            AuthenticatedServerManager.TicketEvaluationWrapper validatedTicketWrapper = AuthenticatedServerManager.getInstance().evaluateClientServerTicket(wrapper);
+//            Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups = Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap();
+//            Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations = Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap();
+//
+//            if (!AuthorizationHelper.canAccess(getConfig(), validatedTicketWrapper.getUserId(), groups, locations)) {
+//                throw new PermissionDeniedException("You have no permission to execute this action.");
+//            }
+//
+//            // update current ticketAuthenticatorWrapperBuilder
+//            ticketAuthenticatorWrapperBuilder.setAuthenticator(validatedTicketWrapper.getTicketAuthenticatorWrapper().getAuthenticator());
+//            ticketAuthenticatorWrapperBuilder.setTicket(validatedTicketWrapper.getTicketAuthenticatorWrapper().getTicket());
+//        } catch (IOException | CouldNotPerformException ex) {
+//            throw new VerificationFailedException("Verifying authority failed", ex);
+//        } catch (InterruptedException ex) {
+//            Thread.currentThread().interrupt();
+//            throw ExceptionPrinter.printHistoryAndReturnThrowable(new VerificationFailedException("Interrupted while verifrying authority", ex), logger);
+//        }
+//    }
 
     @Override
     public void addServiceStateObserver(ServiceTempus serviceTempus, ServiceType serviceType, Observer observer) {
@@ -656,6 +685,92 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     @Override
+    public Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
+//        return internalRestoreSnapshot(snapshot, null);
+        try {
+            Collection<Future> futureCollection = new ArrayList<>();
+            for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
+                ActionDescription actionDescription = ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription).build();
+                futureCollection.add(applyAction(actionDescription));
+            }
+            return GlobalCachedExecutorService.allOf(futureCollection);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not record snapshot!", ex);
+        }
+    }
+
+    protected Future<Void> internalRestoreSnapshot(final Snapshot snapshot, final TicketEvaluationWrapper ticketEvaluationWrapper) throws CouldNotPerformException, InterruptedException {
+        return restoreSnapshot(snapshot);
+        //TODO: implementation has to be fixed like in ServiceRemoteManager
+        //        try {
+//            Collection<Future<ActionFuture>> futureCollection = new ArrayList<>();
+//            for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
+//                ActionDescription.Builder actionDescription = ActionDescription.newBuilder().setServiceStateDescription(serviceStateDescription);
+//
+//                if (ticketEvaluationWrapper != null) {
+//                    actionDescription.getActionAuthorityBuilder().setTicketAuthenticatorWrapper(ticketEvaluationWrapper.getTicketAuthenticatorWrapper());
+//                }
+//
+//                futureCollection.add(applyAction(actionDescription.build()));
+//            }
+//            return GlobalCachedExecutorService.allOf(input -> {
+//                if (ticketEvaluationWrapper != null) {
+//                    try {
+//                        for (Future<ActionFuture> actionFuture : input) {
+//                            AuthenticationClientHandler.handleServiceServerResponse(ticketEvaluationWrapper.getSessionKey(), ticketEvaluationWrapper.getTicketAuthenticatorWrapper(), actionFuture.get().getTicketAuthenticatorWrapper());
+//                        }
+//                    } catch (IOException | BadPaddingException ex) {
+//                        throw new CouldNotPerformException("Could not validate response because it could not be decrypted", ex);
+//                    } catch (ExecutionException ex) {
+//                        throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
+//                    }
+//                }
+//                return null;
+//            }, futureCollection);
+//        } catch (CouldNotPerformException ex) {
+//            throw new CouldNotPerformException("Could not record snapshot!", ex);
+//        }
+    }
+
+    @Override
+    public Future<AuthenticatedValue> restoreSnapshotAuthenticated(final AuthenticatedValue authenticatedSnapshot) {
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedSnapshot, Snapshot.class, this, (snapshot, ticketEvaluationWrapper) -> {
+            try {
+                verifyAccessPermission(ticketEvaluationWrapper);
+
+                try {
+//                    internalRestoreSnapshot(snapshot, ticketEvaluationWrapper).get();
+                    restoreSnapshot(snapshot).get();
+                } catch (ExecutionException ex) {
+                    throw new CouldNotPerformException("Could not restore snapshot authenticated", ex);
+                }
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+            }
+
+            return null;
+        }));
+    }
+
+    private void verifyAccessPermission(final TicketEvaluationWrapper ticketEvaluationWrapper) throws CouldNotPerformException, InterruptedException {
+        try {
+            if (JPService.getProperty(JPAuthentication.class).getValue()) {
+                final String userId = ticketEvaluationWrapper == null ? null : ticketEvaluationWrapper.getUserId();
+
+                // check for write permissions
+                if (!AuthorizationHelper.canDo(getConfig(),
+                        userId,
+                        Registries.getUnitRegistry().getAgentUnitConfigRemoteRegistry().getEntryMap(),
+                        Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap(),
+                        Type.ACCESS)) {
+                    throw new PermissionDeniedException("User[" + userId + "] has not rights to register a unitConfig");
+                }
+            }
+        } catch (JPNotAvailableException ex) {
+            throw new CouldNotPerformException("Could not check JPEnableAuthentication property", ex);
+        }
+    }
+
     protected D filterDataForUser(DB dataBuilder, String userId) throws CouldNotPerformException {
         try {
             if (AuthorizationHelper.canRead(getConfig(), userId, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap(), Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap())) {
@@ -664,7 +779,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             } else {
                 // filter all service states
                 for (final FieldDescriptor fieldDescriptor : dataBuilder.getDescriptorForType().getFields()) {
-                    if (fieldDescriptor.getType() == Type.MESSAGE) {
+                    if (fieldDescriptor.getType() == FieldDescriptor.Type.MESSAGE) {
                         dataBuilder.clearField(fieldDescriptor);
                     }
                 }

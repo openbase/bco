@@ -151,9 +151,9 @@ public class ActionImpl implements Action {
 
                 try {
                     // Verify authority
-                    final ActionFuture.Builder actionFutureBuilder = ActionFuture.newBuilder();
+//                    final ActionFuture.Builder actionFutureBuilder = ActionFuture.newBuilder();
 
-                    unit.verifyAndUpdateAuthority(actionDescriptionBuilder.getActionAuthority(), actionFutureBuilder.getTicketAuthenticatorWrapperBuilder());
+//                    unit.verifyAndUpdateAuthority(actionDescriptionBuilder.getActionAuthority(), actionFutureBuilder.getTicketAuthenticatorWrapperBuilder());
 
                     // Resource Allocation
                     unitAllocation = UnitAllocator.allocate(actionDescriptionBuilder, () -> {
@@ -166,7 +166,7 @@ public class ActionImpl implements Action {
 
                             try {
                                 waitForExecution(Services.invokeServiceMethod(serviceDescription, unit, serviceAttribute));
-                                actionDescriptionBuilder.setTransactionId(unit.getTransactionId());
+//                                actionDescriptionBuilder.setTransactionId(unit.getTransactionId());
                             } catch (CouldNotPerformException ex) {
                                 if (ex.getCause() instanceof InterruptedException) {
                                     updateActionState(ActionState.State.ABORTED);
@@ -198,9 +198,6 @@ public class ActionImpl implements Action {
                 } catch (CouldNotPerformException ex) {
                     updateActionState(ActionState.State.REJECTED);
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-                } catch (InterruptedException ex) {
-                    Thread.currentThread().interrupt();
-                    return null;
                 }
             }
         } catch (CouldNotPerformException ex) {
@@ -224,7 +221,7 @@ public class ActionImpl implements Action {
                         // Verify authority
                         final ActionFuture.Builder actionFuture = ActionFuture.newBuilder();
 
-                        unit.verifyAndUpdateAuthority(actionDescriptionBuilder.getActionAuthority(), actionFuture.getTicketAuthenticatorWrapperBuilder());
+//                        unit.verifyAndUpdateAuthority(actionDescriptionBuilder.getActionAuthority(), actionFuture.getTicketAuthenticatorWrapperBuilder());
 
                         // Resource Allocation
                         try {
@@ -247,7 +244,7 @@ public class ActionImpl implements Action {
                             try {
                                 waitForExecution(Services.invokeServiceMethod(serviceDescription, unit, serviceAttribute));
 
-                                actionDescriptionBuilder.setTransactionId(unit.getTransactionId());
+//                                actionDescriptionBuilder.setTransactionId(unit.getTransactionId());
                             } catch (CouldNotPerformException ex) {
                                 if (ex.getCause() instanceof InterruptedException) {
                                     updateActionState(ActionState.State.ABORTED);

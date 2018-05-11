@@ -23,13 +23,14 @@ package org.openbase.bco.dal.lib.layer.service;
  * #L%
  */
 
-import java.util.concurrent.Future;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.pattern.Observer;
-import rst.domotic.action.ActionDescriptionType;
-import rst.domotic.action.ActionFutureType;
+import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+
+import java.util.concurrent.Future;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -37,9 +38,9 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 public interface ServiceProvider {
     
     @RPCMethod
-    public Future<ActionFutureType.ActionFuture> applyAction(final ActionDescriptionType.ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException;
+    Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException;
     
-    public void addServiceStateObserver(final ServiceType serviceType, final Observer observer);
+    void addServiceStateObserver(final ServiceType serviceType, final Observer observer);
 
-    public void removeServiceStateObserver(final ServiceType serviceType, final Observer observer);
+    void removeServiceStateObserver(final ServiceType serviceType, final Observer observer);
 }

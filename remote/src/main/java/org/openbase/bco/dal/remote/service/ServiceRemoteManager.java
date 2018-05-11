@@ -23,6 +23,8 @@ package org.openbase.bco.dal.remote.service;
  */
 
 import com.google.protobuf.Message;
+import org.openbase.bco.authentication.lib.AuthenticatedServerManager.TicketEvaluationWrapper;
+import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
@@ -50,6 +52,7 @@ import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -58,6 +61,8 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
+import javax.crypto.BadPaddingException;
+import java.io.IOException;
 import java.util.*;
 import java.util.concurrent.*;
 import java.util.concurrent.TimeoutException;
@@ -333,39 +338,75 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
 
     @Override
     public Future<Void> restoreSnapshot(final Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
+        return restoreSnapshotAuthenticated(snapshot, null);
+    }
+
+    public Future<Void> restoreSnapshotAuthenticated(final Snapshot snapshot, final TicketEvaluationWrapper ticketEvaluationWrapper) throws CouldNotPerformException, InterruptedException {
         try {
-            final Map<String, UnitRemote<?>> unitRemoteMap = new HashMap<>();
-            for (AbstractServiceRemote<?, ?> serviceRemote : this.getServiceRemoteList()) {
-                for (UnitRemote<?> unitRemote : serviceRemote.getInternalUnits()) {
-                    unitRemoteMap.put(unitRemote.getId(), unitRemote);
+            if (ticketEvaluationWrapper != null) {
+                try {
+                    final TicketAuthenticatorWrapper initializedTicket = AuthenticationClientHandler.initServiceServerRequest(ticketEvaluationWrapper.getSessionKey(), ticketEvaluationWrapper.getTicketAuthenticatorWrapper());
+
+                    return GlobalCachedExecutorService.allOf(input -> {
+                        if (ticketEvaluationWrapper != null) {
+                            try {
+                                for (Future<ActionFuture> actionFuture : input) {
+                                    AuthenticationClientHandler.handleServiceServerResponse(ticketEvaluationWrapper.getSessionKey(), initializedTicket, actionFuture.get().getTicketAuthenticatorWrapper());
+                                }
+                            } catch (IOException | BadPaddingException ex) {
+                                throw new CouldNotPerformException("Could not validate response because it could not be decrypted", ex);
+                            } catch (ExecutionException ex) {
+                                throw new FatalImplementationErrorException("AllOf called result processable even though some futures did not finish", GlobalCachedExecutorService.getInstance(), ex);
+                            }
+                        }
+                        return null;
+                    }, generateSnapshotActions(snapshot, initializedTicket));
+                } catch (BadPaddingException | IOException ex) {
+                    throw new CouldNotPerformException("Could not update ticket for further requests", ex);
                 }
+            } else {
+                return GlobalCachedExecutorService.allOf(input -> null, generateSnapshotActions(snapshot, null));
             }
-
-            final ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();
-            final Collection<Future> futureCollection = new ArrayList<>();
-            for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
-                final UnitRemote unitRemote = unitRemoteMap.get(serviceStateDescription.getUnitId());
-
-                ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-
-                // TODO: discuss if the responsible action shall be moved to the action chain, if yes a snapshot could already contain a list
-                // of action descriptions which are initialized accordingly, this way the deserialization does not have to be done here
-                // Furthermore restoring a snapshot itself should be have an action description which is the cause
-                Message.Builder serviceAttribute = serviceJSonProcessor.deserialize(serviceStateDescription.getServiceAttribute(), serviceStateDescription.getServiceAttributeType()).toBuilder();
-                if (Services.hasResponsibleAction(serviceAttribute)) {
-                    ActionDescription responsibleAction = Services.getResponsibleAction(serviceAttribute);
-                    Services.clearResponsibleAction(serviceAttribute);
-
-                    ActionDescriptionProcessor.updateActionChain(actionDescription, responsibleAction);
-                }
-                unitRemote.updateActionDescription(actionDescription, serviceAttribute.build(), serviceStateDescription.getServiceType());
-
-                futureCollection.add(unitRemote.applyAction(actionDescription.build()));
-            }
-            return GlobalCachedExecutorService.allOf(futureCollection);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not record snapshot!", ex);
+            throw new CouldNotPerformException("Could not record snapshot authenticated!", ex);
         }
+    }
+
+    private Collection<Future<ActionFuture>> generateSnapshotActions(final Snapshot snapshot, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException, InterruptedException {
+        final Map<String, UnitRemote<?>> unitRemoteMap = new HashMap<>();
+        for (AbstractServiceRemote<?, ?> serviceRemote : this.getServiceRemoteList()) {
+            for (UnitRemote<?> unitRemote : serviceRemote.getInternalUnits()) {
+                unitRemoteMap.put(unitRemote.getId(), unitRemote);
+            }
+        }
+
+        final ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();
+        final Collection<Future<ActionFuture>> futureCollection = new ArrayList<>();
+        for (final ServiceStateDescription serviceStateDescription : snapshot.getServiceStateDescriptionList()) {
+            final UnitRemote unitRemote = unitRemoteMap.get(serviceStateDescription.getUnitId());
+
+            ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+            if (ticketAuthenticatorWrapper != null) {
+                actionDescription.getActionAuthorityBuilder().setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
+            }
+
+            // TODO: discuss if the responsible action shall be moved to the action chain, if yes a snapshot could already contain a list
+            // of action descriptions which are initialized accordingly, this way the deserialization does not have to be done here
+            // Furthermore restoring a snapshot itself should be have an action description which is the cause
+            Message.Builder serviceAttribute = serviceJSonProcessor.deserialize(serviceStateDescription.getServiceAttribute(), serviceStateDescription.getServiceAttributeType()).toBuilder();
+            if (Services.hasResponsibleAction(serviceAttribute)) {
+                ActionDescription responsibleAction = Services.getResponsibleAction(serviceAttribute);
+                Services.clearResponsibleAction(serviceAttribute);
+
+                ActionDescriptionProcessor.updateActionChain(actionDescription, responsibleAction);
+            }
+            unitRemote.updateActionDescription(actionDescription, serviceAttribute.build(), serviceStateDescription.getServiceType());
+
+            Future<ActionFuture> applyActionFuture = unitRemote.applyAction(actionDescription.build());
+            futureCollection.add(applyActionFuture);
+        }
+
+        return futureCollection;
     }
 
     /**
@@ -420,13 +461,16 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
         return connectionPing;
     }
 
-    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws
+            CouldNotPerformException, InterruptedException {
         return getServiceRemote(actionDescription.getServiceStateDescription().getServiceType()).applyAction(actionDescription);
     }
 
-    protected abstract Set<ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException;
+    protected abstract Set<ServiceType> getManagedServiceTypes() throws
+            NotAvailableException, InterruptedException;
 
-    protected abstract void notifyServiceUpdate(final Observable source, final Object data) throws NotAvailableException, InterruptedException;
+    protected abstract void notifyServiceUpdate(final Observable source, final Object data) throws
+            NotAvailableException, InterruptedException;
 
     @Override
     public boolean isDataAvailable() {

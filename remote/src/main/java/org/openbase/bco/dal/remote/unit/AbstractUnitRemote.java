@@ -23,6 +23,7 @@ package org.openbase.bco.dal.remote.unit;
  */
 
 import com.google.protobuf.GeneratedMessage;
+import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableRemote;
@@ -41,7 +42,6 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.MessageObservable;
-import org.openbase.jul.extension.protobuf.processing.GenericMessageProcessor;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
@@ -58,6 +58,7 @@ import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
@@ -593,9 +594,21 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * @throws java.lang.InterruptedException                      {@inheritDoc}
      */
     @Override
-    public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException, RejectedException {
-        final ActionDescription initializedActionDescription = initializeRequest(actionDescription);
-        return new UnitSynchronisationFuture(new AuthenticatedActionFuture(RPCHelper.callRemoteMethod(initializedActionDescription, this, ActionFuture.class), initializedActionDescription.getActionAuthority().getTicketAuthenticatorWrapper(), this.sessionManager), this);
+    public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionFuture.class, this.getSessionManager(), this, this::applyActionAuthenticated);
+//        if (!actionDescription.hasActionAuthority() || !actionDescription.getActionAuthority().hasTicketAuthenticatorWrapper()) {
+//            actionDescription = initializeRequest(actionDescription);
+//        }
+//        return new UnitSynchronisationFuture(new AuthenticatedActionFuture(RPCHelper.callRemoteMethod(actionDescription, this, ActionFuture.class), actionDescription.getActionAuthority().getTicketAuthenticatorWrapper(), this.sessionManager), this);
+    }
+
+    @Override
+    public Future<AuthenticatedValue> applyActionAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
+        try {
+            return RPCHelper.callRemoteMethod(authenticatedValue, this, AuthenticatedValue.class);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not apply action!", ex);
+        }
     }
 
     private ActionDescription initializeRequest(final ActionDescription actionDescription) throws CouldNotPerformException {
@@ -643,18 +656,6 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         return sessionManager != null && sessionManager.isAuthenticated();
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @return {@inheritDoc}
-     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws java.lang.InterruptedException                      {@inheritDoc}
-     */
-    @Override
-    public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
-        return RPCHelper.callRemoteMethod(this, Snapshot.class);
-    }
-
     @Override
     public SessionManager getSessionManager() {
         return sessionManager;
@@ -679,6 +680,20 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
                 serviceObservable.shutdown();
             }
             unitDataObservableMap.get(serviceTempus).shutdown();
+        }
+    }
+
+    @Override
+    public Future<Void> restoreSnapshot(Snapshot snapshot) throws CouldNotPerformException, InterruptedException {
+        return AuthenticatedServiceProcessor.requestAuthenticatedAction(snapshot, Void.class, getSessionManager(), this, this::restoreSnapshotAuthenticated);
+    }
+
+    @Override
+    public Future<AuthenticatedValue> restoreSnapshotAuthenticated(AuthenticatedValue authenticatedSnapshot) throws CouldNotPerformException {
+        try {
+            return RPCHelper.callRemoteMethod(authenticatedSnapshot, this, AuthenticatedValue.class);
+        } catch (CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not restore snapshot!", ex);
         }
     }
 
