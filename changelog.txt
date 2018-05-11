@@ -1,0 +1,13 @@
+Release 2.0:
+
+* API - Changes:
+** applyAction uses authenticated value (openbase/bco.dal#95)
+
+* Fixes:
+
+* Enhancements(Features):
+** Global transaction id (related openbase/bco.dal#92)
+** Snapshot functions authenticated (openbase/bco.dal#91)
+** Filtering data by authorization (related openbase/bco.authentication#10) 
+** Generic ListDiff and Synchronizer
+
