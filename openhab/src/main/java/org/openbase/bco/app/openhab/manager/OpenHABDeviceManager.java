@@ -65,8 +65,6 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
 
                             String itemName = OpenHABItemHelper.generateItemName(unitConfig, serviceConfig.getServiceDescription().getType());
                             if (itemName.equals(entry.getKey())) {
-                                logger.info("Found according unit[" + unitController.getLabel() + "] with service[" + serviceConfig.getServiceDescription().getType() + "]");
-
                                 switch (serviceConfig.getServiceDescription().getType()) {
                                     case COLOR_STATE_SERVICE:
                                         ColorState colorState = OpenHABColorStateTransformer.transform(HSBType.valueOf(entry.getValue()));
