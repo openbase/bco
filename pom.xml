@@ -186,7 +186,7 @@
     <modules>
         <module>device-registry</module>
         <module>location-registry</module>
-        <module>scene-registry</module>
+        <module>template-registry</module>
         <module>agent-registry</module>
         <module>app-registry</module>
         <module>unit-registry</module>

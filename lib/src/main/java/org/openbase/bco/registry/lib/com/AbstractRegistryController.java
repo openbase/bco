@@ -205,6 +205,7 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
 
     @Override
     public void notifyChange() throws CouldNotPerformException, InterruptedException {
+        updateTransactionId();
         try {
             // sync registry flags
             syncRegistryFlags();
