@@ -28,6 +28,8 @@ import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.processing.SimpleMessageProcessor;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 
 import javax.crypto.BadPaddingException;
@@ -36,6 +38,8 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 
 public class AuthenticatedMessageProcessor<M extends GeneratedMessage> extends SimpleMessageProcessor<M> {
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(AuthenticatedMessageProcessor.class);
 
     public AuthenticatedMessageProcessor(Class<M> dataClass) {
         super(dataClass);
@@ -67,6 +71,7 @@ public class AuthenticatedMessageProcessor<M extends GeneratedMessage> extends S
                 Method parseFrom = dataClass.getMethod("parseFrom", ByteString.class);
                 return (M) parseFrom.invoke(null, authenticatedValue.getValue());
             } catch (NoSuchMethodException | SecurityException | IllegalAccessException | IllegalArgumentException | InvocationTargetException ex) {
+                LOGGER.info("Received [" + authenticatedValue.getValue() + "] for data class [" + dataClass + "]");
                 throw new CouldNotPerformException("Could not invoke parseFrom method on [" + dataClass.getSimpleName() + "]", ex);
             }
         }
