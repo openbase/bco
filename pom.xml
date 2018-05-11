@@ -200,13 +200,12 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <dependency.bco.version>1.6-SNAPSHOT</dependency.bco.version>
+        <dependency.bco.version>2.0-SNAPSHOT</dependency.bco.version>
         <dependency.jul.version>${dependency.bco.version}</dependency.jul.version>
         <dependency.bco.registry.version>${dependency.bco.version}</dependency.bco.registry.version>
         <dependency.bco.dal.version>${dependency.bco.version}</dependency.bco.dal.version>
         <dependency.bco.authentication.version>${dependency.bco.version}</dependency.bco.authentication.version>
-        <dependency.bco.ontology.version>2.0-SNAPSHOT</dependency.bco.ontology.version>
-        <!--<dependency.bco.ontology.version>${dependency.bco.version}</dependency.bco.ontology.version>-->
+        <dependency.bco.ontology.version>${dependency.bco.version}</dependency.bco.ontology.version>
         <dependency.org.codehaus.mojo.license-maven-plugin.version>1.10</dependency.org.codehaus.mojo.license-maven-plugin.version>
     </properties>
     
