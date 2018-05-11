@@ -10,12 +10,12 @@ package org.openbase.bco.registry.unit.lib;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -26,6 +26,7 @@ package org.openbase.bco.registry.unit.lib;
 
 import org.openbase.bco.registry.lib.provider.UnitConfigCollectionProvider;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
+import org.openbase.bco.registry.unit.lib.generator.UntShapeGenerator;
 import org.openbase.bco.registry.unit.lib.provider.UnitTransformationProviderRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
@@ -42,47 +43,89 @@ import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.unit.UnitProbabilityCollectionType.UnitProbabilityCollection;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
 import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.rsb.ScopeType.Scope;
+import rst.spatial.ShapeType.Shape;
+import rst.tracking.PointingRay3DFloatCollectionType.PointingRay3DFloatCollection;
+import rst.tracking.PointingRay3DFloatType.PointingRay3DFloat;
 
 import javax.vecmath.Point3d;
 import java.util.*;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
+import java.util.stream.Collectors;
 
 public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransformationProviderRegistry<UnitRegistryData>, UnitConfigCollectionProvider, Shutdownable {
+
+    /**
+     * The default radius used for the unit by coordinate lookup is set to 1 metre.
+     */
+    static final double DEFAULT_RADIUS = 1d;
 
     /**
      * This method registers the given unit config in the registry.
      *
      * @param unitConfig the unit config to register.
+     *
      * @return the registered unit config with all applied consistency changes.
+     *
      * @throws CouldNotPerformException is thrown if the entry already exists or results in an inconsistent registry
      */
     @RPCMethod
-    public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
+    Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
 
     @RPCMethod
-    public Future<AuthenticatedValue> registerUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+    Future<AuthenticatedValue> registerUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+
+    /**
+     * Method updates the given unit config.
+     *
+     * @param unitConfig the updated unit config.
+     *
+     * @return the updated unit config with all applied consistency changes.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    @RPCMethod
+    Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
 
     @RPCMethod
-    public Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
+    Future<AuthenticatedValue> updateUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+
+    /**
+     * Method removes the given unit config out of the global registry.
+     *
+     * @param unitConfig the unit config to remove.
+     *
+     * @return The removed unit config.
+     *
+     * @throws CouldNotPerformException is thrown if the removal fails.
+     */
+    @RPCMethod
+    Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
 
     @RPCMethod
-    public Future<AuthenticatedValue> updateUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+    Future<AuthenticatedValue> removeUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the unit config with the given id is
+     * registered, otherwise false. The unit config id field is used for the
+     * comparison.
+     *
+     * @param unitConfig the unit config used for the identification.
+     *
+     * @return true if the unit exists.
+     *
+     * @throws CouldNotPerformException is thrown if the check fails.
+     */
+    @RPCMethod
+    Boolean containsUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
 
     @RPCMethod
-    public Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
-
-    @RPCMethod
-    public Future<AuthenticatedValue> removeUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean containsUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
-
-    @RPCMethod
-    public default Boolean containsUnitConfigByAlias(final String alias) throws CouldNotPerformException {
+    default Boolean containsUnitConfigByAlias(final String alias) throws CouldNotPerformException {
         try {
             getUnitConfigByAlias(alias);
         } catch (final NotAvailableException ex) {
@@ -91,11 +134,11 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
         return true;
     }
 
-    public default List<UnitConfig> getUnitConfigsByServices(final ServiceType... serviceTypes) throws CouldNotPerformException {
+    default List<UnitConfig> getUnitConfigsByServices(final ServiceType... serviceTypes) throws CouldNotPerformException {
         return getUnitConfigsByService(Arrays.asList(serviceTypes));
     }
 
-    public default List<UnitConfig> getUnitConfigsByService(final List<ServiceType> serviceTypes) throws CouldNotPerformException {
+    default List<UnitConfig> getUnitConfigsByService(final List<ServiceType> serviceTypes) throws CouldNotPerformException {
         validateData();
         final List<UnitConfig> unitConfigs = getUnitConfigs();
         boolean foundServiceType;
@@ -117,65 +160,26 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
     }
 
     @RPCMethod
-    default public String getUnitScopeById(final String id) throws CouldNotPerformException {
+    default String getUnitScopeById(final String id) throws CouldNotPerformException {
         return ScopeGenerator.generateStringRep(getUnitConfigById(id).getScope());
     }
 
     @RPCMethod
-    default public String getUnitScopeByAlias(final String alias) throws CouldNotPerformException {
+    default String getUnitScopeByAlias(final String alias) throws CouldNotPerformException {
         return ScopeGenerator.generateStringRep(getUnitConfigByAlias(alias).getScope());
     }
 
-    @RPCMethod
-    public Boolean isUnitConfigRegistryReadOnly() throws CouldNotPerformException;
-
     /**
-     * Method returns true if the underling registry is marked as consistent.
+     * Method returns true if the underling registry is marked as read only. A
+     * registry is marked as read only in case of inconsistently data entries or
+     * if the underling database is loaded out of a version tag.
      *
-     * @return if the UnitConfig registry is consistent
+     * @return true if read only.
      *
-     * @throws CouldNotPerformException if the check fails
+     * @throws CouldNotPerformException is thrown if the check fails.
      */
     @RPCMethod
-    public Boolean isUnitConfigRegistryConsistent() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Future<UnitTemplate> updateUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean containsUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean containsUnitTemplateById(final String unitTemplateId) throws CouldNotPerformException;
-
-    @RPCMethod
-    public UnitTemplate getUnitTemplateById(final String unitTemplate) throws CouldNotPerformException;
-
-    public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException;
-
-    @RPCMethod
-    public UnitTemplate getUnitTemplateByType(final UnitType type) throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isUnitTemplateRegistryReadOnly() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isUnitTemplateRegistryConsistent() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Future<UnitConfig> registerUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
-
-    @RPCMethod
-    public Future<UnitConfig> updateUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
-
-    @RPCMethod
-    public Future<UnitConfig> removeUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean containsUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean containsUnitGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
+    Boolean isUnitConfigRegistryReadOnly() throws CouldNotPerformException;
 
     /**
      * Method returns the unit matching the given alias. An alias is an unique identifiere of units.
@@ -190,7 +194,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws CouldNotPerformException is thrown if something went wrong during the lookup.
      */
     @RPCMethod
-    public default UnitConfig getUnitConfigByAlias(final String unitAlias) throws CouldNotPerformException {
+    default UnitConfig getUnitConfigByAlias(final String unitAlias) throws CouldNotPerformException {
         validateData();
         for (UnitConfig unitConfig : getUnitConfigs()) {
             for (final String alias : unitConfig.getAliasList()) {
@@ -205,18 +209,17 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
     /**
      * Method returns all registered units with the given label. Label resolving
      * is done case insensitive!
-     *
+     * <p>
      * Note: PLEASE DO NOT USE THIS METHOD TO REQUEST DEVICES FOR THE CONTROLLING PURPOSE BECAUSE LABELS ARE NOT A STABLE IDENTIFIER! USE ID OR ALIAS INSTEAD!
      *
      * @param unitConfigLabel the label to identify a set of units.
      *
-     * @returna list of the requested unit configs.
-     *
      * @throws CouldNotPerformException is thrown if the request fails.
+     * @returna list of the requested unit configs.
      */
-    public List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException;
+    List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException;
 
-    public default List<UnitConfig> getUnitConfigsByLabelAndUnitType(final String unitConfigLabel, final UnitTemplate.UnitType unitType) throws CouldNotPerformException {
+    default List<UnitConfig> getUnitConfigsByLabelAndUnitType(final String unitConfigLabel, final UnitType unitType) throws CouldNotPerformException {
         validateData();
         List<UnitConfig> unitConfigs = Collections.synchronizedList(new ArrayList<>());
         getUnitConfigs().parallelStream().filter((unitConfig) -> (unitConfig.getType().equals(unitType) && unitConfig.getLabel().equalsIgnoreCase(unitConfigLabel))).forEach((unitConfig) -> {
@@ -236,7 +239,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @throws CouldNotPerformException is thrown in case something goes wrong during the request.
      */
-    public default List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException {
+    default List<UnitConfig> getUnitConfigs(final UnitType type) throws CouldNotPerformException {
         validateData();
         List<UnitConfig> unitConfigs = new ArrayList<>();
         for (UnitConfig unitConfig : getUnitConfigs()) {
@@ -256,7 +259,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @throws CouldNotPerformException is thrown in case something goes wrong during the request.
      */
-    public List<UnitConfig> getDalUnitConfigs() throws CouldNotPerformException;
+    List<UnitConfig> getDalUnitConfigs() throws CouldNotPerformException;
 
     /**
      * Method returns a list of all globally registered base units.
@@ -266,32 +269,33 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @throws CouldNotPerformException is thrown in case something goes wrong during the request.
      */
-    public List<UnitConfig> getBaseUnitConfigs() throws CouldNotPerformException;
+    List<UnitConfig> getBaseUnitConfigs() throws CouldNotPerformException;
 
-    public List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException;
+    List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException;
 
-    public List<ServiceConfig> getServiceConfigs(final ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException;
+    List<ServiceConfig> getServiceConfigs(final ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException;
 
+    /**
+     * Method returns true if the underling registry is marked as read only. A
+     * registry is marked as read only in case of inconsistently data entries or
+     * if the underling database is loaded out of a version tag.
+     *
+     * @return true if read only.
+     *
+     * @throws CouldNotPerformException is thrown if the check fails.
+     */
     @RPCMethod
-    public Boolean isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException;
+    Boolean isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException;
 
-    @RPCMethod
-    public Boolean isUnitGroupConfigRegistryConsistent() throws CouldNotPerformException;
+    List<UnitConfig> getUnitGroupUnitConfigsByUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
 
-    @RPCMethod
-    public UnitConfig getUnitGroupConfigById(final String groupConfigId) throws CouldNotPerformException;
+    List<UnitConfig> getUnitGroupUnitConfigsByUnitType(final UnitType type) throws CouldNotPerformException;
 
-    public List<UnitConfig> getUnitGroupConfigs() throws CouldNotPerformException;
+    List<UnitConfig> getUnitGroupUnitConfigsByServiceTypes(final List<ServiceType> serviceTypes) throws CouldNotPerformException;
 
-    public List<UnitConfig> getUnitGroupConfigsByUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
+    List<UnitConfig> getUnitConfigsByUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
 
-    public List<UnitConfig> getUnitGroupConfigsByUnitType(final UnitType type) throws CouldNotPerformException;
-
-    public List<UnitConfig> getUnitGroupConfigsByServiceTypes(final List<ServiceType> serviceTypes) throws CouldNotPerformException;
-
-    public List<UnitConfig> getUnitConfigsByUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
-
-    public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType type, final List<ServiceType> serviceTypes) throws CouldNotPerformException;
+    List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType type, final List<ServiceType> serviceTypes) throws CouldNotPerformException;
 
     /**
      * Method return the unit config which is registered for the given scope. A
@@ -305,7 +309,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws CouldNotPerformException
      */
     @RPCMethod
-    public UnitConfig getUnitConfigByScope(final Scope scope) throws CouldNotPerformException;
+    UnitConfig getUnitConfigByScope(final Scope scope) throws CouldNotPerformException;
 
     /**
      * Get all sub types of a unit type. E.g. COLORABLE_LIGHT and DIMMABLE_LIGHT are
@@ -317,7 +321,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @throws CouldNotPerformException
      */
-    public List<UnitType> getSubUnitTypes(final UnitType type) throws CouldNotPerformException;
+    List<UnitType> getSubUnitTypes(final UnitType type) throws CouldNotPerformException;
 
     /**
      * Get all super types of a unit type. E.g. DIMMABLE_LIGHT and LIGHT are
@@ -329,111 +333,284 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @throws CouldNotPerformException
      */
-    public List<UnitType> getSuperUnitTypes(final UnitType type) throws CouldNotPerformException;
+    List<UnitType> getSuperUnitTypes(final UnitType type) throws CouldNotPerformException;
 
-    public default void verifyUnitGroupUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
+    default void verifyUnitGroupUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
         UnitConfigProcessor.verifyUnitConfig(unitConfig, UnitType.UNIT_GROUP);
     }
 
+    /**
+     * Method returns true if the underling registry is marked as read only. A
+     * registry is marked as read only in case of inconsistently data entries or
+     * if the underling database is loaded out of a version tag.
+     *
+     * @return true if read only.
+     *
+     * @throws CouldNotPerformException is thrown if the check fails.
+     */
     @RPCMethod
-    public Boolean isDalUnitConfigRegistryReadOnly() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isUserUnitRegistryReadOnly() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isAuthorizationGroupUnitRegistryReadOnly() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isDeviceUnitRegistryReadOnly() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isUnitGroupUnitRegistryReadOnly() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isLocationUnitRegistryReadOnly() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isConnectionUnitRegistryReadOnly() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isAgentUnitRegistryReadOnly() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isAppUnitRegistryReadOnly() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isSceneUnitRegistryReadOnly() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isDalUnitConfigRegistryConsistent() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isUserUnitRegistryConsistent() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isAuthorizationGroupUnitRegistryConsistent() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isDeviceUnitRegistryConsistent() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isUnitGroupUnitRegistryConsistent() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isLocationUnitRegistryConsistent() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isConnectionUnitRegistryConsistent() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isAgentUnitRegistryConsistent() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isAppUnitRegistryConsistent() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isSceneUnitRegistryConsistent() throws CouldNotPerformException;
-
-    public void validateData() throws InvalidStateException;
-
-    @RPCMethod
-    public Future<ServiceTemplate> updateServiceTemplate(final ServiceTemplate serviceTemplate) throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean containsServiceTemplate(final ServiceTemplate serviceTemplate) throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean containsServiceTemplateById(final String serviceTemplateId) throws CouldNotPerformException;
-
-    @RPCMethod
-    public ServiceTemplate getServiceTemplateById(final String serviceTemplateId) throws CouldNotPerformException;
-
-    public List<ServiceTemplate> getServiceTemplates() throws CouldNotPerformException;
-
-    @RPCMethod
-    public ServiceTemplate getServiceTemplateByType(final ServiceType type) throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isServiceTemplateRegistryReadOnly() throws CouldNotPerformException;
-
-    @RPCMethod
-    public Boolean isServiceTemplateRegistryConsistent() throws CouldNotPerformException;
-
+    Boolean isDalUnitConfigRegistryReadOnly() throws CouldNotPerformException;
 
     /**
-     * The default radius used for the unit by coordinate lookup is set to 1 metre.
+     * Method returns true if the underling registry is marked as read only. A
+     * registry is marked as read only in case of inconsistently data entries or
+     * if the underling database is loaded out of a version tag.
+     *
+     * @return true if read only.
+     *
+     * @throws CouldNotPerformException is thrown if the check fails.
      */
-    public static final double DEFAULT_RADIUS = 1d;
+    @RPCMethod
+    Boolean isUserUnitRegistryReadOnly() throws CouldNotPerformException;
 
-    public default List<UnitConfig> getUnitConfigsByCoordinate(final Vec3DDouble coordinate) throws CouldNotPerformException {
+    /**
+     * Method returns true if the underling registry is marked as read only. A
+     * registry is marked as read only in case of inconsistently data entries or
+     * if the underling database is loaded out of a version tag.
+     *
+     * @return true if read only.
+     *
+     * @throws CouldNotPerformException is thrown if the check fails.
+     */
+    @RPCMethod
+    Boolean isAuthorizationGroupUnitRegistryReadOnly() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as read only. A
+     * registry is marked as read only in case of inconsistently data entries or
+     * if the underling database is loaded out of a version tag.
+     *
+     * @return true if read only.
+     *
+     * @throws CouldNotPerformException is thrown if the check fails.
+     */
+    @RPCMethod
+    Boolean isDeviceUnitRegistryReadOnly() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as read only. A
+     * registry is marked as read only in case of inconsistently data entries or
+     * if the underling database is loaded out of a version tag.
+     *
+     * @return true if read only.
+     *
+     * @throws CouldNotPerformException is thrown if the check fails.
+     */
+    @RPCMethod
+    Boolean isUnitGroupUnitRegistryReadOnly() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as read only. A
+     * registry is marked as read only in case of inconsistently data entries or
+     * if the underling database is loaded out of a version tag.
+     *
+     * @return true if read only.
+     *
+     * @throws CouldNotPerformException is thrown if the check fails.
+     */
+    @RPCMethod
+    Boolean isLocationUnitRegistryReadOnly() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as read only. A
+     * registry is marked as read only in case of inconsistently data entries or
+     * if the underling database is loaded out of a version tag.
+     *
+     * @return true if read only.
+     *
+     * @throws CouldNotPerformException is thrown if the check fails.
+     */
+    @RPCMethod
+    Boolean isConnectionUnitRegistryReadOnly() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as read only. A
+     * registry is marked as read only in case of inconsistently data entries or
+     * if the underling database is loaded out of a version tag.
+     *
+     * @return true if read only.
+     *
+     * @throws CouldNotPerformException is thrown if the check fails.
+     */
+    @RPCMethod
+    Boolean isAgentUnitRegistryReadOnly() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as read only. A
+     * registry is marked as read only in case of inconsistently data entries or
+     * if the underling database is loaded out of a version tag.
+     *
+     * @return true if read only.
+     *
+     * @throws CouldNotPerformException is thrown if the check fails.
+     */
+    @RPCMethod
+    Boolean isAppUnitRegistryReadOnly() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as read only. A
+     * registry is marked as read only in case of inconsistently data entries or
+     * if the underling database is loaded out of a version tag.
+     *
+     * @return true if read only.
+     *
+     * @throws CouldNotPerformException is thrown if the check fails.
+     */
+    @RPCMethod
+    Boolean isSceneUnitRegistryReadOnly() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     *
+     * @return true if consistent
+     *
+     * @throws CouldNotPerformException if the check fails
+     */
+    @RPCMethod
+    Boolean isUnitConfigRegistryConsistent() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     *
+     * @return true if consistent
+     *
+     * @throws CouldNotPerformException if the check fails
+     */
+    @RPCMethod
+    Boolean isUnitGroupConfigRegistryConsistent() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     *
+     * @return true if consistent
+     *
+     * @throws CouldNotPerformException if the check fails
+     */
+    @RPCMethod
+    Boolean isDalUnitConfigRegistryConsistent() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     *
+     * @return true if consistent
+     *
+     * @throws CouldNotPerformException if the check fails
+     */
+    @RPCMethod
+    Boolean isUserUnitRegistryConsistent() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     *
+     * @return true if consistent
+     *
+     * @throws CouldNotPerformException if the check fails
+     */
+    @RPCMethod
+    Boolean isAuthorizationGroupUnitRegistryConsistent() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     *
+     * @return true if consistent
+     *
+     * @throws CouldNotPerformException if the check fails
+     */
+    @RPCMethod
+    Boolean isDeviceUnitRegistryConsistent() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     *
+     * @return true if consistent
+     *
+     * @throws CouldNotPerformException if the check fails
+     */
+    @RPCMethod
+    Boolean isUnitGroupUnitRegistryConsistent() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     *
+     * @return true if consistent
+     *
+     * @throws CouldNotPerformException if the check fails
+     */
+    @RPCMethod
+    Boolean isLocationUnitRegistryConsistent() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     *
+     * @return true if consistent
+     *
+     * @throws CouldNotPerformException if the check fails
+     */
+    @RPCMethod
+    Boolean isConnectionUnitRegistryConsistent() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     *
+     * @return true if consistent
+     *
+     * @throws CouldNotPerformException if the check fails
+     */
+    @RPCMethod
+    Boolean isAgentUnitRegistryConsistent() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     *
+     * @return true if consistent
+     *
+     * @throws CouldNotPerformException if the check fails
+     */
+    @RPCMethod
+    Boolean isAppUnitRegistryConsistent() throws CouldNotPerformException;
+
+    /**
+     * Method returns true if the underling registry is marked as consistent.
+     *
+     * @return true if consistent
+     *
+     * @throws CouldNotPerformException if the check fails
+     */
+    @RPCMethod
+    Boolean isSceneUnitRegistryConsistent() throws CouldNotPerformException;
+
+    void validateData() throws InvalidStateException;
+
+    @RPCMethod
+    Future<ServiceTemplate> updateServiceTemplate(final ServiceTemplate serviceTemplate) throws CouldNotPerformException;
+
+    @RPCMethod
+    Boolean containsServiceTemplate(final ServiceTemplate serviceTemplate) throws CouldNotPerformException;
+
+    @RPCMethod
+    Boolean containsServiceTemplateById(final String serviceTemplateId) throws CouldNotPerformException;
+
+    @RPCMethod
+    ServiceTemplate getServiceTemplateById(final String serviceTemplateId) throws CouldNotPerformException;
+
+    List<ServiceTemplate> getServiceTemplates() throws CouldNotPerformException;
+
+    @RPCMethod
+    ServiceTemplate getServiceTemplateByType(final ServiceType type) throws CouldNotPerformException;
+
+    @RPCMethod
+    Boolean isServiceTemplateRegistryReadOnly() throws CouldNotPerformException;
+
+    @RPCMethod
+    Boolean isServiceTemplateRegistryConsistent() throws CouldNotPerformException;
+
+    default List<UnitConfig> getUnitConfigsByCoordinate(final Vec3DDouble coordinate) throws CouldNotPerformException {
         return getUnitConfigsByCoordinate(coordinate, DEFAULT_RADIUS, UnitType.UNKNOWN);
     }
 
-    public default List<UnitConfig> getUnitConfigsByCoordinate(final Vec3DDouble coordinate, final double radius) throws CouldNotPerformException {
+    default List<UnitConfig> getUnitConfigsByCoordinate(final Vec3DDouble coordinate, final double radius) throws CouldNotPerformException {
         return getUnitConfigsByCoordinate(coordinate, radius, UnitType.UNKNOWN);
     }
-
 
     /**
      * Method returns a list of {@code UnitConfig} instances sorted by the distance to the given {@code coordinate} starting with the lowest one.
@@ -448,7 +625,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @throws CouldNotPerformException
      */
-    public default List<UnitConfig> getUnitConfigsByCoordinate(final Vec3DDouble coordinate, final double radius, final UnitType unitType) throws CouldNotPerformException {
+    default List<UnitConfig> getUnitConfigsByCoordinate(final Vec3DDouble coordinate, final double radius, final UnitType unitType) throws CouldNotPerformException {
 
         // init
         TreeMap<Double, UnitConfig> result = new TreeMap<>();
@@ -469,10 +646,335 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * If multiple users happen to have the same user name, the first one is returned.
      *
      * @param userName
+     *
      * @return User ID
+     *
      * @throws CouldNotPerformException
-     * @throws NotAvailableException If no user with the given user name could be found.
+     * @throws NotAvailableException    If no user with the given user name could be found.
      */
     @RPCMethod
-    public String getUserIdByUserName(final String userName) throws CouldNotPerformException, NotAvailableException;
+    String getUserUnitIdByUserName(final String userName) throws CouldNotPerformException, NotAvailableException;
+
+    /**
+     * Method returns all location unit configs which are of the given location type.
+     *
+     * @param locationType the type of the location.
+     *
+     * @return a list of the requested unit configs.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    default List<UnitConfig> getLocationUnitConfigsByType(final LocationType locationType) throws CouldNotPerformException {
+        return getUnitConfigs(UnitType.LOCATION)
+                .stream()
+                .filter(locationUnitConfig -> locationUnitConfig.getLocationConfig().getType() == locationType)
+                .collect(Collectors.toList());
+    }
+
+    /**
+     * Method returns all the locations which contain the given coordinate.
+     *
+     * @param coordinate
+     *
+     * @return a list of the requested unit configs.
+     *
+     * @throws CouldNotPerformException                is thrown if the request fails.
+     * @throws java.lang.InterruptedException
+     * @throws java.util.concurrent.ExecutionException
+     */
+    default List<UnitConfig> getLocationUnitConfigsByCoordinate(final Vec3DDouble coordinate) throws CouldNotPerformException, InterruptedException, ExecutionException {
+        return getLocationUnitConfigsByCoordinate(coordinate, LocationType.UNKNOWN);
+    }
+
+    /**
+     * Method returns all the locations which contain the given coordinate and
+     * belong to the given location type.
+     *
+     * @param coordinate
+     * @param locationType
+     *
+     * @return a list of the requested unit configs.
+     *
+     * @throws CouldNotPerformException                is thrown if the request fails.
+     * @throws java.lang.InterruptedException
+     * @throws java.util.concurrent.ExecutionException
+     */
+    List<UnitConfig> getLocationUnitConfigsByCoordinate(final Vec3DDouble coordinate, LocationType locationType) throws CouldNotPerformException, InterruptedException, ExecutionException;
+
+    /**
+     * Method returns all unit configurations which are direct or recursive related to the given location id.
+     *
+     * @param locationId the id of the location which provides the units.
+     *
+     * @return A collection of unit configs.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    List<UnitConfig> getUnitConfigsByLocation(final String locationId) throws CouldNotPerformException;
+
+    /**
+     * Method returns all unit configurations which are direct related to the given location id.
+     * In case the {@code recursive} flag is set to true than recursive related units are included as well.
+     *
+     * @param locationId the id of the location which provides the units.
+     * @param recursive  defines if recursive related unit should be included as well.
+     *
+     * @return A collection of unit configs.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    List<UnitConfig> getUnitConfigsByLocation(final String locationId, final boolean recursive) throws CouldNotPerformException;
+
+    /**
+     * Method returns all unit configurations which are direct or recursive
+     * related to the given location id and an instance of the given unit type.
+     * Label resolving is done case insensitive!
+     *
+     * @param type
+     * @param locationConfigId
+     *
+     * @return A collection of unit configs.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     * @throws NotAvailableException
+     */
+    List<UnitConfig> getUnitConfigsByLocation(final UnitType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException;
+
+    /**
+     * Method returns all unit configurations which are direct or recursive
+     * related to the given location id and an implement the given service type.
+     *
+     * @param type             service type filter.
+     * @param locationConfigId related location.
+     *
+     * @return A collection of unit configs.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     * @throws NotAvailableException
+     */
+    List<UnitConfig> getUnitConfigsByLocation(final ServiceType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException;
+
+    /**
+     * Method returns all service configurations which are direct or recursive
+     * related to the given location id.
+     *
+     * @param locationId
+     *
+     * @return the list of service configurations.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     * @throws NotAvailableException    is thrown if the given location config id
+     *                                  is unknown.
+     */
+    List<ServiceConfig> getServiceConfigsByLocation(final String locationId) throws CouldNotPerformException;
+
+    /**
+     * Method returns all unit configurations which are direct or recursive
+     * related to the given location label which can represent more than one
+     * location. Label resolving is done case insensitive!
+     *
+     * @param locationLabel
+     *
+     * @return A collection of unit configs.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     * @throws NotAvailableException
+     */
+    List<UnitConfig> getUnitConfigsByLocationLabel(final String locationLabel) throws CouldNotPerformException;
+
+    /**
+     * Method returns all unit configurations with a given type which are direct
+     * or recursive related to the given location label which can represent more
+     * than one location. Label resolving is done case insensitive!
+     *
+     * @param unitType
+     * @param locationLabel
+     *
+     * @return A collection of unit configs.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     * @throws NotAvailableException
+     */
+    List<UnitConfig> getUnitConfigsByLocationLabel(final UnitType unitType, final String locationLabel) throws CouldNotPerformException;
+
+    /**
+     * Method returns a collection of unit configs which are located within the
+     * defined location and match the given unit label. Label resolving is done
+     * case insensitive!
+     *
+     * @param unitLabel
+     * @param locationId
+     *
+     * @return
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    List<UnitConfig> getUnitConfigsByLabelAndLocation(final String unitLabel, final String locationId) throws CouldNotPerformException;
+
+    /**
+     * Method returns all unit configurations which are direct or recursive
+     * related to the given location alias which can represent more than one
+     * location. Alias resolving is done case insensitive!
+     *
+     * @param locationAlias
+     *
+     * @return A collection of unit configs.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     * @throws NotAvailableException
+     */
+    List<UnitConfig> getUnitConfigsByLocationAlias(final String locationAlias) throws CouldNotPerformException;
+
+    /**
+     * Method returns all unit configurations with a given type which are direct
+     * or recursive related to the given location alias which can represent more
+     * than one location. Alias resolving is done case insensitive!
+     *
+     * @param unitType
+     * @param locationAlias
+     *
+     * @return A collection of unit configs.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     * @throws NotAvailableException
+     */
+    List<UnitConfig> getUnitConfigsByLocationAlias(final UnitType unitType, final String locationAlias) throws CouldNotPerformException;
+
+    /**
+     * Method returns a collection of unit configs which are located within the
+     * defined location and match the given unit alias. Alias resolving is done
+     * case insensitive!
+     *
+     * @param unitAlias
+     * @param locationId
+     *
+     * @return
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    List<UnitConfig> getUnitConfigsByAliasAndLocation(final String unitAlias, final String locationId) throws CouldNotPerformException;
+
+    /**
+     * Method generates a list of service types supported by the given location.
+     *
+     * @param locationId the location to filter the types.
+     *
+     * @return a list of supported service types.
+     *
+     * @throws NotAvailableException is thrown in case the list could not be computed.
+     */
+    default Set<ServiceType> getServiceTypesByLocation(final String locationId) throws CouldNotPerformException {
+        final Set<ServiceType> serviceTypeSet = new HashSet<>();
+        for (final UnitConfig unitConfig : getUnitConfigsByLocation(locationId)) {
+            for (final ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                serviceTypeSet.add(serviceConfig.getServiceDescription().getType());
+            }
+        }
+        return serviceTypeSet;
+    }
+
+    /**
+     * Method returns all unit configurations which are related to the given
+     * connection id.
+     *
+     * @param connectionConfigId
+     *
+     * @return A collection of unit configs.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    List<UnitConfig> getUnitConfigsByConnection(final String connectionConfigId) throws CouldNotPerformException;
+
+    /**
+     * Method returns all unit configurations which are related to the given
+     * connection id and an instance of the given unit type.
+     *
+     * @param type
+     * @param connectionConfigId
+     *
+     * @return A collection of unit configs.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     * @throws NotAvailableException
+     */
+    List<UnitConfig> getUnitConfigsByConnection(final UnitType type, final String connectionConfigId) throws CouldNotPerformException, NotAvailableException;
+
+    /**
+     * Method returns all unit configurations which are related to the given
+     * connection id and an implement the given service type.
+     *
+     * @param type               service type filter.
+     * @param connectionConfigId related connection.
+     *
+     * @return A collection of unit configs.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     * @throws NotAvailableException
+     */
+    List<UnitConfig> getUnitConfigsByConnection(final ServiceType type, final String connectionConfigId) throws CouldNotPerformException, NotAvailableException;
+
+    /**
+     * Method returns all service configurations which are related to the given
+     * connection id.
+     *
+     * @param connectionConfigId
+     *
+     * @return the list of service configurations.
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     * @throws NotAvailableException    is thrown if the given connection config id
+     *                                  is unknown.
+     */
+    List<ServiceConfig> getServiceConfigsByConnection(final String connectionConfigId) throws CouldNotPerformException;
+
+
+    /**
+     * Method returns all neighbor tiles for a tile. If the given locationId
+     * does not belong to a tile, the could not perform exception is thrown.
+     *
+     * @param locationId the id of the location which neighbors you want to get
+     *
+     * @return all neighbor tiles
+     *
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    List<UnitConfig> getNeighborLocations(final String locationId) throws CouldNotPerformException;
+
+    /**
+     * Method returns a list of probably intersected units by the given 3D ray.
+     * This could for example be useful for selecting units by pointing gestures.
+     *
+     * @param pointingRay3DFloat ray which probably intersects with a specific unit priorized by a given certainty.
+     *
+     * @return a collection of probably intersected units referred by there id.
+     *
+     * @throws CouldNotPerformException is thrown in case the computation could not be performed.
+     */
+    @RPCMethod
+    Future<UnitProbabilityCollection> computeUnitIntersection(final PointingRay3DFloat pointingRay3DFloat) throws CouldNotPerformException;
+
+    /**
+     * Method returns a list of probably intersected units by the given 3D rays.
+     * This could for example be useful for selecting units by pointing gestures.
+     *
+     * @param pointingRay3DFloatCollection a collection of rays which probably intersects with a specific unit priorized by a given certainty.
+     *
+     * @return a collection of probably intersected units referred by there id.
+     *
+     * @throws CouldNotPerformException is thrown in case the computation could not be performed.
+     */
+    @RPCMethod
+    Future<UnitProbabilityCollection> computeUnitIntersection(final PointingRay3DFloatCollection pointingRay3DFloatCollection) throws CouldNotPerformException;
+
+    @Override
+    default Shape getUnitShape(final UnitConfig unitConfig) throws NotAvailableException {
+        try {
+            return UntShapeGenerator.generateUnitShape(unitConfig, this, CachedClassRegistryRemote.getRegistry());
+        } catch (InterruptedException ex) {
+            // because registries should not throw interrupted exceptions in a future release this exception is already transformed into a NotAvailableException.
+            Thread.currentThread().interrupt();
+            throw new NotAvailableException("UnitShape", new CouldNotPerformException("Shutdown in progress"));
+        }
+    }
+
 }

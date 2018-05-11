@@ -39,6 +39,14 @@ public interface UnitConfigCollectionProvider {
      */
     List<UnitConfig> getUnitConfigs() throws CouldNotPerformException;
 
+    /**
+     * Method returns true if the unit config with the given id is
+     * registered, otherwise false.
+     *
+     * @param unitConfigId the id to identify the unit.
+     * @return true if the unit exists.
+     * @throws CouldNotPerformException is thrown if the check fails.
+     */
     @RPCMethod
     Boolean containsUnitConfigById(final String unitConfigId) throws CouldNotPerformException;
 
