@@ -43,12 +43,6 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public class ServiceConfigServiceTemplateIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
-    private final ProtoBufFileSynchronizedRegistry<String, ServiceTemplate, ServiceTemplate.Builder, UnitRegistryData.Builder> serviceTemplateRegistry;
-
-    public ServiceConfigServiceTemplateIdConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, ServiceTemplate, ServiceTemplate.Builder, UnitRegistryData.Builder> serviceTemplateRegistry) {
-        this.serviceTemplateRegistry = serviceTemplateRegistry;
-    }
-
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();

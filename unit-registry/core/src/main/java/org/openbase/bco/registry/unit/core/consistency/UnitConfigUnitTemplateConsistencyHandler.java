@@ -21,7 +21,6 @@ package org.openbase.bco.registry.unit.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.List;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -38,17 +37,13 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
+import java.util.List;
+
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
-
-    private final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> unitTemplateRegistry;
-
-    public UnitConfigUnitTemplateConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> unitTemplateRegistry) {
-        this.unitTemplateRegistry = unitTemplateRegistry;
-    }
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
@@ -89,7 +84,7 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
     }
 
     private UnitTemplate getUnitTemplateByType(UnitType type) throws CouldNotPerformException {
-        for (UnitTemplate unitTemplate : unitTemplateRegistry.getMessages()) {
+        for (UnitTemplate unitTemplate : CachedunitTemplateRegistry.getMessages()) {
             if (unitTemplate.getType() == type) {
                 return unitTemplate;
             }

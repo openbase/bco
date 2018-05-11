@@ -868,33 +868,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     }
 
     @Override
-    public List<UnitTemplate.UnitType> getSubUnitTypes(UnitTemplate.UnitType type) throws CouldNotPerformException {
-        validateData();
-        List<UnitTemplate.UnitType> unitTypes = new ArrayList<>();
-        for (UnitTemplate template : unitTemplateRemoteRegistry.getMessages()) {
-            if (template.getIncludedTypeList().contains(type)) {
-                unitTypes.add(template.getType());
-                unitTypes.addAll(getSubUnitTypes(template.getType()));
-            }
-        }
-        return unitTypes;
-    }
-
-    @Override
-    public List<UnitTemplate.UnitType> getSuperUnitTypes(UnitTemplate.UnitType type) throws CouldNotPerformException {
-        validateData();
-        UnitTemplate unitTemplate = getUnitTemplateByType(type);
-        List<UnitTemplate.UnitType> unitTypes = new ArrayList<>();
-        for (UnitTemplate template : unitTemplateRemoteRegistry.getMessages()) {
-            if (unitTemplate.getIncludedTypeList().contains(template.getType())) {
-                unitTypes.add(template.getType());
-                unitTypes.addAll(getSuperUnitTypes(template.getType()));
-            }
-        }
-        return unitTypes;
-    }
-
-    @Override
     public Future<ServiceTemplate> updateServiceTemplate(ServiceTemplate serviceTemplate) throws CouldNotPerformException {
         try {
             return RPCHelper.callRemoteMethod(serviceTemplate, this, ServiceTemplate.class);

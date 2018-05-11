@@ -29,18 +29,17 @@ import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.unit.lib.generator.UntShapeGenerator;
 import org.openbase.bco.registry.unit.lib.provider.UnitTransformationProviderRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.storage.registry.RegistryService;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitProbabilityCollectionType.UnitProbabilityCollection;
@@ -60,7 +59,7 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.stream.Collectors;
 
-public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransformationProviderRegistry<UnitRegistryData>, UnitConfigCollectionProvider, Shutdownable {
+public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransformationProviderRegistry<UnitRegistryData>, UnitConfigCollectionProvider, Shutdownable, RegistryService {
 
     /**
      * The default radius used for the unit by coordinate lookup is set to 1 metre.
@@ -275,7 +274,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
 
     List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException;
 
-    List<ServiceConfig> getServiceConfigs(final ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException;
+    List<ServiceConfig> getServiceConfigs(final ServiceType serviceType) throws CouldNotPerformException;
 
     /**
      * Method returns true if the underling registry is marked as read only. A
@@ -312,30 +311,6 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      */
     @RPCMethod
     UnitConfig getUnitConfigByScope(final Scope scope) throws CouldNotPerformException;
-
-    /**
-     * Get all sub types of a unit type. E.g. COLORABLE_LIGHT and DIMMABLE_LIGHT are
-     * sub types of LIGHT.
-     *
-     * @param type the super type whose sub types are searched
-     *
-     * @return all types of which the given type is a super type
-     *
-     * @throws CouldNotPerformException
-     */
-    List<UnitType> getSubUnitTypes(final UnitType type) throws CouldNotPerformException;
-
-    /**
-     * Get all super types of a unit type. E.g. DIMMABLE_LIGHT and LIGHT are
-     * super types of COLORABLE_LIGHT.
-     *
-     * @param type the type whose super types are returned
-     *
-     * @return all super types of a given unit type
-     *
-     * @throws CouldNotPerformException
-     */
-    List<UnitType> getSuperUnitTypes(final UnitType type) throws CouldNotPerformException;
 
     default void verifyUnitGroupUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
         UnitConfigProcessor.verifyUnitConfig(unitConfig, UnitType.UNIT_GROUP);
@@ -581,31 +556,6 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
     @RPCMethod
     Boolean isSceneUnitRegistryConsistent() throws CouldNotPerformException;
 
-    void validateData() throws InvalidStateException;
-
-    @RPCMethod
-    Future<ServiceTemplate> updateServiceTemplate(final ServiceTemplate serviceTemplate) throws CouldNotPerformException;
-
-    @RPCMethod
-    Boolean containsServiceTemplate(final ServiceTemplate serviceTemplate) throws CouldNotPerformException;
-
-    @RPCMethod
-    Boolean containsServiceTemplateById(final String serviceTemplateId) throws CouldNotPerformException;
-
-    @RPCMethod
-    ServiceTemplate getServiceTemplateById(final String serviceTemplateId) throws CouldNotPerformException;
-
-    List<ServiceTemplate> getServiceTemplates() throws CouldNotPerformException;
-
-    @RPCMethod
-    ServiceTemplate getServiceTemplateByType(final ServiceType type) throws CouldNotPerformException;
-
-    @RPCMethod
-    Boolean isServiceTemplateRegistryReadOnly() throws CouldNotPerformException;
-
-    @RPCMethod
-    Boolean isServiceTemplateRegistryConsistent() throws CouldNotPerformException;
-
     default List<UnitConfig> getUnitConfigsByCoordinate(final Vec3DDouble coordinate) throws CouldNotPerformException {
         return getUnitConfigsByCoordinate(coordinate, DEFAULT_RADIUS, UnitType.UNKNOWN);
     }
@@ -655,7 +605,17 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws NotAvailableException    If no user with the given user name could be found.
      */
     @RPCMethod
-    String getUserUnitIdByUserName(final String userName) throws CouldNotPerformException, NotAvailableException;
+    default String getUserUnitIdByUserName(final String userName) throws CouldNotPerformException, NotAvailableException {
+        validateData();
+        List<UnitConfig> messages = getUnitConfigs(UnitType.USER);
+
+        for (UnitConfig message : messages) {
+            if (message.getUserConfig().getUserName().equals(userName)) {
+                return message.getId();
+            }
+        }
+        throw new NotAvailableException(userName);
+    }
 
     /**
      * Method returns all location unit configs which are of the given location type.

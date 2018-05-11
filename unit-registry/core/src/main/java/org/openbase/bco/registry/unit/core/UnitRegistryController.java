@@ -92,30 +92,38 @@ import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitProbabilityCollectionType.UnitProbabilityCollection;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.agent.AgentClassType.AgentClass;
 import rst.domotic.unit.agent.AgentConfigType.AgentConfig;
+import rst.domotic.unit.app.AppClassType.AppClass;
 import rst.domotic.unit.app.AppConfigType.AppConfig;
 import rst.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
 import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig;
 import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig;
+import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
 import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
 import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
+import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.rsb.ScopeType;
 import rst.spatial.ShapeType.Shape;
+import rst.tracking.PointingRay3DFloatCollectionType.PointingRay3DFloatCollection;
+import rst.tracking.PointingRay3DFloatType.PointingRay3DFloat;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class UnitRegistryController extends AbstractRegistryController<UnitRegistryData, UnitRegistryData.Builder> implements UnitRegistry, Manageable<ScopeType.Scope> {
+public class UnitRegistryController extends AbstractRegistryController<UnitRegistryData, UnitRegistryData.Builder> implements UnitRegistry {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(UnitRegistryData.getDefaultInstance()));
@@ -138,8 +146,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
     private final static org.slf4j.Logger LOGGER = LoggerFactory.getLogger(UnitRegistryController.class);
 
-    private final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> unitTemplateRegistry;
-    private final ProtoBufFileSynchronizedRegistry<String, ServiceTemplate, ServiceTemplate.Builder, UnitRegistryData.Builder> serviceTemplateRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitConfigRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> userUnitConfigRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupUnitConfigRegistry;
@@ -166,8 +172,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
                 throw new NotAvailableException("Database");
             }
 
-            this.serviceTemplateRegistry = new ProtoBufFileSynchronizedRegistry<>(ServiceTemplate.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.SERVICE_TEMPLATE_FIELD_NUMBER), new ServiceTemplateIdGenerator(), JPService.getProperty(JPServiceTemplateDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
-            this.unitTemplateRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitTemplate.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.UNIT_TEMPLATE_FIELD_NUMBER), new UnitTemplateIdGenerator(), JPService.getProperty(JPUnitTemplateDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.dalUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPDalUnitConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.userUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPUserConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
             this.authorizationGroupUnitConfigRegistry = new ProtoBufFileSynchronizedRegistry<>(UnitConfig.class, getBuilderSetup(), getDataFieldDescriptor(UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER), UNIT_ID_GENERATOR, JPService.getProperty(JPAuthorizationGroupConfigDatabaseDirectory.class).getValue(), protoBufJSonFileProvider);
@@ -209,8 +213,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      */
     @Override
     protected void registerRegistries() throws CouldNotPerformException {
-        registerRegistry(serviceTemplateRegistry);
-        registerRegistry(unitTemplateRegistry);
         unitConfigRegistryList.stream().forEach((registry) -> {
             registerRegistry(registry);
         });
@@ -224,9 +226,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     protected void registerConsistencyHandler() throws CouldNotPerformException {
         try {
-            unitTemplateRegistry.registerConsistencyHandler(new UnitTemplateUniqueTypeConsistencyHandler());
-            unitTemplateRegistry.registerConsistencyHandler(new UniteTemplateServiceTemplateConsistencyHandler(serviceTemplateRegistry));
-
             agentUnitConfigRegistry.registerConsistencyHandler(new AgentConfigAgentClassIdConsistencyHandler(CachedAgentRegistryRemote.getRegistry().getAgentClassRemoteRegistry()));
             agentUnitConfigRegistry.registerConsistencyHandler(new BaseUnitLabelConsistencyHandler());
             agentUnitConfigRegistry.registerConsistencyHandler(new AgentLocationConsistencyHandler(locationUnitConfigRegistry));
@@ -303,11 +302,11 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             // add consistency handler for all unitConfig registries
             registerConsistencyHandler(new UnitLocationIdConsistencyHandler(locationUnitConfigRegistry), UnitConfig.class);
             registerConsistencyHandler(new ServiceConfigUnitIdConsistencyHandler(), UnitConfig.class);
-            registerConsistencyHandler(new UnitConfigUnitTemplateConsistencyHandler(unitTemplateRegistry), UnitConfig.class);
+            registerConsistencyHandler(new UnitConfigUnitTemplateConsistencyHandler(), UnitConfig.class);
             registerConsistencyHandler(new UnitAliasUniqueVerificationConsistencyHandler(this), UnitConfig.class);
             registerConsistencyHandler(new UnitAliasGenerationConsistencyHandler(this), UnitConfig.class);
             registerConsistencyHandler(new UnitEnablingStateConsistencyHandler(), UnitConfig.class);
-            registerConsistencyHandler(new ServiceConfigServiceTemplateIdConsistencyHandler(serviceTemplateRegistry), UnitConfig.class);
+            registerConsistencyHandler(new ServiceConfigServiceTemplateIdConsistencyHandler(), UnitConfig.class);
             registerConsistencyHandler(new BoundingBoxCleanerConsistencyHandler(), UnitConfig.class);
             registerConsistencyHandler(new UnitTransformationFrameConsistencyHandler(locationUnitConfigRegistry), UnitConfig.class);
             registerConsistencyHandler(new UnitPermissionCleanerConsistencyHandler(authorizationGroupUnitConfigRegistry, locationUnitConfigRegistry), UnitConfig.class);
@@ -338,8 +337,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      */
     @Override
     protected void registerPlugins() throws CouldNotPerformException, InterruptedException {
-        serviceTemplateRegistry.registerPlugin(new ServiceTemplateCreatorRegistryPlugin(serviceTemplateRegistry));
-        unitTemplateRegistry.registerPlugin(new UnitTemplateCreatorRegistryPlugin(unitTemplateRegistry));
         locationUnitConfigRegistry.registerPlugin(new RootLocationPlugin());
         try {
             if (JPService.getProperty(JPAuthentication.class).getValue()) {
@@ -375,66 +372,53 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      */
     @Override
     protected void registerDependencies() throws CouldNotPerformException {
-        try {
-            unitTemplateRegistry.registerDependency(serviceTemplateRegistry);
+        registerDependency(unitTemplateRegistry, UnitConfig.class);
 
-            registerDependency(unitTemplateRegistry, UnitConfig.class);
+        dalUnitConfigRegistry.registerDependency(deviceUnitConfigRegistry);
+        dalUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
 
-            dalUnitConfigRegistry.registerDependency(deviceUnitConfigRegistry);
-            dalUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
+        authorizationGroupUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
 
-            authorizationGroupUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
+        deviceUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
+        deviceUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
+        deviceUnitConfigRegistry.registerDependency(CachedDeviceRegistryRemote.getRegistry().getDeviceClassRemoteRegistry());
 
-            deviceUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
-            deviceUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
-            deviceUnitConfigRegistry.registerDependency(CachedDeviceRegistryRemote.getRegistry().getDeviceClassRemoteRegistry());
+        unitGroupUnitConfigRegistry.registerDependency(agentUnitConfigRegistry);
+        unitGroupUnitConfigRegistry.registerDependency(appUnitConfigRegistry);
+        unitGroupUnitConfigRegistry.registerDependency(authorizationGroupUnitConfigRegistry);
+        unitGroupUnitConfigRegistry.registerDependency(connectionUnitConfigRegistry);
+        unitGroupUnitConfigRegistry.registerDependency(dalUnitConfigRegistry);
+        unitGroupUnitConfigRegistry.registerDependency(deviceUnitConfigRegistry);
+        unitGroupUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
+        unitGroupUnitConfigRegistry.registerDependency(sceneUnitConfigRegistry);
+        unitGroupUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
+        unitGroupUnitConfigRegistry.registerDependency(CachedDeviceRegistryRemote.getRegistry().getDeviceClassRemoteRegistry());
 
-            unitGroupUnitConfigRegistry.registerDependency(agentUnitConfigRegistry);
-            unitGroupUnitConfigRegistry.registerDependency(appUnitConfigRegistry);
-            unitGroupUnitConfigRegistry.registerDependency(authorizationGroupUnitConfigRegistry);
-            unitGroupUnitConfigRegistry.registerDependency(connectionUnitConfigRegistry);
-            unitGroupUnitConfigRegistry.registerDependency(dalUnitConfigRegistry);
-            unitGroupUnitConfigRegistry.registerDependency(deviceUnitConfigRegistry);
-            unitGroupUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
-            unitGroupUnitConfigRegistry.registerDependency(sceneUnitConfigRegistry);
-            unitGroupUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
-            unitGroupUnitConfigRegistry.registerDependency(CachedDeviceRegistryRemote.getRegistry().getDeviceClassRemoteRegistry());
+        locationUnitConfigRegistry.registerDependency(agentUnitConfigRegistry);
+        locationUnitConfigRegistry.registerDependency(appUnitConfigRegistry);
+        locationUnitConfigRegistry.registerDependency(authorizationGroupUnitConfigRegistry);
+        locationUnitConfigRegistry.registerDependency(connectionUnitConfigRegistry);
+        locationUnitConfigRegistry.registerDependency(dalUnitConfigRegistry);
+        locationUnitConfigRegistry.registerDependency(deviceUnitConfigRegistry);
+        locationUnitConfigRegistry.registerDependency(sceneUnitConfigRegistry);
+        locationUnitConfigRegistry.registerDependency(unitGroupUnitConfigRegistry);
+        locationUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
 
-            locationUnitConfigRegistry.registerDependency(agentUnitConfigRegistry);
-            locationUnitConfigRegistry.registerDependency(appUnitConfigRegistry);
-            locationUnitConfigRegistry.registerDependency(authorizationGroupUnitConfigRegistry);
-            locationUnitConfigRegistry.registerDependency(connectionUnitConfigRegistry);
-            locationUnitConfigRegistry.registerDependency(dalUnitConfigRegistry);
-            locationUnitConfigRegistry.registerDependency(deviceUnitConfigRegistry);
-            locationUnitConfigRegistry.registerDependency(sceneUnitConfigRegistry);
-            locationUnitConfigRegistry.registerDependency(unitGroupUnitConfigRegistry);
-            locationUnitConfigRegistry.registerDependency(userUnitConfigRegistry);
+        connectionUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
 
-            connectionUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
+        agentUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
+        agentUnitConfigRegistry.registerDependency(CachedAgentRegistryRemote.getRegistry().getAgentClassRemoteRegistry());
 
-            agentUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
-            agentUnitConfigRegistry.registerDependency(CachedAgentRegistryRemote.getRegistry().getAgentClassRemoteRegistry());
+        sceneUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
 
-            sceneUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
-
-            appUnitConfigRegistry.registerDependency(CachedAppRegistryRemote.getRegistry().getAppClassRemoteRegistry());
-            appUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            // registries do not throw interrupted exception within the next release.
-        }
+        appUnitConfigRegistry.registerDependency(CachedAppRegistryRemote.getRegistry().getAppClassRemoteRegistry());
+        appUnitConfigRegistry.registerDependency(locationUnitConfigRegistry);
     }
 
     @Override
     public final void syncRegistryFlags() throws CouldNotPerformException, InterruptedException {
         setDataField(UnitRegistryData.DAL_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, dalUnitConfigRegistry.isReadOnly());
         setDataField(UnitRegistryData.DAL_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, dalUnitConfigRegistry.isConsistent());
-
-        setDataField(UnitRegistryData.UNIT_TEMPLATE_REGISTRY_READ_ONLY_FIELD_NUMBER, unitTemplateRegistry.isReadOnly());
-        setDataField(UnitRegistryData.UNIT_TEMPLATE_REGISTRY_CONSISTENT_FIELD_NUMBER, unitTemplateRegistry.isConsistent());
-
-        setDataField(UnitRegistryData.SERVICE_TEMPLATE_REGISTRY_READ_ONLY_FIELD_NUMBER, unitTemplateRegistry.isReadOnly());
-        setDataField(UnitRegistryData.SERVICE_TEMPLATE_REGISTRY_CONSISTENT_FIELD_NUMBER, unitTemplateRegistry.isConsistent());
 
         setDataField(UnitRegistryData.USER_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, userUnitConfigRegistry.isReadOnly());
         setDataField(UnitRegistryData.USER_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, userUnitConfigRegistry.isConsistent());
@@ -668,81 +652,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         return unitConfigRegistryList.stream().anyMatch((unitConfigRegistry) -> (unitConfigRegistry.isConsistent()));
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @param unitTemplateId {@inheritDoc}
-     * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
-     */
-    @Override
-    public UnitTemplate getUnitTemplateById(final String unitTemplateId) throws CouldNotPerformException {
-        return unitTemplateRegistry.get(unitTemplateId).getMessage();
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @param unitTemplateId {@inheritDoc}
-     * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
-     */
-    @Override
-    public Boolean containsUnitTemplateById(final String unitTemplateId) throws CouldNotPerformException {
-        return unitTemplateRegistry.contains(unitTemplateId);
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @param unitTemplate {@inheritDoc}
-     * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
-     */
-    @Override
-    public Boolean containsUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException {
-        return unitTemplateRegistry.contains(unitTemplate);
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @param unitTemplate {@inheritDoc}
-     * @return {@inheritDoc}
-     * @throws CouldNotPerformException {@inheritDoc}
-     */
-    @Override
-    public Future<UnitTemplate> updateUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.submit(() -> unitTemplateRegistry.update(unitTemplate));
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException {
-        return unitTemplateRegistry.getMessages();
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @param type
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public UnitTemplate getUnitTemplateByType(final UnitType type) throws CouldNotPerformException {
-        for (UnitTemplate unitTemplate : unitTemplateRegistry.getMessages()) {
-            if (unitTemplate.getType() == type) {
-                return unitTemplate;
-            }
-        }
-        throw new NotAvailableException("UnitTemplate with type [" + type + "]");
-    }
 
     /**
      * {@inheritDoc}
@@ -818,91 +727,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         return serviceConfigs;
     }
 
-    /**
-     * {@inheritDoc}
-     *
-     * @param groupConfig
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public Future<UnitConfig> registerUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException {
-        verifyUnitGroupUnitConfig(groupConfig);
-        return GlobalCachedExecutorService.submit(() -> unitGroupUnitConfigRegistry.register(groupConfig));
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @param groupConfig
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public Boolean containsUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException {
-        return unitGroupUnitConfigRegistry.contains(groupConfig);
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @param groupConfigId
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public Boolean containsUnitGroupConfigById(final String groupConfigId) throws CouldNotPerformException {
-        return unitGroupUnitConfigRegistry.contains(groupConfigId);
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @param groupConfig
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public Future<UnitConfig> updateUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException {
-        verifyUnitGroupUnitConfig(groupConfig);
-        return GlobalCachedExecutorService.submit(() -> unitGroupUnitConfigRegistry.update(groupConfig));
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @param groupConfig
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public Future<UnitConfig> removeUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException {
-        verifyUnitGroupUnitConfig(groupConfig);
-        return GlobalCachedExecutorService.submit(() -> unitGroupUnitConfigRegistry.remove(groupConfig));
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @param groupConfigId
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public UnitConfig getUnitGroupConfigById(final String groupConfigId) throws CouldNotPerformException {
-        return unitGroupUnitConfigRegistry.get(groupConfigId).getMessage();
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public List<UnitConfig> getUnitGroupConfigs() throws CouldNotPerformException {
-        return new ArrayList<>(unitGroupUnitConfigRegistry.getMessages());
-    }
 
     /**
      * {@inheritDoc}
@@ -912,7 +736,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * @throws CouldNotPerformException
      */
     @Override
-    public List<UnitConfig> getUnitGroupConfigsByUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
+    public List<UnitConfig> getUnitGroupUnitConfigsByUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
         List<UnitConfig> unitConfigList = new ArrayList<>();
         for (UnitConfig unitGroupUnitConfig : unitGroupUnitConfigRegistry.getMessages()) {
             if (unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList().contains(unitConfig.getId())) {
@@ -930,7 +754,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * @throws CouldNotPerformException
      */
     @Override
-    public List<UnitConfig> getUnitGroupConfigsByUnitType(final UnitType type) throws CouldNotPerformException {
+    public List<UnitConfig> getUnitGroupUnitConfigsByUnitType(final UnitType type) throws CouldNotPerformException {
         List<UnitConfig> unitConfigList = new ArrayList<>();
         for (UnitConfig unitGroupUnitConfig : unitGroupUnitConfigRegistry.getMessages()) {
             if (unitGroupUnitConfig.getType() == type || getSubUnitTypes(type).contains(unitGroupUnitConfig.getType())) {
@@ -948,7 +772,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * @throws CouldNotPerformException
      */
     @Override
-    public List<UnitConfig> getUnitGroupConfigsByServiceTypes(final List<ServiceType> serviceTypes) throws CouldNotPerformException {
+    public List<UnitConfig> getUnitGroupUnitConfigsByServiceTypes(final List<ServiceType> serviceTypes) throws CouldNotPerformException {
         List<UnitConfig> unitGroups = new ArrayList<>();
         for (UnitConfig unitGroupUnitConfig : unitGroupUnitConfigRegistry.getMessages()) {
             boolean skipGroup = false;
@@ -1026,32 +850,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             }
         }
         throw new NotAvailableException("No unit config available for given scope!");
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public Boolean isUnitTemplateRegistryReadOnly() throws CouldNotPerformException {
-        return unitTemplateRegistry.isReadOnly();
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public Boolean isUnitTemplateRegistryConsistent() throws CouldNotPerformException {
-        return unitTemplateRegistry.isConsistent();
-    }
-
-    public ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> getUnitTemplateRegistry() {
-        return unitTemplateRegistry;
     }
 
     public ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> getDalUnitConfigRegistry() {
@@ -1202,61 +1000,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     protected void registerRemoteRegistries() throws CouldNotPerformException {
     }
 
-    /**
-     * @return
-     * @deprecated get your own instance via the registry pool.
-     */
-    @Deprecated
-    public DeviceRegistryRemote getDeviceRegistryRemote() {
-        try {
-            return CachedDeviceRegistryRemote.getRegistry();
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        } catch (NotAvailableException ex) {
-            new FatalImplementationErrorException("registry not available", this, ex);
-        }
-        return null;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @param type
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public List<UnitTemplate.UnitType> getSubUnitTypes(UnitTemplate.UnitType type) throws CouldNotPerformException {
-        List<UnitTemplate.UnitType> unitTypes = new ArrayList<>();
-        for (UnitTemplate template : unitTemplateRegistry.getMessages()) {
-            if (template.getIncludedTypeList().contains(type)) {
-                unitTypes.add(template.getType());
-                unitTypes.addAll(getSubUnitTypes(template.getType()));
-            }
-        }
-        return unitTypes;
-    }
-
-    /**
-     * {@inheritDoc}
-     *
-     * @param type
-     * @return
-     * @throws CouldNotPerformException
-     */
-    @Override
-    public List<UnitTemplate.UnitType> getSuperUnitTypes(UnitTemplate.UnitType type) throws CouldNotPerformException {
-        UnitTemplate unitTemplate = getUnitTemplateByType(type);
-        List<UnitTemplate.UnitType> unitTypes = new ArrayList<>();
-        for (UnitTemplate template : unitTemplateRegistry.getMessages()) {
-            if (unitTemplate.getIncludedTypeList().contains(template.getType())) {
-                unitTypes.add(template.getType());
-                unitTypes.addAll(getSuperUnitTypes(template.getType()));
-            }
-        }
-        return unitTypes;
-    }
-
     @Override
     public void validateData() throws InvalidStateException {
         if (!isDataAvailable()) {
@@ -1265,48 +1008,98 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public Future<ServiceTemplate> updateServiceTemplate(ServiceTemplate serviceTemplate) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.submit(() -> serviceTemplateRegistry.update(serviceTemplate));
+    public List<UnitConfig> getLocationUnitConfigsByCoordinate(Vec3DDouble coordinate, LocationType locationType) throws CouldNotPerformException, InterruptedException, ExecutionException {
+        return null;
     }
 
     @Override
-    public Boolean containsServiceTemplate(ServiceTemplate serviceTemplate) throws CouldNotPerformException {
-        return serviceTemplateRegistry.contains(serviceTemplate);
+    public List<UnitConfig> getUnitConfigsByLocation(String locationId) throws CouldNotPerformException {
+        return null;
     }
 
     @Override
-    public Boolean containsServiceTemplateById(String serviceTemplateId) throws CouldNotPerformException {
-        return serviceTemplateRegistry.contains(serviceTemplateId);
+    public List<UnitConfig> getUnitConfigsByLocation(String locationId, boolean recursive) throws CouldNotPerformException {
+        return null;
     }
 
     @Override
-    public ServiceTemplate getServiceTemplateById(String serviceTemplateId) throws CouldNotPerformException {
-        return serviceTemplateRegistry.getMessage(serviceTemplateId);
+    public List<UnitConfig> getUnitConfigsByLocation(UnitType type, String locationConfigId) throws CouldNotPerformException, NotAvailableException {
+        return null;
     }
 
     @Override
-    public List<ServiceTemplate> getServiceTemplates() throws CouldNotPerformException {
-        return serviceTemplateRegistry.getMessages();
+    public List<UnitConfig> getUnitConfigsByLocation(ServiceType type, String locationConfigId) throws CouldNotPerformException, NotAvailableException {
+        return null;
     }
 
     @Override
-    public ServiceTemplate getServiceTemplateByType(ServiceType type) throws CouldNotPerformException {
-        for (ServiceTemplate serviceTemplate : serviceTemplateRegistry.getMessages()) {
-            if (serviceTemplate.getType() == type) {
-                return serviceTemplate;
-            }
-        }
-        throw new NotAvailableException("ServiceTemplate with type [" + type + "]");
+    public List<ServiceConfig> getServiceConfigsByLocation(String locationId) throws CouldNotPerformException {
+        return null;
     }
 
     @Override
-    public Boolean isServiceTemplateRegistryReadOnly() throws CouldNotPerformException {
-        return serviceTemplateRegistry.isReadOnly();
+    public List<UnitConfig> getUnitConfigsByLocationLabel(String locationLabel) throws CouldNotPerformException {
+        return null;
     }
 
     @Override
-    public Boolean isServiceTemplateRegistryConsistent() throws CouldNotPerformException {
-        return serviceTemplateRegistry.isConsistent();
+    public List<UnitConfig> getUnitConfigsByLocationLabel(UnitType unitType, String locationLabel) throws CouldNotPerformException {
+        return null;
+    }
+
+    @Override
+    public List<UnitConfig> getUnitConfigsByLabelAndLocation(String unitLabel, String locationId) throws CouldNotPerformException {
+        return null;
+    }
+
+    @Override
+    public List<UnitConfig> getUnitConfigsByLocationAlias(String locationAlias) throws CouldNotPerformException {
+        return null;
+    }
+
+    @Override
+    public List<UnitConfig> getUnitConfigsByLocationAlias(UnitType unitType, String locationAlias) throws CouldNotPerformException {
+        return null;
+    }
+
+    @Override
+    public List<UnitConfig> getUnitConfigsByAliasAndLocation(String unitAlias, String locationId) throws CouldNotPerformException {
+        return null;
+    }
+
+    @Override
+    public List<UnitConfig> getUnitConfigsByConnection(String connectionConfigId) throws CouldNotPerformException {
+        return null;
+    }
+
+    @Override
+    public List<UnitConfig> getUnitConfigsByConnection(UnitType type, String connectionConfigId) throws CouldNotPerformException, NotAvailableException {
+        return null;
+    }
+
+    @Override
+    public List<UnitConfig> getUnitConfigsByConnection(ServiceType type, String connectionConfigId) throws CouldNotPerformException, NotAvailableException {
+        return null;
+    }
+
+    @Override
+    public List<ServiceConfig> getServiceConfigsByConnection(String connectionConfigId) throws CouldNotPerformException {
+        return null;
+    }
+
+    @Override
+    public List<UnitConfig> getNeighborLocations(String locationId) throws CouldNotPerformException {
+        return null;
+    }
+
+    @Override
+    public Future<UnitProbabilityCollection> computeUnitIntersection(PointingRay3DFloat pointingRay3DFloat) throws CouldNotPerformException {
+        return null;
+    }
+
+    @Override
+    public Future<UnitProbabilityCollection> computeUnitIntersection(PointingRay3DFloatCollection pointingRay3DFloatCollection) throws CouldNotPerformException {
+        return null;
     }
 
     @Override
@@ -1321,9 +1114,31 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
+    public List<UnitConfig> getAgentUnitConfigsByAgentClass(AgentClass agentClass) throws CouldNotPerformException {
+        return null;
+    }
+
+    @Override
+    public List<UnitConfig> getAgentUnitConfigsByAgentClassId(String agentClassId) throws CouldNotPerformException {
+        return null;
+    }
+
+    @Override
+    public List<UnitConfig> getAppUnitConfigsByAppClass(AppClass appClass) throws CouldNotPerformException, InterruptedException {
+        return null;
+    }
+
+    @Override
+    public List<UnitConfig> getAppUnitConfigsByAppClassId(String appClassId) throws CouldNotPerformException, InterruptedException {
+        return null;
+    }
+
+    @Override
     protected UnitRegistryData filterDataForUser(final UnitRegistryData.Builder dataBuilder, final String userId) throws CouldNotPerformException {
         // Create a filter which removes all unit configs from a list without read permissions its location by the user
-        final ListFilter<UnitConfig> readFilter = unitConfig -> AuthorizationHelper.canRead(getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()), userId, authorizationGroupUnitConfigRegistry.getEntryMap(), locationUnitConfigRegistry.getEntryMap());
+        final ListFilter<UnitConfig> readFilter = unitConfig -> {
+            return AuthorizationHelper.canRead(getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()), userId, authorizationGroupUnitConfigRegistry.getEntryMap(), locationUnitConfigRegistry.getEntryMap());
+        };
         // Create a filter which removes unit ids if the user does have access permissions for them
         final ListFilter<String> readFilterByUnitId = unitId -> AuthorizationHelper.canRead(getUnitConfigById(unitId), userId, authorizationGroupUnitConfigRegistry.getEntryMap(), locationUnitConfigRegistry.getEntryMap());
         // iterate over all fields of unit registry data

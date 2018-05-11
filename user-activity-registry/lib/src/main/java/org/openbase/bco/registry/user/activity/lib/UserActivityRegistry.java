@@ -27,16 +27,19 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.pattern.provider.DataProvider;
+import org.openbase.jul.storage.registry.RegistryService;
 import rst.domotic.activity.UserActivityClassType.UserActivityClass;
 import rst.domotic.activity.UserActivityClassType.UserActivityClass.UserActivityType;
 import rst.domotic.activity.UserActivityConfigType.UserActivityConfig;
 import rst.domotic.registry.UserActivityRegistryDataType.UserActivityRegistryData;
 
+import javax.imageio.spi.ServiceRegistry;
+
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface UserActivityRegistry extends DataProvider<UserActivityRegistryData>, Shutdownable {
+public interface UserActivityRegistry extends DataProvider<UserActivityRegistryData>, Shutdownable, RegistryService {
     
     // ===================================== UserActivityClass Methods =========================================================================================
     
