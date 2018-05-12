@@ -49,7 +49,7 @@ public class RegistrationFuture<M extends GeneratedMessage> extends AbstractRegi
     protected boolean check(M message, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry) throws CouldNotPerformException {
         // if the registered message has been filtered out verify that is contained
         // and else verify that it is contained
-        if (remoteRegistry.getFilter() != null && !remoteRegistry.getFilter().verify(message)) {
+        if (remoteRegistry.getFilter() != null && !remoteRegistry.getFilter().filter(message)) {
             return !remoteRegistry.contains(message);
         } else {
             return remoteRegistry.contains(message);
