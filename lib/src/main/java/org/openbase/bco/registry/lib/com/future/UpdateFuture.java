@@ -50,7 +50,7 @@ public class UpdateFuture<M extends GeneratedMessage> extends AbstractRegistrySy
     protected boolean check(final M message, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry) throws CouldNotPerformException {
         // if the updated message has been filtered out verify that is not contained anymore
         // and else verify that the update has been synchronized
-        if (remoteRegistry.getFilter() != null && !remoteRegistry.getFilter().verify(message)) {
+        if (remoteRegistry.getFilter() != null && !remoteRegistry.getFilter().filter(message)) {
             return !remoteRegistry.contains(getId(message));
         } else {
             return remoteRegistry.getMessage(getId(message)).equals(message);
