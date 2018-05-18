@@ -25,7 +25,7 @@ package org.openbase.bco.registry.activity.core;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
 import org.openbase.bco.registry.lib.generator.UUIDGenerator;
 import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
-import org.openbase.bco.registry.activity.core.consistency.UserActivityConfigClassIdConsistencyHandler;
+import org.openbase.bco.registry.activity.core.consistency.ActivityConfigTemplateIdConsistencyHandler;
 import org.openbase.bco.registry.activity.lib.ActivityRegistry;
 import org.openbase.bco.registry.activity.lib.jp.JPActivityConfigDatabaseDirectory;
 import org.openbase.bco.registry.activity.lib.jp.JPActivityRegistryScope;
@@ -101,7 +101,7 @@ public class ActivityRegistryController extends AbstractRegistryController<Activ
      */
     @Override
     protected void registerConsistencyHandler() throws CouldNotPerformException {
-        activityConfigRegistry.registerConsistencyHandler(new UserActivityConfigClassIdConsistencyHandler(CachedTemplateRegistryRemote.getRegistry().getActivityTemplateRemoteRegistry()));
+        activityConfigRegistry.registerConsistencyHandler(new ActivityConfigTemplateIdConsistencyHandler());
     }
 
     /**
