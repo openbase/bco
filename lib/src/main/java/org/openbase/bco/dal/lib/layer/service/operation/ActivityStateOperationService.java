@@ -32,7 +32,7 @@ import rst.domotic.action.ActionFutureType.ActionFuture;
  *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface UserActivityStateOperationService extends OperationService, ActivityStateProviderService{
+public interface ActivityStateOperationService extends OperationService, ActivityStateProviderService{
     
     @RPCMethod
     public Future<ActionFuture> setActivityState(ActivityState activityState) throws CouldNotPerformException;
