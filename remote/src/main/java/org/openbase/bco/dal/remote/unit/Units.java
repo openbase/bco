@@ -57,7 +57,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rct.Transform;
 import rsb.Scope;
-import rst.domotic.registry.LocationRegistryDataType;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType;
@@ -254,13 +253,9 @@ public class Units {
                 }
             });
 
-            try {
-                Registries.getUnitRegistry().addDataObserver(UNIT_REGISTRY_OBSERVER);
-                if(Registries.getUnitRegistry().isDataAvailable()) {
-                    UNIT_DIFF.diff(Registries.getUnitRegistry().getUnitConfigs());
-                }
-            } catch (InterruptedException ex) {
-                throw new CouldNotPerformException("Could not add observer to unit registry", ex);
+            Registries.getUnitRegistry().addDataObserver(UNIT_REGISTRY_OBSERVER);
+            if (Registries.getUnitRegistry().isDataAvailable()) {
+                UNIT_DIFF.diff(Registries.getUnitRegistry().getUnitConfigs());
             }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new FatalImplementationErrorException(Units.class, new org.openbase.jul.exception.InstantiationException(Units.class, ex)), LOGGER);
@@ -276,6 +271,7 @@ public class Units {
      *
      * @param responsibleObject should be the object which triggers the reset
      *                          which is used for proper exception handling
+     *
      * @throws CouldNotPerformException if reset fails
      */
     public static void reset(final Object responsibleObject) throws CouldNotPerformException {
@@ -357,6 +353,7 @@ public class Units {
      * <code>Registries.getUnitRegistry();</code>
      *
      * @return the unit registry instance.
+     *
      * @throws InterruptedException     is thrown if the current thread was
      *                                  externally interrupted.
      * @throws CouldNotPerformException Is thrown in case an error occurs during
@@ -371,7 +368,9 @@ public class Units {
      * Returns the unit remote of the unit identified by the given unit id.
      *
      * @param unitId the unit id to identify the unit.
+     *
      * @return a new created or already cached unit remote.
+     *
      * @throws NotAvailableException is thrown if the unit remote was not
      *                               available.
      * @throws InterruptedException  is thrown if the current thread was
@@ -422,7 +421,9 @@ public class Units {
      * Returns the unit remote of the unit identified by the given unit config.
      *
      * @param unitConfig the unit config to identify the unit.
+     *
      * @return a new created or already cached unit remote.
+     *
      * @throws NotAvailableException is thrown if the unit remote was not
      *                               available.
      * @throws InterruptedException  is thrown if the current thread was
@@ -466,7 +467,9 @@ public class Units {
      * @param unitRemote  the remote to wait for data.
      * @param waitForData the flag to decide if the current thread should be
      *                    wait for the uni data.
+     *
      * @return the given unit remote.
+     *
      * @throws CouldNotPerformException is thrown if any error occurs during the
      *                                  wait phase.
      * @throws InterruptedException     is thrown in case the thread is externally
@@ -497,8 +500,10 @@ public class Units {
      * @param waitForData if this flag is set to true the current thread will
      *                    block until the unit remote is fully synchronized with the unit
      *                    controller.
+     *
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not
      *                               available.
      * @throws InterruptedException  is thrown in case the thread is externally
@@ -534,8 +539,10 @@ public class Units {
      * @param waitForData if this flag is set to true the current thread will
      *                    block until the unit remote is fully synchronized with the unit
      *                    controller.
+     *
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not
      *                               available.
      * @throws InterruptedException  is thrown in case the thread is externally
@@ -564,7 +571,9 @@ public class Units {
      * @param waitForData     Checkout wrapped method doc
      *                        {@link #getUnit(rst.domotic.unit.UnitConfigType.UnitConfig, boolean) getUnit(UnitConfig, boolean)}
      * @param unitRemoteClass the unit remote class.
+     *
      * @return an instance of the given remote class.
+     *
      * @throws NotAvailableException Is thrown if the remote instance is not
      *                               compatible with the given class. See
      *                               {{@link #getUnit(rst.domotic.unit.UnitConfigType.UnitConfig, boolean) getUnit(UnitConfig, boolean)}
@@ -592,7 +601,9 @@ public class Units {
      * @param waitForData     Checkout wrapped method doc
      *                        {@link #getUnit(java.lang.String, boolean) getUnit(String, boolean)}
      * @param unitRemoteClass the unit remote class.
+     *
      * @return an instance of the given remote class.
+     *
      * @throws NotAvailableException Is thrown if the remote instance is not
      *                               compatible with the given class. See
      *                               {@link #getUnit(java.lang.String, boolean) getUnit(String, boolean)} for
@@ -620,7 +631,9 @@ public class Units {
      * Note: Please to not use this method if you not really need all units because this method establishes a connection to each unit and the synchronization will even continue if you are not working with the remote instances anymore.
      *
      * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
+     *
      * @return a list of new or cached unit remotes which can be used to control the units or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
@@ -651,7 +664,9 @@ public class Units {
      * @param label       the label to identify the unit.
      * @param unitType    the type of the unit.
      * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
+     *
      * @return a list of new or cached unit remotes which can be used to control the units or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
@@ -683,7 +698,9 @@ public class Units {
      * @param label       the label to identify the unit.
      * @param unitType    the type of the unit.
      * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
+     *
      * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      * @deprecated please use getUnitsByLabelAndType(...) instead.
@@ -719,7 +736,9 @@ public class Units {
      *
      * @param label       the label to identify the unit.
      * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
+     *
      * @return a list of new or cached unit remotes which can be used to control the units or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
@@ -750,7 +769,9 @@ public class Units {
      *
      * @param alias       the alias to identify the unit.
      * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
+     *
      * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
@@ -777,7 +798,9 @@ public class Units {
      * @param alias           the alias to identify the unit.
      * @param waitForData     if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
      * @param unitRemoteClass the unit remote class.
+     *
      * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
@@ -803,7 +826,9 @@ public class Units {
      *
      * @param alias       the alias to identify the unit.
      * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
+     *
      * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
@@ -822,7 +847,9 @@ public class Units {
      * @param alias           the alias to identify the unit.
      * @param waitForData     if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
      * @param unitRemoteClass the unit remote class.
+     *
      * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
@@ -840,7 +867,9 @@ public class Units {
      *
      * @param label       the label to identify the unit.
      * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
+     *
      * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      * @deprecated please use getUnitsByLabel(..) instead.
@@ -873,7 +902,9 @@ public class Units {
      * @param label           Checkout wrapped method doc {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
      * @param waitForData     Checkout wrapped method doc {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
      * @param unitRemoteClass the unit remote class.
+     *
      * @return a list of instances of the given remote class.
+     *
      * @throws NotAvailableException Is thrown if the remote instance is not compatible with the given class. See {@link #getUnit(java.lang.String, boolean) getUnit(String, boolean)} for further cases.
      * @throws InterruptedException  Checkout wrapped method doc {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
      * @see #getUnitsByLabel(java.lang.String, boolean)
@@ -899,7 +930,9 @@ public class Units {
      * @param waitForData     Checkout wrapped method doc
      *                        {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
      * @param unitRemoteClass the unit remote class.
+     *
      * @return an instance of the given remote class.
+     *
      * @throws NotAvailableException Is thrown if the remote instance is not
      *                               compatible with the given class. See
      *                               {@link #getUnit(java.lang.String, boolean) getUnit(String, boolean)} for
@@ -940,8 +973,10 @@ public class Units {
      * @param waitForData if this flag is set to true the current thread will
      *                    block until the unit remote is fully synchronized with the unit
      *                    controller.
+     *
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not available
      *                               or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally
@@ -981,8 +1016,10 @@ public class Units {
      * @param waitForData if this flag is set to true the current thread will
      *                    block until the unit remote is fully synchronized with the unit
      *                    controller.
+     *
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not available
      *                               or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally
@@ -1018,8 +1055,10 @@ public class Units {
      * @param waitForData if this flag is set to true the current thread will
      *                    block until the unit remote is fully synchronized with the unit
      *                    controller.
+     *
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not available
      *                               or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally
@@ -1056,7 +1095,9 @@ public class Units {
      * @param waitForData   if this flag is set to true the current thread will
      *                      block until the unit remote is fully synchronized with the unit
      *                      controller.
+     *
      * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not available
      *                               or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally
@@ -1103,8 +1144,10 @@ public class Units {
      * @param waitForData if this flag is set to true the current thread will
      *                    block until the unit remote is fully synchronized with the unit
      *                    controller.
+     *
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not
      *                               available.
      * @throws InterruptedException  is thrown in case the thread is externally
@@ -1132,8 +1175,10 @@ public class Units {
      * @param waitForData if this flag is set to true the current thread will
      *                    block until the unit remote is fully synchronized with the unit
      *                    controller.
+     *
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not
      *                               available.
      * @throws InterruptedException  is thrown in case the thread is externally
@@ -1154,7 +1199,9 @@ public class Units {
      * @param waitForData     Checkout wrapped method doc
      *                        {@link #getUnit(rst.domotic.unit.UnitConfigType.UnitConfig, boolean) getUnit(UnitConfig, boolean)}
      * @param unitRemoteClass the unit remote class.
+     *
      * @return an instance of the given remote class.
+     *
      * @throws NotAvailableException Is thrown if the remote instance is not
      *                               compatible with the given class. See
      *                               {{@link #getUnit(rst.domotic.unit.UnitConfigType.UnitConfig, boolean) getUnit(UnitConfig, boolean)}
@@ -1178,7 +1225,9 @@ public class Units {
      * @param waitForData     Checkout wrapped method doc
      *                        {@link #getUnit(java.lang.String, boolean) getUnit(String, boolean)}
      * @param unitRemoteClass the unit remote class.
+     *
      * @return an instance of the given remote class.
+     *
      * @throws NotAvailableException Is thrown if the remote instance is not
      *                               compatible with the given class. See
      *                               {@link #getUnit(java.lang.String, boolean) getUnit(String, boolean)} for
@@ -1202,7 +1251,9 @@ public class Units {
      * Note: Please to not use this method if you not really need all units because this method establishes a connection to each unit and the synchronization will even continue if you are not working with the remote instances anymore.
      *
      * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
+     *
      * @return a list of new or cached unit remotes which can be used to control the units or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
@@ -1221,7 +1272,9 @@ public class Units {
      * @param label       the label to identify the unit.
      * @param unitType    the type of the unit.
      * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
+     *
      * @return a list of new or cached unit remotes which can be used to control the units or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
@@ -1239,7 +1292,9 @@ public class Units {
      *
      * @param label       the label to identify the unit.
      * @param waitForData if this flag is set to true the current thread will block until the unit remote is fully synchronized with the unit controller.
+     *
      * @return a list of new or cached unit remotes which can be used to control the units or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not available or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally interrupted.
      */
@@ -1254,7 +1309,9 @@ public class Units {
      * @param label           Checkout wrapped method doc {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
      * @param waitForData     Checkout wrapped method doc {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
      * @param unitRemoteClass the unit remote class.
+     *
      * @return a list of instances of the given remote class.
+     *
      * @throws NotAvailableException Is thrown if the remote instance is not compatible with the given class. See {@link #getUnit(java.lang.String, boolean) getUnit(String, boolean)} for further cases.
      * @throws InterruptedException  Checkout wrapped method doc {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
      * @see #getUnitsByLabel(java.lang.String, boolean)
@@ -1276,8 +1333,10 @@ public class Units {
      * @param waitForData if this flag is set to true the current thread will
      *                    block until the unit remote is fully synchronized with the unit
      *                    controller.
+     *
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not available
      *                               or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally
@@ -1306,8 +1365,10 @@ public class Units {
      * @param waitForData if this flag is set to true the current thread will
      *                    block until the unit remote is fully synchronized with the unit
      *                    controller.
+     *
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not available
      *                               or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally
@@ -1329,7 +1390,9 @@ public class Units {
      * @param waitForData     Checkout wrapped method doc
      *                        {@link #getUnitByLabel(java.lang.String, boolean) getUnit(String, boolean)}
      * @param unitRemoteClass the unit remote class.
+     *
      * @return an instance of the given remote class.
+     *
      * @throws NotAvailableException Is thrown if the remote instance is not
      *                               compatible with the given class. See
      *                               {@link #getUnit(java.lang.String, boolean) getUnit(String, boolean)} for
@@ -1361,8 +1424,10 @@ public class Units {
      * @param waitForData if this flag is set to true the current thread will
      *                    block until the unit remote is fully synchronized with the unit
      *                    controller.
+     *
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not available
      *                               or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally
@@ -1390,8 +1455,10 @@ public class Units {
      * @param waitForData if this flag is set to true the current thread will
      *                    block until the unit remote is fully synchronized with the unit
      *                    controller.
+     *
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not available
      *                               or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally
@@ -1419,8 +1486,10 @@ public class Units {
      * @param waitForData if this flag is set to true the current thread will
      *                    block until the unit remote is fully synchronized with the unit
      *                    controller.
+     *
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not available
      *                               or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally
@@ -1449,8 +1518,10 @@ public class Units {
      * @param waitForData   if this flag is set to true the current thread will
      *                      block until the unit remote is fully synchronized with the unit
      *                      controller.
+     *
      * @return a new or cached unit remote which can be used to control the unit
      * or request all current unit states.
+     *
      * @throws NotAvailableException is thrown in case the unit is not available
      *                               or the label is not unique enough to identify the unit.
      * @throws InterruptedException  is thrown in case the thread is externally
@@ -1464,7 +1535,9 @@ public class Units {
      * Method resolves the UnitType of the given unit remote class.
      *
      * @param unitRemoteClass the unit remote class to resolve the unit type.
+     *
      * @return the detected UnitType
+     *
      * @throws CouldNotPerformException is thrown in case if the UnitType could
      *                                  not be resolved.
      */
@@ -1481,8 +1554,10 @@ public class Units {
      * pool.
      *
      * @param unitRemote the remote to check.
+     *
      * @return true if the given remote is managed by this pool otherwise false
      * is returned.
+     *
      * @throws CouldNotPerformException is thrown if the given remote is not
      *                                  valid. For instance if the given unit remote is not initialized.
      */
@@ -1495,7 +1570,9 @@ public class Units {
      * unit.
      *
      * @param unitConfig the unit where the transformation leads to.
+     *
      * @return a transformation future
+     *
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      * @deprecated please use getRootToUnitTransformationFuture(...) instead.
      */
@@ -1508,18 +1585,14 @@ public class Units {
      * Method returns the transformation leading from the given unit to the root location.
      *
      * @param unitConfig the unit where the transformation leads to.
+     *
      * @return a transformation future
      */
     public static Future<Transform> getUnitToRootTransformationFuture(final UnitConfig unitConfig) {
-        final Future<LocationRegistryDataType.LocationRegistryData> dataFuture;
+        final Future<UnitRegistryData> dataFuture;
         try {
-            try {
-                dataFuture = Registries.getUnitRegistry().getDataFuture();
-                return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getUnitRegistry().getUnitToRootTransformationFuture(unitConfig), dataFuture);
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-                throw new FatalImplementationErrorException("getLocationRegistry should not throw InterruptedExceptions anymore!", Units.class, ex);
-            }
+            dataFuture = Registries.getUnitRegistry().getDataFuture();
+            return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getUnitRegistry().getUnitToRootTransformationFuture(unitConfig), dataFuture);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
         }
@@ -1529,39 +1602,14 @@ public class Units {
      * Method returns the transformation leading from the root location to the given unit.
      *
      * @param unitConfig the unit where the transformation leads to.
+     *
      * @return a transformation future
      */
     public static Future<Transform> getRootToUnitTransformationFuture(final UnitConfig unitConfig) {
-        final Future<LocationRegistryDataType.LocationRegistryData> dataFuture;
-        try {
-            try {
-                dataFuture = Registries.getUnitRegistry().getDataFuture();
-                return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getUnitRegistry().getRootToUnitTransformationFuture(unitConfig), dataFuture);
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-                throw new FatalImplementationErrorException("getLocationRegistry should not throw InterruptedExceptions anymore!", Units.class, ex);
-            }
-        } catch (CouldNotPerformException ex) {
-            return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
-        }
-    }
-
-    /**
-     * Method returns the transformation between the given unit A and the given
-     * unit B.
-     *
-     * @param unitConfigA the unit used as transformation base.
-     * @param unitConfigB the unit where the transformation leads to.
-     * @return a transformation future
-     * @throws InterruptedException is thrown if the thread was externally interrupted.
-     * @deprecated please use {@code getUnitTransformationFuture()} instead.
-     */
-    @Deprecated
-    public static Future<Transform> getUnitTransformation(final UnitConfig unitConfigA, final UnitConfig unitConfigB) throws InterruptedException {
-        final Future<LocationRegistryDataType.LocationRegistryData> dataFuture;
+        final Future<UnitRegistryData> dataFuture;
         try {
             dataFuture = Registries.getUnitRegistry().getDataFuture();
-            return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getUnitRegistry().getUnitTransformationFuture(unitConfigA, unitConfigB), dataFuture);
+            return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getUnitRegistry().getRootToUnitTransformationFuture(unitConfig), dataFuture);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
         }
@@ -1573,18 +1621,14 @@ public class Units {
      *
      * @param unitConfigA the unit used as transformation base.
      * @param unitConfigB the unit where the transformation leads to.
+     *
      * @return a transformation future
      */
     public static Future<Transform> getUnitTransformationFuture(final UnitConfig unitConfigA, final UnitConfig unitConfigB) {
-        final Future<LocationRegistryDataType.LocationRegistryData> dataFuture;
+        final Future<UnitRegistryData> dataFuture;
         try {
-            try {
-                dataFuture = Registries.getUnitRegistry().getDataFuture();
-                return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getUnitRegistry().getUnitTransformationFuture(unitConfigA, unitConfigB), dataFuture);
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-                throw new FatalImplementationErrorException("getLocationRegistry should not throw InterruptedExceptions anymore!", Units.class, ex);
-            }
+            dataFuture = Registries.getUnitRegistry().getDataFuture();
+            return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getUnitRegistry().getUnitTransformationFuture(unitConfigA, unitConfigB), dataFuture);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
         }

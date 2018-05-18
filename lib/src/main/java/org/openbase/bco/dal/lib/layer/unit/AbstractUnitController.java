@@ -97,6 +97,7 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePat
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
@@ -251,6 +252,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     /**
      * @return
+     *
      * @deprecated please use Registries.getUnitRegistry(true) instead;
      */
     @Deprecated
@@ -287,7 +289,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             classDescription = getClass().getSimpleName() + "[?]";
         }
 
-        template = Registries.getUnitRegistry(true).getUnitTemplateByType(config.getType());
+        template = Registries.getTemplateRegistry(true).getUnitTemplateByType(config.getType());
 
         // register service observable which are not handled yet.
         for (final ServiceTempus serviceTempus : ServiceTempus.values()) {
@@ -772,22 +774,17 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     protected D filterDataForUser(DB dataBuilder, String userId) throws CouldNotPerformException {
-        try {
-            if (AuthorizationHelper.canRead(getConfig(), userId, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap(), Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap())) {
-                // user has read permissions so send everything
-                return (D) dataBuilder.build();
-            } else {
-                // filter all service states
-                for (final FieldDescriptor fieldDescriptor : dataBuilder.getDescriptorForType().getFields()) {
-                    if (fieldDescriptor.getType() == FieldDescriptor.Type.MESSAGE) {
-                        dataBuilder.clearField(fieldDescriptor);
-                    }
+        if (AuthorizationHelper.canRead(getConfig(), userId, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap(), Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap())) {
+            // user has read permissions so send everything
+            return (D) dataBuilder.build();
+        } else {
+            // filter all service states
+            for (final FieldDescriptor fieldDescriptor : dataBuilder.getDescriptorForType().getFields()) {
+                if (fieldDescriptor.getType() == FieldDescriptor.Type.MESSAGE) {
+                    dataBuilder.clearField(fieldDescriptor);
                 }
-                return (D) dataBuilder.build();
             }
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new CouldNotPerformException("Could not filter data for user because interrupted while accessing the registry", ex);
+            return (D) dataBuilder.build();
         }
     }
 }

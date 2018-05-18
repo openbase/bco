@@ -36,6 +36,7 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.future.UnitSynchronisationFuture;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.*;
@@ -148,11 +149,6 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
 
     }
 
-    protected UnitRegistry getUnitRegistry() throws InterruptedException, CouldNotPerformException {
-        Registries.waitForData();
-        return Registries.getUnitRegistry();
-    }
-
     /**
      * {@inheritDoc}
      *
@@ -163,7 +159,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     @Override
     public void initById(final String id) throws InitializationException, InterruptedException {
         try {
-            init(getUnitRegistry().getUnitConfigById(id));
+            init(Registries.getUnitRegistry(false).getUnitConfigById(id));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -179,7 +175,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     @Override
     public void initByLabel(final String label) throws InitializationException, InterruptedException {
         try {
-            List<UnitConfig> unitConfigList = getUnitRegistry().getUnitConfigsByLabel(label);
+            List<UnitConfig> unitConfigList = Registries.getUnitRegistry().getUnitConfigsByLabel(label);
 
             if (unitConfigList.isEmpty()) {
                 throw new NotAvailableException("Unit with Label[" + label + "]");
@@ -203,7 +199,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     @Override
     public void init(final ScopeType.Scope scope) throws InitializationException, InterruptedException {
         try {
-            init(getUnitRegistry().getUnitConfigByScope(scope));
+            init(Registries.getUnitRegistry().getUnitConfigByScope(scope));
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -346,7 +342,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         }
 
         // update unit template
-        template = getUnitRegistry().getUnitTemplateByType(config.getType());
+        template = Registries.getTemplateRegistry(true).getUnitTemplateByType(config.getType());
 
         // register service observable which are not handled yet.
         for (ServiceTempus serviceTempus : ServiceTempus.values()) {
@@ -521,7 +517,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     public UnitConfig getParentLocationConfig() throws NotAvailableException, InterruptedException {
         try {
             // TODO implement get unit config by type and id;
-            return getUnitRegistry().getUnitConfigById(getConfig().getPlacementConfig().getLocationId());
+            return Registries.getUnitRegistry().getUnitConfigById(getConfig().getPlacementConfig().getLocationId());
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("LocationConfig", ex);
         }

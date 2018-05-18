@@ -29,7 +29,7 @@ import org.openbase.bco.dal.visual.service.AbstractServicePanel;
 import org.openbase.bco.dal.visual.util.StatusPanel;
 import org.openbase.bco.dal.visual.util.StatusPanel.StatusType;
 import org.openbase.bco.dal.visual.util.UnitRemoteView;
-import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
+
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -185,7 +185,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
 
     public void updateUnitConfig(UnitConfig unitConfig, ServiceType serviceType) throws CouldNotPerformException, InterruptedException {
         try {
-            CachedLocationRegistryRemote.waitForData();
+            Registries.waitForData();
             try {
                 getRemoteService().removeConnectionStateObserver(connectionStateObserver);
             } catch (NotAvailableException ex) {

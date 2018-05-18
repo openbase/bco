@@ -119,7 +119,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                 // remove unit from maps
                 serviceMap.remove(unitConfig.getId());
                 unitRemoteTypeMap.get(unitConfig.getType()).remove(unitRemote);
-                for (UnitType superType : Registries.getUnitRegistry().getSuperUnitTypes(unitRemote.getUnitType())) {
+                for (UnitType superType : Registries.getTemplateRegistry().getSuperUnitTypes(unitRemote.getUnitType())) {
                     unitRemoteTypeMap.get(superType).remove(unitRemote);
                 }
             } else if (disabledUnitRemoteMap.containsKey(unitConfig.getId()) && unitConfig.getEnablingState().getValue() == State.ENABLED) {
@@ -130,7 +130,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                 try {
                     serviceMap.put(unitConfig.getId(), (S) unitRemote);
                     unitRemoteTypeMap.get(unitRemote.getUnitType()).add((S) unitRemote);
-                    for (UnitType superType : Registries.getUnitRegistry().getSuperUnitTypes(unitRemote.getUnitType())) {
+                    for (UnitType superType : Registries.getTemplateRegistry().getSuperUnitTypes(unitRemote.getUnitType())) {
                         unitRemoteTypeMap.get(superType).add((S) unitRemote);
                     }
                 } catch (ClassCastException ex) {
@@ -322,7 +322,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
             if (!unitRemoteTypeMap.containsKey(unitRemote.getUnitType())) {
                 unitRemoteTypeMap.put(unitRemote.getUnitType(), new ArrayList());
-                for (UnitType superType : Registries.getUnitRegistry().getSuperUnitTypes(unitRemote.getUnitType())) {
+                for (UnitType superType : Registries.getTemplateRegistry().getSuperUnitTypes(unitRemote.getUnitType())) {
                     if (!unitRemoteTypeMap.containsKey(superType)) {
                         unitRemoteTypeMap.put(superType, new ArrayList<>());
                     }
@@ -339,7 +339,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             try {
                 serviceMap.put(unitConfig.getId(), (S) unitRemote);
                 unitRemoteTypeMap.get(unitRemote.getUnitType()).add((S) unitRemote);
-                for (UnitType superType : Registries.getUnitRegistry().getSuperUnitTypes(unitRemote.getUnitType())) {
+                for (UnitType superType : Registries.getTemplateRegistry().getSuperUnitTypes(unitRemote.getUnitType())) {
                     unitRemoteTypeMap.get(superType).add((S) unitRemote);
                 }
             } catch (ClassCastException ex) {
@@ -471,7 +471,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
             serviceMap.remove(unitConfig.getId());
             unitRemoteTypeMap.get(unitConfig.getType()).remove(unitRemote);
-            for (UnitType superType : Registries.getUnitRegistry().getSuperUnitTypes(unitRemote.getUnitType())) {
+            for (UnitType superType : Registries.getTemplateRegistry().getSuperUnitTypes(unitRemote.getUnitType())) {
                 unitRemoteTypeMap.get(superType).remove(unitRemote);
             }
         } else if (disabledUnitRemoteMap.containsKey(unitConfig.getId())) {
@@ -502,7 +502,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     public Collection<org.openbase.bco.dal.lib.layer.unit.UnitRemote> getInternalUnits(UnitType unitType) throws CouldNotPerformException, InterruptedException {
         List<UnitRemote> unitRemotes = new ArrayList<>();
         for (UnitRemote unitRemote : unitRemoteMap.values()) {
-            if (unitType == UnitType.UNKNOWN || unitType == unitRemote.getType() || UnitConfigProcessor.isBaseUnit(unitRemote.getType()) || Registries.getUnitRegistry().getSubUnitTypes(unitType).contains(unitRemote.getType())) {
+            if (unitType == UnitType.UNKNOWN || unitType == unitRemote.getUnitType() || UnitConfigProcessor.isBaseUnit(unitRemote.getUnitType()) || Registries.getTemplateRegistry().getSubUnitTypes(unitType).contains(unitRemote.getUnitType())) {
                 unitRemotes.add(unitRemote);
             }
         }

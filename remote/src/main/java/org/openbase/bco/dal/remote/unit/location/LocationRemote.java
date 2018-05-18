@@ -1,6 +1,7 @@
 package org.openbase.bco.dal.remote.unit.location;
 
 import com.google.protobuf.GeneratedMessage;
+
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
@@ -9,16 +10,19 @@ import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.concurrent.Future;
+
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.lib.layer.unit.location.Location;
 import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.bco.dal.remote.unit.Units;
+
 import static org.openbase.bco.dal.remote.unit.Units.CONNECTION;
 import static org.openbase.bco.dal.remote.unit.Units.LOCATION;
+
 import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
-import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
+
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.MultiException;
@@ -86,8 +90,8 @@ import rst.vision.RGBColorType;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class LocationRemote extends AbstractUnitRemote<LocationData> implements Location {
@@ -137,8 +141,6 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
 
     @Override
     public void activate() throws InterruptedException, CouldNotPerformException {
-        // TODO is this wait for data realy needed? blocking activation method is some kind of bad behaviour.
-        CachedLocationRegistryRemote.waitForData();
         serviceRemoteManager.activate();
         super.activate();
     }
@@ -164,7 +166,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
         return RPCHelper.callRemoteMethod(updateActionDescription(actionDescription.toBuilder()).build(), this, ActionFuture.class);
     }
-    
+
     protected ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription) throws CouldNotPerformException {
         ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
         serviceStateDescription.setUnitId(getId());
@@ -173,7 +175,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         //TODO: update USER key with authentication, should not be needed anymore in release 2.0 because the location remote
         // should use the applyAction method of the AbstractUnitRemote which does it.
         actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
-        
+
         return actionDescription;
     }
 
@@ -183,8 +185,8 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     }
 
     /**
-     *
      * @return
+     *
      * @throws CouldNotPerformException
      * @deprecated please use Registries.getUnitRegistry().getNeighborLocations(String locationId) instead.
      */
@@ -192,12 +194,8 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     @Deprecated
     public List<String> getNeighborLocationIds() throws CouldNotPerformException {
         final List<String> neighborIdList = new ArrayList<>();
-        try {
-            for (UnitConfig locationConfig : CachedLocationRegistryRemote.getRegistry().getNeighborLocations(getId())) {
-                neighborIdList.add(locationConfig.getId());
-            }
-        } catch (InterruptedException ex) {
-            throw new CouldNotPerformException("Could not get CachedLocationRegistryRemote!", ex);
+        for (UnitConfig locationConfig : Registries.getUnitRegistry().getNeighborLocations(getId())) {
+            neighborIdList.add(locationConfig.getId());
         }
         return neighborIdList;
     }
@@ -206,7 +204,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     public List<LocationRemote> getNeighborLocationList(final boolean waitForData) throws CouldNotPerformException {
         final List<LocationRemote> neighborList = new ArrayList<>();
         try {
-            for (UnitConfig locationUnitConfig : CachedLocationRegistryRemote.getRegistry().getNeighborLocations(getId())) {
+            for (UnitConfig locationUnitConfig : Registries.getUnitRegistry().getNeighborLocations(getId())) {
                 neighborList.add(Units.getUnit(locationUnitConfig, waitForData, LOCATION));
             }
         } catch (InterruptedException ex) {
@@ -219,7 +217,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         final List<LocationRemote> childList = new ArrayList<>();
         for (String childId : getConfig().getLocationConfig().getChildIdList()) {
             try {
-                childList.add(Units.getUnit(CachedLocationRegistryRemote.getRegistry().getLocationConfigById(childId), waitForData, LOCATION));
+                childList.add(Units.getUnit(Registries.getUnitRegistry().getUnitConfigById(childId), waitForData, LOCATION));
             } catch (InterruptedException ex) {
                 throw new CouldNotPerformException("Could not get all child locations!", ex);
             }
@@ -234,7 +232,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
 
         List<ConnectionRemote> connectionList = new ArrayList<>();
         try {
-            for (UnitConfig connectionUnitConfig : CachedLocationRegistryRemote.getRegistry().getConnectionConfigs()) {
+            for (UnitConfig connectionUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.CONNECTION)) {
                 ConnectionRemote connection = Units.getUnit(connectionUnitConfig, waitForData, CONNECTION);
                 if (connection.getConfig().getConnectionConfig().getTileIdList().contains(getId())) {
                     connectionList.add(connection);
@@ -249,9 +247,11 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     /**
      * Method collects all connections between this and the given location and returns those instances.
      *
-     * @param locationID the location id of the location to check.
+     * @param locationID  the location id of the location to check.
      * @param waitForData flag defines if the method should block until all needed instances are available.
+     *
      * @return a collection of unit connection remotes.
+     *
      * @throws CouldNotPerformException is thrown if the check could not be performed e.g. if some data is not available yet.
      */
     public List<ConnectionRemote> getDirectConnectionList(final String locationID, final boolean waitForData) throws CouldNotPerformException {
@@ -276,10 +276,12 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     /**
      * Method checks if an direct connection exists between this and the given location.
      *
-     * @param locationID the location id of the location to check.
+     * @param locationID     the location id of the location to check.
      * @param connectionType the type of the connection. To disable this filter use ConnectionType.UNKNOWN
-     * @param waitForData flag defines if the method should block until all needed instances are available.
+     * @param waitForData    flag defines if the method should block until all needed instances are available.
+     *
      * @return true if the specified connection exists.
+     *
      * @throws CouldNotPerformException is thrown if the check could not be performed e.g. if some data is not available yet.
      */
     public boolean hasDirectConnection(final String locationID, final ConnectionType connectionType, final boolean waitForData) throws CouldNotPerformException {
@@ -293,8 +295,8 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     }
 
     /**
-     *
      * @return
+     *
      * @throws NotAvailableException
      * @throws InterruptedException
      * @deprecated please use getUnitMap() instead.
@@ -308,8 +310,9 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
      * Returns a Map of all units which directly or recursively provided by this location..
      *
      * @return the Map of provided units sorted by their UnitType.
+     *
      * @throws org.openbase.jul.exception.NotAvailableException is thrown if the map is not available.
-     * @throws java.lang.InterruptedException is thrown if the current thread was externally interrupted.
+     * @throws java.lang.InterruptedException                   is thrown if the current thread was externally interrupted.
      */
     // TODO: move into interface as default implementation
     public Map<UnitType, List<UnitRemote>> getUnitMap() throws NotAvailableException, InterruptedException {
@@ -320,9 +323,11 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
      * Returns a Map of all units which are directly or recursively provided by this location..
      *
      * @param recursive defines if recursive related unit should be included as well.
+     *
      * @return the Map of provided units sorted by their UnitType.
+     *
      * @throws org.openbase.jul.exception.NotAvailableException is thrown if the map is not available.
-     * @throws java.lang.InterruptedException is thrown if the current thread was externally interrupted.
+     * @throws java.lang.InterruptedException                   is thrown if the current thread was externally interrupted.
      */
     // TODO: move into interface as default implementation
     public Map<UnitType, List<UnitRemote>> getUnitMap(final boolean recursive) throws NotAvailableException, InterruptedException {
@@ -360,16 +365,17 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     }
 
     /**
-     *
      * Method returns a list of all units filtered by the given unit type which are directly or recursively provided by this location.
      *
-     * @param <UR> the unit remote class type.
-     * @param unitType the unit type.
-     * @param waitForData if this flag is set to true the current thread will block until all unit remotes are fully synchronized with the unit controllers.
+     * @param <UR>            the unit remote class type.
+     * @param unitType        the unit type.
+     * @param waitForData     if this flag is set to true the current thread will block until all unit remotes are fully synchronized with the unit controllers.
      * @param unitRemoteClass the unit remote class.
+     *
      * @return a map of instance of the given remote class.
+     *
      * @throws CouldNotPerformException is thrown in case something went wrong.
-     * @throws InterruptedException is thrown if the current thread was externally interrupted.
+     * @throws InterruptedException     is thrown if the current thread was externally interrupted.
      */
     // TODO: move into interface as default implementation
     public <UR extends UnitRemote<?>> Collection<UR> getUnits(final UnitType unitType, final boolean waitForData, final Class<UR> unitRemoteClass) throws CouldNotPerformException, InterruptedException {
@@ -377,18 +383,19 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     }
 
     /**
-     *
      * Method returns a list of all units filtered by the given unit type which are directly provided by this location.
      * In case the {@code recursive} flag is set to true than recursive related units are included as well.
      *
-     * @param <UR> the unit remote class type.
-     * @param unitType the unit type.
-     * @param waitForData if this flag is set to true the current thread will block until all unit remotes are fully synchronized with the unit controllers.
+     * @param <UR>            the unit remote class type.
+     * @param unitType        the unit type.
+     * @param waitForData     if this flag is set to true the current thread will block until all unit remotes are fully synchronized with the unit controllers.
      * @param unitRemoteClass the unit remote class.
-     * @param recursive defines if recursive related unit should be included as well.
+     * @param recursive       defines if recursive related unit should be included as well.
+     *
      * @return a map of instance of the given remote class.
+     *
      * @throws CouldNotPerformException is thrown in case something went wrong.
-     * @throws InterruptedException is thrown if the current thread was externally interrupted.
+     * @throws InterruptedException     is thrown if the current thread was externally interrupted.
      */
     // TODO: move into interface as default implementation
     public <UR extends UnitRemote<?>> Collection<UR> getUnits(final UnitType unitType, final boolean waitForData, final Class<UR> unitRemoteClass, final boolean recursive) throws CouldNotPerformException, InterruptedException {
@@ -416,7 +423,9 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
      * Method returns the unit template of this unit containing all provided service templates.
      *
      * @param onlyAvailableServices if the filter flag is set to true, only service templates are included which are available for the current instance.
+     *
      * @return the {@code UnitTemplate} of this unit.
+     *
      * @throws NotAvailableException is thrown if the {@code UnitTemplate} is currently not available.
      */
     public UnitTemplate getTemplate(final boolean onlyAvailableServices) throws NotAvailableException {
@@ -441,6 +450,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
      * Method returns a set of all currently available service types of this unit instance.
      *
      * @return a set of {@code ServiceTypes}.
+     *
      * @throws NotAvailableException is thrown if the service types can not be detected.
      */
     public Set<ServiceType> getAvailableServiceTypes() throws NotAvailableException {
@@ -458,6 +468,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
      * Method returns a set of all currently available service descriptions of this unit instance.
      *
      * @return a set of {@code ServiceDescription}.
+     *
      * @throws NotAvailableException is thrown if the service types can not be detected.
      */
     public Set<ServiceDescription> getAvailableServiceDescriptions() throws NotAvailableException {

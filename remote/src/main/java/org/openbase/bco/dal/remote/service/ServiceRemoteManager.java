@@ -285,7 +285,7 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
                     // every abstractServiceRemotes internal units if the serviceType is implemented by the unitType
                     ServiceType serviceType;
                     try {
-                        serviceType = Registries.getUnitRegistry().getUnitTemplateByType(unitType).getServiceDescriptionList().get(0).getType();
+                        serviceType = Registries.getTemplateRegistry().getUnitTemplateByType(unitType).getServiceDescriptionList().get(0).getType();
                     } catch (IndexOutOfBoundsException ex) {
                         // if there is not at least one serviceType for the unitType then the snapshot is empty
                         return snapshotBuilder.build();

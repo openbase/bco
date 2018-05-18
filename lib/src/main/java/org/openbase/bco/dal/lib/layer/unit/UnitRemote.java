@@ -42,6 +42,7 @@ import rst.rsb.ScopeType;
 
 /**
  * @param <M> Message
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, ConfigurableRemote<String, M, UnitConfig> {
@@ -50,6 +51,7 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, Configu
      * Method initializes this unit remote instance via it's remote controller scope.
      *
      * @param scope the scope which is used to reach the remote controller.
+     *
      * @throws InitializationException is thrown in case the remote could not be initialized with the given scope.
      * @throws InterruptedException    is thrown in case the thread is externally interrupted.
      */
@@ -59,6 +61,7 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, Configu
      * Method initializes this unit remote instance via it's remote controller scope.
      *
      * @param scope the scope which is used to reach the remote controller.
+     *
      * @throws InitializationException is thrown in case the remote could not be initialized with the given scope.
      * @throws InterruptedException    is thrown in case the thread is externally interrupted.
      */
@@ -68,6 +71,7 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, Configu
      * Method initializes this unit remote instance via the given id.
      *
      * @param id the unit id which is used to resolve the remote controller scope.
+     *
      * @throws InitializationException is thrown in case the remote could not be initialized with the given id.
      * @throws InterruptedException    is thrown in case the thread is externally interrupted.
      */
@@ -77,6 +81,7 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, Configu
      * Method initializes this unit remote instance via the given label.
      *
      * @param label the unit label which is used to resolve the remote controller scope.
+     *
      * @throws InitializationException is thrown in case the remote could not be initialized with the given label.
      * @throws InterruptedException    is thrown in case the thread is externally interrupted.
      */
@@ -116,7 +121,9 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, Configu
      * @param actionDescription the action description which will be updated
      * @param serviceAttribute  the service attribute that will be applied by this action
      * @param serviceType       the service type according to the service attribute
+     *
      * @return the updated action description
+     *
      * @throws CouldNotPerformException if accessing the unit registry fails or if the service attribute cannot be
      *                                  verified or serialized
      */
@@ -132,24 +139,21 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, Configu
         resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(getScope()));
 
         actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
-        try {
-            String username = "";
-            if (getSessionManager().getUserId() != null) {
-                username += Registries.getUnitRegistry().getUnitConfigById(getSessionManager().getUserId()).getUserConfig().getUserName();
-            }
-            if (getSessionManager().getClientId() != null) {
-                if (!username.isEmpty()) {
-                    username += "@";
-                }
-                username += Registries.getUnitRegistry().getUnitConfigById(getSessionManager().getClientId()).getUserConfig().getUserName();
-            }
-            if (username.isEmpty()) {
-                username = "Other";
-            }
-            actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.AUTHORITY_KEY, username));
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
+
+        String username = "";
+        if (getSessionManager().getUserId() != null) {
+            username += Registries.getUnitRegistry().getUnitConfigById(getSessionManager().getUserId()).getUserConfig().getUserName();
         }
+        if (getSessionManager().getClientId() != null) {
+            if (!username.isEmpty()) {
+                username += "@";
+            }
+            username += Registries.getUnitRegistry().getUnitConfigById(getSessionManager().getClientId()).getUserConfig().getUserName();
+        }
+        if (username.isEmpty()) {
+            username = "Other";
+        }
+        actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.AUTHORITY_KEY, username));
         actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
 
         return Services.updateActionDescription(actionDescription, serviceAttribute, serviceType);
