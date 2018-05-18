@@ -25,16 +25,12 @@ package org.openbase.bco.registry.launch;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 import org.openbase.bco.authentication.core.AuthenticatorLauncher;
-import org.openbase.bco.registry.agent.core.AgentRegistryLauncher;
-import org.openbase.bco.registry.app.core.AppRegistryLauncher;
-import org.openbase.bco.registry.device.core.ClassRegistryLauncher;
+import org.openbase.bco.registry.clazz.core.ClassRegistryLauncher;
 import org.openbase.bco.registry.lib.BCO;
-import org.openbase.bco.registry.user.core.UserRegistryLauncher;
+import org.openbase.bco.registry.activity.core.ActivityRegistryLauncher;
+import org.openbase.bco.registry.template.core.TemplateRegistryLauncher;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
-import org.openbase.bco.registry.location.core.LocationRegistryLauncher;
-import org.openbase.bco.registry.scene.core.SceneRegistryLauncher;
 import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;
-import org.openbase.bco.registry.user.activity.core.UserActivityRegistryLauncher;
 import org.openbase.jul.storage.registry.Registry;
 
 public class RegistryLauncher {
@@ -46,14 +42,10 @@ public class RegistryLauncher {
         BCO.printLogo();
         AbstractLauncher.main(args, Registry.class,
                 AuthenticatorLauncher.class,
+                TemplateRegistryLauncher.class,
                 ClassRegistryLauncher.class,
-                AppRegistryLauncher.class,
-                AgentRegistryLauncher.class,
-                UnitRegistryLauncher.class,
-                LocationRegistryLauncher.class,
-                UserRegistryLauncher.class,
-                SceneRegistryLauncher.class,
-                UserActivityRegistryLauncher.class
+                ActivityRegistryLauncher.class,
+                UnitRegistryLauncher.class
         );
     }
 }

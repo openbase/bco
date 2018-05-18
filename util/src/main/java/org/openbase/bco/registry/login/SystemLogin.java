@@ -46,7 +46,7 @@ public class SystemLogin {
 
     public static void loginBCOUser() throws CouldNotPerformException, InterruptedException {
 
-        // check if authenication is enabled.
+        // check if authentication is enabled.
         try {
             if (!JPService.getProperty(JPAuthentication.class).getValue()) {
                 return;

@@ -184,14 +184,10 @@
     </profiles>
     
     <modules>
+        <module>activity-registry</module>
         <module>class-registry</module>
-        <module>location-registry</module>
         <module>template-registry</module>
-        <module>agent-registry</module>
-        <module>app-registry</module>
         <module>unit-registry</module>
-        <module>user-registry</module>
-        <module>user-activity-registry</module>
         <module>remote</module>
         <module>util</module>
         <module>lib</module>

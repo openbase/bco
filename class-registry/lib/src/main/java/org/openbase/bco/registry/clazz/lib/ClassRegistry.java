@@ -22,6 +22,9 @@ package org.openbase.bco.registry.clazz.lib;
  * #L%
  */
 
+import org.openbase.bco.registry.lib.provider.clazz.AgentClassCollectionProvider;
+import org.openbase.bco.registry.lib.provider.clazz.AppClassCollectionProvider;
+import org.openbase.bco.registry.lib.provider.clazz.DeviceClassCollectionProvider;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.annotations.RPCMethod;
@@ -31,99 +34,155 @@ import rst.domotic.unit.agent.AgentClassType.AgentClass;
 import rst.domotic.unit.app.AppClassType.AppClass;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 
-import java.util.List;
 import java.util.concurrent.Future;
 
-public interface ClassRegistry extends DataProvider<ClassRegistryData>, Shutdownable {
+public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCollectionProvider, DeviceClassCollectionProvider, DataProvider<ClassRegistryData>, Shutdownable {
 
-    // handle device classes
+    // ===================================== DeviceClass Methods =============================================================
 
+    /**
+     * Method registers the given device class.
+     *
+     * @param deviceClass the device class to be registered.
+     * @return the registered device class.
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
     @RPCMethod
     Future<DeviceClass> registerDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException;
 
+    /**
+     * Method updates the given device class.
+     *
+     * @param deviceClass the updated device class.
+     * @return the updated device class.
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
     @RPCMethod
     Future<DeviceClass> updateDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException;
 
+    /**
+     * Method removes the given device class.
+     *
+     * @param deviceClass the device class to be removed.
+     * @return the removed device class.
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
     @RPCMethod
     Future<DeviceClass> removeDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException;
 
-    @RPCMethod
-    Boolean containsDeviceClassById(final String deviceClassId) throws CouldNotPerformException;
-
-    @RPCMethod
-    Boolean containsDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException;
-
+    /**
+     * Method returns true if the underlying registry is marked as read only.
+     *
+     * @return if the device class registry is read only
+     * @throws CouldNotPerformException if the check fails
+     */
     @RPCMethod
     Boolean isDeviceClassRegistryReadOnly() throws CouldNotPerformException;
 
+    /**
+     * Method returns true if the underlying registry is marked as consistent.
+     *
+     * @return if the device class registry is consistent
+     * @throws CouldNotPerformException if the check fails
+     */
     @RPCMethod
     Boolean isDeviceClassRegistryConsistent() throws CouldNotPerformException;
 
-    // handle agent classes
+    // ===================================== AgentClass Methods =============================================================
 
+    /**
+     * Method registers the given agent class.
+     *
+     * @param agentClass the agent class to be registered.
+     * @return the registered agent class.
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
     @RPCMethod
     Future<AgentClass> registerAgentClass(AgentClass agentClass) throws CouldNotPerformException;
 
-    @RPCMethod
-    Boolean containsAgentClass(AgentClass agentClass) throws CouldNotPerformException;
-
-    @RPCMethod
-    Boolean containsAgentClassById(String agentClassId) throws CouldNotPerformException;
-
+    /**
+     * Method updates the given agent class.
+     *
+     * @param agentClass the updated agent class.
+     * @return the updated agent class.
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
     @RPCMethod
     Future<AgentClass> updateAgentClass(AgentClass agentClass) throws CouldNotPerformException;
 
+    /**
+     * Method removes the given agent class.
+     *
+     * @param agentClass the agent class to be removed.
+     * @return the removed agent class.
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
     @RPCMethod
     Future<AgentClass> removeAgentClass(AgentClass agentClass) throws CouldNotPerformException;
 
-    List<AgentClass> getAgentClasses() throws CouldNotPerformException;
-
+    /**
+     * Method returns true if the underlying registry is marked as read only.
+     *
+     * @return if the agent class registry is read only
+     * @throws CouldNotPerformException if the check fails
+     */
     @RPCMethod
     Boolean isAgentClassRegistryReadOnly() throws CouldNotPerformException;
-
-    @RPCMethod
-    AgentClass getAgentClassById(final String agentClassId) throws CouldNotPerformException;
 
     /**
      * Method returns true if the underling registry is marked as consistent.
      *
      * @return if the agent class registry is consistent
-     *
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod
     Boolean isAgentClassRegistryConsistent() throws CouldNotPerformException;
 
-    // handle app classes
+    // ===================================== AppClass Methods =============================================================
 
+    /**
+     * Method registers the given app class.
+     *
+     * @param appClass the app class to be registered.
+     * @return the registered app class.
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
     @RPCMethod
     Future<AppClass> registerAppClass(AppClass appClass) throws CouldNotPerformException;
 
-    @RPCMethod
-    Boolean containsAppClass(AppClass appClass) throws CouldNotPerformException, InterruptedException;
-
-    @RPCMethod
-    Boolean containsAppClassById(String appClassId) throws CouldNotPerformException, InterruptedException;
-
+    /**
+     * Method updates the given app class.
+     *
+     * @param appClass the updated app class.
+     * @return the updated app class.
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
     @RPCMethod
     Future<AppClass> updateAppClass(AppClass appClass) throws CouldNotPerformException;
 
+    /**
+     * Method removes the given app class.
+     *
+     * @param appClass the app class to be removed.
+     * @return the removed app class.
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
     @RPCMethod
     Future<AppClass> removeAppClass(AppClass appClass) throws CouldNotPerformException;
 
+    /**
+     * Method returns true if the underlying registry is marked as read only.
+     *
+     * @return if the app class registry is read only
+     * @throws CouldNotPerformException if the check fails
+     */
     @RPCMethod
-    AppClass getAppClassById(final String appClassId) throws CouldNotPerformException, InterruptedException;
-
-    List<AppClass> getAppClasses() throws CouldNotPerformException, InterruptedException;
-
-    @RPCMethod
-    Boolean isAppClassRegistryReadOnly() throws CouldNotPerformException, InterruptedException;
+    Boolean isAppClassRegistryReadOnly() throws CouldNotPerformException;
 
     /**
      * Method returns true if the underling registry is marked as consistent.
      *
      * @return if the app class registry is consistent
-     *
      * @throws CouldNotPerformException if the check fails
      */
     @RPCMethod

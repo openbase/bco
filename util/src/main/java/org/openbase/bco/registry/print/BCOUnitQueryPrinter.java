@@ -10,19 +10,17 @@ package org.openbase.bco.registry.print;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import java.util.*;
 
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
@@ -31,9 +29,10 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.processing.StringProcessor;
-import org.openbase.jul.processing.StringProcessor.Alignment;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import java.util.*;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -216,18 +215,15 @@ public class BCOUnitQueryPrinter {
         System.out.println("");
     }
 
-    public static void printUnits(List<UnitConfig> unitConfigList) throws InterruptedException, CouldNotPerformException {
+    public static void printUnits(List<UnitConfig> unitConfigList) throws CouldNotPerformException {
 
         // sort by scope
-        Collections.sort(unitConfigList, new Comparator<UnitConfig>() {
-            @Override
-            public int compare(UnitConfig o1, UnitConfig o2) {
-                try {
-                    return ScopeGenerator.generateStringRep(o1.getScope()).compareTo(ScopeGenerator.generateStringRep(o2.getScope()));
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory("Could not sort scope!", ex, System.err);
-                    return 0;
-                }
+        Collections.sort(unitConfigList, (o1, o2) -> {
+            try {
+                return ScopeGenerator.generateStringRep(o1.getScope()).compareTo(ScopeGenerator.generateStringRep(o2.getScope()));
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory("Could not sort scope!", ex, System.err);
+                return 0;
             }
         });
 
@@ -249,7 +245,7 @@ public class BCOUnitQueryPrinter {
         }
     }
 
-    public static void printUnit(final UnitConfig unitConfig, final int maxAliasLength, final int maxUnitLabelLength, final int maxLocationUnitLabelLength, final int maxScopeLength) throws InterruptedException, CouldNotPerformException {
+    public static void printUnit(final UnitConfig unitConfig, final int maxAliasLength, final int maxUnitLabelLength, final int maxLocationUnitLabelLength, final int maxScopeLength) throws CouldNotPerformException {
         System.out.println(unitConfig.getId()
                 + "  "
                 + "[ " + StringProcessor.fillWithSpaces(generateStringRep(unitConfig.getAliasList()), maxAliasLength) + " ]"
@@ -261,9 +257,9 @@ public class BCOUnitQueryPrinter {
         );
     }
 
-    private static String getLocationLabel(final UnitConfig unitConfig) throws InterruptedException {
+    private static String getLocationLabel(final UnitConfig unitConfig) {
         try {
-            return Registries.getLocationRegistry().getLocationConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel();
+            return Registries.getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel();
         } catch (CouldNotPerformException ex) {
             return "?";
         }
