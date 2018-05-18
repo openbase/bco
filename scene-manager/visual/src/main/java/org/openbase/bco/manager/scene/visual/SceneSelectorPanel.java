@@ -278,7 +278,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
                 ArrayList<ServiceTypeHolder> serviceTypeHolderList = new ArrayList<>();
                 UnitType selectedUnitType = ((UnitTypeHolder) unitTypeComboBox.getSelectedItem()).getType();
                 serviceTypeHolderList.add(ALL_Service);
-                for (ServiceDescription serviceDescription : Registries.getUnitRegistry().getUnitTemplateByType(selectedUnitType).getServiceDescriptionList()) {
+                for (ServiceDescription serviceDescription : Registries.getTemplateRegistry().getUnitTemplateByType(selectedUnitType).getServiceDescriptionList()) {
                     if (serviceDescription.getPattern() != ServiceTemplate.ServicePattern.OPERATION) {
                         continue;
                     }

@@ -31,7 +31,7 @@ import org.openbase.bco.dal.remote.service.ServiceRemoteManager;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.manager.location.lib.LocationController;
-import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
+
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -317,7 +317,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
         final List<LocationRemote> childList = new ArrayList<>();
         for (String childId : getConfig().getLocationConfig().getChildIdList()) {
             try {
-                childList.add(Units.getUnit(CachedLocationRegistryRemote.getRegistry().getLocationConfigById(childId), waitForData, LOCATION));
+                childList.add(Units.getUnit(Registries.getUnitRegistry().getUnitConfigById(childId), waitForData, LOCATION));
             } catch (InterruptedException ex) {
                 throw new CouldNotPerformException("Could not get all child locations!", ex);
             }

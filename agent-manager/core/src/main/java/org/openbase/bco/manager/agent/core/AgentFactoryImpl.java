@@ -24,7 +24,7 @@ package org.openbase.bco.manager.agent.core;
 import org.openbase.bco.manager.agent.lib.Agent;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.bco.manager.agent.lib.AgentFactory;
-import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
+
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;

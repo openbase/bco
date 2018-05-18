@@ -32,7 +32,7 @@ import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.dal.remote.unit.util.UnitStateAwaiter;
 import org.openbase.bco.manager.agent.core.preset.PowerStateSynchroniserAgent;
-import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
+
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -93,7 +93,7 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
     public void testPowerStateSyncAgent() throws Exception {
         System.out.println("testPowerStateSyncAgent");
 
-        CachedAgentRegistryRemote.waitForData();
+        Registries.waitForData();
 
         UnitConfig config = registerAgent();
         agent = Units.getUnit(config, true, Units.AGENT);

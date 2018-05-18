@@ -149,7 +149,7 @@ public class OpenHABItemConfigGenerator {
                 Map<ServiceType, ServiceDescription> serviceDescriptionsOnLocation = new HashMap<>();
                 for (final String childUnitId : locationUnitConfig.getLocationConfig().getChildIdList()) {
                     final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(childUnitId);
-                    for (ServiceDescription serviceDescription : Registries.getUnitRegistry().getUnitTemplateByType(unitConfig.getType()).getServiceDescriptionList()) {
+                    for (ServiceDescription serviceDescription : Registries.getTemplateRegistry().getUnitTemplateByType(unitConfig.getType()).getServiceDescriptionList()) {
                         if (!serviceDescriptionsOnLocation.containsKey(serviceDescription.getType())) {
                             serviceDescriptionsOnLocation.put(serviceDescription.getType(), serviceDescription);
                         } else {

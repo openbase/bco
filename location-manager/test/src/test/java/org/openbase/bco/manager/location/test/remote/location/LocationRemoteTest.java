@@ -130,7 +130,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
     }
 
     private boolean unitHasService(UnitConfig unitConfig, ServiceType serviceType, ServicePattern servicePattern) throws CouldNotPerformException, NotAvailableException, InterruptedException {
-        for (ServiceDescription serviceDescription : Registries.getUnitRegistry().getUnitTemplateByType(unitConfig.getType()).getServiceDescriptionList()) {
+        for (ServiceDescription serviceDescription : Registries.getTemplateRegistry().getUnitTemplateByType(unitConfig.getType()).getServiceDescriptionList()) {
             if (serviceDescription.getType() == serviceType && serviceDescription.getPattern() == servicePattern) {
                 return true;
             }
@@ -253,7 +253,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
         System.out.println("testManipulatingByUnitType");
 
         try {
-            List<UnitType> lightTypes = Registries.getUnitRegistry().getSubUnitTypes(UnitType.LIGHT);
+            List<UnitType> lightTypes = Registries.getTemplateRegistry().getSubUnitTypes(UnitType.LIGHT);
             lightTypes.add(UnitType.LIGHT);
             assertTrue("UnitType not found as subType of LIGHT!", lightTypes.contains(UnitType.LIGHT));
             assertTrue("UnitType not found as subType of LIGHT!", lightTypes.contains(UnitType.DIMMABLE_LIGHT));

@@ -34,7 +34,7 @@ import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.unit.util.UnitStateAwaiter;
-import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
+
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
@@ -103,7 +103,7 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
 
         System.out.println("testPreseceLightAgent");
 
-        CachedAgentRegistryRemote.waitForData();
+        Registries.waitForData();
 
         UnitConfig config = registerAgent();
         agent = Units.getUnit(config, true, Units.AGENT);

@@ -27,7 +27,7 @@ import org.openbase.bco.dal.visual.service.AbstractServicePanel;
 import org.openbase.bco.dal.visual.unit.GenericUnitPanel;
 import org.openbase.bco.dal.visual.unit.RemovableGenericUnitPanel;
 import org.openbase.bco.dal.visual.util.SelectorPanel;
-import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
+
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -84,7 +84,7 @@ public class SceneEditor extends javax.swing.JFrame {
                 }
             });
             
-            CachedLocationRegistryRemote.waitForData();
+            Registries.waitForData();
             CachedUnitRegistryRemote.waitForData();
             
             GlobalCachedExecutorService.submit(() -> {

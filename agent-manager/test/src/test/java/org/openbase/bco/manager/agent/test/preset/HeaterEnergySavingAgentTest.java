@@ -34,7 +34,7 @@ import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.dal.remote.unit.connection.ConnectionRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.unit.util.UnitStateAwaiter;
-import org.openbase.bco.registry.agent.remote.CachedAgentRegistryRemote;
+
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
@@ -106,7 +106,7 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         }
         System.out.println("testHeaterEnergySavingAgent");
 
-        CachedAgentRegistryRemote.waitForData();
+        Registries.waitForData();
 
         UnitConfig config = registerAgent();
         agent = Units.getUnit(config, true, Units.AGENT);
