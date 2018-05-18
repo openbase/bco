@@ -52,7 +52,6 @@ public class UnitGroupRegistryTest {
     private static MockRegistry mockRegistry;
 
     private static UnitRegistryController unitRegistry;
-    private static ClassRegistryController classRegistry;
 
     private static UnitConfigType.UnitConfig LOCATION;
 

@@ -327,6 +327,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      */
     @Override
     protected void registerPlugins() throws CouldNotPerformException, InterruptedException {
+        CachedTemplateRegistryRemote.getRegistry().waitUntilReady();
+        CachedClassRegistryRemote.getRegistry().waitUntilReady();
+
         locationUnitConfigRegistry.registerPlugin(new RootLocationPlugin());
         try {
             if (JPService.getProperty(JPAuthentication.class).getValue()) {
@@ -407,7 +410,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     }
 
     @Override
-    public final void syncRegistryFlags() throws CouldNotPerformException, InterruptedException {
+    public final void syncRegistryFlags() throws CouldNotPerformException {
         setDataField(UnitRegistryData.DAL_UNIT_CONFIG_REGISTRY_READ_ONLY_FIELD_NUMBER, dalUnitConfigRegistry.isReadOnly());
         setDataField(UnitRegistryData.DAL_UNIT_CONFIG_REGISTRY_CONSISTENT_FIELD_NUMBER, dalUnitConfigRegistry.isConsistent());
 

@@ -195,7 +195,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         }
     }
 
-    @Test//(timeout = 5000)
+    @Test(timeout = 10000)
     public void testDeviceClassDeviceConfigUnitConsistencyHandler() throws Exception {
         System.out.println("testDeviceClassDeviceConfigUnitConsistencyHandler");
 
@@ -272,7 +272,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         assertEquals("Unit config does not contain the right service", dalUnitConfigs.get(2).getServiceConfig(0).getServiceDescription().getType(), serviceTemplate4.getServiceType());
 
         int sizeBefore = unitRegistry.getDalUnitConfigs().size();
-        config = unitRegistry.registerUnitConfig(config.toBuilder().setLabel("newDeviceLabel").build()).get();
+        config = unitRegistry.updateUnitConfig(config.toBuilder().setLabel("newDeviceLabel").build()).get();
         assertTrue("More dal units registered after device renaming!", unitRegistry.getDalUnitConfigs().size() == sizeBefore);
         assertTrue("More units in device config after renaming!", config.getDeviceConfig().getUnitIdCount() == 3);
 

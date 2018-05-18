@@ -21,18 +21,10 @@ package org.openbase.bco.registry.unit.test;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.ExecutionException;
-import org.junit.After;
-import org.junit.AfterClass;
-import org.junit.Assert;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Test;
+
+import org.junit.*;
 import org.openbase.bco.authentication.core.AuthenticatorController;
 import org.openbase.bco.registry.activity.core.ActivityRegistryController;
-import org.openbase.bco.registry.activity.lib.ActivityRegistry;
 import org.openbase.bco.registry.clazz.core.ClassRegistryController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.template.core.TemplateRegistryController;
@@ -40,8 +32,6 @@ import org.openbase.bco.registry.unit.core.UnitRegistryController;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.slf4j.Logger;
@@ -53,8 +43,12 @@ import rst.domotic.unit.location.LocationConfigType.LocationConfig;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
 import rst.spatial.PlacementConfigType.PlacementConfig;
 
+import java.util.concurrent.ExecutionException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
+
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class LocationRegistryTest {
@@ -75,28 +69,21 @@ public class LocationRegistryTest {
         try {
             JPService.setupJUnitTestMode();
             JPService.registerProperty(JPDebugMode.class, true);
-            
+
             authenticatorController = new AuthenticatorController();
             authenticatorController.init();
             authenticatorController.activate();
             authenticatorController.waitForActivation();
 
-            try {
-                unitRegistry = new UnitRegistryController();
-                classRegistry = new ClassRegistryController();
-                templateRegistry = new TemplateRegistryController();
-                activityRegistry = new ActivityRegistryController();
-
-                unitRegistry.init();
-                classRegistry.init();
-                templateRegistry.init();
-                activityRegistry.init();
-            } catch (InterruptedException | InitializationException | InstantiationException ex) {
-                throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-            }
+            unitRegistry = new UnitRegistryController();
+            classRegistry = new ClassRegistryController();
+            templateRegistry = new TemplateRegistryController();
+            activityRegistry = new ActivityRegistryController();
 
             Thread unitRegistryThread = new Thread(() -> {
                 try {
+                    LOGGER.info("Start unit registry");
+                    unitRegistry.init();
                     unitRegistry.activate();
                 } catch (CouldNotPerformException | InterruptedException ex) {
                     ExceptionPrinter.printHistory(ex, LOGGER);
@@ -104,6 +91,8 @@ public class LocationRegistryTest {
             });
             Thread classRegistryThread = new Thread(() -> {
                 try {
+                    LOGGER.info("Start class registry");
+                    classRegistry.init();
                     classRegistry.activate();
                 } catch (CouldNotPerformException | InterruptedException ex) {
                     ExceptionPrinter.printHistory(ex, LOGGER);
@@ -111,6 +100,8 @@ public class LocationRegistryTest {
             });
             Thread templateRegistryThread = new Thread(() -> {
                 try {
+                    LOGGER.info("Start template registry");
+                    templateRegistry.init();
                     templateRegistry.activate();
                 } catch (CouldNotPerformException | InterruptedException ex) {
                     ExceptionPrinter.printHistory(ex, LOGGER);
@@ -118,6 +109,8 @@ public class LocationRegistryTest {
             });
             Thread activityRegistryThread = new Thread(() -> {
                 try {
+                    LOGGER.info("Start activity registry");
+                    activityRegistry.init();
                     activityRegistry.activate();
                 } catch (CouldNotPerformException | InterruptedException ex) {
                     ExceptionPrinter.printHistory(ex, LOGGER);
@@ -125,15 +118,15 @@ public class LocationRegistryTest {
             });
 
 
-            unitRegistryThread.start();
-            classRegistryThread.start();
             templateRegistryThread.start();
+            classRegistryThread.start();
             activityRegistryThread.start();
+            unitRegistryThread.start();
 
-            unitRegistryThread.join();
-            classRegistryThread.join();
             templateRegistryThread.join();
+            classRegistryThread.join();
             activityRegistryThread.join();
+            unitRegistryThread.join();
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
@@ -154,10 +147,10 @@ public class LocationRegistryTest {
             if (activityRegistry != null) {
                 activityRegistry.shutdown();
             }
-            if(authenticatorController != null) {
+            if (authenticatorController != null) {
                 authenticatorController.shutdown();
             }
-            
+
             Registries.shutdown();
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);

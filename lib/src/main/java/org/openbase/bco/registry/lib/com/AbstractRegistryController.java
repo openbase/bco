@@ -92,7 +92,6 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
      * @param jpScopeProperty            the scope which is used for registry communication and data publishing.
      * @param builder                    the builder to build the registry data message.
      * @param filterSparselyRegistryData if this flag is true the registry data is only published if non of the internal registries is busy.
-     *
      * @throws InstantiationException
      */
     public AbstractRegistryController(final Class<? extends JPScope> jpScopeProperty, MB builder, final boolean filterSparselyRegistryData) throws InstantiationException {
@@ -152,6 +151,11 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
                 throw new CouldNotPerformException("Could not register consistency handler for all internal registries!", ex);
             }
 
+            // plugins may already change items which cause consistency checks
+            // for these checks remote registries have to be synchronized first
+            for (ProtoBufFileSynchronizedRegistry registry : registryList) {
+                registry.waitForRemoteDependencies();
+            }
             try {
                 registerPlugins();
             } catch (CouldNotPerformException ex) {
@@ -379,8 +383,8 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     private void performInitialConsistencyCheck() throws CouldNotPerformException, InterruptedException {
         for (final ProtoBufFileSynchronizedRegistry registry : registryList) {
             try {
-                logger.info("Trigger initial consistency check of " + registry + " with " + registry.getEntries().size() + " entries.");
-                registry.initialCheck();
+                logger.debug("Trigger initial consistency check of " + registry + " with " + registry.getEntries().size() + " entries.");
+                registry.checkConsistency();
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger);
                 notifyChange();
