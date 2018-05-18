@@ -108,8 +108,8 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
 
                 try {
                     // add meta config of device class
-                    Registries.getDeviceRegistry().waitForData();
-                    DeviceClassType.DeviceClass deviceClass = Registries.getDeviceRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
+                    Registries.waitForData();
+                    DeviceClassType.DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
                     configPool.register(new MetaConfigVariableProvider("DeviceClass", deviceClass.getMetaConfig()));
 
 

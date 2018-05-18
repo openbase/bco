@@ -51,8 +51,8 @@ public class ResourceBlockingTest {
 //    @Test
     public void blockColorableLight() throws Exception {
         Registries.waitForData();
-        UnitConfig location = Registries.getLocationRegistry().getLocationConfigsByLabel("Wardrobe").get(0);
-        List<UnitConfig> lights = Registries.getLocationRegistry().getUnitConfigsByLocation(UnitType.COLORABLE_LIGHT, location.getId());
+        UnitConfig location = Registries.getUnitRegistry().getUnitConfigsByLabel("Wardrobe").get(0);
+        List<UnitConfig> lights = Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.COLORABLE_LIGHT, location.getId());
         ColorableLightRemote remote = Units.getUnit(lights.get(0), true, ColorableLightRemote.class);
 
 //        ColorState.Builder colorState = ColorState.newBuilder();

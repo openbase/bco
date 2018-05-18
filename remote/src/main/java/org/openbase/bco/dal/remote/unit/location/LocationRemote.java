@@ -186,7 +186,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
      *
      * @return
      * @throws CouldNotPerformException
-     * @deprecated please use Registries.getLocationRegistry().getNeighborLocations(String locationId) instead.
+     * @deprecated please use Registries.getUnitRegistry().getNeighborLocations(String locationId) instead.
      */
     @Override
     @Deprecated
@@ -261,7 +261,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
 
         List<ConnectionRemote> connectionList = new ArrayList<>();
         try {
-            for (UnitConfig connectionUnitConfig : Registries.getLocationRegistry().getConnectionConfigs()) {
+            for (UnitConfig connectionUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.CONNECTION)) {
                 ConnectionRemote connection = Units.getUnit(connectionUnitConfig, waitForData, CONNECTION);
                 if (connectionUnitConfig.getConnectionConfig().getTileIdList().contains(getId()) && connectionUnitConfig.getConnectionConfig().getTileIdList().contains(locationID)) {
                     connectionList.add(connection);
@@ -395,7 +395,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         final List<UR> unitRemote = new ArrayList<>();
         MultiException.ExceptionStack exceptionStack = null;
         Registries.waitForData();
-        for (final UnitConfig unitConfig : Registries.getLocationRegistry().getUnitConfigsByLocation(unitType, getId())) {
+        for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLocation(unitType, getId())) {
             try {
                 if (recursive || unitConfig.getPlacementConfig().getLocationId().equals(getId())) {
                     unitRemote.add(Units.getUnit(unitConfig, waitForData, unitRemoteClass));

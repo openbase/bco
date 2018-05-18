@@ -47,7 +47,6 @@ import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
 import rst.domotic.registry.UnitRegistryDataType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.EnablingStateType.EnablingState;
@@ -108,19 +107,13 @@ public class SelectorPanel extends javax.swing.JPanel {
         statusPanel = StatusPanel.getInstance();
 
         statusPanel.setStatus("Wait for unit registry...", StatusPanel.StatusType.INFO, true);
-        Registries.getUnitRegistry().waitForData();
+        Registries.waitForData();
         statusPanel.setStatus("Wait for location registry...", StatusPanel.StatusType.INFO, true);
-        Registries.getLocationRegistry().waitForData();
+        Registries.waitForData();
         statusPanel.setStatus("Connection established.", StatusPanel.StatusType.INFO, 3);
 
         // register change observer
         Registries.getUnitRegistry().addDataObserver((Observable<UnitRegistryDataType.UnitRegistryData> source, UnitRegistryDataType.UnitRegistryData data) -> {
-            SwingUtilities.invokeLater(() -> {
-                updateDynamicComponents();
-            });
-        });
-
-        Registries.getLocationRegistry().addDataObserver((Observable<LocationRegistryData> source, LocationRegistryData data) -> {
             SwingUtilities.invokeLater(() -> {
                 updateDynamicComponents();
             });
@@ -183,7 +176,7 @@ public class SelectorPanel extends javax.swing.JPanel {
             try {
                 ArrayList<LocationUnitConfigHolder> locationConfigHolderList = new ArrayList<>();
                 locationConfigHolderList.add(ALL_LOCATION);
-                for (UnitConfig locationUnitConfig : Registries.getLocationRegistry().getLocationConfigs()) {
+                for (UnitConfig locationUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.LOCATION)) {
                     locationConfigHolderList.add(new LocationUnitConfigHolder(locationUnitConfig));
                 }
                 Collections.sort(locationConfigHolderList);
@@ -205,9 +198,9 @@ public class SelectorPanel extends javax.swing.JPanel {
                 UnitType selectedUnitType = ((UnitTypeHolder) unitTypeComboBox.getSelectedItem()).getType();
                 if (selectedUnitType == UnitType.UNKNOWN) {
                     if (selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
-                        for (final UnitConfig config : Registries.getLocationRegistry().getUnitConfigsByLocation(selectedLocationConfigHolder.getConfig().getId())) {
+                        for (final UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByLocation(selectedLocationConfigHolder.getConfig().getId())) {
                             try {
-                                unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getLocationRegistry().getLocationConfigById(config.getPlacementConfig().getLocationId())));
+                                unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getUnitRegistry().getUnitConfigById(config.getPlacementConfig().getLocationId())));
                             } catch (CouldNotPerformException ex) {
                                 exceptionStack = MultiException.push(this, ex, exceptionStack);
                             }
@@ -222,16 +215,16 @@ public class SelectorPanel extends javax.swing.JPanel {
                                 if (config.getPlacementConfig().getLocationId().isEmpty()) {
                                     throw new InvalidStateException("Could not load location unit of " + config.getLabel() + " because its not configured!");
                                 }
-                                unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getLocationRegistry().getLocationConfigById(config.getPlacementConfig().getLocationId())));
+                                unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getUnitRegistry().getUnitConfigById(config.getPlacementConfig().getLocationId())));
                             } catch (CouldNotPerformException ex) {
                                 exceptionStack = MultiException.push(this, ex, exceptionStack);
                             }
                         }
                     }
                 } else if (selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
-                    for (UnitConfig config : Registries.getLocationRegistry().getUnitConfigsByLocation(selectedUnitType, selectedLocationConfigHolder.getConfig().getId())) {
+                    for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByLocation(selectedUnitType, selectedLocationConfigHolder.getConfig().getId())) {
                         try {
-                            unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getLocationRegistry().getLocationConfigById(config.getPlacementConfig().getLocationId())));
+                            unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getUnitRegistry().getUnitConfigById(config.getPlacementConfig().getLocationId())));
                         } catch (CouldNotPerformException ex) {
                             exceptionStack = MultiException.push(this, ex, exceptionStack);
                         }
@@ -243,7 +236,7 @@ public class SelectorPanel extends javax.swing.JPanel {
                             if (config.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                                 continue;
                             }
-                            unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getLocationRegistry().getLocationConfigById(config.getPlacementConfig().getLocationId())));
+                            unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getUnitRegistry().getUnitConfigById(config.getPlacementConfig().getLocationId())));
                         } catch (CouldNotPerformException ex) {
                             exceptionStack = MultiException.push(this, ex, exceptionStack);
                         }
@@ -266,9 +259,6 @@ public class SelectorPanel extends javax.swing.JPanel {
             MultiException.checkAndThrow("Could not acquire all informations!", exceptionStack);
         } catch (CouldNotPerformException | NullPointerException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update all dynamic components!", ex), logger);
-        } catch (InterruptedException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Component update interrupted.", ex), logger, LogLevel.WARN);
-            Thread.currentThread().interrupt();
         } finally {
             updateComponentLock.writeLock().unlock();
         }
@@ -677,9 +667,6 @@ public class SelectorPanel extends javax.swing.JPanel {
             validScope = true;
         } catch (CouldNotPerformException | IllegalArgumentException | NullPointerException ex) {
             validScope = false;
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            return;
         }
 
         try {

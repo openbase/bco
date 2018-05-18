@@ -82,7 +82,7 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
      */
     public void init() throws InitializationException, InterruptedException {
         try {
-            Registries.getUnitRegistry().waitForData();
+            Registries.waitForData();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }

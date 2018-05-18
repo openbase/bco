@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -29,8 +29,6 @@ import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceProvider;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
-import org.openbase.bco.registry.location.lib.LocationRegistry;
-import org.openbase.bco.registry.location.remote.CachedLocationRegistryRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -142,12 +140,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      */
     default Shape getUnitShape() throws NotAvailableException {
         try {
-            try {
-                return Registries.getLocationRegistry().getUnitShape(getConfig());
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-                throw new FatalImplementationErrorException("getLocationRegistry should not throw InterruptedExceptions anymore!", Unit.class, ex);
-            }
+            return Registries.getUnitRegistry().getUnitShape(getConfig());
         } catch (final CouldNotPerformException ex) {
             throw new NotAvailableException("UnitShape", ex);
         }
@@ -450,7 +443,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      */
     default Future<Transform> getRootToUnitTransformationFuture() {
         try {
-            return getLocationRegistry().getRootToUnitTransformationFuture(getConfig());
+            return Registries.getUnitRegistry().getRootToUnitTransformationFuture(getConfig());
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(new NotAvailableException("UnitTransformation", ex));
         }
@@ -463,7 +456,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      */
     default Future<Transform> getUnitToRootTransformationFuture() {
         try {
-            return getLocationRegistry().getUnitToRootTransformationFuture(getConfig());
+            return Registries.getUnitRegistry().getUnitToRootTransformationFuture(getConfig());
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(new NotAvailableException("UnitTransformation", ex));
         }
@@ -478,7 +471,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      */
     default Transform getRootToUnitTransformation() throws NotAvailableException {
         try {
-            return getLocationRegistry().getRootToUnitTransformation(getConfig());
+            return Registries.getUnitRegistry().getRootToUnitTransformation(getConfig());
         } catch (final CouldNotPerformException ex) {
             throw new NotAvailableException("UnitTransformation", ex);
         }
@@ -493,7 +486,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      */
     default Transform getUnitToRootTransformation() throws NotAvailableException {
         try {
-            return getLocationRegistry().getUnitToRootTransformation(getConfig());
+            return Registries.getUnitRegistry().getUnitToRootTransformation(getConfig());
         } catch (final CouldNotPerformException ex) {
             throw new NotAvailableException("UnitTransformation", ex);
         }
@@ -508,7 +501,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      */
     default Transform3D getRootToUnitTransform3D() throws NotAvailableException {
         try {
-            return getLocationRegistry().getRootToUnitTransform3D(getConfig());
+            return Registries.getUnitRegistry().getRootToUnitTransform3D(getConfig());
         } catch (final CouldNotPerformException ex) {
             throw new NotAvailableException("Transform3D", ex);
         }
@@ -525,7 +518,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      */
     default Transform3D getUnitToRootTransform3D() throws NotAvailableException {
         try {
-            return getLocationRegistry().getUnitToRootTransform3D(getConfig());
+            return Registries.getUnitRegistry().getUnitToRootTransform3D(getConfig());
         } catch (NotAvailableException ex) {
             throw new NotAvailableException("Transform3Dinverse", ex);
         }
@@ -540,7 +533,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      */
     default Point3d getUnitPositionGlobalPoint3d() throws NotAvailableException {
         try {
-            return getLocationRegistry().getUnitPositionGlobalPoint3d(getConfig());
+            return Registries.getUnitRegistry().getUnitPositionGlobalPoint3d(getConfig());
         } catch (NotAvailableException ex) {
             throw new NotAvailableException("GlobalPositionVector", ex);
         }
@@ -555,7 +548,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      */
     default Translation getUnitPositionGlobal() throws NotAvailableException {
         try {
-            return getLocationRegistry().getUnitPositionGlobal(getConfig());
+            return Registries.getUnitRegistry().getUnitPositionGlobal(getConfig());
         } catch (NotAvailableException ex) {
             throw new NotAvailableException("GlobalPosition", ex);
         }
@@ -570,7 +563,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      */
     default Quat4d getUnitRotationGlobalQuat4d() throws NotAvailableException {
         try {
-            return getLocationRegistry().getUnitRotationGlobalQuat4d(getConfig());
+            return Registries.getUnitRegistry().getUnitRotationGlobalQuat4d(getConfig());
         } catch (final NotAvailableException ex) {
             throw new NotAvailableException("GlobalRotationQuat", ex);
         }
@@ -585,7 +578,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      */
     default Rotation getUnitRotationGlobal() throws NotAvailableException {
         try {
-            return getLocationRegistry().getUnitRotationGlobal(getConfig());
+            return Registries.getUnitRegistry().getUnitRotationGlobal(getConfig());
         } catch (final NotAvailableException ex) {
             throw new NotAvailableException("GlobalRotation", ex);
         }
@@ -599,7 +592,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      * @throws NotAvailableException is thrown if the center can not be calculate.
      */
     default Point3d getUnitBoundingBoxCenterPoint3d() throws NotAvailableException {
-        return getLocationRegistry().getUnitBoundingBoxCenterPoint3d(getConfig());
+        return Registries.getUnitRegistry().getUnitBoundingBoxCenterPoint3d(getConfig());
     }
 
     /**
@@ -611,33 +604,9 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      */
     default Point3d getUnitBoundingBoxCenterGlobalPoint3d() throws NotAvailableException {
         try {
-            return getLocationRegistry().getUnitBoundingBoxCenterGlobalPoint3d(getConfig());
+            return Registries.getUnitRegistry().getUnitBoundingBoxCenterGlobalPoint3d(getConfig());
         } catch (NotAvailableException ex) {
             throw new NotAvailableException("GlobalBoundingBoxCenter", ex);
-        }
-    }
-
-    /**
-     * Do not use this method! Use Registries.getLocationRegistry() instead!
-     *
-     * @return
-     *
-     * @throws org.openbase.jul.exception.NotAvailableException
-     * @deprecated Do not use this method! Use Registries.getLocationRegistry() instead!
-     */
-    @Deprecated
-    default LocationRegistry getLocationRegistry() throws NotAvailableException {
-        // method is only needed because the registry is still throwing a InterruptedException which will removed in a future release.
-        // todo release: can be removed later on
-        try {
-            try {
-                return CachedLocationRegistryRemote.getRegistry();
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-                throw new FatalImplementationErrorException("", this, ex);
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException(LocationRegistry.class);
         }
     }
 
@@ -785,10 +754,6 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
             return Registries.getUnitRegistry().getUnitConfigById(getConfig().getUnitHostId());
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("HostUnitConfig", ex);
-        } catch (InterruptedException ex) {
-            // will be removed later
-            ex.printStackTrace();
-            throw new NotAvailableException("HostUnitConfig", ex);
         }
     }
 
@@ -817,26 +782,22 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
             if (isDalUnit()) {
 
                 // HostConfigMetaConfig
-                try {
-                    UnitConfig hostUnitConfig = getHostUnitConfig();
-                    configPool.register(new MetaConfigVariableProvider("HostConfigMetaConfig", hostUnitConfig.getMetaConfig()));
-                    configPool.register(new ProtobufVariableProvider(hostUnitConfig));
-                    switch (hostUnitConfig.getType()) {
-                        case DEVICE:
-                            final DeviceClass deviceClass = Registries.getDeviceRegistry().getDeviceClassById(hostUnitConfig.getDeviceConfig().getDeviceClassId());
-                            configPool.register(new MetaConfigVariableProvider("DeviceBindingConfig", deviceClass.getBindingConfig().getMetaConfig()));
-                            configPool.register(new MetaConfigVariableProvider("DeviceClassMetaConfig", deviceClass.getMetaConfig()));
-                            configPool.register(new ProtobufVariableProvider(deviceClass));
-                            break;
-                        case APP:
-                            final AppClass appClass = Registries.getAppRegistry().getAppClassById(hostUnitConfig.getAppConfig().getAppClassId());
-                            configPool.register(new MetaConfigVariableProvider("AppBindingConfig", appClass.getBindingConfig().getMetaConfig()));
-                            configPool.register(new MetaConfigVariableProvider("AppClassMetaConfig", appClass.getMetaConfig()));
-                            configPool.register(new ProtobufVariableProvider(appClass));
-                            break;
-                    }
-                } catch (InterruptedException e) {
-                    // check will be removed in bco 2.0
+                UnitConfig hostUnitConfig = getHostUnitConfig();
+                configPool.register(new MetaConfigVariableProvider("HostConfigMetaConfig", hostUnitConfig.getMetaConfig()));
+                configPool.register(new ProtobufVariableProvider(hostUnitConfig));
+                switch (hostUnitConfig.getType()) {
+                    case DEVICE:
+                        final DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(hostUnitConfig.getDeviceConfig().getDeviceClassId());
+                        configPool.register(new MetaConfigVariableProvider("DeviceBindingConfig", deviceClass.getBindingConfig().getMetaConfig()));
+                        configPool.register(new MetaConfigVariableProvider("DeviceClassMetaConfig", deviceClass.getMetaConfig()));
+                        configPool.register(new ProtobufVariableProvider(deviceClass));
+                        break;
+                    case APP:
+                        final AppClass appClass = Registries.getClassRegistry().getAppClassById(hostUnitConfig.getAppConfig().getAppClassId());
+                        configPool.register(new MetaConfigVariableProvider("AppBindingConfig", appClass.getBindingConfig().getMetaConfig()));
+                        configPool.register(new MetaConfigVariableProvider("AppClassMetaConfig", appClass.getMetaConfig()));
+                        configPool.register(new ProtobufVariableProvider(appClass));
+                        break;
                 }
             }
 

@@ -120,8 +120,8 @@ public class ColorableLightController extends AbstractDALUnitController<Colorabl
             configPool.register(new MetaConfigVariableProvider("DeviceUnitConfig", deviceUnitConfig.getMetaConfig()));
 
             // add meta config of device class
-            Registries.getDeviceRegistry().waitForData();
-            DeviceClass deviceClass = Registries.getDeviceRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
+            Registries.waitForData();
+            DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
             configPool.register(new MetaConfigVariableProvider("DeviceClass", deviceClass.getMetaConfig()));
 
             // add meta config of service template config in unit template of deviceClass

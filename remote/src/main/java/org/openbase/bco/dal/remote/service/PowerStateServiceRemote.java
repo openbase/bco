@@ -88,7 +88,7 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
         try {
             // check if infrastructure filter is enabled
             if (filterInfrastructureUnits) {
-                Registries.getUnitRegistry().waitForData();
+                Registries.waitForData();
                 final MetaConfigPool metaConfigPool = new MetaConfigPool();
                 metaConfigPool.register(new MetaConfigVariableProvider("UnitConfig", config.getMetaConfig()));
                 if (config.hasUnitHostId() && !config.getUnitHostId().isEmpty()) {

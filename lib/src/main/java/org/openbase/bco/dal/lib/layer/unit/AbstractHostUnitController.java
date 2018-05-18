@@ -128,7 +128,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
     @Override
     public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
         UnitConfig unitConfig = super.applyConfigUpdate(config);
-        Registries.getUnitRegistry().waitForData();
+        Registries.waitForData();
 
         try {
             synchronized (unitMapLock) {

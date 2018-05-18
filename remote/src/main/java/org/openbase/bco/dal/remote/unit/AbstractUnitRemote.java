@@ -149,7 +149,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     }
 
     protected UnitRegistry getUnitRegistry() throws InterruptedException, CouldNotPerformException {
-        Registries.getUnitRegistry().waitForData();
+        Registries.waitForData();
         return Registries.getUnitRegistry();
     }
 

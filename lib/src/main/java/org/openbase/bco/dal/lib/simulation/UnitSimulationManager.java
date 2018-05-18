@@ -95,7 +95,7 @@ public class UnitSimulationManager implements Manageable<UnitControllerRegistry<
         }
 
         try {
-            Registries.getUnitRegistry().waitForData();
+            Registries.waitForData();
             unitControllerRegistry.addObserver((source, data) -> {
                 updateUnitSimulators(data.values());
             });

@@ -69,7 +69,7 @@ public class RemoteAction implements Action {
             }
 
             this.serviceRemoteFactory = ServiceRemoteFactoryImpl.getInstance();
-            Registries.getUnitRegistry().waitForData();
+            Registries.waitForData();
             this.unitConfig = Registries.getUnitRegistry().getUnitConfigById(actionDescription.getServiceStateDescription().getUnitId());
             this.verifyUnitConfig(unitConfig);
             this.serviceRemote = serviceRemoteFactory.newInstance(actionDescription.getServiceStateDescription().getServiceType());

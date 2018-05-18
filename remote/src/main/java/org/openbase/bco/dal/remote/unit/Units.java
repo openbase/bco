@@ -363,7 +363,7 @@ public class Units {
      *                                  registry connection.
      */
     public synchronized static UnitRegistry getUnitRegistry() throws InterruptedException, CouldNotPerformException {
-        Registries.getUnitRegistry().waitForData();
+        Registries.waitForData();
         return Registries.getUnitRegistry();
     }
 
@@ -1514,8 +1514,8 @@ public class Units {
         final Future<LocationRegistryDataType.LocationRegistryData> dataFuture;
         try {
             try {
-                dataFuture = Registries.getLocationRegistry().getDataFuture();
-                return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getLocationRegistry().getUnitToRootTransformationFuture(unitConfig), dataFuture);
+                dataFuture = Registries.getUnitRegistry().getDataFuture();
+                return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getUnitRegistry().getUnitToRootTransformationFuture(unitConfig), dataFuture);
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
                 throw new FatalImplementationErrorException("getLocationRegistry should not throw InterruptedExceptions anymore!", Units.class, ex);
@@ -1535,8 +1535,8 @@ public class Units {
         final Future<LocationRegistryDataType.LocationRegistryData> dataFuture;
         try {
             try {
-                dataFuture = Registries.getLocationRegistry().getDataFuture();
-                return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getLocationRegistry().getRootToUnitTransformationFuture(unitConfig), dataFuture);
+                dataFuture = Registries.getUnitRegistry().getDataFuture();
+                return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getUnitRegistry().getRootToUnitTransformationFuture(unitConfig), dataFuture);
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
                 throw new FatalImplementationErrorException("getLocationRegistry should not throw InterruptedExceptions anymore!", Units.class, ex);
@@ -1560,8 +1560,8 @@ public class Units {
     public static Future<Transform> getUnitTransformation(final UnitConfig unitConfigA, final UnitConfig unitConfigB) throws InterruptedException {
         final Future<LocationRegistryDataType.LocationRegistryData> dataFuture;
         try {
-            dataFuture = Registries.getLocationRegistry().getDataFuture();
-            return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getLocationRegistry().getUnitTransformationFuture(unitConfigA, unitConfigB), dataFuture);
+            dataFuture = Registries.getUnitRegistry().getDataFuture();
+            return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getUnitRegistry().getUnitTransformationFuture(unitConfigA, unitConfigB), dataFuture);
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
         }
@@ -1579,8 +1579,8 @@ public class Units {
         final Future<LocationRegistryDataType.LocationRegistryData> dataFuture;
         try {
             try {
-                dataFuture = Registries.getLocationRegistry().getDataFuture();
-                return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getLocationRegistry().getUnitTransformationFuture(unitConfigA, unitConfigB), dataFuture);
+                dataFuture = Registries.getUnitRegistry().getDataFuture();
+                return GlobalCachedExecutorService.allOfInclusiveResultFuture(Registries.getUnitRegistry().getUnitTransformationFuture(unitConfigA, unitConfigB), dataFuture);
             } catch (InterruptedException ex) {
                 Thread.currentThread().interrupt();
                 throw new FatalImplementationErrorException("getLocationRegistry should not throw InterruptedExceptions anymore!", Units.class, ex);

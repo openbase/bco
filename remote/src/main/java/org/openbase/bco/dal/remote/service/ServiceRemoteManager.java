@@ -93,7 +93,7 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
     }
 
     public synchronized void applyConfigUpdate(final List<String> unitIDList) throws CouldNotPerformException, InterruptedException {
-        Registries.getUnitRegistry().waitForData();
+        Registries.waitForData();
         synchronized (serviceRemoteMapLock) {
             // shutdown all existing instances.
             for (final AbstractServiceRemote serviceRemote : serviceRemoteMap.values()) {

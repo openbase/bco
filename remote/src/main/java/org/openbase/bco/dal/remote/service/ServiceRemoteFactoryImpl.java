@@ -64,7 +64,7 @@ public class ServiceRemoteFactoryImpl implements ServiceRemoteFactory {
     
     @Override
     public AbstractServiceRemote newInitializedInstanceByIds(final ServiceType serviceType, final Collection<String> unitIDs) throws CouldNotPerformException, InterruptedException {
-        Registries.getUnitRegistry().waitForData();
+        Registries.waitForData();
         final Collection<UnitConfig> unitRemotes = new ArrayList<>();
         for(String unitId : unitIDs) {
             unitRemotes.add(Registries.getUnitRegistry().getUnitConfigById(unitId));
@@ -74,7 +74,7 @@ public class ServiceRemoteFactoryImpl implements ServiceRemoteFactory {
 
     @Override
     public AbstractServiceRemote newInitializedInstanceById(final ServiceType serviceType, final String unitID) throws CouldNotPerformException, InterruptedException {
-        Registries.getUnitRegistry().waitForData();
+        Registries.waitForData();
         return newInitializedInstance(serviceType, Registries.getUnitRegistry().getUnitConfigById(unitID));
     }
 

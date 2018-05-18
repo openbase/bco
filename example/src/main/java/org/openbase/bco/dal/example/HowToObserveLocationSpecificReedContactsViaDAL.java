@@ -53,10 +53,10 @@ public class HowToObserveLocationSpecificReedContactsViaDAL {
             Registries.waitForData();
 
             // choose your location where the reed contacts are placed in.
-            final String locationId = Registries.getLocationRegistry().getRootLocationConfig().getId();
+            final String locationId = Registries.getUnitRegistry().getRootLocationConfig().getId();
 
             LOGGER.info("register observer on all reed contacts...");
-            for (UnitConfig reedContactUnitConfig : Registries.getLocationRegistry().getUnitConfigsByLocation(UnitType.REED_CONTACT, locationId)) {
+            for (UnitConfig reedContactUnitConfig : Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.REED_CONTACT, locationId)) {
                 Units.getUnit(reedContactUnitConfig, false, Units.REED_CONTACT).addDataObserver((source, data) -> {
                     LOGGER.info(source + " changed to " + data.getContactState().getValue().name());
                 });
