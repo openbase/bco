@@ -26,7 +26,6 @@ import org.openbase.bco.registry.clazz.lib.ClassRegistry;
 import org.openbase.bco.registry.clazz.lib.jp.JPClassRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
-import org.openbase.bco.registry.lib.provider.DeviceClassCollectionProvider;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
@@ -50,7 +49,7 @@ import java.util.concurrent.Future;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryData> implements ClassRegistry, RegistryRemote<ClassRegistryData>, DataProvider<ClassRegistryData>, DeviceClassCollectionProvider {
+public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryData> implements ClassRegistry, RegistryRemote<ClassRegistryData>, DataProvider<ClassRegistryData> {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ClassRegistryData.getDefaultInstance()));
@@ -95,18 +94,39 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
         registerRemoteRegistry(deviceClassRemoteRegistry);
     }
 
+    /**
+     * Get the internally used agent class remote registry.
+     *
+     * @return the internally used agent class remote registry
+     */
     public SynchronizedRemoteRegistry<String, AgentClass, AgentClass.Builder> getAgentClassRemoteRegistry() {
         return agentClassRemoteRegistry;
     }
 
+    /**
+     * Get the internally used app class remote registry.
+     *
+     * @return the internally used app class remote registry
+     */
     public SynchronizedRemoteRegistry<String, AppClass, AppClass.Builder> getAppClassRemoteRegistry() {
         return appClassRemoteRegistry;
     }
 
+    /**
+     * Get the internally used device class remote registry.
+     *
+     * @return the internally used device class remote registry
+     */
     public SynchronizedRemoteRegistry<String, DeviceClass, DeviceClass.Builder> getDeviceClassRemoteRegistry() {
         return deviceClassRemoteRegistry;
     }
 
+    /**
+     *  {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Boolean isConsistent() throws CouldNotPerformException {
         return isDeviceClassRegistryConsistent()
@@ -156,9 +176,9 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
     /**
      * {@inheritDoc}
      *
-     * @param deviceClassId
-     * @return
-     * @throws CouldNotPerformException
+     * @param deviceClassId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean containsDeviceClassById(String deviceClassId) throws CouldNotPerformException {
@@ -239,102 +259,235 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
         }
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param agentClass {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Future<AgentClass> registerAgentClass(AgentClass agentClass) throws CouldNotPerformException {
         return RPCHelper.callRemoteMethod(agentClass, this, AgentClass.class);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param agentClass {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Boolean containsAgentClass(AgentClass agentClass) throws CouldNotPerformException {
         validateData();
         return agentClassRemoteRegistry.contains(agentClass);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param agentClassId {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Boolean containsAgentClassById(String agentClassId) throws CouldNotPerformException {
         validateData();
         return agentClassRemoteRegistry.contains(agentClassId);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param agentClass {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Future<AgentClass> updateAgentClass(AgentClass agentClass) throws CouldNotPerformException {
         return RPCHelper.callRemoteMethod(agentClass, this, AgentClass.class);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param agentClass {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Future<AgentClass> removeAgentClass(AgentClass agentClass) throws CouldNotPerformException {
         return RPCHelper.callRemoteMethod(agentClass, this, AgentClass.class);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public List<AgentClass> getAgentClasses() throws CouldNotPerformException {
         validateData();
         return agentClassRemoteRegistry.getMessages();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Boolean isAgentClassRegistryReadOnly() throws CouldNotPerformException {
         validateData();
         return getData().getAgentClassRegistryReadOnly();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param agentClassId {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public AgentClass getAgentClassById(String agentClassId) throws CouldNotPerformException {
         validateData();
         return agentClassRemoteRegistry.getMessage(agentClassId);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Boolean isAgentClassRegistryConsistent() throws CouldNotPerformException {
         validateData();
         return getData().getAgentClassRegistryConsistent();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param appClass {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Future<AppClass> registerAppClass(AppClass appClass) throws CouldNotPerformException {
         return RPCHelper.callRemoteMethod(appClass, this, AppClass.class);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param appClass {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     * @throws InterruptedException {@inheritDoc}
+     */
     @Override
     public Boolean containsAppClass(AppClass appClass) throws CouldNotPerformException, InterruptedException {
         validateData();
         return appClassRemoteRegistry.contains(appClass);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param appClassId {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
-    public Boolean containsAppClassById(String appClassId) throws CouldNotPerformException, InterruptedException {
+    public Boolean containsAppClassById(String appClassId) throws CouldNotPerformException {
         validateData();
         return appClassRemoteRegistry.contains(appClassId);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param appClass {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Future<AppClass> updateAppClass(AppClass appClass) throws CouldNotPerformException {
         return RPCHelper.callRemoteMethod(appClass, this, AppClass.class);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param appClass {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Future<AppClass> removeAppClass(AppClass appClass) throws CouldNotPerformException {
         return RPCHelper.callRemoteMethod(appClass, this, AppClass.class);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param appClassId {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
-    public AppClass getAppClassById(String appClassId) throws CouldNotPerformException, InterruptedException {
+    public AppClass getAppClassById(String appClassId) throws CouldNotPerformException {
         validateData();
         return appClassRemoteRegistry.getMessage(appClassId);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
-    public List<AppClass> getAppClasses() throws CouldNotPerformException, InterruptedException {
+    public List<AppClass> getAppClasses() throws CouldNotPerformException {
         validateData();
         return appClassRemoteRegistry.getMessages();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
-    public Boolean isAppClassRegistryReadOnly() throws CouldNotPerformException, InterruptedException {
+    public Boolean isAppClassRegistryReadOnly() throws CouldNotPerformException {
         validateData();
         return getData().getAppClassRegistryReadOnly();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Boolean isAppClassRegistryConsistent() throws CouldNotPerformException {
         validateData();

@@ -10,7 +10,6 @@ import org.openbase.bco.registry.clazz.lib.jp.JPClassRegistryScope;
 import org.openbase.bco.registry.clazz.lib.jp.JPDeviceClassDatabaseDirectory;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
 import org.openbase.bco.registry.lib.generator.UUIDGenerator;
-import org.openbase.bco.registry.lib.provider.DeviceClassCollectionProvider;
 import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -57,7 +56,7 @@ import java.util.concurrent.Future;
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class ClassRegistryController extends AbstractRegistryController<ClassRegistryData, ClassRegistryData.Builder> implements ClassRegistry, DataProvider<ClassRegistryData>, DeviceClassCollectionProvider, Shutdownable {
+public class ClassRegistryController extends AbstractRegistryController<ClassRegistryData, ClassRegistryData.Builder> implements ClassRegistry, DataProvider<ClassRegistryData>, Shutdownable {
 
     static {
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ClassRegistryData.getDefaultInstance()));
@@ -158,14 +157,29 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
         RPCHelper.registerInterface(ClassRegistry.class, this, server);
     }
 
+    /**
+     * Get the internally used agent class registry;
+     *
+     * @return the internally used agent class registry;
+     */
     public ProtoBufFileSynchronizedRegistry<String, AgentClass, AgentClass.Builder, ClassRegistryData.Builder> getAgentClassRegistry() {
         return agentClassRegistry;
     }
 
+    /**
+     * Get the internally used app class registry;
+     *
+     * @return the internally used app class registry;
+     */
     public ProtoBufFileSynchronizedRegistry<String, AppClass, AppClass.Builder, ClassRegistryData.Builder> getAppClassRegistry() {
         return appClassRegistry;
     }
 
+    /**
+     * Get the internally used device class registry;
+     *
+     * @return the internally used device class registry;
+     */
     public ProtoBufFileSynchronizedRegistry<String, DeviceClass, DeviceClass.Builder, ClassRegistryData.Builder> getDeviceClassRegistry() {
         return deviceClassRegistry;
     }
@@ -197,9 +211,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
     /**
      * {@inheritDoc}
      *
-     * @param deviceClassId
-     * @return
-     * @throws CouldNotPerformException
+     * @param deviceClassId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean containsDeviceClassById(String deviceClassId) throws CouldNotPerformException {
@@ -209,9 +223,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
     /**
      * {@inheritDoc}
      *
-     * @param deviceClass
-     * @return
-     * @throws CouldNotPerformException
+     * @param deviceClass {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean containsDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
@@ -221,9 +235,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
     /**
      * {@inheritDoc}
      *
-     * @param deviceClass
-     * @return
-     * @throws CouldNotPerformException
+     * @param deviceClass {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<DeviceClass> updateDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
@@ -233,9 +247,9 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
     /**
      * {@inheritDoc}
      *
-     * @param deviceClass
-     * @return
-     * @throws CouldNotPerformException
+     * @param deviceClass {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<DeviceClass> removeDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
@@ -245,8 +259,8 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
     /**
      * {@inheritDoc}
      *
-     * @return
-     * @throws CouldNotPerformException
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public List<DeviceClass> getDeviceClasses() throws CouldNotPerformException {
@@ -256,8 +270,8 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
     /**
      * {@inheritDoc}
      *
-     * @return
-     * @throws CouldNotPerformException
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean isDeviceClassRegistryReadOnly() throws CouldNotPerformException {
@@ -267,99 +281,219 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
     /**
      * {@inheritDoc}
      *
-     * @return
-     * @throws CouldNotPerformException
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Boolean isDeviceClassRegistryConsistent() throws CouldNotPerformException {
         return deviceClassRegistry.isConsistent();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param agentClass {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Future<AgentClass> registerAgentClass(AgentClass agentClass) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> agentClassRegistry.register(agentClass));
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param agentClass {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Boolean containsAgentClass(AgentClass agentClass) throws CouldNotPerformException {
         return agentClassRegistry.contains(agentClass);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param agentClassId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Boolean containsAgentClassById(String agentClassId) throws CouldNotPerformException {
         return agentClassRegistry.contains(agentClassId);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param agentClass {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Future<AgentClass> updateAgentClass(AgentClass agentClass) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> agentClassRegistry.update(agentClass));
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param agentClass {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Future<AgentClass> removeAgentClass(AgentClass agentClass) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> agentClassRegistry.remove(agentClass));
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public List<AgentClass> getAgentClasses() throws CouldNotPerformException {
         return agentClassRegistry.getMessages();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Boolean isAgentClassRegistryReadOnly() throws CouldNotPerformException {
         return agentClassRegistry.isReadOnly();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param agentClassId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public AgentClass getAgentClassById(String agentClassId) throws CouldNotPerformException {
         return agentClassRegistry.getMessage(agentClassId);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Boolean isAgentClassRegistryConsistent() throws CouldNotPerformException {
         return agentClassRegistry.isConsistent();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param appClass {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Future<AppClass> registerAppClass(AppClass appClass) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> appClassRegistry.register(appClass));
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param appClass {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
-    public Boolean containsAppClass(AppClass appClass) throws CouldNotPerformException, InterruptedException {
+    public Boolean containsAppClass(AppClass appClass) throws CouldNotPerformException {
         return appClassRegistry.contains(appClass);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param appClassId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
-    public Boolean containsAppClassById(String appClassId) throws CouldNotPerformException, InterruptedException {
+    public Boolean containsAppClassById(String appClassId) throws CouldNotPerformException {
         return appClassRegistry.contains(appClassId);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param appClass {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Future<AppClass> updateAppClass(AppClass appClass) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> appClassRegistry.update(appClass));
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param appClass {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Future<AppClass> removeAppClass(AppClass appClass) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> appClassRegistry.remove(appClass));
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param appClassId {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
-    public AppClass getAppClassById(String appClassId) throws CouldNotPerformException, InterruptedException {
+    public AppClass getAppClassById(String appClassId) throws CouldNotPerformException {
         return appClassRegistry.getMessage(appClassId);
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
-    public List<AppClass> getAppClasses() throws CouldNotPerformException, InterruptedException {
+    public List<AppClass> getAppClasses() throws CouldNotPerformException {
         return appClassRegistry.getMessages();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
-    public Boolean isAppClassRegistryReadOnly() throws CouldNotPerformException, InterruptedException {
+    public Boolean isAppClassRegistryReadOnly() throws CouldNotPerformException {
         return appClassRegistry.isReadOnly();
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
     @Override
     public Boolean isAppClassRegistryConsistent() throws CouldNotPerformException {
         return appClassRegistry.isConsistent();

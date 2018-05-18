@@ -22,7 +22,7 @@ package org.openbase.bco.registry.unit.lib.generator;
  * #L%
  */
 
-import org.openbase.bco.registry.lib.provider.DeviceClassCollectionProvider;
+import org.openbase.bco.registry.lib.provider.clazz.DeviceClassCollectionProvider;
 import org.openbase.bco.registry.lib.provider.UnitConfigCollectionProvider;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
