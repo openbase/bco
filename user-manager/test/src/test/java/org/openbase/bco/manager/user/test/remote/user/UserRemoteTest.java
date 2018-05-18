@@ -34,7 +34,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
-import rst.domotic.state.UserActivityStateType.UserActivityState;
+import rst.domotic.state.ActivityStateType.ActivityState;
 import rst.domotic.state.UserPresenceStateType.UserPresenceState;
 
 /**
@@ -90,15 +90,15 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
 
         //TODO: this has to be changed to use real ids
         String activityId = "cooking";
-        UserActivityState activity = UserActivityState.newBuilder().setActivityId(activityId).build();
+        ActivityState activity = ActivityState.newBuilder().setActivityId(activityId).build();
         UserPresenceState presenceState = UserPresenceState.newBuilder().setValue(UserPresenceState.State.AT_HOME).build();
 
-        userRemote.setUserActivityState(activity).get();
+        userRemote.setActivityState(activity).get();
         userRemote.setUserPresenceState(presenceState).get();
 
         userRemote.requestData().get();
 
-        assertEquals("UserActivityState has not been set!", activityId, userRemote.getUserActivityState().getActivityId());
+        assertEquals("ActivityState has not been set!", activityId, userRemote.getActivityState().getActivityId());
         assertEquals("UserPresenceState has not been set!", presenceState.getValue(), userRemote.getUserPresenceState().getValue());
     }
 }

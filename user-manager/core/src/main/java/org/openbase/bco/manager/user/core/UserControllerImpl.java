@@ -45,7 +45,7 @@ import org.slf4j.LoggerFactory;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionFutureType.ActionFuture;
-import rst.domotic.state.UserActivityStateType.UserActivityState;
+import rst.domotic.state.ActivityStateType.ActivityState;
 import rst.domotic.state.UserPresenceStateType.UserPresenceState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.user.UserDataType.UserData;
@@ -169,9 +169,9 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     }
     
     @Override
-    public UserActivityState getUserActivityState() throws NotAvailableException {
+    public ActivityState getActivityState() throws NotAvailableException {
         try {
-            return getData().getUserActivityState();
+            return getData().getActivityState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("user activity", ex);
         }
@@ -187,11 +187,11 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     }
     
     @Override
-    public Future<ActionFuture> setUserActivityState(UserActivityState UserActivityState) throws CouldNotPerformException {
+    public Future<ActionFuture> setActivityState(ActivityState ActivityState) throws CouldNotPerformException {
         try (ClosableDataBuilder<UserData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setUserActivityState(UserActivityState);
+            dataBuilder.getInternalBuilder().setActivityState(ActivityState);
         } catch (CouldNotPerformException | NullPointerException ex) {
-            throw new CouldNotPerformException("Could not set user activity to [" + UserActivityState + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not set user activity to [" + ActivityState + "] for " + this + "!", ex);
         }
         return CompletableFuture.completedFuture(null);
     }
