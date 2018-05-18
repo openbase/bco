@@ -10,12 +10,12 @@ package org.openbase.bco.registry.unit.remote;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -60,6 +60,12 @@ public class CachedUnitRegistryRemote {
         });
     }
 
+    /**
+     * Reinitialize the internal registry remote and request data to be synchronized again.
+     *
+     * @throws InterruptedException     is thrown in case the thread was externally interrupted.
+     * @throws CouldNotPerformException is thrown if the reinitialization could not be performed.
+     */
     public synchronized static void reinitialize() throws InterruptedException, CouldNotPerformException {
         try {
             getRegistry().reinit(REMOTE_LOCK);
@@ -69,15 +75,13 @@ public class CachedUnitRegistryRemote {
         }
     }
 
-    // todo release: remove InterruptedException for all getRegistry() methods.
-
     /**
-     * @return
+     * Get a cached UnitRegistryRemote.
      *
-     * @throws InterruptedException
-     * @throws NotAvailableException
+     * @return a cached UnitRegistryRemote
+     * @throws NotAvailableException if the initial startup of the UnitRegistryRemote fails
      */
-    public synchronized static UnitRegistryRemote getRegistry() throws InterruptedException, NotAvailableException {
+    public synchronized static UnitRegistryRemote getRegistry() throws NotAvailableException {
         try {
             if (shutdown) {
                 throw new InvalidStateException("Remote service is shutting down!");
@@ -104,10 +108,22 @@ public class CachedUnitRegistryRemote {
         }
     }
 
+    /**
+     * Wait for data on the internal registry remote.
+     *
+     * @throws InterruptedException     is thrown in case the thread was externally interrupted.
+     * @throws CouldNotPerformException is thrown if the wait could not be performed.
+     */
     public static void waitForData() throws InterruptedException, CouldNotPerformException {
         getRegistry().waitForData();
     }
 
+    /**
+     * Wait for data on the internal registry remote and define a timeout.
+     *
+     * @throws InterruptedException     is thrown in case the thread was externally interrupted.
+     * @throws CouldNotPerformException is thrown if the wait could not be performed.
+     */
     public static void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
         getRegistry().waitForData(timeout, timeUnit);
     }
@@ -125,11 +141,11 @@ public class CachedUnitRegistryRemote {
     }
 
     /**
-     * Method shutdown the cached registry instances.
-     * <p>
+     * Shutdown the cached registry instances.
+     * <p> <b>
      * Please use method with care!
      * Make sure no other instances are using the cached remote instances before shutdown.
-     * <p>
+     * </b> </p>
      * Note: This method takes only effect in unit tests, otherwise this call is ignored. During normal operation there is not need for a manual registry shutdown because each registry takes care of its shutdown.
      */
     public static void shutdown() {

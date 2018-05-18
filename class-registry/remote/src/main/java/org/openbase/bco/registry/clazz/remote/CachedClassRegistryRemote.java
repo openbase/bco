@@ -21,10 +21,7 @@ package org.openbase.bco.registry.clazz.remote;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.CancellationException;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
+
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
@@ -34,6 +31,11 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import java.util.concurrent.CancellationException;
+import java.util.concurrent.ExecutionException;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
 
 /**
  *
@@ -59,6 +61,12 @@ public class CachedClassRegistryRemote {
         });
     }
 
+    /**
+     * Reinitialize the internal registry remote and request data to be synchronized again.
+     *
+     * @throws InterruptedException     is thrown in case the thread was externally interrupted.
+     * @throws CouldNotPerformException is thrown if the reinitialization could not be performed.
+     */
     public synchronized static void reinitialize() throws InterruptedException, CouldNotPerformException {
         try {
             getRegistry().reinit(REMOTE_LOCK);
@@ -69,9 +77,10 @@ public class CachedClassRegistryRemote {
     }
 
     /**
+     * Get a cached ClassRegistryRemote.
      *
-     * @return
-     * @throws NotAvailableException
+     * @return a cached ClassRegistryRemote
+     * @throws NotAvailableException if the initial startup of the ClassRegistryRemote fails
      */
     public synchronized static ClassRegistryRemote getRegistry() throws NotAvailableException {
         try {
@@ -100,17 +109,29 @@ public class CachedClassRegistryRemote {
         }
     }
 
+    /**
+     * Wait for data on the internal registry remote.
+     *
+     * @throws InterruptedException     is thrown in case the thread was externally interrupted.
+     * @throws CouldNotPerformException is thrown if the wait could not be performed.
+     */
     public static void waitForData() throws InterruptedException, CouldNotPerformException {
         getRegistry().waitForData();
     }
 
+    /**
+     * Wait for data on the internal registry remote and define a timeout.
+     *
+     * @throws InterruptedException     is thrown in case the thread was externally interrupted.
+     * @throws CouldNotPerformException is thrown if the wait could not be performed.
+     */
     public static void waitForData(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
         getRegistry().waitForData(timeout, timeUnit);
     }
 
     /**
      * Method blocks until the registry is not handling any tasks and is currently consistent.
-     *
+     * <p>
      * Note: If you have just modified the registry this method can maybe return immediately if the task is not yet received by the registry controller. So you should prefer the futures of the modification methods for synchronization tasks.
      *
      * @throws InterruptedException is thrown in case the thread was externally interrupted.
@@ -121,11 +142,11 @@ public class CachedClassRegistryRemote {
     }
 
     /**
-     * Method shutdown the cached registry instances.
-     *
+     * Shutdown the cached registry instances.
+     * <p> <b>
      * Please use method with care!
      * Make sure no other instances are using the cached remote instances before shutdown.
-     *
+     * </b> </p>
      * Note: This method takes only effect in unit tests, otherwise this call is ignored. During normal operation there is not need for a manual registry shutdown because each registry takes care of its shutdown.
      */
     public static void shutdown() {
