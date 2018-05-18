@@ -258,7 +258,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
         validateData();
         List<UnitConfig> unitConfigs = new ArrayList<>();
         for (UnitConfig unitConfig : getUnitConfigs()) {
-            if (type == UnitType.UNKNOWN || unitConfig.getType() == type || getSubUnitTypes(type).contains(unitConfig.getType())) {
+            if (type == UnitType.UNKNOWN || unitConfig.getType() == type || CachedTemplateRegistryRemote.getRegistry().getSubUnitTypes(type).contains(unitConfig.getType())) {
                 unitConfigs.add(unitConfig);
             }
         }
@@ -333,20 +333,51 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
     Boolean isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException;
 
     /**
+     * Method returns all unit configs filtered by the given {@code unitType} and {@code serviceType}.
      *
-     * @param type
-     * @param serviceTypes
-     * @return
-     * @throws CouldNotPerformException
+     * @param unitType    the unit type to filter.
+     * @param serviceType the service type to filter.
+     *
+     * @return a list of unit types matching the given unit and service type.
+     *
+     * @throws CouldNotPerformException is thrown if the list could not be generated.
      */
-    default List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType type, final List<ServiceType> serviceTypes) throws CouldNotPerformException {
-        List<UnitConfig> unitConfigs = getUnitConfigs(type);
+    default List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType unitType, final ServiceType serviceType) throws CouldNotPerformException {
+        final List<UnitConfig> unitConfigs = getUnitConfigs(unitType);
         boolean foundServiceType;
 
-        for (UnitConfig unitConfig : new ArrayList<>(unitConfigs)) {
+        for (final UnitConfig unitConfig : new ArrayList<>(unitConfigs)) {
+            foundServiceType = false;
+            for (final ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                if (serviceConfig.getServiceDescription().getType() == serviceType) {
+                    foundServiceType = true;
+                }
+            }
+            if (!foundServiceType) {
+                unitConfigs.remove(unitConfig);
+            }
+        }
+        return unitConfigs;
+    }
+
+    /**
+     * Method returns all unit configs filtered by the given {@code unitType} and {@code serviceTypes}.
+     *
+     * @param unitType     the unit type to filter.
+     * @param serviceTypes a list of service types to filter.
+     *
+     * @return a list of unit types matching the given unit and service type.
+     *
+     * @throws CouldNotPerformException is thrown if the list could not be generated.
+     */
+    default List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType unitType, final List<ServiceType> serviceTypes) throws CouldNotPerformException {
+        final List<UnitConfig> unitConfigs = getUnitConfigs(unitType);
+        boolean foundServiceType;
+
+        for (final UnitConfig unitConfig : new ArrayList<>(unitConfigs)) {
             foundServiceType = false;
             for (ServiceType serviceType : serviceTypes) {
-                for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                for (final ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                     if (serviceConfig.getServiceDescription().getType() == serviceType) {
                         foundServiceType = true;
                     }
@@ -360,31 +391,31 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
     }
 
     /**
+     * Method returns a list of all unit group configs where the given unit config is a member of the group.
      *
-     * @param unitConfig
-     * @return
-     * @throws CouldNotPerformException
+     * @param unitConfig the unit config used to identify the member unit.
+     *
+     * @return a list of unit group configs.
+     *
+     * @throws CouldNotPerformException is thrown if the list could not be generated.
      */
     default List<UnitConfig> getUnitGroupUnitConfigsByUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
-        List<UnitConfig> unitConfigList = new ArrayList<>();
-        for (UnitConfig unitGroupUnitConfig : getUnitConfigs(UnitType.UNIT_GROUP)) {
-            if (unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList().contains(unitConfig.getId())) {
-                unitConfigList.add(unitGroupUnitConfig);
-            }
-        }
-        return unitConfigList;
+        return getUnitGroupUnitConfigsByUnitConfig(unitConfig.getId());
     }
 
     /**
+     * Method returns a list of all unit group configs where the given unit is a member of the group.
      *
-     * @param type
-     * @return
-     * @throws CouldNotPerformException
+     * @param unitId the unit id defining the member unit.
+     *
+     * @return a list of unit group configs.
+     *
+     * @throws CouldNotPerformException is thrown if the list could not be generated.
      */
-    default List<UnitConfig> getUnitGroupUnitConfigsByUnitType(final UnitType type) throws CouldNotPerformException {
+    default List<UnitConfig> getUnitGroupUnitConfigsByUnitConfig(final String unitId) throws CouldNotPerformException {
         List<UnitConfig> unitConfigList = new ArrayList<>();
         for (UnitConfig unitGroupUnitConfig : getUnitConfigs(UnitType.UNIT_GROUP)) {
-            if (unitGroupUnitConfig.getType() == type || CachedTemplateRegistryRemote.getRegistry().getSubUnitTypes(type).contains(unitGroupUnitConfig.getType())) {
+            if (unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList().contains(unitId)) {
                 unitConfigList.add(unitGroupUnitConfig);
             }
         }
@@ -392,10 +423,54 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
     }
 
     /**
+     * Method returns a list of all unit group configs which are providing at least one member of the given {@code unitType}.
      *
-     * @param serviceTypes
-     * @return
-     * @throws CouldNotPerformException
+     * @param unitType the unit type to filter the groups.
+     *
+     * @return a list of unit group configs.
+     *
+     * @throws CouldNotPerformException is thrown if the list could not be generated.
+     */
+    default List<UnitConfig> getUnitGroupUnitConfigsByUnitType(final UnitType unitType) throws CouldNotPerformException {
+        List<UnitConfig> unitConfigList = new ArrayList<>();
+        for (UnitConfig unitGroupUnitConfig : getUnitConfigs(UnitType.UNIT_GROUP)) {
+            if (unitGroupUnitConfig.getType() == unitType || CachedTemplateRegistryRemote.getRegistry().getSubUnitTypes(unitType).contains(unitGroupUnitConfig.getType())) {
+                unitConfigList.add(unitGroupUnitConfig);
+            }
+        }
+        return unitConfigList;
+    }
+
+    /**
+     * Method returns all unit configs filtered by the given {@code serviceType}.
+     *
+     * @param serviceType the service types to filter.
+     *
+     * @return a list of unit types matching the given service types.
+     *
+     * @throws CouldNotPerformException is thrown if the list could not be generated.
+     */
+    default List<UnitConfig> getUnitGroupUnitConfigsByServiceTypes(final ServiceType serviceType) throws CouldNotPerformException {
+        final List<UnitConfig> unitGroups = new ArrayList<>();
+        for (final UnitConfig unitGroupUnitConfig : getUnitConfigs(UnitType.UNIT_GROUP)) {
+            for (final ServiceDescription serviceDescription : unitGroupUnitConfig.getUnitGroupConfig().getServiceDescriptionList()) {
+                if (serviceType == serviceDescription.getType()) {
+                    unitGroups.add(unitGroupUnitConfig);
+                    break;
+                }
+            }
+        }
+        return unitGroups;
+    }
+
+    /**
+     * Method returns all unit configs filtered by the given {@code serviceTypes}.
+     *
+     * @param serviceTypes a list of service types to filter.
+     *
+     * @return a list of unit types matching the given service types.
+     *
+     * @throws CouldNotPerformException is thrown if the list could not be generated.
      */
     default List<UnitConfig> getUnitGroupUnitConfigsByServiceTypes(final List<ServiceType> serviceTypes) throws CouldNotPerformException {
         List<UnitConfig> unitGroups = new ArrayList<>();
@@ -415,14 +490,17 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
     }
 
     /**
+     * Method collects all member unit configs of the given unit group and returns those as list.
      *
-     * @param unitGroupUnitConfig
-     * @return
-     * @throws CouldNotPerformException
+     * @param unitGroupUnitConfig the unit group of the members.
+     *
+     * @return a list of unit configs.
+     *
+     * @throws CouldNotPerformException is thrown if the list could not be generated.
      */
     default List<UnitConfig> getUnitConfigsByUnitGroupConfig(final UnitConfig unitGroupUnitConfig) throws CouldNotPerformException {
         verifyUnitGroupUnitConfig(unitGroupUnitConfig);
-        List<UnitConfig> unitConfigs = new ArrayList<>();
+        final List<UnitConfig> unitConfigs = new ArrayList<>();
         for (String unitId : unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList()) {
             unitConfigs.add(getUnitConfigById(unitId));
         }
@@ -434,7 +512,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * NotAvailableException is thrown if no unit config is registered for the
      * given scope.
      *
-     * @param scope
+     * @param scope the scope of the unit used as identifier.
      *
      * @return the unit config matching the given scope.
      *
@@ -888,7 +966,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
         for (String unitConfigId : getUnitConfigById(locationConfigId).getLocationConfig().getUnitIdList()) {
             try {
                 unitConfig = getUnitConfigById(unitConfigId);
-                if (unitConfig.getType().equals(type) || unitRegistry.getSubUnitTypesOfUnitType(type).contains(unitConfig.getType())) {
+                if (unitConfig.getType().equals(type) || CachedTemplateRegistryRemote.getRegistry().getSubUnitTypes(type).contains(unitConfig.getType())) {
                     unitConfigList.add(unitConfig);
                 }
             } catch (CouldNotPerformException ex) {
@@ -1064,11 +1142,11 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
         for (String unitConfigId : getUnitConfigById(connectionConfigId).getConnectionConfig().getUnitIdList()) {
             try {
                 unitConfig = getUnitConfigById(unitConfigId);
-                if (unitConfig.getType().equals(type) || unitRegistry.getSubUnitTypesOfUnitType(type).contains(unitConfig.getType())) {
+                if (unitConfig.getType().equals(type) || CachedTemplateRegistryRemote.getRegistry().getSubUnitTypes(type).contains(unitConfig.getType())) {
                     unitConfigList.add(unitConfig);
                 }
             } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not resolve UnitConfigId[" + unitConfigId + "] by device registry!", ex), logger);
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not resolve UnitConfigId[" + unitConfigId + "] by device registry!", ex), LoggerFactory.getLogger(this.getClass()));
             }
         }
         return unitConfigList;
@@ -1099,7 +1177,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
                     }
                 }
             } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not resolve UnitConfigId[" + unitConfigId + "] by device registry!", ex), logger);
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not resolve UnitConfigId[" + unitConfigId + "] by device registry!", ex), LoggerFactory.getLogger(this.getClass()));
             }
         }
         return unitConfigList;

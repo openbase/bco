@@ -21,15 +21,13 @@ package org.openbase.bco.registry.unit.core.consistency.appconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.*;
-import rst.domotic.unit.app.AppClassType.AppClass;
-import rst.domotic.unit.app.AppClassType.AppClass.Builder;
 import rst.domotic.unit.app.AppConfigType.AppConfig;
-import rst.domotic.registry.AppRegistryDataType.AppRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
@@ -37,12 +35,6 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class AppConfigAppClassIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
-
-    private final Registry<String, IdentifiableMessage<String, AppClass, Builder>> appClassRegistry;
-
-    public AppConfigAppClassIdConsistencyHandler(final Registry<String, IdentifiableMessage<String, AppClass, Builder>> appClassRegistry) {
-        this.appClassRegistry = appClassRegistry;
-    }
 
     @Override
     public void processData(final String id, final IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, final ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, final ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
@@ -53,6 +45,6 @@ public class AppConfigAppClassIdConsistencyHandler extends AbstractProtoBufRegis
         }
 
         // get throws a CouldNotPerformException if the agent class with the id does not exists
-        appClassRegistry.get(appConfig.getAppClassId());
+        CachedClassRegistryRemote.getRegistry().getAppClassById(appConfig.getAppClassId());
     }
 }

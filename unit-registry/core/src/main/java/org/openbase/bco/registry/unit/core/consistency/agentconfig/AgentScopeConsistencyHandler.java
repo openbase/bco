@@ -23,6 +23,8 @@ package org.openbase.bco.registry.unit.core.consistency.agentconfig;
  */
 import java.util.Map;
 import java.util.TreeMap;
+
+import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -46,13 +48,10 @@ import rst.rsb.ScopeType.Scope;
 public class AgentScopeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry;
-    private final Registry<String, IdentifiableMessage<String, AgentClass, AgentClass.Builder>> agentClassRegistry;
     private final Map<String, UnitConfig> agentMap;
 
-    public AgentScopeConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry,
-                                        final Registry<String, IdentifiableMessage<String, AgentClass, AgentClass.Builder>> agentClassRegistry) {
+    public AgentScopeConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry) {
         this.locationRegistry = locationRegistry;
-        this.agentClassRegistry = agentClassRegistry;
         this.agentMap = new TreeMap<>();
     }
 
@@ -71,8 +70,8 @@ public class AgentScopeConsistencyHandler extends AbstractProtoBufRegistryConsis
         if (!agentUnitConfig.getAgentConfig().hasAgentClassId() || agentUnitConfig.getAgentConfig().getAgentClassId().isEmpty()) {
             throw new NotAvailableException("agent.agentClassId");
         }
-
-        Scope newScope = ScopeGenerator.generateAgentScope(agentUnitConfig, agentClassRegistry.get(agentUnitConfig.getAgentConfig().getAgentClassId()).getMessage(), locationRegistry.getMessage(agentUnitConfig.getPlacementConfig().getLocationId()));
+        final AgentClass agentClassById = CachedClassRegistryRemote.getRegistry().getAgentClassById(agentUnitConfig.getAgentConfig().getAgentClassId());
+        final Scope newScope = ScopeGenerator.generateAgentScope(agentUnitConfig, agentClassById, locationRegistry.getMessage(agentUnitConfig.getPlacementConfig().getLocationId()));
 
         // verify and update scope
         if (!ScopeGenerator.generateStringRep(agentUnitConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {

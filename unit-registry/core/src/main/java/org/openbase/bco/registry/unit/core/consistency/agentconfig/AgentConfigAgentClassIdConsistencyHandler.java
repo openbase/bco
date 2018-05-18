@@ -21,15 +21,13 @@ package org.openbase.bco.registry.unit.core.consistency.agentconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.*;
-import rst.domotic.unit.agent.AgentClassType.AgentClass;
-import rst.domotic.unit.agent.AgentClassType.AgentClass.Builder;
 import rst.domotic.unit.agent.AgentConfigType.AgentConfig;
-import rst.domotic.registry.AgentRegistryDataType.AgentRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
@@ -37,12 +35,6 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class AgentConfigAgentClassIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
-
-    private final Registry<String, IdentifiableMessage<String, AgentClass, Builder>> agentClassRegistry;
-
-    public AgentConfigAgentClassIdConsistencyHandler(final Registry<String, IdentifiableMessage<String, AgentClass, Builder>> agentClassRegistry) {
-        this.agentClassRegistry = agentClassRegistry;
-    }
 
     @Override
     public void processData(final String id, final IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, final ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, final ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
@@ -53,6 +45,6 @@ public class AgentConfigAgentClassIdConsistencyHandler extends AbstractProtoBufR
         }
 
         // get throws a CouldNotPerformException if the agent class with the id does not exists
-        agentClassRegistry.get(agentConfig.getAgentClassId());
+        CachedClassRegistryRemote.getRegistry().getAgentClassById(agentConfig.getAgentClassId());
     }
 }

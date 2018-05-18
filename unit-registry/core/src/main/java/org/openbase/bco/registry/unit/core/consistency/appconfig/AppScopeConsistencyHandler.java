@@ -23,6 +23,9 @@ package org.openbase.bco.registry.unit.core.consistency.appconfig;
  */
 import java.util.Map;
 import java.util.TreeMap;
+
+import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
+import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -46,13 +49,10 @@ import rst.rsb.ScopeType.Scope;
 public class AppScopeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry;
-    private final Registry<String, IdentifiableMessage<String, AppClass, AppClass.Builder>> appClassRegistry;
     private final Map<String, UnitConfig> appMap;
 
-    public AppScopeConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry,
-                                      final Registry<String, IdentifiableMessage<String, AppClass, AppClass.Builder>> appClassRegistry) {
+    public AppScopeConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry) {
         this.locationRegistry = locationRegistry;
-        this.appClassRegistry = appClassRegistry;
         this.appMap = new TreeMap<>();
     }
 
@@ -72,7 +72,8 @@ public class AppScopeConsistencyHandler extends AbstractProtoBufRegistryConsiste
             throw new NotAvailableException("app.appClassId");
         }
 
-        Scope newScope = ScopeGenerator.generateAppScope(appUnitConfig, appClassRegistry.get(appUnitConfig.getAppConfig().getAppClassId()).getMessage(), locationRegistry.getMessage(appUnitConfig.getPlacementConfig().getLocationId()));
+        final AppClass appClass = CachedClassRegistryRemote.getRegistry().getAppClassById(appUnitConfig.getAppConfig().getAppClassId());
+        final Scope newScope = ScopeGenerator.generateAppScope(appUnitConfig, appClass, locationRegistry.getMessage(appUnitConfig.getPlacementConfig().getLocationId()));
 
         // verify and update scope
         if (!ScopeGenerator.generateStringRep(appUnitConfig.getScope()).equals(ScopeGenerator.generateStringRep(newScope))) {
