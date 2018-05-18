@@ -21,15 +21,12 @@ package org.openbase.bco.registry.unit.test;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.TimeUnit;
-import java.util.concurrent.TimeoutException;
-import java.util.logging.Level;
+
 import org.junit.AfterClass;
 import org.junit.Assert;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.authentication.lib.future.AuthenticatedSynchronizationFuture;
-import org.openbase.bco.registry.lib.com.future.AbstractRegistrySynchronizationFuture;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
@@ -51,6 +48,10 @@ import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
+
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.TimeoutException;
+import java.util.logging.Level;
 
 /**
  *
@@ -121,7 +122,7 @@ public class TestWaitUntilReady {
         final String company = "ReadyCompany";
 
         DeviceClass deviceClass = MockRegistry.getDeviceClass(deviceClassLabel, productNumber, company, UnitType.POWER_SWITCH, UnitType.BUTTON, UnitType.HANDLE);
-        deviceClass = Registries.getDeviceRegistry().registerDeviceClass(deviceClass).get();
+        deviceClass = Registries.getClassRegistry().registerDeviceClass(deviceClass).get();
 
         Registries.getUnitRegistry().addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
             if (waitedUntilReady) {

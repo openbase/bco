@@ -22,16 +22,19 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 
-import java.util.List;
-import java.util.Random;
-import java.util.concurrent.ExecutionException;
-import static org.junit.Assert.assertFalse;
 import org.junit.Test;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import java.util.List;
+import java.util.Random;
+import java.util.concurrent.ExecutionException;
+
+import static org.junit.Assert.assertFalse;
 
 /**
  * In this test the MockRegistry is started and all its locations except the root are
@@ -56,9 +59,9 @@ public class LocationRemovalTest extends AbstractBCORegistryTest {
             Registries.waitForData();
             while (true) {
                 // get current locations, cannot be generated at the beginning because removing a tile can cause regions to be removed as well
-                List<UnitConfig> locationConfigList = Registries.getLocationRegistry().getLocationConfigs();
+                List<UnitConfig> locationConfigList = Registries.getUnitRegistry().getUnitConfigs(UnitType.LOCATION);
                 // remove root
-                locationConfigList.remove(Registries.getLocationRegistry().getRootLocationConfig());
+                locationConfigList.remove(Registries.getUnitRegistry().getRootLocationConfig());
 
                 // break if no more locations can be removed
                 if (locationConfigList.isEmpty()) {
@@ -70,10 +73,10 @@ public class LocationRemovalTest extends AbstractBCORegistryTest {
                 logger.info("Try to remove location[" + ScopeGenerator.generateStringRep(locationConfig.getScope()) + "].");
 
                 // remove location
-                Registries.getLocationRegistry().removeLocationConfig(locationConfig).get();
+                Registries.getUnitRegistry().removeUnitConfig(locationConfig).get();
 
                 // test if removal really worked
-                assertFalse("LocationRegistry still contains locationConfig[" + locationConfig.getLabel() + "] after removal", Registries.getLocationRegistry().containsLocationConfig(locationConfig));
+                assertFalse("LocationRegistry still contains locationConfig[" + locationConfig.getLabel() + "] after removal", Registries.getUnitRegistry().containsUnitConfig(locationConfig));
                 logger.info("Removed location[" + ScopeGenerator.generateStringRep(locationConfig.getScope()) + "] successfully. " + locationConfigList.size() + " location[s] remaining.");
             }
         } catch (InterruptedException | ExecutionException | CouldNotPerformException ex) {

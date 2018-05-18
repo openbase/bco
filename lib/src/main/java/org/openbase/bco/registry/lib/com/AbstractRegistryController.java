@@ -379,8 +379,8 @@ public abstract class AbstractRegistryController<M extends GeneratedMessage, MB 
     private void performInitialConsistencyCheck() throws CouldNotPerformException, InterruptedException {
         for (final ProtoBufFileSynchronizedRegistry registry : registryList) {
             try {
-                logger.debug("Trigger initial consistency check of " + registry + " with " + registry.getEntries().size() + " entries.");
-                registry.checkConsistency();
+                logger.info("Trigger initial consistency check of " + registry + " with " + registry.getEntries().size() + " entries.");
+                registry.initialCheck();
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(new CouldNotPerformException("Initial consistency check failed!", ex), logger);
                 notifyChange();

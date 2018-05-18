@@ -22,10 +22,6 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 
-import java.util.Random;
-import java.util.concurrent.ExecutionException;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertTrue;
 import org.junit.Test;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -34,6 +30,12 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 import rst.geometry.PoseType.Pose;
 import rst.spatial.PlacementConfigType.PlacementConfig;
+
+import java.util.Random;
+import java.util.concurrent.ExecutionException;
+
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertTrue;
 
 /**
  *
@@ -87,7 +89,7 @@ public class TestBoundToDeviceFlag extends AbstractBCORegistryTest {
 
     private PlacementConfig generatePlacementConfig() throws CouldNotPerformException {
         PlacementConfig.Builder placement = PlacementConfig.newBuilder();
-        placement.setLocationId(locationRegistry.getRootLocationConfig().getId());
+        placement.setLocationId(unitRegistry.getRootLocationConfig().getId());
         placement.getPositionBuilder().getRotationBuilder().setQw(random.nextDouble()).setQx(random.nextDouble()).setQy(random.nextDouble()).setQz(random.nextDouble()).build();
         placement.getPositionBuilder().getTranslationBuilder().setX(random.nextInt(10)).setY(random.nextInt(10)).setZ(random.nextInt(10));
         return placement.build();

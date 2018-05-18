@@ -28,10 +28,11 @@ import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.openbase.bco.registry.ClassRegistryController;
-import org.openbase.bco.registry.location.core.LocationRegistryController;
+import org.openbase.bco.registry.clazz.core.ClassRegistryController;
+import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
+import org.openbase.bco.registry.template.core.TemplateRegistryController;
 import org.openbase.bco.registry.unit.core.UnitRegistryController;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -64,8 +65,8 @@ public abstract class AbstractBCORegistryTest {
     protected MockRegistry mockRegistry;
 
     protected UnitRegistryController unitRegistry;
-    protected ClassRegistryController deviceRegistry;
-    protected LocationRegistryController locationRegistry;
+    protected ClassRegistryController classRegistry;
+    protected TemplateRegistryController templateRegistry;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -78,8 +79,8 @@ public abstract class AbstractBCORegistryTest {
             mockRegistry = MockRegistryHolder.newMockRegistry();
 
             unitRegistry = (UnitRegistryController) MockRegistry.getUnitRegistry();
-            deviceRegistry = (ClassRegistryController) MockRegistry.getDeviceRegistry();
-            locationRegistry = (LocationRegistryController) MockRegistry.getLocationRegistry();
+            classRegistry = (ClassRegistryController) MockRegistry.getClassRegistry();
+            templateRegistry = (TemplateRegistryController) MockRegistry.getTemplateRegistry();
         } catch (Exception ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
@@ -112,7 +113,7 @@ public abstract class AbstractBCORegistryTest {
     protected UnitTemplateConfig getUnitTemplateConfig(UnitType unitType) throws CouldNotPerformException {
         Set<ServiceType> serviceTypeSet = new HashSet();
         UnitTemplateConfig.Builder unitTemplateConfig = UnitTemplateConfig.newBuilder().setType(unitType);
-        for (ServiceDescription serviceDescription : unitRegistry.getUnitTemplateByType(unitType).getServiceDescriptionList()) {
+        for (ServiceDescription serviceDescription : templateRegistry.getUnitTemplateByType(unitType).getServiceDescriptionList()) {
             if (!serviceTypeSet.contains(serviceDescription.getType())) {
                 unitTemplateConfig.addServiceTemplateConfig(ServiceTemplateConfig.newBuilder().setServiceType(serviceDescription.getType()));
                 serviceTypeSet.add(serviceDescription.getType());
@@ -122,10 +123,10 @@ public abstract class AbstractBCORegistryTest {
     }
 
     protected DeviceClass registerDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException, ExecutionException, InterruptedException {
-        unitRegistry.getDeviceRegistryRemote().addDataObserver(notifyChangeObserver);
-        DeviceClass clazz = deviceRegistry.registerDeviceClass(deviceClass).get();
+        CachedClassRegistryRemote.getRegistry().addDataObserver(notifyChangeObserver);
+        DeviceClass clazz = classRegistry.registerDeviceClass(deviceClass).get();
         waitForDeviceClass(clazz);
-        unitRegistry.getDeviceRegistryRemote().removeDataObserver(notifyChangeObserver);
+        CachedClassRegistryRemote.getRegistry().removeDataObserver(notifyChangeObserver);
         return clazz;
     }
 
@@ -147,7 +148,7 @@ public abstract class AbstractBCORegistryTest {
 
         synchronized (LOCK) {
             try {
-                while (!unitRegistry.getDeviceRegistryRemote().containsDeviceClass(deviceClass)) {
+                while (!CachedClassRegistryRemote.getRegistry().containsDeviceClass(deviceClass)) {
                     LOCK.wait();
                 }
             } catch (InterruptedException ex) {

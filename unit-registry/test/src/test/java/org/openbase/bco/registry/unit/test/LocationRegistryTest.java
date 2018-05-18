@@ -26,16 +26,16 @@ import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Assert;
 import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 import org.openbase.bco.authentication.core.AuthenticatorController;
-import org.openbase.bco.registry.agent.core.AgentRegistryController;
-import org.openbase.bco.registry.app.core.AppRegistryController;
-import org.openbase.bco.registry.ClassRegistryController;
+import org.openbase.bco.registry.activity.core.ActivityRegistryController;
+import org.openbase.bco.registry.activity.lib.ActivityRegistry;
+import org.openbase.bco.registry.clazz.core.ClassRegistryController;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.template.core.TemplateRegistryController;
 import org.openbase.bco.registry.unit.core.UnitRegistryController;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPDebugMode;
@@ -62,9 +62,9 @@ public class LocationRegistryTest {
     private static final Logger LOGGER = LoggerFactory.getLogger(LocationRegistryTest.class);
 
     private static UnitRegistryController unitRegistry;
-    private static ClassRegistryController deviceRegistry;
-    private static AppRegistryController appRegistry;
-    private static AgentRegistryController agentRegistry;
+    private static ClassRegistryController classRegistry;
+    private static TemplateRegistryController templateRegistry;
+    private static ActivityRegistryController activityRegistry;
     private static AuthenticatorController authenticatorController;
 
     public LocationRegistryTest() {
@@ -83,14 +83,14 @@ public class LocationRegistryTest {
 
             try {
                 unitRegistry = new UnitRegistryController();
-                deviceRegistry = new ClassRegistryController();
-                appRegistry = new AppRegistryController();
-                agentRegistry = new AgentRegistryController();
+                classRegistry = new ClassRegistryController();
+                templateRegistry = new TemplateRegistryController();
+                activityRegistry = new ActivityRegistryController();
 
                 unitRegistry.init();
-                deviceRegistry.init();
-                appRegistry.init();
-                agentRegistry.init();
+                classRegistry.init();
+                templateRegistry.init();
+                activityRegistry.init();
             } catch (InterruptedException | InitializationException | InstantiationException ex) {
                 throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
             }
@@ -102,37 +102,38 @@ public class LocationRegistryTest {
                     ExceptionPrinter.printHistory(ex, LOGGER);
                 }
             });
-            Thread deviceRegistryThread = new Thread(() -> {
+            Thread classRegistryThread = new Thread(() -> {
                 try {
-                    deviceRegistry.activate();
+                    classRegistry.activate();
                 } catch (CouldNotPerformException | InterruptedException ex) {
                     ExceptionPrinter.printHistory(ex, LOGGER);
                 }
             });
-            Thread appRegistryThread = new Thread(() -> {
+            Thread templateRegistryThread = new Thread(() -> {
                 try {
-                    appRegistry.activate();
+                    templateRegistry.activate();
                 } catch (CouldNotPerformException | InterruptedException ex) {
                     ExceptionPrinter.printHistory(ex, LOGGER);
                 }
             });
-            Thread agentRegistryThread = new Thread(() -> {
+            Thread activityRegistryThread = new Thread(() -> {
                 try {
-                    agentRegistry.activate();
+                    activityRegistry.activate();
                 } catch (CouldNotPerformException | InterruptedException ex) {
                     ExceptionPrinter.printHistory(ex, LOGGER);
                 }
             });
+
 
             unitRegistryThread.start();
-            deviceRegistryThread.start();
-            appRegistryThread.start();
-            agentRegistryThread.start();
+            classRegistryThread.start();
+            templateRegistryThread.start();
+            activityRegistryThread.start();
 
             unitRegistryThread.join();
-            deviceRegistryThread.join();
-            appRegistryThread.join();
-            agentRegistryThread.join();
+            classRegistryThread.join();
+            templateRegistryThread.join();
+            activityRegistryThread.join();
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
@@ -144,14 +145,14 @@ public class LocationRegistryTest {
             if (unitRegistry != null) {
                 unitRegistry.shutdown();
             }
-            if (deviceRegistry != null) {
-                deviceRegistry.shutdown();
+            if (classRegistry != null) {
+                classRegistry.shutdown();
             }
-            if (appRegistry != null) {
-                appRegistry.shutdown();
+            if (templateRegistry != null) {
+                templateRegistry.shutdown();
             }
-            if (agentRegistry != null) {
-                agentRegistry.shutdown();
+            if (activityRegistry != null) {
+                activityRegistry.shutdown();
             }
             if(authenticatorController != null) {
                 authenticatorController.shutdown();
