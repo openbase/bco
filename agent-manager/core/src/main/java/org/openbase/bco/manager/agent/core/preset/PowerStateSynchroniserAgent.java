@@ -159,7 +159,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
 
         try {
             logger.info("ApplyConfigUpdate for PowerStateSynchroniserAgent[" + config.getLabel() + "]");
-            Registries.getUnitRegistry().waitForData();
+            Registries.waitForData();
 
             MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("PowerStateSynchroniserAgent", config.getMetaConfig());
 

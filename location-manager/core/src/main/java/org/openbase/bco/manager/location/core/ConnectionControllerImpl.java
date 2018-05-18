@@ -156,7 +156,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         LOGGER.debug("Init connection [" + config.getLabel() + "]");
         try {
-            Registries.getUnitRegistry().waitForData();
+            Registries.waitForData();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }

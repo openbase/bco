@@ -92,7 +92,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
             this.unitControllerRegistry = new UnitControllerRegistryImpl();
             this.deviceControllerRegistry = new ControllerRegistryImpl<>();
 
-            Registries.getUnitRegistry().waitForData();
+            Registries.waitForData();
 
             this.deviceRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, DeviceController, UnitConfig, UnitConfig.Builder>(deviceControllerRegistry, Registries.getUnitRegistry().getDeviceUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), deviceFactory) {
 

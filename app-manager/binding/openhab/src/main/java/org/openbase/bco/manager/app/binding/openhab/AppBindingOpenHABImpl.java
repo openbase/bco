@@ -74,7 +74,7 @@ public class AppBindingOpenHABImpl extends AbstractOpenHABBinding {
     public void init() throws InitializationException, InterruptedException {
         super.init(AGENT_MANAGER_ITEM_FILTER, new AppBindingOpenHABRemote(hardwareSimulationMode, registry));
         try {
-            Registries.getAppRegistry().waitForData();
+            Registries.waitForData();
             factory.init(openHABRemote);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);

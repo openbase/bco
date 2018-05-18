@@ -56,7 +56,7 @@ public class AgentManagerController implements AgentManager, Launchable<Void>, V
             this.factory = AgentFactoryImpl.getInstance();
             this.agentRegistry = new ControllerRegistryImpl<>();
 
-            this.agentRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder>(agentRegistry, Registries.getAgentRegistry().getAgentConfigRemoteRegistry(), Registries.getAgentRegistry(), factory) {
+            this.agentRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder>(agentRegistry, Registries.getUnitRegistry().getAgentConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {
 
                 @Override
                 public boolean enablingCondition(final UnitConfig config) {
@@ -98,6 +98,6 @@ public class AgentManagerController implements AgentManager, Launchable<Void>, V
 
     @Override
     public void waitForInit(long timeout, TimeUnit timeUnit) throws CouldNotPerformException, InterruptedException {
-        Registries.getAgentRegistry().waitForData(timeout, timeUnit);
+        Registries.getUnitRegistry().waitForData(timeout, timeUnit);
     }
 }

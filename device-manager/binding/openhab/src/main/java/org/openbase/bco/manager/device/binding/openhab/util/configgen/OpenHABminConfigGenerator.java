@@ -65,9 +65,9 @@ public class OpenHABminConfigGenerator {
 
     private void init() throws InitializationException, InterruptedException, CouldNotPerformException {
         logger.info("init");
-        Registries.getUnitRegistry().waitForData();
-        Registries.getDeviceRegistry().waitForData();
-        Registries.getLocationRegistry().waitForData();
+        Registries.waitForData();
+        Registries.waitForData();
+        Registries.waitForData();
     }
 
     private void generate() throws CouldNotPerformException, InterruptedException {
@@ -89,12 +89,12 @@ public class OpenHABminConfigGenerator {
                     try {
 
                         // check openhab binding type
-                        if (!Registries.getDeviceRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId()).getBindingConfig().getBindingId().equals("OPENHAB")) {
+                        if (!Registries.getClassRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId()).getBindingConfig().getBindingId().equals("OPENHAB")) {
                             continue;
                         }
 
                         // check if zwave
-                        variableProvider = new MetaConfigVariableProvider("BindingConfigVariableProvider", Registries.getDeviceRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId()).getBindingConfig().getMetaConfig());
+                        variableProvider = new MetaConfigVariableProvider("BindingConfigVariableProvider", Registries.getClassRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId()).getBindingConfig().getMetaConfig());
                         openhabBindingType = variableProvider.getValue(SERVICE_TEMPLATE_BINDING_TYPE);
                         if (!"zwave".equals(openhabBindingType)) {
                             continue;
@@ -153,8 +153,8 @@ public class OpenHABminConfigGenerator {
             Element locationElement = new Element("location");
 
             // add values
-            nameElement.appendChild(deviceDeviceConfig.getLabel() + " " + Registries.getLocationRegistry().getLocationConfigById(deviceDeviceConfig.getPlacementConfig().getLocationId()).getLabel());
-            locationElement.appendChild(Registries.getLocationRegistry().getLocationConfigById(deviceDeviceConfig.getPlacementConfig().getLocationId()).getLabel());
+            nameElement.appendChild(deviceDeviceConfig.getLabel() + " " + Registries.getUnitRegistry().getUnitConfigById(deviceDeviceConfig.getPlacementConfig().getLocationId()).getLabel());
+            locationElement.appendChild(Registries.getUnitRegistry().getUnitConfigById(deviceDeviceConfig.getPlacementConfig().getLocationId()).getLabel());
 
             // store back
             nodeElement.appendChild(nameElement);

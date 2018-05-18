@@ -75,7 +75,7 @@ public class SceneBindingOpenHABImpl extends AbstractOpenHABBinding {
     public void init() throws InitializationException, InterruptedException {
         super.init(SCENE_MANAGER_ITEM_FILTER, new SceneBindingOpenHABRemote(hardwareSimulationMode, registry));
         try {
-            Registries.getSceneRegistry().waitForData();
+            Registries.waitForData();
             factory.init(openHABRemote);
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);

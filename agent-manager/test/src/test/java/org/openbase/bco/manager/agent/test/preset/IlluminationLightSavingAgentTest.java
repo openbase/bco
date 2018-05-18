@@ -116,8 +116,8 @@ public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTes
         Registries.waitForData();
 
         LocationRemote locationRemote = Units.getUnitsByLabel(LOCATION_LABEL, true, Units.LOCATION).get(0);
-        ColorableLightRemote colorableLightRemote = Units.getUnit(Registries.getLocationRegistry().getUnitConfigsByLocationLabel(UnitType.COLORABLE_LIGHT, LOCATION_LABEL).get(0), true, Units.COLORABLE_LIGHT);
-        LightSensorRemote lightSensorRemote = Units.getUnit(Registries.getLocationRegistry().getUnitConfigsByLocationLabel(UnitType.LIGHT_SENSOR, LOCATION_LABEL).get(0), true, LightSensorRemote.class);
+        ColorableLightRemote colorableLightRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocationLabel(UnitType.COLORABLE_LIGHT, LOCATION_LABEL).get(0), true, Units.COLORABLE_LIGHT);
+        LightSensorRemote lightSensorRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocationLabel(UnitType.LIGHT_SENSOR, LOCATION_LABEL).get(0), true, LightSensorRemote.class);
         LightSensorController lightSensorController = (LightSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightSensorRemote.getId());
 
         UnitStateAwaiter<LightSensorData, LightSensorRemote> lightSensorStateAwaiter = new UnitStateAwaiter(lightSensorRemote);
@@ -206,10 +206,10 @@ public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTes
         System.out.println("Register the IlluminationLightSavingAgent...");
 
         EnablingState enablingState = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
-        PlacementConfig.Builder placementConfig = PlacementConfig.newBuilder().setLocationId(Registries.getLocationRegistry().getLocationConfigsByLabel(LOCATION_LABEL).get(0).getId());
+        PlacementConfig.Builder placementConfig = PlacementConfig.newBuilder().setLocationId(Registries.getUnitRegistry().getUnitConfigsByLabel(LOCATION_LABEL).get(0).getId());
 
         String agentClassId = null;
-        for (AgentClass agentClass : Registries.getAgentRegistry().getAgentClasses()) {
+        for (AgentClass agentClass : Registries.getUnitRegistry().getAgentClasses()) {
             if (MockRegistry.ILLUMINATION_LIGHT_SAVING_AGENT_LABEL.equals(agentClass.getLabel())) {
                 agentClassId = agentClass.getId();
             }
@@ -229,6 +229,6 @@ public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTes
 
         UnitConfig.Builder agentUnitConfig = UnitConfig.newBuilder().setLabel(ILLUMINATION_LIGHT_SAVING_AGENT_LABEL).setType(UnitType.AGENT).setPlacementConfig(placementConfig).setMetaConfig(metaConfig).setEnablingState(enablingState);
         agentUnitConfig.getAgentConfigBuilder().setAgentClassId(agentClassId);
-        return Registries.getAgentRegistry().registerAgentConfig(agentUnitConfig.build()).get();
+        return Registries.getUnitRegistry().registerAgentConfig(agentUnitConfig.build()).get();
     }
 }

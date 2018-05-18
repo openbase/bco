@@ -200,7 +200,7 @@ public class OpenHABItemConfigGenerator {
             for (UnitConfig deviceUnitConfig : deviceUnitConfigList) {
 
                 // load device class
-                DeviceClass deviceClass = Registries.getDeviceRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
+                DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
 
                 // ignore non openhab items
                 if (!deviceClass.getBindingConfig().getBindingId().equalsIgnoreCase("OPENHAB")) {

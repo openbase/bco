@@ -69,7 +69,6 @@ public class AgentFactoryImpl implements AgentFactory {
             if (!agentUnitConfig.hasScope() && agentUnitConfig.getScope().getComponentList().isEmpty()) {
                 throw new NotAvailableException("scope");
             }
-            CachedAgentRegistryRemote.waitForData();
             final Class agentClass = Thread.currentThread().getContextClassLoader().loadClass(getAgentClass(agentUnitConfig));
             logger.debug("Creating agent of type [" + agentClass.getSimpleName() + "] on scope [" + ScopeGenerator.generateStringRep(agentUnitConfig.getScope()) + "]");
             agent = (AgentController) agentClass.newInstance();
@@ -82,8 +81,7 @@ public class AgentFactoryImpl implements AgentFactory {
 
     private String getAgentClass(final UnitConfig agentUnitConfig) throws InterruptedException, NotAvailableException {
         try {
-            Registries.getAgentRegistry().waitForData();
-            AgentClass agentClass = Registries.getAgentRegistry().getAgentClassById(agentUnitConfig.getAgentConfig().getAgentClassId());
+            AgentClass agentClass = Registries.getClassRegistry(true).getAgentClassById(agentUnitConfig.getAgentConfig().getAgentClassId());
             return AbstractAgentController.class.getPackage().getName() + "."
                     + "preset."
                     + agentClass.getLabel()

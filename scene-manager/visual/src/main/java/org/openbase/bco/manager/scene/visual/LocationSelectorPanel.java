@@ -71,7 +71,7 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
         statusPanel = StatusPanel.getInstance();
 
         statusPanel.setStatus("Wait for location registry...", StatusPanel.StatusType.INFO, true);
-        Registries.getLocationRegistry().waitForData();
+        Registries.waitForData();
         statusPanel.setStatus("Successfully connected to location registry .", StatusPanel.StatusType.INFO, 3);
 
         init = true;
@@ -86,7 +86,7 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
     }
 
     private void initDynamicComponents() throws InterruptedException, NotAvailableException {
-        Registries.getLocationRegistry().addDataObserver((final Observable<LocationRegistryData> source, LocationRegistryData data) -> {
+        Registries.getUnitRegistry().addDataObserver((final Observable<LocationRegistryData> source, LocationRegistryData data) -> {
             updateDynamicComponents();
         });
         updateDynamicComponents();
@@ -119,7 +119,7 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
             if (enableAllLocation) {
                 locationConfigHolderList.add(ALL_LOCATION);
             }
-            for (UnitConfig config : Registries.getLocationRegistry().getLocationConfigs()) {
+            for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigs(UnitType.LOCATION)) {
                 locationConfigHolderList.add(new LocationUnitConfigHolder(config));
             }
             Collections.sort(locationConfigHolderList);

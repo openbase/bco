@@ -71,8 +71,8 @@ public class AppFactoryImpl implements AppFactory {
 
     private String getAppClass(final UnitConfig appUnitConfig) throws InterruptedException, NotAvailableException {
         try {
-            Registries.getAppRegistry().waitForData();
-            AppClass appClass = Registries.getAppRegistry().getAppClassById(appUnitConfig.getAppConfig().getAppClassId());
+            Registries.waitForData();
+            AppClass appClass = Registries.getClassRegistry().getAppClassById(appUnitConfig.getAppConfig().getAppClassId());
             return AbstractAppController.class.getPackage().getName() + "."
                     + "preset."
                     + appClass.getLabel()

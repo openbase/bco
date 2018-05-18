@@ -117,7 +117,7 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         Registries.waitForData();
 
         LocationRemote locationRemote = Units.getUnitsByLabel(LOCATION_LABEL, true, Units.LOCATION).get(0);
-        TemperatureControllerRemote temperatureControllerRemote = Units.getUnit(Registries.getLocationRegistry().getUnitConfigsByLocationLabel(UnitType.TEMPERATURE_CONTROLLER, LOCATION_LABEL).get(0), true, Units.TEMPERATURE_CONTROLLER);
+        TemperatureControllerRemote temperatureControllerRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocationLabel(UnitType.TEMPERATURE_CONTROLLER, LOCATION_LABEL).get(0), true, Units.TEMPERATURE_CONTROLLER);
         ConnectionRemote connectionRemote = Units.getUnitsByLabel("Stairs_Hell_Lookout", true, Units.CONNECTION).get(0);
         ReedContactRemote reedContactRemote = Units.getUnitsByLabel("Reed_Stairway_Window", true, Units.REED_CONTACT).get(0);
         ReedContactController reedContactController = (ReedContactController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(reedContactRemote.getId());
@@ -169,10 +169,10 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
         System.out.println("Register the AbsenceEnergySavingAgent...");
 
         EnablingState enablingState = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
-        PlacementConfig.Builder placementConfig = PlacementConfig.newBuilder().setLocationId(Registries.getLocationRegistry().getLocationConfigsByLabel(LOCATION_LABEL).get(0).getId());
+        PlacementConfig.Builder placementConfig = PlacementConfig.newBuilder().setLocationId(Registries.getUnitRegistry().getUnitConfigsByLabel(LOCATION_LABEL).get(0).getId());
 
         String agentClassId = null;
-        for (AgentClass agentClass : Registries.getAgentRegistry().getAgentClasses()) {
+        for (AgentClass agentClass : Registries.getUnitRegistry().getAgentClasses()) {
             if (MockRegistry.HEATER_ENERGY_SAVING_AGENT_LABEL.equals(agentClass.getLabel())) {
                 agentClassId = agentClass.getId();
             }
@@ -184,6 +184,6 @@ public class HeaterEnergySavingAgentTest extends AbstractBCOAgentManagerTest {
 
         UnitConfig.Builder agentUnitConfig = UnitConfig.newBuilder().setLabel(HEATER_ENERGY_SAVING_AGENT_LABEL).setType(UnitType.AGENT).setPlacementConfig(placementConfig).setEnablingState(enablingState);
         agentUnitConfig.getAgentConfigBuilder().setAgentClassId(agentClassId);
-        return Registries.getAgentRegistry().registerAgentConfig(agentUnitConfig.build()).get();
+        return Registries.getUnitRegistry().registerAgentConfig(agentUnitConfig.build()).get();
     }
 }

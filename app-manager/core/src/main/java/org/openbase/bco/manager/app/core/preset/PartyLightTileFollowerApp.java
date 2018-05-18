@@ -57,12 +57,12 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
     public PartyLightTileFollowerApp() throws InstantiationException, InterruptedException {
         super(PartyLightTileFollowerApp.class);
         try {
-            Registries.getLocationRegistry().waitForData();
-            Registries.getUnitRegistry().waitForData();
+            Registries.waitForData();
+            Registries.waitForData();
             this.locationRemoteMap = new HashMap<>();
 
             // init tile remotes
-            for (final UnitConfig locationUnitConfig : Registries.getLocationRegistry().getLocationConfigs()) {
+            for (final UnitConfig locationUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.LOCATION)) {
                 if (!locationUnitConfig.getLocationConfig().getType().equals(LocationConfigType.LocationConfig.LocationType.TILE)) {
                     continue;
                 }
@@ -89,7 +89,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
     protected void execute() throws CouldNotPerformException, InterruptedException {
         logger.debug("Execute PartyLightTileFollowerApp[" + getLabel() + "]");
         // verify
-        if (!Registries.getLocationRegistry().getLocationConfigById(getConfig().getPlacementConfig().getLocationId()).getLocationConfig().getType().equals(LocationConfigType.LocationConfig.LocationType.TILE)) {
+        if (!Registries.getUnitRegistry().getUnitConfigById(getConfig().getPlacementConfig().getLocationId()).getLocationConfig().getType().equals(LocationConfigType.LocationConfig.LocationType.TILE)) {
             throw new InvalidStateException("App location is not a tile!");
         }
 
@@ -137,7 +137,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
             try {
 
                 // skip if no colorable light is present
-                if (!Registries.getLocationRegistry().getUnitConfigsByLocation(UnitTemplateType.UnitTemplate.UnitType.COLORABLE_LIGHT, locationRemote.getId()).isEmpty()) {
+                if (!Registries.getUnitRegistry().getUnitConfigsByLocation(UnitTemplateType.UnitTemplate.UnitType.COLORABLE_LIGHT, locationRemote.getId()).isEmpty()) {
                     try {
                         if (locationRemote.isConnected() && locationRemote.isDataAvailable()) {
                             locationRemote.setColor(color).get(5, TimeUnit.SECONDS);
@@ -153,7 +153,7 @@ public class PartyLightTileFollowerApp extends AbstractAppController {
 
                 // process neighbors
                 LocationRemote neighborRemote;
-                for (UnitConfig neighborConfig : Registries.getLocationRegistry().getNeighborLocations(locationRemote.getId())) {
+                for (UnitConfig neighborConfig : Registries.getUnitRegistry().getNeighborLocations(locationRemote.getId())) {
                     // skip if already processed
                     if (processedLocations.contains(neighborConfig.getId())) {
                         continue;

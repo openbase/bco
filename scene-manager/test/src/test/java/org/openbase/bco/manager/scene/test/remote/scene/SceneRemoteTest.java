@@ -202,7 +202,7 @@ public class SceneRemoteTest {
             }
 
             String label = SCENE_TEST;
-            PlacementConfig placementConfig = PlacementConfig.newBuilder().setLocationId(Registries.getLocationRegistry().getRootLocationConfig().getId()).build();
+            PlacementConfig placementConfig = PlacementConfig.newBuilder().setLocationId(Registries.getUnitRegistry().getRootLocationConfig().getId()).build();
             SceneConfig sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
             UnitConfig unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
             unitRegistry.registerUnitConfig(unitConfig).get();
@@ -212,7 +212,7 @@ public class SceneRemoteTest {
             serviceStateDescription.setServiceType(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
             serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(temperatureState));
             serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(temperatureState));
-            serviceStateDescription.setUnitId(Registries.getLocationRegistry().getRootLocationConfig().getId());
+            serviceStateDescription.setUnitId(Registries.getUnitRegistry().getRootLocationConfig().getId());
             serviceStateDescriptionList.add(serviceStateDescription.build());
 
             label = SCENE_ROOT_LOCATION;
@@ -221,7 +221,7 @@ public class SceneRemoteTest {
             unitRegistry.registerUnitConfig(unitConfig).get();
 
             label = SCENE_ROOT_LOCATION_ALL_DEVICES_ON;
-            LocationRemote locationRemote = Units.getUnit(Registries.getLocationRegistry().getRootLocationConfig(), false, LocationRemote.class);
+            LocationRemote locationRemote = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), false, LocationRemote.class);
             locationRemote.addConnectionStateObserver((source, data) -> System.out.println("ConnectionState update of root location remote[" + data + "] isActive[" + locationRemote.isActive() + "]"));
             System.out.println("LocationRemote connectionState[" + locationRemote.getConnectionState().name() + "] isActive[" + locationRemote.isActive() + "]");
             locationRemote.waitForData();
@@ -244,7 +244,7 @@ public class SceneRemoteTest {
             serviceStateDescription.setServiceType(ServiceType.POWER_STATE_SERVICE);
             serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(POWER_STATE_ON));
             serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(POWER_STATE_ON));
-            serviceStateDescription.setUnitId(Registries.getLocationRegistry().getRootLocationConfig().getId());
+            serviceStateDescription.setUnitId(Registries.getUnitRegistry().getRootLocationConfig().getId());
             serviceStateDescriptionList.add(serviceStateDescription.build());
             sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
             unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
@@ -256,7 +256,7 @@ public class SceneRemoteTest {
             serviceStateDescription.setServiceType(ServiceType.POWER_STATE_SERVICE);
             serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(POWER_STATE_OFF));
             serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(POWER_STATE_OFF));
-            serviceStateDescription.setUnitId(Registries.getLocationRegistry().getRootLocationConfig().getId());
+            serviceStateDescription.setUnitId(Registries.getUnitRegistry().getRootLocationConfig().getId());
             serviceStateDescriptionList.add(serviceStateDescription.build());
             sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
             unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
@@ -341,7 +341,7 @@ public class SceneRemoteTest {
     public void testTriggerSceneWithLocationActionPerRemote() throws Exception {
         System.out.println("testTriggerSceneWithLocationActionPerRemote");
 
-        LocationRemote locationRemote = Units.getUnit(Registries.getLocationRegistry().getRootLocationConfig(), true, LocationRemote.class);
+        LocationRemote locationRemote = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, LocationRemote.class);
         assertTrue("LocationState has the correct temperature to begin with!", locationRemote.getTargetTemperatureState().getTemperature() != TEMPERATURE);
 
         activateScene(SCENE_ROOT_LOCATION);
@@ -401,7 +401,7 @@ public class SceneRemoteTest {
         assertTrue("internalLight has not switched off!", internalLight.getPowerState().getValue() == POWER_ON);
         assertTrue("internalPowerSwitch has not switched off!", internalPowerSwitch.getPowerState().getValue() == POWER_ON);
 
-        LocationRemote locationRemote = Units.getUnit(Registries.getLocationRegistry().getRootLocationConfig(), true, LocationRemote.class);
+        LocationRemote locationRemote = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, LocationRemote.class);
         locationRemote.setPowerState(POWER_OFF).get();
 
         internalLight.requestData().get();
@@ -457,7 +457,7 @@ public class SceneRemoteTest {
         assertTrue("internalLight has not switched off!", internalLight.getPowerState().getValue() == POWER_ON);
         assertTrue("internalPowerSwitch has not switched off!", internalPowerSwitch.getPowerState().getValue() == POWER_ON);
 
-        LocationRemote locationRemote = Units.getUnit(Registries.getLocationRegistry().getRootLocationConfig(), true, LocationRemote.class);
+        LocationRemote locationRemote = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), true, LocationRemote.class);
         locationRemote.setPowerState(POWER_OFF).get();
 
         internalLight.requestData().get();

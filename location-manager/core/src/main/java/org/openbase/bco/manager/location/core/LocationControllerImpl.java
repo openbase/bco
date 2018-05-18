@@ -147,7 +147,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         LOGGER.debug("Init location [" + config.getLabel() + "]");
         try {
-            Registries.getUnitRegistry().waitForData();
+            Registries.waitForData();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
@@ -248,7 +248,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
     public List<String> getNeighborLocationIds() throws CouldNotPerformException {
         List<String> neighborIdList = new ArrayList<>();
         try {
-            for (UnitConfig locationConfig : Registries.getLocationRegistry().getNeighborLocations(getId())) {
+            for (UnitConfig locationConfig : Registries.getUnitRegistry().getNeighborLocations(getId())) {
                 neighborIdList.add(locationConfig.getId());
             }
         } catch (InterruptedException ex) {

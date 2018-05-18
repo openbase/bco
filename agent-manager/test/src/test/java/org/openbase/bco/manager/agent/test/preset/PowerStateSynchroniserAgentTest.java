@@ -221,10 +221,10 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
                 .addEntry(sourceBehaviour)
                 .addEntry(targetBehaviour).build();
         EnablingState enablingState = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
-        PlacementConfig.Builder placementConfig = PlacementConfig.newBuilder().setLocationId(Registries.getLocationRegistry().getRootLocationConfig().getId());
+        PlacementConfig.Builder placementConfig = PlacementConfig.newBuilder().setLocationId(Registries.getUnitRegistry().getRootLocationConfig().getId());
 
         String agentClassId = null;
-        for (AgentClass agentClass : Registries.getAgentRegistry().getAgentClasses()) {
+        for (AgentClass agentClass : Registries.getUnitRegistry().getAgentClasses()) {
             if (MockRegistry.POWER_STATE_SYNCHRONISER_AGENT_LABEL.equals(agentClass.getLabel())) {
                 agentClassId = agentClass.getId();
             }
@@ -236,6 +236,6 @@ public class PowerStateSynchroniserAgentTest extends AbstractBCOAgentManagerTest
 
         UnitConfig.Builder agentUnitConfig = UnitConfig.newBuilder().setLabel(POWER_STATE_SYNC_AGENT_LABEL).setType(UnitType.AGENT).setPlacementConfig(placementConfig).setMetaConfig(metaConfig).setEnablingState(enablingState);
         agentUnitConfig.getAgentConfigBuilder().setAgentClassId(agentClassId);
-        return Registries.getAgentRegistry().registerAgentConfig(agentUnitConfig.build()).get();
+        return Registries.getUnitRegistry().registerAgentConfig(agentUnitConfig.build()).get();
     }
 }

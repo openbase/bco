@@ -114,8 +114,8 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         Registries.waitForData();
 
         LocationRemote locationRemote = Units.getUnitsByLabel(LOCATION_LABEL, true, Units.LOCATION).get(0);
-        ColorableLightRemote colorableLightRemote = Units.getUnit(Registries.getLocationRegistry().getUnitConfigsByLocationLabel(UnitType.COLORABLE_LIGHT, LOCATION_LABEL).get(0), true, Units.COLORABLE_LIGHT);
-        MotionDetectorRemote motionDetectorRemote = Units.getUnit(Registries.getLocationRegistry().getUnitConfigsByLocationLabel(UnitType.MOTION_DETECTOR, LOCATION_LABEL).get(0), true, Units.MOTION_DETECTOR);
+        ColorableLightRemote colorableLightRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocationLabel(UnitType.COLORABLE_LIGHT, LOCATION_LABEL).get(0), true, Units.COLORABLE_LIGHT);
+        MotionDetectorRemote motionDetectorRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocationLabel(UnitType.MOTION_DETECTOR, LOCATION_LABEL).get(0), true, Units.MOTION_DETECTOR);
         MotionDetectorController motionDetectorController = (MotionDetectorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(motionDetectorRemote.getId());
 
         UnitStateAwaiter<ColorableLightData, ColorableLightRemote> colorableLightStateAwaiter = new UnitStateAwaiter(colorableLightRemote);
@@ -166,10 +166,10 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
         System.out.println("Register the PresenceLightAgent...");
 
         EnablingState enablingState = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
-        PlacementConfig.Builder placementConfig = PlacementConfig.newBuilder().setLocationId(Registries.getLocationRegistry().getLocationConfigsByLabel(LOCATION_LABEL).get(0).getId());
+        PlacementConfig.Builder placementConfig = PlacementConfig.newBuilder().setLocationId(Registries.getUnitRegistry().getUnitConfigsByLabel(LOCATION_LABEL).get(0).getId());
 
         String agentClassId = null;
-        for (AgentClass agentClass : Registries.getAgentRegistry().getAgentClasses()) {
+        for (AgentClass agentClass : Registries.getUnitRegistry().getAgentClasses()) {
             if (MockRegistry.PRESENCE_LIGHT_AGENT_LABEL.equals(agentClass.getLabel())) {
                 agentClassId = agentClass.getId();
             }
@@ -181,6 +181,6 @@ public class PresenceLightAgentTest extends AbstractBCOAgentManagerTest {
 
         UnitConfig.Builder agentUnitConfig = UnitConfig.newBuilder().setLabel(PRESENCE_LIGHT_AGENT_LABEL).setType(UnitType.AGENT).setPlacementConfig(placementConfig).setEnablingState(enablingState);
         agentUnitConfig.getAgentConfigBuilder().setAgentClassId(agentClassId);
-        return Registries.getAgentRegistry().registerAgentConfig(agentUnitConfig.build()).get();
+        return Registries.getUnitRegistry().registerAgentConfig(agentUnitConfig.build()).get();
     }
 }

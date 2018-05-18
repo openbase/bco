@@ -92,7 +92,7 @@ public class UnitGroupRemoteTest extends AbstractBCODeviceManagerTest {
         }
         assert unitGroupConfig.getMemberIdList().size() > 0;
         UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setUnitGroupConfig(unitGroupConfig).setLabel("testGroup").setType(UnitTemplateType.UnitTemplate.UnitType.UNIT_GROUP);
-        unitConfig.setPlacementConfig(MockRegistry.getDefaultPlacement(Registries.getLocationRegistry().getRootLocationConfig()));
+        unitConfig.setPlacementConfig(MockRegistry.getDefaultPlacement(Registries.getUnitRegistry().getRootLocationConfig()));
         return Registries.getUnitRegistry().registerUnitConfig(unitConfig.build()).get();
     }
 

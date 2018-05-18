@@ -96,7 +96,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
     @Override
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
         try {
-            Registries.getUnitRegistry().waitForData();
+            Registries.waitForData();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }

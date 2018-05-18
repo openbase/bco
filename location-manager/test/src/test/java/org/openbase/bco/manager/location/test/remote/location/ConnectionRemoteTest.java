@@ -52,7 +52,7 @@ public class ConnectionRemoteTest extends AbstractBCOLocationManagerTest {
         try {
             AbstractBCOLocationManagerTest.setUpClass();
 
-            connectionRemote = Units.getUnit(Registries.getLocationRegistry().getConnectionConfigs().get(0), true, ConnectionRemote.class);
+            connectionRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigs(UnitType.CONNECTION).get(0), true, ConnectionRemote.class);
             connectionRemote.waitForConnectionState(Remote.ConnectionState.CONNECTED);
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);

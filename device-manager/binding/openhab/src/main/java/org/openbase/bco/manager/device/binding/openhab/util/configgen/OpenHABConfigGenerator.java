@@ -114,7 +114,7 @@ public class OpenHABConfigGenerator implements Launchable<Void>, VoidInitializab
     public void init() throws InitializationException, InterruptedException {
         try {
             itemConfigGenerator.init();
-            Registries.getUnitRegistry().waitForData();
+            Registries.waitForData();
 
             Registries.getUnitRegistry().addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
                 generate();

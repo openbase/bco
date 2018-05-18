@@ -104,9 +104,9 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
         statusPanel = StatusPanel.getInstance();
 
         statusPanel.setStatus("Wait for unit registry...", StatusPanel.StatusType.INFO, true);
-        Registries.getUnitRegistry().waitForData();
+        Registries.waitForData();
         statusPanel.setStatus("Wait for location registry...", StatusPanel.StatusType.INFO, true);
-        Registries.getLocationRegistry().waitForData();
+        Registries.waitForData();
         statusPanel.setStatus("Connection established.", StatusPanel.StatusType.INFO, 3);
 
         // register change observer
@@ -116,7 +116,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
             });
         });
 
-        Registries.getLocationRegistry().addDataObserver((Observable<LocationRegistryData> source, LocationRegistryData data) -> {
+        Registries.getUnitRegistry().addDataObserver((Observable<LocationRegistryData> source, LocationRegistryData data) -> {
             SwingUtilities.invokeLater(() -> {
                 updateDynamicComponents();
             });
@@ -196,7 +196,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
             try {
                 ArrayList<LocationUnitConfigHolder> locationConfigHolderList = new ArrayList<>();
                 locationConfigHolderList.add(ALL_LOCATION);
-                for (UnitConfig locationUnitConfig : Registries.getLocationRegistry().getLocationConfigs()) {
+                for (UnitConfig locationUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.LOCATION)) {
                     locationConfigHolderList.add(new LocationUnitConfigHolder(locationUnitConfig));
                 }
                 Collections.sort(locationConfigHolderList);
@@ -218,8 +218,8 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
                 UnitType selectedUnitType = ((UnitTypeHolder) unitTypeComboBox.getSelectedItem()).getType();
                 if (selectedUnitType == UnitType.UNKNOWN) {
                     if (unitConfigComboBox.isEnabled() && selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
-                        for (UnitConfig config : Registries.getLocationRegistry().getUnitConfigsByLocation(selectedLocationConfigHolder.getConfig().getId())) {
-                            unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getLocationRegistry().getLocationConfigById(config.getPlacementConfig().getLocationId())));
+                        for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByLocation(selectedLocationConfigHolder.getConfig().getId())) {
+                            unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getUnitRegistry().getUnitConfigById(config.getPlacementConfig().getLocationId())));
                         }
                     } else {
                         for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigs()) {
@@ -231,7 +231,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
                                 if (config.getPlacementConfig().getLocationId().isEmpty()) {
                                     throw new InvalidStateException("Could not load location unit of " + config.getLabel() + " because its not configured!");
                                 }
-                                unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getLocationRegistry().getLocationConfigById(config.getPlacementConfig().getLocationId())));
+                                unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getUnitRegistry().getUnitConfigById(config.getPlacementConfig().getLocationId())));
                             } catch (CouldNotPerformException ex) {
                                 exceptionStack = MultiException.push(this, ex, exceptionStack);
                             }
@@ -239,9 +239,9 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
                     }
                 } else {
                     if (unitConfigComboBox.isEnabled() && selectedLocationConfigHolder != null && !selectedLocationConfigHolder.isNotSpecified()) {
-                        for (UnitConfig config : Registries.getLocationRegistry().getUnitConfigsByLocation(selectedUnitType, selectedLocationConfigHolder.getConfig().getId())) {
+                        for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigsByLocation(selectedUnitType, selectedLocationConfigHolder.getConfig().getId())) {
                             try {
-                                unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getLocationRegistry().getLocationConfigById(config.getPlacementConfig().getLocationId())));
+                                unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getUnitRegistry().getUnitConfigById(config.getPlacementConfig().getLocationId())));
                             } catch (CouldNotPerformException ex) {
                                 exceptionStack = MultiException.push(this, ex, exceptionStack);
                             }
@@ -253,7 +253,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
                                 if (!config.getEnablingState().getValue().equals(EnablingState.State.ENABLED)) {
                                     continue;
                                 }
-                                unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getLocationRegistry().getLocationConfigById(config.getPlacementConfig().getLocationId())));
+                                unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getUnitRegistry().getUnitConfigById(config.getPlacementConfig().getLocationId())));
                             } catch (CouldNotPerformException ex) {
                                 exceptionStack = MultiException.push(this, ex, exceptionStack);
                             }
