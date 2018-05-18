@@ -10,19 +10,22 @@ package org.openbase.bco.registry.unit.core.consistency.unitgroupconfig;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import java.util.ArrayList;
 import java.util.List;
+
+import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -40,7 +43,6 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
 
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
@@ -55,19 +57,17 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> sceneRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitGroupRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> userRegistry;
-    private final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> unitTemplateRegistry;
 
     public UnitGroupMemberListTypesConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> agentRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> appRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> connectionRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> scneRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitGroupRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> userRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> unitTemplateRegistry) {
+                                                      final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> appRegistry,
+                                                      final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupRegistry,
+                                                      final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> connectionRegistry,
+                                                      final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry,
+                                                      final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry,
+                                                      final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry,
+                                                      final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> scneRegistry,
+                                                      final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitGroupRegistry,
+                                                      final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> userRegistry) {
         this.agentRegistry = agentRegistry;
         this.appRegistry = appRegistry;
         this.authorizationGroupRegistry = authorizationGroupRegistry;
@@ -78,7 +78,6 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
         this.sceneRegistry = scneRegistry;
         this.unitGroupRegistry = unitGroupRegistry;
         this.userRegistry = userRegistry;
-        this.unitTemplateRegistry = unitTemplateRegistry;
     }
 
     @Override
@@ -95,9 +94,9 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
             for (String memberId : entry.getMessage().getUnitGroupConfig().getMemberIdList()) {
                 UnitConfig unitConfig = getUnitConfigById(memberId);
                 boolean skip = true;
-                for(ServiceDescription serviceDescription : unitGroup.getServiceDescriptionList()) {
-                    for(ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                        if(serviceDescription.equals(serviceConfig.getServiceDescription())) {
+                for (ServiceDescription serviceDescription : unitGroup.getServiceDescriptionList()) {
+                    for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                        if (serviceDescription.equals(serviceConfig.getServiceDescription())) {
                             skip = false;
                         }
                     }
@@ -152,7 +151,7 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
 
     private List<UnitType> getSubTypes(UnitType type) throws CouldNotPerformException {
         List<UnitType> unitTypes = new ArrayList<>();
-        for (UnitTemplate template : unitTemplateRegistry.getMessages()) {
+        for (UnitTemplate template : CachedTemplateRegistryRemote.getRegistry().getUnitTemplates()) {
             if (template.getIncludedTypeList().contains(type)) {
                 unitTypes.add(template.getType());
             }

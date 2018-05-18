@@ -23,6 +23,8 @@ package org.openbase.bco.registry.unit.core.plugin;
  */
 import java.util.ArrayList;
 import java.util.List;
+
+import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -54,14 +56,11 @@ public class DeviceConfigDeviceClassUnitConsistencyPlugin extends ProtobufRegist
 
     protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    private final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceUnitRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry;
 
-    public DeviceConfigDeviceClassUnitConsistencyPlugin(final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry,
+    public DeviceConfigDeviceClassUnitConsistencyPlugin(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceUnitRegistry) {
-        this.deviceClassRegistry = deviceClassRegistry;
         this.dalUnitRegistry = dalUnitRegistry;
         this.deviceUnitRegistry = deviceUnitRegistry;
     }
@@ -93,7 +92,7 @@ public class DeviceConfigDeviceClassUnitConsistencyPlugin extends ProtobufRegist
         }
 
         boolean modification = false;
-        DeviceClass deviceClass = deviceClassRegistry.get(deviceConfig.getDeviceClassId()).getMessage();
+        DeviceClass deviceClass = CachedClassRegistryRemote.getRegistry().getDeviceClassById(deviceConfig.getDeviceClassId());
         List<UnitConfig> unitConfigs = new ArrayList<>();
         for (String unitId : deviceConfig.getUnitIdList()) {
             unitConfigs.add(dalUnitRegistry.getMessage(unitId));

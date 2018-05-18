@@ -70,7 +70,7 @@ public class CachedClassRegistryRemote {
 
     /**
      *
-     * @return @throws InterruptedException
+     * @return
      * @throws NotAvailableException
      */
     public synchronized static ClassRegistryRemote getRegistry() throws NotAvailableException {

@@ -68,15 +68,21 @@
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>
-            <artifactId>bco.registry.class</artifactId>
+            <artifactId>bco.registry.class.remote</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>
-            <artifactId>bco.registry.template</artifactId>
+            <artifactId>bco.registry.template.remote</artifactId>
             <version>${project.version}</version>
             <type>jar</type>
+        </dependency>
+        <dependency>
+            <groupId>org.apache.commons</groupId>
+            <artifactId>commons-math3</artifactId>
+            <version>3.6.1</version>
+            <scope>compile</scope>
         </dependency>
     </dependencies>
 

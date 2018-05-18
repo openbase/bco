@@ -21,6 +21,7 @@ package org.openbase.bco.registry.unit.core.consistency.deviceconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.bco.registry.lib.util.DeviceConfigUtils;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -38,18 +39,12 @@ import rst.domotic.unit.device.DeviceClassType;
  */
 public class DeviceBoundToHostConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
-    private final Registry<String, IdentifiableMessage<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder>> deviceClassRegistry;
-
-    public DeviceBoundToHostConsistencyHandler(final Registry<String, IdentifiableMessage<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder>> deviceClassRegistry) {
-        this.deviceClassRegistry = deviceClassRegistry;
-    }
-
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder deviceUnitConfig = entry.getMessage().toBuilder();
         boolean modification = false;
 
-        final DeviceClassType.DeviceClass deviceClass = deviceClassRegistry.get(deviceUnitConfig.getDeviceConfig().getDeviceClassId()).getMessage();
+        final DeviceClassType.DeviceClass deviceClass = CachedClassRegistryRemote.getRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
 
         // Setup default bounding
         if (!deviceUnitConfig.hasBoundToUnitHost()) {

@@ -10,17 +10,18 @@ package org.openbase.bco.registry.unit.core.consistency.dalunitconfig;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -36,20 +37,14 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.device.DeviceClassType;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UnitBoundToHostConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
-    public static final boolean DEFAULT_BOUND_TO_DEVICE = true;
-
-    private final Registry<String, IdentifiableMessage<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder>> deviceClassRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryDataType.UnitRegistryData.Builder> deviceRegistry;
 
-    public UnitBoundToHostConsistencyHandler(final Registry<String, IdentifiableMessage<String, DeviceClassType.DeviceClass, DeviceClassType.DeviceClass.Builder>> deviceClassRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryDataType.UnitRegistryData.Builder> deviceRegistry) {
+    public UnitBoundToHostConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryDataType.UnitRegistryData.Builder> deviceRegistry) {
         this.deviceRegistry = deviceRegistry;
-        this.deviceClassRegistry = deviceClassRegistry;
     }
 
     @Override
@@ -57,7 +52,7 @@ public class UnitBoundToHostConsistencyHandler extends AbstractProtoBufRegistryC
         UnitConfig.Builder dalUnitConfig = entry.getMessage().toBuilder();
 
         // filter virtual units
-        if(UnitConfigProcessor.isVirtualUnit(dalUnitConfig)) {
+        if (UnitConfigProcessor.isVirtualUnit(dalUnitConfig)) {
             return;
         }
 
@@ -89,7 +84,7 @@ public class UnitBoundToHostConsistencyHandler extends AbstractProtoBufRegistryC
                 logger.debug("Updated location to : " + deviceUnitConfig.getPlacementConfig().getLocationId());
                 modification = true;
             }
- 
+
             // copy position
             if (deviceUnitConfig.getPlacementConfig().hasPosition() && !dalUnitConfig.getPlacementConfig().getPosition().equals(deviceUnitConfig.getPlacementConfig().getPosition())) {
                 dalUnitConfig.getPlacementConfigBuilder().setPosition(deviceUnitConfig.getPlacementConfig().getPosition());

@@ -21,6 +21,7 @@ package org.openbase.bco.registry.unit.core.consistency.deviceconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -39,12 +40,6 @@ import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
  */
 public class DeviceConfigDeviceClassIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
-    private final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry;
-
-    public DeviceConfigDeviceClassIdConsistencyHandler(final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry) {
-        this.deviceClassRegistry = deviceClassRegistry;
-    }
-
     @Override
     public void processData(final String id, final IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, final ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, final ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig unitConfig = entry.getMessage();
@@ -59,6 +54,6 @@ public class DeviceConfigDeviceClassIdConsistencyHandler extends AbstractProtoBu
         }
 
         // get throws a CouldNotPerformException if the device class with the id does not exists
-        deviceClassRegistry.get(deviceConfig.getDeviceClassId());
+        CachedClassRegistryRemote.getRegistry().getDeviceClassById(deviceConfig.getDeviceClassId());
     }
 }

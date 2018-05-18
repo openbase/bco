@@ -22,6 +22,7 @@ package org.openbase.bco.registry.unit.core.consistency.unitgroupconfig;
  * #L%
  */
 
+import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -42,12 +43,6 @@ import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
 public class UnitGroupServiceDescriptionServiceTemplateIdConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
-
-    private final ProtoBufFileSynchronizedRegistry<String, ServiceTemplate, ServiceTemplate.Builder, UnitRegistryData.Builder> serviceTemplateRegistry;
-
-    public UnitGroupServiceDescriptionServiceTemplateIdConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, ServiceTemplate, ServiceTemplate.Builder, UnitRegistryData.Builder> serviceTemplateRegistry) {
-        this.serviceTemplateRegistry = serviceTemplateRegistry;
-    }
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
@@ -72,7 +67,7 @@ public class UnitGroupServiceDescriptionServiceTemplateIdConsistencyHandler exte
     }
 
     public String getServiceIdByType(ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException {
-        for (ServiceTemplateType.ServiceTemplate serviceTemplate : serviceTemplateRegistry.getMessages()) {
+        for (ServiceTemplateType.ServiceTemplate serviceTemplate : CachedTemplateRegistryRemote.getRegistry().getServiceTemplates()) {
             if (serviceTemplate.getType() == serviceType) {
                 return serviceTemplate.getId();
             }

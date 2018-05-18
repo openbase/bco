@@ -24,6 +24,7 @@ package org.openbase.bco.registry.unit.core.consistency.dalunitconfig;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -47,11 +48,9 @@ import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
  */
 public class SyncBindingConfigDeviceClassUnitConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
-    private final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceUnitRegistry;
 
-    public SyncBindingConfigDeviceClassUnitConsistencyHandler(final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry, final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceUnitRegistry) {
-        this.deviceClassRegistry = deviceClassRegistry;
+    public SyncBindingConfigDeviceClassUnitConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceUnitRegistry) {
         this.deviceUnitRegistry = deviceUnitRegistry;
     }
 
@@ -72,7 +71,8 @@ public class SyncBindingConfigDeviceClassUnitConsistencyHandler extends Abstract
         if (!deviceConfig.hasDeviceClassId() || deviceConfig.getDeviceClassId().isEmpty()) {
             throw new NotAvailableException("deviceConfig.deviceClassId");
         }
-        DeviceClass deviceClass = deviceClassRegistry.get(deviceConfig.getDeviceClassId()).getMessage();
+
+        final DeviceClass deviceClass = CachedClassRegistryRemote.getRegistry().getDeviceClassById(deviceConfig.getDeviceClassId());
 
         if (!deviceClass.hasBindingConfig() || !deviceClass.getBindingConfig().hasBindingId() || deviceClass.getBindingConfig().getBindingId().isEmpty()) {
             // nothing to sync

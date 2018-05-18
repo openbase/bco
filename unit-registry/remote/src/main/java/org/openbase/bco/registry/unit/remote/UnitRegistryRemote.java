@@ -47,6 +47,7 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType;
+import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -75,9 +76,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(AuthenticatedValue.getDefaultInstance()));
     }
 
-    //    private final AuthorizationFilter authorizationFilter;
-    private final SynchronizedRemoteRegistry<String, UnitTemplate, UnitTemplate.Builder> unitTemplateRemoteRegistry;
-    private final SynchronizedRemoteRegistry<String, ServiceTemplate, ServiceTemplate.Builder> serviceTemplateRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> dalUnitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> userUnitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> authorizationGroupUnitConfigRemoteRegistry;
@@ -94,10 +92,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     public UnitRegistryRemote() throws InstantiationException {
         super(JPUnitRegistryScope.class, UnitRegistryData.class);
         try {
-            this.unitTemplateRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.UNIT_TEMPLATE_FIELD_NUMBER);
-            this.serviceTemplateRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.SERVICE_TEMPLATE_FIELD_NUMBER);
-
-//            this.authorizationFilter = new AuthorizationFilter();
             this.dalUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER);
             this.userUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
             this.authorizationGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, new MockUpFilter(), UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
@@ -150,8 +144,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         registerRemoteRegistry(locationUnitConfigRemoteRegistry);
         registerRemoteRegistry(authorizationGroupUnitConfigRemoteRegistry);
         registerRemoteRegistry(unitConfigRemoteRegistry);
-        registerRemoteRegistry(unitTemplateRemoteRegistry);
-        registerRemoteRegistry(serviceTemplateRemoteRegistry);
         registerRemoteRegistry(dalUnitConfigRemoteRegistry);
         registerRemoteRegistry(userUnitConfigRemoteRegistry);
         registerRemoteRegistry(deviceUnitConfigRemoteRegistry);
@@ -161,22 +153,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         registerRemoteRegistry(sceneUnitConfigRemoteRegistry);
         registerRemoteRegistry(appUnitConfigRemoteRegistry);
         registerRemoteRegistry(baseUnitConfigRemoteRegistry);
-    }
-
-//    @Override
-//    public void activate() throws InterruptedException, CouldNotPerformException {
-//        authorizationFilter.setAuthorizationGroups(authorizationGroupUnitConfigRemoteRegistry.getEntryMap());
-//        authorizationFilter.setLocations(locationUnitConfigRemoteRegistry.getEntryMap());
-//
-//        super.activate();
-//    }
-
-    public SynchronizedRemoteRegistry<String, UnitTemplate, UnitTemplate.Builder> getUnitTemplateRemoteRegistry() {
-        return unitTemplateRemoteRegistry;
-    }
-
-    public SynchronizedRemoteRegistry<String, ServiceTemplate, ServiceTemplate.Builder> getServiceTemplateRemoteRegistry() {
-        return serviceTemplateRemoteRegistry;
     }
 
     public SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> getDalUnitConfigRemoteRegistry() {
@@ -361,113 +337,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     }
 
     @Override
-    public Future<UnitTemplate> updateUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException {
-        try {
-            return RPCHelper.callRemoteMethod(unitTemplate, this, UnitTemplate.class);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not update unit template!", ex);
-        }
-    }
-
-    @Override
-    public Boolean containsUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException {
-        validateData();
-        return unitTemplateRemoteRegistry.contains(unitTemplate);
-    }
-
-    @Override
-    public Boolean containsUnitTemplateById(final String unitTemplateId) throws CouldNotPerformException {
-        validateData();
-        return unitTemplateRemoteRegistry.contains(unitTemplateId);
-    }
-
-    @Override
-    public UnitTemplate getUnitTemplateById(final String unitTemplateId) throws CouldNotPerformException {
-        validateData();
-        return unitTemplateRemoteRegistry.getMessage(unitTemplateId);
-    }
-
-    @Override
-    public List<UnitTemplate> getUnitTemplates() throws CouldNotPerformException {
-        validateData();
-        return unitTemplateRemoteRegistry.getMessages();
-    }
-
-    @Override
-    public UnitTemplate getUnitTemplateByType(final UnitTemplate.UnitType type) throws CouldNotPerformException {
-        validateData();
-        for (final UnitTemplate unitTemplate : unitTemplateRemoteRegistry.getMessages()) {
-            if (unitTemplate.getType() == type) {
-                return unitTemplate;
-            }
-        }
-        throw new NotAvailableException("UnitTemplate", type.name(), "No UnitTemplate with given Type[" + type + "] registered!");
-    }
-
-    @Override
-    public Boolean isUnitTemplateRegistryReadOnly() throws CouldNotPerformException {
-        validateData();
-        try {
-            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-                return true;
-            }
-        } catch (JPServiceException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
-        }
-
-        return getData().getUnitTemplateRegistryReadOnly();
-    }
-
-    @Override
-    public Boolean isUnitTemplateRegistryConsistent() throws CouldNotPerformException {
-        try {
-            validateData();
-            return getData().getUnitTemplateRegistryConsistent();
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not check consistency!", ex);
-        }
-    }
-
-    @Override
-    public Future<UnitConfig> registerUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException {
-        try {
-            return RPCHelper.callRemoteMethod(groupConfig, this, UnitConfig.class);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not register group unit config!", ex);
-        }
-    }
-
-    @Override
-    public Future<UnitConfig> updateUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException {
-        try {
-            return RPCHelper.callRemoteMethod(groupConfig, this, UnitConfig.class);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not update group unit config!", ex);
-        }
-    }
-
-    @Override
-    public Future<UnitConfig> removeUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException {
-        try {
-            return RPCHelper.callRemoteMethod(groupConfig, this, UnitConfig.class);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not remove group unit config!", ex);
-        }
-    }
-
-    @Override
-    public Boolean containsUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException {
-        validateData();
-        return unitGroupUnitConfigRemoteRegistry.contains(groupConfig);
-    }
-
-    @Override
-    public Boolean containsUnitGroupConfigById(final String groupConfigId) throws CouldNotPerformException {
-        validateData();
-        return unitGroupUnitConfigRemoteRegistry.contains(groupConfigId);
-    }
-
-    @Override
     public List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException {
         validateData();
         List<UnitConfig> unitConfigs = Collections.synchronizedList(new ArrayList<>());
@@ -478,9 +347,9 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     }
 
     @Override
-    public List<ServiceConfigType.ServiceConfig> getServiceConfigs() throws CouldNotPerformException {
+    public List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException {
         validateData();
-        List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
+        List<ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfig unitConfig : getUnitConfigs()) {
             serviceConfigs.addAll(unitConfig.getServiceConfigList());
         }
@@ -488,11 +357,11 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     }
 
     @Override
-    public List<ServiceConfigType.ServiceConfig> getServiceConfigs(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException {
+    public List<ServiceConfig> getServiceConfigs(final ServiceTemplateType.ServiceTemplate.ServiceType serviceType) throws CouldNotPerformException {
         validateData();
-        List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
+        List<ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfig unitConfig : getUnitConfigs()) {
-            for (ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+            for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
                 if (serviceConfig.getServiceDescription().getType() == serviceType) {
                     serviceConfigs.add(serviceConfig);
                 }
@@ -524,108 +393,96 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
             throw new CouldNotPerformException("Could not check consistency!", ex);
         }
     }
-
-    @Override
-    public UnitConfig getUnitGroupConfigById(final String groupConfigId) throws CouldNotPerformException {
-        validateData();
-        return unitGroupUnitConfigRemoteRegistry.get(groupConfigId).getMessage();
-    }
-
-    @Override
-    public List<UnitConfig> getUnitGroupConfigs() throws CouldNotPerformException {
-        validateData();
-        return new ArrayList<>(unitGroupUnitConfigRemoteRegistry.getMessages());
-    }
-
-    @Override
-    public List<UnitConfig> getUnitGroupConfigsByUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
-        validateData();
-        List<UnitConfig> unitConfigList = new ArrayList<>();
-        for (UnitConfig unitGroupUnitConfig : unitGroupUnitConfigRemoteRegistry.getMessages()) {
-            if (unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList().contains(unitConfig.getId())) {
-                unitConfigList.add(unitGroupUnitConfig);
-            }
-        }
-        return unitConfigList;
-    }
-
-    @Override
-    public List<UnitConfig> getUnitGroupConfigsByUnitType(final UnitTemplate.UnitType type) throws CouldNotPerformException {
-        validateData();
-        List<UnitConfig> unitConfigList = new ArrayList<>();
-        for (UnitConfig unitGroupUnitConfig : unitGroupUnitConfigRemoteRegistry.getMessages()) {
-            if (unitGroupUnitConfig.getType() == type || getSubUnitTypesOfUnitType(type).contains(unitGroupUnitConfig.getType())) {
-                unitConfigList.add(unitGroupUnitConfig);
-            }
-        }
-        return unitConfigList;
-    }
-
-    @Override
-    public List<UnitConfig> getUnitGroupConfigsByServiceTypes(final List<ServiceTemplateType.ServiceTemplate.ServiceType> serviceTypes) throws CouldNotPerformException {
-        validateData();
-        List<UnitConfig> unitGroups = new ArrayList<>();
-        for (UnitConfig unitGroupUnitConfig : unitGroupUnitConfigRemoteRegistry.getMessages()) {
-            boolean skipGroup = false;
-            for (ServiceDescription serviceDescription : unitGroupUnitConfig.getUnitGroupConfig().getServiceDescriptionList()) {
-                if (!serviceTypes.contains(serviceDescription.getType())) {
-                    skipGroup = true;
-                }
-            }
-            if (skipGroup) {
-                continue;
-            }
-            unitGroups.add(unitGroupUnitConfig);
-        }
-        return unitGroups;
-    }
-
-    @Override
-    public List<UnitConfig> getUnitConfigsByUnitGroupConfig(final UnitConfig unitGroupUnitConfig) throws CouldNotPerformException {
-        validateData();
-        verifyUnitGroupUnitConfig(unitGroupUnitConfig);
-        List<UnitConfig> unitConfigs = new ArrayList<>();
-        for (String unitId : unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList()) {
-            unitConfigs.add(getUnitConfigById(unitId));
-        }
-        return unitConfigs;
-    }
-
-    @Override
-    public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType type, final List<ServiceType> serviceTypes) throws CouldNotPerformException {
-        validateData();
-        final List<UnitConfig> unitConfigs = getUnitConfigs(type);
-        boolean foundServiceType;
-
-        for (UnitConfig unitConfig : new ArrayList<>(unitConfigs)) {
-            foundServiceType = false;
-            for (ServiceTemplateType.ServiceTemplate.ServiceType serviceType : serviceTypes) {
-                for (ServiceConfigType.ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                    if (serviceConfig.getServiceDescription().getType() == serviceType) {
-                        foundServiceType = true;
-                    }
-                }
-                if (!foundServiceType) {
-                    unitConfigs.remove(unitConfig);
-                }
-            }
-        }
-        return unitConfigs;
-    }
-
-    @Override
-    public UnitConfig getUnitConfigByScope(ScopeType.Scope scope) throws CouldNotPerformException {
-        if (scope == null) {
-            throw new NotAvailableException("scope");
-        }
-        validateData();
-        for (UnitConfig unitConfig : getUnitConfigs()) {
-            if (unitConfig.getScope().equals(scope)) {
-                return unitConfig;
-            }
-        }
-        throw new NotAvailableException("No unit config available for given Scope[" + ScopeGenerator.generateStringRep(scope) + "]!");
-    }
+//
+//    @Override
+//    public List<UnitConfig> getUnitGroupConfigsByUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
+//        validateData();
+//        List<UnitConfig> unitConfigList = new ArrayList<>();
+//        for (UnitConfig unitGroupUnitConfig : unitGroupUnitConfigRemoteRegistry.getMessages()) {
+//            if (unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList().contains(unitConfig.getId())) {
+//                unitConfigList.add(unitGroupUnitConfig);
+//            }
+//        }
+//        return unitConfigList;
+//    }
+//
+//    @Override
+//    public List<UnitConfig> getUnitGroupConfigsByUnitType(final UnitTemplate.UnitType type) throws CouldNotPerformException {
+//        validateData();
+//        List<UnitConfig> unitConfigList = new ArrayList<>();
+//        for (UnitConfig unitGroupUnitConfig : unitGroupUnitConfigRemoteRegistry.getMessages()) {
+//            if (unitGroupUnitConfig.getType() == type || getSubUnitTypesOfUnitType(type).contains(unitGroupUnitConfig.getType())) {
+//                unitConfigList.add(unitGroupUnitConfig);
+//            }
+//        }
+//        return unitConfigList;
+//    }
+//
+//    @Override
+//    public List<UnitConfig> getUnitGroupConfigsByServiceTypes(final List<ServiceTemplateType.ServiceTemplate.ServiceType> serviceTypes) throws CouldNotPerformException {
+//        validateData();
+//        List<UnitConfig> unitGroups = new ArrayList<>();
+//        for (UnitConfig unitGroupUnitConfig : unitGroupUnitConfigRemoteRegistry.getMessages()) {
+//            boolean skipGroup = false;
+//            for (ServiceDescription serviceDescription : unitGroupUnitConfig.getUnitGroupConfig().getServiceDescriptionList()) {
+//                if (!serviceTypes.contains(serviceDescription.getType())) {
+//                    skipGroup = true;
+//                }
+//            }
+//            if (skipGroup) {
+//                continue;
+//            }
+//            unitGroups.add(unitGroupUnitConfig);
+//        }
+//        return unitGroups;
+//    }
+//
+//    @Override
+//    public List<UnitConfig> getUnitConfigsByUnitGroupConfig(final UnitConfig unitGroupUnitConfig) throws CouldNotPerformException {
+//        validateData();
+//        verifyUnitGroupUnitConfig(unitGroupUnitConfig);
+//        List<UnitConfig> unitConfigs = new ArrayList<>();
+//        for (String unitId : unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList()) {
+//            unitConfigs.add(getUnitConfigById(unitId));
+//        }
+//        return unitConfigs;
+//    }
+//
+//    @Override
+//    public List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType type, final List<ServiceType> serviceTypes) throws CouldNotPerformException {
+//        validateData();
+//        final List<UnitConfig> unitConfigs = getUnitConfigs(type);
+//        boolean foundServiceType;
+//
+//        for (UnitConfig unitConfig : new ArrayList<>(unitConfigs)) {
+//            foundServiceType = false;
+//            for (ServiceTemplateType.ServiceTemplate.ServiceType serviceType : serviceTypes) {
+//                for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+//                    if (serviceConfig.getServiceDescription().getType() == serviceType) {
+//                        foundServiceType = true;
+//                    }
+//                }
+//                if (!foundServiceType) {
+//                    unitConfigs.remove(unitConfig);
+//                }
+//            }
+//        }
+//        return unitConfigs;
+//    }
+//
+//    @Override
+//    public UnitConfig getUnitConfigByScope(ScopeType.Scope scope) throws CouldNotPerformException {
+//        if (scope == null) {
+//            throw new NotAvailableException("scope");
+//        }
+//        validateData();
+//        for (UnitConfig unitConfig : getUnitConfigs()) {
+//            if (unitConfig.getScope().equals(scope)) {
+//                return unitConfig;
+//            }
+//        }
+//        throw new NotAvailableException("No unit config available for given Scope[" + ScopeGenerator.generateStringRep(scope) + "]!");
+//    }
 
     @Override
     public Boolean isDalUnitConfigRegistryReadOnly() throws CouldNotPerformException {
@@ -868,74 +725,6 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     }
 
     @Override
-    public Future<ServiceTemplate> updateServiceTemplate(ServiceTemplate serviceTemplate) throws CouldNotPerformException {
-        try {
-            return RPCHelper.callRemoteMethod(serviceTemplate, this, ServiceTemplate.class);
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not update service template!", ex);
-        }
-    }
-
-    @Override
-    public Boolean containsServiceTemplate(ServiceTemplate serviceTemplate) throws CouldNotPerformException {
-        validateData();
-        return serviceTemplateRemoteRegistry.contains(serviceTemplate);
-    }
-
-    @Override
-    public Boolean containsServiceTemplateById(String serviceTemplateId) throws CouldNotPerformException {
-        validateData();
-        return serviceTemplateRemoteRegistry.contains(serviceTemplateId);
-    }
-
-    @Override
-    public ServiceTemplate getServiceTemplateById(String serviceTemplateId) throws CouldNotPerformException {
-        validateData();
-        return serviceTemplateRemoteRegistry.getMessage(serviceTemplateId);
-    }
-
-    @Override
-    public List<ServiceTemplate> getServiceTemplates() throws CouldNotPerformException {
-        validateData();
-        return serviceTemplateRemoteRegistry.getMessages();
-    }
-
-    @Override
-    public ServiceTemplate getServiceTemplateByType(ServiceType type) throws CouldNotPerformException {
-        validateData();
-        for (final ServiceTemplate serviceTemplates : serviceTemplateRemoteRegistry.getMessages()) {
-            if (serviceTemplates.getType() == type) {
-                return serviceTemplates;
-            }
-        }
-        throw new NotAvailableException("ServiceTemplate", type.name(), "No ServiceTemplate with given Type[" + type + "] registered!");
-    }
-
-    @Override
-    public Boolean isServiceTemplateRegistryReadOnly() throws CouldNotPerformException {
-        validateData();
-        try {
-            if (JPService.getProperty(JPReadOnly.class).getValue() || !isConnected()) {
-                return true;
-            }
-        } catch (JPServiceException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not access java property!", ex), logger);
-        }
-
-        return getData().getServiceTemplateRegistryReadOnly();
-    }
-
-    @Override
-    public Boolean isServiceTemplateRegistryConsistent() throws CouldNotPerformException {
-        try {
-            validateData();
-            return getData().getServiceTemplateRegistryConsistent();
-        } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not check consistency!", ex);
-        }
-    }
-
-    @Override
     public Boolean isConsistent() throws CouldNotPerformException {
         return isAgentUnitRegistryConsistent() &&
                 isAppUnitRegistryConsistent() &&
@@ -945,34 +734,8 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                 isDeviceUnitRegistryConsistent() &&
                 isLocationUnitRegistryConsistent() &&
                 isSceneUnitRegistryConsistent() &&
-                isServiceTemplateRegistryConsistent() &&
                 isUserUnitRegistryConsistent() &&
                 isUnitConfigRegistryConsistent() &&
-                isUnitGroupConfigRegistryConsistent() &&
-                isUnitTemplateRegistryConsistent();
-    }
-
-
-    @Override
-    public Shape getUnitShape(final UnitConfig unitConfig) throws NotAvailableException {
-        // todo release: switch implementation if issue # was implemented. openbase/bco.dal#81 (Remove Virtual Unit Registries)
-        // Workaround implementation until the device registry is not a virtual unit registry anymore.
-        try {
-            return RPCHelper.callRemoteMethod(unitConfig, this, Shape.class).get(5, TimeUnit.SECONDS);
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new NotAvailableException("UnitShape", ex);
-        } catch (CouldNotPerformException | ExecutionException | TimeoutException | CancellationException ex) {
-            throw new NotAvailableException("UnitShape", ex);
-        }
-
-        // new code if the device registry is not a virtual unit registry anymore.
-        //        try {
-        //            return UntShapeGenerator.generateUnitShape(unitConfig, this, CachedDeviceRegistryRemote.getRegistry());
-        //        } catch (InterruptedException ex) {
-        //            // because registries should not throw interrupted exceptions in a future release this exception is already transformed into a NotAvailableException.
-        //            Thread.currentThread().interrupt();
-        //            throw new NotAvailableException("UnitShape", new CouldNotPerformException("Shutdown in progress"));
-        //        }
+                isUnitGroupConfigRegistryConsistent();
     }
 }

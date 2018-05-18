@@ -24,22 +24,30 @@ package org.openbase.bco.registry.unit.lib;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 
+import org.apache.commons.math3.geometry.euclidean.twod.PolygonsSet;
+import org.apache.commons.math3.geometry.euclidean.twod.Vector2D;
+import org.apache.commons.math3.geometry.partitioning.Region.Location;
+import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.bco.registry.lib.provider.UnitConfigCollectionProvider;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
+import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.bco.registry.unit.lib.generator.UntShapeGenerator;
 import org.openbase.bco.registry.unit.lib.provider.UnitTransformationProviderRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.RegistryService;
+import org.slf4j.LoggerFactory;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
+import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitProbabilityCollectionType.UnitProbabilityCollection;
@@ -47,12 +55,14 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.agent.AgentClassType.AgentClass;
 import rst.domotic.unit.app.AppClassType.AppClass;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
+import rst.math.Vec3DDoubleType;
 import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.rsb.ScopeType.Scope;
 import rst.spatial.ShapeType.Shape;
 import rst.tracking.PointingRay3DFloatCollectionType.PointingRay3DFloatCollection;
 import rst.tracking.PointingRay3DFloatType.PointingRay3DFloat;
 
+import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3d;
 import java.util.*;
 import java.util.concurrent.ExecutionException;
@@ -196,7 +206,6 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      */
     @RPCMethod
     default UnitConfig getUnitConfigByAlias(final String unitAlias) throws CouldNotPerformException {
-        validateData();
         for (UnitConfig unitConfig : getUnitConfigs()) {
             for (final String alias : unitConfig.getAliasList()) {
                 if (alias.equalsIgnoreCase(unitAlias)) {
@@ -218,10 +227,15 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws CouldNotPerformException is thrown if the request fails.
      * @returna list of the requested unit configs.
      */
-    List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException;
+    default List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException {
+        List<UnitConfig> unitConfigs = Collections.synchronizedList(new ArrayList<>());
+        getUnitConfigs().parallelStream().filter((unitConfig) -> (unitConfig.getLabel().equalsIgnoreCase(unitConfigLabel))).forEach((unitConfig) -> {
+            unitConfigs.add(unitConfig);
+        });
+        return unitConfigs;
+    }
 
     default List<UnitConfig> getUnitConfigsByLabelAndUnitType(final String unitConfigLabel, final UnitType unitType) throws CouldNotPerformException {
-        validateData();
         List<UnitConfig> unitConfigs = Collections.synchronizedList(new ArrayList<>());
         getUnitConfigs().parallelStream().filter((unitConfig) -> (unitConfig.getType().equals(unitType) && unitConfig.getLabel().equalsIgnoreCase(unitConfigLabel))).forEach((unitConfig) -> {
             unitConfigs.add(unitConfig);
@@ -272,9 +286,39 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      */
     List<UnitConfig> getBaseUnitConfigs() throws CouldNotPerformException;
 
-    List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException;
+    /**
+     * @return a list containing all service configs of all units.
+     *
+     * @throws CouldNotPerformException is thrown if the config list could not be generated.
+     */
+    default List<ServiceConfig> getServiceConfigs() throws CouldNotPerformException {
+        final List<ServiceConfig> serviceConfigs = new ArrayList<>();
+        for (UnitConfig unitConfig : getUnitConfigs()) {
+            serviceConfigs.addAll(unitConfig.getServiceConfigList());
+        }
+        return serviceConfigs;
+    }
 
-    List<ServiceConfig> getServiceConfigs(final ServiceType serviceType) throws CouldNotPerformException;
+    /**
+     * Method returns all service configs of all units filtered by the given {@code serviceType}.
+     *
+     * @param serviceType the service type to filter.
+     *
+     * @return a list of service configs matching the given {@code serviceType}.
+     *
+     * @throws CouldNotPerformException is thrown if the config list could not be generated.
+     */
+    default List<ServiceConfig> getServiceConfigs(final ServiceType serviceType) throws CouldNotPerformException {
+        List<ServiceConfig> serviceConfigs = new ArrayList<>();
+        for (UnitConfig unitConfig : getUnitConfigs()) {
+            for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                if (serviceConfig.getServiceDescription().getType() == serviceType) {
+                    serviceConfigs.add(serviceConfig);
+                }
+            }
+        }
+        return serviceConfigs;
+    }
 
     /**
      * Method returns true if the underling registry is marked as read only. A
@@ -288,15 +332,102 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
     @RPCMethod
     Boolean isUnitGroupConfigRegistryReadOnly() throws CouldNotPerformException;
 
-    List<UnitConfig> getUnitGroupUnitConfigsByUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException;
+    /**
+     *
+     * @param type
+     * @param serviceTypes
+     * @return
+     * @throws CouldNotPerformException
+     */
+    default List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType type, final List<ServiceType> serviceTypes) throws CouldNotPerformException {
+        List<UnitConfig> unitConfigs = getUnitConfigs(type);
+        boolean foundServiceType;
 
-    List<UnitConfig> getUnitGroupUnitConfigsByUnitType(final UnitType type) throws CouldNotPerformException;
+        for (UnitConfig unitConfig : new ArrayList<>(unitConfigs)) {
+            foundServiceType = false;
+            for (ServiceType serviceType : serviceTypes) {
+                for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                    if (serviceConfig.getServiceDescription().getType() == serviceType) {
+                        foundServiceType = true;
+                    }
+                }
+                if (!foundServiceType) {
+                    unitConfigs.remove(unitConfig);
+                }
+            }
+        }
+        return unitConfigs;
+    }
 
-    List<UnitConfig> getUnitGroupUnitConfigsByServiceTypes(final List<ServiceType> serviceTypes) throws CouldNotPerformException;
+    /**
+     *
+     * @param unitConfig
+     * @return
+     * @throws CouldNotPerformException
+     */
+    default List<UnitConfig> getUnitGroupUnitConfigsByUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
+        List<UnitConfig> unitConfigList = new ArrayList<>();
+        for (UnitConfig unitGroupUnitConfig : getUnitConfigs(UnitType.UNIT_GROUP)) {
+            if (unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList().contains(unitConfig.getId())) {
+                unitConfigList.add(unitGroupUnitConfig);
+            }
+        }
+        return unitConfigList;
+    }
 
-    List<UnitConfig> getUnitConfigsByUnitGroupConfig(final UnitConfig groupConfig) throws CouldNotPerformException;
+    /**
+     *
+     * @param type
+     * @return
+     * @throws CouldNotPerformException
+     */
+    default List<UnitConfig> getUnitGroupUnitConfigsByUnitType(final UnitType type) throws CouldNotPerformException {
+        List<UnitConfig> unitConfigList = new ArrayList<>();
+        for (UnitConfig unitGroupUnitConfig : getUnitConfigs(UnitType.UNIT_GROUP)) {
+            if (unitGroupUnitConfig.getType() == type || CachedTemplateRegistryRemote.getRegistry().getSubUnitTypes(type).contains(unitGroupUnitConfig.getType())) {
+                unitConfigList.add(unitGroupUnitConfig);
+            }
+        }
+        return unitConfigList;
+    }
 
-    List<UnitConfig> getUnitConfigsByUnitTypeAndServiceTypes(final UnitType type, final List<ServiceType> serviceTypes) throws CouldNotPerformException;
+    /**
+     *
+     * @param serviceTypes
+     * @return
+     * @throws CouldNotPerformException
+     */
+    default List<UnitConfig> getUnitGroupUnitConfigsByServiceTypes(final List<ServiceType> serviceTypes) throws CouldNotPerformException {
+        List<UnitConfig> unitGroups = new ArrayList<>();
+        for (UnitConfig unitGroupUnitConfig : getUnitConfigs(UnitType.UNIT_GROUP)) {
+            boolean skipGroup = false;
+            for (ServiceDescription serviceDescription : unitGroupUnitConfig.getUnitGroupConfig().getServiceDescriptionList()) {
+                if (!serviceTypes.contains(serviceDescription.getType())) {
+                    skipGroup = true;
+                }
+            }
+            if (skipGroup) {
+                continue;
+            }
+            unitGroups.add(unitGroupUnitConfig);
+        }
+        return unitGroups;
+    }
+
+    /**
+     *
+     * @param unitGroupUnitConfig
+     * @return
+     * @throws CouldNotPerformException
+     */
+    default List<UnitConfig> getUnitConfigsByUnitGroupConfig(final UnitConfig unitGroupUnitConfig) throws CouldNotPerformException {
+        verifyUnitGroupUnitConfig(unitGroupUnitConfig);
+        List<UnitConfig> unitConfigs = new ArrayList<>();
+        for (String unitId : unitGroupUnitConfig.getUnitGroupConfig().getMemberIdList()) {
+            unitConfigs.add(getUnitConfigById(unitId));
+        }
+        return unitConfigs;
+    }
 
     /**
      * Method return the unit config which is registered for the given scope. A
@@ -310,7 +441,14 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws CouldNotPerformException
      */
     @RPCMethod
-    UnitConfig getUnitConfigByScope(final Scope scope) throws CouldNotPerformException;
+    default UnitConfig getUnitConfigByScope(final Scope scope) throws CouldNotPerformException {
+        for (final UnitConfig unitConfig : getUnitConfigs()) {
+            if (unitConfig.getScope().equals(scope)) {
+                return unitConfig;
+            }
+        }
+        throw new NotAvailableException("No unit config available for given scope!");
+    }
 
     default void verifyUnitGroupUnitConfig(UnitConfig unitConfig) throws VerificationFailedException {
         UnitConfigProcessor.verifyUnitConfig(unitConfig, UnitType.UNIT_GROUP);
@@ -661,7 +799,39 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws java.lang.InterruptedException
      * @throws java.util.concurrent.ExecutionException
      */
-    List<UnitConfig> getLocationUnitConfigsByCoordinate(final Vec3DDouble coordinate, LocationType locationType) throws CouldNotPerformException, InterruptedException, ExecutionException;
+    default List<UnitConfig> getLocationUnitConfigsByCoordinate(final Vec3DDouble coordinate, LocationType locationType) throws CouldNotPerformException, InterruptedException, ExecutionException {
+        validateData();
+        List<UnitConfig> result = new ArrayList<>();
+
+        for (UnitConfig locationUnitConfig : getUnitConfigs(UnitType.LOCATION)) {
+            // Check if the unit meets the requirements of the filter
+            if (!locationType.equals(LocationType.UNKNOWN) && !locationType.equals(locationUnitConfig.getLocationConfig().getType())) {
+                continue;
+            }
+
+            // Get the shape of the floor
+            List<Vec3DDoubleType.Vec3DDouble> floorList = locationUnitConfig.getPlacementConfig().getShape().getFloorList();
+
+            // Convert the shape into a PolygonsSet
+            List<Vector2D> vertices = floorList.stream()
+                    .map(vec3DDouble -> new Vector2D(vec3DDouble.getX(), vec3DDouble.getY()))
+                    .collect(Collectors.toList());
+            PolygonsSet polygonsSet = new PolygonsSet(0.1, vertices.toArray(new Vector2D[]{}));
+
+            // Transform the given coordinate
+            Transform3D unitTransform = getRootToUnitTransformationFuture(locationUnitConfig).get().getTransform();
+            Point3d transformedCoordinate = new Point3d(coordinate.getX(), coordinate.getY(), coordinate.getZ());
+            unitTransform.transform(transformedCoordinate);
+
+            // NOTE: Hence apache-math builds its polygons counter clockwise unlike bco, the resulting polygon is inverted.
+            // Therefore we check whether the point lies on the outside of the polygon.
+            if (polygonsSet.checkPoint(new Vector2D(transformedCoordinate.x, transformedCoordinate.y)) == Location.OUTSIDE) {
+                result.add(locationUnitConfig);
+            }
+        }
+
+        return result;
+    }
 
     /**
      * Method returns all unit configurations which are direct or recursive related to the given location id.
@@ -672,7 +842,9 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
-    List<UnitConfig> getUnitConfigsByLocation(final String locationId) throws CouldNotPerformException;
+    default List<UnitConfig> getUnitConfigsByLocation(final String locationId) throws CouldNotPerformException {
+        return getUnitConfigsByLocation(locationId, true);
+    }
 
     /**
      * Method returns all unit configurations which are direct related to the given location id.
@@ -685,7 +857,16 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
-    List<UnitConfig> getUnitConfigsByLocation(final String locationId, final boolean recursive) throws CouldNotPerformException;
+    default List<UnitConfig> getUnitConfigsByLocation(final String locationId, final boolean recursive) throws CouldNotPerformException {
+        final List<UnitConfig> unitConfigList = new ArrayList<>();
+        for (String unitConfigId : getUnitConfigById(locationId).getLocationConfig().getUnitIdList()) {
+            final UnitConfig unitConfig = getUnitConfigById(unitConfigId);
+            if (recursive || unitConfig.getPlacementConfig().getLocationId().equals(locationId)) {
+                unitConfigList.add(unitConfig);
+            }
+        }
+        return unitConfigList;
+    }
 
     /**
      * Method returns all unit configurations which are direct or recursive
@@ -700,7 +881,22 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException
      */
-    List<UnitConfig> getUnitConfigsByLocation(final UnitType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException;
+    default List<UnitConfig> getUnitConfigsByLocation(final UnitType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
+        List<UnitConfig> unitConfigList = new ArrayList<>();
+        UnitConfig unitConfig;
+
+        for (String unitConfigId : getUnitConfigById(locationConfigId).getLocationConfig().getUnitIdList()) {
+            try {
+                unitConfig = getUnitConfigById(unitConfigId);
+                if (unitConfig.getType().equals(type) || unitRegistry.getSubUnitTypesOfUnitType(type).contains(unitConfig.getType())) {
+                    unitConfigList.add(unitConfig);
+                }
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not resolve UnitConfigId[" + unitConfigId + "] by UnitRegitryRemote!", ex), LoggerFactory.getLogger(UnitRegistry.class));
+            }
+        }
+        return unitConfigList;
+    }
 
     /**
      * Method returns all unit configurations which are direct or recursive
@@ -714,7 +910,25 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException
      */
-    List<UnitConfig> getUnitConfigsByLocation(final ServiceType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException;
+    default List<UnitConfig> getUnitConfigsByLocation(final ServiceType type, final String locationConfigId) throws CouldNotPerformException, NotAvailableException {
+        List<UnitConfig> unitConfigList = new ArrayList<>();
+        UnitConfig unitConfig;
+
+        for (String unitConfigId : getUnitConfigById(locationConfigId).getLocationConfig().getUnitIdList()) {
+            try {
+                unitConfig = getUnitConfigById(unitConfigId);
+                for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                    if (serviceConfig.getServiceDescription().getType().equals(type)) {
+                        unitConfigList.add(unitConfig);
+                    }
+                }
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not resolve UnitConfigId[" + unitConfigId + "] by device registry!", ex), LoggerFactory.getLogger(UnitRegistry.class));
+            }
+        }
+        return unitConfigList;
+    }
+
 
     /**
      * Method returns all service configurations which are direct or recursive
@@ -728,36 +942,32 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws NotAvailableException    is thrown if the given location config id
      *                                  is unknown.
      */
-    List<ServiceConfig> getServiceConfigsByLocation(final String locationId) throws CouldNotPerformException;
+    default List<ServiceConfig> getServiceConfigsByLocation(final String locationId) throws CouldNotPerformException {
+        List<ServiceConfig> serviceConfigList = new ArrayList<>();
+        for (UnitConfig unitConfig : getUnitConfigsByLocation(locationId)) {
+            serviceConfigList.addAll(unitConfig.getServiceConfigList());
+        }
+        return serviceConfigList;
+    }
 
     /**
      * Method returns all unit configurations which are direct or recursive
-     * related to the given location label which can represent more than one
-     * location. Label resolving is done case insensitive!
+     * related to the given location alias.
      *
-     * @param locationLabel
-     *
-     * @return A collection of unit configs.
-     *
-     * @throws CouldNotPerformException is thrown if the request fails.
-     * @throws NotAvailableException
-     */
-    List<UnitConfig> getUnitConfigsByLocationLabel(final String locationLabel) throws CouldNotPerformException;
-
-    /**
-     * Method returns all unit configurations with a given type which are direct
-     * or recursive related to the given location label which can represent more
-     * than one location. Label resolving is done case insensitive!
-     *
-     * @param unitType
-     * @param locationLabel
+     * @param locationAlias the alias to identify the location.
      *
      * @return A collection of unit configs.
      *
      * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException
      */
-    List<UnitConfig> getUnitConfigsByLocationLabel(final UnitType unitType, final String locationLabel) throws CouldNotPerformException;
+    default List<UnitConfig> getUnitConfigsByLocationAlias(final String locationAlias) throws CouldNotPerformException {
+        final HashMap<String, UnitConfig> unitConfigMap = new HashMap<>();
+        for (UnitConfig unitConfig : getUnitConfigsByLocation(getUnitConfigByAlias(locationAlias).getId())) {
+            unitConfigMap.put(unitConfig.getId(), unitConfig);
+        }
+        return new ArrayList<>(unitConfigMap.values());
+    }
 
     /**
      * Method returns a collection of unit configs which are located within the
@@ -771,21 +981,11 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
-    List<UnitConfig> getUnitConfigsByLabelAndLocation(final String unitLabel, final String locationId) throws CouldNotPerformException;
-
-    /**
-     * Method returns all unit configurations which are direct or recursive
-     * related to the given location alias which can represent more than one
-     * location. Alias resolving is done case insensitive!
-     *
-     * @param locationAlias
-     *
-     * @return A collection of unit configs.
-     *
-     * @throws CouldNotPerformException is thrown if the request fails.
-     * @throws NotAvailableException
-     */
-    List<UnitConfig> getUnitConfigsByLocationAlias(final String locationAlias) throws CouldNotPerformException;
+    default List<UnitConfig> getUnitConfigsByLabelAndLocation(final String unitLabel, final String locationId) throws CouldNotPerformException {
+        return getUnitConfigsByLabel(unitLabel).stream()
+                .filter(u -> u.getPlacementConfig().getLocationId().equals(locationId))
+                .collect(Collectors.toCollection(ArrayList::new));
+    }
 
     /**
      * Method returns all unit configurations with a given type which are direct
@@ -800,21 +1000,13 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException
      */
-    List<UnitConfig> getUnitConfigsByLocationAlias(final UnitType unitType, final String locationAlias) throws CouldNotPerformException;
-
-    /**
-     * Method returns a collection of unit configs which are located within the
-     * defined location and match the given unit alias. Alias resolving is done
-     * case insensitive!
-     *
-     * @param unitAlias
-     * @param locationId
-     *
-     * @return
-     *
-     * @throws CouldNotPerformException is thrown if the request fails.
-     */
-    List<UnitConfig> getUnitConfigsByAliasAndLocation(final String unitAlias, final String locationId) throws CouldNotPerformException;
+    default List<UnitConfig> getUnitConfigsByLocationAlias(final UnitType unitType, final String locationAlias) throws CouldNotPerformException {
+        final HashMap<String, UnitConfig> unitConfigMap = new HashMap<>();
+        for (UnitConfig unitConfig : getUnitConfigsByLocation(getUnitConfigByAlias(locationAlias).getId())) {
+            unitConfigMap.put(unitConfig.getId(), unitConfig);
+        }
+        return new ArrayList<>(unitConfigMap.values());
+    }
 
     /**
      * Method generates a list of service types supported by the given location.
@@ -845,7 +1037,13 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
-    List<UnitConfig> getUnitConfigsByConnection(final String connectionConfigId) throws CouldNotPerformException;
+    default List<UnitConfig> getUnitConfigsByConnection(final String connectionConfigId) throws CouldNotPerformException {
+        List<UnitConfig> unitConfigList = new ArrayList<>();
+        for (String unitConfigId : getUnitConfigById(connectionConfigId).getConnectionConfig().getUnitIdList()) {
+            unitConfigList.add(getUnitConfigById(unitConfigId));
+        }
+        return unitConfigList;
+    }
 
     /**
      * Method returns all unit configurations which are related to the given
@@ -859,7 +1057,22 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException
      */
-    List<UnitConfig> getUnitConfigsByConnection(final UnitType type, final String connectionConfigId) throws CouldNotPerformException, NotAvailableException;
+    default List<UnitConfig> getUnitConfigsByConnection(final UnitType type, final String connectionConfigId) throws CouldNotPerformException, NotAvailableException {
+        List<UnitConfig> unitConfigList = new ArrayList<>();
+        UnitConfig unitConfig;
+
+        for (String unitConfigId : getUnitConfigById(connectionConfigId).getConnectionConfig().getUnitIdList()) {
+            try {
+                unitConfig = getUnitConfigById(unitConfigId);
+                if (unitConfig.getType().equals(type) || unitRegistry.getSubUnitTypesOfUnitType(type).contains(unitConfig.getType())) {
+                    unitConfigList.add(unitConfig);
+                }
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not resolve UnitConfigId[" + unitConfigId + "] by device registry!", ex), logger);
+            }
+        }
+        return unitConfigList;
+    }
 
     /**
      * Method returns all unit configurations which are related to the given
@@ -873,7 +1086,24 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws CouldNotPerformException is thrown if the request fails.
      * @throws NotAvailableException
      */
-    List<UnitConfig> getUnitConfigsByConnection(final ServiceType type, final String connectionConfigId) throws CouldNotPerformException, NotAvailableException;
+    default List<UnitConfig> getUnitConfigsByConnection(final ServiceType type, final String connectionConfigId) throws CouldNotPerformException, NotAvailableException {
+        List<UnitConfig> unitConfigList = new ArrayList<>();
+        UnitConfig unitConfig;
+
+        for (String unitConfigId : getUnitConfigById(connectionConfigId).getConnectionConfig().getUnitIdList()) {
+            try {
+                unitConfig = getUnitConfigById(unitConfigId);
+                for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
+                    if (serviceConfig.getServiceDescription().getType().equals(type)) {
+                        unitConfigList.add(unitConfig);
+                    }
+                }
+            } catch (CouldNotPerformException ex) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not resolve UnitConfigId[" + unitConfigId + "] by device registry!", ex), logger);
+            }
+        }
+        return unitConfigList;
+    }
 
     /**
      * Method returns all service configurations which are related to the given
@@ -887,7 +1117,13 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws NotAvailableException    is thrown if the given connection config id
      *                                  is unknown.
      */
-    List<ServiceConfig> getServiceConfigsByConnection(final String connectionConfigId) throws CouldNotPerformException;
+    default List<ServiceConfig> getServiceConfigsByConnection(final String connectionConfigId) throws CouldNotPerformException {
+        List<ServiceConfig> serviceConfigList = new ArrayList<>();
+        for (UnitConfig unitConfig : getUnitConfigsByConnection(connectionConfigId)) {
+            serviceConfigList.addAll(unitConfig.getServiceConfigList());
+        }
+        return serviceConfigList;
+    }
 
     /**
      * Method returns all neighbor tiles for a tile. If the given locationId
@@ -899,51 +1135,165 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @throws CouldNotPerformException is thrown if the request fails.
      */
-    List<UnitConfig> getNeighborLocations(final String locationId) throws CouldNotPerformException;
-
-    /**
-     * Method returns a list of probably intersected units by the given 3D ray.
-     * This could for example be useful for selecting units by pointing gestures.
-     *
-     * @param pointingRay3DFloat ray which probably intersects with a specific unit priorized by a given certainty.
-     *
-     * @return a collection of probably intersected units referred by there id.
-     *
-     * @throws CouldNotPerformException is thrown in case the computation could not be performed.
-     */
-    @RPCMethod
-    Future<UnitProbabilityCollection> computeUnitIntersection(final PointingRay3DFloat pointingRay3DFloat) throws CouldNotPerformException;
-
-    /**
-     * Method returns a list of probably intersected units by the given 3D rays.
-     * This could for example be useful for selecting units by pointing gestures.
-     *
-     * @param pointingRay3DFloatCollection a collection of rays which probably intersects with a specific unit priorized by a given certainty.
-     *
-     * @return a collection of probably intersected units referred by there id.
-     *
-     * @throws CouldNotPerformException is thrown in case the computation could not be performed.
-     */
-    @RPCMethod
-    Future<UnitProbabilityCollection> computeUnitIntersection(final PointingRay3DFloatCollection pointingRay3DFloatCollection) throws CouldNotPerformException;
-
-    @Override
-    default Shape getUnitShape(final UnitConfig unitConfig) throws NotAvailableException {
-        try {
-            return UntShapeGenerator.generateUnitShape(unitConfig, this, CachedClassRegistryRemote.getRegistry());
-        } catch (InterruptedException ex) {
-            // because registries should not throw interrupted exceptions in a future release this exception is already transformed into a NotAvailableException.
-            Thread.currentThread().interrupt();
-            throw new NotAvailableException("UnitShape", new CouldNotPerformException("Shutdown in progress"));
+    default List<UnitConfig> getNeighborLocations(final String locationId) throws CouldNotPerformException {
+        UnitConfig locationConfig = getUnitConfigById(locationId);
+        if (locationConfig.getLocationConfig().getType() != LocationType.TILE) {
+            throw new CouldNotPerformException("Id[" + locationId + "] does not belong to a tile and therefore its neighbors aren't defined!");
         }
+
+        Map<String, UnitConfig> neighborMap = new HashMap<>();
+        for (UnitConfig connectionConfig : getUnitConfigs(UnitType.CONNECTION)) {
+            if (connectionConfig.getConnectionConfig().getTileIdList().contains(locationId)) {
+                for (String id : connectionConfig.getConnectionConfig().getTileIdList()) {
+                    if (id.equals(locationId)) {
+                        continue;
+                    }
+
+                    neighborMap.put(id, getUnitConfigById(id));
+                }
+            }
+        }
+
+        return new ArrayList<>(neighborMap.values());
     }
 
-    List<UnitConfig> getAgentUnitConfigsByAgentClass(final AgentClass agentClass) throws CouldNotPerformException;
+    /**
+     * {@inheritDoc}
+     *
+     * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
+     */
+    default List<UnitConfig> getLocationConfigsByCoordinate(final Vec3DDouble coordinate, final LocationType locationType) throws CouldNotPerformException, InterruptedException, ExecutionException {
+        validateData();
+        List<UnitConfig> result = new ArrayList<>();
 
-    List<UnitConfig> getAgentUnitConfigsByAgentClassId(final String agentClassId) throws CouldNotPerformException;
+        for (UnitConfig unitConfig : getUnitConfigs(UnitType.LOCATION)) {
+            // Check if the unit meets the requirements of the filter
+            if (!locationType.equals(LocationType.UNKNOWN) && !locationType.equals(unitConfig.getLocationConfig().getType())) {
+                continue;
+            }
 
-    List<UnitConfig> getAppUnitConfigsByAppClass(final AppClass appClass) throws CouldNotPerformException, InterruptedException;
+            // Get the shape of the floor
+            List<Vec3DDoubleType.Vec3DDouble> floorList = unitConfig.getPlacementConfig().getShape().getFloorList();
 
-    List<UnitConfig> getAppUnitConfigsByAppClassId(final String appClassId) throws CouldNotPerformException, InterruptedException;
+            // Convert the shape into a PolygonsSet
+            List<Vector2D> vertices = floorList.stream()
+                    .map(vec3DDouble -> new Vector2D(vec3DDouble.getX(), vec3DDouble.getY()))
+                    .collect(Collectors.toList());
+            PolygonsSet polygonsSet = new PolygonsSet(0.1, vertices.toArray(new Vector2D[]{}));
+
+            // Transform the given coordinate
+            Transform3D unitTransform = getRootToUnitTransformationFuture(unitConfig).get().getTransform();
+            Point3d transformedCoordinate = new Point3d(coordinate.getX(), coordinate.getY(), coordinate.getZ());
+            unitTransform.transform(transformedCoordinate);
+
+            // NOTE: Hence apache-math builds its polygons counter clockwise unlike bco, the resulting polygon is inverted.
+            // Therefore we check whether the point lies on the outside of the polygon.
+            if (polygonsSet.checkPoint(new Vector2D(transformedCoordinate.x, transformedCoordinate.y)) == Location.OUTSIDE) {
+                result.add(unitConfig);
+            }
+        }
+
+        return result;
+    }
+
+    /**
+     * Method returns all agent unit configs which are based on the given agent class.
+     *
+     * @param agentClass the agent class to identify the units.
+     *
+     * @return a list of matching agent configs.
+     *
+     * @throws CouldNotPerformException is thrown in case the list could not be generated.
+     */
+    default List<UnitConfig> getAgentUnitConfigsByAgentClass(final AgentClass agentClass) throws CouldNotPerformException {
+        return getAgentUnitConfigsByAgentClassId(agentClass.getId());
+    }
+
+    /**
+     * Method returns all agent unit configs which are based on the given agent class.
+     *
+     * @param agentClassId the if of the agent class to identify the units.
+     *
+     * @return a list of matching agent configs.
+     *
+     * @throws CouldNotPerformException is thrown in case the list could not be generated.
+     */
+    default List<UnitConfig> getAgentUnitConfigsByAgentClassId(final String agentClassId) throws CouldNotPerformException {
+        if (!CachedClassRegistryRemote.getRegistry().containsAgentClassById(agentClassId)) {
+            throw new NotAvailableException("agentClassId [" + agentClassId + "]");
+        }
+
+        List<UnitConfig> agentConfigs = new ArrayList<>();
+        for (UnitConfig agentConfig : getUnitConfigs(UnitType.AGENT)) {
+            if (agentConfig.getAgentConfig().getAgentClassId().equals(agentClassId)) {
+                agentConfigs.add(agentConfig);
+            }
+        }
+        return agentConfigs;
+    }
+
+    /**
+     * Method returns all app unit configs which are based on the given app class.
+     *
+     * @param appClass the app class to identify the units.
+     *
+     * @return a list of matching app configs.
+     *
+     * @throws CouldNotPerformException is thrown in case the list could not be generated.
+     */
+    default List<UnitConfig> getAppUnitConfigsByAppClass(final AppClass appClass) throws CouldNotPerformException, InterruptedException {
+        return getAppUnitConfigsByAppClassId(appClass.getId());
+    }
+
+    /**
+     * Method returns all app unit configs which are based on the given app class.
+     *
+     * @param appClassId the if of the app class to identify the units.
+     *
+     * @return a list of matching app configs.
+     *
+     * @throws CouldNotPerformException is thrown in case the list could not be generated.
+     */
+    default List<UnitConfig> getAppUnitConfigsByAppClassId(final String appClassId) throws CouldNotPerformException, InterruptedException {
+        if (!CachedClassRegistryRemote.getRegistry().containsAppClassById(appClassId)) {
+            throw new NotAvailableException("appClassId [" + appClassId + "]");
+        }
+
+        final List<UnitConfig> appConfigs = new ArrayList<>();
+        for (UnitConfig appConfig : getUnitConfigs(UnitType.APP)) {
+            if (appConfig.getAppConfig().getAppClassId().equals(appClassId)) {
+                appConfigs.add(appConfig);
+            }
+        }
+        return appConfigs;
+    }
+
+//    Not yet implemented so temporally removed from interface
+//
+//    /**
+//     * Method returns a list of probably intersected units by the given 3D ray.
+//     * This could for example be useful for selecting units by pointing gestures.
+//     *
+//     * @param pointingRay3DFloat ray which probably intersects with a specific unit priorized by a given certainty.
+//     *
+//     * @return a collection of probably intersected units referred by there id.
+//     *
+//     * @throws CouldNotPerformException is thrown in case the computation could not be performed.
+//     */
+//    @RPCMethod
+//    Future<UnitProbabilityCollection> computeUnitIntersection(final PointingRay3DFloat pointingRay3DFloat) throws CouldNotPerformException;
+//
+//    /**
+//     * Method returns a list of probably intersected units by the given 3D rays.
+//     * This could for example be useful for selecting units by pointing gestures.
+//     *
+//     * @param pointingRay3DFloatCollection a collection of rays which probably intersects with a specific unit priorized by a given certainty.
+//     *
+//     * @return a collection of probably intersected units referred by there id.
+//     *
+//     * @throws CouldNotPerformException is thrown in case the computation could not be performed.
+//     */
+//    @RPCMethod
+//    Future<UnitProbabilityCollection> computeUnitIntersection(final PointingRay3DFloatCollection pointingRay3DFloatCollection) throws CouldNotPerformException;
 
 }

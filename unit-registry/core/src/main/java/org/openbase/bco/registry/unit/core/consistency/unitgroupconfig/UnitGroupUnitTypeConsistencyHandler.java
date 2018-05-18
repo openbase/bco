@@ -22,6 +22,8 @@ package org.openbase.bco.registry.unit.core.consistency.unitgroupconfig;
  * #L%
  */
 import java.util.List;
+
+import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -43,12 +45,6 @@ import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
  */
 public class UnitGroupUnitTypeConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
-    private final ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> unitTemplateRegistry;
-
-    public UnitGroupUnitTypeConsistencyHandler(ProtoBufFileSynchronizedRegistry<String, UnitTemplate, UnitTemplate.Builder, UnitRegistryData.Builder> unitTemplateRegistry) {
-        this.unitTemplateRegistry = unitTemplateRegistry;
-    }
-
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder unitGroupUnitConfig = entry.getMessage().toBuilder();
@@ -56,7 +52,8 @@ public class UnitGroupUnitTypeConsistencyHandler extends AbstractProtoBufRegistr
 
         if (unitGroup.hasUnitType() && !(unitGroup.getUnitType() == UnitType.UNKNOWN)) {
             if (unitGroup.getServiceDescriptionList().isEmpty()) {
-                unitGroup.addAllServiceDescription(getUnitTemplateByType(unitGroup.getUnitType()).getServiceDescriptionList());
+                final UnitTemplate template = CachedTemplateRegistryRemote.getRegistry().getUnitTemplateByType(unitGroup.getUnitType());
+                unitGroup.addAllServiceDescription(template.getServiceDescriptionList());
                 throw new EntryModification(entry.setMessage(unitGroupUnitConfig), this);
             }
             if (!unitTemplateHasSameServices(unitGroup.getUnitType(), unitGroup.getServiceDescriptionList())) {
@@ -67,19 +64,10 @@ public class UnitGroupUnitTypeConsistencyHandler extends AbstractProtoBufRegistr
     }
 
     private boolean unitTemplateHasSameServices(UnitType unitType, List<ServiceDescription> serviceDescription) throws CouldNotPerformException {
-        UnitTemplate unitTemplate = getUnitTemplateByType(unitType);
+        final UnitTemplate unitTemplate = CachedTemplateRegistryRemote.getRegistry().getUnitTemplateByType(unitType);
         if (!serviceDescription.stream().noneMatch((serviceTemplate) -> (!unitTemplate.getServiceDescriptionList().contains(serviceTemplate)))) {
             return false;
         }
         return unitTemplate.getServiceDescriptionList().stream().noneMatch((serviceType) -> (!serviceDescription.contains(serviceType)));
-    }
-
-    private UnitTemplate getUnitTemplateByType(UnitType unitType) throws CouldNotPerformException {
-        for (UnitTemplate unitTemplate : unitTemplateRegistry.getMessages()) {
-            if (unitTemplate.getType() == unitType) {
-                return unitTemplate;
-            }
-        }
-        throw new NotAvailableException(UnitTemplate.class, unitType.name());
     }
 }
