@@ -56,14 +56,15 @@
     <dependencies>
         <dependency>
             <groupId>org.openbase</groupId>
-            <artifactId>jul.storage</artifactId>
-            <version>${dependency.jul.version}</version>
-            <type>jar</type>
-        </dependency>
-        <dependency>
-            <groupId>org.openbase</groupId>
             <artifactId>bco.registry.lib</artifactId>
             <version>${project.version}</version>
+            <type>jar</type>
+        </dependency>
+
+        <dependency>
+            <groupId>org.openbase</groupId>
+            <artifactId>jul.storage</artifactId>
+            <version>${dependency.jul.version}</version>
             <type>jar</type>
         </dependency>
         <dependency>

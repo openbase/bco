@@ -65,11 +65,7 @@
             <version>4.12</version>
             <scope>test</scope>
         </dependency>
-        <dependency>
-            <groupId>org.openbase</groupId>
-            <artifactId>bco.registry.template.lib</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+
         <dependency>
             <groupId>org.openbase</groupId>
             <artifactId>bco.registry.template.core</artifactId>

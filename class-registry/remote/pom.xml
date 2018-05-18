@@ -59,11 +59,7 @@
             <artifactId>bco.registry.class.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.openbase</groupId>
-            <artifactId>bco.registry.unit.remote</artifactId>
-            <version>${project.version}</version>
-        </dependency>
+
         <dependency>
             <groupId>org.openbase</groupId>
             <artifactId>jul.storage</artifactId>

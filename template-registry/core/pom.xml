@@ -84,6 +84,7 @@
             <artifactId>bco.registry.template.lib</artifactId>
             <version>${project.version}</version>
         </dependency>
+
         <dependency>
             <groupId>org.openbase</groupId>
             <artifactId>jul.extension.rsb.scope</artifactId>
