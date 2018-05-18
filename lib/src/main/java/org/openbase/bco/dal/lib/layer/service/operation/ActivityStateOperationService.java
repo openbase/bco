@@ -27,6 +27,7 @@ import org.openbase.bco.dal.lib.layer.service.provider.ActivityStateProviderServ
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.state.ActivityStateType.ActivityState;
 
 /**
  *
