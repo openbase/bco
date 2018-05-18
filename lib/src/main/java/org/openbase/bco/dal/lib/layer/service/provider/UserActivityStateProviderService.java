@@ -24,14 +24,14 @@ package org.openbase.bco.dal.lib.layer.service.provider;
 
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.iface.annotations.RPCMethod;
-import rst.domotic.state.UserActivityStateType.UserActivityState;
+import rst.domotic.state.ActivityStateType.ActivityState;
 
 /**
  *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface UserActivityStateProviderService extends ProviderService{
+public interface ActivityStateProviderService extends ProviderService{
     
     @RPCMethod
-    public UserActivityState getUserActivityState() throws NotAvailableException;
+    public ActivityState getActivityState() throws NotAvailableException;
 }

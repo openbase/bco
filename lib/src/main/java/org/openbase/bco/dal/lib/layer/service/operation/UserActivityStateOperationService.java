@@ -23,19 +23,18 @@ package org.openbase.bco.dal.lib.layer.service.operation;
  */
 
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.service.provider.UserActivityStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.ActivityStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.annotations.RPCMethod;
 import rst.domotic.action.ActionFutureType.ActionFuture;
-import rst.domotic.state.UserActivityStateType.UserActivityState;
 
 /**
  *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface UserActivityStateOperationService extends OperationService, UserActivityStateProviderService{
+public interface UserActivityStateOperationService extends OperationService, ActivityStateProviderService{
     
     @RPCMethod
-    public Future<ActionFuture> setUserActivityState(UserActivityState userActivityState) throws CouldNotPerformException;
+    public Future<ActionFuture> setActivityState(ActivityState activityState) throws CouldNotPerformException;
     
 }

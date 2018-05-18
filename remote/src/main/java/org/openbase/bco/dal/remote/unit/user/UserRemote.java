@@ -35,7 +35,7 @@ import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.state.UserActivityStateType.UserActivityState;
+import rst.domotic.state.ActivityStateType.ActivityState;
 import rst.domotic.state.UserPresenceStateType.UserPresenceState;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 import rst.domotic.unit.user.UserDataType.UserData;
@@ -57,9 +57,9 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
     }
 
     @Override
-    public UserActivityState getUserActivityState() throws NotAvailableException {
+    public ActivityState getActivityState() throws NotAvailableException {
         try {
-            return getData().getUserActivityState();
+            return getData().getActivityState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("user activity", ex);
         }
@@ -75,15 +75,15 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
     }
 
     @Override
-    public Future<ActionFuture> setUserActivityState(UserActivityState userActivityState) throws CouldNotPerformException {
+    public Future<ActionFuture> setActivityState(ActivityState activityState) throws CouldNotPerformException {
         //TODO: services for Users have to registered, see dal issue 44
         ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
         try {
-            return applyAction(updateActionDescription(actionDescription, userActivityState, ServiceType.USER_ACTIVITY_STATE_SERVICE).build());
+            return applyAction(updateActionDescription(actionDescription, activityState, ServiceType.USER_ACTIVITY_STATE_SERVICE).build());
         } catch (InterruptedException ex) {
             throw new CouldNotPerformException("Interrupted while setting activationState.", ex);
         }
-//        return RPCHelper.callRemoteMethod(userActivityState, this, Void.class);
+//        return RPCHelper.callRemoteMethod(activityState, this, Void.class);
     }
 
     @Override

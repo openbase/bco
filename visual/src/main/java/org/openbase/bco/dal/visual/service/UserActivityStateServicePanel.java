@@ -26,38 +26,38 @@ import java.util.Collections;
 import java.util.List;
 import javax.swing.DefaultComboBoxModel;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
-import org.openbase.bco.dal.lib.layer.service.operation.UserActivityStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.provider.UserActivityStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.operation.ActivityStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.provider.ActivityStateProviderService;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Observable;
-import rst.domotic.activity.UserActivityConfigType.UserActivityConfig;
-import rst.domotic.registry.UserActivityRegistryDataType.UserActivityRegistryData;
-import rst.domotic.state.UserActivityStateType.UserActivityState;
+import rst.domotic.activity.ActivityConfigType.ActivityConfig;
+import rst.domotic.registry.ActivityRegistryDataType.ActivityRegistryData;
+import rst.domotic.state.ActivityStateType.ActivityState;
 
 /**
  *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public class UserActivityStateServicePanel extends AbstractServicePanel<UserActivityStateProviderService, ConsumerService, UserActivityStateOperationService> {
+public class ActivityStateServicePanel extends AbstractServicePanel<ActivityStateProviderService, ConsumerService, ActivityStateOperationService> {
 
     /**
-     * Creates new form UserActivityStateServicePanel
+     * Creates new form ActivityStateServicePanel
      *
      * @throws org.openbase.jul.exception.InstantiationException
      */
-    public UserActivityStateServicePanel() throws org.openbase.jul.exception.InstantiationException {
+    public ActivityStateServicePanel() throws org.openbase.jul.exception.InstantiationException {
         initComponents();
         initDynamicComponents();
     }
     
     private void initDynamicComponents() throws org.openbase.jul.exception.InstantiationException {
         try {
-            Registries.getUserActivityRegistry(true);
+            Registries.getActivityRegistry(true);
             updateComboBoxModel();
             
-            Registries.getUserActivityRegistry().addDataObserver((Observable<UserActivityRegistryData> source, UserActivityRegistryData data) -> {
+            Registries.getActivityRegistry().addDataObserver((Observable<ActivityRegistryData> source, ActivityRegistryData data) -> {
                 updateComboBoxModel();
             });
         } catch (CouldNotPerformException ex) {
@@ -68,19 +68,19 @@ public class UserActivityStateServicePanel extends AbstractServicePanel<UserActi
     }
     
     private void updateComboBoxModel() throws InterruptedException, CouldNotPerformException {
-        Object selected = userActivityComboBox.getModel().getSelectedItem();
+        Object selected = activityComboBox.getModel().getSelectedItem();
         
-        List<UserActivityConfigHolder> userActivityConfigHolderList = new ArrayList<>();
-        for (UserActivityConfig userActivityConfig : Registries.getUserActivityRegistry().getUserActivityConfigs()) {
-            userActivityConfigHolderList.add(new UserActivityConfigHolder(userActivityConfig));
+        List<ActivityConfigHolder> activityConfigHolderList = new ArrayList<>();
+        for (ActivityConfig activityConfig : Registries.getActivityRegistry().getActivityConfigs()) {
+            activityConfigHolderList.add(new ActivityConfigHolder(activityConfig));
         }
-        Collections.sort(userActivityConfigHolderList);
-        userActivityComboBox.setModel(new DefaultComboBoxModel(userActivityConfigHolderList.toArray()));
+        Collections.sort(activityConfigHolderList);
+        activityComboBox.setModel(new DefaultComboBoxModel(activityConfigHolderList.toArray()));
         
         if (selected != null) {
-            userActivityComboBox.getModel().setSelectedItem(selected);
+            activityComboBox.getModel().setSelectedItem(selected);
         } else {
-            userActivityComboBox.getModel().setSelectedItem(userActivityComboBox.getModel().getElementAt(0));
+            activityComboBox.getModel().setSelectedItem(activityComboBox.getModel().getElementAt(0));
         }
     }
 
@@ -94,30 +94,30 @@ public class UserActivityStateServicePanel extends AbstractServicePanel<UserActi
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        userActivityStatePanel = new javax.swing.JPanel();
-        userActivityStateLabel = new javax.swing.JLabel();
-        userActivityComboBox = new javax.swing.JComboBox();
+        activityStatePanel = new javax.swing.JPanel();
+        activityStateLabel = new javax.swing.JLabel();
+        activityComboBox = new javax.swing.JComboBox();
 
-        userActivityStatePanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 3));
+        activityStatePanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 3));
 
-        userActivityStateLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        userActivityStateLabel.setText("UserActivityState");
+        activityStateLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        activityStateLabel.setText("ActivityState");
 
-        javax.swing.GroupLayout userActivityStatePanelLayout = new javax.swing.GroupLayout(userActivityStatePanel);
-        userActivityStatePanel.setLayout(userActivityStatePanelLayout);
-        userActivityStatePanelLayout.setHorizontalGroup(
-            userActivityStatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(userActivityStateLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+        javax.swing.GroupLayout activityStatePanelLayout = new javax.swing.GroupLayout(activityStatePanel);
+        activityStatePanel.setLayout(activityStatePanelLayout);
+        activityStatePanelLayout.setHorizontalGroup(
+            activityStatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(activityStateLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
         );
-        userActivityStatePanelLayout.setVerticalGroup(
-            userActivityStatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(userActivityStateLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
+        activityStatePanelLayout.setVerticalGroup(
+            activityStatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(activityStateLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
         );
 
-        userActivityComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        userActivityComboBox.addActionListener(new java.awt.event.ActionListener() {
+        activityComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        activityComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                userActivityComboBoxActionPerformed(evt);
+                activityComboBoxActionPerformed(evt);
             }
         });
 
@@ -125,48 +125,48 @@ public class UserActivityStateServicePanel extends AbstractServicePanel<UserActi
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(userActivityStatePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(userActivityComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(activityStatePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(activityComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(userActivityStatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(activityStatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(userActivityComboBox, javax.swing.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE))
+                .addComponent(activityComboBox, javax.swing.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void userActivityComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userActivityComboBoxActionPerformed
-        Object selected = userActivityComboBox.getModel().getSelectedItem();
-        if (!(selected instanceof UserActivityConfigHolder)) {
+    private void activityComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_activityComboBoxActionPerformed
+        Object selected = activityComboBox.getModel().getSelectedItem();
+        if (!(selected instanceof ActivityConfigHolder)) {
             return;
         }
         
-        UserActivityConfigHolder selectedActivity = (UserActivityConfigHolder) selected;
-        UserActivityState userActivityState = UserActivityState.newBuilder().setActivityId(selectedActivity.getUserActivityConfig().getId()).build();
+        ActivityConfigHolder selectedActivity = (ActivityConfigHolder) selected;
+        ActivityState activityState = ActivityState.newBuilder().setActivityId(selectedActivity.getActivityConfig().getId()).build();
         try {
-            notifyActionProcessing(getOperationService().setUserActivityState(userActivityState));
+            notifyActionProcessing(getOperationService().setActivityState(activityState));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set user activity state!", ex), logger);
         }
-    }//GEN-LAST:event_userActivityComboBoxActionPerformed
+    }//GEN-LAST:event_activityComboBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox userActivityComboBox;
-    private javax.swing.JLabel userActivityStateLabel;
-    private javax.swing.JPanel userActivityStatePanel;
+    private javax.swing.JComboBox activityComboBox;
+    private javax.swing.JLabel activityStateLabel;
+    private javax.swing.JPanel activityStatePanel;
     // End of variables declaration//GEN-END:variables
 
     @Override
     protected void updateDynamicComponents() {
         try {
-            if (getProviderService().getUserActivityState().hasActivityId() && !getProviderService().getUserActivityState().getActivityId().isEmpty()) {
-                UserActivityConfig userActivityConfig = Registries.getUserActivityRegistry().getUserActivityConfigById(getProviderService().getUserActivityState().getActivityId());
-                logger.info("state: " + userActivityConfig.getLabel());
-                userActivityComboBox.getModel().setSelectedItem(new UserActivityConfigHolder(userActivityConfig));
-                userActivityStateLabel.setText("Current UserActivityState = " + userActivityConfig.getLabel());
+            if (getProviderService().getActivityState().hasActivityId() && !getProviderService().getActivityState().getActivityId().isEmpty()) {
+                ActivityConfig activityConfig = Registries.getActivityRegistry().getActivityConfigById(getProviderService().getActivityState().getActivityId());
+                logger.info("state: " + activityConfig.getLabel());
+                activityComboBox.getModel().setSelectedItem(new ActivityConfigHolder(activityConfig));
+                activityStateLabel.setText("Current ActivityState = " + activityConfig.getLabel());
             }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger);
@@ -175,26 +175,26 @@ public class UserActivityStateServicePanel extends AbstractServicePanel<UserActi
         }
     }
     
-    public static class UserActivityConfigHolder implements Comparable<UserActivityConfigHolder> {
+    public static class ActivityConfigHolder implements Comparable<ActivityConfigHolder> {
         
-        private final UserActivityConfig userActivityConfig;
+        private final ActivityConfig activityConfig;
         
-        public UserActivityConfigHolder(final UserActivityConfig userActivityConfig) {
-            this.userActivityConfig = userActivityConfig;
+        public ActivityConfigHolder(final ActivityConfig activityConfig) {
+            this.activityConfig = activityConfig;
         }
         
         @Override
         public String toString() {
-            return this.userActivityConfig.getLabel();
+            return this.activityConfig.getLabel();
         }
         
         @Override
-        public int compareTo(UserActivityConfigHolder o) {
-            return this.userActivityConfig.getLabel().compareTo(o.getUserActivityConfig().getLabel());
+        public int compareTo(ActivityConfigHolder o) {
+            return this.activityConfig.getLabel().compareTo(o.getActivityConfig().getLabel());
         }
         
-        public UserActivityConfig getUserActivityConfig() {
-            return userActivityConfig;
+        public ActivityConfig getActivityConfig() {
+            return activityConfig;
         }
     }
 }

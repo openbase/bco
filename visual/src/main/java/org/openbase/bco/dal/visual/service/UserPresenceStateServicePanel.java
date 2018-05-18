@@ -39,7 +39,7 @@ import rst.domotic.state.UserPresenceStateType.UserPresenceState;
 public class UserPresenceStateServicePanel extends AbstractServicePanel<UserPresenceStateProviderService, ConsumerService, UserPresenceStateOperationService> {
 
     /**
-     * Creates new form UserActivityStateServicePanel
+     * Creates new form ActivityStateServicePanel
      *
      * @throws org.openbase.jul.exception.InstantiationException
      */
@@ -65,7 +65,7 @@ public class UserPresenceStateServicePanel extends AbstractServicePanel<UserPres
         userPresenceStatePanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 3));
 
         userPresenceStateLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        userPresenceStateLabel.setText("UserActivityState");
+        userPresenceStateLabel.setText("ActivityState");
 
         javax.swing.GroupLayout userPresenceStatePanelLayout = new javax.swing.GroupLayout(userPresenceStatePanel);
         userPresenceStatePanel.setLayout(userPresenceStatePanelLayout);
