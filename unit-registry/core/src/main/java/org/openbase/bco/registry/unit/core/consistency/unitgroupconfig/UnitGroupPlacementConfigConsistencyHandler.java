@@ -246,8 +246,6 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
             }
 
             try {
-//                CachedLocationRegistryRemote.getRegistry().waitForData();
-//                Shape unitShape = CachedLocationRegistryRemote.getRegistry().getUnitShape((UnitConfig) unitConfig);
                 Shape unitShape = getUnitShape(unitConfig);
                 if (unitShape.hasBoundingBox()) {
                     AxisAlignedBoundingBox3DFloat boundingBox = unitShape.getBoundingBox();
@@ -259,7 +257,7 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
                 if (!(ex instanceof NotAvailableException)) {
-                    throw new CouldNotPerformException("CachedLocationRegistryRemote not available.", ex);
+                    throw new CouldNotPerformException("Registry not available.", ex);
                 }
                 // The other case should lead to the following code aswell.
             }
