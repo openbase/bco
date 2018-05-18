@@ -29,12 +29,12 @@ import org.openbase.bco.registry.agent.core.AgentRegistryLauncher;
 import org.openbase.bco.registry.app.core.AppRegistryLauncher;
 import org.openbase.bco.registry.device.core.ClassRegistryLauncher;
 import org.openbase.bco.registry.lib.BCO;
+import org.openbase.bco.registry.activity.core.ActivityRegistryLauncher;
 import org.openbase.bco.registry.user.core.UserRegistryLauncher;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
 import org.openbase.bco.registry.location.core.LocationRegistryLauncher;
 import org.openbase.bco.registry.scene.core.SceneRegistryLauncher;
 import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;
-import org.openbase.bco.registry.user.activity.core.UserActivityRegistryLauncher;
 import org.openbase.jul.storage.registry.Registry;
 
 public class RegistryLauncher {
@@ -53,7 +53,7 @@ public class RegistryLauncher {
                 LocationRegistryLauncher.class,
                 UserRegistryLauncher.class,
                 SceneRegistryLauncher.class,
-                UserActivityRegistryLauncher.class
+                ActivityRegistryLauncher.class
         );
     }
 }

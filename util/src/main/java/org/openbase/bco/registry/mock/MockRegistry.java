@@ -45,9 +45,9 @@ import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
-import org.openbase.bco.registry.user.activity.core.UserActivityRegistryLauncher;
-import org.openbase.bco.registry.user.activity.lib.UserActivityRegistry;
-import org.openbase.bco.registry.user.activity.remote.CachedUserActivityRegistryRemote;
+import org.openbase.bco.registry.activity.core.ActivityRegistryLauncher;
+import org.openbase.bco.registry.activity.lib.ActivityRegistry;
+import org.openbase.bco.registry.activity.remote.CachedActivityRegistryRemote;
 import org.openbase.bco.registry.user.core.UserRegistryLauncher;
 import org.openbase.bco.registry.user.lib.UserRegistry;
 import org.openbase.bco.registry.user.remote.CachedUserRegistryRemote;
@@ -151,7 +151,7 @@ public class MockRegistry {
     private static SceneRegistryLauncher sceneRegistryLauncher;
     private static UserRegistryLauncher userRegistryLauncher;
     private static UnitRegistryLauncher unitRegistryLauncher;
-    private static UserActivityRegistryLauncher userActivityRegistryLauncher;
+    private static ActivityRegistryLauncher activityRegistryLauncher;
 
     private static DeviceRegistry deviceRegistry;
     private static LocationRegistry locationRegistry;
@@ -160,7 +160,7 @@ public class MockRegistry {
     private static SceneRegistry sceneRegistry;
     private static UserRegistry userRegisty;
     private static UnitRegistry unitRegistry;
-    private static UserActivityRegistry userActivityRegistry;
+    private static ActivityRegistry userActivityRegistry;
 
     private static UnitConfig paradiseLocation;
     private static UnitConfig hellLocation;
@@ -361,9 +361,9 @@ public class MockRegistry {
             }));
             registryStartupTasks.add(GlobalCachedExecutorService.submit(() -> {
                 try {
-                    userActivityRegistryLauncher = new UserActivityRegistryLauncher();
-                    userActivityRegistryLauncher.launch();
-                    userActivityRegistry = userActivityRegistryLauncher.getLaunchable();
+                    activityRegistryLauncher = new ActivityRegistryLauncher();
+                    activityRegistryLauncher.launch();
+                    userActivityRegistry = activityRegistryLauncher.getLaunchable();
                 } catch (CouldNotPerformException ex) {
                     throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER, LogLevel.ERROR);
                 }
@@ -501,8 +501,8 @@ public class MockRegistry {
             authenticatorLauncher.shutdown();
         }
 
-        if (userActivityRegistryLauncher != null) {
-            userActivityRegistryLauncher.shutdown();
+        if (activityRegistryLauncher != null) {
+            activityRegistryLauncher.shutdown();
         }
 
         SessionManager.getInstance().completeLogout();
@@ -518,7 +518,7 @@ public class MockRegistry {
 
         CachedUnitRegistryRemote.shutdown();
 
-        CachedUserActivityRegistryRemote.shutdown();
+        CachedActivityRegistryRemote.shutdown();
     }
 
     private void registerLocations() throws CouldNotPerformException, InterruptedException {

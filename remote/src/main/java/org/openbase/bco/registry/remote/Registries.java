@@ -35,8 +35,8 @@ import org.openbase.bco.registry.scene.remote.CachedSceneRegistryRemote;
 import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
-import org.openbase.bco.registry.user.activity.remote.CachedUserActivityRegistryRemote;
-import org.openbase.bco.registry.user.activity.remote.UserActivityRegistryRemote;
+import org.openbase.bco.registry.activity.remote.CachedActivityRegistryRemote;
+import org.openbase.bco.registry.activity.remote.ActivityRegistryRemote;
 import org.openbase.bco.registry.user.remote.CachedUserRegistryRemote;
 import org.openbase.bco.registry.user.remote.UserRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -139,8 +139,8 @@ public class Registries {
      * @throws NotAvailableException
      * @throws InterruptedException is thrown if thread is externally interrupted.
      */
-    public static UserActivityRegistryRemote getUserActivityRegistry() throws NotAvailableException {
-        return CachedUserActivityRegistryRemote.getRegistry();
+    public static ActivityRegistryRemote getUserActivityRegistry() throws NotAvailableException {
+        return CachedActivityRegistryRemote.getRegistry();
     }
 
     /**
@@ -267,11 +267,11 @@ public class Registries {
      * @throws NotAvailableException
      * @throws InterruptedException is thrown if thread is externally interrupted.
      */
-    public static UserActivityRegistryRemote getUserActivityRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
+    public static ActivityRegistryRemote getUserActivityRegistry(final boolean waitForData) throws CouldNotPerformException, InterruptedException {
         if (waitForData) {
-            CachedUserActivityRegistryRemote.getRegistry().waitForData();
+            CachedActivityRegistryRemote.getRegistry().waitForData();
         }
-        return CachedUserActivityRegistryRemote.getRegistry();
+        return CachedActivityRegistryRemote.getRegistry();
     }
 
     /**
@@ -290,7 +290,7 @@ public class Registries {
         CachedLocationRegistryRemote.shutdown();
         CachedSceneRegistryRemote.shutdown();
         CachedUserRegistryRemote.shutdown();
-        CachedUserActivityRegistryRemote.shutdown();
+        CachedActivityRegistryRemote.shutdown();
     }
 
     /**
@@ -307,7 +307,7 @@ public class Registries {
         CachedLocationRegistryRemote.waitForData();
         CachedSceneRegistryRemote.waitForData();
         CachedUserRegistryRemote.waitForData();
-        CachedUserActivityRegistryRemote.waitForData();
+        CachedActivityRegistryRemote.waitForData();
     }
 
     public static boolean isDataAvailable() {
@@ -319,7 +319,7 @@ public class Registries {
                     && CachedLocationRegistryRemote.getRegistry().isDataAvailable()
                     && CachedSceneRegistryRemote.getRegistry().isDataAvailable()
                     && CachedUserRegistryRemote.getRegistry().isDataAvailable()
-                    && CachedUserActivityRegistryRemote.getRegistry().isDataAvailable();
+                    && CachedActivityRegistryRemote.getRegistry().isDataAvailable();
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         } catch (NotAvailableException ex) {
@@ -342,7 +342,7 @@ public class Registries {
         CachedLocationRegistryRemote.reinitialize();
         CachedSceneRegistryRemote.reinitialize();
         CachedUserRegistryRemote.reinitialize();
-        CachedUserActivityRegistryRemote.reinitialize();
+        CachedActivityRegistryRemote.reinitialize();
     }
 
     /**
@@ -361,6 +361,6 @@ public class Registries {
         CachedLocationRegistryRemote.waitUntilReady();
         CachedSceneRegistryRemote.waitUntilReady();
         CachedUserRegistryRemote.waitUntilReady();
-        CachedUserActivityRegistryRemote.waitUntilReady();
+        CachedActivityRegistryRemote.waitUntilReady();
     }
 }
