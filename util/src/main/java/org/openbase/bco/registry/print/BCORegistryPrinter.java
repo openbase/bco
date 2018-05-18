@@ -65,31 +65,31 @@ public class BCORegistryPrinter {
         deviceNumberByClassMap = new HashMap<>();
         unitNumberByTypeMap = new HashMap<>();
         serviceNumberByTypeMap = new HashMap<>();
-        Registries.getDeviceRegistry().waitForData();
+        Registries.getClassRegistry().waitForData();
 
         // calculate max unit label length
         int maxUnitLabelLength = 0;
 
         // prepare devices
-        for (DeviceClass deviceClass : Registries.getDeviceRegistry().getDeviceClasses()) {
+        for (DeviceClass deviceClass : Registries.getClassRegistry().getDeviceClasses()) {
             maxUnitLabelLength = Math.max(maxUnitLabelLength, deviceClass.getLabel().length());
             deviceNumberByClassMap.put(deviceClass.getId(), 0);
         }
-        for (UnitConfig deviceUnitConfig : Registries.getDeviceRegistry().getDeviceConfigs()) {
+        for (UnitConfig deviceUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.DEVICE)) {
             deviceNumberByClassMap.put(deviceUnitConfig.getDeviceConfig().getDeviceClassId(), deviceNumberByClassMap.get(deviceUnitConfig.getDeviceConfig().getDeviceClassId()) + 1);
         }
 
         // prepare units
         for (UnitType unitType : UnitType.values()) {
             maxUnitLabelLength = Math.max(maxUnitLabelLength, unitType.name().length());
-            int unitsPerType = Registries.getDeviceRegistry().getUnitConfigs(unitType).size();
+            int unitsPerType = Registries.getUnitRegistry().getUnitConfigs(unitType).size();
             unitNumberByTypeMap.put(unitType, unitsPerType);
         }
 
         // prepare services
         for (ServiceType serviceType : ServiceType.values()) {
             maxUnitLabelLength = Math.max(maxUnitLabelLength, serviceType.name().length());
-            int servicesPerType = Registries.getDeviceRegistry().getServiceConfigs(serviceType).size();
+            int servicesPerType = Registries.getUnitRegistry().getServiceConfigs(serviceType).size();
             serviceNumberByTypeMap.put(serviceType, servicesPerType);
         }
 
@@ -101,17 +101,12 @@ public class BCORegistryPrinter {
         // print device category
         System.out.println("");
         System.out.println(LINE_DELIMITER_FAT);
-        printEntry("Devices", Registries.getDeviceRegistry().getDeviceConfigs().size());
+        printEntry("Devices", Registries.getUnitRegistry().getUnitConfigs(UnitType.DEVICE).size());
         System.out.println(LINE_DELIMITER_FAT);
 
         // sort devices
-        List<DeviceClass> devicesList = Registries.getDeviceRegistry().getDeviceClasses();
-        Collections.sort(devicesList, new Comparator<DeviceClass>() {
-            @Override
-            public int compare(DeviceClass o1, DeviceClass o2) {
-                return o1.getLabel().compareTo(o2.getLabel());
-            }
-        });
+        List<DeviceClass> devicesList = Registries.getClassRegistry().getDeviceClasses();
+        Collections.sort(devicesList, Comparator.comparing(DeviceClass::getLabel));
 
         // print devices
         for (DeviceClass deviceClass : devicesList) {
@@ -130,12 +125,7 @@ public class BCORegistryPrinter {
 
         // sort units
         List<UnitType> unitServiceList = Arrays.asList(UnitType.values());
-        Collections.sort(unitServiceList, new Comparator<UnitType>() {
-            @Override
-            public int compare(UnitType o1, UnitType o2) {
-                return o1.name().compareTo(o2.name());
-            }
-        });
+        Collections.sort(unitServiceList, Comparator.comparing(Enum::name));
 
         // print units
         for (UnitType unitType : unitServiceList) {
@@ -157,12 +147,7 @@ public class BCORegistryPrinter {
 
         // sort services
         List<ServiceType> servicesServiceList = Arrays.asList(ServiceType.values());
-        Collections.sort(servicesServiceList, new Comparator<ServiceType>() {
-            @Override
-            public int compare(ServiceType o1, ServiceType o2) {
-                return o1.name().compareTo(o2.name());
-            }
-        });
+        Collections.sort(servicesServiceList, Comparator.comparing(Enum::name));
 
         // print services
         for (ServiceType serviceType : servicesServiceList) {
