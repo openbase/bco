@@ -215,9 +215,9 @@ public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegis
         List<ActivityConfig> activityConfigList = new ArrayList<>();
 
         String activityTemplateId = CachedTemplateRegistryRemote.getRegistry().getActivityTemplateByType(activityType).getId();
-        for (ActivityConfig userActivityConfig : getActivityConfigs()) {
-            if (userActivityConfig.getActivityTemplateId().equals(activityTemplateId)) {
-                activityConfigList.add(userActivityConfig);
+        for (ActivityConfig activityConfig : getActivityConfigs()) {
+            if (activityConfig.getActivityTemplateId().equals(activityTemplateId)) {
+                activityConfigList.add(activityConfig);
             }
         }
         return activityConfigList;

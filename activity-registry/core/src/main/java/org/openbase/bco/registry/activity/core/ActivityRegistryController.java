@@ -271,14 +271,14 @@ public class ActivityRegistryController extends AbstractRegistryController<Activ
      */
     @Override
     public List<ActivityConfig> getActivityConfigsByType(final ActivityType activityType) throws CouldNotPerformException {
-        final List<ActivityConfig> userActivityConfigList = new ArrayList<>();
+        final List<ActivityConfig> activityConfigList = new ArrayList<>();
 
         final String activityTemplateId = CachedTemplateRegistryRemote.getRegistry().getActivityTemplateByType(activityType).getId();
-        for (final ActivityConfig userActivityConfig : activityConfigRegistry.getMessages()) {
-            if (userActivityConfig.getActivityTemplateId().equals(activityTemplateId)) {
-                userActivityConfigList.add(userActivityConfig);
+        for (final ActivityConfig activityConfig : activityConfigRegistry.getMessages()) {
+            if (activityConfig.getActivityTemplateId().equals(activityTemplateId)) {
+                activityConfigList.add(activityConfig);
             }
         }
-        return userActivityConfigList;
+        return activityConfigList;
     }
 }

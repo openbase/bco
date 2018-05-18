@@ -34,7 +34,7 @@ import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.activity.ActivityConfigType.ActivityConfig;
 
 /**
- * Consistency handler validating that a UserActivityCOnfig has a class id
+ * Consistency handler validating that a ActivityCOnfig has a class id
  * and the class to that id exists.
  *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>

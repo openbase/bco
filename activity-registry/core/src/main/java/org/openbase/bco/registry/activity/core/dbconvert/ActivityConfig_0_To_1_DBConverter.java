@@ -31,8 +31,8 @@ import java.io.File;
 import java.util.Map;
 
 /**
- * With the registry simplification UserActivityClass became ActivityTemplate.
- * Thus the id field in UserActivityConfig (which is now ActivityConfig) has been renamed.
+ * With the registry simplification ActivityClass became ActivityTemplate.
+ * Thus the id field in ActivityConfig (which is now ActivityConfig) has been renamed.
  * This converter updates the id field accordingly.
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
