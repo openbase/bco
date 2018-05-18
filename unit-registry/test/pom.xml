@@ -67,45 +67,9 @@
         </dependency>
         <dependency>
             <groupId>org.openbase</groupId>
-            <artifactId>bco.registry.unit.lib</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openbase</groupId>
-            <artifactId>bco.registry.unit.core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openbase</groupId>
-            <artifactId>bco.registry.device.core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openbase</groupId>
-            <artifactId>bco.registry.location.core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openbase</groupId>
-            <artifactId>bco.registry.agent.core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openbase</groupId>
             <artifactId>bco.registry.util</artifactId>
             <version>${project.version}</version>
         </dependency>
-        <dependency>
-            <groupId>org.openbase</groupId>
-            <artifactId>bco.registry.app.core</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        <dependency>
-            <groupId>org.openbase</groupId>
-            <artifactId>bco.registry.unit.remote</artifactId>
-            <version>${project.version}</version>
-        </dependency>
-        
         <dependency>
             <groupId>org.openbase</groupId>
             <artifactId>bco.authentication.core</artifactId>

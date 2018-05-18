@@ -22,6 +22,7 @@ package org.openbase.bco.registry.unit.core.consistency;
  * #L%
  */
 
+import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -49,13 +50,13 @@ public class ServiceConfigServiceTemplateIdConsistencyHandler extends AbstractPr
 
         boolean modification = false;
         for (ServiceConfig.Builder serviceConfig : unitConfig.getServiceConfigBuilderList()) {
-            ServiceDescription.Builder serviceDescription = serviceConfig.getServiceDescriptionBuilder();
+            final ServiceDescription.Builder serviceDescription = serviceConfig.getServiceDescriptionBuilder();
             if (serviceDescription.getServiceTemplateId().isEmpty()) {
                 if (!serviceDescription.hasType()) {
                     throw new NotAvailableException("ServiceType");
                 }
 
-                serviceDescription.setServiceTemplateId(getServiceIdByType(serviceDescription.getType()));
+                serviceDescription.setServiceTemplateId(CachedTemplateRegistryRemote.getRegistry().getServiceTemplateByType(serviceDescription.getType()).getId());
                 modification = true;
             }
         }
@@ -63,14 +64,5 @@ public class ServiceConfigServiceTemplateIdConsistencyHandler extends AbstractPr
         if (modification) {
             throw new EntryModification(entry.setMessage(unitConfig), this);
         }
-    }
-
-    public String getServiceIdByType(ServiceType serviceType) throws CouldNotPerformException {
-        for (ServiceTemplate serviceTemplate : serviceTemplateRegistry.getMessages()) {
-            if (serviceTemplate.getType() == serviceType) {
-                return serviceTemplate.getId();
-            }
-        }
-        throw new NotAvailableException("Now service template for type[" + serviceType.name() + "] found!", "service id");
     }
 }

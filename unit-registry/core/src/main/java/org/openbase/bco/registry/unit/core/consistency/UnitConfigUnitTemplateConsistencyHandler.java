@@ -21,6 +21,7 @@ package org.openbase.bco.registry.unit.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -54,8 +55,8 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
         }
 
         boolean modification = false;
-        UnitTemplate unitTemplate = getUnitTemplateByType(unitConfig.getType());
-        for (ServiceDescription serviceDescription : unitTemplate.getServiceDescriptionList()) {
+        final UnitTemplate unitTemplate = CachedTemplateRegistryRemote.getRegistry().getUnitTemplateByType(unitConfig.getType());
+        for (final ServiceDescription serviceDescription : unitTemplate.getServiceDescriptionList()) {
             if (!unitConfigContainsServiceDescription(unitConfig, serviceDescription)) {
                 unitConfig.addServiceConfig(ServiceConfig.newBuilder().setServiceDescription(serviceDescription).setBindingConfig(BindingConfig.getDefaultInstance()));
                 modification = true;
@@ -81,14 +82,5 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
 
     private boolean unitConfigContainsServiceDescription(UnitConfig.Builder unitConfig, ServiceDescription serviceDescription) {
         return unitConfig.getServiceConfigList().stream().map((serviceConfig) -> serviceConfig.getServiceDescription()).anyMatch((description) -> (description.getType() == serviceDescription.getType() && description.getPattern() == serviceDescription.getPattern()));
-    }
-
-    private UnitTemplate getUnitTemplateByType(UnitType type) throws CouldNotPerformException {
-        for (UnitTemplate unitTemplate : CachedunitTemplateRegistry.getMessages()) {
-            if (unitTemplate.getType() == type) {
-                return unitTemplate;
-            }
-        }
-        throw new NotAvailableException("UnitTemplate with type[" + type + "]");
     }
 }

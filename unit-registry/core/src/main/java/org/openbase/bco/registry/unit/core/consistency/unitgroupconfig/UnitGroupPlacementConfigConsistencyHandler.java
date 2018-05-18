@@ -10,12 +10,12 @@ package org.openbase.bco.registry.unit.core.consistency.unitgroupconfig;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -28,6 +28,7 @@ import java.util.stream.Collectors;
 import javax.media.j3d.Transform3D;
 import javax.vecmath.Point3d;
 
+import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -382,7 +383,7 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
 
             // resolve shape via device class
             if (unitConfig.getType().equals(UnitType.DEVICE)) {
-                return deviceClassRegistry.get(unitConfig.getDeviceConfig().getDeviceClassId()).getMessage().getShape();
+                return CachedClassRegistryRemote.getRegistry().getDeviceClassById(unitConfig.getDeviceConfig().getDeviceClassId()).getShape();
             }
 
             // inform that the resolution is not possible.

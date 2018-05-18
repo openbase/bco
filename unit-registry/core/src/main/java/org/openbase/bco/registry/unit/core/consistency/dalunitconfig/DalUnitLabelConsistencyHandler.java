@@ -59,8 +59,7 @@ public class DalUnitLabelConsistencyHandler extends AbstractProtoBufRegistryCons
             this.deviceRegistry = deviceRegistry;
             this.appRegistry = appRegistry;
             this.oldUnitHostLabelMap = new HashMap<>();
-        } catch (final CouldNotPerformException | InterruptedException ex) {
-            // remove InterruptedException in bco 2.0 release
+        } catch (final CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }

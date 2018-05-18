@@ -43,8 +43,7 @@ public class DeviceLabelConsistencyHandler extends BaseUnitLabelConsistencyHandl
         super();
         try {
             this.deviceClassRegistry = CachedClassRegistryRemote.getRegistry().getDeviceClassRemoteRegistry();
-        } catch (final CouldNotPerformException | InterruptedException ex) {
-            // remove InterruptedException in bco 2.0 release
+        } catch (final CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
     }
