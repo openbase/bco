@@ -181,6 +181,7 @@
 
     <modules>
         <module>openhab</module>
+        <module>cloud-connector</module>
     </modules>
     
     <properties>
@@ -188,7 +189,7 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <maven.compiler.source>1.8</maven.compiler.source>
         <maven.compiler.target>1.8</maven.compiler.target>
-        <dependency.bco.version>1.6-SNAPSHOT</dependency.bco.version>
+        <dependency.bco.version>2.0-SNAPSHOT</dependency.bco.version>
         <dependency.jul.version>${dependency.bco.version}</dependency.jul.version>
         <dependency.bco.registry.version>${dependency.bco.version}</dependency.bco.registry.version>
         <dependency.bco.dal.version>${dependency.bco.version}</dependency.bco.dal.version>

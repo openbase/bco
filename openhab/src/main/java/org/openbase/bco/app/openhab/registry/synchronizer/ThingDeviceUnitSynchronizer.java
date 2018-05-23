@@ -194,7 +194,7 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
 
     private UnitConfig getLocationForThing(final ThingDTO thingDTO) throws CouldNotPerformException, InterruptedException {
         if (thingDTO.location != null) {
-            List<UnitConfig> locationConfigs = Registries.getLocationRegistry(true).getLocationConfigsByLabel(thingDTO.location);
+            List<UnitConfig> locationConfigs = Registries.getUnitRegistry(true).getUnitConfigsByLabelAndUnitType(thingDTO.location, UnitType.LOCATION);
 
             if (locationConfigs.size() == 0) {
                 throw new NotAvailableException("Location[" + thingDTO.location + "] for thing[" + thingDTO + "]");
@@ -238,7 +238,7 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
                 logger.info("Register item for service[" + serviceType.name() + "] of unit[" + dalUnitConfig.getAlias(0) + "]");
 
                 String channelUID = "";
-                final DeviceClass deviceClass = Registries.getDeviceRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
+                final DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
                 outer:
                 for (final UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
                     if (!unitTemplateConfig.getId().equals(dalUnitConfig.getUnitTemplateConfigId())) {
@@ -290,7 +290,7 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
 
     private DeviceClass getDeviceClassByThing(final ThingDTO thingDTO) throws CouldNotPerformException, InterruptedException {
         // iterate over all device classes
-        for (final DeviceClass deviceClass : Registries.getDeviceRegistry(true).getDeviceClasses()) {
+        for (final DeviceClass deviceClass : Registries.getClassRegistry(true).getDeviceClasses()) {
             // get the most global meta config
             final MetaConfigPool metaConfigPool = new MetaConfigPool();
             metaConfigPool.register(new MetaConfigVariableProvider("DeviceClassMetaConfig", deviceClass.getMetaConfig()));
