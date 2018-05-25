@@ -50,7 +50,7 @@
                     <programs>
                         <program>
                             <mainClass>org.openbase.bco.registry.template.core.TemplateRegistryLauncher</mainClass>
-                            <id>bco-registry-scene</id>
+                            <id>bco-registry-template</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
