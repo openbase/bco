@@ -24,7 +24,7 @@ package org.openbase.bco.dal.lib.layer.service;
  */
 
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.iface.annotations.RPCMethod;
+import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.pattern.Observer;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;

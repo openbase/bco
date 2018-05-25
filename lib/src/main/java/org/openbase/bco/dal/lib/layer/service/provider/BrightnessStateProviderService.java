@@ -24,7 +24,7 @@ package org.openbase.bco.dal.lib.layer.service.provider;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
-import org.openbase.jul.iface.annotations.RPCMethod;
+import org.openbase.jul.annotation.RPCMethod;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 
 /**

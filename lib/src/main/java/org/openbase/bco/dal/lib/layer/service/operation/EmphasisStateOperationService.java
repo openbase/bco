@@ -25,7 +25,7 @@ package org.openbase.bco.dal.lib.layer.service.operation;
 import java.util.concurrent.Future;
 import org.openbase.bco.dal.lib.layer.service.provider.EmphasisStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.iface.annotations.RPCMethod;
+import org.openbase.jul.annotation.RPCMethod;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.EmphasisStateType.EmphasisState;
 
