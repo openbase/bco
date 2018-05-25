@@ -22,6 +22,7 @@ package org.openbase.bco.registry.unit.core.consistency.locationconfig;
  * #L%
  */
 
+import org.openbase.bco.registry.unit.core.consistency.OtherPermissionConsistencyHandler;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
@@ -42,6 +43,11 @@ public class RootLocationPermissionConsistencyHandler extends AbstractProtoBufRe
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, Builder> entry, ProtoBufMessageMap<String, UnitConfig, Builder> entryMap, ProtoBufRegistry<String, UnitConfig, Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
+
+        if(unitConfig.getLocationConfig().getRoot() && !unitConfig.hasPermissionConfig()) {
+            unitConfig.getPermissionConfigBuilder().setOtherPermission(OtherPermissionConsistencyHandler.DEFAULT_OTHER_PERMISSION);
+            throw new EntryModification(entry.setMessage(unitConfig), this);
+        }
 
         if (unitConfig.getLocationConfig().getRoot() && !unitConfig.getPermissionConfig().getOtherPermission().getRead()) {
             if(!unitConfig.getPermissionConfig().hasOtherPermission()) {
