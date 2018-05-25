@@ -486,6 +486,7 @@ public class Registries {
             case "ActivityTemplate":
                 return getTemplateRegistry();
             case "ActivityConfig":
+                return getActivityRegistry();
             default:
                 throw new NotAvailableException("Registry remote for type [" + messageOrBuilder.getDescriptorForType().getName() + "]");
 
