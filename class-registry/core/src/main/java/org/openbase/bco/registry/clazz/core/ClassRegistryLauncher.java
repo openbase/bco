@@ -56,6 +56,11 @@ public class ClassRegistryLauncher extends AbstractRegistryLauncher<ClassRegistr
     }
 
     @Override
+    public boolean isCoreLauncher() {
+        return true;
+    }
+
+    @Override
     public void loadProperties() {
         JPService.registerProperty(JPClassRegistryScope.class);
         JPService.registerProperty(JPAgentClassDatabaseDirectory.class);

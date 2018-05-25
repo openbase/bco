@@ -45,6 +45,11 @@ public class UnitRegistryLauncher extends AbstractRegistryLauncher<UnitRegistryC
     }
 
     @Override
+    public boolean isCoreLauncher() {
+        return true;
+    }
+
+    @Override
     public void loadProperties() {
         JPService.registerProperty(JPUnitRegistryScope.class);
         JPService.registerProperty(JPReadOnly.class);

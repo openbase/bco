@@ -49,6 +49,11 @@ public class ActivityRegistryLauncher extends AbstractRegistryLauncher<ActivityR
     }
 
     @Override
+    public boolean isCoreLauncher() {
+        return true;
+    }
+
+    @Override
     public void loadProperties() {
         JPService.registerProperty(JPActivityRegistryScope.class);
         JPService.registerProperty(JPActivityConfigDatabaseDirectory.class);

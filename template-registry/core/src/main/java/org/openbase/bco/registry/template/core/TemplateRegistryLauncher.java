@@ -69,6 +69,11 @@ public class TemplateRegistryLauncher extends AbstractRegistryLauncher<TemplateR
         JPService.registerProperty(JPRSBTransport.class);
     }
 
+    @Override
+    public boolean isCoreLauncher() {
+        return true;
+    }
+
     public static void main(String args[]) throws Throwable {
         BCO.printLogo();
         AbstractLauncher.main(args, TemplateRegistry.class, TemplateRegistryLauncher.class);
