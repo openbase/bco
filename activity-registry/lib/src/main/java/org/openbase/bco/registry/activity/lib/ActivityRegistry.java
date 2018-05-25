@@ -25,7 +25,7 @@ package org.openbase.bco.registry.activity.lib;
 import org.openbase.bco.registry.lib.provider.activity.ActivityConfigCollectionProvider;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
-import org.openbase.jul.iface.annotations.RPCMethod;
+import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.RegistryService;
 import rst.domotic.activity.ActivityConfigType.ActivityConfig;

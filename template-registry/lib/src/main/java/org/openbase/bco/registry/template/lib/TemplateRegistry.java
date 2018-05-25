@@ -27,7 +27,7 @@ import org.openbase.bco.registry.lib.provider.template.ServiceTemplateCollection
 import org.openbase.bco.registry.lib.provider.template.UnitTemplateCollectionProvider;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
-import org.openbase.jul.iface.annotations.RPCMethod;
+import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.RegistryService;
 import rst.domotic.activity.ActivityTemplateType.ActivityTemplate;

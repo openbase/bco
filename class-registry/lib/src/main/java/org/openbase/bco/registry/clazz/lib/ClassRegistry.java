@@ -27,7 +27,7 @@ import org.openbase.bco.registry.lib.provider.clazz.AppClassCollectionProvider;
 import org.openbase.bco.registry.lib.provider.clazz.DeviceClassCollectionProvider;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
-import org.openbase.jul.iface.annotations.RPCMethod;
+import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.pattern.provider.DataProvider;
 import rst.domotic.registry.ClassRegistryDataType.ClassRegistryData;
 import rst.domotic.unit.agent.AgentClassType.AgentClass;

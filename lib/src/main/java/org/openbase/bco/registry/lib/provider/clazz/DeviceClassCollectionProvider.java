@@ -23,7 +23,7 @@ package org.openbase.bco.registry.lib.provider.clazz;
  */
 
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.iface.annotations.RPCMethod;
+import org.openbase.jul.annotation.RPCMethod;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 
 import java.util.List;
