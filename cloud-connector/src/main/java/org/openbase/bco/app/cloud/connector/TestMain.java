@@ -130,7 +130,8 @@ public class TestMain {
 
 
         try {
-            Socket socket = IO.socket("http://localhost:3000");
+            Socket socket = IO.socket("http://localhost:5000");
+//            Socket socket = IO.socket("https://bco-cloud.herokuapp.com/");
             socket.on(Socket.EVENT_CONNECT, objects -> {
                 LOGGER.info("CONNECTED");
 
