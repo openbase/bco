@@ -54,7 +54,7 @@ public class UnitSimulationManager implements Manageable<UnitControllerRegistry<
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(UnitSimulationManager.class);
 
-    private final ShutdownDeamon shutdownDeamon;
+    private final ShutdownDaemon shutdownDaemon;
 
     private final Object UNIT_SIMULATOR_MONITOR = new SyncObject("UnitSimulatorMonitor");
 
@@ -70,7 +70,7 @@ public class UnitSimulationManager implements Manageable<UnitControllerRegistry<
     public UnitSimulationManager() throws InstantiationException {
         try {
             this.unitSimulatorMap = new HashMap<>();
-            this.shutdownDeamon = Shutdownable.registerShutdownHook(this);
+            this.shutdownDaemon = Shutdownable.registerShutdownHook(this);
 
             try {
                 enabled = JPService.getProperty(JPHardwareSimulationMode.class).getValue() || JPService.getProperty(JPBenchmarkMode.class).getValue();
@@ -205,6 +205,6 @@ public class UnitSimulationManager implements Manageable<UnitControllerRegistry<
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory("Could not shutdown " + this, ex, LoggerFactory.getLogger(getClass()));
         }
-        shutdownDeamon.cancel();
+        shutdownDaemon.cancel();
     }
 }
