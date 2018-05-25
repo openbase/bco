@@ -37,7 +37,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.com.RSBRemote;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.jul.iface.annotations.RPCMethod;
+import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
