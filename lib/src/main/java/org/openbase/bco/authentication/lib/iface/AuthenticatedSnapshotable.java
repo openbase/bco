@@ -24,7 +24,7 @@ package org.openbase.bco.authentication.lib.iface;
 
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Snapshotable;
-import org.openbase.jul.iface.annotations.RPCMethod;
+import org.openbase.jul.annotation.RPCMethod;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 
