@@ -132,7 +132,7 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, Configu
         ResourceAllocation.Builder resourceAllocation = actionDescription.getResourceAllocationBuilder();
 
         if (!actionDescription.hasDescription() || actionDescription.getDescription().isEmpty()) {
-            actionDescription.setDescription(ActionDescriptionProcessor.GENERIC_ACTION_DESCSRIPTION);
+            actionDescription.setDescription(ActionDescriptionProcessor.GENERIC_ACTION_DESCRIPTION);
         }
 
         serviceStateDescription.setUnitId(getId());
