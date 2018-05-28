@@ -44,6 +44,8 @@ import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
+import static rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType.*;
+
 public class FulfillmentHandler {
 
     public static final String REQUEST_ID_KEY = "requestId";
@@ -133,7 +135,7 @@ public class FulfillmentHandler {
                 device.add(NAME_KEY, name);
 
                 final JsonObject deviceInfo = new JsonObject();
-                deviceInfo.addProperty("manufacturer", Registries.getClassRegistry(true).getDeviceClassById(Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId()).getDeviceConfig().getDeviceClassId()).getCompany());
+                deviceInfo.addProperty("manufacturer", Registries.getDeviceRegistry(true).getDeviceClassById(Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId()).getDeviceConfig().getDeviceClassId()).getCompany());
                 //TODO: missing: model, hwVersion, swVersion
                 device.add("deviceInfo", deviceInfo);
 
