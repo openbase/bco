@@ -116,8 +116,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     private UnitTemplate template;
     private boolean initialized = false;
 
-    private long transactionId = 0;
-
     private String classDescription = "";
 
     public AbstractUnitController(final Class unitClass, final DB builder) throws InstantiationException {
@@ -480,62 +478,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }));
     }
 
-//    /**
-//     * Verifies the authority by verifying its internal TicketAuthenticationWrapper with the authenticator and updates the given {@code ticketAuthenticatorWrapperBuilder}.
-//     * It the authenticator has no TicketAuthenticationWrapper, the given {@code ticketAuthenticatorWrapperBuilder} is just not updated.
-//     *
-//     * @param actionAuthority                   the authority verified
-//     * @param ticketAuthenticatorWrapperBuilder the ticketAuthenticator to update.
-//     * @throws VerificationFailedException                          if someone is logged in but the verification with the authenticator fails
-//     * @throws org.openbase.jul.exception.PermissionDeniedException is thrown in case the authority has no permission for the related action.
-//     * @throws java.lang.InterruptedException
-//     */
-//    public void verifyAndUpdateAuthority(final ActionAuthority actionAuthority, final TicketAuthenticatorWrapper.Builder ticketAuthenticatorWrapperBuilder) throws VerificationFailedException, PermissionDeniedException, InterruptedException, CouldNotPerformException {
-//
-//        // check if authentication is enabled
-//        try {
-//            if (!JPService.getProperty(JPAuthentication.class).getValue()) {
-//                return;
-//            }
-//        } catch (JPNotAvailableException ex) {
-//            throw new CouldNotPerformException("Could not check JPEnableAuthentication property", ex);
-//        }
-//
-//        // If there is no TicketAuthenticationWrapper, check permissions without userId and groups.
-//        if (!actionAuthority.hasTicketAuthenticatorWrapper()) {
-//            try {
-//                Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations = Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap();
-//
-//                if (!AuthorizationHelper.canAccess(getConfig(), null, null, locations)) {
-//                    throw new PermissionDeniedException("You have no permission to execute this action.");
-//                }
-//                return;
-//            } catch (NotAvailableException ex) {
-//                throw new VerificationFailedException("Verifying authority failed", ex);
-//            }
-//        }
-//
-//        try {
-//            TicketAuthenticatorWrapper wrapper = actionAuthority.getTicketAuthenticatorWrapper();
-//            AuthenticatedServerManager.TicketEvaluationWrapper validatedTicketWrapper = AuthenticatedServerManager.getInstance().evaluateClientServerTicket(wrapper);
-//            Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> groups = Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry().getEntryMap();
-//            Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations = Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry().getEntryMap();
-//
-//            if (!AuthorizationHelper.canAccess(getConfig(), validatedTicketWrapper.getUserId(), groups, locations)) {
-//                throw new PermissionDeniedException("You have no permission to execute this action.");
-//            }
-//
-//            // update current ticketAuthenticatorWrapperBuilder
-//            ticketAuthenticatorWrapperBuilder.setAuthenticator(validatedTicketWrapper.getTicketAuthenticatorWrapper().getAuthenticator());
-//            ticketAuthenticatorWrapperBuilder.setTicket(validatedTicketWrapper.getTicketAuthenticatorWrapper().getTicket());
-//        } catch (IOException | CouldNotPerformException ex) {
-//            throw new VerificationFailedException("Verifying authority failed", ex);
-//        } catch (InterruptedException ex) {
-//            Thread.currentThread().interrupt();
-//            throw ExceptionPrinter.printHistoryAndReturnThrowable(new VerificationFailedException("Interrupted while verifrying authority", ex), logger);
-//        }
-//    }
-
     @Override
     public void addServiceStateObserver(ServiceTempus serviceTempus, ServiceType serviceType, Observer observer) {
         serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).addObserver(observer);
@@ -571,19 +513,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             }
             unitDataObservableMap.get(serviceTempus).shutdown();
         }
-    }
-
-    public synchronized long getTransactionId() {
-        return transactionId;
-    }
-
-    /**
-     * Transaction id should never be 0 because thats the builder default value.
-     *
-     * @return the next transactionId
-     */
-    public long generateTransactionId() {
-        return ++transactionId;
     }
 
     @Override
@@ -643,9 +572,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
             // update the action description
             Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(newState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
-            ActionDescription actionDescription = (ActionDescription) newState.getField(descriptor);
-            actionDescription = actionDescription.toBuilder().setTransactionId(getTransactionId()).build();
-            newState = newState.toBuilder().setField(descriptor, actionDescription).build();
+            newState = newState.toBuilder().setField(descriptor, newState.getField(descriptor)).build();
 
             // update the current state
             Services.invokeServiceMethod(serviceType, OPERATION, ServiceTempus.CURRENT, internalBuilder, newState);
