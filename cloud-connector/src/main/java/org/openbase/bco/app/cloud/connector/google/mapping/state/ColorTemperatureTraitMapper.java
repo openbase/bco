@@ -1,0 +1,145 @@
+package org.openbase.bco.app.cloud.connector.google.mapping.state;
+
+import com.google.gson.JsonObject;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.extension.rst.transform.HSBColorToRGBColorTransformer;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.ColorStateType.ColorState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.vision.ColorType.Color.Type;
+import rst.vision.RGBColorType.RGBColor;
+
+public class ColorTemperatureTraitMapper implements TraitMapper<ColorState> {
+
+    public static final String MIN_KELVIN_ATTRIBUTE_KEY = "temperatureMinK";
+    public static final String MAX_KELVIN_ATTRIBUTE_KEY = "temperatureMaxK";
+
+    public static final int MIN_KELVIN_DEFAULT = 2000;
+    public static final int MAX_KELVIN_DEFAULT = 6500;
+
+    public static final String TEMPERATURE_KEY = "temperature";
+
+    @Override
+    public ColorState map(JsonObject jsonObject) throws CouldNotPerformException {
+        if (!jsonObject.has(ColorSpectrumTraitMapper.COLOR_KEY)) {
+            throw new CouldNotPerformException("Could not map from jsonObject[" + jsonObject.toString() + "] to [" + ColorState.class.getSimpleName() + "]. Attribute[" + ColorSpectrumTraitMapper.COLOR_KEY + "] is missing");
+        }
+
+        //TODO: name for color
+        try {
+            final JsonObject color = jsonObject.get(ColorSpectrumTraitMapper.COLOR_KEY).getAsJsonObject();
+
+            if (!color.has(TEMPERATURE_KEY)) {
+                throw new CouldNotPerformException("Could not map from jsonObject[" + color.toString() + "] to [" + ColorState.class.getSimpleName() + "]. Attribute[" + TEMPERATURE_KEY + "] is missing");
+            }
+
+            try {
+                final int temperature = color.get(TEMPERATURE_KEY).getAsInt();
+                final RGBColor rgbColor = colorTemperatureToRGB(temperature);
+                final ColorState.Builder colorState = ColorState.newBuilder();
+                colorState.getColorBuilder().setType(Type.RGB).setRgbColor(rgbColor);
+                return colorState.build();
+            } catch (ClassCastException | IllegalStateException ex) {
+                // thrown if it is not an int
+                throw new CouldNotPerformException("Could not map from jsonObject[" + color.toString() + "] to [" + ColorState.class.getSimpleName() + "]. Attribute[" + TEMPERATURE_KEY + "] is not an int");
+            }
+        } catch (ClassCastException | IllegalStateException ex) {
+            // thrown if it is not a json object
+            throw new CouldNotPerformException("Could not map from jsonObject[" + jsonObject.toString() + "] to [" + ColorState.class.getSimpleName() + "]. Attribute[" + ColorSpectrumTraitMapper.COLOR_KEY + "] is not an object");
+        }
+    }
+
+    @Override
+    public void map(ColorState colorState, JsonObject jsonObject) throws CouldNotPerformException {
+        RGBColor rgbColor;
+        if (colorState.getColor().getType() == Type.HSB) {
+            rgbColor = HSBColorToRGBColorTransformer.transform(colorState.getColor().getHsbColor());
+        } else {
+            rgbColor = colorState.getColor().getRgbColor();
+        }
+
+        JsonObject color = new JsonObject();
+
+        //TODO: what to do if color is not a valid temperature, e.g. violet
+        //TODO: name for color
+        color.addProperty(TEMPERATURE_KEY, RGBToColorTemperature(rgbColor));
+
+        jsonObject.add(ColorSpectrumTraitMapper.COLOR_KEY, color);
+    }
+
+    @Override
+    public void addAttributes(UnitConfig unitConfig, JsonObject jsonObject) {
+        //TODO: try to parse theses values from meta configs in unit config, device unit config, device class
+        jsonObject.addProperty(MIN_KELVIN_ATTRIBUTE_KEY, MIN_KELVIN_DEFAULT);
+        jsonObject.addProperty(MAX_KELVIN_ATTRIBUTE_KEY, MAX_KELVIN_DEFAULT);
+    }
+
+    @Override
+    public ServiceType getServiceType() {
+        return ServiceType.COLOR_STATE_SERVICE;
+    }
+
+    /**
+     * Convert color temperature given in Kelvin to RGB using
+     * <a href=http://www.tannerhelland.com/4435/convert-temperature-rgb-algorithm-code/>this algorithm</a>.
+     * This algorithm is an approximation which works between 1000 and 40000.
+     *
+     * @param temperature the temperature for the color in Kelvin
+     * @return an rgb color type converted from the temperature
+     */
+    public RGBColor colorTemperatureToRGB(final int temperature) {
+        double temp = temperature / 100.0;
+
+        double red, green, blue;
+        if (temp <= 66) {
+            red = 255;
+
+            green = temp;
+            green = 99.4708025861 * Math.log(green) - 161.1195681661;
+
+            if (temp <= 19) {
+                blue = 0;
+            } else if (temp == 66) {
+                blue = 255;
+            } else {
+                blue = temp - 10;
+                blue = 138.5177312231 * Math.log(blue) - 305.0447927307;
+            }
+        } else {
+            red = temp - 60;
+            red = 329.698727446 * Math.pow(red, -0.1332047592);
+
+            green = temp - 60;
+            green = 288.1221695283 * Math.pow(green, -0.0755148492);
+
+            blue = 255;
+        }
+
+        red = Math.max(Math.min(red, 255), 0);
+        green = Math.max(Math.min(green, 255), 0);
+        blue = Math.max(Math.min(blue, 255), 0);
+
+        RGBColor.Builder rgbColor = RGBColor.newBuilder();
+        rgbColor.setRed((int) red).setGreen((int) green).setBlue((int) blue);
+        return rgbColor.build();
+    }
+
+    /**
+     * Invert the algorithm for @link{coloTemperatureToRGB}.
+     * Because of rounding and double precision the inversion is most likely close
+     * but not exact to the original temperature.
+     *
+     * @param rgbColor an rgb color type
+     * @return the color temperature representing that color type
+     */
+    public int RGBToColorTemperature(final RGBColor rgbColor) {
+        // always use green for the conversion and switch over cases using red
+        if (rgbColor.getRed() == 255) {
+            double res = Math.exp((rgbColor.getGreen() + 161.1195681661) / 99.4708025861) * 100;
+            return (int) res;
+        } else {
+            double res = (Math.exp(Math.log(rgbColor.getGreen() / 288.1221695283) / -0.0755148492) + 60) * 100;
+            return (int) res;
+        }
+    }
+}

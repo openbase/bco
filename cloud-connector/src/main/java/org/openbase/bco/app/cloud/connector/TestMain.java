@@ -43,7 +43,7 @@ public class TestMain {
     private static final Logger LOGGER = LoggerFactory.getLogger(TestMain.class);
 
     public static void main(String[] args) {
-        final Gson gson = new GsonBuilder()/*.setPrettyPrinting()*/.create();
+        final Gson gson = new GsonBuilder().setPrettyPrinting().create();
         final FulfillmentHandler fulfillmentHandler = new FulfillmentHandler();
 
         // test sync
@@ -55,7 +55,7 @@ public class TestMain {
 //        input.addProperty("intent", "action.devices.SYNC");
 //        syncRequest.add("inputs", inputs);
 //        System.out.println(gson.toJson(syncRequest).replace("\"", "\\\""));
-
+//
 //        try {
 //            JsonObject jsonObject = fulfillmentHandler.handleRequest(syncRequest);
 //            System.out.println(gson.toJson(jsonObject));
@@ -125,71 +125,69 @@ public class TestMain {
 
             System.out.println(gson.toJson(request));
 
-//            JsonObject jsonObject = fulfillmentHandler.handleRequest(request);
-//            System.out.println(gson.toJson(jsonObject));
+            JsonObject jsonObject = fulfillmentHandler.handleRequest(request);
+            System.out.println(gson.toJson(jsonObject));
         } catch (Exception ex) {
             StackTracePrinter.printStackTrace(ex.getStackTrace(), LoggerFactory.getLogger(TestMain.class), LogLevel.INFO);
             ExceptionPrinter.printHistory(ex, LoggerFactory.getLogger(TestMain.class));
             System.exit(1);
         }
-//        System.exit(0);
+        System.exit(0);
 
 
-        try {
-//            Socket socket = IO.socket("http://localhost:5000");
-            Socket socket = IO.socket("https://bco-cloud.herokuapp.com/");
-            socket.on(Socket.EVENT_CONNECT, objects -> {
-                LOGGER.info("CONNECTED");
-
-                LOGGER.info("Authenticate...");
-                final String pwd = "DevelopmentAccess!";
-                socket.emit("authenticate", pwd, (Ack) objects1 -> LOGGER.info("Authentication: " + objects1[0].toString()));
-
-//                socket.disconnect();
-            }).on(Socket.EVENT_MESSAGE, objects -> {
-                LOGGER.info("Received message: " + objects[0]);
-                JsonParser jsonParser = new JsonParser();
-                JsonElement parse = jsonParser.parse((String) objects[0]);
-
-                try {
-                    LOGGER.info("Call handler");
-                    JsonObject jsonObject = fulfillmentHandler.handleRequest(parse.getAsJsonObject());
-                    final Ack ack = (Ack) objects[objects.length - 1];
-                    String response = gson.toJson(jsonObject);
-                    LOGGER.info("Handler produced response: " + response);
-                    ack.call(response);
-                } catch (CouldNotPerformException ex) {
-                    // todo handle error
-                }
-            }).on(Socket.EVENT_DISCONNECT, objects -> {
-                LOGGER.info("Socket disconnected: " + objects[0].toString());
-            });
-
-            LOGGER.info("Try to connect to socket[" + socket.id() + "]");
-            socket.connect();
-            LOGGER.info("Connected to socket[" + socket + "]");
-
-//            socket.emit("test", "hello", new Ack() {
-//                @Override
-//                public void call(Object... objects) {
-//                    System.out.println("Server received message: ");
-//                    for (Object object : objects) {
-//                        System.out.println(object);
-//                    }
+//        try {
+////            Socket socket = IO.socket("http://localhost:5000");
+//            Socket socket = IO.socket("https://bco-cloud.herokuapp.com/");
+//            socket.on(Socket.EVENT_CONNECT, objects -> {
+//                LOGGER.info("CONNECTED");
+//
+//                LOGGER.info("Authenticate...");
+//                final String pwd = "DevelopmentAccess!";
+//                socket.emit("authenticate", pwd, (Ack) objects1 -> LOGGER.info("Authentication: " + objects1[0].toString()));
+//
+////                socket.disconnect();
+//            }).on(Socket.EVENT_MESSAGE, objects -> {
+//                LOGGER.info("Received message: " + objects[0]);
+//                JsonParser jsonParser = new JsonParser();
+//                JsonElement parse = jsonParser.parse((String) objects[0]);
+//
+//                try {
+//                    LOGGER.info("Call handler");
+//                    JsonObject jsonObject = fulfillmentHandler.handleRequest(parse.getAsJsonObject());
+//                    final Ack ack = (Ack) objects[objects.length - 1];
+//                    String response = gson.toJson(jsonObject);
+//                    LOGGER.info("Handler produced response: " + response);
+//                    ack.call(response);
+//                } catch (CouldNotPerformException ex) {
+//                    // todo handle error
 //                }
+//            }).on(Socket.EVENT_DISCONNECT, objects -> {
+//                LOGGER.info("Socket disconnected: " + objects[0].toString());
 //            });
-            while (!Thread.currentThread().isInterrupted()) {
-                Thread.sleep(5000);
-            }
-
-
-            LOGGER.info("Disconnect socket[" + socket + "]");
-            socket.disconnect();
-            LOGGER.info("Disconnected socket[" + socket + "]");
-        } catch (Exception ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not create socket client", ex), LOGGER);
-        } finally {
-            System.exit(0);
-        }
+//
+//            LOGGER.info("Try to connect to socket[" + socket.id() + "]");
+//            socket.connect();
+//            LOGGER.info("Connected to socket[" + socket + "]");
+//
+////            socket.emit("test", "hello", new Ack() {
+////                @Override
+////                public void call(Object... objects) {
+////                    System.out.println("Server received message: ");
+////                    for (Object object : objects) {
+////                        System.out.println(object);
+////                    }
+////                }
+////            });
+//            while (!Thread.currentThread().isInterrupted()) {
+//                Thread.sleep(5000);
+//            }
+//
+//
+//            LOGGER.info("Disconnect socket[" + socket + "]");
+//            socket.disconnect();
+//            LOGGER.info("Disconnected socket[" + socket + "]");
+//        } catch (Exception ex) {
+//            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not create socket client", ex), LOGGER);
+//        }
     }
 }
