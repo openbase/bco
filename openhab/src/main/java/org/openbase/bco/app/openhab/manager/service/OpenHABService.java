@@ -13,6 +13,7 @@ import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.binding.openhab.OpenhabCommandType;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -79,7 +80,7 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
         return itemName;
     }
 
-    public Future executeCommand(final Command command) throws CouldNotPerformException {
+    public Future<ActionFuture> executeCommand(final Command command) throws CouldNotPerformException {
         if (itemName == null) {
             throw new NotAvailableException("itemID");
         }

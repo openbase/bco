@@ -1,6 +1,6 @@
 package org.openbase.bco.app.openhab.manager.service;
 
-import org.openbase.bco.app.openhab.manager.transform.OpenHABColorStateTransformer;
+import org.openbase.bco.app.openhab.manager.transform.ColorStateTransformer;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -19,7 +19,7 @@ public class ColorStateServiceImpl<ST extends ColorStateOperationService & Unit<
 
 //    private final boolean autoRepeat;
 
-    public ColorStateServiceImpl(final ST unit) throws InstantiationException {
+    ColorStateServiceImpl(final ST unit) throws InstantiationException {
         super(unit);
 //        this.autoRepeat = ServiceFactoryTools.detectAutoRepeat(unit);
     }
@@ -31,6 +31,6 @@ public class ColorStateServiceImpl<ST extends ColorStateOperationService & Unit<
 
     @Override
     public Future<ActionFuture> setColorState(final ColorState colorState) throws CouldNotPerformException {
-        return executeCommand(OpenHABColorStateTransformer.transform(colorState));
+        return executeCommand(ColorStateTransformer.transform(colorState));
     }
 }

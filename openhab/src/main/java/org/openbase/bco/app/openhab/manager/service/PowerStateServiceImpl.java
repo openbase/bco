@@ -1,6 +1,6 @@
 package org.openbase.bco.app.openhab.manager.service;
 
-import org.eclipse.smarthome.core.library.types.OnOffType;
+import org.openbase.bco.app.openhab.manager.transform.PowerStateTransformer;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -13,20 +13,13 @@ import java.util.concurrent.Future;
 
 public class PowerStateServiceImpl<ST extends PowerStateOperationService & Unit<?>> extends OpenHABService<ST> implements PowerStateOperationService {
 
-    public PowerStateServiceImpl(final ST unit) throws InstantiationException {
+    PowerStateServiceImpl(final ST unit) throws InstantiationException {
         super(unit);
     }
 
     @Override
     public Future<ActionFuture> setPowerState(PowerState powerState) throws CouldNotPerformException {
-        switch (powerState.getValue()) {
-            case ON:
-                return executeCommand(OnOffType.ON);
-            case OFF:
-                return executeCommand(OnOffType.OFF);
-            default:
-                throw new CouldNotPerformException("Could not set power staet[" + powerState + "]");
-        }
+        return executeCommand(PowerStateTransformer.transform(powerState));
     }
 
     @Override

@@ -3,7 +3,6 @@ package org.openbase.bco.app.openhab.manager.service;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
 import org.openbase.bco.dal.lib.layer.service.operation.*;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
-import org.openbase.jul.exception.NotSupportedException;
 import org.openbase.jul.exception.InstantiationException;
 
 public class OpenHABServiceFactory implements ServiceFactory {
@@ -31,17 +30,17 @@ public class OpenHABServiceFactory implements ServiceFactory {
 
     @Override
     public <UNIT extends BlindStateOperationService & Unit> BlindStateOperationService newShutterService(final UNIT unit) throws InstantiationException {
-        throw new InstantiationException(this, new NotSupportedException(BlindStateOperationService.class, this));
+        return new BlindStateServiceImpl<>(unit);
     }
 
     @Override
     public <UNIT extends StandbyStateOperationService & Unit> StandbyStateOperationService newStandbyService(final UNIT unit) throws InstantiationException {
-        throw new InstantiationException(this, new NotSupportedException(StandbyStateOperationService.class, this));
+        return new StandbyStateServiceImpl<>(unit);
     }
 
     @Override
     public <UNIT extends TargetTemperatureStateOperationService & Unit> TargetTemperatureStateOperationService newTargetTemperatureService(final UNIT unit) throws InstantiationException {
-        throw new InstantiationException(this, new NotSupportedException(TargetTemperatureStateOperationService.class, this));
+        return new TargetTemperatureStateServiceImpl<>(unit);
     }
 
 }

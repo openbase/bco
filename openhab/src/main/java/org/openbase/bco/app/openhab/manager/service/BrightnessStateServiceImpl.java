@@ -1,6 +1,7 @@
 package org.openbase.bco.app.openhab.manager.service;
 
 import org.eclipse.smarthome.core.library.types.PercentType;
+import org.openbase.bco.app.openhab.manager.transform.BrightnessStateTransformer;
 import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.Unit;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -13,13 +14,13 @@ import java.util.concurrent.Future;
 
 public class BrightnessStateServiceImpl<ST extends BrightnessStateOperationService & Unit<?>> extends OpenHABService<ST> implements BrightnessStateOperationService {
 
-    public BrightnessStateServiceImpl(final ST unit) throws InstantiationException {
+    BrightnessStateServiceImpl(final ST unit) throws InstantiationException {
         super(unit);
     }
 
     @Override
     public Future<ActionFuture> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
-        return executeCommand(new PercentType((int) brightnessState.getBrightness()));
+        return executeCommand(BrightnessStateTransformer.transform(brightnessState));
     }
 
     @Override

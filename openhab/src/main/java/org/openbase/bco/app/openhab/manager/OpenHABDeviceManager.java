@@ -3,12 +3,14 @@ package org.openbase.bco.app.openhab.manager;
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
 import org.openbase.bco.app.openhab.manager.service.OpenHABServiceFactory;
 import org.openbase.bco.manager.device.core.DeviceManagerController;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 
 public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable {
 
@@ -22,7 +24,11 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
 
             @Override
             public boolean isSupported(UnitConfig config) throws CouldNotPerformException {
-                //TODO: this has to overwritten to only support obenhab units
+                DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(config.getDeviceConfig().getDeviceClassId());
+                if(!deviceClass.getBindingConfig().getBindingId().equals("OPENHAB")) {
+                    return false;
+                }
+
                 return super.isSupported(config);
             }
         };

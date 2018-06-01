@@ -13,6 +13,7 @@ public class OpenHABItemHelper {
     public static final String ITEM_SUBSEGMENT_DELIMITER = "_";
     public static final String ITEM_SEGMENT_DELIMITER = "__";
 
+    //TODO: maybe these values are somewhere available in eclipse smart home
     public static final String OPENHAB_COLOR_TYPE = "Color"; // Color information (RGB);	OnOff, IncreaseDecrease, Percent, HSB
     public static final String OPENHAB_CONTACT_TYPE = "Contact"; // Status of contacts, e.g. door/window contacts;	OpenClose
     public static final String OPENHAB_DATE_TIME_TYPE = "DateTime"; // Stores date and time;
@@ -38,18 +39,34 @@ public class OpenHABItemHelper {
     }
 
     public static String getItemType(final ServiceType serviceType, final ServicePattern servicePattern) throws NotAvailableException {
-        switch (servicePattern) {
-            case OPERATION:
-                switch (serviceType) {
-                    case COLOR_STATE_SERVICE:
-                        return OPENHAB_COLOR_TYPE;
-                    case BRIGHTNESS_STATE_SERVICE:
-                        return OPENHAB_DIMMER_TYPE;
-                    case POWER_STATE_SERVICE:
-                        return OPENHAB_SWITCH_TYPE;
-                }
+        switch (serviceType) {
+            case COLOR_STATE_SERVICE:
+                return OPENHAB_COLOR_TYPE;
+            case POWER_CONSUMPTION_STATE_SERVICE:
+            case TEMPERATURE_STATE_SERVICE:
+            case MOTION_STATE_SERVICE:
+            case TAMPER_STATE_SERVICE:
+            case BATTERY_STATE_SERVICE:
+            case SMOKE_ALARM_STATE_SERVICE:
+            case SMOKE_STATE_SERVICE:
+            case TEMPERATURE_ALARM_STATE_SERVICE:
+            case TARGET_TEMPERATURE_STATE_SERVICE:
+            case ILLUMINANCE_STATE_SERVICE:
+                return OPENHAB_NUMBER_TYPE;
+            case BLIND_STATE_SERVICE:
+                return OPENHAB_ROLLERSHUTTER_TYPE;
+            case POWER_STATE_SERVICE:
+            case BUTTON_STATE_SERVICE:
+                return OPENHAB_SWITCH_TYPE;
+            case CONTACT_STATE_SERVICE:
+                return OPENHAB_CONTACT_TYPE;
+            case HANDLE_STATE_SERVICE:
+                return OPENHAB_STRING_TYPE;
+            case BRIGHTNESS_STATE_SERVICE:
+                return OPENHAB_DIMMER_TYPE;
+            default:
+                throw new NotAvailableException("OpenHAB item type for service[" + serviceType.name() + ", " + servicePattern.name() + "]");
         }
-        throw new NotAvailableException("OpenHAB item type for service[" + serviceType.name() + ", " + servicePattern.name() + "]");
     }
 
     public static class OpenHABItemNameMetaData {

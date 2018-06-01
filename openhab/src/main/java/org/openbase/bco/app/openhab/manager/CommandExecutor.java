@@ -1,21 +1,20 @@
 package org.openbase.bco.app.openhab.manager;
 
 import com.google.gson.JsonObject;
-import org.eclipse.smarthome.core.library.types.HSBType;
+import com.google.protobuf.Message;
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
-import org.openbase.bco.app.openhab.manager.transform.OpenHABColorStateTransformer;
+import org.openbase.bco.app.openhab.manager.transform.CommandTransformer;
 import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemHelper;
 import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemHelper.OpenHABItemNameMetaData;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.state.ColorStateType.ColorState;
 
 public class CommandExecutor implements Observer<JsonObject> {
 
@@ -48,17 +47,22 @@ public class CommandExecutor implements Observer<JsonObject> {
 
     public void applyStateUpdate(final String itemName, final String state) throws CouldNotPerformException {
         final OpenHABItemNameMetaData metaData = OpenHABItemHelper.getMetaData(itemName);
-        final UnitController unitController = unitControllerRegistry.get(Registries.getUnitRegistry().getUnitConfigByAlias(metaData.getAlias()).getId());
+        try {
+            final UnitController unitController = unitControllerRegistry.get(Registries.getUnitRegistry().getUnitConfigByAlias(metaData.getAlias()).getId());
+            final Message serviceData = CommandTransformer.getServiceData(state, metaData.getServiceType());
 
-        switch (metaData.getServiceType()) {
-            case COLOR_STATE_SERVICE:
-                ColorState colorState = OpenHABColorStateTransformer.transform(HSBType.valueOf(state));
-                unitController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(colorState), metaData.getServiceType());
-                break;
-            case POWER_STATE_SERVICE:
-                break;
-            case BRIGHTNESS_STATE_SERVICE:
-                break;
+            if (serviceData == null) {
+                // unsupported state for service, see CommandTransformer for details
+                return;
+            }
+
+            unitController.applyDataUpdate(serviceData, metaData.getServiceType());
+        } catch (NotAvailableException ex) {
+            if (!unitControllerRegistry.isInitiallySynchronized()) {
+                LOGGER.debug("ItemUpdate[" + itemName + "=" + state + "] skipped because controller registry was not ready yet!");
+                return;
+            }
+            throw ex;
         }
     }
 }

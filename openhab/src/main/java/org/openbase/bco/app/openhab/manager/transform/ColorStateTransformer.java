@@ -9,7 +9,7 @@ import rst.domotic.state.ColorStateType.ColorState;
 import rst.vision.ColorType.Color.Type;
 import rst.vision.HSBColorType.HSBColor;
 
-public class OpenHABColorStateTransformer {
+public class ColorStateTransformer {
 
     public static ColorState transform(final HSBType hsbType) throws CouldNotTransformException {
         try {
