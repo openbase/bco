@@ -31,7 +31,7 @@ import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionFutureType.ActionFuture;
-import rst.domotic.state.UserPresenceStateType.UserPresenceState;
+import rst.domotic.state.UserTransitStateType.UserTransitState;
 import rst.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData;
 import rst.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData.Builder;
 
@@ -49,20 +49,20 @@ public class AuthorizationGroupControllerImpl extends AbstractBaseUnitController
     }
 
     @Override
-    public UserPresenceState getUserPresenceState() throws NotAvailableException {
+    public UserTransitState getUserTransitState() throws NotAvailableException {
         try {
-            return getData().getUserPresenceState();
+            return getData().getUserTransitState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("user presence state", ex);
         }
     }
 
     @Override
-    public Future<ActionFuture> setUserPresenceState(UserPresenceState userPresenceState) throws CouldNotPerformException {
+    public Future<ActionFuture> setUserTransitState(UserTransitState userTransitState) throws CouldNotPerformException {
         try (ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setUserPresenceState(userPresenceState);
+            dataBuilder.getInternalBuilder().setUserTransitState(userTransitState);
         } catch (CouldNotPerformException | NullPointerException ex) {
-            throw new CouldNotPerformException("Could not set user presence state to [" + userPresenceState + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not set user presence state to [" + userTransitState + "] for " + this + "!", ex);
         }
         return CompletableFuture.completedFuture(null);
     }

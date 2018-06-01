@@ -46,7 +46,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.state.ActivityStateType.ActivityState;
-import rst.domotic.state.UserPresenceStateType.UserPresenceState;
+import rst.domotic.state.UserTransitStateType.UserTransitState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.user.UserDataType.UserData;
 
@@ -95,11 +95,11 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
                             synchronized (netDeviceDetectorMapLock) {
                                 for (NetDeviceDetector detector : netDeviceDetectorMap.values()) {
                                     if (detector.isReachable()) {
-                                        setUserPresenceState(UserPresenceState.newBuilder().setValue(UserPresenceState.State.AT_HOME).build());
+                                        setUserTransitState(UserTransitState.newBuilder().setValue(UserTransitState.State.AT_HOME).build());
                                         return;
                                     }
                                 }
-                                setUserPresenceState(UserPresenceState.newBuilder().setValue(UserPresenceState.State.AWAY).build());
+                                setUserTransitState(UserTransitState.newBuilder().setValue(UserTransitState.State.AWAY).build());
                             }
                         });
                         if (isActive()) {
@@ -178,9 +178,9 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     }
     
     @Override
-    public UserPresenceState getUserPresenceState() throws NotAvailableException {
+    public UserTransitState getUserTransitState() throws NotAvailableException {
         try {
-            return getData().getUserPresenceState();
+            return getData().getUserTransitState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("user presence state", ex);
         }
@@ -197,11 +197,11 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     }
     
     @Override
-    public Future<ActionFuture> setUserPresenceState(UserPresenceState userPresenceState) throws CouldNotPerformException {
+    public Future<ActionFuture> setUserTransitState(UserTransitState userTransitState) throws CouldNotPerformException {
         try (ClosableDataBuilder<UserData.Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setUserPresenceState(userPresenceState);
+            dataBuilder.getInternalBuilder().setUserTransitState(userTransitState);
         } catch (CouldNotPerformException | NullPointerException ex) {
-            throw new CouldNotPerformException("Could not set user presence state to [" + userPresenceState + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not set user presence state to [" + userTransitState + "] for " + this + "!", ex);
         }
         return CompletableFuture.completedFuture(null);
     }
