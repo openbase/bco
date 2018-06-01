@@ -1,6 +1,7 @@
 package org.openbase.bco.app.openhab.registry;
 
 import org.openbase.bco.app.openhab.registry.synchronizer.ThingDeviceUnitSynchronizer;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.iface.Launchable;
@@ -27,6 +28,7 @@ public class OpenHABConfigSynchronizer implements Launchable<Void>, VoidInitiali
     }
 
     public void activate() throws CouldNotPerformException, InterruptedException {
+        Registries.waitForData();
         thingDeviceUnitSynchronizer.activate();
     }
 

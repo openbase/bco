@@ -8,6 +8,13 @@ import org.eclipse.smarthome.core.types.Command;
 import org.eclipse.smarthome.io.rest.core.item.EnrichedItemDTO;
 import org.eclipse.smarthome.io.rest.core.thing.EnrichedThingDTO;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.iface.Shutdownable;
+import org.openbase.jul.pattern.ObservableImpl;
+import org.openbase.jul.pattern.Observer;
+import org.openbase.jul.schedule.SyncObject;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import javax.ws.rs.client.Client;
 import javax.ws.rs.client.ClientBuilder;
@@ -15,12 +22,13 @@ import javax.ws.rs.client.Entity;
 import javax.ws.rs.client.WebTarget;
 import javax.ws.rs.core.MediaType;
 import javax.ws.rs.core.Response;
+import javax.ws.rs.sse.SseEventSource;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-public class OpenHABRestCommunicator {
+public class OpenHABRestCommunicator implements Shutdownable {
 
     //TODO: parse from java properties
     public static final String OPENHAB_IP = "localhost";
@@ -34,11 +42,21 @@ public class OpenHABRestCommunicator {
     public static final String INBOX_TARGET = "inbox";
     public static final String APPROVE_TARGET = "approve";
 
+    public static final String TOPIC_KEY = "topic";
+    public static final String TOPIC_SEPERATOR = SEPARATOR;
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OpenHABRestCommunicator.class);
+
     private static OpenHABRestCommunicator instance = null;
 
     public static OpenHABRestCommunicator getInstance() {
         if (instance == null) {
             instance = new OpenHABRestCommunicator();
+            try {
+                Shutdownable.registerShutdownHook(instance);
+            } catch (CouldNotPerformException ex) {
+                // only thrown if instance would be null
+            }
         }
 
         return instance;
@@ -50,12 +68,76 @@ public class OpenHABRestCommunicator {
     private final Gson gson;
     private final JsonParser jsonParser;
 
+    private final Map<String, EventSourceObservableMapping> topicEventSourceMap;
+    private final SyncObject eventSourceLock = new SyncObject("EventSourceLock");
+
     public OpenHABRestCommunicator() {
         this.client = ClientBuilder.newClient();
         this.baseWebTarget = client.target("http://" + OPENHAB_IP + ":" + PORT + SEPARATOR + REST_TARGET);
 
         this.gson = new GsonBuilder().create();
         this.jsonParser = new JsonParser();
+
+        topicEventSourceMap = new HashMap<>();
+    }
+
+    @Override
+    public void shutdown() {
+        synchronized (eventSourceLock) {
+            for (EventSourceObservableMapping mapping : topicEventSourceMap.values()) {
+                mapping.getSseEventSource().close();
+            }
+            topicEventSourceMap.clear();
+        }
+    }
+
+    public void addSSEObserver(Observer<JsonObject> observer) {
+        addSSEObserver(observer, "");
+    }
+
+    public void addSSEObserver(Observer<JsonObject> observer, final String topicFilter) {
+        synchronized (eventSourceLock) {
+            if (topicEventSourceMap.containsKey(topicFilter)) {
+                topicEventSourceMap.get(topicFilter).addObserver(observer);
+                return;
+            }
+
+            final String path = (topicFilter.isEmpty()) ? "" : "?topics=" + topicFilter;
+            final WebTarget webTarget = baseWebTarget.path(path);
+            final SseEventSource sseEventSource = SseEventSource.target(webTarget).build();
+            final ObservableImpl<JsonObject> observable = new ObservableImpl<>();
+            topicEventSourceMap.put(topicFilter, new EventSourceObservableMapping(sseEventSource, observable));
+
+            sseEventSource.register(inboundSseEvent -> {
+                // parse payload as json
+                final JsonObject payload = jsonParser.parse(inboundSseEvent.readData()).getAsJsonObject();
+                try {
+                    observable.notifyObservers(payload);
+                } catch (Exception ex) {
+                    ExceptionPrinter.printHistory(new CouldNotPerformException("Could not notify listeners on topic[" + topicFilter + "]", ex), LOGGER);
+                }
+            });
+            sseEventSource.open();
+        }
+    }
+
+    public void removeSSEObserver(Observer<JsonObject> observer) {
+        removeSSEObserver(observer, "");
+    }
+
+    public void removeSSEObserver(Observer<JsonObject> observer, final String topicFilter) {
+        synchronized (eventSourceLock) {
+            if (topicEventSourceMap.containsKey(topicFilter)) {
+                final EventSourceObservableMapping mapping = topicEventSourceMap.get(topicFilter);
+                mapping.removeObserver(observer);
+
+                if (mapping.getObserverCount() == 0) {
+                    topicEventSourceMap.remove(topicFilter);
+
+                    mapping.getSseEventSource().close();
+                }
+            }
+        }
     }
 
     // ==========================================================================================================================================
@@ -253,6 +335,35 @@ public class OpenHABRestCommunicator {
             return result;
         } else {
             throw new CouldNotPerformException("Response returned with errorCode[" + response.getStatus() + "] and error message[" + result + "]");
+        }
+    }
+
+    private static class EventSourceObservableMapping {
+        private final SseEventSource sseEventSource;
+        private final ObservableImpl<JsonObject> observable;
+        private int observerCount;
+
+        public EventSourceObservableMapping(final SseEventSource sseEventSource, ObservableImpl<JsonObject> objectObservable) {
+            this.sseEventSource = sseEventSource;
+            this.observable = objectObservable;
+        }
+
+        public void addObserver(final Observer<JsonObject> observer) {
+            this.observable.addObserver(observer);
+            this.observerCount++;
+        }
+
+        public void removeObserver(final Observer<JsonObject> observer) {
+            this.observable.removeObserver(observer);
+            this.observerCount--;
+        }
+
+        public int getObserverCount() {
+            return observerCount;
+        }
+
+        public SseEventSource getSseEventSource() {
+            return sseEventSource;
         }
     }
 }

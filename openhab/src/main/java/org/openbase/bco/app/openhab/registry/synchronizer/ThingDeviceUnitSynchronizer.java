@@ -30,7 +30,6 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, IdentifiableEnrichedThingDTO> {
 
@@ -38,23 +37,8 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
     public static final String OPENHAB_THING_CLASS_KEY = "OPENHAB_THING_CLASS";
     public static final String OPENHAB_THING_CHANNEL_TYPE_UID_KEY = "OPENHAB_THING_CHANNEL_TYPE_UID";
 
-    //TODO: parse from java property
-    public static final long PERIOD_AND_INITIAL_DELAY = 60;
-
     public ThingDeviceUnitSynchronizer() throws InstantiationException {
-        super(new ScheduledDataProvider(PERIOD_AND_INITIAL_DELAY, PERIOD_AND_INITIAL_DELAY, TimeUnit.SECONDS));
-    }
-
-    @Override
-    public void activate() throws CouldNotPerformException, InterruptedException {
-        super.activate();
-        ((ScheduledDataProvider) getDataProvider()).activate();
-    }
-
-    @Override
-    public void deactivate() throws CouldNotPerformException, InterruptedException {
-        ((ScheduledDataProvider) getDataProvider()).deactivate();
-        super.deactivate();
+        super(new ThingObservable());
     }
 
     @Override

@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloud.connector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -173,7 +173,7 @@ public class FulfillmentHandler {
                 device.add(NAME_KEY, name);
 
                 final JsonObject deviceInfo = new JsonObject();
-                deviceInfo.addProperty("manufacturer", Registries.getDeviceRegistry(true).getDeviceClassById(Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId()).getDeviceConfig().getDeviceClassId()).getCompany());
+                deviceInfo.addProperty("manufacturer", Registries.getClassRegistry(true).getDeviceClassById(Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId()).getDeviceConfig().getDeviceClassId()).getCompany());
                 //TODO: missing: model, hwVersion, swVersion
                 device.add("deviceInfo", deviceInfo);
 
@@ -197,7 +197,7 @@ public class FulfillmentHandler {
                 UnitRemote unitRemote = Units.getUnit(id, true);
 
                 final Set<ServiceType> serviceTypeSet = new HashSet<>();
-                for (ServiceDescription serviceDescription : Registries.getUnitRegistry(true).getUnitTemplateByType(unitRemote.getUnitType()).getServiceDescriptionList()) {
+                for (ServiceDescription serviceDescription : Registries.getTemplateRegistry(true).getUnitTemplateByType(unitRemote.getUnitType()).getServiceDescriptionList()) {
                     if (serviceTypeSet.contains(serviceDescription.getType())) {
                         continue;
                     }
