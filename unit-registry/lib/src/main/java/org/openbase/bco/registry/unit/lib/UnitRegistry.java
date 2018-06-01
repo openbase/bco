@@ -188,7 +188,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
     Boolean isUnitConfigRegistryReadOnly() throws CouldNotPerformException;
 
     /**
-     * Method returns the unit matching the given alias. An alias is an unique identifiere of units.
+     * Method returns the unit matching the given alias. An alias is a unique identifier of units.
      * <p>
      * Hint: If you want to address more than one unit with an alias than create a unit group of such units and define an alias for those group.
      *
@@ -200,16 +200,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws CouldNotPerformException is thrown if something went wrong during the lookup.
      */
     @RPCMethod
-    default UnitConfig getUnitConfigByAlias(final String unitAlias) throws CouldNotPerformException {
-        for (UnitConfig unitConfig : getUnitConfigs()) {
-            for (final String alias : unitConfig.getAliasList()) {
-                if (alias.equalsIgnoreCase(unitAlias)) {
-                    return unitConfig;
-                }
-            }
-        }
-        throw new NotAvailableException("UnitConfig", "alias:" + unitAlias);
-    }
+    UnitConfig getUnitConfigByAlias(final String unitAlias) throws CouldNotPerformException;
 
     /**
      * Method returns all registered units with the given label. Label resolving

@@ -23,11 +23,9 @@ package org.openbase.bco.registry.unit.remote;
  */
 
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
-import org.openbase.bco.authentication.lib.AuthorizationFilter;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
-import org.openbase.bco.registry.lib.com.future.RemovalFuture;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.jp.JPUnitRegistryScope;
 import org.openbase.jps.core.JPService;
@@ -37,31 +35,28 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.pattern.MockUpFilter;
+import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import org.openbase.jul.storage.registry.RemoteRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
-import rst.domotic.service.ServiceConfigType;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
-import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.rsb.ScopeType;
-import rst.spatial.ShapeType.Shape;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.*;
+import java.util.TreeMap;
+import java.util.concurrent.Future;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -89,9 +84,15 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> unitConfigRemoteRegistry;
     private final SynchronizedRemoteRegistry<String, UnitConfig, UnitConfig.Builder> baseUnitConfigRemoteRegistry;
 
+    private final TreeMap<String, String> aliasIdMap;
+    private final SyncObject aliasIdMapLock;
+
     public UnitRegistryRemote() throws InstantiationException {
         super(JPUnitRegistryScope.class, UnitRegistryData.class);
         try {
+            this.aliasIdMap = new TreeMap<>();
+            this.aliasIdMapLock = new SyncObject("AliasIdMapLock");
+
             this.dalUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.DAL_UNIT_CONFIG_FIELD_NUMBER);
             this.userUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, UnitRegistryData.USER_UNIT_CONFIG_FIELD_NUMBER);
             this.authorizationGroupUnitConfigRemoteRegistry = new SynchronizedRemoteRegistry<>(this.getIntenalPriorizedDataObservable(), this, new MockUpFilter(), UnitRegistryData.AUTHORIZATION_GROUP_UNIT_CONFIG_FIELD_NUMBER);
@@ -125,6 +126,16 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
                     UnitRegistryData.SCENE_UNIT_CONFIG_FIELD_NUMBER,
                     UnitRegistryData.DEVICE_UNIT_CONFIG_FIELD_NUMBER
             );
+
+            unitConfigRemoteRegistry.addDataObserver((source, data) -> {
+                synchronized (aliasIdMapLock) {
+                    aliasIdMap.clear();
+                    for (IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage : data.values()) {
+                        final UnitConfig unitConfig = identifiableMessage.getMessage();
+                        unitConfig.getAliasList().forEach(alias -> aliasIdMap.put(alias, unitConfig.getId()));
+                    }
+                }
+            });
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
         }
@@ -236,6 +247,23 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     public UnitConfig getUnitConfigById(final String unitConfigId) throws CouldNotPerformException, NotAvailableException {
         validateData();
         return unitConfigRemoteRegistry.getMessage(unitConfigId);
+    }
+
+    /**
+     * {@inheritDoc}
+     *
+     * @param unitAlias {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public UnitConfig getUnitConfigByAlias(String unitAlias) throws CouldNotPerformException {
+        synchronized (aliasIdMapLock) {
+            if (aliasIdMap.containsKey(unitAlias)) {
+                return getUnitConfigById(aliasIdMap.get(unitAlias));
+            }
+        }
+        throw new NotAvailableException("UnitConfig with alias[" + unitAlias + "]");
     }
 
     @Override

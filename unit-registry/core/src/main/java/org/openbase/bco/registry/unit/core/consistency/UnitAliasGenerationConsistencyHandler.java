@@ -44,7 +44,7 @@ public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegis
 
     private static final Logger LOGGER = LoggerFactory.getLogger(UnitAliasGenerationConsistencyHandler.class);
 
-    public static final String ALIAS_NUMBER_SEPERATOR = "-";
+    public static final String ALIAS_NUMBER_SEPARATOR = "-";
 
     private final Map<UnitType, Integer> unitTypeAliasNumberMap;
     private final UnitRegistry unitRegistry;
@@ -93,7 +93,7 @@ public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegis
         registerNumber(newNumber, unitType);
 
         // generate and return alias string
-        return StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + ALIAS_NUMBER_SEPERATOR + newNumber;
+        return StringProcessor.transformUpperCaseToCamelCase(unitType.name()) + ALIAS_NUMBER_SEPARATOR + newNumber;
     }
 
 
@@ -104,7 +104,7 @@ public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegis
     }
 
     private void registerAlias(final String alias, final UnitType unitType) {
-        String split[] = alias.split(ALIAS_NUMBER_SEPERATOR);
+        String split[] = alias.split(ALIAS_NUMBER_SEPARATOR);
 
         if (split.length != 2) {
             return;

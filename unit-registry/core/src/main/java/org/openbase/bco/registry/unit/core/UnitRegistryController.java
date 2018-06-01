@@ -69,9 +69,9 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
-import org.openbase.jul.iface.Manageable;
 import org.openbase.jul.pattern.ListFilter;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.file.ProtoBufJSonFileProvider;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.slf4j.LoggerFactory;
@@ -82,36 +82,26 @@ import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
 import rst.domotic.authentication.PermissionType.Permission;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
-import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitProbabilityCollectionType.UnitProbabilityCollection;
+import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.domotic.unit.agent.AgentClassType.AgentClass;
 import rst.domotic.unit.agent.AgentConfigType.AgentConfig;
-import rst.domotic.unit.app.AppClassType.AppClass;
 import rst.domotic.unit.app.AppConfigType.AppConfig;
 import rst.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
 import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig;
 import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig;
-import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
 import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
 import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
-import rst.math.Vec3DDoubleType.Vec3DDouble;
-import rst.rsb.ScopeType;
 import rst.spatial.ShapeType.Shape;
-import rst.tracking.PointingRay3DFloatCollectionType.PointingRay3DFloatCollection;
-import rst.tracking.PointingRay3DFloatType.PointingRay3DFloat;
 
 import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
-import java.util.concurrent.ExecutionException;
+import java.util.TreeMap;
 import java.util.concurrent.Future;
 
 
@@ -154,9 +144,15 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
     private final ArrayList<ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder>> unitConfigRegistryList, baseUnitConfigRegistryList;
 
+    private final SyncObject aliasIdMapLock;
+    private final TreeMap<String, String> aliasIdMap;
+
     public UnitRegistryController() throws InstantiationException, InterruptedException {
         super(JPUnitRegistryScope.class, UnitRegistryData.newBuilder());
         try {
+            this.aliasIdMap = new TreeMap<>();
+            this.aliasIdMapLock = new SyncObject("AliasIdMapLock");
+
             this.unitConfigRegistryList = new ArrayList();
             this.baseUnitConfigRegistryList = new ArrayList();
 
@@ -201,16 +197,31 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         }
     }
 
+    @Override
+    protected void postInit() throws InitializationException, InterruptedException {
+        // post init loads registries
+        super.postInit();
+
+        // fill in alias id map
+        synchronized (aliasIdMapLock) {
+            try {
+                for (ProtoBufFileSynchronizedRegistry<String, UnitConfig, Builder, UnitRegistryData.Builder> registry : unitConfigRegistryList) {
+                    registry.getMessages().forEach((unitConfig) -> unitConfig.getAliasList().forEach(alias -> aliasIdMap.put(alias, unitConfig.getId())));
+                }
+            } catch (CouldNotPerformException ex) {
+                throw new InitializationException(this, ex);
+            }
+        }
+    }
+
     /**
      * {@inheritDoc}
      *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
-    protected void registerRegistries() throws CouldNotPerformException {
-        unitConfigRegistryList.stream().forEach((registry) -> {
-            registerRegistry(registry);
-        });
+    protected void registerRegistries() {
+        unitConfigRegistryList.forEach(this::registerRegistry);
     }
 
     /**
@@ -356,6 +367,10 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         agentUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
         authorizationGroupUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
         unitGroupUnitConfigRegistry.registerPlugin(new PublishUnitTransformationRegistryPlugin(locationUnitConfigRegistry));
+
+        for (ProtoBufFileSynchronizedRegistry<String, UnitConfig, Builder, UnitRegistryData.Builder> registry : unitConfigRegistryList) {
+            registry.registerPlugin(new AliasMapUpdatePlugin(aliasIdMap, aliasIdMapLock));
+        }
     }
 
     /**
@@ -536,6 +551,23 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         throw new CouldNotPerformException("None of the unit registries contains an entry with the id [" + unitConfigId + "]");
     }
 
+    /**
+     * {@inheritDoc}
+     *
+     * @param unitAlias {@inheritDoc}
+     * @return {@inheritDoc}
+     * @throws CouldNotPerformException {@inheritDoc}
+     */
+    @Override
+    public UnitConfig getUnitConfigByAlias(String unitAlias) throws CouldNotPerformException {
+        synchronized (aliasIdMapLock) {
+            if (aliasIdMap.containsKey(unitAlias)) {
+                return getUnitConfigById(aliasIdMap.get(unitAlias));
+            }
+        }
+        throw new NotAvailableException("UnitConfig with alias[" + unitAlias + "]");
+    }
+
     @Override
     public Boolean containsUnitConfigById(final String unitConfigId) throws CouldNotPerformException {
         for (ProtoBufFileSynchronizedRegistry registry : getRegistries()) {
@@ -608,7 +640,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -620,7 +651,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -641,7 +671,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
-     *
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
@@ -653,7 +682,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @return
-     *
      * @throws CouldNotPerformException
      */
     @Override
@@ -665,7 +693,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @return
-     *
      * @throws CouldNotPerformException
      */
     @Override
@@ -677,9 +704,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      * {@inheritDoc}
      *
      * @param serviceType
-     *
      * @return
-     *
      * @throws CouldNotPerformException
      */
     @Override
@@ -700,9 +725,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
      *
      * @param unitType
      * @param serviceTypes
-     *
      * @return
-     *
      * @throws CouldNotPerformException
      */
     @Override
