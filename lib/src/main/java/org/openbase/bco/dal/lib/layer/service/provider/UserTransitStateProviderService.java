@@ -1,6 +1,6 @@
-package org.openbase.bco.dal.lib.layer.service.operation;
+package org.openbase.bco.dal.lib.layer.service.provider;
 
-/*
+/*-
  * #%L
  * BCO DAL Library
  * %%
@@ -21,20 +21,17 @@ package org.openbase.bco.dal.lib.layer.service.operation;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.service.provider.IntensityStateProviderService;
-import org.openbase.jul.exception.CouldNotPerformException;
+
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
-import rst.domotic.action.ActionFutureType.ActionFuture;
-import rst.domotic.state.IntensityStateType.IntensityState;
+import rst.domotic.state.UserTransitStateType.UserTransitState;
 
 /**
  *
- * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-@Deprecated
-public interface IntensityStateOperationService extends OperationService, IntensityStateProviderService {
-
+public interface UserTransitStateProviderService extends ProviderService {
+    
     @RPCMethod
-    public Future<ActionFuture> setIntensityState(final IntensityState intensityState) throws CouldNotPerformException;
+    public UserTransitState getUserTransitState() throws NotAvailableException;
 }

@@ -72,19 +72,21 @@ public class RollerShutterController extends AbstractDALUnitController<RollerShu
     @Override
     public Future<ActionFuture> setBlindState(final BlindState state) throws CouldNotPerformException {
         logger.debug("Setting [" + getLabel() + "] to BlindState [" + state + "]");
-        
+
+        // todo: merge new state with latest state to support sparse state updates (e.g. openhab handles for items which are all projected onto our BlindState)
+
         try {
             Services.verifyOperationServiceState(state);
         } catch (VerificationFailedException ex) {
             return FutureProcessor.canceledFuture(ActionFuture.class, ex);
         }
-        
+
         // stop before moving in any direction.
-        switch (state.getMovementState()) {
+        switch (state.getValue()) {
             case DOWN:
             case UP:
                 try {
-                    blindStateService.setBlindState(state.toBuilder().setMovementState(BlindState.MovementState.STOP).build()).get(1000, TimeUnit.MILLISECONDS);
+                    blindStateService.setBlindState(state.toBuilder().setValue(BlindState.State.STOP).build()).get(1000, TimeUnit.MILLISECONDS);
                 } catch (ExecutionException | TimeoutException | InterruptedException ex) {
                     if (ex instanceof InterruptedException) {
                         Thread.currentThread().interrupt();

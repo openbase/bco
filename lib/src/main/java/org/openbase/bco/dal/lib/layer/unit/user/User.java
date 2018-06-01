@@ -22,7 +22,7 @@ package org.openbase.bco.dal.lib.layer.unit.user;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.service.operation.ActivityStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.operation.UserPresenceStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.UserTransitStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
@@ -33,7 +33,7 @@ import rst.domotic.unit.user.UserDataType.UserData;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface User extends BaseUnit<UserData>, ActivityStateOperationService, UserPresenceStateOperationService {
+public interface User extends BaseUnit<UserData>, ActivityStateOperationService, UserTransitStateOperationService {
 
     public final static String TYPE_FIELD_USER_NAME = "user_name";
 
@@ -55,7 +55,7 @@ public interface User extends BaseUnit<UserData>, ActivityStateOperationService,
 
     default public Boolean isAtHome() throws NotAvailableException {
         try {
-            switch (getData().getUserPresenceState().getValue()) {
+            switch (getData().getUserTransitState().getValue()) {
                 case AT_HOME:
                 case SHORT_AT_HOME:
                 case SOON_AWAY:
@@ -65,9 +65,9 @@ public interface User extends BaseUnit<UserData>, ActivityStateOperationService,
                 case SOON_AT_HOME:
                     return false;
                 case UNKNOWN:
-                    throw new InvalidStateException("UserPresenceState unknown!");
+                    throw new InvalidStateException("UserTransitState unknown!");
                 default:
-                    throw new AssertionError("Type " + getData().getUserPresenceState().getValue() + " not supported!");
+                    throw new AssertionError("Type " + getData().getUserTransitState().getValue() + " not supported!");
             }
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("AtHomeState");

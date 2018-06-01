@@ -24,28 +24,28 @@ package org.openbase.bco.dal.visual.service;
 import java.awt.Color;
 import javax.swing.DefaultComboBoxModel;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
-import org.openbase.bco.dal.lib.layer.service.operation.UserPresenceStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.provider.UserPresenceStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.operation.UserTransitStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.provider.UserTransitStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.processing.StringProcessor;
-import rst.domotic.state.UserPresenceStateType.UserPresenceState;
+import rst.domotic.state.UserTransitStateType.UserTransitState;
 
 /**
  *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public class UserPresenceStateServicePanel extends AbstractServicePanel<UserPresenceStateProviderService, ConsumerService, UserPresenceStateOperationService> {
+public class UserTransitStateServicePanel extends AbstractServicePanel<UserTransitStateProviderService, ConsumerService, UserTransitStateOperationService> {
 
     /**
      * Creates new form ActivityStateServicePanel
      *
      * @throws org.openbase.jul.exception.InstantiationException
      */
-    public UserPresenceStateServicePanel() throws org.openbase.jul.exception.InstantiationException {
+    public UserTransitStateServicePanel() throws org.openbase.jul.exception.InstantiationException {
         initComponents();
-        userPresenceStateComboBox.setModel(new DefaultComboBoxModel(UserPresenceState.State.values()));
+        userTransitStateComboBox.setModel(new DefaultComboBoxModel(UserTransitState.State.values()));
     }
 
     /**
@@ -58,30 +58,30 @@ public class UserPresenceStateServicePanel extends AbstractServicePanel<UserPres
     // <editor-fold defaultstate="collapsed" desc="Generated Code">//GEN-BEGIN:initComponents
     private void initComponents() {
 
-        userPresenceStatePanel = new javax.swing.JPanel();
-        userPresenceStateLabel = new javax.swing.JLabel();
-        userPresenceStateComboBox = new javax.swing.JComboBox();
+        userTransitStatePanel = new javax.swing.JPanel();
+        userTransitStateLabel = new javax.swing.JLabel();
+        userTransitStateComboBox = new javax.swing.JComboBox();
 
-        userPresenceStatePanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 3));
+        userTransitStatePanel.setBorder(javax.swing.BorderFactory.createLineBorder(new java.awt.Color(0, 0, 0), 3));
 
-        userPresenceStateLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
-        userPresenceStateLabel.setText("ActivityState");
+        userTransitStateLabel.setHorizontalAlignment(javax.swing.SwingConstants.CENTER);
+        userTransitStateLabel.setText("ActivityState");
 
-        javax.swing.GroupLayout userPresenceStatePanelLayout = new javax.swing.GroupLayout(userPresenceStatePanel);
-        userPresenceStatePanel.setLayout(userPresenceStatePanelLayout);
-        userPresenceStatePanelLayout.setHorizontalGroup(
-            userPresenceStatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(userPresenceStateLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
+        javax.swing.GroupLayout userTransitStatePanelLayout = new javax.swing.GroupLayout(userTransitStatePanel);
+        userTransitStatePanel.setLayout(userTransitStatePanelLayout);
+        userTransitStatePanelLayout.setHorizontalGroup(
+            userTransitStatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(userTransitStateLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 250, Short.MAX_VALUE)
         );
-        userPresenceStatePanelLayout.setVerticalGroup(
-            userPresenceStatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(userPresenceStateLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE)
+        userTransitStatePanelLayout.setVerticalGroup(
+            userTransitStatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+            .addComponent(userTransitStateLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 36, Short.MAX_VALUE)
         );
 
-        userPresenceStateComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
-        userPresenceStateComboBox.addActionListener(new java.awt.event.ActionListener() {
+        userTransitStateComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        userTransitStateComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
-                userPresenceStateComboBoxActionPerformed(evt);
+                userTransitStateComboBoxActionPerformed(evt);
             }
         });
 
@@ -89,72 +89,72 @@ public class UserPresenceStateServicePanel extends AbstractServicePanel<UserPres
         this.setLayout(layout);
         layout.setHorizontalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(userPresenceStatePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(userPresenceStateComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(userTransitStatePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+            .addComponent(userTransitStateComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
             layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
             .addGroup(layout.createSequentialGroup()
-                .addComponent(userPresenceStatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                .addComponent(userTransitStatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
                 .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(userPresenceStateComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE))
+                .addComponent(userTransitStateComboBox, javax.swing.GroupLayout.PREFERRED_SIZE, 39, javax.swing.GroupLayout.PREFERRED_SIZE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
-    private void userPresenceStateComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userPresenceStateComboBoxActionPerformed
-        UserPresenceState.State userPresenceState = (UserPresenceState.State) userPresenceStateComboBox.getModel().getSelectedItem();
+    private void userTransitStateComboBoxActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_userTransitStateComboBoxActionPerformed
+        UserTransitState.State userTransitState = (UserTransitState.State) userTransitStateComboBox.getModel().getSelectedItem();
         try {
-            notifyActionProcessing(getOperationService().setUserPresenceState(userPresenceState));
+            notifyActionProcessing(getOperationService().setUserTransitState(userTransitState));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set user presence state!", ex), logger);
         }
-    }//GEN-LAST:event_userPresenceStateComboBoxActionPerformed
+    }//GEN-LAST:event_userTransitStateComboBoxActionPerformed
 
 
     // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox userPresenceStateComboBox;
-    private javax.swing.JLabel userPresenceStateLabel;
-    private javax.swing.JPanel userPresenceStatePanel;
+    private javax.swing.JComboBox userTransitStateComboBox;
+    private javax.swing.JLabel userTransitStateLabel;
+    private javax.swing.JPanel userTransitStatePanel;
     // End of variables declaration//GEN-END:variables
 
     @Override
     protected void updateDynamicComponents() {
         try {
-            logger.info("state: " + getProviderService().getUserPresenceState().getValue().name());
-            switch (getProviderService().getUserPresenceState().getValue()) {
+            logger.info("state: " + getProviderService().getUserTransitState().getValue().name());
+            switch (getProviderService().getUserTransitState().getValue()) {
                 case AT_HOME:
-                    userPresenceStateLabel.setForeground(Color.BLACK);
-                    userPresenceStatePanel.setBackground(Color.GREEN.darker());
+                    userTransitStateLabel.setForeground(Color.BLACK);
+                    userTransitStatePanel.setBackground(Color.GREEN.darker());
                     break;
                 case AWAY:
-                    userPresenceStateLabel.setForeground(Color.LIGHT_GRAY);
-                    userPresenceStatePanel.setBackground(Color.GRAY.darker());
+                    userTransitStateLabel.setForeground(Color.LIGHT_GRAY);
+                    userTransitStatePanel.setBackground(Color.GRAY.darker());
                     break;
                 case SHORT_AT_HOME:
-                    userPresenceStateLabel.setForeground(Color.BLACK);
-                    userPresenceStatePanel.setBackground(Color.CYAN.brighter());
+                    userTransitStateLabel.setForeground(Color.BLACK);
+                    userTransitStatePanel.setBackground(Color.CYAN.brighter());
                     break;
                 case SHORT_AWAY:
-                    userPresenceStateLabel.setForeground(Color.BLACK);
-                    userPresenceStatePanel.setBackground(Color.CYAN.darker());
+                    userTransitStateLabel.setForeground(Color.BLACK);
+                    userTransitStatePanel.setBackground(Color.CYAN.darker());
                     break;
                 case SOON_AT_HOME:
-                    userPresenceStateLabel.setForeground(Color.BLACK);
-                    userPresenceStatePanel.setBackground(Color.GREEN.darker().darker());
+                    userTransitStateLabel.setForeground(Color.BLACK);
+                    userTransitStatePanel.setBackground(Color.GREEN.darker().darker());
                     break;
                 case SOON_AWAY:
-                    userPresenceStateLabel.setForeground(Color.BLACK);
-                    userPresenceStatePanel.setBackground(Color.GREEN.darker().darker());
+                    userTransitStateLabel.setForeground(Color.BLACK);
+                    userTransitStatePanel.setBackground(Color.GREEN.darker().darker());
                     break;
                 case UNKNOWN:
-                    userPresenceStateLabel.setForeground(Color.BLACK);
-                    userPresenceStatePanel.setBackground(Color.ORANGE.darker());
+                    userTransitStateLabel.setForeground(Color.BLACK);
+                    userTransitStatePanel.setBackground(Color.ORANGE.darker());
                     break;
                 default:
-                    throw new InvalidStateException("State[" + getProviderService().getUserPresenceState().getValue() + "] is unknown.");
+                    throw new InvalidStateException("State[" + getProviderService().getUserTransitState().getValue() + "] is unknown.");
             }
-            userPresenceStateComboBox.getModel().setSelectedItem(getProviderService().getUserPresenceState().getValue());
-            userPresenceStateLabel.setText("Current UserPresenceState = " + StringProcessor.transformUpperCaseToCamelCase(getProviderService().getUserPresenceState().getValue().name()));
+            userTransitStateComboBox.getModel().setSelectedItem(getProviderService().getUserTransitState().getValue());
+            userTransitStateLabel.setText("Current UserTransitState = " + StringProcessor.transformUpperCaseToCamelCase(getProviderService().getUserTransitState().getValue().name()));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }

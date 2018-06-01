@@ -23,22 +23,22 @@ package org.openbase.bco.dal.lib.layer.service.operation;
  */
 
 import java.util.concurrent.Future;
-import org.openbase.bco.dal.lib.layer.service.provider.UserPresenceStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.UserTransitStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.annotation.RPCMethod;
 import rst.domotic.action.ActionFutureType.ActionFuture;
-import rst.domotic.state.UserPresenceStateType.UserPresenceState;
+import rst.domotic.state.UserTransitStateType.UserTransitState;
 
 /**
  *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface UserPresenceStateOperationService extends OperationService, UserPresenceStateProviderService {
+public interface UserTransitStateOperationService extends OperationService, UserTransitStateProviderService {
 
     @RPCMethod
-    public Future<ActionFuture> setUserPresenceState(UserPresenceState userPresenceState) throws CouldNotPerformException;
+    public Future<ActionFuture> setUserTransitState(UserTransitState userTransitState) throws CouldNotPerformException;
 
-    default public Future<ActionFuture> setUserPresenceState(UserPresenceState.State userPresenceState) throws CouldNotPerformException {
-        return setUserPresenceState(UserPresenceState.newBuilder().setValue(userPresenceState).build());
+    default public Future<ActionFuture> setUserTransitState(UserTransitState.State userTransitState) throws CouldNotPerformException {
+        return setUserTransitState(UserTransitState.newBuilder().setValue(userTransitState).build());
     }
 }
