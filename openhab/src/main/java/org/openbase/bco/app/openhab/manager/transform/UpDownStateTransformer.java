@@ -36,16 +36,16 @@ public class UpDownStateTransformer {
     public static BlindState transform(final UpDownType upDownType) throws CouldNotTransformException {
         switch (upDownType) {
             case DOWN:
-                return BlindState.newBuilder().setMovementState(BlindState.MovementState.DOWN).build();
+                return BlindState.newBuilder().setValue(BlindState.State.DOWN).build();
             case UP:
-                return BlindState.newBuilder().setMovementState(BlindState.MovementState.UP).build();
+                return BlindState.newBuilder().setValue(BlindState.State.UP).build();
             default:
                 throw new CouldNotTransformException("Could not transform " + UpDownHolder.UpDown.class.getSimpleName() + "[" + upDownType.name() + "] is unknown!");
         }
     }
 
     public static UpDownType transform(final BlindState blindState) throws TypeNotSupportedException, CouldNotTransformException {
-        switch (blindState.getMovementState()) {
+        switch (blindState.getValue()) {
             case DOWN:
                 return UpDownType.DOWN;
             case UP:
@@ -53,7 +53,7 @@ public class UpDownStateTransformer {
             case UNKNOWN:
                 throw new TypeNotSupportedException(blindState, UpDownType.class);
             default:
-                throw new CouldNotTransformException("Could not transform " + BlindState.class.getSimpleName() + "[" + blindState.getMovementState().name() + "] is unknown!");
+                throw new CouldNotTransformException("Could not transform " + BlindState.class.getSimpleName() + "[" + blindState.getValue().name() + "] is unknown!");
         }
     }
 }

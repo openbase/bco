@@ -20,7 +20,7 @@ public class BlindStateServiceImpl<ST extends BlindStateOperationService & Unit<
 
     @Override
     public Future<ActionFuture> setBlindState(BlindState blindState) throws CouldNotPerformException {
-        switch (blindState.getMovementState()) {
+        switch (blindState.getValue()) {
             case UP:
                 return executeCommand(UpDownStateTransformer.transform(blindState));
             case DOWN:

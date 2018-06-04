@@ -147,7 +147,7 @@ public class ColorTemperatureTraitMapper implements TraitMapper<ColorState> {
     }
 
     /**
-     * Invert the algorithm for @link{coloTemperatureToRGB}.
+     * Invert the algorithm for {@link #colorTemperatureToRGB(int)}.
      * Because of rounding and double precision the inversion is most likely close
      * but not exact to the original temperature.
      *
@@ -155,6 +155,7 @@ public class ColorTemperatureTraitMapper implements TraitMapper<ColorState> {
      * @return the color temperature representing that color type
      */
     public int RGBToColorTemperature(final RGBColor rgbColor) {
+        //TODO: filter green 0
         // always use green for the conversion and switch over cases using red
         if (rgbColor.getRed() == 255) {
             double res = Math.exp((rgbColor.getGreen() + 161.1195681661) / 99.4708025861) * 100;
