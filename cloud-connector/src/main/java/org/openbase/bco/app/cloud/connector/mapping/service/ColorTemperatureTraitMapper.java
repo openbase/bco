@@ -1,4 +1,4 @@
-package org.openbase.bco.app.cloud.connector.google.mapping.state;
+package org.openbase.bco.app.cloud.connector.mapping.service;
 
 /*-
  * #%L
@@ -31,7 +31,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.vision.ColorType.Color.Type;
 import rst.vision.RGBColorType.RGBColor;
 
-public class ColorTemperatureTraitMapper implements TraitMapper<ColorState> {
+public class ColorTemperatureTraitMapper extends AbstractTraitMapper<ColorState> {
 
     public static final String MIN_KELVIN_ATTRIBUTE_KEY = "temperatureMinK";
     public static final String MAX_KELVIN_ATTRIBUTE_KEY = "temperatureMaxK";
@@ -41,13 +41,17 @@ public class ColorTemperatureTraitMapper implements TraitMapper<ColorState> {
 
     public static final String TEMPERATURE_KEY = "temperature";
 
+    public ColorTemperatureTraitMapper() {
+        super(ServiceType.COLOR_STATE_SERVICE);
+    }
+
     @Override
-    public ColorState map(JsonObject jsonObject) throws CouldNotPerformException {
+    protected ColorState map(final JsonObject jsonObject) throws CouldNotPerformException {
         if (!jsonObject.has(ColorSpectrumTraitMapper.COLOR_KEY)) {
             throw new CouldNotPerformException("Could not map from jsonObject[" + jsonObject.toString() + "] to [" + ColorState.class.getSimpleName() + "]. Attribute[" + ColorSpectrumTraitMapper.COLOR_KEY + "] is missing");
         }
 
-        //TODO: name for color
+        //TODO: name for color, maybe from device class or generic -> then unit config/remote has to be given as a parameter
         try {
             final JsonObject color = jsonObject.get(ColorSpectrumTraitMapper.COLOR_KEY).getAsJsonObject();
 
@@ -96,15 +100,10 @@ public class ColorTemperatureTraitMapper implements TraitMapper<ColorState> {
         jsonObject.addProperty(MAX_KELVIN_ATTRIBUTE_KEY, MAX_KELVIN_DEFAULT);
     }
 
-    @Override
-    public ServiceType getServiceType() {
-        return ServiceType.COLOR_STATE_SERVICE;
-    }
-
     /**
      * Convert color temperature given in Kelvin to RGB using
      * <a href=http://www.tannerhelland.com/4435/convert-temperature-rgb-algorithm-code/>this algorithm</a>.
-     * This algorithm is an approximation which works between 1000 and 40000.
+     * It is an approximation which works between 1000 and 40000.
      *
      * @param temperature the temperature for the color in Kelvin
      * @return an rgb color type converted from the temperature

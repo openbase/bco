@@ -10,22 +10,22 @@ package org.openbase.bco.app.cloud.connector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
 
-import com.google.gson.*;
-import io.socket.client.Ack;
-import io.socket.client.IO;
-import io.socket.client.Socket;
+import com.google.gson.Gson;
+import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.StackTracePrinter;
@@ -45,6 +45,8 @@ public class TestMain {
     public static void main(String[] args) {
         final Gson gson = new GsonBuilder().setPrettyPrinting().create();
         final FulfillmentHandler fulfillmentHandler = new FulfillmentHandler();
+
+        LOGGER.info(new CouldNotPerformException("Could not do this").toString());
 
         // test sync
 //        JsonObject syncRequest = new JsonObject();

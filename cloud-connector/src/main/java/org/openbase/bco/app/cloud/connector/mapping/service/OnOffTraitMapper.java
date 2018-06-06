@@ -1,4 +1,4 @@
-package org.openbase.bco.app.cloud.connector.google.mapping.state;
+package org.openbase.bco.app.cloud.connector.mapping.service;
 
 /*-
  * #%L
@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloud.connector.google.mapping.state;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -29,18 +29,23 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.PowerStateType.PowerState.State;
 
-public class OnOffTraitMapper implements TraitMapper<PowerState> {
+public class OnOffTraitMapper extends AbstractTraitMapper<PowerState> {
 
-    public static final String ON_OFF_TRAIT_KEY = "on";
+    public static final String ON_PARAM_KEY = "on";
+
+    public OnOffTraitMapper() {
+        super(ServiceType.POWER_STATE_SERVICE);
+    }
 
     @Override
-    public PowerState map(final JsonObject jsonObject) throws CouldNotPerformException {
-        if (!jsonObject.has(ON_OFF_TRAIT_KEY)) {
-            throw new CouldNotPerformException("Could not map from jsonObject[" + jsonObject.toString() + "] to [" + PowerState.class.getSimpleName() + "]. Attribute[" + ON_OFF_TRAIT_KEY + "] is missing");
+    protected PowerState map(final JsonObject jsonObject) throws CouldNotPerformException {
+        if (!jsonObject.has(ON_PARAM_KEY)) {
+            throw new CouldNotPerformException("Could not map from jsonObject[" + jsonObject.toString() + "] to ["
+                    + PowerState.class.getSimpleName() + "]. Attribute[" + ON_PARAM_KEY + "] is missing");
         }
 
         try {
-            final boolean state = jsonObject.get(ON_OFF_TRAIT_KEY).getAsBoolean();
+            final boolean state = jsonObject.get(ON_PARAM_KEY).getAsBoolean();
             if (state) {
                 return PowerState.newBuilder().setValue(State.ON).build();
             } else {
@@ -48,7 +53,8 @@ public class OnOffTraitMapper implements TraitMapper<PowerState> {
             }
         } catch (ClassCastException | IllegalStateException ex) {
             // thrown if it is not a boolean
-            throw new CouldNotPerformException("Could not map from jsonObject[" + jsonObject.toString() + "] to [" + PowerState.class.getSimpleName() + "]. Attribute[" + ON_OFF_TRAIT_KEY + "] is not boolean");
+            throw new CouldNotPerformException("Could not map from jsonObject[" + jsonObject.toString() + "] to [" +
+                    PowerState.class.getSimpleName() + "]. Attribute[" + ON_PARAM_KEY + "] is not boolean");
         }
     }
 
@@ -56,19 +62,15 @@ public class OnOffTraitMapper implements TraitMapper<PowerState> {
     public void map(final PowerState powerState, final JsonObject jsonObject) throws CouldNotTransformException {
         switch (powerState.getValue()) {
             case ON:
-                jsonObject.addProperty(ON_OFF_TRAIT_KEY, true);
+                jsonObject.addProperty(ON_PARAM_KEY, true);
                 break;
             case OFF:
-                jsonObject.addProperty(ON_OFF_TRAIT_KEY, false);
+                jsonObject.addProperty(ON_PARAM_KEY, false);
                 break;
             case UNKNOWN:
             default:
-                throw new CouldNotTransformException("Could not map [" + powerState.getClass().getSimpleName() + ", " + powerState.getValue().name() + "] to jsonObject");
+                throw new CouldNotTransformException("Could not map [" + powerState.getClass().getSimpleName()
+                        + ", " + powerState.getValue().name() + "] to jsonObject");
         }
-    }
-
-    @Override
-    public ServiceType getServiceType() {
-        return ServiceType.POWER_STATE_SERVICE;
     }
 }

@@ -1,4 +1,4 @@
-package org.openbase.bco.app.cloud.connector.google;
+package org.openbase.bco.app.cloud.connector.mapping.service;
 
 /*-
  * #%L
@@ -22,6 +22,7 @@ package org.openbase.bco.app.cloud.connector.google;
  * #L%
  */
 
+import org.openbase.bco.app.cloud.connector.mapping.lib.Trait;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 

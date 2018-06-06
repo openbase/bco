@@ -1,4 +1,4 @@
-package org.openbase.bco.app.cloud.connector.google.mapping.state;
+package org.openbase.bco.app.cloud.connector.mapping.service;
 
 /*-
  * #%L
@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloud.connector.google.mapping.state;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -28,12 +28,16 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.BrightnessStateType.BrightnessState.DataUnit;
 
-public class BrightnessTraitMapper implements TraitMapper<BrightnessState> {
+public class BrightnessTraitMapper extends AbstractTraitMapper<BrightnessState> {
 
     public static final String BRIGHTNESS_TRAIT_KEY = "brightness";
 
+    public BrightnessTraitMapper() {
+        super(ServiceType.BRIGHTNESS_STATE_SERVICE);
+    }
+
     @Override
-    public BrightnessState map(JsonObject jsonObject) throws CouldNotPerformException {
+    protected BrightnessState map(final JsonObject jsonObject) throws CouldNotPerformException {
         if (!jsonObject.has(BRIGHTNESS_TRAIT_KEY)) {
             throw new CouldNotPerformException("Could not map from jsonObject[" + jsonObject.toString() + "] to [" + BrightnessState.class.getSimpleName() + "]. Attribute[" + BRIGHTNESS_TRAIT_KEY + "] is missing");
         }
@@ -48,12 +52,7 @@ public class BrightnessTraitMapper implements TraitMapper<BrightnessState> {
     }
 
     @Override
-    public void map(BrightnessState brightnessState, JsonObject jsonObject) {
+    public void map(final BrightnessState brightnessState, final JsonObject jsonObject) {
         jsonObject.addProperty(BRIGHTNESS_TRAIT_KEY, (int) brightnessState.getBrightness());
-    }
-
-    @Override
-    public ServiceType getServiceType() {
-        return ServiceType.BRIGHTNESS_STATE_SERVICE;
     }
 }
