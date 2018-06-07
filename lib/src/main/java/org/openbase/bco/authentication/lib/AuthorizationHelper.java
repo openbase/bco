@@ -232,7 +232,7 @@ public class AuthorizationHelper {
             // user or authentication group permissions are independent of there location referred location.
             if (isAuthenticationUnit(unitConfig)) {
                 if (!unitConfig.hasPermissionConfig()) {
-                    throw new InvalidStateException(StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name()) + " should always provide a permission config!");
+                    throw new InvalidStateException(StringProcessor.transformUpperCaseToCamelCase(unitConfig.getUnitType().name()) + " should always provide a permission config!");
                 }
                 return unitConfig.getPermissionConfig();
             }
@@ -273,7 +273,7 @@ public class AuthorizationHelper {
     private static boolean isRootLocation(final UnitConfig unitConfig, final Map<String, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder>> locations) {
 
         // if this unit is not a location it can not be a root location
-        if (unitConfig.getType() != UnitType.LOCATION) {
+        if (unitConfig.getUnitType() != UnitType.LOCATION) {
             return false;
         }
 
@@ -300,7 +300,7 @@ public class AuthorizationHelper {
     }
 
     private static boolean isAuthenticationUnit(final UnitConfig unitConfig) {
-        switch (unitConfig.getType()) {
+        switch (unitConfig.getUnitType()) {
             case USER:
             case AUTHORIZATION_GROUP:
                 return true;

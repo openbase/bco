@@ -25,6 +25,7 @@ package org.openbase.bco.authentication.test;
  */
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -33,6 +34,7 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 import static org.junit.Assert.*;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
 import rst.domotic.authentication.PermissionType.Permission;
 import rst.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
@@ -70,23 +72,25 @@ public class AuthorizationHelperTest {
         AuthorizationGroupConfig group1 = AuthorizationGroupConfig.newBuilder().addMemberId(USER_1).addMemberId(USER_2).build();
         AuthorizationGroupConfig group2 = AuthorizationGroupConfig.newBuilder().addMemberId(USER_1).addMemberId(USER_3).build();
         AuthorizationGroupConfig group3 = AuthorizationGroupConfig.newBuilder().addMemberId(CLIENT_1).build();
-        UnitConfig unitConfig1 = UnitConfig.newBuilder().setLabel(GROUP_1).setId(GROUP_1).setType(UnitType.AUTHORIZATION_GROUP).setAuthorizationGroupConfig(group1).build();
-        UnitConfig unitConfig2 = UnitConfig.newBuilder().setLabel(GROUP_2).setId(GROUP_2).setType(UnitType.AUTHORIZATION_GROUP).setAuthorizationGroupConfig(group2).build();
-        UnitConfig unitConfig3 = UnitConfig.newBuilder().setLabel(GROUP_CLIENTS).setId(GROUP_CLIENTS).setType(UnitType.AUTHORIZATION_GROUP).setAuthorizationGroupConfig(group3).build();
-        groups.put(GROUP_1, new IdentifiableMessage<>(unitConfig1));
-        groups.put(GROUP_2, new IdentifiableMessage<>(unitConfig2));
-        groups.put(GROUP_CLIENTS, new IdentifiableMessage<>(unitConfig3));
+        UnitConfig.Builder unitConfig1 = UnitConfig.newBuilder().setId(GROUP_1).setUnitType(UnitType.AUTHORIZATION_GROUP).setAuthorizationGroupConfig(group1);
+        UnitConfig.Builder unitConfig2 = UnitConfig.newBuilder().setId(GROUP_2).setUnitType(UnitType.AUTHORIZATION_GROUP).setAuthorizationGroupConfig(group2);
+        UnitConfig.Builder unitConfig3 = UnitConfig.newBuilder().setId(GROUP_CLIENTS).setUnitType(UnitType.AUTHORIZATION_GROUP).setAuthorizationGroupConfig(group3);
+        LabelProcessor.addLabel(unitConfig1.getLabelBuilder(), Locale.ENGLISH, GROUP_1);
+        LabelProcessor.addLabel(unitConfig2.getLabelBuilder(), Locale.ENGLISH, GROUP_2);
+        LabelProcessor.addLabel(unitConfig3.getLabelBuilder(), Locale.ENGLISH, GROUP_CLIENTS);
+        groups.put(GROUP_1, new IdentifiableMessage<>(unitConfig1.build()));
+        groups.put(GROUP_2, new IdentifiableMessage<>(unitConfig2.build()));
+        groups.put(GROUP_CLIENTS, new IdentifiableMessage<>(unitConfig3.build()));
 
         LocationConfig locationRoot = LocationConfig.newBuilder().setRoot(true).build();
         PermissionConfig permissionConfig = PermissionConfig.newBuilder().setOtherPermission(READ_ONLY).build();
-        UnitConfig unitConfig4 = UnitConfig.newBuilder()
-          .setLabel(LOCATION_ROOT)
+        UnitConfig.Builder unitConfig4 = UnitConfig.newBuilder()
           .setId(LOCATION_ROOT)
-          .setType(UnitType.LOCATION)
+          .setUnitType(UnitType.LOCATION)
           .setLocationConfig(locationRoot)
-          .setPermissionConfig(permissionConfig)
-          .build();
-        locations.put(LOCATION_ROOT, new IdentifiableMessage<>(unitConfig4));
+          .setPermissionConfig(permissionConfig);
+        locations.put(LOCATION_ROOT, new IdentifiableMessage<>(unitConfig4.build()));
+        LabelProcessor.addLabel(unitConfig4.getLabelBuilder(), Locale.ENGLISH, LOCATION_ROOT);
     }
 
     @BeforeClass
@@ -308,12 +312,12 @@ public class AuthorizationHelperTest {
         PermissionConfig.Builder permissionConfigLocation = PermissionConfig.newBuilder().setOtherPermission(NONE);
         PlacementConfig placementConfigLocation = PlacementConfig.newBuilder().setLocationId(LOCATION_ROOT).build();
         UnitConfig.Builder unitConfigLocationBuilder = UnitConfig.newBuilder()
-          .setLabel(LOCATION_1)
           .setId(LOCATION_1)
-          .setType(UnitType.LOCATION)
+          .setUnitType(UnitType.LOCATION)
           .setLocationConfig(location1)
           .setPlacementConfig(placementConfigLocation)
           .setPermissionConfig(permissionConfigLocation);
+        LabelProcessor.addLabel(unitConfigLocationBuilder.getLabelBuilder(), Locale.ENGLISH, LOCATION_1);
         locations.put(LOCATION_1, new IdentifiableMessage<>(unitConfigLocationBuilder.build()));
 
         PlacementConfig placementUnit = PlacementConfig.newBuilder().setLocationId(LOCATION_1).build();

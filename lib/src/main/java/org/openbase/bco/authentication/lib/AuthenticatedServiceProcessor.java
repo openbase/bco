@@ -174,7 +174,7 @@ public class AuthenticatedServiceProcessor {
             try {
                 if (JPService.getProperty(JPAuthentication.class).getValue()) {
                     UnitConfig unitConfig = configRetrieval.retrieve(message);
-                    if (unitConfig.getType() == UnitType.UNKNOWN) {
+                    if (unitConfig.getUnitType() == UnitType.UNKNOWN) {
                         throw new InvalidStateException("Unit type of received unit config is unknown! Reject request because message seems to be broken.");
                     }
 

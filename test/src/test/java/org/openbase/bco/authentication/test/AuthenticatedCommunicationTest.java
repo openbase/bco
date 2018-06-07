@@ -121,13 +121,13 @@ public class AuthenticatedCommunicationTest {
     public void testCommunication() throws Exception {
         UnitConfig.Builder otherAgentConfig = UnitConfig.newBuilder();
         otherAgentConfig.setId("OtherAgent");
-        otherAgentConfig.setType(UnitType.AGENT);
+        otherAgentConfig.setUnitType(UnitType.AGENT);
         Permission.Builder otherPermission = otherAgentConfig.getPermissionConfigBuilder().getOtherPermissionBuilder();
         otherPermission.setRead(true).setWrite(false).setAccess(true);
 
         UnitConfig.Builder userAgentConfig = UnitConfig.newBuilder();
         userAgentConfig.setId("UserAgent");
-        userAgentConfig.setType(UnitType.AGENT);
+        userAgentConfig.setUnitType(UnitType.AGENT);
         userAgentConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setRead(false).setAccess(false).setWrite(false);
         userAgentConfig.getPermissionConfigBuilder().getOwnerPermissionBuilder().setRead(true).setAccess(true).setWrite(true);
         userAgentConfig.getPermissionConfigBuilder().setOwnerId(USER_ID);
