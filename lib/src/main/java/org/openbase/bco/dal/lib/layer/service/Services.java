@@ -26,6 +26,7 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
+import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
@@ -44,6 +45,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
+import rst.timing.TimestampType.Timestamp;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -217,7 +219,7 @@ public class Services {
     }
 
     public static Method detectServiceMethod(final ServiceDescription description, final ServiceTempus serviceTempus, final Class instanceClass, final Class... argumentClasses) throws CouldNotPerformException {
-        return detectServiceMethod(description.getType(), description.getPattern(), serviceTempus, instanceClass, argumentClasses);
+        return detectServiceMethod(description.getServiceType(), description.getPattern(), serviceTempus, instanceClass, argumentClasses);
     }
 
     public static Object invokeServiceMethod(final ServiceDescription description, final Service instance, final Object... arguments) throws CouldNotPerformException {
@@ -228,7 +230,7 @@ public class Services {
         try {
             return detectServiceMethod(description, serviceTempus, instance.getClass(), getArgumentClasses(arguments)).invoke(instance, arguments);
         } catch (IllegalAccessException | ExceptionInInitializerError ex) {
-            throw new NotSupportedException("ServiceType[" + description.getType().name() + "] with Pattern[" + description.getPattern() + "]", instance, ex);
+            throw new NotSupportedException("ServiceType[" + description.getServiceType().name() + "] with Pattern[" + description.getPattern() + "]", instance, ex);
         } catch (NullPointerException ex) {
             throw new CouldNotPerformException("Invocation failed because given instance is not available!", ex);
         } catch (InvocationTargetException ex) {
