@@ -21,6 +21,7 @@ package org.openbase.bco.registry.unit.core.consistency.deviceconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
@@ -29,12 +30,9 @@ import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
-import rst.domotic.state.InventoryStateType.InventoryState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
 
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class DeviceOwnerConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
@@ -48,12 +46,14 @@ public class DeviceOwnerConsistencyHandler extends AbstractProtoBufRegistryConsi
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
-        DeviceConfig.Builder deviceConfig = unitConfig.getDeviceConfigBuilder();
 
         // verify if configured owner exists.
-        if (deviceConfig.hasInventoryState() && deviceConfig.getInventoryState().hasOwnerId() && !deviceConfig.getInventoryState().getOwnerId().isEmpty() && !userRegistry.contains(deviceConfig.getInventoryState().getOwnerId())) {
+        if (unitConfig.hasPermissionConfig() &&
+                unitConfig.getPermissionConfig().hasOwnerId() &&
+                !unitConfig.getPermissionConfig().getOwnerId().isEmpty() &&
+                !userRegistry.contains(unitConfig.getPermissionConfig().getOwnerId())) {
             // remove unknown owner
-            deviceConfig.setInventoryState(InventoryState.newBuilder(deviceConfig.getInventoryState()).setOwnerId(""));
+            unitConfig.getPermissionConfigBuilder().clearOwnerId();
             throw new EntryModification(entry.setMessage(unitConfig), this);
         }
     }

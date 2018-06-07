@@ -59,19 +59,22 @@ public class UnitPermissionCleanerConsistencyHandler extends AbstractProtoBufReg
             boolean modification = false;
 
             // fill other permission fields that are not set
-            if (!permissionIsEmpty(permissionConfig.getOtherPermission())) {
+            if (permissionConfig.hasOtherPermission() && !permissionIsEmpty(permissionConfig.getOtherPermission())) {
                 Permission otherPermission = AuthorizationHelper.getPermission(entry.getMessage(), null, authorizationGroupConfigRegistry.getEntryMap(), locationConfigRegistry.getEntryMap());
                 modification = fillEmptyPermissions(permissionConfig.getOtherPermissionBuilder(), otherPermission) || modification;
             }
 
             // fill owner permissions which are not set
-            if (!permissionIsEmpty(permissionConfig.getOwnerPermission())) {
+            if (permissionConfig.hasOwnerPermission() && !permissionIsEmpty(permissionConfig.getOwnerPermission())) {
                 Permission ownerPermission = AuthorizationHelper.getPermission(entry.getMessage(), permissionConfig.getOwnerId(), authorizationGroupConfigRegistry.getEntryMap(), locationConfigRegistry.getEntryMap());
                 modification = fillEmptyPermissions(permissionConfig.getOwnerPermissionBuilder(), ownerPermission) || modification;
             }
 
             // clean empty permission configs
-            if (permissionIsEmpty(permissionConfig.getOtherPermission()) && permissionIsEmpty(permissionConfig.getOwnerPermission()) && permissionConfig.getGroupPermissionList().isEmpty()) {
+            if (permissionIsEmpty(permissionConfig.getOtherPermission()) &&
+                    permissionIsEmpty(permissionConfig.getOwnerPermission()) &&
+                    permissionConfig.getGroupPermissionList().isEmpty() &&
+                    !permissionConfig.hasOwnerId()) {
                 unitConfig.clearPermissionConfig();
                 modification = true;
             }

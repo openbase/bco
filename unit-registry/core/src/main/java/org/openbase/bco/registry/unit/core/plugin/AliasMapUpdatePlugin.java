@@ -24,9 +24,12 @@ package org.openbase.bco.registry.unit.core.plugin;
 
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.RejectedException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 
@@ -44,6 +47,7 @@ public class AliasMapUpdatePlugin extends ProtobufRegistryPluginAdapter<String, 
     public AliasMapUpdatePlugin(final Map<String, String> aliasIdMap, final SyncObject aliasIdMapLock) {
         this.aliasIdMap = aliasIdMap;
         this.aliasIdMapLock = aliasIdMapLock;
+        this.temporaryAliasList = new ArrayList<>();
     }
 
     @Override

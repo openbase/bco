@@ -177,7 +177,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         assertTrue("DeviceConfig does not contain the correct amount of units", localDeviceConfig.getDeviceConfig().getUnitIdCount() == 1);
 
         UnitConfig registeredUnit = unitRegistry.getUnitConfigById(localDeviceConfig.getDeviceConfig().getUnitId(0));
-        assertTrue("The amount of service configs for the unit is not correct", registeredUnit.getServiceConfigCount() == 2);
+        assertEquals("The amount of service configs for the unit is not correct", 2, registeredUnit.getServiceConfigCount());
         assertTrue(registeredUnit.getServiceConfig(0).getServiceDescription().getType() == ServiceType.BATTERY_STATE_SERVICE || registeredUnit.getServiceConfig(0).getServiceDescription().getType() == ServiceType.COLOR_STATE_SERVICE);
         assertTrue(registeredUnit.getServiceConfig(1).getServiceDescription().getType() == ServiceType.BATTERY_STATE_SERVICE || registeredUnit.getServiceConfig(1).getServiceDescription().getType() == ServiceType.COLOR_STATE_SERVICE);
 
@@ -312,39 +312,50 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
     }
 
     /**
-     * Test if the owner of a device is updated correctly.
+     * Test that the owner id for a device can be correctly set and that the owner id is cleared
+     * when the user with that id is removed.
      *
-     * @throws java.lang.Exception
+     * @throws java.lang.Exception if anything fails
      */
     @Test(timeout = 5000)
     public void testOwnerRemoval() throws Exception {
         System.out.println("testOwnerRemoval");
+
+        // register a user
         UserConfig userConfig = UserConfig.newBuilder().setUserName("owner").setFirstName("Max").setLastName("Mustermann").build();
         UnitConfig.Builder userUnitConfig = UnitConfig.newBuilder().setType(UnitType.USER).setUserConfig(userConfig).setEnablingState(EnablingState.newBuilder().setValue(EnablingState.State.ENABLED));
         userUnitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setRead(true).setAccess(true).setWrite(true);
         UnitConfig owner = unitRegistry.registerUnitConfig(userUnitConfig.build()).get();
 
+        // register a device class
         Registries.getClassRegistry().addDataObserver(notifyChangeObserver);
         DeviceClass clazz = classRegistry.registerDeviceClass(generateDeviceClass("OwnerRemovalTest", "194872639127319823", "ServiceGMBH")).get();
         waitForDeviceClass(clazz);
         Registries.getClassRegistry().removeDataObserver(notifyChangeObserver);
 
-        UnitConfig ownerRemovalDeviceConfig = generateDeviceUnitConfig("OwnerRemovalTestDevice", "1249726918723918723", clazz);
-        DeviceConfig tmp = ownerRemovalDeviceConfig.getDeviceConfig().toBuilder().setInventoryState(InventoryState.newBuilder().setOwnerId(owner.getId()).setValue(InventoryState.State.IN_STOCK)).build();
-        ownerRemovalDeviceConfig = ownerRemovalDeviceConfig.toBuilder().setDeviceConfig(tmp).build();
-        ownerRemovalDeviceConfig = unitRegistry.registerUnitConfig(ownerRemovalDeviceConfig).get();
+        // register a device of the previously registered class with the previously registered owner
+        UnitConfig.Builder deviceUnitConfigBuilder = generateDeviceUnitConfig("OwnerRemovalTestDevice", "1249726918723918723", clazz).toBuilder();
+        deviceUnitConfigBuilder.getPermissionConfigBuilder().setOwnerId(owner.getId());
+        UnitConfig deviceUnitConfig = unitRegistry.registerUnitConfig(deviceUnitConfigBuilder.build()).get();
 
-        assertEquals("The device does not have the correct owner id!", owner.getId(), ownerRemovalDeviceConfig.getDeviceConfig().getInventoryState().getOwnerId());
+        // test that owner id is still set after registration
 
+        logger.warn("Before: " + deviceUnitConfigBuilder.build().getPermissionConfig());
+        logger.warn("After: " + deviceUnitConfig.getPermissionConfig());
+        assertEquals("The device does not have the correct owner id!", owner.getId(), deviceUnitConfig.getPermissionConfig().getOwnerId());
+
+        // remove the owner from the registry
         unitRegistry.removeUnitConfig(owner).get();
 
+        // validate that owner got removed
         assertTrue("The owner did not get removed!", !unitRegistry.containsUnitConfig(owner));
-        ownerRemovalDeviceConfig = unitRegistry.getUnitConfigById(ownerRemovalDeviceConfig.getId());
-        while (!ownerRemovalDeviceConfig.getDeviceConfig().getInventoryState().getOwnerId().isEmpty()) {
+
+        // validate that owner has been removed from device unit config
+        deviceUnitConfig = unitRegistry.getUnitConfigById(deviceUnitConfig.getId());
+        while (!deviceUnitConfig.getPermissionConfig().getOwnerId().isEmpty()) {
             Thread.sleep(100);
-            ownerRemovalDeviceConfig = unitRegistry.getUnitConfigById(ownerRemovalDeviceConfig.getId());
+            deviceUnitConfig = unitRegistry.getUnitConfigById(deviceUnitConfig.getId());
         }
-        assertEquals("The owner id did not get removed even though the user got removed!", "", ownerRemovalDeviceConfig.getDeviceConfig().getInventoryState().getOwnerId());
     }
 
     @Test(timeout = 5000)
