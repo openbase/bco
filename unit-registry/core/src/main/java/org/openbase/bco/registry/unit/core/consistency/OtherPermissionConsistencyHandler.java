@@ -51,7 +51,7 @@ public class OtherPermissionConsistencyHandler extends AbstractProtoBufRegistryC
         if (unitConfig.hasPlacementConfig() && unitConfig.getPlacementConfig().hasLocationId() && !unitConfig.getPlacementConfig().getLocationId().isEmpty()) {
 
             // only let root location pass
-            boolean isRootLocation = unitConfig.getType() == UnitType.LOCATION && unitConfig.getLocationConfig().getRoot();
+            boolean isRootLocation = unitConfig.getUnitType() == UnitType.LOCATION && unitConfig.getLocationConfig().getRoot();
             if (!isRootLocation) {
                 return;
             }

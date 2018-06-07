@@ -23,8 +23,11 @@ package org.openbase.bco.registry.lib.util;
  */
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
+
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfigOrBuilder;
@@ -86,9 +89,9 @@ public class DeviceConfigUtils {
      */
     public static boolean setupUnitLabelByDeviceConfig(final UnitConfig.Builder unitConfig, final UnitConfigOrBuilder deviceUnitConfig, final DeviceClassOrBuilder deviceClass, final boolean deviceConfigHasDuplicatedUnitType) throws CouldNotPerformException {
         try {
-            if (!unitConfig.hasLabel() || unitConfig.getLabel().isEmpty() || unitConfig.getBoundToUnitHost()) {
+            if (!unitConfig.hasLabel() || unitConfig.getBoundToUnitHost()) {
                 if (deviceConfigHasDuplicatedUnitType) {
-                    if (unitConfig.hasLabel() && !unitConfig.getLabel().isEmpty()) {
+                    if (unitConfig.hasLabel()) {
                         return false;
                     }
 
@@ -96,7 +99,8 @@ public class DeviceConfigUtils {
                         throw new NotAvailableException("unitconfig.unittemplateconfigid");
                     }
 
-                    unitConfig.setLabel(generateDefaultUnitLabel(unitConfig, deviceUnitConfig, deviceClass, deviceConfigHasDuplicatedUnitType));
+                    LabelProcessor.addLabel(unitConfig.getLabelBuilder(), Locale.ENGLISH,
+                            generateDefaultUnitLabel(unitConfig, deviceUnitConfig, deviceClass, deviceConfigHasDuplicatedUnitType));
                     return true;
                 } else {
 
@@ -105,7 +109,8 @@ public class DeviceConfigUtils {
                     }
 
                     if (!unitConfig.getLabel().equals(deviceUnitConfig.getLabel())) {
-                        unitConfig.setLabel(generateDefaultUnitLabel(unitConfig, deviceUnitConfig, deviceClass, deviceConfigHasDuplicatedUnitType));
+                        LabelProcessor.addLabel(unitConfig.getLabelBuilder(), Locale.ENGLISH,
+                                generateDefaultUnitLabel(unitConfig, deviceUnitConfig, deviceClass, deviceConfigHasDuplicatedUnitType));
                         return true;
                     }
                 }
@@ -120,15 +125,12 @@ public class DeviceConfigUtils {
         if (deviceConfigHasDuplicatedUnitType) {
             for (UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
                 if (unitTemplateConfig.getId().equals(unitConfig.getUnitTemplateConfigId())) {
-                    if (unitTemplateConfig.getLabel().isEmpty()) {
-                        throw new NotAvailableException("unitTemplateConfig.label");
-                    }
-                    return deviceUnitConfig.getLabel() + "_" + unitTemplateConfig.getLabel();
+                    return deviceUnitConfig.getLabel() + "_" + LabelProcessor.getFirstLabel(unitTemplateConfig.getLabel());
                 }
             }
             throw new CouldNotPerformException("DeviceClass[" + deviceClass.getId() + "] does not contain UnitTemplateConfig[" + unitConfig.getUnitTemplateConfigId() + "]!");
         }
-        // because device does not contain dublicated unit types, the device label can be used without any conflicts.
-        return deviceUnitConfig.getLabel();
+        // because device does not contain duplicated unit types, the device label can be used without any conflicts.
+        return LabelProcessor.getFirstLabel(deviceUnitConfig.getLabel());
     }
 }

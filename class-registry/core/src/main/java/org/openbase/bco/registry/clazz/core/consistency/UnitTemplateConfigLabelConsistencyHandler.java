@@ -25,11 +25,14 @@ package org.openbase.bco.registry.clazz.core.consistency;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
+
+import java.util.Locale;
 
 /**
  *
@@ -44,9 +47,10 @@ public class UnitTemplateConfigLabelConsistencyHandler extends AbstractProtoBufR
         deviceClass.clearUnitTemplateConfig();
         boolean modification = false;
         for (UnitTemplateConfig.Builder unitTemplateConfig : entry.getMessage().toBuilder().getUnitTemplateConfigBuilderList()) {
-            if (!unitTemplateConfig.hasLabel() || unitTemplateConfig.getLabel().isEmpty()) {
+            if (!unitTemplateConfig.hasLabel()) {
                 // unit template starts with deviceClassId_ so remove that
-                unitTemplateConfig.setLabel(unitTemplateConfig.getId().substring(deviceClass.getId().length() + 1));
+                LabelProcessor.addLabel(unitTemplateConfig.getLabelBuilder(), Locale.ENGLISH,
+                        unitTemplateConfig.getId().substring(deviceClass.getId().length() + 1));
                 modification = true;
             }
             deviceClass.addUnitTemplateConfig(unitTemplateConfig);

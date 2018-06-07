@@ -500,7 +500,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public Future<UnitConfig> registerUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
-            UnitConfig result = getUnitConfigRegistry(unitConfig.getType()).register(unitConfig);
+            UnitConfig result = getUnitConfigRegistry(unitConfig.getUnitType()).register(unitConfig);
             return result;
         });
     }
@@ -511,7 +511,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
                 UnitConfig.class,
                 this,
                 (UnitConfig unitConfig) -> {
-                    UnitConfig result = getUnitConfigRegistry(unitConfig.getType()).register(unitConfig);
+                    UnitConfig result = getUnitConfigRegistry(unitConfig.getUnitType()).register(unitConfig);
                     return result;
                 },
                 (UnitConfig unitConfig) -> {
@@ -582,13 +582,13 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
     @Override
     public Boolean containsUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
-        return getUnitConfigRegistry(unitConfig.getType()).contains(unitConfig);
+        return getUnitConfigRegistry(unitConfig.getUnitType()).contains(unitConfig);
     }
 
     @Override
     public Future<UnitConfig> updateUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
-            UnitConfig result = getUnitConfigRegistry(unitConfig.getType()).update(unitConfig);
+            UnitConfig result = getUnitConfigRegistry(unitConfig.getUnitType()).update(unitConfig);
             return result;
         });
     }
@@ -598,7 +598,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, getAuthorizationGroupUnitConfigRegistry().getEntryMap(), getLocationUnitConfigRegistry().getEntryMap(), UnitConfig.class,
                 this,
                 (UnitConfig unitConfig) -> {
-                    UnitConfig result = getUnitConfigRegistry(unitConfig.getType()).update(unitConfig);
+                    UnitConfig result = getUnitConfigRegistry(unitConfig.getUnitType()).update(unitConfig);
                     return result;
                 },
                 (UnitConfig unitConfig) -> getUnitConfigById(unitConfig.getId())
@@ -608,7 +608,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
     @Override
     public Future<UnitConfig> removeUnitConfig(final UnitConfig unitConfig) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> {
-            UnitConfig result = getUnitConfigRegistry(unitConfig.getType()).remove(unitConfig);
+            UnitConfig result = getUnitConfigRegistry(unitConfig.getUnitType()).remove(unitConfig);
             return result;
         });
     }
@@ -619,7 +619,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             return AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, getAuthorizationGroupUnitConfigRegistry().getEntryMap(), getLocationUnitConfigRegistry().getEntryMap(), UnitConfig.class,
                     this,
                     (UnitConfig unitConfig) -> {
-                        UnitConfig result = getUnitConfigRegistry(unitConfig.getType()).remove(unitConfig);
+                        UnitConfig result = getUnitConfigRegistry(unitConfig.getUnitType()).remove(unitConfig);
                         return result;
                     },
                     (UnitConfig unitConfig) -> getUnitConfigById(unitConfig.getId())
@@ -712,7 +712,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         List<ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfig unitConfig : getUnitConfigs()) {
             for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                if (serviceConfig.getServiceDescription().getType() == serviceType) {
+                if (serviceConfig.getServiceDescription().getServiceType() == serviceType) {
                     serviceConfigs.add(serviceConfig);
                 }
             }
@@ -737,7 +737,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             foundServiceType = false;
             for (ServiceType serviceType : serviceTypes) {
                 for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                    if (serviceConfig.getServiceDescription().getType() == serviceType) {
+                    if (serviceConfig.getServiceDescription().getServiceType() == serviceType) {
                         foundServiceType = true;
                     }
                 }

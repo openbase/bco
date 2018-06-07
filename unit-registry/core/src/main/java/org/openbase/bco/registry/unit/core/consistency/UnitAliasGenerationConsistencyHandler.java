@@ -68,7 +68,7 @@ public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegis
             }
 
             UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
-            unitConfig.addAlias(generateAndRegisterAlias(unitConfig.getType()));
+            unitConfig.addAlias(generateAndRegisterAlias(unitConfig.getUnitType()));
             throw new EntryModification(entry.setMessage(unitConfig), this);
         }
     }
@@ -99,7 +99,7 @@ public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegis
 
     private void registerAlias(final UnitConfig unitConfig) {
         for (String alias : unitConfig.getAliasList()) {
-            registerAlias(alias, unitConfig.getType());
+            registerAlias(alias, unitConfig.getUnitType());
         }
     }
 

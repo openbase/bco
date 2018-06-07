@@ -52,11 +52,11 @@ public class ServiceConfigServiceTemplateIdConsistencyHandler extends AbstractPr
         for (ServiceConfig.Builder serviceConfig : unitConfig.getServiceConfigBuilderList()) {
             final ServiceDescription.Builder serviceDescription = serviceConfig.getServiceDescriptionBuilder();
             if (serviceDescription.getServiceTemplateId().isEmpty()) {
-                if (!serviceDescription.hasType()) {
+                if (!serviceDescription.hasServiceType()) {
                     throw new NotAvailableException("ServiceType");
                 }
 
-                serviceDescription.setServiceTemplateId(CachedTemplateRegistryRemote.getRegistry().getServiceTemplateByType(serviceDescription.getType()).getId());
+                serviceDescription.setServiceTemplateId(CachedTemplateRegistryRemote.getRegistry().getServiceTemplateByType(serviceDescription.getServiceType()).getId());
                 modification = true;
             }
         }

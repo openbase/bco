@@ -21,6 +21,7 @@ package org.openbase.bco.registry.unit.core.consistency.dalunitconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.storage.registry.consistency.AbstractTransformationFrameConsistencyHandler;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
@@ -47,7 +48,7 @@ public class UnitTransformationFrameConsistencyHandler extends AbstractTransform
         boolean modification = false;
         PlacementConfig placementConfig;
 
-        placementConfig = verifyAndUpdatePlacement(unitConfig.getLabel(), unitConfig.getPlacementConfig());
+        placementConfig = verifyAndUpdatePlacement(LabelProcessor.getFirstLabel(unitConfig.getLabel()), unitConfig.getPlacementConfig());
 
         if (placementConfig != null) {
             unitConfig.setPlacementConfig(placementConfig);

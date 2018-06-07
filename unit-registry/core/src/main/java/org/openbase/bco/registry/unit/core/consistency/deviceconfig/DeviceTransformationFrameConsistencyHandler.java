@@ -24,6 +24,7 @@ package org.openbase.bco.registry.unit.core.consistency.deviceconfig;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.storage.registry.consistency.AbstractTransformationFrameConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
@@ -43,7 +44,7 @@ public class DeviceTransformationFrameConsistencyHandler extends AbstractTransfo
     @Override
     public void processData(final String id, final IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, final ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, final ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder unitDeviceConfig = entry.getMessage().toBuilder();
-        PlacementConfig placementConfig = verifyAndUpdatePlacement(unitDeviceConfig.getLabel(), unitDeviceConfig.getPlacementConfig());
+        PlacementConfig placementConfig = verifyAndUpdatePlacement(LabelProcessor.getFirstLabel(unitDeviceConfig.getLabel()), unitDeviceConfig.getPlacementConfig());
 
         if (placementConfig != null) {
             entry.setMessage(unitDeviceConfig.setPlacementConfig(placementConfig));

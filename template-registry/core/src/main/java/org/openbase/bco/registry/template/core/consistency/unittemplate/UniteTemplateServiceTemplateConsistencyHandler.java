@@ -63,22 +63,22 @@ public class UniteTemplateServiceTemplateConsistencyHandler extends AbstractProt
         for (ServiceDescription serviceDescription : unitTemplate.getServiceDescriptionList()) {
             if (serviceDescription.getServiceTemplateId().isEmpty() || !serviceTemplateRegistry.contains(serviceDescription.getServiceTemplateId())) {
                 // recover id from type:
-                if (!serviceDescription.hasType()) {
+                if (!serviceDescription.hasServiceType()) {
                     throw new NotAvailableException("ServiceDescription [" + serviceDescription + "] does not contain a valid id and type!");
                 }
-                serviceTemplate = getServiceTemplateByType(serviceDescription.getType());
+                serviceTemplate = getServiceTemplateByType(serviceDescription.getServiceType());
                 serviceDescriptionList.add(serviceDescription.toBuilder().setServiceTemplateId(serviceTemplate.getId()).build());
                 modification = true;
             } else {
                 serviceTemplate = serviceTemplateRegistry.getMessage(serviceDescription.getServiceTemplateId());
                 
                 // sync type to service description
-                if(serviceDescription.hasType() && serviceTemplate.getType() == serviceDescription.getType()) {
+                if(serviceDescription.hasServiceType() && serviceTemplate.getType() == serviceDescription.getServiceType()) {
                     // id and type match
                     serviceDescriptionList.add(serviceDescription);
                 } else {
                     // sync type to description
-                    serviceDescriptionList.add(serviceDescription.toBuilder().setType(serviceTemplate.getType()).build());
+                    serviceDescriptionList.add(serviceDescription.toBuilder().setServiceType(serviceTemplate.getType()).build());
                     modification = true;
                 }
             }

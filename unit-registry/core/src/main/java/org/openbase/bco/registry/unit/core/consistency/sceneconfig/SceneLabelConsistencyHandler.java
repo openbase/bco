@@ -21,20 +21,22 @@ package org.openbase.bco.registry.unit.core.consistency.sceneconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.HashMap;
-import java.util.Map;
+
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
+import java.util.HashMap;
+import java.util.Map;
+
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class SceneLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
@@ -49,7 +51,7 @@ public class SceneLabelConsistencyHandler extends AbstractProtoBufRegistryConsis
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig scene = entry.getMessage();
 
-        if (!scene.hasLabel() || scene.getLabel().isEmpty()) {
+        if (!scene.hasLabel()) {
             throw new NotAvailableException("scene.label");
         }
 
@@ -57,11 +59,11 @@ public class SceneLabelConsistencyHandler extends AbstractProtoBufRegistryConsis
             throw new NotAvailableException("scene.locationId");
         }
 
-        String key = scene.getLabel() + scene.getPlacementConfig().getLocationId();
+        String key = LabelProcessor.getFirstLabel(scene.getLabel()) + scene.getPlacementConfig().getLocationId();
         if (!sceneMap.containsKey(key)) {
             sceneMap.put(key, scene);
         } else {
-            throw new InvalidStateException("Scene [" + scene + "] and scene [" + sceneMap.get(key) + "] are registered with the same label at the same location");
+            throw new InvalidStateException("Scene [" + scene + "] and scene [" + sceneMap.get(key) + "] are registered with the same first label at the same location");
         }
     }
 

@@ -45,8 +45,8 @@ public class UnitConfigProcessor {
     private static final List<UnitType> DAL_UNIT_TYPE_LIST = new ArrayList<>();
 
     public static boolean isHostUnit(final UnitConfig unitConfig) throws CouldNotPerformException {
-        verifyUnitConfig(unitConfig, unitConfig.getType());
-        return isHostUnit(unitConfig.getType());
+        verifyUnitConfig(unitConfig, unitConfig.getUnitType());
+        return isHostUnit(unitConfig.getUnitType());
     }
 
     public static boolean isHostUnit(final UnitType unitType) {
@@ -60,8 +60,8 @@ public class UnitConfigProcessor {
     }
 
     public static boolean isDalUnit(final UnitConfig unitConfig) throws CouldNotPerformException {
-        verifyUnitConfig(unitConfig, unitConfig.getType());
-        return isDalUnit(unitConfig.getType());
+        verifyUnitConfig(unitConfig, unitConfig.getUnitType());
+        return isDalUnit(unitConfig.getUnitType());
     }
 
     public static boolean isDalUnit(final UnitType unitType) {
@@ -69,8 +69,8 @@ public class UnitConfigProcessor {
     }
 
     public static boolean isBaseUnit(final UnitConfigOrBuilder unitConfig) throws CouldNotPerformException {
-        verifyUnitConfig(unitConfig, unitConfig.getType());
-        return isBaseUnit(unitConfig.getType());
+        verifyUnitConfig(unitConfig, unitConfig.getUnitType());
+        return isBaseUnit(unitConfig.getUnitType());
     }
 
     public static boolean isBaseUnit(final UnitType unitType) {
@@ -103,13 +103,13 @@ public class UnitConfigProcessor {
 
     public static void verifyUnitType(final UnitConfigOrBuilder unitConfig, final UnitType unitType) throws VerificationFailedException {
         // verify if unit type is defined
-        if (!unitConfig.hasType()) {
+        if (!unitConfig.hasUnitType()) {
             throw new VerificationFailedException("UnitType not available!");
         }
 
         // verify unit type
-        if (unitConfig.getType() != unitType) {
-            throw new VerificationFailedException("UnitType verification failed. Expected[" + unitType + "] but was[" + unitConfig.getType() + "]!");
+        if (unitConfig.getUnitType() != unitType) {
+            throw new VerificationFailedException("UnitType verification failed. Expected[" + unitType + "] but was[" + unitConfig.getUnitType() + "]!");
         }
     }
 
@@ -130,8 +130,8 @@ public class UnitConfigProcessor {
     }
 
     public static void verifyUnit(final UnitConfig unitConfig) throws VerificationFailedException {
-        verifyUnitConfig(unitConfig, unitConfig.getType());
-        verifyUnitType(unitConfig, unitConfig.getType());
+        verifyUnitConfig(unitConfig, unitConfig.getUnitType());
+        verifyUnitType(unitConfig, unitConfig.getUnitType());
     }
 
 
@@ -182,6 +182,6 @@ public class UnitConfigProcessor {
      * @throws org.openbase.jul.exception.NotAvailableException is thrown if the data class could not be detected.
      */
     public static Class<? extends GeneratedMessage> getUnitDataClass(final UnitConfig unitConfig) throws NotAvailableException {
-        return UnitConfigProcessor.getUnitDataClass(unitConfig.getType());
+        return UnitConfigProcessor.getUnitDataClass(unitConfig.getUnitType());
     }
 }

@@ -22,11 +22,13 @@ package org.openbase.bco.registry.unit.core.consistency.connectionconfig;
  * #L%
  */
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
@@ -50,8 +52,10 @@ public class BaseUnitLabelConsistencyHandler extends AbstractProtoBufRegistryCon
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         final UnitConfig unitConfig = entry.getMessage();
 
-        if (!unitConfig.hasLabel() || unitConfig.getLabel().isEmpty()) {
-            throw new EntryModification(entry.setMessage(unitConfig.toBuilder().setLabel(generateDefaultLabel(unitConfig))), this);
+        if (!unitConfig.hasLabel()) {
+            UnitConfig.Builder unitConfigBuilder = unitConfig.toBuilder();
+            LabelProcessor.addLabel(unitConfigBuilder.getLabelBuilder(), Locale.ENGLISH, generateDefaultLabel(unitConfig))
+            throw new EntryModification(entry.setMessage(unitConfigBuilder), this);
         }
 
         if (!unitConfig.hasPlacementConfig() || !unitConfig.getPlacementConfig().hasLocationId() || unitConfig.getPlacementConfig().getLocationId().isEmpty()) {
@@ -61,7 +65,7 @@ public class BaseUnitLabelConsistencyHandler extends AbstractProtoBufRegistryCon
         String key = unitConfig.getLabel() + unitConfig.getPlacementConfig().getLocationId();
 
         if (baseUnitMap.containsKey(key)) {
-            final String typeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name());
+            final String typeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getUnitType().name());
             throw new InvalidStateException(typeName+"[" + unitConfig.getAlias(0) + "] and "+typeName+"[" + baseUnitMap.get(key).getAlias(0) + "] are registered with the same label and type at the same location.");
         }
 

@@ -26,11 +26,14 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
+
+import java.util.Locale;
 
 /**
  *
@@ -40,12 +43,13 @@ public class UserConfigLabelConsistencyHandler extends AbstractProtoBufRegistryC
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        UnitConfig userUnitConfig = entry.getMessage();
+        UnitConfig.Builder userUnitConfig = entry.getMessage().toBuilder();
         UserConfig userConfig = userUnitConfig.getUserConfig();
 
         String label = generateUserLabel(userConfig);
-        if (!userUnitConfig.hasLabel() || !label.equals(userUnitConfig.getLabel())) {
-            throw new EntryModification(entry.setMessage(userUnitConfig.toBuilder().setLabel(label).build()), this);
+        if (!userUnitConfig.hasLabel() || !LabelProcessor.contains(userUnitConfig.getLabel(), label)) {
+            LabelProcessor.addLabel(userUnitConfig.getLabelBuilder(), Locale.ENGLISH, label);
+            throw new EntryModification(entry.setMessage(userUnitConfig), this);
         }
     }
 

@@ -21,6 +21,7 @@ package org.openbase.bco.registry.unit.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -28,20 +29,16 @@ import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.binding.BindingConfigType.BindingConfig;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.List;
 
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
@@ -50,12 +47,12 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
 
-        if (!unitConfig.hasType()) {
+        if (!unitConfig.hasUnitType()) {
             throw new NotAvailableException("unitConfig.type");
         }
 
         boolean modification = false;
-        final UnitTemplate unitTemplate = CachedTemplateRegistryRemote.getRegistry().getUnitTemplateByType(unitConfig.getType());
+        final UnitTemplate unitTemplate = CachedTemplateRegistryRemote.getRegistry().getUnitTemplateByType(unitConfig.getUnitType());
         for (final ServiceDescription serviceDescription : unitTemplate.getServiceDescriptionList()) {
             if (!unitConfigContainsServiceDescription(unitConfig, serviceDescription)) {
                 unitConfig.addServiceConfig(ServiceConfig.newBuilder().setServiceDescription(serviceDescription).setBindingConfig(BindingConfig.getDefaultInstance()));
@@ -77,10 +74,10 @@ public class UnitConfigUnitTemplateConsistencyHandler extends AbstractProtoBufRe
     }
 
     private boolean serviceDescriptionListContainsDescription(List<ServiceDescription> serviceDescriptionList, ServiceDescription serviceDescription) {
-        return serviceDescriptionList.stream().anyMatch((description) -> (description.getType() == serviceDescription.getType() && description.getPattern() == serviceDescription.getPattern()));
+        return serviceDescriptionList.stream().anyMatch((description) -> (description.getServiceType() == serviceDescription.getServiceType() && description.getPattern() == serviceDescription.getPattern()));
     }
 
     private boolean unitConfigContainsServiceDescription(UnitConfig.Builder unitConfig, ServiceDescription serviceDescription) {
-        return unitConfig.getServiceConfigList().stream().map((serviceConfig) -> serviceConfig.getServiceDescription()).anyMatch((description) -> (description.getType() == serviceDescription.getType() && description.getPattern() == serviceDescription.getPattern()));
+        return unitConfig.getServiceConfigList().stream().map((serviceConfig) -> serviceConfig.getServiceDescription()).anyMatch((description) -> (description.getServiceType() == serviceDescription.getServiceType() && description.getPattern() == serviceDescription.getPattern()));
     }
 }

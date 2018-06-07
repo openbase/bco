@@ -87,9 +87,9 @@ public class DalUnitHostIdConsistencyHandler extends AbstractProtoBufRegistryCon
 
             // retrieve the units the host knows about
             List<String> hostUnitIdList = new ArrayList<>();
-            if(unitHostConfig.getType() == UnitType.DEVICE) {
+            if(unitHostConfig.getUnitType() == UnitType.DEVICE) {
                 hostUnitIdList = unitHostConfig.getDeviceConfig().getUnitIdList();
-            } else if(unitHostConfig.getType() == UnitType.APP) {
+            } else if(unitHostConfig.getUnitType() == UnitType.APP) {
                 hostUnitIdList = unitHostConfig.getAppConfig().getUnitIdList();
             }
 

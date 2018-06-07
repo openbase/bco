@@ -109,7 +109,7 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
             }
         } else {
             for (String memberId : entry.getMessage().getUnitGroupConfig().getMemberIdList()) {
-                UnitType unitType = getUnitConfigById(memberId).getType();
+                UnitType unitType = getUnitConfigById(memberId).getUnitType();
                 if (unitType == unitGroup.getUnitType() || getSubTypes(unitGroup.getUnitType()).contains(unitType)) {
                     memberIds.add(memberId);
                 } else {

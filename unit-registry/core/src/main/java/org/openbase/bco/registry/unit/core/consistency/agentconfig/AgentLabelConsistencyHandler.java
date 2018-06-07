@@ -50,7 +50,7 @@ public class AgentLabelConsistencyHandler extends AbstractProtoBufRegistryConsis
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig agent = entry.getMessage();
 
-        if (!agent.hasLabel() || agent.getLabel().isEmpty()) {
+        if (!agent.hasLabel()) {
             throw new NotAvailableException("agent.label");
         }
 

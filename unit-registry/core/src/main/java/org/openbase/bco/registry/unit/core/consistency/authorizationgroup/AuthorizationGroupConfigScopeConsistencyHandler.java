@@ -42,7 +42,7 @@ public class AuthorizationGroupConfigScopeConsistencyHandler extends AbstractPro
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig authorizationGroupUnitConfig = entry.getMessage();
 
-        if (!authorizationGroupUnitConfig.hasLabel() || authorizationGroupUnitConfig.getLabel().isEmpty()) {
+        if (!authorizationGroupUnitConfig.hasLabel()) {
             throw new NotAvailableException("user.label");
         }
 

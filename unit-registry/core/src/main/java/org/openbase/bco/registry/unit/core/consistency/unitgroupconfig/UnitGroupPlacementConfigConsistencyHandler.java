@@ -380,7 +380,7 @@ public class UnitGroupPlacementConfigConsistencyHandler extends AbstractProtoBuf
             }
 
             // resolve shape via device class
-            if (unitConfig.getType().equals(UnitType.DEVICE)) {
+            if (unitConfig.getUnitType().equals(UnitType.DEVICE)) {
                 return CachedClassRegistryRemote.getRegistry().getDeviceClassById(unitConfig.getDeviceConfig().getDeviceClassId()).getShape();
             }
 

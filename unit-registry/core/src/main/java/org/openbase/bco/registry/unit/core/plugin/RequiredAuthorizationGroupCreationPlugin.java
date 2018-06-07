@@ -25,6 +25,7 @@ package org.openbase.bco.registry.unit.core.plugin;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.Registry;
@@ -33,6 +34,8 @@ import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import java.util.Locale;
 
 /**
  *
@@ -52,8 +55,9 @@ public class RequiredAuthorizationGroupCreationPlugin extends FileRegistryPlugin
     public void init(ProtoBufRegistry<String, UnitConfig, Builder> config) throws InitializationException, InterruptedException {
         try {
             if(!containsAuthorizationGrouptByLabel(ADMIN_GROUP_LABEL)) {
-                UnitConfig unitConfig = UnitConfig.newBuilder().setType(UnitType.AUTHORIZATION_GROUP).setLabel(ADMIN_GROUP_LABEL).build();
-                authorisationGroupRegistry.register(unitConfig);
+                UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setUnitType(UnitType.AUTHORIZATION_GROUP);
+                LabelProcessor.addLabel(unitConfig.getLabelBuilder(), Locale.ENGLISH, ADMIN_GROUP_LABEL);
+                authorisationGroupRegistry.register(unitConfig.build());
             }
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);

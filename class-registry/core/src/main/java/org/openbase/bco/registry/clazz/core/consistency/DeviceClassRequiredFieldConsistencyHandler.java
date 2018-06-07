@@ -24,8 +24,10 @@ package org.openbase.bco.registry.clazz.core.consistency;
 
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
@@ -44,8 +46,12 @@ public class DeviceClassRequiredFieldConsistencyHandler extends AbstractProtoBuf
             throw new InvalidStateException("DeviceClass is missing company");
         }
 
-        if (!entry.getMessage().hasLabel() || entry.getMessage().getLabel().isEmpty()) {
-            throw new InvalidStateException("DeviceClass is missing label");
+        if (!entry.getMessage().hasLabel()) {
+            try {
+                LabelProcessor.getFirstLabel(entry.getMessage().getLabel());
+            } catch (NotAvailableException ex) {
+                throw new InvalidStateException("DeviceClass is missing label");
+            }
         }
     }
 }

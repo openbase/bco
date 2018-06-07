@@ -52,7 +52,7 @@ public class AppLabelConsistencyHandler extends AbstractProtoBufRegistryConsiste
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
         UnitConfig app = entry.getMessage();
 
-        if (!app.hasLabel() || app.getLabel().isEmpty()) {
+        if (!app.hasLabel()) {
             throw new NotAvailableException("app.label");
         }
 

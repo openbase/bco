@@ -21,24 +21,23 @@ package org.openbase.bco.registry.unit.core.plugin;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.HashSet;
-import java.util.Set;
+
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.storage.registry.FileSynchronizedRegistry;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import org.openbase.jul.storage.registry.Registry;
-import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
+
 /**
- *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class AuthorizationGroupCreationPlugin extends ProtobufRegistryPluginAdapter<String, UnitConfig, Builder> {
@@ -49,6 +48,7 @@ public class AuthorizationGroupCreationPlugin extends ProtobufRegistryPluginAdap
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupRegistry;
     private final Set<String> labelSet;
 
+    //TODO: these groups should not be found by label but by alias
     public AuthorizationGroupCreationPlugin(ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupRegistry) {
         this.authorizationGroupRegistry = authorizationGroupRegistry;
 
@@ -61,12 +61,12 @@ public class AuthorizationGroupCreationPlugin extends ProtobufRegistryPluginAdap
     public void init(ProtoBufRegistry<String, UnitConfig, Builder> registry) throws InitializationException, InterruptedException {
         try {
             UnitConfig.Builder authorizationGoupUnitConfig = UnitConfig.newBuilder();
-            authorizationGoupUnitConfig.setType(UnitType.AUTHORIZATION_GROUP);
+            authorizationGoupUnitConfig.setUnitType(UnitType.AUTHORIZATION_GROUP);
 
             // create missing authorization groups
             for (String label : this.labelSet) {
                 if (!containsAuthorizationGroupByLabel(label)) {
-                    authorizationGoupUnitConfig.setLabel(label);
+                    LabelProcessor.addLabel(authorizationGoupUnitConfig.getLabelBuilder(), Locale.ENGLISH, label);
                     this.authorizationGroupRegistry.register(authorizationGoupUnitConfig.build());
                 }
             }
@@ -77,7 +77,7 @@ public class AuthorizationGroupCreationPlugin extends ProtobufRegistryPluginAdap
 
     private boolean containsAuthorizationGroupByLabel(String label) throws CouldNotPerformException {
         for (UnitConfig unitConfig : authorizationGroupRegistry.getMessages()) {
-            if (unitConfig.getLabel().equals(label)) {
+            if (LabelProcessor.contains(unitConfig.getLabel(), label)) {
                 return true;
             }
         }

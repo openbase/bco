@@ -37,6 +37,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.MockUpFilter;
 import org.openbase.jul.schedule.SyncObject;
 import org.openbase.jul.storage.registry.RegistryRemote;
@@ -368,7 +369,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
     public List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException {
         validateData();
         List<UnitConfig> unitConfigs = Collections.synchronizedList(new ArrayList<>());
-        getUnitConfigs().parallelStream().filter((unitConfig) -> (unitConfig.getLabel().equalsIgnoreCase(unitConfigLabel))).forEach((unitConfig) -> {
+        getUnitConfigs().parallelStream().filter((unitConfig) -> LabelProcessor.contains(unitConfig.getLabel(), unitConfigLabel)).forEach((unitConfig) -> {
             unitConfigs.add(unitConfig);
         });
         return unitConfigs;
@@ -390,7 +391,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
         List<ServiceConfig> serviceConfigs = new ArrayList<>();
         for (UnitConfig unitConfig : getUnitConfigs()) {
             for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                if (serviceConfig.getServiceDescription().getType() == serviceType) {
+                if (serviceConfig.getServiceDescription().getServiceType() == serviceType) {
                     serviceConfigs.add(serviceConfig);
                 }
             }

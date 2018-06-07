@@ -61,7 +61,7 @@ public class UntShapeGenerator {
             }
 
             // resolve shape via device class
-            if (unitConfig.getType().equals(UnitType.DEVICE)) {
+            if (unitConfig.getUnitType().equals(UnitType.DEVICE)) {
                 return deviceClassCollectionProvider.getDeviceClassById(unitConfig.getDeviceConfig().getDeviceClassId()).getShape();
             }
 

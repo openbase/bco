@@ -26,6 +26,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
@@ -43,8 +44,10 @@ import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.spatial.PlacementConfigType.PlacementConfig;
 import rst.spatial.ShapeType.Shape;
 
+import java.awt.*;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 /**
@@ -86,9 +89,8 @@ public class RootLocationPlugin extends ProtobufRegistryPluginAdapter<String, Un
     }
 
     private UnitConfig generateDefaultRootLocation() {
-        return UnitConfig.newBuilder()
-                .setType(UnitType.LOCATION)
-                .setLabel(DEFAULT_ROOT_LOCATION_NAME)
+        UnitConfig.Builder defaultRoot = UnitConfig.newBuilder()
+                .setUnitType(UnitType.LOCATION)
                 .setLocationConfig(LocationConfig.newBuilder()
                         .setType(LocationType.ZONE)
                         .build())
@@ -99,7 +101,8 @@ public class RootLocationPlugin extends ProtobufRegistryPluginAdapter<String, Un
                                 .addFloor(Vec3DDouble.newBuilder().setX(1).setY(1).setZ(0).build())
                                 .addFloor(Vec3DDouble.newBuilder().setX(0).setY(1).setZ(0).build())
                                 .build())
-                        .build())
-                .build();
+                        .build());
+        LabelProcessor.addLabel(defaultRoot.getLabelBuilder(), Locale.ENGLISH, DEFAULT_ROOT_LOCATION_NAME);
+        return defaultRoot.build();
     }
 }

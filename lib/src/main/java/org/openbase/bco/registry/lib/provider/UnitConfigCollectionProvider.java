@@ -83,7 +83,7 @@ public interface UnitConfigCollectionProvider {
         final UnitConfig unitConfig = getUnitConfigById(unitConfigId);
 
         // validate type
-        if (unitConfig.getType() != unitType) {
+        if (unitConfig.getUnitType() != unitType) {
             throw new VerificationFailedException("Referred Unit[" + unitConfig.getLabel() + "] is not compatible to given type!");
         }
 
