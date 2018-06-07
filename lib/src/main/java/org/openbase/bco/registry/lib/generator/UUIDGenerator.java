@@ -24,8 +24,10 @@ package org.openbase.bco.registry.lib.generator;
 
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdGenerator;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import rst.configuration.LabelType;
 
 import java.util.UUID;
 
@@ -33,7 +35,6 @@ import static org.openbase.jul.iface.provider.LabelProvider.TYPE_FIELD_LABEL;
 
 /**
  * @param <M>
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class UUIDGenerator<M extends GeneratedMessage> implements IdGenerator<String, M> {
@@ -41,12 +42,17 @@ public class UUIDGenerator<M extends GeneratedMessage> implements IdGenerator<St
     @Override
     public String generateId(final M message) {
         // in case we are performing a unit test let's generate a human readable uuid.
-        if (JPService.testMode()) {
-            if (message.getDescriptorForType().findFieldByName(TYPE_FIELD_LABEL) != null) {
-                if (message.hasField(message.getDescriptorForType().findFieldByName(TYPE_FIELD_LABEL))) {
-                    return message.getField(message.getDescriptorForType().findFieldByName(TYPE_FIELD_LABEL)) + ":"+ UUID.randomUUID().toString();
+        try {
+            if (JPService.testMode()) {
+                if (message.getDescriptorForType().findFieldByName(TYPE_FIELD_LABEL) != null) {
+                    if (message.hasField(message.getDescriptorForType().findFieldByName(TYPE_FIELD_LABEL))) {
+                        LabelType.Label label = (LabelType.Label) message.getField(message.getDescriptorForType().findFieldByName(TYPE_FIELD_LABEL));
+                        return LabelProcessor.getFirstLabel(label) + ":" + UUID.randomUUID().toString();
+                    }
                 }
             }
+        } catch (NotAvailableException ex) {
+            // label not available so just use normal uuid
         }
         return UUID.randomUUID().toString();
     }

@@ -66,6 +66,7 @@ public class AuthorizationGroupCreationPlugin extends ProtobufRegistryPluginAdap
             // create missing authorization groups
             for (String label : this.labelSet) {
                 if (!containsAuthorizationGroupByLabel(label)) {
+                    authorizationGoupUnitConfig.clearLabel();
                     LabelProcessor.addLabel(authorizationGoupUnitConfig.getLabelBuilder(), Locale.ENGLISH, label);
                     this.authorizationGroupRegistry.register(authorizationGoupUnitConfig.build());
                 }

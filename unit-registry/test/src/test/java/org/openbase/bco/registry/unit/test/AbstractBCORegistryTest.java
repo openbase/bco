@@ -23,6 +23,7 @@ package org.openbase.bco.registry.unit.test;
  */
 
 import java.util.HashSet;
+import java.util.Locale;
 import java.util.Set;
 import java.util.concurrent.ExecutionException;
 import org.junit.After;
@@ -37,6 +38,7 @@ import org.openbase.bco.registry.unit.core.UnitRegistryController;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
@@ -98,11 +100,14 @@ public abstract class AbstractBCORegistryTest {
     protected UnitConfig generateDeviceUnitConfig(String label, String serialNumber, DeviceClass clazz) {
         InventoryState inventoryState = InventoryState.newBuilder().setValue(InventoryStateType.InventoryState.State.IN_STOCK).build();
         DeviceConfig deviceConfig = DeviceConfig.newBuilder().setDeviceClassId(clazz.getId()).setSerialNumber(serialNumber).setInventoryState(inventoryState).build();
-        return UnitConfig.newBuilder().setType(UnitType.DEVICE).setLabel(label).setDeviceConfig(deviceConfig).build();
+        UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setUnitType(UnitType.DEVICE).setDeviceConfig(deviceConfig);
+        LabelProcessor.addLabel(unitConfig.getLabelBuilder(), Locale.ENGLISH, label);
+        return unitConfig.build();
     }
 
     protected DeviceClass generateDeviceClass(String label, String productNumber, String company, UnitType... unitTypes) throws CouldNotPerformException {
-        DeviceClass.Builder deviceClass = DeviceClass.newBuilder().setLabel(label).setProductNumber(productNumber).setCompany(company);
+        DeviceClass.Builder deviceClass = DeviceClass.newBuilder().setProductNumber(productNumber).setCompany(company);
+        LabelProcessor.addLabel(deviceClass.getLabelBuilder(), Locale.ENGLISH, label);
         deviceClass.setBindingConfig(BindingConfig.newBuilder().setBindingId("OPENHAB"));
         for (UnitType unitType : unitTypes) {
             deviceClass.addUnitTemplateConfig(getUnitTemplateConfig(unitType));
@@ -114,9 +119,9 @@ public abstract class AbstractBCORegistryTest {
         Set<ServiceType> serviceTypeSet = new HashSet();
         UnitTemplateConfig.Builder unitTemplateConfig = UnitTemplateConfig.newBuilder().setType(unitType);
         for (ServiceDescription serviceDescription : templateRegistry.getUnitTemplateByType(unitType).getServiceDescriptionList()) {
-            if (!serviceTypeSet.contains(serviceDescription.getType())) {
-                unitTemplateConfig.addServiceTemplateConfig(ServiceTemplateConfig.newBuilder().setServiceType(serviceDescription.getType()));
-                serviceTypeSet.add(serviceDescription.getType());
+            if (!serviceTypeSet.contains(serviceDescription.getServiceType())) {
+                unitTemplateConfig.addServiceTemplateConfig(ServiceTemplateConfig.newBuilder().setServiceType(serviceDescription.getServiceType()));
+                serviceTypeSet.add(serviceDescription.getServiceType());
             }
         }
         return unitTemplateConfig.build();

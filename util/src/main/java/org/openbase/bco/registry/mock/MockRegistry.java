@@ -461,7 +461,7 @@ public class MockRegistry {
             Pose hellPosition = Pose.newBuilder().setTranslation(Translation.newBuilder().setX(3).setY(1).setZ(0).build())
                     .setRotation(Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build()).build();
             PlacementConfig hellPlacement = PlacementConfig.newBuilder().setPosition(hellPosition).setShape(hellShape).setLocationId(paradiseLocation.getId()).build();
-            unitRegistry.registerUnitConfig(getLocationUnitConfig("Hell", tileLocationConfig, hellPlacement)).get();
+            hellLocation = unitRegistry.registerUnitConfig(getLocationUnitConfig("Hell", tileLocationConfig, hellPlacement)).get();
 
             // Create stairway to heaven
             List<Vec3DDouble> stairwayVertices = new ArrayList<>();
@@ -473,7 +473,7 @@ public class MockRegistry {
             Pose stairwayPosition = Pose.newBuilder().setTranslation(Translation.newBuilder().setX(1).setY(0).setZ(0).build())
                     .setRotation(Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build()).build();
             PlacementConfig stairwayPlacement = PlacementConfig.newBuilder().setPosition(stairwayPosition).setShape(stairwayShape).setLocationId(paradiseLocation.getId()).build();
-            unitRegistry.registerUnitConfig(getLocationUnitConfig("Stairway to Heaven", tileLocationConfig, stairwayPlacement)).get();
+            stairwayLocation = unitRegistry.registerUnitConfig(getLocationUnitConfig("Stairway to Heaven", tileLocationConfig, stairwayPlacement)).get();
 
             // Create heaven
             List<Vec3DDouble> heavenVertices = new ArrayList<>();
@@ -485,7 +485,7 @@ public class MockRegistry {
             Pose heavenPosition = Pose.newBuilder().setTranslation(Translation.newBuilder().setX(1).setY(1).setZ(0).build())
                     .setRotation(Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build()).build();
             PlacementConfig heavenPlacement = PlacementConfig.newBuilder().setPosition(heavenPosition).setShape(heavenShape).setLocationId(paradiseLocation.getId()).build();
-            unitRegistry.registerUnitConfig(getLocationUnitConfig("Heaven", tileLocationConfig, heavenPlacement)).get();
+            heavenLocation = unitRegistry.registerUnitConfig(getLocationUnitConfig("Heaven", tileLocationConfig, heavenPlacement)).get();
 
             // Create Garden of Eden
             List<Vec3DDouble> edenVertices = new ArrayList<>();

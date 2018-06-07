@@ -42,7 +42,7 @@ import java.util.Map;
  */
 public class AuthorizationGroupConfigLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
-    private final Map<String, String> authorizationGroupMap;
+    private final Map<String, UnitConfig> authorizationGroupMap;
 
     public AuthorizationGroupConfigLabelConsistencyHandler() {
         this.authorizationGroupMap = new HashMap<>();
@@ -63,9 +63,11 @@ public class AuthorizationGroupConfigLabelConsistencyHandler extends AbstractPro
         for (Label.MapFieldEntry labelMapEntry : authorizationGroupUnitConfig.getLabel().getEntryList()) {
             for (String value : labelMapEntry.getValueList()) {
                 if (!authorizationGroupMap.containsKey(value)) {
-                    authorizationGroupMap.put(value, authorizationGroupUnitConfig.getAlias(0));
+                    authorizationGroupMap.put(value, entry.getMessage());
                 } else {
-                    throw new InvalidStateException("AuthorizationGroup [" + authorizationGroupUnitConfig.getAlias(0) + "] and authorizationGroup [" + authorizationGroupMap.get(value) + "] are registered with the same label!");
+                    throw new InvalidStateException("AuthorizationGroup [" +
+                            entry.getMessage() + "] and authorizationGroup [" +
+                            authorizationGroupMap.get(value) + "] are registered with the same label!");
                 }
             }
         }

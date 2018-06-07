@@ -35,6 +35,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.Registry;
@@ -79,9 +80,9 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
             UnitConfig.Builder adminGroupConfig = null;
             UnitConfig.Builder bcoGroupConfig = null;
             for (UnitConfig authorizationGroup : authorizationGroupConfigRegistry.getMessages()) {
-                if (authorizationGroup.getLabel().equals(AuthorizationGroupCreationPlugin.ADMIN_GROUP_LABEL)) {
+                if (LabelProcessor.contains(authorizationGroup.getLabel(), AuthorizationGroupCreationPlugin.ADMIN_GROUP_LABEL)) {
                     adminGroupConfig = authorizationGroup.toBuilder();
-                } else if (authorizationGroup.getLabel().equals(AuthorizationGroupCreationPlugin.BCO_GROUP_LABEL)) {
+                } else if (LabelProcessor.contains(authorizationGroup.getLabel(), AuthorizationGroupCreationPlugin.BCO_GROUP_LABEL)) {
                     bcoGroupConfig = authorizationGroup.toBuilder();
                 }
             }
