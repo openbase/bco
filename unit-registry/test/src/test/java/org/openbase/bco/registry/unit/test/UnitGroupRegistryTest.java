@@ -33,6 +33,7 @@ import org.openbase.bco.registry.unit.core.UnitRegistryController;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType;
@@ -40,6 +41,8 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.unitgroup.UnitGroupConfigType.UnitGroupConfig;
 import rst.spatial.PlacementConfigType.PlacementConfig;
+
+import java.util.Locale;
 
 /**
  *
@@ -88,8 +91,8 @@ public class UnitGroupRegistryTest {
         LOGGER.info("testPlacementChange");
 
         UnitConfig.Builder unitConfig = UnitConfig.newBuilder();
-        unitConfig.setLabel("PlacementChangeGroup");
-        unitConfig.setType(UnitType.UNIT_GROUP);
+        LabelProcessor.addLabel(unitConfig.getLabelBuilder(), Locale.ENGLISH, "PlacementChangeGroup");
+        unitConfig.setUnitType(UnitType.UNIT_GROUP);
 
         PlacementConfig.Builder placement = unitConfig.getPlacementConfigBuilder();
         placement.setLocationId(LOCATION.getId());

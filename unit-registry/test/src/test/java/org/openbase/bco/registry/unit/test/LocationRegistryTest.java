@@ -34,15 +34,18 @@ import org.openbase.jps.preset.JPDebugMode;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.connection.ConnectionConfigType.ConnectionConfig;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig;
 import rst.domotic.unit.location.LocationConfigType.LocationConfig.LocationType;
 import rst.spatial.PlacementConfigType.PlacementConfig;
 
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
@@ -167,22 +170,28 @@ public class LocationRegistryTest {
     public void tearDown() {
     }
 
-    private static UnitConfig.Builder getLocationUnitBuilder() {
-        return UnitConfig.newBuilder().setType(UnitTemplate.UnitType.LOCATION).setLocationConfig(LocationConfig.getDefaultInstance());
+    private static UnitConfig.Builder getLocationUnitBuilder(final String label) {
+        UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setUnitType(UnitTemplate.UnitType.LOCATION).setLocationConfig(LocationConfig.getDefaultInstance());
+        LabelProcessor.addLabel(unitConfig.getLabelBuilder(), Locale.ENGLISH, label);
+        return unitConfig;
     }
 
-    private static UnitConfig.Builder getLocationUnitBuilder(LocationConfig.LocationType locationType) {
+    private static UnitConfig.Builder getLocationUnitBuilder(LocationConfig.LocationType locationType, String label) {
         LocationConfig locationConfig = LocationConfig.getDefaultInstance().toBuilder().setType(locationType).build();
-        return UnitConfig.newBuilder().setType(UnitTemplate.UnitType.LOCATION).setLocationConfig(locationConfig);
+        UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setUnitType(UnitTemplate.UnitType.LOCATION).setLocationConfig(locationConfig);
+        LabelProcessor.addLabel(unitConfig.getLabelBuilder(), Locale.ENGLISH, label);
+        return unitConfig;
     }
 
-    private static UnitConfig.Builder getConnectionUnitBuilder() {
-        return UnitConfig.newBuilder().setType(UnitTemplate.UnitType.CONNECTION).setConnectionConfig(ConnectionConfig.getDefaultInstance());
+    private static UnitConfig.Builder getConnectionUnitBuilder(final String label) {
+        UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setUnitType(UnitTemplate.UnitType.CONNECTION).setConnectionConfig(ConnectionConfig.getDefaultInstance());
+        LabelProcessor.addLabel(unitConfig.getLabelBuilder(), Locale.ENGLISH, label);
+        return unitConfig;
     }
 
     private static UnitConfig.Builder getConnectionUnitBuilder(ConnectionConfig.ConnectionType connectionType) {
         ConnectionConfig connectionConfig = ConnectionConfig.getDefaultInstance().toBuilder().setType(connectionType).build();
-        return UnitConfig.newBuilder().setType(UnitTemplate.UnitType.LOCATION).setConnectionConfig(connectionConfig);
+        return UnitConfig.newBuilder().setUnitType(UnitTemplate.UnitType.LOCATION).setConnectionConfig(connectionConfig);
     }
 
     /**
@@ -195,20 +204,20 @@ public class LocationRegistryTest {
     public void testChildConsistency() throws Exception {
         System.out.println("TestChildConsistency");
         String label = "Test2Living";
-        UnitConfig living = getLocationUnitBuilder(LocationType.ZONE).setLabel(label).build();
+        UnitConfig living = getLocationUnitBuilder(LocationType.ZONE, label).build();
         UnitConfig registeredLiving = unitRegistry.registerUnitConfig(living).get();
         assertTrue("The new location isn't registered as a root location.", registeredLiving.getLocationConfig().getRoot());
         assertEquals("Label has not been set", label, registeredLiving.getLabel());
 
         String rootLocationConfigLabel = "Test3RootLocation";
-        UnitConfig rootLocationConfig = getLocationUnitBuilder(LocationType.ZONE).setLabel(rootLocationConfigLabel).build();
+        UnitConfig rootLocationConfig = getLocationUnitBuilder(LocationType.ZONE, rootLocationConfigLabel).build();
         UnitConfig registeredRootLocationConfig = unitRegistry.registerUnitConfig(rootLocationConfig).get();
         UnitConfig.Builder registeredLivingBuilder = unitRegistry.getUnitConfigById(registeredLiving.getId()).toBuilder();
         registeredLivingBuilder.getPlacementConfigBuilder().setLocationId(registeredRootLocationConfig.getId());
         unitRegistry.updateUnitConfig(registeredLivingBuilder.build()).get();
         assertEquals("Parent was not updated!", registeredRootLocationConfig.getId(), registeredLivingBuilder.getPlacementConfig().getLocationId());
 
-        UnitConfig home = getLocationUnitBuilder(LocationType.TILE).setLabel("Test2Home").build();
+        UnitConfig home = getLocationUnitBuilder(LocationType.TILE, "Test2Home").build();
         UnitConfig registeredHome = unitRegistry.registerUnitConfig(home).get();
         registeredLivingBuilder = unitRegistry.getUnitConfigById(registeredRootLocationConfig.getId()).toBuilder();
         registeredLivingBuilder.getPlacementConfigBuilder().setLocationId(registeredHome.getId());
@@ -226,17 +235,16 @@ public class LocationRegistryTest {
         System.out.println("testParentIdUpdateConsistency");
 
         String rootLocationConfigLabel = "Test3RootLocation";
-        UnitConfig rootLocationConfig = getLocationUnitBuilder(LocationType.ZONE).setLabel(rootLocationConfigLabel).build();
+        UnitConfig rootLocationConfig = getLocationUnitBuilder(LocationType.ZONE, rootLocationConfigLabel).build();
         UnitConfig registeredRootLocationConfig = unitRegistry.registerUnitConfig(rootLocationConfig).get();
 
         String childLocationConfigLabel = "Test3ChildLocation";
-        UnitConfig.Builder childLocationConfigBuilder = getLocationUnitBuilder(LocationType.TILE);
-        childLocationConfigBuilder.setLabel(childLocationConfigLabel);
+        UnitConfig.Builder childLocationConfigBuilder = getLocationUnitBuilder(LocationType.TILE, childLocationConfigLabel);
         childLocationConfigBuilder.getPlacementConfigBuilder().setLocationId(registeredRootLocationConfig.getId());
         UnitConfig registeredChildLocationConfig = unitRegistry.registerUnitConfig(childLocationConfigBuilder.build()).get();
 
         String parentLabel = "Test3ParentLocation";
-        UnitConfig.Builder parentLocationConfigBuilder = getLocationUnitBuilder(LocationType.ZONE).setLabel(parentLabel);
+        UnitConfig.Builder parentLocationConfigBuilder = getLocationUnitBuilder(LocationType.ZONE, parentLabel);
         UnitConfig registeredParentLocationConfig = unitRegistry.registerUnitConfig(parentLocationConfigBuilder.build()).get();
 
         assertEquals("The new location isn't registered as child of Location[" + rootLocationConfigLabel + "]!", registeredRootLocationConfig.getId(), registeredChildLocationConfig.getPlacementConfig().getLocationId());
@@ -262,13 +270,13 @@ public class LocationRegistryTest {
         String rootLabel = "Root";
         String firstChildLabel = "FirstChild";
         String SecondChildLabel = "SecondChild";
-        UnitConfig root = getLocationUnitBuilder(LocationType.ZONE).setLabel(rootLabel).build();
+        UnitConfig root = getLocationUnitBuilder(LocationType.ZONE, rootLabel).build();
         root = unitRegistry.registerUnitConfig(root).get();
 
-        UnitConfig firstChild = getLocationUnitBuilder(LocationType.ZONE).setLabel(firstChildLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build();
+        UnitConfig firstChild = getLocationUnitBuilder(LocationType.ZONE, firstChildLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build();
         unitRegistry.registerUnitConfig(firstChild);
 
-        UnitConfig secondChild = getLocationUnitBuilder(LocationType.ZONE).setLabel(SecondChildLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build();
+        UnitConfig secondChild = getLocationUnitBuilder(LocationType.ZONE, SecondChildLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build();
         secondChild = unitRegistry.registerUnitConfig(secondChild).get();
 
         try {
@@ -297,14 +305,14 @@ public class LocationRegistryTest {
 
         String rootLabel = "RootWithChildrenWithSameLabel";
         String childLabel = "childWithSameLabel";
-        UnitConfig root = getLocationUnitBuilder(LocationType.ZONE).setLabel(rootLabel).build();
+        UnitConfig root = getLocationUnitBuilder(LocationType.ZONE, rootLabel).build();
         root = unitRegistry.registerUnitConfig(root).get();
 
-        UnitConfig firstChild = getLocationUnitBuilder(LocationType.ZONE).setLabel(childLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build();
+        UnitConfig firstChild = getLocationUnitBuilder(LocationType.ZONE, childLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build();
         unitRegistry.registerUnitConfig(firstChild).get();
 
         try {
-            UnitConfig secondChild = getLocationUnitBuilder(LocationType.ZONE).setLabel(childLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build();
+            UnitConfig secondChild = getLocationUnitBuilder(LocationType.ZONE, childLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build();
             ExceptionPrinter.setBeQuit(Boolean.TRUE);
             unitRegistry.registerUnitConfig(secondChild).get();
             Assert.fail("No exception thrown when registering a second child with the same label");
@@ -328,18 +336,18 @@ public class LocationRegistryTest {
         String tile1Label = "Tile1";
         String tile2Label = "Tile3";
         String tile3Label = "Tile2";
-        UnitConfig root = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.ZONE).setLabel(rootLabel).build()).get();
-        UnitConfig zone = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.ZONE).setLabel(zoneLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build()).get();
-        UnitConfig tile1 = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.TILE).setLabel(tile1Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build()).get();
-        UnitConfig tile2 = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.TILE).setLabel(tile2Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(zone.getId())).build()).get();
-        UnitConfig tile3 = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.TILE).setLabel(tile3Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(zone.getId())).build()).get();
+        UnitConfig root = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.ZONE, rootLabel).build()).get();
+        UnitConfig zone = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.ZONE, zoneLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build()).get();
+        UnitConfig tile1 = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.TILE, tile1Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build()).get();
+        UnitConfig tile2 = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.TILE, tile2Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(zone.getId())).build()).get();
+        UnitConfig tile3 = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.TILE, tile3Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(zone.getId())).build()).get();
 
         String connection1Label = "Connection1";
         String connection2Label = "Connection2";
         ConnectionConfig connectionConfig1 = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.DOOR).addTileId(tile1.getId()).addTileId(tile2.getId()).build();
         ConnectionConfig connectionConfig2 = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.WINDOW).addTileId(tile2.getId()).addTileId(tile3.getId()).build();
-        UnitConfig connection1 = unitRegistry.registerUnitConfig(getConnectionUnitBuilder().setLabel(connection1Label).setConnectionConfig(connectionConfig1).build()).get();
-        UnitConfig connection2 = unitRegistry.registerUnitConfig(getConnectionUnitBuilder().setLabel(connection2Label).setConnectionConfig(connectionConfig2).build()).get();
+        UnitConfig connection1 = unitRegistry.registerUnitConfig(getConnectionUnitBuilder(connection1Label).setConnectionConfig(connectionConfig1).build()).get();
+        UnitConfig connection2 = unitRegistry.registerUnitConfig(getConnectionUnitBuilder(connection2Label).setConnectionConfig(connectionConfig2).build()).get();
 
         assertEquals(root.getId(), connection1.getPlacementConfig().getLocationId());
         assertEquals(zone.getId(), connection2.getPlacementConfig().getLocationId());
@@ -348,7 +356,7 @@ public class LocationRegistryTest {
         assertEquals(ScopeGenerator.generateConnectionScope(connection2, zone), connection2.getScope());
 
         ConnectionConfig connectionConfig3 = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.PASSAGE).addTileId(tile2.getId()).addTileId(tile3.getId()).build();
-        UnitConfig connection3 = getConnectionUnitBuilder().setConnectionConfig(connectionConfig3).build();
+        UnitConfig connection3 = getConnectionUnitBuilder(connection2Label).setConnectionConfig(connectionConfig3).build();
         try {
             ExceptionPrinter.setBeQuit(Boolean.TRUE);
             unitRegistry.registerUnitConfig(connection3).get();
@@ -372,10 +380,10 @@ public class LocationRegistryTest {
         String noTileLabel = "NoTile";
         String tile1Label = "RealTile1";
         String tile2Label = "RealTile2";
-        UnitConfig root = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.ZONE).setLabel(rootLabel).build()).get();
-        UnitConfig tile1 = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.TILE).setLabel(tile1Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build()).get();
-        UnitConfig tile2 = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.TILE).setLabel(tile2Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build()).get();
-        UnitConfig noTile = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.REGION).setLabel(noTileLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(tile1.getId())).build()).get();
+        UnitConfig root = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.ZONE, rootLabel).build()).get();
+        UnitConfig tile1 = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.TILE, tile1Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build()).get();
+        UnitConfig tile2 = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.TILE, tile2Label).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(root.getId())).build()).get();
+        UnitConfig noTile = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.REGION, noTileLabel).setPlacementConfig(PlacementConfig.newBuilder().setLocationId(tile1.getId())).build()).get();
 
         System.out.println("Locations: ");
         for (UnitConfig location : unitRegistry.getLocationUnitConfigRegistry().getMessages()) {
@@ -385,7 +393,7 @@ public class LocationRegistryTest {
         String connectionFailLabel = "ConnectionFail";
         String connectionLabel = "TilesTestConnection";
         ConnectionConfig connectionFail = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.DOOR).addTileId(tile2.getId()).build();
-        UnitConfig connectionUnitFail = getConnectionUnitBuilder().setLabel(connectionFailLabel).setConnectionConfig(connectionFail).build();
+        UnitConfig connectionUnitFail = getConnectionUnitBuilder(connectionFailLabel).setConnectionConfig(connectionFail).build();
         try {
             ExceptionPrinter.setBeQuit(Boolean.TRUE);
             unitRegistry.registerUnitConfig(connectionUnitFail).get();
@@ -402,7 +410,7 @@ public class LocationRegistryTest {
         connectionBuilder.addTileId(tile2.getId());
         connectionBuilder.addTileId(root.getId());
         connectionBuilder.addTileId("fakeLocationId");
-        UnitConfig connectionUnit = unitRegistry.registerUnitConfig(getConnectionUnitBuilder().setLabel(connectionLabel).setConnectionConfig(connectionBuilder.build()).build()).get();
+        UnitConfig connectionUnit = unitRegistry.registerUnitConfig(getConnectionUnitBuilder(connectionLabel).setConnectionConfig(connectionBuilder.build()).build()).get();
         ConnectionConfig connection = connectionUnit.getConnectionConfig();
 
         assertEquals("Doubled tiles or locations that aren't tiles or that do not exists do not have been removed", 2, connection.getTileIdCount());
@@ -423,9 +431,9 @@ public class LocationRegistryTest {
         String tilelabel = "tile";
         String regionlabel = "region";
         try {
-            UnitConfig rootLocation = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationType.ZONE).setLabel(rootLabel).build()).get();
+            UnitConfig rootLocation = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationType.ZONE, rootLabel).build()).get();
             PlacementConfig tilePlacement = PlacementConfig.newBuilder().setLocationId(rootLocation.getId()).build();
-            UnitConfig tile = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationType.TILE).setLabel(tilelabel).setPlacementConfig(tilePlacement).build()).get();
+            UnitConfig tile = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationType.TILE, tilelabel).setPlacementConfig(tilePlacement).build()).get();
 
             UnitConfig.Builder rootWithoutType = unitRegistry.getUnitConfigById(rootLocation.getId()).toBuilder();
             LocationConfig.Builder rootWithoutTypeConfig = rootWithoutType.getLocationConfigBuilder();
@@ -434,7 +442,7 @@ public class LocationRegistryTest {
             assertEquals("Type has not been reset even though the root location has a child which is a tile!", LocationType.ZONE, rootLocation.getLocationConfig().getType());
 
             PlacementConfig regionPlacement = PlacementConfig.newBuilder().setLocationId(tile.getId()).build();
-            UnitConfig region = unitRegistry.registerUnitConfig(getLocationUnitBuilder().setLabel(regionlabel).setPlacementConfig(regionPlacement).build()).get();
+            UnitConfig region = unitRegistry.registerUnitConfig(getLocationUnitBuilder(regionlabel).setPlacementConfig(regionPlacement).build()).get();
             assertEquals("Type has not been detected for region!", LocationType.REGION, region.getLocationConfig().getType());
 
             LocationConfig wrongType = tile.getLocationConfig().toBuilder().setType(LocationType.ZONE).build();
@@ -453,7 +461,7 @@ public class LocationRegistryTest {
 
         String label = "RootLocation";
         try {
-            UnitConfig rootLocation = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationType.ZONE).setLabel(label).build()).get();
+            UnitConfig rootLocation = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationType.ZONE, label).build()).get();
 
             assertEquals("Could not resolve locationUnitConfig by its scope!", rootLocation, unitRegistry.getUnitConfigByScope(rootLocation.getScope()));
         } catch (CouldNotPerformException ex) {

@@ -21,28 +21,25 @@ package org.openbase.bco.registry.print;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.Arrays;
-import java.util.Collections;
-import java.util.Comparator;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.processing.StringProcessor.Alignment;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
+
+import java.util.*;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class BCORegistryPrinter {
@@ -72,7 +69,7 @@ public class BCORegistryPrinter {
 
         // prepare devices
         for (DeviceClass deviceClass : Registries.getClassRegistry().getDeviceClasses()) {
-            maxUnitLabelLength = Math.max(maxUnitLabelLength, deviceClass.getLabel().length());
+            maxUnitLabelLength = Math.max(maxUnitLabelLength, LabelProcessor.getFirstLabel(deviceClass.getLabel()).length());
             deviceNumberByClassMap.put(deviceClass.getId(), 0);
         }
         for (UnitConfig deviceUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.DEVICE)) {
@@ -106,14 +103,20 @@ public class BCORegistryPrinter {
 
         // sort devices
         List<DeviceClass> devicesList = Registries.getClassRegistry().getDeviceClasses();
-        Collections.sort(devicesList, Comparator.comparing(DeviceClass::getLabel));
+        devicesList.sort(Comparator.comparing(deviceClass -> {
+            try {
+                return LabelProcessor.getFirstLabel(deviceClass.getLabel());
+            } catch (NotAvailableException ex) {
+                return deviceClass.getId();
+            }
+        }));
 
         // print devices
         for (DeviceClass deviceClass : devicesList) {
             if (deviceNumberByClassMap.get(deviceClass.getId()) == 0) {
                 continue;
             }
-            printEntry(deviceClass.getLabel(), deviceNumberByClassMap.get(deviceClass.getId()));
+            printEntry(LabelProcessor.getFirstLabel(deviceClass.getLabel()), deviceNumberByClassMap.get(deviceClass.getId()));
         }
         System.out.println(LINE_DELIMITER_SMALL);
         System.out.println("");
@@ -166,13 +169,13 @@ public class BCORegistryPrinter {
     private void printEntry(final String context, final int amount) {
         System.out.println(COLUM_DELIMITER
                 + StringProcessor.fillWithSpaces(
-                        StringProcessor.fillWithSpaces(
-                                Integer.toString(amount),
-                                AMOUNT_COLUM_SPACE,
-                                Alignment.RIGHT)
+                StringProcessor.fillWithSpaces(
+                        Integer.toString(amount),
+                        AMOUNT_COLUM_SPACE,
+                        Alignment.RIGHT)
                         + " x " + context,
-                        LINE_LENGHT - (COLUM_DELIMITER.length() * 2),
-                        Alignment.LEFT)
+                LINE_LENGHT - (COLUM_DELIMITER.length() * 2),
+                Alignment.LEFT)
                 + COLUM_DELIMITER);
     }
 

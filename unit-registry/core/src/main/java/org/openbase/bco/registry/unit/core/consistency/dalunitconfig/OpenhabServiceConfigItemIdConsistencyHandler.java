@@ -28,6 +28,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
@@ -97,7 +98,7 @@ public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoB
                 if(!dalUnitConfig.getPlacementConfig().hasLocationId() || dalUnitConfig.getPlacementConfig().getLocationId().isEmpty()) {
                     throw new NotAvailableException("dalUnitConfig.placementConfig.locationId");
                 }
-                String itemId = generateItemName(entry.getMessage(), deviceClass.getLabel(), dalUnitConfig.clone().build(), serviceConfig.clone().build(), locationRegistry.getMessage(dalUnitConfig.getPlacementConfig().getLocationId()));
+                String itemId = generateItemName(entry.getMessage(), LabelProcessor.getFirstLabel(deviceClass.getLabel()), dalUnitConfig.clone().build(), serviceConfig.clone().build(), locationRegistry.getMessage(dalUnitConfig.getPlacementConfig().getLocationId()));
 
                 MetaConfig metaConfig;
 
@@ -146,10 +147,10 @@ public class OpenhabServiceConfigItemIdConsistencyHandler extends AbstractProtoB
                 + ITEM_SEGMENT_DELIMITER
                 + ScopeGenerator.generateStringRepWithDelimiter(location.getScope(), ITEM_SUBSEGMENT_DELIMITER)
                 + ITEM_SEGMENT_DELIMITER
-                + StringProcessor.transformUpperCaseToCamelCase(unit.getType().toString())
+                + StringProcessor.transformUpperCaseToCamelCase(unit.getUnitType().toString())
                 + ITEM_SEGMENT_DELIMITER
-                + StringProcessor.transformToIdString(unit.getLabel())
+                + StringProcessor.transformToIdString(LabelProcessor.getFirstLabel(unit.getLabel()))
                 + ITEM_SEGMENT_DELIMITER
-                + StringProcessor.transformUpperCaseToCamelCase(service.getServiceDescription().getType().toString());
+                + StringProcessor.transformUpperCaseToCamelCase(service.getServiceDescription().getServiceType().toString());
     }
 }

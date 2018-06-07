@@ -27,6 +27,7 @@ import java.util.Map;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
@@ -58,7 +59,7 @@ public class ChildWithSameLabelConsistencyHandler extends AbstractProtoBufRegist
             if (labelConsistencyMap.containsKey(childLocationUnitConfig.getLabel()) && !labelConsistencyMap.get(childLocationUnitConfig.getLabel()).equals(childLocationId)) {
                 throw new InvalidStateException("Location [" + locationUnitConfig.getId() + "," + locationUnitConfig.getLabel() + "] has more than on child with the same label [" + childLocationUnitConfig.getLabel() + "]");
             } else {
-                labelConsistencyMap.put(childLocationUnitConfig.getLabel(), childLocationId);
+                labelConsistencyMap.put(LabelProcessor.getFirstLabel(childLocationUnitConfig.getLabel()), childLocationId);
             }
         }
     }

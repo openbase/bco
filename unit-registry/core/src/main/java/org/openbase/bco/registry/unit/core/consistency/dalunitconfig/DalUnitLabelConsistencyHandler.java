@@ -23,6 +23,7 @@ package org.openbase.bco.registry.unit.core.consistency.dalunitconfig;
  */
 
 import java.util.HashMap;
+import java.util.Locale;
 import java.util.Map;
 
 import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
@@ -34,6 +35,7 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
@@ -83,21 +85,21 @@ public class DalUnitLabelConsistencyHandler extends AbstractProtoBufRegistryCons
             DeviceClass deviceClass = deviceClassRegistry.get(hostUnitConfig.getDeviceConfig().getDeviceClassId()).getMessage();
 
             if (!oldUnitHostLabelMap.containsKey(dalUnitConfig.getId())) {
-                oldUnitHostLabelMap.put(dalUnitConfig.getId(), hostUnitConfig.getLabel());
+                oldUnitHostLabelMap.put(dalUnitConfig.getId(), LabelProcessor.getFirstLabel(hostUnitConfig.getLabel()));
             }
 
             boolean hasDuplicatedUnitType = DeviceConfigUtils.checkDuplicatedUnitType(hostUnitConfig, deviceClass, registry);
 
             // Setup device label if unit has no label configured.
-            if (!dalUnitConfig.hasLabel() || dalUnitConfig.getLabel().isEmpty()) {
+            if (!dalUnitConfig.hasLabel()) {
                 if (DeviceConfigUtils.setupUnitLabelByDeviceConfig(dalUnitConfig, hostUnitConfig, deviceClass, hasDuplicatedUnitType)) {
                     throw new EntryModification(entry.setMessage(dalUnitConfig), this);
                 }
             }
 
             String oldLabel = oldUnitHostLabelMap.get(dalUnitConfig.getId());
-            if (!oldLabel.equals(hostUnitConfig.getLabel())) {
-                oldUnitHostLabelMap.put(dalUnitConfig.getId(), hostUnitConfig.getLabel());
+            if (!oldLabel.equals(LabelProcessor.getFirstLabel(hostUnitConfig.getLabel()))) {
+                oldUnitHostLabelMap.put(dalUnitConfig.getId(), LabelProcessor.getFirstLabel(hostUnitConfig.getLabel()));
                 if (dalUnitConfig.getLabel().equals(oldLabel)) {
                     if (DeviceConfigUtils.setupUnitLabelByDeviceConfig(dalUnitConfig, hostUnitConfig, deviceClass, hasDuplicatedUnitType)) {
                         throw new EntryModification(entry.setMessage(dalUnitConfig), this);
@@ -109,15 +111,16 @@ public class DalUnitLabelConsistencyHandler extends AbstractProtoBufRegistryCons
             UnitConfig hostUnitConfig = appRegistry.getMessage(dalUnitConfig.getUnitHostId());
 
             if (!oldUnitHostLabelMap.containsKey(dalUnitConfig.getId())) {
-                oldUnitHostLabelMap.put(dalUnitConfig.getId(), hostUnitConfig.getLabel());
+                oldUnitHostLabelMap.put(dalUnitConfig.getId(), LabelProcessor.getFirstLabel(hostUnitConfig.getLabel()));
             }
 
             // Setup alias as label if unit has no label configured.
-            if (!dalUnitConfig.hasLabel() || dalUnitConfig.getLabel().isEmpty()) {
+            if (!dalUnitConfig.hasLabel()) {
                 if (dalUnitConfig.getAliasCount() <= 1) {
                     throw new InvalidStateException("Alias not provided by Unit[" + dalUnitConfig.getId() + "]!");
                 }
-                throw new EntryModification(entry.setMessage(dalUnitConfig.setLabel(dalUnitConfig.getAlias(0))), this);
+                LabelProcessor.addLabel(dalUnitConfig.getLabelBuilder(), Locale.ENGLISH, dalUnitConfig.getAlias(0));
+                throw new EntryModification(entry.setMessage(dalUnitConfig), this);
             }
         }
     }

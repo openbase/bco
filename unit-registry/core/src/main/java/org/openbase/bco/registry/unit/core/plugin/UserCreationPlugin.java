@@ -193,7 +193,7 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
         // if not register one
         if (adminConfig == null) {
             UnitConfig.Builder unitConfig = UnitConfig.newBuilder();
-            unitConfig.setType(UnitType.USER);
+            unitConfig.setUnitType(UnitType.USER);
 
             PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();
             Permission.Builder otherPermission = permissionConfig.getOtherPermissionBuilder();
@@ -264,7 +264,7 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
         // if not register one
         if (!bcoUserAlreadyInRegistry) {
             UnitConfig.Builder unitConfig = UnitConfig.newBuilder();
-            unitConfig.setType(UnitType.USER);
+            unitConfig.setUnitType(UnitType.USER);
 
             PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();
             Permission.Builder otherPermission = permissionConfig.getOtherPermissionBuilder();

@@ -87,7 +87,7 @@ public class RegistryFilteringTest {
 
         UnitConfig.Builder userUnitConfig = UnitConfig.newBuilder();
         UserConfig.Builder userConfig = userUnitConfig.getUserConfigBuilder();
-        userUnitConfig.setType(UnitType.USER);
+        userUnitConfig.setUnitType(UnitType.USER);
         userUnitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setWrite(true).setAccess(true).setRead(true);
         userConfig.setFirstName("Le");
         userConfig.setLastName("Chuck");

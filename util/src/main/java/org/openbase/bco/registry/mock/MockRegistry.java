@@ -46,6 +46,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
@@ -186,7 +187,7 @@ public class MockRegistry {
 
         MockServiceDescription(ServiceType type, ServicePattern servicePattern) {
             ServiceDescription.Builder descriptionBuilder = ServiceDescription.newBuilder();
-            descriptionBuilder.setType(type);
+            descriptionBuilder.setServiceType(type);
             descriptionBuilder.setPattern(servicePattern);
             this.description = descriptionBuilder.build();
         }
@@ -444,7 +445,9 @@ public class MockRegistry {
             PlacementConfig paradisePlacement = PlacementConfig.newBuilder().setShape(paradiseShape).build();
 
             // rename default root location home into paradise test location.
-            paradiseLocation = unitRegistry.updateUnitConfig(unitRegistry.getRootLocationConfig().toBuilder().setLabel("Paradise").setPlacementConfig(paradisePlacement).build()).get();
+            UnitConfig.Builder rootLocation = unitRegistry.getRootLocationConfig().toBuilder().clearLabel();
+            LabelProcessor.addLabel(rootLocation.getLabelBuilder(), Locale.ENGLISH, "Paradise");
+            paradiseLocation = unitRegistry.updateUnitConfig(rootLocation.build()).get();
             LocationConfig tileLocationConfig = LocationConfig.newBuilder().setType(LocationType.TILE).build();
             LocationConfig regionLocationConfig = LocationConfig.newBuilder().setType(LocationType.REGION).build();
 
@@ -458,8 +461,7 @@ public class MockRegistry {
             Pose hellPosition = Pose.newBuilder().setTranslation(Translation.newBuilder().setX(3).setY(1).setZ(0).build())
                     .setRotation(Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build()).build();
             PlacementConfig hellPlacement = PlacementConfig.newBuilder().setPosition(hellPosition).setShape(hellShape).setLocationId(paradiseLocation.getId()).build();
-            hellLocation = unitRegistry.registerUnitConfig(UnitConfig.newBuilder().setType(UnitType.LOCATION)
-                    .setLabel("Hell").setLocationConfig(tileLocationConfig).setPlacementConfig(hellPlacement).build()).get();
+            unitRegistry.registerUnitConfig(getLocationUnitConfig("Hell", tileLocationConfig, hellPlacement)).get();
 
             // Create stairway to heaven
             List<Vec3DDouble> stairwayVertices = new ArrayList<>();
@@ -471,8 +473,7 @@ public class MockRegistry {
             Pose stairwayPosition = Pose.newBuilder().setTranslation(Translation.newBuilder().setX(1).setY(0).setZ(0).build())
                     .setRotation(Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build()).build();
             PlacementConfig stairwayPlacement = PlacementConfig.newBuilder().setPosition(stairwayPosition).setShape(stairwayShape).setLocationId(paradiseLocation.getId()).build();
-            stairwayLocation = unitRegistry.registerUnitConfig(UnitConfig.newBuilder().setType(UnitType.LOCATION)
-                    .setLabel("Stairway to Heaven").setLocationConfig(tileLocationConfig).setPlacementConfig(stairwayPlacement).build()).get();
+            unitRegistry.registerUnitConfig(getLocationUnitConfig("Stairway to Heaven", tileLocationConfig, stairwayPlacement)).get();
 
             // Create heaven
             List<Vec3DDouble> heavenVertices = new ArrayList<>();
@@ -484,8 +485,7 @@ public class MockRegistry {
             Pose heavenPosition = Pose.newBuilder().setTranslation(Translation.newBuilder().setX(1).setY(1).setZ(0).build())
                     .setRotation(Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build()).build();
             PlacementConfig heavenPlacement = PlacementConfig.newBuilder().setPosition(heavenPosition).setShape(heavenShape).setLocationId(paradiseLocation.getId()).build();
-            heavenLocation = unitRegistry.registerUnitConfig(UnitConfig.newBuilder().setType(UnitType.LOCATION)
-                    .setLabel("Heaven").setLocationConfig(tileLocationConfig).setPlacementConfig(heavenPlacement).build()).get();
+            unitRegistry.registerUnitConfig(getLocationUnitConfig("Heaven", tileLocationConfig, heavenPlacement)).get();
 
             // Create Garden of Eden
             List<Vec3DDouble> edenVertices = new ArrayList<>();
@@ -497,12 +497,17 @@ public class MockRegistry {
             Pose edenPosition = Pose.newBuilder().setTranslation(Translation.newBuilder().setX(0).setY(2).setZ(0).build())
                     .setRotation(Rotation.newBuilder().setQw(1).setQx(0).setQy(0).setQz(0).build()).build();
             PlacementConfig edenPlacement = PlacementConfig.newBuilder().setPosition(edenPosition).setShape(edenShape).setLocationId(heavenLocation.getId()).build();
-            unitRegistry.registerUnitConfig(UnitConfig.newBuilder().setType(UnitType.LOCATION)
-                    .setLabel("Garden of Eden").setLocationConfig(regionLocationConfig).setPlacementConfig(edenPlacement).build()).get();
+            unitRegistry.registerUnitConfig(getLocationUnitConfig("Garden", regionLocationConfig, edenPlacement)).get();
 
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
         }
+    }
+
+    private UnitConfig getLocationUnitConfig(final String label, final LocationConfig locationConfig, final PlacementConfig placementConfig) {
+        UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setUnitType(UnitType.LOCATION).setLocationConfig(locationConfig).setPlacementConfig(placementConfig);
+        LabelProcessor.addLabel(unitConfig.getLabelBuilder(), Locale.ENGLISH, label);
+        return unitConfig.build();
     }
 
     private void registerConnections() throws CouldNotPerformException, InterruptedException {
@@ -512,32 +517,38 @@ public class MockRegistry {
             tileIds.add(hellLocation.getId());
             String reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabel(REED_CONTACT_LABEL).get(0).getId();
             ConnectionConfig connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
-            unitRegistry.registerUnitConfig(UnitConfig.newBuilder().setType(UnitType.CONNECTION).setLabel("Gate").setConnectionConfig(connectionConfig).build()).get();
+            unitRegistry.registerUnitConfig(getConnectionUnitConfig("Gate", connectionConfig)).get();
 
             tileIds.clear();
             tileIds.add(heavenLocation.getId());
             tileIds.add(stairwayLocation.getId());
             reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Heaven_Stairs", UnitType.REED_CONTACT).get(0).getId();
             connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
-            unitRegistry.registerUnitConfig(UnitConfig.newBuilder().setType(UnitType.CONNECTION).setLabel("Stairs_Heaven_Gate").setConnectionConfig(connectionConfig).build()).get();
+            unitRegistry.registerUnitConfig(getConnectionUnitConfig("Stairs_Heaven_Gate", connectionConfig)).get();
 
             tileIds.clear();
             tileIds.add(hellLocation.getId());
             tileIds.add(stairwayLocation.getId());
             reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Hell_Stairs", UnitType.REED_CONTACT).get(0).getId();
             connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.DOOR).addAllTileId(tileIds).addUnitId(reedContactId).build();
-            unitRegistry.registerUnitConfig(UnitConfig.newBuilder().setType(UnitType.CONNECTION).setLabel("Stairs_Hell_Gate").setConnectionConfig(connectionConfig).build()).get();
+            unitRegistry.registerUnitConfig(getConnectionUnitConfig("Stairs_Hell_Gate", connectionConfig)).get();
 
             tileIds.clear();
             tileIds.add(hellLocation.getId());
             tileIds.add(stairwayLocation.getId());
             reedContactId = Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType("Reed_Stairway_Window", UnitType.REED_CONTACT).get(0).getId();
             connectionConfig = ConnectionConfig.newBuilder().setType(ConnectionConfig.ConnectionType.WINDOW).addAllTileId(tileIds).addUnitId(reedContactId).build();
-            unitRegistry.registerUnitConfig(UnitConfig.newBuilder().setType(UnitType.CONNECTION).setLabel("Stairs_Hell_Lookout").setConnectionConfig(connectionConfig).build()).get();
+            unitRegistry.registerUnitConfig(getConnectionUnitConfig("Stairs_Hell_Lookout", connectionConfig)).get();
 
         } catch (ExecutionException | IndexOutOfBoundsException ex) {
             throw new CouldNotPerformException(ex);
         }
+    }
+
+    private UnitConfig getConnectionUnitConfig(final String label, final ConnectionConfig connectionConfig) {
+        UnitConfig.Builder connectionUnitConfig = UnitConfig.newBuilder().setUnitType(UnitType.CONNECTION).setConnectionConfig(connectionConfig);
+        LabelProcessor.addLabel(connectionUnitConfig.getLabelBuilder(), Locale.ENGLISH, label);
+        return connectionUnitConfig.build();
     }
 
     private void registerUser() throws CouldNotPerformException, InterruptedException {
@@ -549,7 +560,7 @@ public class MockRegistry {
         }
 
         UserConfig.Builder config = UserConfig.newBuilder().setFirstName("Max").setLastName("Mustermann").setUserName(USER_NAME);
-        UnitConfig.Builder userUnitConfig = UnitConfig.newBuilder().setType(UnitType.USER).setUserConfig(config).setEnablingState(EnablingState.newBuilder().setValue(EnablingState.State.ENABLED));
+        UnitConfig.Builder userUnitConfig = UnitConfig.newBuilder().setUnitType(UnitType.USER).setUserConfig(config).setEnablingState(EnablingState.newBuilder().setValue(EnablingState.State.ENABLED));
         userUnitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setWrite(true).setAccess(true).setRead(true);
         try {
             testUser = unitRegistry.registerUnitConfig(userUnitConfig.build()).get();
@@ -560,14 +571,20 @@ public class MockRegistry {
 
     private void registerAgentClasses() throws CouldNotPerformException, InterruptedException {
         try {
-            classRegistry.registerAgentClass(AgentClass.newBuilder().setLabel(ABSENCE_ENERGY_SAVING_AGENT_LABEL).build()).get();
-            classRegistry.registerAgentClass(AgentClass.newBuilder().setLabel(HEATER_ENERGY_SAVING_AGENT_LABEL).build()).get();
-            classRegistry.registerAgentClass(AgentClass.newBuilder().setLabel(ILLUMINATION_LIGHT_SAVING_AGENT_LABEL).build()).get();
-            classRegistry.registerAgentClass(AgentClass.newBuilder().setLabel(POWER_STATE_SYNCHRONISER_AGENT_LABEL).build()).get();
-            classRegistry.registerAgentClass(AgentClass.newBuilder().setLabel(PRESENCE_LIGHT_AGENT_LABEL).build()).get();
+            classRegistry.registerAgentClass(getAgentClass(ABSENCE_ENERGY_SAVING_AGENT_LABEL)).get();
+            classRegistry.registerAgentClass(getAgentClass(HEATER_ENERGY_SAVING_AGENT_LABEL)).get();
+            classRegistry.registerAgentClass(getAgentClass(ILLUMINATION_LIGHT_SAVING_AGENT_LABEL)).get();
+            classRegistry.registerAgentClass(getAgentClass(POWER_STATE_SYNCHRONISER_AGENT_LABEL)).get();
+            classRegistry.registerAgentClass(getAgentClass(PRESENCE_LIGHT_AGENT_LABEL)).get();
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
         }
+    }
+
+    private AgentClass getAgentClass(final String label) {
+        AgentClass.Builder agentClass = AgentClass.newBuilder();
+        LabelProcessor.addLabel(agentClass.getLabelBuilder(), Locale.ENGLISH, label);
+        return agentClass.build();
     }
 
     final SyncObject LOCK = new SyncObject("WaitForDeviceClassLock");
@@ -706,14 +723,16 @@ public class MockRegistry {
 
     private static void updateUnitLabel(final List<String> unitIds) throws CouldNotPerformException, InterruptedException, ExecutionException {
         for (String unitId : unitIds) {
-            UnitConfig tmp = unitRegistry.getUnitConfigById(unitId);
+            UnitConfig.Builder tmp = unitRegistry.getUnitConfigById(unitId).toBuilder();
 
             // ignore disabled test unit otherwise they would registered twice with the same label if another enabled instance of the same class exists.
             if (tmp.getEnablingState().getValue().equals(EnablingState.State.DISABLED)) {
                 continue;
             }
 
-            unitRegistry.updateUnitConfig(tmp.toBuilder().setLabel(UNIT_TYPE_LABEL_MAP.get(tmp.getType())).build()).get();
+            tmp.clearLabel();
+            LabelProcessor.addLabel(tmp.getLabelBuilder(), Locale.ENGLISH, (UNIT_TYPE_LABEL_MAP.get(tmp.getUnitType())));
+            unitRegistry.updateUnitConfig(tmp.build()).get();
         }
     }
 
@@ -764,12 +783,12 @@ public class MockRegistry {
                 .setDeviceClassId(clazz.getId())
                 .setInventoryState(InventoryStateType.InventoryState.newBuilder().setValue(inventoryState))
                 .build();
-        return UnitConfig.newBuilder()
+        UnitConfig.Builder deviceUnitConfig = UnitConfig.newBuilder()
                 .setPlacementConfig(getDefaultPlacement(location))
-                .setLabel(label)
                 .setDeviceConfig(tmp)
-                .setType(UnitType.DEVICE)
-                .build();
+                .setUnitType(UnitType.DEVICE);
+        LabelProcessor.addLabel(deviceUnitConfig.getLabelBuilder(), Locale.ENGLISH, label);
+        return deviceUnitConfig.build();
     }
 
     private static List<UnitTemplateConfig> getUnitTemplateConfigs(List<UnitTemplate.UnitType> unitTypes) throws CouldNotPerformException {
@@ -777,7 +796,7 @@ public class MockRegistry {
         for (UnitTemplate.UnitType type : unitTypes) {
             Set<ServiceTemplateConfig> serviceTemplateConfigs = new HashSet<>();
             for (ServiceDescription serviceDescription : MockUnitTemplate.getTemplate(type).getServiceDescriptionList()) {
-                serviceTemplateConfigs.add(ServiceTemplateConfig.newBuilder().setServiceType(serviceDescription.getType()).build());
+                serviceTemplateConfigs.add(ServiceTemplateConfig.newBuilder().setServiceType(serviceDescription.getServiceType()).build());
             }
             UnitTemplateConfig config = UnitTemplateConfig.newBuilder().setType(type).addAllServiceTemplateConfig(serviceTemplateConfigs).build();
             unitTemplateConfigs.add(config);
@@ -786,12 +805,12 @@ public class MockRegistry {
     }
 
     public static DeviceClass getDeviceClass(String label, String productNumber, String company, UnitTemplate.UnitType... types) throws CouldNotPerformException {
-        List<UnitTemplate.UnitType> unitTypeList = new ArrayList<>();
-        unitTypeList.addAll(Arrays.asList(types));
-        return DeviceClass.newBuilder().setLabel(label).setProductNumber(productNumber).setCompany(company)
+        List<UnitTemplate.UnitType> unitTypeList = new ArrayList<>(Arrays.asList(types));
+        DeviceClass.Builder deviceClass = DeviceClass.newBuilder().setProductNumber(productNumber).setCompany(company)
                 .setBindingConfig(getBindingConfig()).addAllUnitTemplateConfig(getUnitTemplateConfigs(unitTypeList))
-                .setShape(Shape.newBuilder().setBoundingBox(DEFAULT_BOUNDING_BOX))
-                .build();
+                .setShape(Shape.newBuilder().setBoundingBox(DEFAULT_BOUNDING_BOX));
+        LabelProcessor.addLabel(deviceClass.getLabelBuilder(), Locale.ENGLISH, label);
+        return deviceClass.build();
     }
 
     public static BindingConfig getBindingConfig() {

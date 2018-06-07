@@ -45,7 +45,7 @@ public class ExecutableUnitAutostartConsistencyHandler extends AbstractProtoBufR
 
         UnitConfigProcessor.verifyUnit(unitConfig.build());
 
-        switch (unitConfig.getType()) {
+        switch (unitConfig.getUnitType()) {
             case APP:
                 if (!unitConfig.getAppConfig().hasAutostart()) {
                     unitConfig.getAppConfigBuilder().setAutostart(DEFAULT_AUTOSTART_STATE);
@@ -59,7 +59,7 @@ public class ExecutableUnitAutostartConsistencyHandler extends AbstractProtoBufR
                 }
                 break;
             default:
-                throw new NotSupportedException(unitConfig.getType(), getClass());
+                throw new NotSupportedException(unitConfig.getUnitType(), getClass());
         }
     }
 }

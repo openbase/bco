@@ -117,11 +117,11 @@ public class DeviceConfigDeviceClassUnitConsistencyPlugin extends ProtobufRegist
                 List<ServiceConfigType.ServiceConfig> serviceConfigs = new ArrayList<>();
                 for (ServiceTemplateConfigType.ServiceTemplateConfig serviceTemplateConfig : unitTemplateConfig.getServiceTemplateConfigList()) {
                     ServiceConfigType.ServiceConfig.Builder serviceConfig = ServiceConfigType.ServiceConfig.newBuilder().setBindingConfig(BindingConfigType.BindingConfig.newBuilder().setBindingId(deviceClass.getBindingConfig().getBindingId()));
-                    serviceConfig.setServiceDescription(ServiceDescription.newBuilder().setType(serviceTemplateConfig.getServiceType()));
+                    serviceConfig.setServiceDescription(ServiceDescription.newBuilder().setServiceType(serviceTemplateConfig.getServiceType()));
                     serviceConfigs.add(serviceConfig.build());
                 }
 
-                UnitConfig dalUnitConfig = UnitConfig.newBuilder().setType(unitTemplateConfig.getType()).addAllServiceConfig(serviceConfigs).setUnitTemplateConfigId(unitTemplateConfig.getId()).setUnitHostId(deviceUnitConfig.getId()).build();
+                UnitConfig dalUnitConfig = UnitConfig.newBuilder().setUnitType(unitTemplateConfig.getType()).addAllServiceConfig(serviceConfigs).setUnitTemplateConfigId(unitTemplateConfig.getId()).setUnitHostId(deviceUnitConfig.getId()).build();
                 dalUnitConfig = dalUnitRegistry.register(dalUnitConfig);
                 deviceConfig.addUnitId(dalUnitConfig.getId());
                 modification = true;

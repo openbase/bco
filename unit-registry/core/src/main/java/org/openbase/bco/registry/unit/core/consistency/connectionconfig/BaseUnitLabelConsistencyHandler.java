@@ -54,7 +54,7 @@ public class BaseUnitLabelConsistencyHandler extends AbstractProtoBufRegistryCon
 
         if (!unitConfig.hasLabel()) {
             UnitConfig.Builder unitConfigBuilder = unitConfig.toBuilder();
-            LabelProcessor.addLabel(unitConfigBuilder.getLabelBuilder(), Locale.ENGLISH, generateDefaultLabel(unitConfig))
+            LabelProcessor.addLabel(unitConfigBuilder.getLabelBuilder(), Locale.ENGLISH, generateDefaultLabel(unitConfig));
             throw new EntryModification(entry.setMessage(unitConfigBuilder), this);
         }
 

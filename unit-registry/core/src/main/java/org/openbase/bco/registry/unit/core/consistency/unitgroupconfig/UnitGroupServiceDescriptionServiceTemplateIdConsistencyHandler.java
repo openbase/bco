@@ -52,11 +52,11 @@ public class UnitGroupServiceDescriptionServiceTemplateIdConsistencyHandler exte
         boolean modification = false;
         for (ServiceDescription.Builder serviceDescription : unitGroup.getServiceDescriptionBuilderList()) {
             if (serviceDescription.getServiceTemplateId().isEmpty()) {
-                if (!serviceDescription.hasType()) {
+                if (!serviceDescription.hasServiceType()) {
                     throw new NotAvailableException("ServiceType");
                 }
 
-                serviceDescription.setServiceTemplateId(getServiceIdByType(serviceDescription.getType()));
+                serviceDescription.setServiceTemplateId(getServiceIdByType(serviceDescription.getServiceType()));
                 modification = true;
             }
         }
