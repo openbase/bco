@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -25,6 +25,7 @@ package org.openbase.bco.dal.remote.service;
 import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager.TicketEvaluationWrapper;
 import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
+import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitProcessor;
@@ -52,6 +53,7 @@ import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.action.SnapshotType.Snapshot;
+import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType;
@@ -285,7 +287,7 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
                     // every abstractServiceRemotes internal units if the serviceType is implemented by the unitType
                     ServiceType serviceType;
                     try {
-                        serviceType = Registries.getTemplateRegistry().getUnitTemplateByType(unitType).getServiceDescriptionList().get(0).getType();
+                        serviceType = Registries.getTemplateRegistry().getUnitTemplateByType(unitType).getServiceDescriptionList().get(0).getServiceType();
                     } catch (IndexOutOfBoundsException ex) {
                         // if there is not at least one serviceType for the unitType then the snapshot is empty
                         return snapshotBuilder.build();
@@ -360,19 +362,19 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
                             }
                         }
                         return null;
-                    }, generateSnapshotActions(snapshot, initializedTicket));
+                    }, generateSnapshotActions(snapshot, initializedTicket, ticketEvaluationWrapper.getSessionKey()));
                 } catch (BadPaddingException | IOException ex) {
                     throw new CouldNotPerformException("Could not update ticket for further requests", ex);
                 }
             } else {
-                return GlobalCachedExecutorService.allOf(input -> null, generateSnapshotActions(snapshot, null));
+                return GlobalCachedExecutorService.allOf(input -> null, generateSnapshotActions(snapshot, null, null));
             }
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not record snapshot authenticated!", ex);
         }
     }
 
-    private Collection<Future<ActionFuture>> generateSnapshotActions(final Snapshot snapshot, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper) throws CouldNotPerformException, InterruptedException {
+    private Collection<Future<ActionFuture>> generateSnapshotActions(final Snapshot snapshot, final TicketAuthenticatorWrapper ticketAuthenticatorWrapper, final byte[] sessionKey) throws CouldNotPerformException, InterruptedException {
         final Map<String, UnitRemote<?>> unitRemoteMap = new HashMap<>();
         for (AbstractServiceRemote<?, ?> serviceRemote : this.getServiceRemoteList()) {
             for (UnitRemote<?> unitRemote : serviceRemote.getInternalUnits()) {
@@ -386,9 +388,6 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
             final UnitRemote unitRemote = unitRemoteMap.get(serviceStateDescription.getUnitId());
 
             ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-            if (ticketAuthenticatorWrapper != null) {
-                actionDescription.getActionAuthorityBuilder().setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
-            }
 
             // TODO: discuss if the responsible action shall be moved to the action chain, if yes a snapshot could already contain a list
             // of action descriptions which are initialized accordingly, this way the deserialization does not have to be done here
@@ -402,8 +401,19 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
             }
             unitRemote.updateActionDescription(actionDescription, serviceAttribute.build(), serviceStateDescription.getServiceType());
 
-            Future<ActionFuture> applyActionFuture = unitRemote.applyAction(actionDescription.build());
-            futureCollection.add(applyActionFuture);
+            if (ticketAuthenticatorWrapper != null) {
+                // prepare authenticated value to request action
+                AuthenticatedValue.Builder authenticatedValue = AuthenticatedValue.newBuilder();
+                authenticatedValue.setTicketAuthenticatorWrapper(ticketAuthenticatorWrapper);
+                try {
+                    authenticatedValue.setValue(EncryptionHelper.encryptSymmetric(actionDescription.build(), sessionKey));
+                    futureCollection.add(unitRemote.applyActionAuthenticated(authenticatedValue.build()));
+                } catch (IOException ex) {
+                    throw new CouldNotPerformException("Could not encrypt userConfig", ex);
+                }
+            } else {
+                futureCollection.add(unitRemote.applyAction(actionDescription.build()));
+            }
         }
 
         return futureCollection;
