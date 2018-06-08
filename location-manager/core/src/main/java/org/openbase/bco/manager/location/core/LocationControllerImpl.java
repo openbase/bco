@@ -205,11 +205,6 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
     }
 
     @Override
-    public String getLabel() throws NotAvailableException {
-        return getConfig().getLabel();
-    }
-
-    @Override
     public Future<Snapshot> recordSnapshot() throws CouldNotPerformException, InterruptedException {
         return serviceRemoteManager.recordSnapshot();
     }
@@ -230,7 +225,7 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
     }
 
     @Override
-    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
         switch (actionDescription.getServiceStateDescription().getServiceType()) {
             case STANDBY_STATE_SERVICE:
                 return super.applyAction(actionDescription);
@@ -242,19 +237,6 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
     @Override
     public ServiceRemote getServiceRemote(final ServiceType serviceType) throws NotAvailableException {
         return serviceRemoteManager.getServiceRemote(serviceType);
-    }
-
-    @Override
-    public List<String> getNeighborLocationIds() throws CouldNotPerformException {
-        List<String> neighborIdList = new ArrayList<>();
-        try {
-            for (UnitConfig locationConfig : Registries.getUnitRegistry().getNeighborLocations(getId())) {
-                neighborIdList.add(locationConfig.getId());
-            }
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-        }
-        return neighborIdList;
     }
 
     @Override

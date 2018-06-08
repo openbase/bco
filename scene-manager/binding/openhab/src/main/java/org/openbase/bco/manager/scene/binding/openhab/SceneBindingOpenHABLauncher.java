@@ -23,8 +23,8 @@ package org.openbase.bco.manager.scene.binding.openhab;
  */
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
 import org.openbase.bco.registry.lib.BCO;
+import org.openbase.bco.registry.unit.lib.jp.JPUnitRegistryScope;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
-import org.openbase.bco.registry.scene.lib.jp.JPSceneRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 
@@ -42,7 +42,7 @@ public class SceneBindingOpenHABLauncher extends AbstractLauncher<SceneBindingOp
     @Override
     protected void loadProperties() {
         JPService.registerProperty(JPHardwareSimulationMode.class);
-        JPService.registerProperty(JPSceneRegistryScope.class);
+        JPService.registerProperty(JPUnitRegistryScope.class);
     }
 
     /**

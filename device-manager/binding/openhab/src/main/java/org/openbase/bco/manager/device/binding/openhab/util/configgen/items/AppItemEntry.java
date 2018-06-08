@@ -23,6 +23,7 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen.items;
  */
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
@@ -39,7 +40,9 @@ public class AppItemEntry extends AbstractItemEntry {
             this.itemId = generateItemId(appUnitConfig);
             this.icon = "";
             this.commandType = "Switch";
-            this.label = appUnitConfig.getLabel();
+            this.label = LabelProcessor.getFirstLabel(unitConfig.getLabel());
+            // as a backup use the first label as seen below
+            //TODO: this should parse a value from the root location meta config that defines a default label
             this.itemHardwareConfig = "rsb=\"bco.manager.app:" + appUnitConfig.getId() + "\"";
             groups.add(ItemIdGenerator.generateUnitGroupID(UnitType.APP));
             groups.add(ItemIdGenerator.generateUnitGroupID(appUnitConfig.getPlacementConfig().getLocationId()));

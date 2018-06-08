@@ -41,7 +41,7 @@ import org.openbase.bco.registry.location.core.LocationRegistryLauncher;
 import org.openbase.bco.registry.scene.core.SceneRegistryLauncher;
 import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;
 import org.openbase.bco.registry.user.activity.core.ActivityRegistryLauncher;
-import org.openbase.bco.registry.user.core.UserRegistryLauncher;
+import org.openbase.bco.registry.user.core.UnitRegistryLauncher;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -62,7 +62,7 @@ public class BCOBindingOpenhabLauncher {
                 AgentRegistryLauncher.class,
                 UnitRegistryLauncher.class,
                 LocationRegistryLauncher.class,
-                UserRegistryLauncher.class,
+                UnitRegistryLauncher.class,
                 SceneRegistryLauncher.class,
                 ActivityRegistryLauncher.class,
                 /**

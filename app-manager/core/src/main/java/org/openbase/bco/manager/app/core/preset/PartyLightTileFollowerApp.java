@@ -34,6 +34,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.schedule.SyncObject;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.location.LocationConfigType;
 import rst.vision.HSBColorType.HSBColor;
 

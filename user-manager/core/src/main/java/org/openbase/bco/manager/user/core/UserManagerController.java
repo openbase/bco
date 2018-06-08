@@ -49,10 +49,10 @@ public class UserManagerController implements UserManager, Launchable<Void>, Voi
     private final UserFactory userFactory;
     private final AuthorizationGroupFactory authorizationGroupFactory;
 
-    private final ControllerRegistryImpl<String, UserController> userRegistry;
+    private final ControllerRegistryImpl<String, UserController> unitRegistry;
     private final ControllerRegistryImpl<String, AuthorizationGroupController> authorizationGroupRegistry;
 
-    private final EnableableEntryRegistrySynchronizer<String, UserController, UnitConfig, UnitConfig.Builder> userRegistrySynchronizer;
+    private final EnableableEntryRegistrySynchronizer<String, UserController, UnitConfig, UnitConfig.Builder> unitRegistrySynchronizer;
     private final ActivatableEntryRegistrySynchronizer<String, AuthorizationGroupController, UnitConfig, UnitConfig.Builder> authorizationGroupRegistrySynchronizer;
 
     public UserManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
@@ -60,17 +60,17 @@ public class UserManagerController implements UserManager, Launchable<Void>, Voi
             this.userFactory = UserFactoryImpl.getInstance();
             this.authorizationGroupFactory = AuthorizationGroupFactoryImpl.getInstance();
 
-            this.userRegistry = new ControllerRegistryImpl<>();
+            this.unitRegistry = new ControllerRegistryImpl<>();
             this.authorizationGroupRegistry = new ControllerRegistryImpl<>();
 
-            this.userRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, UserController, UnitConfig, UnitConfig.Builder>(userRegistry, Registries.getUserRegistry().getUserConfigRemoteRegistry(), Registries.getUserRegistry(), userFactory) {
+            this.unitRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, UserController, UnitConfig, UnitConfig.Builder>(unitRegistry, Registries.getUnitRegistry().getUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), userFactory) {
 
                 @Override
                 public boolean enablingCondition(UnitConfig config) {
                     return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
                 }
             };
-            this.authorizationGroupRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, AuthorizationGroupController, UnitConfig, Builder>(authorizationGroupRegistry, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry(), Registries.getUserRegistry(), authorizationGroupFactory) {
+            this.authorizationGroupRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, AuthorizationGroupController, UnitConfig, Builder>(authorizationGroupRegistry, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), authorizationGroupFactory) {
                 @Override
                 public boolean activationCondition(UnitConfig config) {
                     return config.getEnablingState().getValue() == State.ENABLED;
@@ -90,30 +90,30 @@ public class UserManagerController implements UserManager, Launchable<Void>, Voi
     public void activate() throws CouldNotPerformException, InterruptedException {
         SystemLogin.loginBCOUser();
 
-        userRegistrySynchronizer.activate();
+        unitRegistrySynchronizer.activate();
         authorizationGroupRegistrySynchronizer.activate();
     }
 
     @Override
     public boolean isActive() {
-        return userRegistrySynchronizer.isActive();
+        return unitRegistrySynchronizer.isActive();
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        userRegistrySynchronizer.deactivate();
+        unitRegistrySynchronizer.deactivate();
         authorizationGroupRegistrySynchronizer.deactivate();
 
-        userRegistry.clear();
+        unitRegistry.clear();
         authorizationGroupRegistry.clear();
     }
 
     @Override
     public void shutdown() {
-        userRegistrySynchronizer.shutdown();
+        unitRegistrySynchronizer.shutdown();
         authorizationGroupRegistrySynchronizer.shutdown();
 
-        userRegistry.shutdown();
+        unitRegistry.shutdown();
         authorizationGroupRegistry.shutdown();
     }
 }

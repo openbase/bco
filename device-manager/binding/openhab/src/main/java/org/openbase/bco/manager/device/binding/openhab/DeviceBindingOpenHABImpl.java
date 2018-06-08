@@ -24,7 +24,6 @@ package org.openbase.bco.manager.device.binding.openhab;
 import org.openbase.bco.manager.device.binding.openhab.comm.DeviceOpenHABRemote;
 import org.openbase.bco.manager.device.binding.openhab.service.OpenhabServiceFactory;
 import org.openbase.bco.manager.device.core.DeviceManagerController;
-import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -47,8 +46,7 @@ public class DeviceBindingOpenHABImpl extends AbstractOpenHABBinding {
     public static final String DEVICE_MANAGER_ITEM_FILTER = "";
 
     private DeviceManagerController deviceManagerController;
-    private DeviceRegistryRemote deviceRegistryRemote;
-    
+
     public DeviceBindingOpenHABImpl() throws InstantiationException, JPNotAvailableException {
         super();
     }
@@ -64,14 +62,13 @@ public class DeviceBindingOpenHABImpl extends AbstractOpenHABBinding {
     @Override
     public void init(String itemFilter, OpenHABRemote openHABRemote) throws InitializationException, InterruptedException {
         try {
-            deviceRegistryRemote = Registries.getUnitRegistry();
-            deviceRegistryRemote.waitForData();
+            Registries.getClassRegistry(true);
             deviceManagerController = new DeviceManagerController(new OpenhabServiceFactory()) {
 
                 @Override
                 public boolean isSupported(UnitConfig config) throws CouldNotPerformException {
                     try {
-                        DeviceClass deviceClass = deviceRegistryRemote.getDeviceClassById(config.getDeviceConfig().getDeviceClassId());
+                        DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(config.getDeviceConfig().getDeviceClassId());
                         if (!deviceClass.getBindingConfig().getBindingId().equals("OPENHAB")) {
                             return false;
                         }

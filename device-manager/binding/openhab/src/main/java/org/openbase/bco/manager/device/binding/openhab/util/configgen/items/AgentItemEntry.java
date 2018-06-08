@@ -23,6 +23,7 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen.items;
  */
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -34,16 +35,18 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public class AgentItemEntry extends AbstractItemEntry {
 
-    public AgentItemEntry(final UnitConfig agentUnitConfig, final ServiceConfig serviceConfig) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        super(agentUnitConfig, serviceConfig);
+    public AgentItemEntry(final UnitConfig unitConfig, final ServiceConfig serviceConfig) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+        super(unitConfig, serviceConfig);
         try {
-            this.itemId = generateItemId(agentUnitConfig);
+            this.itemId = generateItemId(unitConfig);
             this.icon = "";
             this.commandType = "Switch";
-            this.label = agentUnitConfig.getLabel();
-            this.itemHardwareConfig = "rsb=\"bco.manager.agent:" + agentUnitConfig.getId() + "\"";
+            this.label = LabelProcessor.getFirstLabel(this.unitConfig.getLabel());
+            // as a backup use the first label as seen below
+            //TODO: this should parse a value from the root location meta config that defines a default label
+            this.itemHardwareConfig = "rsb=\"bco.manager.agent:" + unitConfig.getId() + "\"";
             groups.add(ItemIdGenerator.generateUnitGroupID(UnitType.AGENT));
-            groups.add(ItemIdGenerator.generateUnitGroupID(agentUnitConfig.getPlacementConfig().getLocationId()));
+            groups.add(ItemIdGenerator.generateUnitGroupID(unitConfig.getPlacementConfig().getLocationId()));
             calculateGaps();
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);

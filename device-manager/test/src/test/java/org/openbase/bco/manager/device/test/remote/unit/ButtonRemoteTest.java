@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.ButtonController;
 import org.openbase.bco.dal.remote.unit.ButtonRemote;
 import org.openbase.bco.dal.remote.unit.Units;
@@ -39,6 +40,7 @@ import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.Stopwatch;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ButtonStateType.ButtonState;
+import rst.domotic.state.ButtonStateType.ButtonState.State;
 
 /**
  *
@@ -104,7 +106,7 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
         stopwatch.stop();
         buttonRemote.requestData().get();
         assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
-        timestamp = TimestampJavaTimeTransform.transform(buttonRemote.getButtonState().getLastPressed());
+        timestamp = TimestampJavaTimeTransform.transform(Services.getLatestValueOccurrence(State.PRESSED, buttonRemote.getButtonState()));
         assertTrue("The timestamp of the button state has not been updated!", (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
 
         // just to be safe that the next test does not set the motion state in the same millisecond 
@@ -116,7 +118,7 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
         stopwatch.stop();
         buttonRemote.requestData().get();
         assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
-        timestamp = TimestampJavaTimeTransform.transform(buttonRemote.getButtonState().getLastPressed());
+        timestamp = TimestampJavaTimeTransform.transform(Services.getLatestValueOccurrence(State.PRESSED, buttonRemote.getButtonState()));
         assertTrue("The timestamp of the button state has not been updated!", (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
 
         // just to be safe that the next test does not set the motion state in the same millisecond 
@@ -128,7 +130,7 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
         stopwatch.stop();
         buttonRemote.requestData().get();
         assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
-        timestamp = TimestampJavaTimeTransform.transform(buttonRemote.getButtonState().getLastPressed());
+        timestamp = TimestampJavaTimeTransform.transform(Services.getLatestValueOccurrence(State.PRESSED, buttonRemote.getButtonState()));
         assertFalse("The timestamp of the button state has been updated even though it sould not!", (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
     }
 }

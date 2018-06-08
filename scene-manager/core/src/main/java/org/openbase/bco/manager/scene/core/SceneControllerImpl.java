@@ -31,6 +31,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
@@ -121,7 +122,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
                 buttonRemoteSet.clear();
                 ButtonRemote buttonRemote;
 
-                for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(config.getLabel(), UnitType.BUTTON)) {
+                for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigsByLabelAndUnitType(LabelProcessor.getFirstLabel(config.getLabel()), UnitType.BUTTON)) {
                     try {
                         buttonRemote = Units.getUnit(unitConfig, false, Units.BUTTON);
                         buttonRemoteSet.add(buttonRemote);

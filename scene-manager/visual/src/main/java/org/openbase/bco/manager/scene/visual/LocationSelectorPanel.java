@@ -38,8 +38,9 @@ import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -86,7 +87,7 @@ public class LocationSelectorPanel extends javax.swing.JPanel {
     }
 
     private void initDynamicComponents() throws InterruptedException, NotAvailableException {
-        Registries.getUnitRegistry().addDataObserver((final Observable<LocationRegistryData> source, LocationRegistryData data) -> {
+        Registries.getUnitRegistry().addDataObserver((final Observable<UnitRegistryData> source, UnitRegistryData data) -> {
             updateDynamicComponents();
         });
         updateDynamicComponents();

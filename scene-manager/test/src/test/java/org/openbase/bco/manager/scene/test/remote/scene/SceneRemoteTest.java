@@ -46,10 +46,12 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.LoggerFactory;
+import rst.configuration.LabelType.Label;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
@@ -68,6 +70,7 @@ import rst.vision.HSBColorType.HSBColor;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 
 import static org.junit.Assert.assertEquals;
@@ -160,7 +163,6 @@ public class SceneRemoteTest {
     private static void registerScenes() throws CouldNotPerformException {
         try {
             ServiceJSonProcessor serviceJSonProcessor = new ServiceJSonProcessor();
-            UnitRegistryRemote unitRegistry = Registries.getUnitRegistry();
 
             List<ServiceStateDescription> serviceStateDescriptionList = new ArrayList<>();
 
@@ -170,12 +172,12 @@ public class SceneRemoteTest {
             serviceStateDescription.setServiceType(ServiceType.POWER_STATE_SERVICE);
             serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(powerState));
             serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(powerState));
-            for (UnitConfig unitConfig : unitRegistry.getDalUnitConfigs()) {
+            for (UnitConfig unitConfig : Registries.getUnitRegistry().getDalUnitConfigs()) {
                 if (unitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                     continue;
                 }
 
-                if (unitRegistry.getSubUnitTypes(UnitType.LIGHT).contains(unitConfig.getUnitType()) || unitConfig.getUnitType() == UnitType.LIGHT || unitConfig.getUnitType() == UnitType.POWER_SWITCH) {
+                if (Registries.getTemplateRegistry().getSubUnitTypes(UnitType.LIGHT).contains(unitConfig.getUnitType()) || unitConfig.getUnitType() == UnitType.LIGHT || unitConfig.getUnitType() == UnitType.POWER_SWITCH) {
                     serviceStateDescription.clearUnitId();
                     serviceStateDescription.setUnitId(unitConfig.getId());
                     serviceStateDescriptionList.add(serviceStateDescription.build());
@@ -188,7 +190,7 @@ public class SceneRemoteTest {
             serviceStateDescription.setServiceType(ServiceType.COLOR_STATE_SERVICE);
             serviceStateDescription.setServiceAttribute(serviceJSonProcessor.serialize(colorState));
             serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(colorState));
-            for (UnitConfig unitConfig : unitRegistry.getDalUnitConfigs()) {
+            for (UnitConfig unitConfig : Registries.getUnitRegistry().getDalUnitConfigs()) {
                 if (unitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                     continue;
                 }
@@ -204,8 +206,8 @@ public class SceneRemoteTest {
             String label = SCENE_TEST;
             PlacementConfig placementConfig = PlacementConfig.newBuilder().setLocationId(Registries.getUnitRegistry().getRootLocationConfig().getId()).build();
             SceneConfig sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
-            UnitConfig unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
-            unitRegistry.registerUnitConfig(unitConfig).get();
+            UnitConfig unitConfig = UnitConfig.newBuilder().setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, label)).setUnitType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
+            Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
 
             serviceStateDescriptionList.clear();
             TemperatureState temperatureState = TemperatureState.newBuilder().setTemperature(TEMPERATURE).setTemperatureDataUnit(TemperatureState.DataUnit.CELSIUS).build();
@@ -217,8 +219,8 @@ public class SceneRemoteTest {
 
             label = SCENE_ROOT_LOCATION;
             sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
-            unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
-            unitRegistry.registerUnitConfig(unitConfig).get();
+            unitConfig = UnitConfig.newBuilder().setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, label)).setUnitType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
+            Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
 
             label = SCENE_ROOT_LOCATION_ALL_DEVICES_ON;
             LocationRemote locationRemote = Units.getUnit(Registries.getUnitRegistry().getRootLocationConfig(), false, LocationRemote.class);
@@ -228,15 +230,15 @@ public class SceneRemoteTest {
             locationRemote.setPowerState(POWER_ON).get();
             locationRemote.requestData().get();
             sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(locationRemote.recordSnapshot().get().getServiceStateDescriptionList()).build();
-            unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
-            unitRegistry.registerUnitConfig(unitConfig).get();
+            unitConfig = UnitConfig.newBuilder().setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, label)).setUnitType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
+            Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
 
             label = SCENE_ROOT_LOCATION_ALL_DEVICES_OFF;
             locationRemote.setPowerState(POWER_OFF).get();
             locationRemote.requestData().get();
             sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(locationRemote.recordSnapshot().get().getServiceStateDescriptionList()).build();
-            unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
-            unitRegistry.registerUnitConfig(unitConfig).get();
+            unitConfig = UnitConfig.newBuilder().setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, label)).setUnitType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
+            Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
 
             label = SCENE_ROOT_LOCATION_ON;
             serviceStateDescriptionList.clear();
@@ -247,8 +249,8 @@ public class SceneRemoteTest {
             serviceStateDescription.setUnitId(Registries.getUnitRegistry().getRootLocationConfig().getId());
             serviceStateDescriptionList.add(serviceStateDescription.build());
             sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
-            unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
-            unitRegistry.registerUnitConfig(unitConfig).get();
+            unitConfig = UnitConfig.newBuilder().setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, label)).setUnitType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
+            Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
 
             label = SCENE_ROOT_LOCATION_OFF;
             serviceStateDescriptionList.clear();
@@ -259,15 +261,15 @@ public class SceneRemoteTest {
             serviceStateDescription.setUnitId(Registries.getUnitRegistry().getRootLocationConfig().getId());
             serviceStateDescriptionList.add(serviceStateDescription.build());
             sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
-            unitConfig = UnitConfig.newBuilder().setLabel(label).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
-            unitRegistry.registerUnitConfig(unitConfig).get();
+            unitConfig = UnitConfig.newBuilder().setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, label)).setUnitType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
+            Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
 
             // Register Scene which changes a unitGroup
             String unitGroupId = registerUnitGroup();
             color = ColorType.Color.newBuilder().setType(ColorType.Color.Type.HSB).setHsbColor(GROUP_COLOR_VALUE).build();
             colorState = ColorState.newBuilder().setColor(color).build();
 
-            String sceneLabel = SCENE_GROUP;
+            label = SCENE_GROUP;
             serviceStateDescriptionList.clear();
             serviceStateDescription.clear();
             serviceStateDescription.setServiceType(ServiceType.COLOR_STATE_SERVICE);
@@ -276,8 +278,8 @@ public class SceneRemoteTest {
             serviceStateDescription.setUnitId(unitGroupId);
             serviceStateDescriptionList.add(serviceStateDescription.build());
             sceneConfig = SceneConfig.newBuilder().addAllRequiredServiceStateDescription(serviceStateDescriptionList).build();
-            unitConfig = UnitConfig.newBuilder().setLabel(sceneLabel).setType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
-            unitRegistry.registerUnitConfig(unitConfig).get();
+            unitConfig = UnitConfig.newBuilder().setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, label)).setUnitType(UnitType.SCENE).setSceneConfig(sceneConfig).setPlacementConfig(placementConfig).build();
+            Registries.getUnitRegistry().registerUnitConfig(unitConfig).get();
         } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
             throw new CouldNotPerformException("Could not register scene!", ex);
         }
@@ -285,7 +287,7 @@ public class SceneRemoteTest {
 
     private static String registerUnitGroup() throws CouldNotPerformException {
         try {
-            UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setType(UnitType.UNIT_GROUP).setLabel(COLORABLE_LIGHT_GROUP);
+            UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setUnitType(UnitType.UNIT_GROUP).setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, COLORABLE_LIGHT_GROUP));
             UnitGroupConfig.Builder unitGroup = unitConfig.getUnitGroupConfigBuilder();
 
             unitGroup.setUnitType(UnitType.COLORABLE_LIGHT);

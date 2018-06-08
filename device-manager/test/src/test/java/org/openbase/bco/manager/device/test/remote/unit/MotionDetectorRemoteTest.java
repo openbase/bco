@@ -28,6 +28,7 @@ import static org.junit.Assert.assertTrue;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.MotionDetectorController;
 import org.openbase.bco.dal.remote.unit.MotionDetectorRemote;
 import org.openbase.bco.dal.remote.unit.Units;
@@ -39,6 +40,7 @@ import org.openbase.jul.schedule.Stopwatch;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.MotionStateType.MotionState;
+import rst.domotic.state.MotionStateType.MotionState.State;
 
 /**
  *
@@ -100,7 +102,7 @@ public class MotionDetectorRemoteTest extends AbstractBCODeviceManagerTest {
         stopwatch.stop();
         motionDetectorRemote.requestData().get();
         Assert.assertEquals("The getter for the motion state returns the wrong value!", motion.getValue(), motionDetectorRemote.getMotionState().getValue());
-        timestamp = TimestampJavaTimeTransform.transform(motionDetectorRemote.getMotionState().getLastMotion());
+        timestamp = TimestampJavaTimeTransform.transform(Services.getLatestValueOccurrence(State.MOTION, motionDetectorRemote.getMotionState()));
         String comparision = "Timestamp: " + timestamp + ", interval: [" + stopwatch.getStartTime() + ", " + stopwatch.getEndTime() + "]";
         assertTrue("The last motion timestamp has not been updated! " + comparision, (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
 
@@ -113,7 +115,7 @@ public class MotionDetectorRemoteTest extends AbstractBCODeviceManagerTest {
         stopwatch.stop();
         motionDetectorRemote.requestData().get();
         Assert.assertEquals("The getter for the motion state returns the wrong value!", motion.getValue(), motionDetectorRemote.getMotionState().getValue());
-        timestamp = TimestampJavaTimeTransform.transform(motionDetectorRemote.getMotionState().getLastMotion());
+        timestamp = TimestampJavaTimeTransform.transform(Services.getLatestValueOccurrence(State.MOTION, motionDetectorRemote.getMotionState()));
         comparision = "Timestamp: " + timestamp + ", interval: [" + stopwatch.getStartTime() + ", " + stopwatch.getEndTime() + "]";
         assertFalse("The last motion timestamp has been updated even though it sould not! " + comparision, (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
     }

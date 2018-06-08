@@ -21,8 +21,8 @@ package org.openbase.bco.manager.app.binding.openhab;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.registry.app.lib.jp.JPAppRegistryScope;
 import org.openbase.bco.registry.lib.BCO;
+import org.openbase.bco.registry.unit.lib.jp.JPUnitRegistryScope;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -40,7 +40,7 @@ public class AppBindingOpenHABLauncher extends AbstractLauncher<AppBindingOpenHA
 
     @Override
     protected void loadProperties() {
-        JPService.registerProperty(JPAppRegistryScope.class);
+        JPService.registerProperty(JPUnitRegistryScope.class);
     }
 
     /**

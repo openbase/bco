@@ -26,6 +26,7 @@ import static org.openbase.bco.manager.device.binding.openhab.util.configgen.ite
 import static org.openbase.bco.manager.device.binding.openhab.util.configgen.items.LocationItemEntry.LOCATION_RSB_BINDING_CONFIG;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -38,17 +39,19 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
  */
 public class ConnectionItemEntry extends AbstractItemEntry {
 
-    public ConnectionItemEntry(final UnitConfig connectionUnitConfig, final ServiceDescription serviceDescription) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        super(connectionUnitConfig, null);
+    public ConnectionItemEntry(final UnitConfig unitConfig, final ServiceDescription serviceDescription) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+        super(unitConfig, null);
         try {
-            this.itemId = generateItemId(connectionUnitConfig, serviceDescription.getServiceType());
+            this.itemId = generateItemId(unitConfig, serviceDescription.getServiceType());
             this.icon = "";
             this.commandType = getDefaultCommand(serviceDescription.getServiceType());
-            this.label = connectionUnitConfig.getLabel();
-            this.itemHardwareConfig = "rsb=\"" + LOCATION_RSB_BINDING_CONFIG + ":" + connectionUnitConfig.getId() + "\"";
+            this.label = LabelProcessor.getFirstLabel(this.unitConfig.getLabel());
+            // as a backup use the first label as seen below
+            //TODO: this should parse a value from the root location meta config that defines a default label
+            this.itemHardwareConfig = "rsb=\"" + LOCATION_RSB_BINDING_CONFIG + ":" + unitConfig.getId() + "\"";
             
             groups.add(ItemIdGenerator.generateUnitGroupID(UnitType.CONNECTION));
-            groups.add(ItemIdGenerator.generateUnitGroupID(connectionUnitConfig.getPlacementConfig().getLocationId()));
+            groups.add(ItemIdGenerator.generateUnitGroupID(unitConfig.getPlacementConfig().getLocationId()));
             calculateGaps();
         } catch (CouldNotPerformException ex) {
             throw new org.openbase.jul.exception.InstantiationException(this, ex);

@@ -42,6 +42,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.extension.xml.exception.XMLParsingException;
 import org.openbase.jul.extension.xml.processing.XMLProcessor;
@@ -154,7 +155,9 @@ public class OpenHABminConfigGenerator {
 
             // add values
             nameElement.appendChild(deviceDeviceConfig.getLabel() + " " + Registries.getUnitRegistry().getUnitConfigById(deviceDeviceConfig.getPlacementConfig().getLocationId()).getLabel());
-            locationElement.appendChild(Registries.getUnitRegistry().getUnitConfigById(deviceDeviceConfig.getPlacementConfig().getLocationId()).getLabel());
+            locationElement.appendChild(LabelProcessor.getFirstLabel(Registries.getUnitRegistry().getUnitConfigById(deviceDeviceConfig.getPlacementConfig().getLocationId()).getLabel()));
+            // as a backup use the first label as seen below
+            //TODO: this should parse a value from the root location meta config that defines a default label
 
             // store back
             nodeElement.appendChild(nameElement);

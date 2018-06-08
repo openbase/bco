@@ -69,10 +69,10 @@ public class RollerShutterRemoteTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 10000)
     public void testSetShutterState() throws Exception {
         System.out.println("setShutterState");
-        BlindState state = BlindState.newBuilder().setMovementState(BlindState.MovementState.DOWN).build();
+        BlindState state = BlindState.newBuilder().setValue(BlindState.State.DOWN).build();
         rollerShutterRemote.setBlindState(state).get();
         rollerShutterRemote.requestData().get();
-        assertEquals("Shutter movement state has not been set in time!", state.getMovementState(), rollerShutterRemote.getData().getBlindState().getMovementState());
+        assertEquals("Shutter movement state has not been set in time!", state.getValue(), rollerShutterRemote.getData().getBlindState().getValue());
     }
 
     /**
@@ -83,10 +83,10 @@ public class RollerShutterRemoteTest extends AbstractBCODeviceManagerTest {
     @Test(timeout = 10000)
     public void testGetShutterState() throws Exception {
         System.out.println("getShutterState");
-        BlindState state = BlindState.newBuilder().setMovementState(BlindState.MovementState.UP).build();
+        BlindState state = BlindState.newBuilder().setValue(BlindState.State.UP).build();
         ((RollerShutterController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(rollerShutterRemote.getId())).applyDataUpdate(state, ServiceType.BLIND_STATE_SERVICE);
         rollerShutterRemote.requestData().get();
-        assertEquals("Shutter has not been set in time!", rollerShutterRemote.getBlindState().getMovementState(), state.getMovementState());
+        assertEquals("Shutter has not been set in time!", rollerShutterRemote.getBlindState().getValue(), state.getValue());
     }
 
     /**

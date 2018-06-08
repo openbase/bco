@@ -29,6 +29,7 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.TamperDetectorController;
 import org.openbase.bco.dal.remote.unit.TamperDetectorRemote;
 import org.openbase.bco.dal.remote.unit.Units;
@@ -39,6 +40,7 @@ import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.Stopwatch;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.TamperStateType.TamperState;
+import rst.domotic.state.TamperStateType.TamperState.State;
 
 /**
  *
@@ -104,7 +106,7 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
         stopwatch.stop();
         tamperDetectorRemote.requestData().get();
         assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
-        timestamp = TimestampJavaTimeTransform.transform(tamperDetectorRemote.getTamperState().getLastDetection());
+        timestamp = TimestampJavaTimeTransform.transform(Services.getLatestValueOccurrence(State.TAMPER, tamperDetectorRemote.getTamperState()));
         String comparision = "Timestamp: " + timestamp + ", interval: [" + stopwatch.getStartTime() + ", " + stopwatch.getEndTime() + "]";
         assertTrue("The last detection timestamp has not been updated! " + comparision, (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
 
@@ -117,7 +119,7 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
         stopwatch.stop();
         tamperDetectorRemote.requestData().get();
         assertEquals("The getter for the tamper switch state returns the wrong value!", tamperState.getValue(), tamperDetectorRemote.getTamperState().getValue());
-        timestamp = TimestampJavaTimeTransform.transform(tamperDetectorRemote.getTamperState().getLastDetection());
+        timestamp = TimestampJavaTimeTransform.transform(Services.getLatestValueOccurrence(State.TAMPER, tamperDetectorRemote.getTamperState()));
         comparision = "Timestamp: " + timestamp + ", interval: [" + stopwatch.getStartTime() + ", " + stopwatch.getEndTime() + "]";
         assertFalse("The last detection timestamp has been updated even though it sould not! " + comparision, (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
     }

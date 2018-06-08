@@ -22,6 +22,8 @@ package org.openbase.bco.manager.util.launch;
  * #L%
  */
 import org.openbase.bco.authentication.core.AuthenticatorLauncher;
+import org.openbase.bco.registry.activity.core.ActivityRegistryLauncher;
+import org.openbase.bco.registry.clazz.core.ClassRegistryLauncher;
 import org.openbase.bco.registry.lib.BCO;
 import org.openbase.bco.manager.agent.core.AgentManagerLauncher;
 import org.openbase.bco.manager.app.core.AppManagerLauncher;
@@ -29,15 +31,9 @@ import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.manager.location.core.LocationManagerLauncher;
 import org.openbase.bco.manager.scene.core.SceneManagerLauncher;
 import org.openbase.bco.manager.user.core.UserManagerLauncher;
-import org.openbase.bco.registry.agent.core.AgentRegistryLauncher;
-import org.openbase.bco.registry.app.core.AppRegistryLauncher;
-import org.openbase.bco.registry.device.core.DeviceRegistryLauncher;
+import org.openbase.bco.registry.template.core.TemplateRegistryLauncher;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
-import org.openbase.bco.registry.location.core.LocationRegistryLauncher;
-import org.openbase.bco.registry.scene.core.SceneRegistryLauncher;
 import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;
-import org.openbase.bco.registry.user.activity.core.ActivityRegistryLauncher;
-import org.openbase.bco.registry.user.core.UserRegistryLauncher;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -57,14 +53,11 @@ public class BCOLauncher {
                 /**
                  * Registry *
                  */
-                DeviceRegistryLauncher.class,
-                AppRegistryLauncher.class,
-                AgentRegistryLauncher.class,
-                UnitRegistryLauncher.class,
-                LocationRegistryLauncher.class,
-                UserRegistryLauncher.class,
-                SceneRegistryLauncher.class,
+                TemplateRegistryLauncher.class,
+                TemplateRegistryLauncher.class,
+                ClassRegistryLauncher.class,
                 ActivityRegistryLauncher.class,
+                UnitRegistryLauncher.class,
                 /**
                  * Manager *
                  */

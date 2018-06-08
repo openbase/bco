@@ -22,8 +22,8 @@ package org.openbase.bco.manager.agent.binding.openhab;
  * #L%
  */
 import org.openbase.bco.dal.lib.jp.JPHardwareSimulationMode;
-import org.openbase.bco.registry.agent.lib.jp.JPAgentRegistryScope;
 import org.openbase.bco.registry.lib.BCO;
+import org.openbase.bco.registry.unit.lib.jp.JPUnitRegistryScope;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -42,7 +42,7 @@ public class AgentBindingOpenHABLauncher extends AbstractLauncher<AgentBindingOp
     @Override
     protected void loadProperties() {
         JPService.registerProperty(JPHardwareSimulationMode.class);
-        JPService.registerProperty(JPAgentRegistryScope.class);
+        JPService.registerProperty(JPUnitRegistryScope.class);
     }
 
     /**

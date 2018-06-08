@@ -25,6 +25,7 @@ import java.awt.Color;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Locale;
 import java.util.concurrent.ExecutionException;
 import javax.swing.DefaultComboBoxModel;
 import javax.swing.JOptionPane;
@@ -34,23 +35,25 @@ import org.openbase.bco.dal.remote.unit.scene.SceneRemote;
 import org.openbase.bco.dal.visual.util.SelectorPanel.LocationUnitConfigHolder;
 import org.openbase.bco.dal.visual.util.StatusPanel;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.scene.remote.SceneRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.slf4j.LoggerFactory;
-import rst.domotic.registry.SceneRegistryDataType.SceneRegistryData;
+import rst.configuration.LabelType.Label;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.EnablingStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.scene.SceneConfigType.SceneConfig;
 
 public class SceneCreationPanel extends javax.swing.JPanel {
@@ -58,7 +61,6 @@ public class SceneCreationPanel extends javax.swing.JPanel {
     protected static final org.slf4j.Logger logger = LoggerFactory.getLogger(SceneCreationPanel.class);
 
     private final ObservableImpl<SceneConfig> observable;
-    private SceneRegistryRemote sceneRegistryRemote;
     private UnitConfig lastSelected = null;
     private LocationUnitConfigHolder location = null;
 
@@ -72,16 +74,15 @@ public class SceneCreationPanel extends javax.swing.JPanel {
     }
 
     public void init() throws CouldNotPerformException, InterruptedException {
-        sceneRegistryRemote = Registries.getSceneRegistry();
-        StatusPanel.getInstance().setStatus("Wait for scene registry data...", StatusPanel.StatusType.INFO, sceneRegistryRemote.getDataFuture());
-        sceneRegistryRemote.waitForData();
+        StatusPanel.getInstance().setStatus("Wait for scene registry data...", StatusPanel.StatusType.INFO, Registries.getUnitRegistry().getDataFuture());
+        Registries.getUnitRegistry(true);
         StatusPanel.getInstance().setStatus("Scene registry loaded.", StatusPanel.StatusType.INFO, 3);
         initDynamicComponents();
         updateDynamicComponents();
     }
 
     private void initDynamicComponents() throws CouldNotPerformException, InitializationException, InterruptedException {
-        sceneRegistryRemote.addDataObserver((final Observable<SceneRegistryData> source, SceneRegistryData data) -> {
+        Registries.getUnitRegistry().addDataObserver((final Observable<UnitRegistryData> source, UnitRegistryData data) -> {
             updateDynamicComponents();
         });
         locationSelectorPanel.addObserver((final Observable<LocationUnitConfigHolder> source, LocationUnitConfigHolder data) -> {
@@ -94,12 +95,12 @@ public class SceneCreationPanel extends javax.swing.JPanel {
 
     private void updateDynamicComponents() throws CouldNotPerformException {
 
-        if (!sceneRegistryRemote.isDataAvailable()) {
+        if (!Registries.getUnitRegistry().isDataAvailable()) {
             return;
         }
 
         ArrayList<SceneUnitConfigHolder> sceneConfigHolderList = new ArrayList<>();
-        for (final UnitConfig sceneUnitConfig : sceneRegistryRemote.getSceneConfigs()) {
+        for (final UnitConfig sceneUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.SCENE)) {
             sceneConfigHolderList.add(new SceneUnitConfigHolder(sceneUnitConfig));
         }
 
@@ -129,11 +130,11 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         sceneUnitConfig.getPlacementConfigBuilder().setLocationId(location.getConfig().getId());
         logger.info("save location:" + location.getConfig().getLabel());
         try {
-            if (!sceneRegistryRemote.containsSceneConfig(sceneUnitConfig.build())) {
+            if (!Registries.getUnitRegistry().containsUnitConfig(sceneUnitConfig.build())) {
                 logger.debug("Registering scene from updateSceneConfig");
-                lastSelected = sceneRegistryRemote.registerSceneConfig(sceneUnitConfig.build()).get();
+                lastSelected = Registries.getUnitRegistry().registerUnitConfig(sceneUnitConfig.build()).get();
             } else {
-                lastSelected = sceneRegistryRemote.updateSceneConfig(sceneUnitConfig.build()).get();
+                lastSelected = Registries.getUnitRegistry().updateUnitConfig(sceneUnitConfig.build()).get();
             }
         } catch (ExecutionException | InterruptedException ex) {
             throw new CouldNotPerformException("Could not register/update scene", ex);
@@ -249,12 +250,12 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         }
         try {
             logger.info("Registering scene from new button");
-            UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setLabel(label);
-            unitConfig.setType(UnitTemplateType.UnitTemplate.UnitType.SCENE);
+            UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, label));
+            unitConfig.setUnitType(UnitTemplateType.UnitTemplate.UnitType.SCENE);
             unitConfig.getPlacementConfigBuilder().setLocationId(location.getConfig().getId());
             unitConfig.setEnablingState(EnablingStateType.EnablingState.newBuilder().setValue(EnablingStateType.EnablingState.State.ENABLED));
             unitConfig.setSceneConfig(SceneConfig.getDefaultInstance());
-            lastSelected = sceneRegistryRemote.registerSceneConfig(unitConfig.build()).get();
+            lastSelected = Registries.getUnitRegistry().registerUnitConfig(unitConfig.build()).get();
             updateDynamicComponents();
             observable.notifyObservers(lastSelected.getSceneConfig());
         } catch (CouldNotPerformException | InterruptedException | ExecutionException ex) {
@@ -267,7 +268,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
         if (sceneUnitConfig.hasId() && !sceneUnitConfig.getId().isEmpty()) {
             try {
                 lastSelected = null;
-                sceneRegistryRemote.removeSceneConfig(sceneUnitConfig);
+                Registries.getUnitRegistry().removeUnitConfig(sceneUnitConfig);
             } catch (CouldNotPerformException ex) {
                 ExceptionPrinter.printHistory(ex, logger, LogLevel.WARN);
             }
@@ -318,7 +319,11 @@ public class SceneCreationPanel extends javax.swing.JPanel {
             if (isNotSpecified()) {
                 return "New";
             }
-            return config.getLabel();
+            try {
+                return LabelProcessor.getFirstLabel(config.getLabel());
+            } catch (NotAvailableException e) {
+                return "?";
+            }
         }
 
         public boolean isNotSpecified() {

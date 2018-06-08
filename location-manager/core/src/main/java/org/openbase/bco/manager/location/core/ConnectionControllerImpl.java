@@ -235,11 +235,6 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
         return this.supportedServiceTypes.contains(serviceType);
     }
 
-    @Override
-    public String getLabel() throws NotAvailableException {
-        return getConfig().getLabel();
-    }
-
     private void updateCurrentState() {
         try {
             switch (getConnectionType()) {

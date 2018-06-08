@@ -48,7 +48,7 @@ public class BlindStateServiceImpl<ST extends BlindStateOperationService & Unit<
 
     @Override
     public Future<ActionFuture> setBlindState(final BlindState state) throws CouldNotPerformException {
-        switch (state.getMovementState()) {
+        switch (state.getValue()) {
             case UP:
                 return executeCommand(OpenHABCommandFactory.newUpDownCommand(state));
             case DOWN:

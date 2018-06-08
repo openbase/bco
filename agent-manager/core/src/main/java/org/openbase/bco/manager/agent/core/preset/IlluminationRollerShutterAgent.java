@@ -128,7 +128,7 @@ public class IlluminationRollerShutterAgent extends AbstractResourceAllocationAg
                     ResourceAllocationType.ResourceAllocation.Policy.FIRST,
                     ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
                     locationRemote,
-                    BlindStateType.BlindState.newBuilder().setMovementState(BlindStateType.BlindState.MovementState.DOWN).build(),
+                    BlindStateType.BlindState.newBuilder().setValue(BlindStateType.BlindState.State.DOWN).build(),
                     UnitTemplateType.UnitTemplate.UnitType.UNKNOWN,
                     ServiceTemplateType.ServiceTemplate.ServiceType.BLIND_STATE_SERVICE,
                     MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);
@@ -146,7 +146,7 @@ public class IlluminationRollerShutterAgent extends AbstractResourceAllocationAg
                     ResourceAllocationType.ResourceAllocation.Policy.FIRST,
                     ResourceAllocationType.ResourceAllocation.Priority.NORMAL,
                     locationRemote,
-                    BlindStateType.BlindState.newBuilder().setMovementState(BlindStateType.BlindState.MovementState.UP).build(),
+                    BlindStateType.BlindState.newBuilder().setValue(BlindStateType.BlindState.State.UP).build(),
                     UnitTemplateType.UnitTemplate.UnitType.UNKNOWN,
                     ServiceTemplateType.ServiceTemplate.ServiceType.BLIND_STATE_SERVICE,
                     MultiResourceAllocationStrategyType.MultiResourceAllocationStrategy.Strategy.AT_LEAST_ONE);

@@ -181,7 +181,7 @@ public class UnitGroupControllerImpl extends AbstractBaseUnitController<UnitGrou
     }
 
     @Override
-    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
         return serviceRemoteManager.applyAction(actionDescription);
     }
 

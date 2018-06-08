@@ -35,6 +35,8 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.ActivityStateType.ActivityState;
+import rst.domotic.state.PresenceStateType.PresenceState;
+import rst.domotic.state.PresenceStateType.PresenceState.State;
 import rst.domotic.state.UserTransitStateType.UserTransitState;
 
 /**
@@ -81,7 +83,7 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
     public void testGetUserName() throws Exception {
         System.out.println("testGetUserName");
         userRemote.requestData().get();
-        assertEquals("The user created in the manager has a different user name than the one registered!", MockRegistry.USER_NAME, userRemote.getData().getUserName());
+        assertEquals("The user created in the manager has a different user name than the one registered!", MockRegistry.USER_NAME, userRemote.getUserName());
     }
 
     @Test(timeout = 10000)
@@ -91,14 +93,14 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
         //TODO: this has to be changed to use real ids
         String activityId = "cooking";
         ActivityState activity = ActivityState.newBuilder().setActivityId(activityId).build();
-        UserTransitState presenceState = UserTransitState.newBuilder().setValue(UserTransitState.State.AT_HOME).build();
+        PresenceState presenceState = PresenceState.newBuilder().setValue(State.PRESENT).build();
 
         userRemote.setActivityState(activity).get();
-        userRemote.setUserTransitState(presenceState).get();
+        userRemote.setPresenceState(presenceState).get();
 
         userRemote.requestData().get();
 
         assertEquals("ActivityState has not been set!", activityId, userRemote.getActivityState().getActivityId());
-        assertEquals("UserTransitState has not been set!", presenceState.getValue(), userRemote.getUserTransitState().getValue());
+        assertEquals("UserTransitState has not been set!", presenceState.getValue(), userRemote.getPresenceState().getValue());
     }
 }

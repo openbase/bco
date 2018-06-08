@@ -24,9 +24,9 @@ package org.openbase.bco.manager.device.core;
 
 import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
 import org.openbase.bco.manager.device.lib.DeviceManager;
-import org.openbase.bco.registry.device.lib.jp.JPDeviceRegistryScope;
+import org.openbase.bco.registry.clazz.lib.jp.JPClassRegistryScope;
 import org.openbase.bco.registry.lib.BCO;
-import org.openbase.bco.registry.location.lib.jp.JPLocationRegistryScope;
+import org.openbase.bco.registry.unit.lib.jp.JPUnitRegistryScope;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.preset.JPPrefix;
 import org.openbase.jul.pattern.launch.AbstractLauncher;
@@ -44,8 +44,8 @@ public class FallbackDeviceManagerLauncher extends AbstractLauncher<FallbackDevi
     @Override
     public void loadProperties() {
         JPService.registerProperty(JPPrefix.class);
-        JPService.registerProperty(JPLocationRegistryScope.class);
-        JPService.registerProperty(JPDeviceRegistryScope.class);
+        JPService.registerProperty(JPUnitRegistryScope.class);
+        JPService.registerProperty(JPClassRegistryScope.class);
         JPService.registerProperty(JPResourceAllocation.class);
     }
 

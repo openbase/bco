@@ -31,9 +31,11 @@ import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.action.ActionFutureType.ActionFuture;
+import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.state.UserTransitStateType.UserTransitState;
 import rst.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData;
 import rst.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData.Builder;
+import rst.domotic.unit.user.UserDataType.UserData;
 
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -49,20 +51,20 @@ public class AuthorizationGroupControllerImpl extends AbstractBaseUnitController
     }
 
     @Override
-    public UserTransitState getUserTransitState() throws NotAvailableException {
+    public PresenceState getPresenceState() throws NotAvailableException {
         try {
-            return getData().getUserTransitState();
+            return getData().getPresenceState();
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("user presence state", ex);
+            throw new NotAvailableException("presence", ex);
         }
     }
 
     @Override
-    public Future<ActionFuture> setUserTransitState(UserTransitState userTransitState) throws CouldNotPerformException {
+    public Future<ActionFuture> setPresenceState(PresenceState presenceState) throws CouldNotPerformException {
         try (ClosableDataBuilder<Builder> dataBuilder = getDataBuilder(this)) {
-            dataBuilder.getInternalBuilder().setUserTransitState(userTransitState);
+            dataBuilder.getInternalBuilder().setPresenceState(presenceState);
         } catch (CouldNotPerformException | NullPointerException ex) {
-            throw new CouldNotPerformException("Could not set user presence state to [" + userTransitState + "] for " + this + "!", ex);
+            throw new CouldNotPerformException("Could not set presence to [" + presenceState + "] for " + this + "!", ex);
         }
         return CompletableFuture.completedFuture(null);
     }

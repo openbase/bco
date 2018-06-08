@@ -46,7 +46,7 @@ import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.registry.LocationRegistryDataType.LocationRegistryData;
+import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.registry.UnitRegistryDataType;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -116,7 +116,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
             });
         });
 
-        Registries.getUnitRegistry().addDataObserver((Observable<LocationRegistryData> source, LocationRegistryData data) -> {
+        Registries.getUnitRegistry().addDataObserver((Observable<UnitRegistryData> source, UnitRegistryData data) -> {
             SwingUtilities.invokeLater(() -> {
                 updateDynamicComponents();
             });
@@ -302,9 +302,6 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
             MultiException.checkAndThrow("Could not acquire all informations!", exceptionStack);
         } catch (CouldNotPerformException | NullPointerException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update all dynamic components!", ex), logger);
-        } catch (InterruptedException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Component update interrupted.", ex), logger, LogLevel.WARN);
-            Thread.currentThread().interrupt();
         } finally {
             updateComponentLock.writeLock().unlock();
         }
@@ -510,7 +507,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
 
     private void addButtonActionPerformed(java.awt.event.ActionEvent evt) {//GEN-FIRST:event_addButtonActionPerformed
         final UnitConfigHolder unitConfigHolder = (UnitConfigHolder) unitConfigComboBox.getSelectedItem();
-        final UnitConfig selectedUnitConfig = unitConfigHolder.getConfig();
+        final UnitConfig selectedUnitConfig = unitConfigHolder.getUnitConfig();
         final ServiceTypeHolder serviceTypeHolder = (ServiceTypeHolder) selectedServiceTypeComboBox.getSelectedItem();
         final ServiceType serviceType = serviceTypeHolder.getServiceType();
         try {

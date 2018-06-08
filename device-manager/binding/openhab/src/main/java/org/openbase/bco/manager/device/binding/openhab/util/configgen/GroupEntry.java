@@ -27,6 +27,7 @@ import static org.openbase.bco.manager.device.binding.openhab.util.configgen.ite
 import static org.openbase.bco.manager.device.binding.openhab.util.configgen.OpenHABItemConfigGenerator.TAB_SIZE;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.processing.VariableProvider;
@@ -59,7 +60,7 @@ public class GroupEntry {
     private static int maxParentLocationsSize = 0;
 
     public GroupEntry(final UnitConfig locationUnitConfig) throws CouldNotPerformException, InterruptedException {
-        this(ItemIdGenerator.generateUnitGroupID(locationUnitConfig), locationUnitConfig.getLabel(), detectIcon(new MetaConfigVariableProvider("LocationConfig", locationUnitConfig.getMetaConfig())), new ArrayList<>());
+        this(ItemIdGenerator.generateUnitGroupID(locationUnitConfig), LabelProcessor.getFirstLabel(locationUnitConfig.getLabel()), detectIcon(new MetaConfigVariableProvider("LocationConfig", locationUnitConfig.getMetaConfig())), new ArrayList<>());
         if (!locationUnitConfig.getLocationConfig().getRoot()) {
             this.parentLocations.add(ItemIdGenerator.generateParentGroupID(locationUnitConfig));
         }

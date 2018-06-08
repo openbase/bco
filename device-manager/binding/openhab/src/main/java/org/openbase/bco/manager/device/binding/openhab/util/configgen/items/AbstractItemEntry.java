@@ -39,7 +39,6 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceTyp
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.CONTACT_STATE_SERVICE;
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.HANDLE_STATE_SERVICE;
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.ILLUMINANCE_STATE_SERVICE;
-import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.INTENSITY_STATE_SERVICE;
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.MOTION_STATE_SERVICE;
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_CONSUMPTION_STATE_SERVICE;
 import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType.POWER_STATE_SERVICE;
@@ -231,8 +230,6 @@ public abstract class AbstractItemEntry implements ItemEntry, Comparable<Abstrac
             case POWER_STATE_SERVICE:
             case BUTTON_STATE_SERVICE:
                 return "Switch";
-            case INTENSITY_STATE_SERVICE:
-                return "Dimmer";
             case CONTACT_STATE_SERVICE:
                 return "Contact";
             case HANDLE_STATE_SERVICE:

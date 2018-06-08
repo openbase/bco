@@ -29,6 +29,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ProtobufVariableProvider;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import rst.configuration.MetaConfigType.MetaConfig;
@@ -89,7 +90,9 @@ public class ServiceItemEntry extends AbstractItemEntry {
             try {
                 this.label = configPool.getValue(SERVICE_TEMPLATE_BINDING_LABEL_DESCRIPTOR);
             } catch (NotAvailableException ex) {
-                this.label = unitConfig.getLabel();
+                // as a backup use the first label as seen below
+                //TODO: this should parse a value from the root location meta config that defines a default label
+                this.label = LabelProcessor.getFirstLabel(unitConfig.getLabel());
             }
 
             try {
@@ -105,7 +108,7 @@ public class ServiceItemEntry extends AbstractItemEntry {
             }
 
             this.groups.add(ItemIdGenerator.generateUnitGroupID(unitConfig.getUnitType()));
-            for (final UnitType unitType : Registries.getUnitRegistry(true).getSuperUnitTypes(unitConfig.getUnitType())) {
+            for (final UnitType unitType : Registries.getTemplateRegistry(true).getSuperUnitTypes(unitConfig.getUnitType())) {
                 this.groups.add(ItemIdGenerator.generateUnitGroupID(unitType));
             }
 
@@ -157,12 +160,12 @@ public class ServiceItemEntry extends AbstractItemEntry {
     }
 
     /**
-     * Lookups the service template of the given ServiceType out of the unit
-     * template.
+     * Lookups the service template of the given service config out of the unit
+     * config.
      *
-     * @param unitTemplate to lookup the service template.
-     * @param serviceType the service type to resolve the template.
-     * @return the related service template for the given service type.
+     * @param unitConfig to lookup the service template.
+     * @param serviceConfig to detect the service type to resolve the template.
+     * @return the related service template for the given service config.
      * @throws NotAvailableException
      */
     private ServiceTemplateConfig lookupServiceTemplate(final DeviceClass deviceClass, final UnitConfig unitConfig, final ServiceConfig serviceConfig) throws NotAvailableException {

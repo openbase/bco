@@ -23,16 +23,20 @@ package org.openbase.bco.manager.location.lib.util;
  */
 
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
+import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.bco.registry.location.remote.LocationRegistryRemote;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.Executor;
 import java.util.logging.Level;
 import java.util.logging.Logger;
+
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.vision.HSBColorType.HSBColor;
@@ -46,9 +50,8 @@ public class ColorLoopControl {
 
     public final static Random random = new Random();
 
-    private final LocationRegistryRemote locationRegistryRemote;
     private final ArrayList<HSBColor> colorList;
-    private final List<ColorableLightRemote> ambientLightRemoteList;
+    private final List<ColorableLightRemote> colorableLightRemoteList;
     private final long delay;
 
     
@@ -60,16 +63,10 @@ public class ColorLoopControl {
         try {
             this.delay = delay;
             this.colorList = new ArrayList<>(colors);
-            this.locationRegistryRemote = new LocationRegistryRemote();
-            this.locationRegistryRemote.init();
-            this.locationRegistryRemote.activate();
-            List<UnitConfig> unitConfigs = this.locationRegistryRemote.getUnitConfigsByLocation(UnitType.COLORABLE_LIGHT, locationId);
-            this.ambientLightRemoteList = new ArrayList<>();
-            ColorableLightRemote ambientLightRemote;
+            List<UnitConfig> unitConfigs = Registries.getUnitRegistry(true).getUnitConfigsByLocation(UnitType.COLORABLE_LIGHT, locationId);
+            this.colorableLightRemoteList = new ArrayList<>();
             for (UnitConfig unitConfig : unitConfigs) {
-                ambientLightRemote = new ColorableLightRemote();
-                ambientLightRemote.init(unitConfig);
-                ambientLightRemoteList.add(ambientLightRemote);
+                colorableLightRemoteList.add(Units.getUnit(unitConfig, false, Units.COLORABLE_LIGHT));
             }
         } catch (CouldNotPerformException ex) {
             throw new InstantiationException(this, ex);
@@ -77,34 +74,27 @@ public class ColorLoopControl {
     }
 
     public void activate() throws InterruptedException, CouldNotPerformException {
-        for (ColorableLightRemote remote : ambientLightRemoteList) {
-            remote.activate();
-        }
-        new Thread() {
-
-            @Override
-            public void run() {
-                try {
-                    while (!isInterrupted()) {
-                        Collections.shuffle(ambientLightRemoteList);
-                        for (ColorableLightRemote remote : ambientLightRemoteList) {
-                            try {
-                                remote.setColor(getRandomColor());
-                                if(delay > 0) {
-                                    Thread.sleep(delay);
-                                } else {
-                                    Thread.yield();
-                                }
-                            } catch (CouldNotPerformException ex) {
-                                Logger.getLogger(ColorLoopControl.class.getName()).log(Level.SEVERE, null, ex);
+        GlobalCachedExecutorService.execute(() -> {
+            try {
+                while (!Thread.interrupted()) {
+                    Collections.shuffle(colorableLightRemoteList);
+                    for (ColorableLightRemote remote : colorableLightRemoteList) {
+                        try {
+                            remote.setColor(getRandomColor());
+                            if(delay > 0) {
+                                Thread.sleep(delay);
+                            } else {
+                                Thread.yield();
                             }
+                        } catch (CouldNotPerformException ex) {
+                            Logger.getLogger(ColorLoopControl.class.getName()).log(Level.SEVERE, null, ex);
                         }
                     }
-                } catch (InterruptedException ex) {
-                    Logger.getLogger(ColorLoopControl.class.getName()).log(Level.SEVERE, null, ex);
                 }
+            } catch (InterruptedException ex) {
+                Logger.getLogger(ColorLoopControl.class.getName()).log(Level.SEVERE, null, ex);
             }
-        }.start();
+        });
     }
 
     public HSBColor getRandomColor() {

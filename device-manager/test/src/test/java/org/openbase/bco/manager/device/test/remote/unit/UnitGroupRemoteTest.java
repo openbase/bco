@@ -21,10 +21,8 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
+import java.util.*;
+
 import org.junit.After;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.fail;
@@ -45,7 +43,9 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.slf4j.LoggerFactory;
+import rst.configuration.LabelType.Label;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
@@ -91,7 +91,7 @@ public class UnitGroupRemoteTest extends AbstractBCODeviceManagerTest {
             }
         }
         assert unitGroupConfig.getMemberIdList().size() > 0;
-        UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setUnitGroupConfig(unitGroupConfig).setLabel("testGroup").setType(UnitTemplateType.UnitTemplate.UnitType.UNIT_GROUP);
+        UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setUnitGroupConfig(unitGroupConfig).setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, "testGroup")).setUnitType(UnitTemplateType.UnitTemplate.UnitType.UNIT_GROUP);
         unitConfig.setPlacementConfig(MockRegistry.getDefaultPlacement(Registries.getUnitRegistry().getRootLocationConfig()));
         return Registries.getUnitRegistry().registerUnitConfig(unitConfig.build()).get();
     }

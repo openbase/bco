@@ -23,7 +23,6 @@ package org.openbase.bco.manager.device.core;
  */
 
 import org.openbase.bco.dal.lib.layer.service.mock.ServiceFactoryMock;
-import org.openbase.bco.registry.device.remote.DeviceRegistryRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -45,22 +44,20 @@ public class FallbackDeviceManagerController implements Launchable<Void>, VoidIn
     private static final Logger LOGGER = LoggerFactory.getLogger(FallbackDeviceManagerController.class);
     
     private DeviceManagerController deviceManagerController;
-    private DeviceRegistryRemote deviceRegistryRemote;
-    
+
     public FallbackDeviceManagerController() throws InstantiationException, JPNotAvailableException {
     }
 
     @Override
     public void init() throws InitializationException, InterruptedException {
         try {
-            deviceRegistryRemote = Registries.getUnitRegistry();
-            deviceRegistryRemote.waitForData();
+            Registries.getClassRegistry(true);
             deviceManagerController = new DeviceManagerController(ServiceFactoryMock.getInstance()) {
 
                 @Override
                 public boolean isSupported(UnitConfig config) throws CouldNotPerformException {
                     try {
-                        DeviceClass deviceClass = deviceRegistryRemote.getDeviceClassById(config.getDeviceConfig().getDeviceClassId());
+                        DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(config.getDeviceConfig().getDeviceClassId());
                         return !deviceClass.getBindingConfig().hasBindingId() || deviceClass.getBindingConfig().getBindingId().isEmpty();
                     } catch (CouldNotPerformException ex) {
                         ExceptionPrinter.printHistory(new CouldNotPerformException("Could not check device support!", ex), LOGGER);

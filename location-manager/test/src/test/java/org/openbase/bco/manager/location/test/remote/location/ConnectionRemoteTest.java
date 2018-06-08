@@ -33,6 +33,7 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.pattern.Remote;
 import org.slf4j.LoggerFactory;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
