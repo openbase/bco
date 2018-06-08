@@ -142,7 +142,7 @@ public class VirtualRegistrySyncTest {
 //
 //            locationRegistry.waitUntilReady();
 //            Registries.getUnitRegistry().waitForData();
-//            Registries.getLocationRegistry().waitForData();
+//            Registries.getUnitRegistry().waitForData();
 //
 //            ROOT_LOCATION = locationRegistry.getRootLocationConfig();
 //            UnitTemplateConfig unitTemplateConfig = UnitTemplateConfig.newBuilder().setType(UnitType.LIGHT).build();
@@ -241,7 +241,7 @@ public class VirtualRegistrySyncTest {
 //                if ((i % 2) == 0) {
 //                    deviceUnitConfig = unitRegistry.registerUnitConfig(deviceUnitConfig).get();
 //                } else {
-//                    deviceUnitConfig = deviceRegistry.registerDeviceConfig(deviceUnitConfig).get();
+//                    deviceUnitConfig = deviceRegistry.registerUnitConfig(deviceUnitConfig).get();
 //                }
 //            } catch (ExecutionException ex) {
 //                throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
