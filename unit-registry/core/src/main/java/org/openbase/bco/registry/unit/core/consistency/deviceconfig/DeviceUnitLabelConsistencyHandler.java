@@ -23,24 +23,28 @@ package org.openbase.bco.registry.unit.core.consistency.deviceconfig;
  */
 
 import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
-import org.openbase.bco.registry.unit.core.consistency.connectionconfig.BaseUnitLabelConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.DefaultUnitLabelConsistencyHandler;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.storage.registry.EntryModification;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.Registry;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class DeviceLabelConsistencyHandler extends BaseUnitLabelConsistencyHandler {
+public class DeviceUnitLabelConsistencyHandler extends DefaultUnitLabelConsistencyHandler {
 
     private final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry;
 
-    public DeviceLabelConsistencyHandler() throws InstantiationException {
+    public DeviceUnitLabelConsistencyHandler() throws InstantiationException {
         super();
         try {
             this.deviceClassRegistry = CachedClassRegistryRemote.getRegistry().getDeviceClassRemoteRegistry();
@@ -49,6 +53,13 @@ public class DeviceLabelConsistencyHandler extends BaseUnitLabelConsistencyHandl
         }
     }
 
+    /**
+     * Generate the default label depending on the first label and the company of the device class.
+     *
+     * @param unitConfig the unit config for which a label is generated
+     * @return company deviceClassFirstLabel firstAlias
+     * @throws CouldNotPerformException if expected values are not set in the unit config or the device class is not available.
+     */
     @Override
     public String generateDefaultLabel(final UnitConfig unitConfig) throws CouldNotPerformException {
         try {

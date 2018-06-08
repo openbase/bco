@@ -34,7 +34,5 @@ public class ActivityTemplate_0_To_1_DBConverter extends LabelDBConverter {
 
     public ActivityTemplate_0_To_1_DBConverter(DBVersionControl versionControl) {
         super(versionControl);
-
-        System.out.println("CREATE ACTIVITY TEMPLATE DB CONVERTER");
     }
 }

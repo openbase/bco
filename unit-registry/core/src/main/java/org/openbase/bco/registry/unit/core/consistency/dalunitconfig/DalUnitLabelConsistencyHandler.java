@@ -25,35 +25,40 @@ package org.openbase.bco.registry.unit.core.consistency.dalunitconfig;
 import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.bco.registry.lib.util.DeviceConfigUtils;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
+import org.openbase.bco.registry.unit.core.consistency.DefaultUnitLabelConsistencyHandler;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.openbase.jul.storage.registry.*;
+import org.openbase.jul.storage.registry.EntryModification;
+import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import org.openbase.jul.storage.registry.Registry;
+import rst.configuration.LabelType.Label;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 
 import java.util.HashMap;
-import java.util.Locale;
 import java.util.Map;
 
 /**
- * TODO: this has to ba changed to sync all label not only the first one
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class DalUnitLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
+public class DalUnitLabelConsistencyHandler extends DefaultUnitLabelConsistencyHandler {
 
     private final Registry<String, IdentifiableMessage<String, DeviceClass, DeviceClass.Builder>> deviceClassRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> appRegistry;
-    private final Map<String, String> oldUnitHostLabelMap;
+    private final Map<String, Label> oldUnitHostLabelMap;
 
-    public DalUnitLabelConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry, final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> appRegistry) throws InstantiationException {
+    public DalUnitLabelConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry,
+                                          final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> appRegistry)
+            throws InstantiationException {
+        super();
+
         try {
             this.deviceClassRegistry = CachedClassRegistryRemote.getRegistry().getDeviceClassRemoteRegistry();
             this.deviceRegistry = deviceRegistry;
@@ -65,61 +70,72 @@ public class DalUnitLabelConsistencyHandler extends AbstractProtoBufRegistryCons
     }
 
     @Override
-    public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
+    public void processData(final String id,
+                            final IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry,
+                            final ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap,
+                            final ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry)
+            throws CouldNotPerformException, EntryModification {
         UnitConfig.Builder dalUnitConfig = entry.getMessage().toBuilder();
-
-        // filter virtual units
-        if (UnitConfigProcessor.isVirtualUnit(dalUnitConfig)) {
-            return;
-        }
-
-        if (!dalUnitConfig.hasUnitHostId() || dalUnitConfig.getUnitHostId().isEmpty()) {
-            throw new NotAvailableException("unitConfig.unitHostId");
-        }
-
-        // handle if host unit is a device
-        if (deviceRegistry.contains(dalUnitConfig.getUnitHostId())) {
-            UnitConfig hostUnitConfig = deviceRegistry.getMessage(dalUnitConfig.getUnitHostId());
-            DeviceClass deviceClass = deviceClassRegistry.get(hostUnitConfig.getDeviceConfig().getDeviceClassId()).getMessage();
-
-            if (!oldUnitHostLabelMap.containsKey(dalUnitConfig.getId())) {
-                oldUnitHostLabelMap.put(dalUnitConfig.getId(), LabelProcessor.getFirstLabel(hostUnitConfig.getLabel()));
+        // virtual units will be handles by super call
+        if (!UnitConfigProcessor.isVirtualUnit(dalUnitConfig)) {
+            if (!dalUnitConfig.hasUnitHostId() || dalUnitConfig.getUnitHostId().isEmpty()) {
+                throw new NotAvailableException("unitConfig.unitHostId");
             }
 
-            boolean hasDuplicatedUnitType = DeviceConfigUtils.checkDuplicatedUnitType(hostUnitConfig, deviceClass, registry);
+            if (deviceRegistry.contains(dalUnitConfig.getUnitHostId())) {
+                // handle if host unit is a device
+                UnitConfig hostUnitConfig = deviceRegistry.getMessage(dalUnitConfig.getUnitHostId());
+                DeviceClass deviceClass = deviceClassRegistry.get(hostUnitConfig.getDeviceConfig().getDeviceClassId()).getMessage();
 
-            // Setup device label if unit has no label configured.
-            if (!dalUnitConfig.hasLabel()) {
-                if (DeviceConfigUtils.setupUnitLabelByDeviceConfig(dalUnitConfig, hostUnitConfig, deviceClass, hasDuplicatedUnitType)) {
-                    throw new EntryModification(entry.setMessage(dalUnitConfig), this);
+                if (!oldUnitHostLabelMap.containsKey(dalUnitConfig.getId())) {
+                    oldUnitHostLabelMap.put(dalUnitConfig.getId(), hostUnitConfig.getLabel());
                 }
-            }
 
-            String oldLabel = oldUnitHostLabelMap.get(dalUnitConfig.getId());
-            if (!oldLabel.equals(LabelProcessor.getFirstLabel(hostUnitConfig.getLabel()))) {
-                oldUnitHostLabelMap.put(dalUnitConfig.getId(), LabelProcessor.getFirstLabel(hostUnitConfig.getLabel()));
-                if (dalUnitConfig.getLabel().equals(oldLabel)) {
+                boolean hasDuplicatedUnitType = DeviceConfigUtils.checkDuplicatedUnitType(hostUnitConfig, deviceClass, registry);
+
+                // Setup device label if unit has no label configured.
+                if (!dalUnitConfig.hasLabel() || LabelProcessor.isEmpty(dalUnitConfig.getLabel())) {
                     if (DeviceConfigUtils.setupUnitLabelByDeviceConfig(dalUnitConfig, hostUnitConfig, deviceClass, hasDuplicatedUnitType)) {
                         throw new EntryModification(entry.setMessage(dalUnitConfig), this);
                     }
                 }
-            }
-            // handle if host unit is a app
-        } else if (appRegistry.contains(dalUnitConfig.getUnitHostId())) {
-            UnitConfig hostUnitConfig = appRegistry.getMessage(dalUnitConfig.getUnitHostId());
 
-            if (!oldUnitHostLabelMap.containsKey(dalUnitConfig.getId())) {
-                oldUnitHostLabelMap.put(dalUnitConfig.getId(), LabelProcessor.getFirstLabel(hostUnitConfig.getLabel()));
-            }
-
-            // Setup alias as label if unit has no label configured.
-            if (!dalUnitConfig.hasLabel()) {
-                if (dalUnitConfig.getAliasCount() <= 1) {
-                    throw new InvalidStateException("Alias not provided by Unit[" + dalUnitConfig.getId() + "]!");
+                Label oldLabel = oldUnitHostLabelMap.get(dalUnitConfig.getId());
+                if (!oldLabel.equals(hostUnitConfig.getLabel())) {
+                    // host label has changed
+                    logger.warn("Host label has changed from [" + oldLabel + "] to [" + hostUnitConfig.getLabel() + "] for unit [" + dalUnitConfig.getAlias(0) + "]");
+                    oldUnitHostLabelMap.put(dalUnitConfig.getId(), hostUnitConfig.getLabel());
+                    if (dalUnitConfig.getLabel().equals(oldLabel)) {
+                        // dal unit label is still the same
+                        throw new EntryModification(entry.setMessage(dalUnitConfig.setLabel(hostUnitConfig.getLabel())), this);
+                    }
                 }
-                LabelProcessor.addLabel(dalUnitConfig.getLabelBuilder(), Locale.ENGLISH, dalUnitConfig.getAlias(0));
-                throw new EntryModification(entry.setMessage(dalUnitConfig), this);
+            } else if (appRegistry.contains(dalUnitConfig.getUnitHostId())) {
+                // handle if host unit is a app
+                UnitConfig hostUnitConfig = appRegistry.getMessage(dalUnitConfig.getUnitHostId());
+
+                if (!oldUnitHostLabelMap.containsKey(dalUnitConfig.getId())) {
+                    oldUnitHostLabelMap.put(dalUnitConfig.getId(), hostUnitConfig.getLabel());
+                }
+
+                // we do not have a strategy here yet since no example exists
+                // just let super setup the alias as a default label
             }
         }
+
+        // make sure that label exists and are unique per location per unit type
+        super.processData(id, entry, entryMap, registry);
+    }
+
+    /**
+     * Make sure that the label is unique per unit type and per location.
+     *
+     * @param label      the label for which the key is generated
+     * @param unitConfig the unit having the label
+     * @return a key unique per unit type per location
+     */
+    @Override
+    protected String generateKey(String label, UnitConfig unitConfig) {
+        return label + unitConfig.getUnitType().name() + unitConfig.getPlacementConfig().getLocationId();
     }
 }

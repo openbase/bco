@@ -394,7 +394,6 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
 
         label = label + "-2";
         UnitConfig.Builder deviceBuilder = device.clearLabel();
-        deviceBuilder.getDeviceConfigBuilder().clearUnitId();
         LabelProcessor.addLabel(deviceBuilder.getLabelBuilder(), Locale.ENGLISH, label);
         device = unitRegistry.updateUnitConfig(deviceBuilder.build()).get().toBuilder();
         dalUnit = unitRegistry.getUnitConfigById(device.getDeviceConfig().getUnitId(0));

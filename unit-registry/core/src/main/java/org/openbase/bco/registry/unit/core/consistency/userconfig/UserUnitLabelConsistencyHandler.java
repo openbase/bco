@@ -22,38 +22,28 @@ package org.openbase.bco.registry.unit.core.consistency.userconfig;
  * #L%
  */
 
+import org.openbase.bco.registry.unit.core.consistency.DefaultUnitLabelConsistencyHandler;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
-import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 
-import java.util.Locale;
-
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class UserConfigLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
+public class UserUnitLabelConsistencyHandler extends DefaultUnitLabelConsistencyHandler {
 
+    /**
+     * Generate a default user name.
+     *
+     * @param unitConfig the unit config for which a label is generated
+     * @return username (firstName lastName)
+     * @throws CouldNotPerformException if values in the user config are missing
+     */
     @Override
-    public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        UnitConfig.Builder userUnitConfig = entry.getMessage().toBuilder();
-        UserConfig userConfig = userUnitConfig.getUserConfig();
+    protected String generateDefaultLabel(UnitConfig unitConfig) throws CouldNotPerformException {
+        final UserConfig userConfig = unitConfig.getUserConfig();
 
-        String label = generateUserLabel(userConfig);
-        if (!userUnitConfig.hasLabel() || !LabelProcessor.contains(userUnitConfig.getLabel(), label)) {
-            LabelProcessor.addLabel(userUnitConfig.getLabelBuilder(), Locale.ENGLISH, label);
-            throw new EntryModification(entry.setMessage(userUnitConfig), this);
-        }
-    }
-
-    private String generateUserLabel(UserConfig userConfig) throws NotAvailableException {
         if (!userConfig.hasFirstName() || userConfig.getFirstName().isEmpty()) {
             throw new NotAvailableException("UserConfig.FirstName");
         }
@@ -67,5 +57,17 @@ public class UserConfigLabelConsistencyHandler extends AbstractProtoBufRegistryC
         }
 
         return userConfig.getUserName() + " (" + userConfig.getFirstName() + " " + userConfig.getLastName() + ")";
+    }
+
+    /**
+     * Return the label to make sure user label are unique.
+     *
+     * @param label      the label for which the key is generated
+     * @param unitConfig the unit having the label
+     * @return the label
+     */
+    @Override
+    protected String generateKey(String label, UnitConfig unitConfig) {
+        return label;
     }
 }

@@ -22,59 +22,24 @@ package org.openbase.bco.registry.unit.core.consistency.authorizationgroup;
  * #L%
  */
 
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
-import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import rst.configuration.LabelType.Label;
+import org.openbase.bco.registry.unit.core.consistency.DefaultUnitLabelConsistencyHandler;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class AuthorizationGroupConfigLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
+public class AuthorizationGroupConfigLabelConsistencyHandler extends DefaultUnitLabelConsistencyHandler {
 
-    private final Map<String, UnitConfig> authorizationGroupMap;
-
-    public AuthorizationGroupConfigLabelConsistencyHandler() {
-        this.authorizationGroupMap = new HashMap<>();
-    }
-
+    /**
+     * Label for authorization groups have to be globally unique.
+     * Therefore just return the label.
+     *
+     * @param label the label for which the key is generated
+     * @param unitConfig the unit having the label
+     * @return the label
+     */
     @Override
-    public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        UnitConfig.Builder authorizationGroupUnitConfig = entry.getMessage().toBuilder();
-
-        if (!authorizationGroupUnitConfig.hasLabel()) {
-            if (authorizationGroupUnitConfig.getAliasCount() <= 1) {
-                throw new InvalidStateException("Alias not provided by Unit[" + authorizationGroupUnitConfig.getId() + "]!");
-            }
-            LabelProcessor.addLabel(authorizationGroupUnitConfig.getLabelBuilder(), Locale.ENGLISH, authorizationGroupUnitConfig.getAlias(0));
-            throw new EntryModification(entry.setMessage(authorizationGroupUnitConfig), this);
-        }
-
-        for (Label.MapFieldEntry labelMapEntry : authorizationGroupUnitConfig.getLabel().getEntryList()) {
-            for (String value : labelMapEntry.getValueList()) {
-                if (!authorizationGroupMap.containsKey(value)) {
-                    authorizationGroupMap.put(value, entry.getMessage());
-                } else {
-                    throw new InvalidStateException("AuthorizationGroup [" +
-                            entry.getMessage() + "] and authorizationGroup [" +
-                            authorizationGroupMap.get(value) + "] are registered with the same label!");
-                }
-            }
-        }
-    }
-
-    @Override
-    public void reset() {
-        authorizationGroupMap.clear();
+    protected String generateKey(String label, UnitConfig unitConfig) {
+        return label;
     }
 }
