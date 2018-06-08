@@ -36,6 +36,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.pattern.Remote.ConnectionState;
@@ -113,7 +114,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
                 String unitHostLabel;
                 try {
                     if (unitConfig.hasUnitHostId() && !unitConfig.getUnitHostId().isEmpty()) {
-                        unitHostLabel = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId()).getLabel();
+                        unitHostLabel = LabelProcessor.getFirstLabel(Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId()).getLabel());
                     } else {
                         unitHostLabel = "";
                     }
@@ -123,7 +124,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
 
                 String locationLabel;
                 try {
-                    locationLabel = Registries.getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel();
+                    locationLabel = LabelProcessor.getFirstLabel(Registries.getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel());
                 } catch (CouldNotPerformException ex) {
                     locationLabel = "?";
                 }

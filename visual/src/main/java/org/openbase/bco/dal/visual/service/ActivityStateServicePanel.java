@@ -30,7 +30,9 @@ import org.openbase.bco.dal.lib.layer.service.operation.ActivityStateOperationSe
 import org.openbase.bco.dal.lib.layer.service.provider.ActivityStateProviderService;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observable;
 import rst.domotic.activity.ActivityConfigType.ActivityConfig;
 import rst.domotic.registry.ActivityRegistryDataType.ActivityRegistryData;
@@ -170,8 +172,6 @@ public class ActivityStateServicePanel extends AbstractServicePanel<ActivityStat
             }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger);
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
         }
     }
     
@@ -185,12 +185,16 @@ public class ActivityStateServicePanel extends AbstractServicePanel<ActivityStat
         
         @Override
         public String toString() {
-            return this.activityConfig.getLabel();
+            try {
+                return LabelProcessor.getFirstLabel(this.activityConfig.getLabel());
+            } catch (NotAvailableException e) {
+                return "?";
+            }
         }
         
         @Override
         public int compareTo(ActivityConfigHolder o) {
-            return this.activityConfig.getLabel().compareTo(o.getActivityConfig().getLabel());
+            return toString().compareTo(o.toString());
         }
         
         public ActivityConfig getActivityConfig() {

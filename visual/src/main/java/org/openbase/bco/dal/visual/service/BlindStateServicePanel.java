@@ -35,9 +35,9 @@ import rst.domotic.state.BlindStateType.BlindState;
  */
 public class BlindStateServicePanel extends AbstractServicePanel<BlindStateProviderService, ConsumerService, BlindStateOperationService> {
 
-    public static final BlindState UP = BlindState.newBuilder().setMovementState(BlindState.MovementState.UP).build();
-    public static final BlindState DOWN = BlindState.newBuilder().setMovementState(BlindState.MovementState.DOWN).build();
-    public static final BlindState STOP = BlindState.newBuilder().setMovementState(BlindState.MovementState.STOP).build();
+    public static final BlindState UP = BlindState.newBuilder().setValue(BlindState.State.UP).build();
+    public static final BlindState DOWN = BlindState.newBuilder().setValue(BlindState.State.DOWN).build();
+    public static final BlindState STOP = BlindState.newBuilder().setValue(BlindState.State.STOP).build();
 
     /**
      * Creates new form BrightnessService
@@ -179,7 +179,7 @@ public class BlindStateServicePanel extends AbstractServicePanel<BlindStateProvi
         try {
             openingRatioBar.setValue((int) getProviderService().getBlindState().getOpeningRatio());
             openingRatioBar.setString("Opening Ratio = " + openingRatioBar.getValue() + "%");
-            switch (getProviderService().getBlindState().getMovementState()) {
+            switch (getProviderService().getBlindState().getValue()) {
                 case UP:
                     movementStatePanel.setBackground(Color.GREEN.darker());
                     break;
@@ -195,7 +195,7 @@ public class BlindStateServicePanel extends AbstractServicePanel<BlindStateProvi
                 default:
                     break;
             }
-            movementStateLabel.setText(getProviderService().getBlindState().getMovementState().name());
+            movementStateLabel.setText(getProviderService().getBlindState().getValue().name());
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }

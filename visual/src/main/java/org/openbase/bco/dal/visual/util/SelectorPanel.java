@@ -40,6 +40,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
@@ -284,7 +285,7 @@ public class SelectorPanel extends javax.swing.JPanel {
                     return;
                 }
 
-                final UnitConfig selectedUnitConfig = unitConfigHolder.getConfig();
+                final UnitConfig selectedUnitConfig = unitConfigHolder.getUnitConfig();
 
                 if (loadedUnitConfig == selectedUnitConfig) {
                     // selection has not been changed.
@@ -725,7 +726,11 @@ public class SelectorPanel extends javax.swing.JPanel {
             if (isNotSpecified()) {
                 return "All";
             }
-            return locationUnitConfig.getLabel();
+            try {
+                return LabelProcessor.getFirstLabel(locationUnitConfig.getLabel());
+            } catch (NotAvailableException e) {
+                return "?";
+            }
         }
 
         public boolean isNotSpecified() {
@@ -851,11 +856,11 @@ public class SelectorPanel extends javax.swing.JPanel {
 
     public static class UnitConfigHolder implements Comparable<UnitConfigHolder> {
 
-        private final UnitConfig config;
+        private final UnitConfig unitConfig;
         private final UnitConfig locationUnitConfig;
 
         public UnitConfigHolder(final UnitConfig unitConfig, final UnitConfig locationUnitConfig) {
-            this.config = unitConfig;
+            this.unitConfig = unitConfig;
             this.locationUnitConfig = locationUnitConfig;
         }
 
@@ -864,18 +869,18 @@ public class SelectorPanel extends javax.swing.JPanel {
             if (isNotSpecified()) {
                 return "Not Available";
             }
-            return StringProcessor.transformUpperCaseToCamelCase(config.getType().name())
-                    + " = " + config.getLabel() + ""
+            return StringProcessor.transformUpperCaseToCamelCase(unitConfig.getUnitType().name())
+                    + " = " + unitConfig.getLabel() + ""
                     + " @ " + locationUnitConfig.getLabel()
-                    + (config.getDescription().isEmpty() ? "" : " (" + config.getDescription() + ")");
+                    + (unitConfig.getDescription().isEmpty() ? "" : " (" + unitConfig.getDescription() + ")");
         }
 
         public boolean isNotSpecified() {
-            return config == null;
+            return unitConfig == null;
         }
 
-        public UnitConfig getConfig() {
-            return config;
+        public UnitConfig getUnitConfig() {
+            return unitConfig;
         }
 
         @Override

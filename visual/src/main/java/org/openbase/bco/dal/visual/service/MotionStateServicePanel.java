@@ -24,16 +24,20 @@ package org.openbase.bco.dal.visual.service;
 import java.awt.Color;
 import java.text.DateFormat;
 import java.util.Date;
+
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rst.processing.TimestampJavaTimeTransform;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.processing.StringProcessor;
+import rst.domotic.state.MotionStateType.MotionState.State;
 
 /**
  *
@@ -143,16 +147,16 @@ public class MotionStateServicePanel extends AbstractServicePanel<MotionStatePro
                     throw new InvalidStateException("State[" + getProviderService().getMotionState().getValue() + "] is unknown.");
             }
             motionStatusLabel.setText(StringProcessor.transformUpperCaseToCamelCase(getProviderService().getMotionState().getValue().name()));
+
             try {
-                if(getProviderService().getMotionState().getLastMotion().getTime() <= 0) {
+                try {
+                    lastMovementValueLabel.setText(dateFormat.format(new Date(TimestampJavaTimeTransform.transform(Services.getLatestValueOccurrence(State.MOTION, getProviderService().getMotionState())))));
+                } catch (NotAvailableException ex) {
                     lastMovementValueLabel.setText("Never");
-                } else {
-                lastMovementValueLabel.setText(dateFormat.format(new Date(TimestampJavaTimeTransform.transform(getProviderService().getMotionState().getLastMotion()))));
-                    
                 }
             } catch (Exception ex) {
                 lastMovementValueLabel.setText("N/A");
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not format: [" + getProviderService().getMotionState().getLastMotion().getTime() + "]!", ex), logger, LogLevel.ERROR);
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not format: [" + Services.getLatestValueOccurrence(State.MOTION, getProviderService().getMotionState()).getTime() + "]!", ex), logger, LogLevel.ERROR);
             }
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);

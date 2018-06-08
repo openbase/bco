@@ -122,27 +122,27 @@ public class UserTransitStateServicePanel extends AbstractServicePanel<UserTrans
         try {
             logger.info("state: " + getProviderService().getUserTransitState().getValue().name());
             switch (getProviderService().getUserTransitState().getValue()) {
-                case AT_HOME:
+                case LONG_TERM_PRESENT:
                     userTransitStateLabel.setForeground(Color.BLACK);
                     userTransitStatePanel.setBackground(Color.GREEN.darker());
                     break;
-                case AWAY:
+                case LONG_TERM_ABSENT:
                     userTransitStateLabel.setForeground(Color.LIGHT_GRAY);
                     userTransitStatePanel.setBackground(Color.GRAY.darker());
                     break;
-                case SHORT_AT_HOME:
+                case SHORT_TERM_PRESENT:
                     userTransitStateLabel.setForeground(Color.BLACK);
                     userTransitStatePanel.setBackground(Color.CYAN.brighter());
                     break;
-                case SHORT_AWAY:
+                case SHORT_TERM_ABSENT:
                     userTransitStateLabel.setForeground(Color.BLACK);
                     userTransitStatePanel.setBackground(Color.CYAN.darker());
                     break;
-                case SOON_AT_HOME:
+                case SOON_PRESENT:
                     userTransitStateLabel.setForeground(Color.BLACK);
                     userTransitStatePanel.setBackground(Color.GREEN.darker().darker());
                     break;
-                case SOON_AWAY:
+                case SOON_ABSENT:
                     userTransitStateLabel.setForeground(Color.BLACK);
                     userTransitStatePanel.setBackground(Color.GREEN.darker().darker());
                     break;

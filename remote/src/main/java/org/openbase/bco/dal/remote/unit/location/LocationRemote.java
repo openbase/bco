@@ -164,6 +164,18 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         return serviceRemoteManager.getServiceRemote(serviceType);
     }
 
+    public List<LocationRemote> getNeighborLocationList(final boolean waitForData) throws CouldNotPerformException {
+        final List<LocationRemote> neighborList = new ArrayList<>();
+        try {
+            for (UnitConfig locationUnitConfig : Registries.getUnitRegistry().getNeighborLocations(getId())) {
+                neighborList.add(Units.getUnit(locationUnitConfig, waitForData, LOCATION));
+            }
+        } catch (InterruptedException ex) {
+            throw new CouldNotPerformException("Could not get all neighbors!", ex);
+        }
+        return neighborList;
+    }
+
     public List<LocationRemote> getChildLocationList(final boolean waitForData) throws CouldNotPerformException {
         final List<LocationRemote> childList = new ArrayList<>();
         for (String childId : getConfig().getLocationConfig().getChildIdList()) {
@@ -175,6 +187,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         }
         return childList;
     }
+
 
     public List<ConnectionRemote> getConnectionList(final boolean waitForData) throws CouldNotPerformException {
         if (!getConfig().getLocationConfig().getType().equals(LocationType.TILE)) {

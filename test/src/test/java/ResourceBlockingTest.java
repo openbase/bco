@@ -21,6 +21,7 @@
  */
 
 import java.util.List;
+import java.util.Locale;
 
 import com.google.protobuf.Message;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -31,7 +32,9 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
+import rst.configuration.LabelType.Label;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -93,20 +96,20 @@ public class ResourceBlockingTest {
 //        }
     }
 
-    public ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute, final ServiceType serviceType, final UnitRemote unitRemote) throws CouldNotPerformException {
+    public ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescriptionBuilder, final Message serviceAttribute, final ServiceType serviceType, final UnitRemote unitRemote) throws CouldNotPerformException {
         // 5 minute retaining:
-        actionDescription.setExecutionTimePeriod(1000 * 30);
+        actionDescriptionBuilder.setExecutionTimePeriod(1000 * 30);
         
-        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
-        ResourceAllocation.Builder resourceAllocation = actionDescription.getResourceAllocationBuilder();
+        ServiceStateDescription.Builder serviceStateDescription = actionDescriptionBuilder.getServiceStateDescriptionBuilder();
+        ResourceAllocation.Builder resourceAllocation = actionDescriptionBuilder.getResourceAllocationBuilder();
 
         serviceStateDescription.setUnitId((String) unitRemote.getId());
         resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(unitRemote.getScope()));
 
-        actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel()));
+        actionDescriptionBuilder.setDescription(actionDescriptionBuilder.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel()));
         //TODO: update USER key with authentication
-        actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel()));
+        actionDescriptionBuilder.setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, LabelProcessor.getFirstLabel(actionDescriptionBuilder.getLabel()).replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel())));
 
-        return Services.updateActionDescription(actionDescription, serviceAttribute, serviceType);
+        return ActionDescriptionProcessor.updateActionDescription(actionDescriptionBuilder, serviceAttribute, serviceType);
     }
 }
