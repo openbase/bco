@@ -53,7 +53,7 @@ public class FallbackDeviceManagerController implements Launchable<Void>, VoidIn
     @Override
     public void init() throws InitializationException, InterruptedException {
         try {
-            deviceRegistryRemote = Registries.getDeviceRegistry();
+            deviceRegistryRemote = Registries.getUnitRegistry();
             deviceRegistryRemote.waitForData();
             deviceManagerController = new DeviceManagerController(ServiceFactoryMock.getInstance()) {
 

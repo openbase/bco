@@ -152,7 +152,7 @@ public class NightLightApp extends AbstractAppController {
 
                 // load tile remotes
                 remoteLocationLoop:
-                for (final UnitConfig locationUnitConfig : Registries.getLocationRegistry(true).getLocationConfigsByType(LocationType.TILE)) {
+                for (final UnitConfig locationUnitConfig : Registries.getUnitRegistry(true).getLocationConfigsByType(LocationType.TILE)) {
 
                     // check if location was excluded
                     if (excludedLocations.contains(locationUnitConfig.getId())) {

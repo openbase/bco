@@ -89,7 +89,7 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
         deviceClassBuilder.removeUnitTemplateConfig(1);
 
         // register the device class
-        DeviceClass deviceClass = Registries.getDeviceRegistry().registerDeviceClass(deviceClassBuilder.build()).get();
+        DeviceClass deviceClass = Registries.getUnitRegistry().registerDeviceClass(deviceClassBuilder.build()).get();
         mockRegistry.waitForDeviceClass(deviceClass);
 
         // register a device with that class and retrieve the colorable light
@@ -108,7 +108,7 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
         deviceClassBuilder.addUnitTemplateConfig(powerSwitchTemplateConfig);
 
         // update the device class
-        deviceClass = Registries.getDeviceRegistry().updateDeviceClass(deviceClassBuilder.build()).get();
+        deviceClass = Registries.getUnitRegistry().updateDeviceClass(deviceClassBuilder.build()).get();
         mockRegistry.waitForDeviceClass(deviceClass);
 
         // wait up to half a second until the device is updated, is done in this way because it can fail but is a specific unit test failure
@@ -135,7 +135,7 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
         deviceClassBuilder = deviceClass.toBuilder();
         deviceClassBuilder.removeUnitTemplateConfig(1);
 
-        deviceClass = Registries.getDeviceRegistry().updateDeviceClass(deviceClassBuilder.build()).get();
+        deviceClass = Registries.getUnitRegistry().updateDeviceClass(deviceClassBuilder.build()).get();
         mockRegistry.waitForDeviceClass(deviceClass);
 
         // wait up to half a second until the device is updated, is done in this way because it can fail but is a specific unit test failure
@@ -172,7 +172,7 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
         String company = "SimpleManufacturing";
         DeviceClass.Builder deviceClassBuilder = MockRegistry.getDeviceClass(deviceClassLabel, productNumber, company, UnitType.COLORABLE_LIGHT, UnitType.COLORABLE_LIGHT, UnitType.POWER_SWITCH).toBuilder();
 
-        DeviceClass deviceClass = Registries.getDeviceRegistry().registerDeviceClass(deviceClassBuilder.build()).get();
+        DeviceClass deviceClass = Registries.getUnitRegistry().registerDeviceClass(deviceClassBuilder.build()).get();
         mockRegistry.waitForDeviceClass(deviceClass);
 
         final List<UnitConfig> registeredUnitConfigs = new ArrayList<>();

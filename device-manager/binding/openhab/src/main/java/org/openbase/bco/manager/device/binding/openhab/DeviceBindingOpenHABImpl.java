@@ -64,7 +64,7 @@ public class DeviceBindingOpenHABImpl extends AbstractOpenHABBinding {
     @Override
     public void init(String itemFilter, OpenHABRemote openHABRemote) throws InitializationException, InterruptedException {
         try {
-            deviceRegistryRemote = Registries.getDeviceRegistry();
+            deviceRegistryRemote = Registries.getUnitRegistry();
             deviceRegistryRemote.waitForData();
             deviceManagerController = new DeviceManagerController(new OpenhabServiceFactory()) {
 
