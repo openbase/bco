@@ -24,6 +24,8 @@ package org.openbase.bco.registry.template.core.plugin;
 
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
@@ -32,8 +34,9 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.Builder;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
+import java.util.Locale;
+
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class ServiceTemplateCreatorRegistryPlugin extends ProtobufRegistryPluginAdapter<String, ServiceTemplate, Builder> {
@@ -47,7 +50,7 @@ public class ServiceTemplateCreatorRegistryPlugin extends ProtobufRegistryPlugin
     @Override
     public void init(ProtoBufRegistry<String, ServiceTemplate, Builder> config) throws InitializationException, InterruptedException {
         try {
-            ServiceTemplate template;
+            ServiceTemplate.Builder template;
 
             // create missing unit template
             if (registry.size() <= ServiceType.values().length - 1) {
@@ -55,9 +58,12 @@ public class ServiceTemplateCreatorRegistryPlugin extends ProtobufRegistryPlugin
                     if (serviceType == ServiceType.UNKNOWN) {
                         continue;
                     }
-                    template = ServiceTemplate.newBuilder().setType(serviceType).build();
                     if (!containsServiceTemplateByType(serviceType)) {
-                        registry.register(template);
+                        template = ServiceTemplate.newBuilder().setType(serviceType);
+                        LabelProcessor.addLabel(template.getLabelBuilder(), Locale.ENGLISH,
+                                StringProcessor.insertSpaceBetweenCamelCase(
+                                        StringProcessor.transformUpperCaseToCamelCase(serviceType.name())));
+                        registry.register(template.build());
                     }
                 }
             }

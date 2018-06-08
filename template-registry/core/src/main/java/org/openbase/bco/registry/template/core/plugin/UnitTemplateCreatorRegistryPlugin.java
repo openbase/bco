@@ -24,6 +24,8 @@ package org.openbase.bco.registry.template.core.plugin;
 
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
@@ -32,11 +34,10 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.Builder;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
+import java.util.Locale;
+
 /**
- *
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- *
  */
 public class UnitTemplateCreatorRegistryPlugin extends ProtobufRegistryPluginAdapter<String, UnitTemplate, Builder> {
 
@@ -49,7 +50,7 @@ public class UnitTemplateCreatorRegistryPlugin extends ProtobufRegistryPluginAda
     @Override
     public void init(ProtoBufRegistry<String, UnitTemplate, Builder> config) throws InitializationException, InterruptedException {
         try {
-            UnitTemplate template;
+            UnitTemplate.Builder template;
 
             // create missing unit template
             if (registry.size() <= UnitTemplate.UnitType.values().length - 1) {
@@ -57,9 +58,12 @@ public class UnitTemplateCreatorRegistryPlugin extends ProtobufRegistryPluginAda
                     if (unitType == UnitType.UNKNOWN) {
                         continue;
                     }
-                    template = UnitTemplate.newBuilder().setType(unitType).build();
                     if (!containsUnitTemplateByType(unitType)) {
-                        registry.register(template);
+                        template = UnitTemplate.newBuilder().setType(unitType);
+                        LabelProcessor.addLabel(template.getLabelBuilder(), Locale.ENGLISH,
+                                StringProcessor.insertSpaceBetweenCamelCase(
+                                        StringProcessor.transformUpperCaseToCamelCase(unitType.name())));
+                        registry.register(template.build());
                     }
                 }
             }
