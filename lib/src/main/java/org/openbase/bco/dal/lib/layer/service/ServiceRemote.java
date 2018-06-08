@@ -71,15 +71,6 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
     Collection<UnitRemote> getInternalUnits(UnitType unitType) throws CouldNotPerformException, InterruptedException;
 
     /**
-     *
-     * @return the current service state
-     * @throws NotAvailableException if the service state has not been set at least once.
-     * @deprecated please use getData instead.
-     */
-    @Deprecated
-    ST getServiceState() throws NotAvailableException;
-
-    /**
      * Returns the service type of this remote.
      *
      * @return the remote service type.

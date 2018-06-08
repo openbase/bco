@@ -114,12 +114,7 @@ public class ServiceStateProcessorTest {
         hsbColor2.setBrightness(10).setHue(20).setSaturation(30);
 
 
-        State present = State.PRESENT;
-
-        ServiceStateProcessor.updateLatestValueOccurrence(PresenceState.MapFieldEntry.newBuilder().setKey(State.PRESENT).setValue(Timestamp.newBuilder().setTime(1231).build()).build(), presenceState2);
         ServiceStateProcessor.updateLatestValueOccurrence(State.PRESENT, 1231, presenceState2);
-
-        ServiceStateProcessor.updateLatestValueOccurrence(PresenceState.MapFieldEntry.newBuilder().setKey(State.PRESENT).setValue(Timestamp.newBuilder().setTime(1231).build()).build(), presenceState2);
         presenceState2.setTimestamp(Timestamp.newBuilder().setTime(1231)).setValue(PresenceState.State.ABSENT);
 
         messageObservable.addObserver(new Observer<LocationData>() {

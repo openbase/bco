@@ -61,7 +61,7 @@ public class PowerConsumptionStateServiceRemote extends AbstractServiceRemote<Po
 
     @Override
     public PowerConsumptionState getPowerConsumptionState() throws NotAvailableException {
-        return getServiceState();
+        return getData();
     }
 
     @Override

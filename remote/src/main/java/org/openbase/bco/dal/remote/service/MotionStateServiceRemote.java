@@ -32,7 +32,6 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.MotionStateType.MotionState;
@@ -40,7 +39,6 @@ import rst.domotic.state.MotionStateType.MotionState.Builder;
 import rst.domotic.state.MotionStateType.MotionState.MapFieldEntry;
 import rst.domotic.state.MotionStateType.MotionState.State;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.timing.TimestampType.Timestamp;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -71,7 +69,7 @@ public class MotionStateServiceRemote extends AbstractServiceRemote<MotionStateP
 
     @Override
     public MotionState getMotionState() throws NotAvailableException {
-        return getServiceState();
+        return getData();
     }
 
     @Override
@@ -87,7 +85,7 @@ public class MotionStateServiceRemote extends AbstractServiceRemote<MotionStateP
                 continue;
             }
 
-            // handle motion state
+            // handle state
             MotionState motionState = service.getMotionState();
             if (motionState.getValue() == MotionState.State.MOTION) {
                 motionStateBuilder.setValue(MotionState.State.MOTION);

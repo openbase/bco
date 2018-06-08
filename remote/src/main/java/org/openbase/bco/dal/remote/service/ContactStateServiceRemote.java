@@ -67,7 +67,7 @@ public class ContactStateServiceRemote extends AbstractServiceRemote<ContactStat
 
     @Override
     public ContactState getContactState() throws NotAvailableException {
-        return getServiceState();
+        return getData();
     }
 
     @Override

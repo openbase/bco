@@ -62,7 +62,7 @@ public class SmokeStateServiceRemote extends AbstractServiceRemote<SmokeStatePro
 
     @Override
     public SmokeState getSmokeState() throws NotAvailableException {
-        return getServiceState();
+        return getData();
     }
 
     @Override

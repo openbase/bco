@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -71,6 +71,7 @@ import java.util.concurrent.TimeUnit;
 /**
  * @param <S>  generic definition of the overall service type for this remote.
  * @param <ST> the corresponding state for the service type of this remote.
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractServiceRemote<S extends Service, ST extends GeneratedMessage> implements ServiceRemote<S, ST> {
@@ -153,6 +154,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * service changes.
      *
      * @return the computed server state is returned.
+     *
      * @throws CouldNotPerformException if an underlying service throws an
      *                                  exception
      */
@@ -174,21 +176,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
     /**
      * @return the current service state
-     * @throws NotAvailableException if the service state has not been set at
-     *                               least once.
-     * @deprecated please use getData instead.
-     */
-    @Override
-    @Deprecated
-    public ST getServiceState() throws NotAvailableException {
-        if (!serviceStateObservable.isValueAvailable()) {
-            throw new NotAvailableException("ServiceState");
-        }
-        return serviceStateObservable.getValue();
-    }
-
-    /**
-     * @return the current service state
+     *
      * @throws NotAvailableException if the service state data has not been set at
      *                               least once.
      */
@@ -253,7 +241,9 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * Method request the data of all internal unit remotes.
      *
      * @param failOnError flag decides if an exception should be thrown in case one data request fails.
+     *
      * @return the recalculated server state data based on the newly requested data.
+     *
      * @throws CouldNotPerformException is thrown if non of the request was successful. In case the failOnError is set to true any request error throws an CouldNotPerformException.
      */
     @Override
@@ -301,6 +291,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * {@inheritDoc}
      *
      * @param unitConfig {@inheritDoc}
+     *
      * @throws InitializationException {@inheritDoc}
      * @throws InterruptedException    {@inheritDoc}
      */
@@ -363,6 +354,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * service type of this service remote.
      *
      * @param configs a set of unit configurations.
+     *
      * @throws InitializationException is thrown if the service remote could not
      *                                 be initialized.
      * @throws InterruptedException    is thrown if the current thread is
@@ -703,6 +695,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * @param timeout  maximal time to wait for the main controller data. After
      *                 the timeout is reached a TimeoutException is thrown.
      * @param timeUnit the time unit of the timeout.
+     *
      * @throws CouldNotPerformException is thrown in case the any error occurs,
      *                                  or if the given timeout is reached. In this case a TimeoutException is
      *                                  thrown.
@@ -795,6 +788,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * Method unlocks this instance.
      *
      * @param maintainer the instance which currently holds the lock.
+     *
      * @throws CouldNotPerformException is thrown if the instance could not be
      *                                  unlocked.
      */

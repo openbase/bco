@@ -60,7 +60,7 @@ public class HandleStateServiceRemote extends AbstractServiceRemote<HandleStateP
 
     @Override
     public HandleState getHandleState() throws NotAvailableException {
-        return getServiceState();
+        return getData();
     }
 
     @Override

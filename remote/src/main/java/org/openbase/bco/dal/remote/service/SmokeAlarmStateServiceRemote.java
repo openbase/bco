@@ -61,7 +61,7 @@ public class SmokeAlarmStateServiceRemote extends AbstractServiceRemote<SmokeAla
 
     @Override
     public AlarmState getSmokeAlarmState() throws NotAvailableException {
-        return getServiceState();
+        return getData();
     }
 
     @Override

@@ -96,7 +96,7 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
 
     @Override
     public StandbyState getStandbyState() throws NotAvailableException {
-        return getServiceState();
+        return getData();
     }
 
     @Override

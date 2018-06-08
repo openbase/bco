@@ -61,7 +61,7 @@ public class TemperatureStateServiceRemote extends AbstractServiceRemote<Tempera
 
     @Override
     public TemperatureState getTemperatureState() throws NotAvailableException {
-        return getServiceState();
+        return getData();
     }
 
     @Override

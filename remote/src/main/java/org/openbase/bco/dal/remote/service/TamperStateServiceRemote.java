@@ -23,16 +23,21 @@ package org.openbase.bco.dal.remote.service;
  */
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
+
+import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.bco.dal.lib.layer.service.collection.TamperStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.provider.TamperStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.state.TamperStateType.TamperState.Builder;
+import rst.domotic.state.TamperStateType.TamperState.MapFieldEntry;
 import rst.domotic.state.TamperStateType.TamperState;
+import rst.domotic.state.TamperStateType.TamperState.State;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.timing.TimestampType.Timestamp;
 
 /**
  *
@@ -63,31 +68,45 @@ public class TamperStateServiceRemote extends AbstractServiceRemote<TamperStateP
 
     @Override
     public TamperState getTamperState() throws NotAvailableException {
-        return getServiceState();
+        return getData();
     }
 
     @Override
     public TamperState getTamperState(final UnitType unitType) throws NotAvailableException {
-        TamperState.State tamperValue = TamperState.State.NO_TAMPER;
-        long lastDetection = 0;
+        final Builder tamperStateBuilder = TamperState.newBuilder().setValue(State.NO_TAMPER);
         long timestamp = 0;
+
         for (TamperStateProviderService service : getServices(unitType)) {
+
+            // do not handle if data is not synced yet.
             if (!((UnitRemote) service).isDataAvailable()) {
                 continue;
             }
 
+            // handle state
             TamperState tamperState = service.getTamperState();
-            if (tamperState.getValue() == TamperState.State.TAMPER) {
-                tamperValue = TamperState.State.TAMPER;
+            if (tamperState.getValue() == State.TAMPER) {
+                tamperStateBuilder.setValue(TamperState.State.TAMPER);
             }
 
-            if (tamperState.getLastDetection().getTime() > lastDetection) {
-                lastDetection = tamperState.getLastDetection().getTime();
+            // handle latest occurrence timestamps
+            for (final MapFieldEntry entry : tamperState.getLastValueOccurrenceList()) {
+
+                try {
+                    ServiceStateProcessor.updateLatestValueOccurrence(entry.getKey(), entry.getValue(), tamperStateBuilder);
+                } catch (CouldNotPerformException ex) {
+                    ExceptionPrinter.printHistory("Could not update latest occurrence timestamp of Entry[" + entry + "]", ex, logger);
+                }
             }
 
+            // handle timestamp
             timestamp = Math.max(timestamp, tamperState.getTimestamp().getTime());
         }
 
-        return TimestampProcessor.updateTimestamp(timestamp, TamperState.newBuilder().setValue(tamperValue).setLastDetection(Timestamp.newBuilder().setTime(lastDetection)), TimeUnit.MICROSECONDS, logger).build();
+        // update final timestamp
+        TimestampProcessor.updateTimestamp(timestamp, tamperStateBuilder, TimeUnit.MICROSECONDS, logger);
+
+        // return merged state
+        return tamperStateBuilder.build();
     }
 }

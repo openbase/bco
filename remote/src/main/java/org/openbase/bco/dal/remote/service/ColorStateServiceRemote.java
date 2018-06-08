@@ -26,7 +26,7 @@ import java.util.Collection;
 import java.util.List;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.layer.service.Service;
+
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.ColorStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.ColorStateOperationService;
@@ -104,7 +104,7 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
 
     @Override
     public ColorState getColorState() throws NotAvailableException {
-        return getServiceState();
+        return getData();
     }
 
     @Override

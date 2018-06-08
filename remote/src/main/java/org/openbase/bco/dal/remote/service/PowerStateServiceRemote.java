@@ -160,7 +160,7 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
 
     @Override
     public PowerState getPowerState() throws NotAvailableException {
-        return getServiceState();
+        return getData();
     }
 
     @Override

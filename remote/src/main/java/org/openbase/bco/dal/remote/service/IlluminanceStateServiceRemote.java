@@ -66,7 +66,7 @@ public class IlluminanceStateServiceRemote extends AbstractServiceRemote<Illumin
 
     @Override
     public IlluminanceState getIlluminanceState() throws NotAvailableException {
-        return getServiceState();
+        return getData();
     }
 
     @Override
