@@ -251,8 +251,8 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
         try (ClosableDataBuilder<DB> dataBuilder = getDataBuilder(this, isActive())) {
             DB builder = dataBuilder.getInternalBuilder();
             Class builderClass = builder.getClass();
-            String unitTypeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name());
-            String repeatedUnitFieldName = "unit_" + unitConfig.getType().name().toLowerCase() + "_data";
+            String unitTypeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getUnitType().name());
+            String repeatedUnitFieldName = "unit_" + unitConfig.getUnitType().name().toLowerCase() + "_data";
             Descriptors.FieldDescriptor repeatedUnitFieldDescriptor = builder.getDescriptorForType().findFieldByName(repeatedUnitFieldName);
 
             if (repeatedUnitFieldDescriptor == null) {
@@ -287,7 +287,7 @@ public abstract class AbstractHostUnitController<D extends GeneratedMessage, DB 
     private GeneratedMessage.Builder loadUnitBuilder(final UnitConfig unitConfig) throws CouldNotPerformException {
         GeneratedMessage.Builder builder = null;
         try {
-            String unitTypeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getType().name());
+            String unitTypeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getUnitType().name());
             String unitMessageClassName = "rst.domotic.unit.dal." + unitTypeName + "DataType$" + unitTypeName + "Data";
             Class messageClass;
             try {

@@ -146,7 +146,7 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
     public String getServiceName() {
         for (ServiceConfig serviceConfig : serviceConfigs) {
             if (serviceConfig != null) {
-                return serviceConfig.getServiceDescription().getType().name();
+                return serviceConfig.getServiceDescription().getServiceType().name();
             }
         }
         return "---";
@@ -261,7 +261,7 @@ public abstract class AbstractServicePanel<PS extends ProviderService, CS extend
             }
             setServiceConfig(serviceConfig);
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not bind ServiceConfig[" + serviceConfig.getServiceDescription().getType() + "] on UnitRemote[" + unitRemote.getScope() + "]!", ex);
+            throw new CouldNotPerformException("Could not bind ServiceConfig[" + serviceConfig.getServiceDescription().getServiceType() + "] on UnitRemote[" + unitRemote.getScope() + "]!", ex);
         }
     }
 

@@ -118,7 +118,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
 
                 // remove unit from maps
                 serviceMap.remove(unitConfig.getId());
-                unitRemoteTypeMap.get(unitConfig.getType()).remove(unitRemote);
+                unitRemoteTypeMap.get(unitConfig.getUnitType()).remove(unitRemote);
                 for (UnitType superType : Registries.getTemplateRegistry().getSuperUnitTypes(unitRemote.getUnitType())) {
                     unitRemoteTypeMap.get(superType).remove(unitRemote);
                 }
@@ -470,7 +470,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             unitRemote = unitRemoteMap.remove(unitConfig.getId());
 
             serviceMap.remove(unitConfig.getId());
-            unitRemoteTypeMap.get(unitConfig.getType()).remove(unitRemote);
+            unitRemoteTypeMap.get(unitConfig.getUnitType()).remove(unitRemote);
             for (UnitType superType : Registries.getTemplateRegistry().getSuperUnitTypes(unitRemote.getUnitType())) {
                 unitRemoteTypeMap.get(superType).remove(unitRemote);
             }
@@ -748,7 +748,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
     }
 
     public static boolean verifyServiceCompatibility(final UnitConfig unitConfig, final ServiceType serviceType) {
-        return unitConfig.getServiceConfigList().stream().anyMatch((serviceConfig) -> (serviceConfig.getServiceDescription().getType() == serviceType));
+        return unitConfig.getServiceConfigList().stream().anyMatch((serviceConfig) -> (serviceConfig.getServiceDescription().getServiceType() == serviceType));
     }
 
     /**

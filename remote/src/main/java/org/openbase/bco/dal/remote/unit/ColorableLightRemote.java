@@ -80,9 +80,9 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
     }
 
     @Override
-    public UnitConfigType.UnitConfig applyConfigUpdate(final UnitConfigType.UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        updateNeutralWhiteValue(config);
-        return super.applyConfigUpdate(config);
+    public UnitConfigType.UnitConfig applyConfigUpdate(final UnitConfigType.UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
+        updateNeutralWhiteValue(unitConfig);
+        return super.applyConfigUpdate(unitConfig);
     }
 
     public void updateNeutralWhiteValue(final UnitConfigType.UnitConfig config) throws InterruptedException {
@@ -93,7 +93,7 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
             // add meta config of service config with type ColorStateService
             ServiceConfigType.ServiceConfig colorStateServiceConfig = null;
             for (ServiceConfigType.ServiceConfig serviceConfig : config.getServiceConfigList()) {
-                if (serviceConfig.getServiceDescription().getType() == ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE) {
+                if (serviceConfig.getServiceDescription().getServiceType() == ServiceTemplateType.ServiceTemplate.ServiceType.COLOR_STATE_SERVICE) {
                     colorStateServiceConfig = serviceConfig;
                 }
             }

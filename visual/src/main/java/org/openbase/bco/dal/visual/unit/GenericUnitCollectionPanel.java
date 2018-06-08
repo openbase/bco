@@ -164,7 +164,7 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
                 genericUnitPanel = new GenericUnitPanel<>();
                 if (removable) {
                     RemovableGenericUnitPanel wrapperPanel = new RemovableGenericUnitPanel();
-                    wrapperPanel.init(mapKey, (unitConfig.getType() == UnitType.LOCATION) || (unitConfig.getType() == UnitType.UNIT_GROUP));
+                    wrapperPanel.init(mapKey, (unitConfig.getUnitType() == UnitType.LOCATION) || (unitConfig.getUnitType() == UnitType.UNIT_GROUP));
                     wrapperPanel.addObserver(removedObserver);
                     genericUnitPanel = wrapperPanel;
                 }

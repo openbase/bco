@@ -90,7 +90,7 @@ public class ActionImpl implements Action {
             Services.verifyServiceState(serviceAttribute);
 
             // since its an action it has to be an operation service pattern
-            this.serviceDescription = ServiceDescription.newBuilder().setType(actionDescription.getServiceStateDescription().getServiceType()).setPattern(ServicePattern.OPERATION).build();
+            this.serviceDescription = ServiceDescription.newBuilder().setServiceType(actionDescription.getServiceStateDescription().getServiceType()).setPattern(ServicePattern.OPERATION).build();
 
             // set resource allocation interval if not defined yet
             if (!actionDescription.getResourceAllocation().getSlot().hasBegin()) {
@@ -286,7 +286,7 @@ public class ActionImpl implements Action {
             serviceStateBuilder.setField(fieldDescriptor, actionDescriptionBuilder.build());
 
             // set the updated service attribute as requested state in the unit data builder
-            Services.invokeServiceMethod(serviceDescription.getType(), serviceDescription.getPattern(), ServiceTempus.REQUESTED, dataBuilder.getInternalBuilder(), serviceStateBuilder);
+            Services.invokeServiceMethod(serviceDescription.getServiceType(), serviceDescription.getPattern(), ServiceTempus.REQUESTED, dataBuilder.getInternalBuilder(), serviceStateBuilder);
         }
     }
 
@@ -310,7 +310,7 @@ public class ActionImpl implements Action {
         if(result instanceof Future) {
             ((Future) result).get();
         } else {
-            LOGGER.warn("Service["+serviceDescription.getType()+"] implementation of "+unit+" does not provide feedback about triggered operation! Just continue without feedback...");
+            LOGGER.warn("Service["+serviceDescription.getServiceType()+"] implementation of "+unit+" does not provide feedback about triggered operation! Just continue without feedback...");
         }
     }
 

@@ -84,7 +84,7 @@ public class HowToObserveServiceStateChangesViaRSB {
                 for (final ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
 
                     // check if service type match
-                    if (serviceConfig.getServiceDescription().getType().equals(serviceType)) {
+                    if (serviceConfig.getServiceDescription().getServiceType().equals(serviceType)) {
                         final Scope scope = ScopeTransformer.transform(unitConfig.getScope()).concat(new Scope("/status"));
                         LOGGER.info("Register listener on Scope[" + scope + "]");
                         final Listener listener = Factory.getInstance().createListener(scope);

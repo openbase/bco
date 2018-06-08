@@ -48,18 +48,18 @@ public class BlindStateServiceSimulator extends AbstractScheduledServiceSimulato
     public BlindStateServiceSimulator(UnitController unitController) {
         super(unitController, ServiceType.BLIND_STATE_SERVICE);
         this.simulatedBlindState = BlindState.newBuilder();
-        this.simulatedBlindState.setMovementState(BlindState.MovementState.STOP);
+        this.simulatedBlindState.setValue(BlindState.State.STOP);
         this.simulatedBlindState.setOpeningRatio(100);
     }
 
     private BlindState getSimulatedBlindState() {
-        switch (simulatedBlindState.getMovementState()) {
+        switch (simulatedBlindState.getValue()) {
             case STOP:
                 if (simulatedBlindState.getOpeningRatio() == MAX_OPENING_RATIO) {
-                    simulatedBlindState.setMovementState(BlindState.MovementState.DOWN);
+                    simulatedBlindState.setValue(BlindState.State.DOWN);
                     simulatedBlindState.setOpeningRatio(MAX_OPENING_RATIO - OPENING_RATIO_STEP);
                 } else {
-                    simulatedBlindState.setMovementState(BlindState.MovementState.UP);
+                    simulatedBlindState.setValue(BlindState.State.UP);
                     simulatedBlindState.setOpeningRatio(MIN_OPENING_RATIO + OPENING_RATIO_STEP);
                 }
                 break;
@@ -67,7 +67,7 @@ public class BlindStateServiceSimulator extends AbstractScheduledServiceSimulato
                 if (simulatedBlindState.getOpeningRatio() > MIN_OPENING_RATIO) {
                     simulatedBlindState.setOpeningRatio(simulatedBlindState.getOpeningRatio() - OPENING_RATIO_STEP);
                 } else {
-                    simulatedBlindState.setMovementState(BlindState.MovementState.STOP);
+                    simulatedBlindState.setValue(BlindState.State.STOP);
                     simulatedBlindState.setOpeningRatio(MIN_OPENING_RATIO);
                 }
                 break;
@@ -75,12 +75,12 @@ public class BlindStateServiceSimulator extends AbstractScheduledServiceSimulato
                 if (simulatedBlindState.getOpeningRatio() < MAX_OPENING_RATIO) {
                     simulatedBlindState.setOpeningRatio(simulatedBlindState.getOpeningRatio() + OPENING_RATIO_STEP);
                 } else {
-                    simulatedBlindState.setMovementState(BlindState.MovementState.STOP);
+                    simulatedBlindState.setValue(BlindState.State.STOP);
                     simulatedBlindState.setOpeningRatio(MAX_OPENING_RATIO);
                 }
                 break;
             default:
-                simulatedBlindState.setMovementState(BlindState.MovementState.STOP);
+                simulatedBlindState.setValue(BlindState.State.STOP);
                 simulatedBlindState.setOpeningRatio(MAX_OPENING_RATIO);
                 break;
         }

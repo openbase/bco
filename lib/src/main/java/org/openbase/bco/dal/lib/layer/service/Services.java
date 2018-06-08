@@ -26,7 +26,6 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
-import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
@@ -45,7 +44,6 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus;
-import rst.timing.TimestampType.Timestamp;
 
 import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
@@ -327,8 +325,6 @@ public class Services {
         actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.SERVICE_ATTRIBUTE_KEY, serviceAttributeRepresentation));
         return actionDescription.setDescription(StringProcessor.removeDoubleWhiteSpaces(description));
     }
-
-
 
     /**
      * @deprecated Deprecated and broken since there is no bidirectional mapping between services arguments and service states!

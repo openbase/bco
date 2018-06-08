@@ -1,5 +1,27 @@
 package org.openbase.bco.dal.lib.layer.service;
 
+/*-
+ * #%L
+ * BCO DAL Library
+ * %%
+ * Copyright (C) 2014 - 2018 openbase.org
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU Lesser General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Lesser Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Lesser Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/lgpl-3.0.html>.
+ * #L%
+ */
+
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
@@ -46,6 +68,19 @@ public class ServiceStateProcessor {
      * @throws CouldNotPerformException is thrown if the update could not be performed.
      */
     public static void updateLatestValueOccurrence(final ProtocolMessageEnum enumStateValue, long timestamp, GeneratedMessage.Builder serviceState) throws CouldNotPerformException {
+        updateLatestValueOccurrence(enumStateValue, Timestamp.newBuilder().setTime(timestamp).build(), serviceState);
+    }
+
+    /**
+     * This method updates the last occurrence of the given service state value.
+     *
+     * @param enumStateValue the state value which as been occurred.
+     * @param timestamp      the timestamp of the occurrence.
+     * @param serviceState   the service state message which holds the service value.
+     *
+     * @throws CouldNotPerformException is thrown if the update could not be performed.
+     */
+    public static void updateLatestValueOccurrence(final ProtocolMessageEnum enumStateValue, final Timestamp timestamp, GeneratedMessage.Builder serviceState) throws CouldNotPerformException {
         final Message entryMessage;
 
         try {
@@ -55,7 +90,7 @@ public class ServiceStateProcessor {
             final FieldDescriptor key = entryMessageBuilder.build().getDescriptorForType().findFieldByName(FIELD_NAME_KEY);
             final FieldDescriptor value = entryMessageBuilder.build().getDescriptorForType().findFieldByName(FIELD_NAME_VALUE);
 
-            entryMessageBuilder.setField(value, Timestamp.newBuilder().setTime(timestamp).build());
+            entryMessageBuilder.setField(value, timestamp);
             entryMessageBuilder.setField(key, enumStateValue.getValueDescriptor());
             entryMessage = entryMessageBuilder.build();
         } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | ClassCastException ex) {

@@ -586,7 +586,7 @@ public class Units {
         try {
             return (UR) getUnit(unitConfig, waitForData);
         } catch (ClassCastException ex) {
-            throw new NotAvailableException("Unit[" + unitConfig.getId() + "]", new InvalidStateException("Requested Unit[" + unitConfig.getLabel() + "] of UnitType[" + unitConfig.getType() + "] is not compatible with defined UnitRemoteClass[" + unitRemoteClass + "]!", ex));
+            throw new NotAvailableException("Unit[" + unitConfig.getId() + "]", new InvalidStateException("Requested Unit[" + unitConfig.getLabel() + "] of UnitType[" + unitConfig.getUnitType() + "] is not compatible with defined UnitRemoteClass[" + unitRemoteClass + "]!", ex));
         }
     }
 

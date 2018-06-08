@@ -132,7 +132,7 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
                     // sort dal unit by service type
                     unitConfig.getServiceConfigList().stream().forEach((serviceConfig) -> {
                         // register unit for each service type. UnitConfigs can be added twice because of duplicated types with different service patterns but are filtered by the set.
-                        serviceMap.get(serviceConfig.getServiceDescription().getType()).add(unitConfig);
+                        serviceMap.get(serviceConfig.getServiceDescription().getServiceType()).add(unitConfig);
                     });
                 } catch (CouldNotPerformException ex) {
                     ExceptionPrinter.printHistory(new CouldNotPerformException("Could not process unit config update of Unit[" + unitId + "] for " + responsibleInstance + "!", ex), LOGGER);

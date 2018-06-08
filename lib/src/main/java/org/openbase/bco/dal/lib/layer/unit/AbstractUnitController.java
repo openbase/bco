@@ -26,17 +26,16 @@ import com.google.protobuf.Descriptors;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
-import com.sun.org.apache.bcel.internal.generic.RETURN;
-import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
+import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager.TicketEvaluationWrapper;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
-import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor.InternalIdentifiedProcessable;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
 import org.openbase.bco.authentication.lib.AuthorizationHelper.Type;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableController;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.dal.lib.action.ActionImpl;
 import org.openbase.bco.dal.lib.layer.service.Service;
+import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
@@ -50,7 +49,6 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
-import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.MessageObservable;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
@@ -66,13 +64,11 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rsb.Scope;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType;
 import rst.domotic.action.SnapshotType.Snapshot;
 import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
-import rst.domotic.authentication.TicketAuthenticatorWrapperType.TicketAuthenticatorWrapper;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -83,11 +79,10 @@ import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.rsb.ScopeType;
+import rst.timing.TimestampType.Timestamp;
 
-import java.io.IOException;
 import java.util.*;
 import java.util.Map.Entry;
-import java.util.concurrent.Callable;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 
@@ -226,13 +221,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
 
                 // check if already handled
-                if (!serviceTypeSet.contains(serviceDescription.getType())) {
-                    serviceTypeSet.add(serviceDescription.getType());
+                if (!serviceTypeSet.contains(serviceDescription.getServiceType())) {
+                    serviceTypeSet.add(serviceDescription.getServiceType());
                     try {
-                        Object serviceData = Services.invokeServiceMethod(serviceDescription.getType(), ServicePattern.PROVIDER, serviceTempus, data);
-                        serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceDescription.getType()).notifyObservers(serviceData);
+                        Object serviceData = Services.invokeServiceMethod(serviceDescription.getServiceType(), ServicePattern.PROVIDER, serviceTempus, data);
+                        serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceDescription.getServiceType()).notifyObservers(serviceData);
                     } catch (CouldNotPerformException ex) {
-                        logger.debug("Could not notify state update for service[" + serviceDescription.getType() + "] because this service is not supported by this controller.", ex);
+                        logger.debug("Could not notify state update for service[" + serviceDescription.getServiceType() + "] because this service is not supported by this controller.", ex);
                     }
                 }
             }
@@ -282,12 +277,12 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         }
 
         try {
-            classDescription = getClass().getSimpleName() + "[" + config.getType() + "[" + config.getLabel() + "]]";
+            classDescription = getClass().getSimpleName() + "[" + config.getUnitType() + "[" + config.getLabel() + "]]";
         } catch (NullPointerException ex) {
             classDescription = getClass().getSimpleName() + "[?]";
         }
 
-        template = Registries.getTemplateRegistry(true).getUnitTemplateByType(config.getType());
+        template = Registries.getTemplateRegistry(true).getUnitTemplateByType(config.getUnitType());
 
         // register service observable which are not handled yet.
         for (final ServiceTempus serviceTempus : ServiceTempus.values()) {
@@ -296,8 +291,8 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             for (final ServiceDescription serviceDescription : template.getServiceDescriptionList()) {
 
                 // create observable if new
-                if (!serviceTempusServiceTypeObservableMap.get(serviceTempus).containsKey(serviceDescription.getType())) {
-                    serviceTempusServiceTypeObservableMap.get(serviceTempus).put(serviceDescription.getType(), new MessageObservable(this));
+                if (!serviceTempusServiceTypeObservableMap.get(serviceTempus).containsKey(serviceDescription.getServiceType())) {
+                    serviceTempusServiceTypeObservableMap.get(serviceTempus).put(serviceDescription.getServiceType(), new MessageObservable(this));
                 }
             }
         }
@@ -309,7 +304,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 for (final ServiceDescription serviceDescription : template.getServiceDescriptionList()) {
 
                     // verify if service type is still valid.
-                    if (serviceType == serviceDescription.getType()) {
+                    if (serviceType == serviceDescription.getServiceType()) {
                         // continue because service type is still valid
                         continue outer;
                     }
@@ -360,7 +355,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     @Override
     public UnitTemplate.UnitType getUnitType() throws NotAvailableException {
-        return getConfig().getType();
+        return getConfig().getUnitType();
     }
 
     @Override
@@ -386,7 +381,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         // collect and register service interface methods via unit templates
         HashMap<String, ServiceDescription> serviceInterfaceMap = new HashMap<>();
         for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
-            serviceInterfaceMap.put(StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getType().name())
+            serviceInterfaceMap.put(StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getServiceType().name())
                     + StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getPattern().name()), serviceDescription);
         }
 
@@ -415,7 +410,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 }
 
                 // Identify interface class
-                String serviceDataTypeName = StringProcessor.transformUpperCaseToCamelCase(serviceInterfaceMapEntry.getValue().getType().name()).replaceAll("Service", "");
+                String serviceDataTypeName = StringProcessor.transformUpperCaseToCamelCase(serviceInterfaceMapEntry.getValue().getServiceType().name()).replaceAll("Service", "");
                 String servicePatternName = StringProcessor.transformUpperCaseToCamelCase(serviceInterfaceMapEntry.getValue().getPattern().name());
                 String serviceClassName = servicePackage.getName() + "." + serviceDataTypeName + servicePatternName + "Service";
                 try {
@@ -577,7 +572,32 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             // update the current state
             Services.invokeServiceMethod(serviceType, OPERATION, ServiceTempus.CURRENT, internalBuilder, newState);
 
-            // do other state depending update in sub classes
+
+            // Update timestamps
+            try {
+                GeneratedMessage.Builder serviceStateBuilder = (GeneratedMessage.Builder) internalBuilder.getClass().getMethod("get" + Services.getServiceStateName(serviceType) + "Builder").invoke(internalBuilder);
+
+                //Set timestamp if missing
+                if (!serviceStateBuilder.hasField(serviceStateBuilder.getDescriptorForType().findFieldByName("timestamp"))) {
+                    logger.warn("State[" + serviceStateBuilder.getClass().getSimpleName() + "] of " + this + " does not contain any state related timestampe!");
+                    TimestampProcessor.updateTimestampWithCurrentTime(serviceStateBuilder, logger);
+                }
+
+                // update state value occurrence timestamp
+                try {
+                    FieldDescriptor valueFieldDescriptor = serviceStateBuilder.getDescriptorForType().findFieldByName("value");
+                    FieldDescriptor timestampFieldDescriptor = serviceStateBuilder.getDescriptorForType().findFieldByName("timestamp");
+                    if(valueFieldDescriptor != null) {
+                        ServiceStateProcessor.updateLatestValueOccurrence((ProtocolMessageEnum) serviceStateBuilder.getField(valueFieldDescriptor), ((Timestamp) serviceStateBuilder.getField(timestampFieldDescriptor)), serviceStateBuilder);
+                    }
+                } catch (CouldNotPerformException ex) {
+                    throw new CouldNotPerformException("Could not update state value occurrence timestamp!", ex);
+                }
+            } catch(Exception ex) {
+                ExceptionPrinter.printHistory("Could not update timestamp!", ex, logger);
+            }
+
+            // do custom state depending update in sub classes
             applyDataUpdate(internalBuilder, serviceType);
         } catch (Exception ex) {
             throw new CouldNotPerformException("Could not apply service[" + serviceType.name() + "] update[" + value + "] for " + this + "!", ex);
@@ -596,7 +616,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     private boolean hasOperationServiceForType(ServiceType serviceType) throws NotAvailableException {
         for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
-            if (serviceDescription.getType() == serviceType && serviceDescription.getPattern() == OPERATION) {
+            if (serviceDescription.getServiceType() == serviceType && serviceDescription.getPattern() == OPERATION) {
                 return true;
             }
         }

@@ -81,7 +81,7 @@ public class Consumer implements Manageable<ServiceConfig> {
             if (boundedProviderService != null) {
                 boundedProviderService.shutdown();
             }
-            boundedProviderService = ServiceRemoteFactoryImpl.getInstance().newInitializedInstanceById(providerServiceConfig.getServiceDescription().getType(), providerServiceConfig.getUnitId());
+            boundedProviderService = ServiceRemoteFactoryImpl.getInstance().newInitializedInstanceById(providerServiceConfig.getServiceDescription().getServiceType(), providerServiceConfig.getUnitId());
         } catch (final CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }

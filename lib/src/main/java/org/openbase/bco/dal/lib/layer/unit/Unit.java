@@ -190,7 +190,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
                 Snapshot.Builder snapshotBuilder = Snapshot.newBuilder();
                 for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
                     try {
-                        ServiceStateDescription.Builder serviceStateDescription = ServiceStateDescription.newBuilder().setServiceType(serviceDescription.getType()).setUnitId(getId());
+                        ServiceStateDescription.Builder serviceStateDescription = ServiceStateDescription.newBuilder().setServiceType(serviceDescription.getServiceType()).setUnitId(getId());
 
                         // skip non operation services.
                         if (serviceDescription.getPattern() != ServiceTemplate.ServicePattern.OPERATION) {
@@ -198,7 +198,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
                         }
 
                         // load operation service attribute by related provider service
-                        Message serviceAttribute = (Message) Services.invokeServiceMethod(serviceDescription.getType(), ServiceTemplate.ServicePattern.PROVIDER, this);
+                        Message serviceAttribute = (Message) Services.invokeServiceMethod(serviceDescription.getServiceType(), ServiceTemplate.ServicePattern.PROVIDER, this);
 
                         // verify operation service state (e.g. ignore UNKNOWN service states)
                         Services.verifyOperationServiceState(serviceAttribute);
@@ -213,7 +213,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
                         }
                         serviceStateDescription.setUnitId(getId());
                         serviceStateDescription.setUnitType(getUnitTemplate().getType());
-                        serviceStateDescription.setServiceType(serviceDescription.getType());
+                        serviceStateDescription.setServiceType(serviceDescription.getServiceType());
                         serviceStateDescription.setServiceAttributeType(serviceJSonProcessor.getServiceAttributeType(serviceAttribute));
 
                         // add action config
@@ -701,7 +701,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
      */
     default VariableProvider generateVariablePool(final ServiceType serviceType) throws NotAvailableException {
         for (ServiceConfig serviceConfig : getConfig().getServiceConfigList()) {
-            if (serviceConfig.getServiceDescription().getType() == serviceType) {
+            if (serviceConfig.getServiceDescription().getServiceType() == serviceType) {
                 return generateVariablePool(serviceConfig);
             }
         }
@@ -774,7 +774,7 @@ public interface Unit<D> extends LabelProvider, ScopeProvider, Identifiable<Stri
                 UnitConfig hostUnitConfig = getHostUnitConfig();
                 configPool.register(new MetaConfigVariableProvider("HostConfigMetaConfig", hostUnitConfig.getMetaConfig()));
                 configPool.register(new ProtobufVariableProvider(hostUnitConfig));
-                switch (hostUnitConfig.getType()) {
+                switch (hostUnitConfig.getUnitType()) {
                     case DEVICE:
                         final DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(hostUnitConfig.getDeviceConfig().getDeviceClassId());
                         configPool.register(new MetaConfigVariableProvider("DeviceBindingConfig", deviceClass.getBindingConfig().getMetaConfig()));

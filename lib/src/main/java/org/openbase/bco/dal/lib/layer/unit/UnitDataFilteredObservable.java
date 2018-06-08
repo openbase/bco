@@ -96,10 +96,10 @@ public class UnitDataFilteredObservable<M extends Message> extends AbstractObser
 
         Set<ServiceType> serviceTypeSet = new HashSet<>();
         for (ServiceDescription serviceDescription : unitTemplate.getServiceDescriptionList()) {
-            if (!serviceTypeSet.contains(serviceDescription.getType())) {
-                serviceTypeSet.add(serviceDescription.getType());
+            if (!serviceTypeSet.contains(serviceDescription.getServiceType())) {
+                serviceTypeSet.add(serviceDescription.getServiceType());
 
-                fieldsToKeep.add(Services.getServiceFieldName(serviceDescription.getType(), serviceTempus));
+                fieldsToKeep.add(Services.getServiceFieldName(serviceDescription.getServiceType(), serviceTempus));
             }
         }
     }

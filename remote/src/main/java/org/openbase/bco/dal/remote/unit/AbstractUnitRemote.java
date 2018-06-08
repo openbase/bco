@@ -134,13 +134,13 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
                         continue;
                     }
                     // check if already handled
-                    if (!serviceTypeSet.contains(serviceDescription.getType())) {
-                        serviceTypeSet.add(serviceDescription.getType());
+                    if (!serviceTypeSet.contains(serviceDescription.getServiceType())) {
+                        serviceTypeSet.add(serviceDescription.getServiceType());
                         try {
-                            Object serviceData = Services.invokeServiceMethod(serviceDescription.getType(), ServicePattern.PROVIDER, serviceTempus, data1);
-                            serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceDescription.getType()).notifyObservers(serviceData);
+                            Object serviceData = Services.invokeServiceMethod(serviceDescription.getServiceType(), ServicePattern.PROVIDER, serviceTempus, data1);
+                            serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceDescription.getServiceType()).notifyObservers(serviceData);
                         } catch (CouldNotPerformException ex) {
-                            logger.debug("Could not notify state update for service[" + serviceDescription.getType() + "] because this service is not supported by this remote controller.", ex);
+                            logger.debug("Could not notify state update for service[" + serviceDescription.getServiceType() + "] because this service is not supported by this remote controller.", ex);
                         }
                     }
                 }
@@ -276,13 +276,13 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
 //        for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
 //
 //            // check if already handled
-//            if (!serviceTypeSet.contains(serviceDescription.getType())) {
-//                serviceTypeSet.add(serviceDescription.getType());
+//            if (!serviceTypeSet.contains(serviceDescription.getServiceType())) {
+//                serviceTypeSet.add(serviceDescription.getServiceType());
 //                try {
-//                    Object serviceData = Services.invokeProviderServiceMethod(serviceDescription.getType(), data);
-//                    serviceStateObservableMap.get(serviceDescription.getType()).notifyObservers(serviceData);
+//                    Object serviceData = Services.invokeProviderServiceMethod(serviceDescription.getServiceType(), data);
+//                    serviceStateObservableMap.get(serviceDescription.getServiceType()).notifyObservers(serviceData);
 //                } catch (CouldNotPerformException ex) {
-//                    logger.debug("Could not notify state update for service[" + serviceDescription.getType() + "] because this service is not supported by this remote controller.", ex);
+//                    logger.debug("Could not notify state update for service[" + serviceDescription.getServiceType() + "] because this service is not supported by this remote controller.", ex);
 //                }
 //            }
 //        }
@@ -320,29 +320,29 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     /**
      * {@inheritDoc}
      *
-     * @param config {@inheritDoc}
+     * @param unitConfig {@inheritDoc}
      * @return {@inheritDoc}
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      * @throws java.lang.InterruptedException                      {@inheritDoc}
      */
     @Override
-    public UnitConfig applyConfigUpdate(final UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        if (config == null) {
+    public UnitConfig applyConfigUpdate(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
+        if (unitConfig == null) {
             throw new NotAvailableException("UnitConfig");
         }
 
         // non change filter
         try {
-            if (getConfig().equals(config)) {
+            if (getConfig().equals(unitConfig)) {
                 logger.debug("Skip config update because no config change detected!");
-                return config;
+                return unitConfig;
             }
         } catch (final NotAvailableException ex) {
             logger.trace("Unit config change check failed because config is not available yet.");
         }
 
         // update unit template
-        template = Registries.getTemplateRegistry(true).getUnitTemplateByType(config.getType());
+        template = Registries.getTemplateRegistry(true).getUnitTemplateByType(unitConfig.getUnitType());
 
         // register service observable which are not handled yet.
         for (ServiceTempus serviceTempus : ServiceTempus.values()) {
@@ -354,8 +354,8 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
                 }
 
                 // create observable if new
-                if (!serviceTempusServiceTypeObservableMap.get(serviceTempus).containsKey(serviceDescription.getType())) {
-                    serviceTempusServiceTypeObservableMap.get(serviceTempus).put(serviceDescription.getType(), new ServiceDataFilteredObservable(this));
+                if (!serviceTempusServiceTypeObservableMap.get(serviceTempus).containsKey(serviceDescription.getServiceType())) {
+                    serviceTempusServiceTypeObservableMap.get(serviceTempus).put(serviceDescription.getServiceType(), new ServiceDataFilteredObservable(this));
                 }
             }
         }
@@ -367,7 +367,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
                 for (final ServiceDescription serviceDescription : template.getServiceDescriptionList()) {
 
                     // verify if service type is still valid.
-                    if (serviceType == serviceDescription.getType()) {
+                    if (serviceType == serviceDescription.getServiceType()) {
                         // continue because service type is still valid
                         continue outer;
                     }
@@ -378,7 +378,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
             }
         }
 
-        return super.applyConfigUpdate(config);
+        return super.applyConfigUpdate(unitConfig);
     }
 
     /**
@@ -459,7 +459,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     @Override
     public UnitType getUnitType() throws NotAvailableException {
         try {
-            return getConfig().getType();
+            return getConfig().getUnitType();
         } catch (NullPointerException | NotAvailableException ex) {
             throw new NotAvailableException("unit type", ex);
         }

@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.unit.user;
  * #L%
  */
 import org.openbase.bco.dal.lib.layer.service.operation.ActivityStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.operation.PresenceStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.UserTransitStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -33,7 +34,7 @@ import rst.domotic.unit.user.UserDataType.UserData;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface User extends BaseUnit<UserData>, ActivityStateOperationService, UserTransitStateOperationService {
+public interface User extends BaseUnit<UserData>, ActivityStateOperationService, UserTransitStateOperationService, PresenceStateOperationService {
 
     public final static String TYPE_FIELD_USER_NAME = "user_name";
 
@@ -53,16 +54,23 @@ public interface User extends BaseUnit<UserData>, ActivityStateOperationService,
         }
     }
 
-    default public Boolean isAtHome() throws NotAvailableException {
+    /**
+     *
+     * @return
+     * @throws NotAvailableException
+     * @deprecated Please use getPresenceState() instead.
+     */
+    @Deprecated
+    default Boolean isAtHome() throws NotAvailableException {
         try {
             switch (getData().getUserTransitState().getValue()) {
-                case AT_HOME:
-                case SHORT_AT_HOME:
-                case SOON_AWAY:
+                case LONG_TERM_PRESENT:
+                case SHORT_TERM_PRESENT:
+                case SOON_ABSENT:
                     return true;
-                case AWAY:
-                case SHORT_AWAY:
-                case SOON_AT_HOME:
+                case LONG_TERM_ABSENT:
+                case SHORT_TERM_ABSENT:
+                case SOON_PRESENT:
                     return false;
                 case UNKNOWN:
                     throw new InvalidStateException("UserTransitState unknown!");

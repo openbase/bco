@@ -21,8 +21,6 @@ package org.openbase.bco.dal.lib.layer.unit.unitgroup;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import java.util.HashSet;
-import java.util.Set;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import org.openbase.bco.dal.lib.layer.unit.MultiUnitServiceFusion;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -30,6 +28,9 @@ import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
+
+import java.util.HashSet;
+import java.util.Set;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -41,7 +42,7 @@ public interface UnitGroup extends BaseUnit<UnitGroupData>, MultiUnitServiceFusi
         final Set<ServiceTemplateType.ServiceTemplate.ServiceType> serviceTypeSet = new HashSet<>();
         try {
             for (final ServiceDescription serviceDescription : getConfig().getUnitGroupConfig().getServiceDescriptionList()) {
-                serviceTypeSet.add(serviceDescription.getType());
+                serviceTypeSet.add(serviceDescription.getServiceType());
             }
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("SupportedServiceTypes", new CouldNotPerformException("Could not generate supported service type list!", ex));

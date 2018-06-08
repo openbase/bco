@@ -39,7 +39,7 @@ public interface BlindStateProviderService extends ProviderService {
 
     static void verifyBlindState(final BlindState blindState) throws VerificationFailedException {
         try {
-            if (!blindState.hasMovementState() && !blindState.hasOpeningRatio()) {
+            if (!blindState.hasValue() && !blindState.hasOpeningRatio()) {
                 throw new VerificationFailedException("MovementState and OpeningRatio not available!", new InvalidStateException(blindState.toString()));
             }
 
@@ -47,8 +47,8 @@ public interface BlindStateProviderService extends ProviderService {
                 throw new VerificationFailedException("Opening ratio of blind state out of range with value[" + blindState.getOpeningRatio() + "]!", new InvalidStateException(blindState.toString()));
             }
 
-            if (blindState.hasMovementState()) {
-                switch (blindState.getMovementState()) {
+            if (blindState.hasValue()) {
+                switch (blindState.getValue()) {
                     case UNKNOWN:
                         throw new VerificationFailedException("MovementState unknown!", new InvalidStateException(blindState.toString()));
                     default:

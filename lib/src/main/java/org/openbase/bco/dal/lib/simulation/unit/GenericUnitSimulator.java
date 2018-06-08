@@ -66,7 +66,7 @@ public class GenericUnitSimulator extends AbstractUnitSimulator {
             final MultiException.ExceptionStack exceptionStack = new MultiException.ExceptionStack();
             for (final ServiceDescription serviceDescription : unitController.getUnitTemplate().getServiceDescriptionList()) {
                 try {
-                    serviceSimulatorList.add(serviceSimulatorFactory.newInstance(unitController, serviceDescription.getType()));
+                    serviceSimulatorList.add(serviceSimulatorFactory.newInstance(unitController, serviceDescription.getServiceType()));
                 } catch (final CouldNotPerformException ex) {
                     MultiException.push(this, ex, exceptionStack);
                 }

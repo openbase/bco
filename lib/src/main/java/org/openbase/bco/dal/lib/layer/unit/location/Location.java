@@ -62,7 +62,7 @@ public interface Location extends BaseUnit<LocationData>, PresenceStateProviderS
         final Set<ServiceTemplate.ServiceType> serviceTypeSet = new HashSet<>();
         try {
             for (final ServiceConfig serviceConfig : getConfig().getServiceConfigList()) {
-                serviceTypeSet.add(serviceConfig.getServiceDescription().getType());
+                serviceTypeSet.add(serviceConfig.getServiceDescription().getServiceType());
             }
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("SupportedServiceTypes", new CouldNotPerformException("Could not generate supported service type list!", ex));

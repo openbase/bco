@@ -439,7 +439,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
 
         unitTemplateBuilder.clearServiceDescription();
         for (final ServiceDescription serviceDescription : super.getUnitTemplate().getServiceDescriptionList()) {
-            if (serviceRemoteManager.isServiceAvailable(serviceDescription.getType())) {
+            if (serviceRemoteManager.isServiceAvailable(serviceDescription.getServiceType())) {
                 unitTemplateBuilder.addServiceDescription(serviceDescription);
             }
         }
@@ -459,7 +459,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         final Set<ServiceType> serviceTypeList = new HashSet<>();
 
         for (final ServiceDescription serviceDescription : getTemplate(true).getServiceDescriptionList()) {
-            serviceTypeList.add(serviceDescription.getType());
+            serviceTypeList.add(serviceDescription.getServiceType());
         }
         return serviceTypeList;
     }

@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -27,7 +27,6 @@ import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
-import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.Timeout;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -106,15 +105,8 @@ public class ButtonController extends AbstractDALUnitController<ButtonData, Butt
     protected void applyDataUpdate(ButtonData.Builder internalBuilder, ServiceType serviceType) {
         switch (serviceType) {
             case BUTTON_STATE_SERVICE:
-                // Update timestemp if necessary
-                ButtonState.Builder buttonState = internalBuilder.getButtonStateBuilder();
-                if (buttonState.getValue() == ButtonState.State.PRESSED || buttonState.getValue() == ButtonState.State.DOUBLE_PRESSED) {
-                    if (!buttonState.hasTimestamp()) {
-                        logger.warn("State[" + buttonState.getClass().getSimpleName() + "] of " + this + " does not contain any state related timestamp!");
-                        buttonState = TimestampProcessor.updateTimestampWithCurrentTime(buttonState, logger);
-                    }
-                    buttonState.setLastPressed(buttonState.getTimestamp());
 
+                if (internalBuilder.getButtonState().getValue() == ButtonState.State.PRESSED || internalBuilder.getButtonState().getValue() == ButtonState.State.DOUBLE_PRESSED) {
                     try {
                         if (Boolean.parseBoolean(generateVariablePool().getValue(META_CONFIG_AUTO_RESET_BUTTON_STATE))) {
                             try {
