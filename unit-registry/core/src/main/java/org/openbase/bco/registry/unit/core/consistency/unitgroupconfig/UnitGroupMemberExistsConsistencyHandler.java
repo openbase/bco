@@ -49,7 +49,7 @@ public class UnitGroupMemberExistsConsistencyHandler extends AbstractProtoBufReg
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> sceneRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitGroupRegistry;
-    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> userRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitRegistry;
 
     public UnitGroupMemberExistsConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> agentRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> appRegistry,
@@ -60,7 +60,7 @@ public class UnitGroupMemberExistsConsistencyHandler extends AbstractProtoBufReg
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> scneRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitGroupRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> userRegistry) {
+            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitRegistry) {
         this.agentRegistry = agentRegistry;
         this.appRegistry = appRegistry;
         this.authorizationGroupRegistry = authorizationGroupRegistry;
@@ -70,7 +70,7 @@ public class UnitGroupMemberExistsConsistencyHandler extends AbstractProtoBufReg
         this.locationRegistry = locationRegistry;
         this.sceneRegistry = scneRegistry;
         this.unitGroupRegistry = unitGroupRegistry;
-        this.userRegistry = userRegistry;
+        this.unitRegistry = unitRegistry;
     }
 
     @Override
@@ -106,6 +106,6 @@ public class UnitGroupMemberExistsConsistencyHandler extends AbstractProtoBufReg
                 || locationRegistry.contains(unitConfigId)
                 || sceneRegistry.contains(unitConfigId)
                 || unitGroupRegistry.contains(unitConfigId)
-                || userRegistry.contains(unitConfigId);
+                || unitRegistry.contains(unitConfigId);
     }
 }

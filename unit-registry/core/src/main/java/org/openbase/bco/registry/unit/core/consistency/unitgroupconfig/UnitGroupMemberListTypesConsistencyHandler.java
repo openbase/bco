@@ -56,7 +56,7 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> sceneRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitGroupRegistry;
-    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> userRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitRegistry;
 
     public UnitGroupMemberListTypesConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> agentRegistry,
                                                       final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> appRegistry,
@@ -67,7 +67,7 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
                                                       final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> locationRegistry,
                                                       final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> scneRegistry,
                                                       final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitGroupRegistry,
-                                                      final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> userRegistry) {
+                                                      final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitRegistry) {
         this.agentRegistry = agentRegistry;
         this.appRegistry = appRegistry;
         this.authorizationGroupRegistry = authorizationGroupRegistry;
@@ -77,7 +77,7 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
         this.locationRegistry = locationRegistry;
         this.sceneRegistry = scneRegistry;
         this.unitGroupRegistry = unitGroupRegistry;
-        this.userRegistry = userRegistry;
+        this.unitRegistry = unitRegistry;
     }
 
     @Override
@@ -143,8 +143,8 @@ public class UnitGroupMemberListTypesConsistencyHandler extends AbstractProtoBuf
             return sceneRegistry.getMessage(unitConfigId);
         } else if (unitGroupRegistry.contains(unitConfigId)) {
             return unitGroupRegistry.getMessage(unitConfigId);
-        } else if (userRegistry.contains(unitConfigId)) {
-            return userRegistry.getMessage(unitConfigId);
+        } else if (unitRegistry.contains(unitConfigId)) {
+            return unitRegistry.getMessage(unitConfigId);
         }
         throw new NotAvailableException(unitConfigId);
     }

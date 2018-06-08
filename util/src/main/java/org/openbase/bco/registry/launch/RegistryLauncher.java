@@ -24,6 +24,7 @@ package org.openbase.bco.registry.launch;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
+
 import org.openbase.bco.authentication.core.AuthenticatorLauncher;
 import org.openbase.bco.registry.clazz.core.ClassRegistryLauncher;
 import org.openbase.bco.registry.lib.BCO;

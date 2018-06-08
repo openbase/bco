@@ -212,7 +212,7 @@ public class VirtualRegistrySyncTest {
 //        deviceRegistry.addDataObserver(deviceRegistryObserver);
 //        Thread waitForDeviceUpdateThread;
 //
-//        final Observer locationRegistryObserver = (Observer<LocationRegistryData>) (Observable<LocationRegistryData> source, LocationRegistryData data) -> {
+//        final Observer locationRegistryObserver = (Observer<UnitRegistryData>) (Observable<UnitRegistryData> source, UnitRegistryData data) -> {
 //            synchronized (LOCATION_LOCK) {
 ////                LOGGER.info("LocationRegistry notification...");
 //                LOCATION_LOCK.notifyAll();

@@ -37,10 +37,10 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  */
 public class DeviceOwnerConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
-    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> userRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitRegistry;
 
-    public DeviceOwnerConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> userRegistry) {
-        this.userRegistry = userRegistry;
+    public DeviceOwnerConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitRegistry) {
+        this.unitRegistry = unitRegistry;
     }
 
     @Override
@@ -51,7 +51,7 @@ public class DeviceOwnerConsistencyHandler extends AbstractProtoBufRegistryConsi
         if (unitConfig.hasPermissionConfig() &&
                 unitConfig.getPermissionConfig().hasOwnerId() &&
                 !unitConfig.getPermissionConfig().getOwnerId().isEmpty() &&
-                !userRegistry.contains(unitConfig.getPermissionConfig().getOwnerId())) {
+                !unitRegistry.contains(unitConfig.getPermissionConfig().getOwnerId())) {
             // remove unknown owner
             unitConfig.getPermissionConfigBuilder().clearOwnerId();
             throw new EntryModification(entry.setMessage(unitConfig), this);

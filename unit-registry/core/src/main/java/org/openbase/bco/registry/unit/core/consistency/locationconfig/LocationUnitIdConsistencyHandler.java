@@ -53,7 +53,7 @@ public class LocationUnitIdConsistencyHandler extends AbstractProtoBufRegistryCo
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> sceneRegistry;
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitGroupRegistry;
-    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> userRegistry;
+    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitRegistry;
 
     public LocationUnitIdConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> agentRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> appRegistry,
@@ -63,7 +63,7 @@ public class LocationUnitIdConsistencyHandler extends AbstractProtoBufRegistryCo
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> scneRegistry,
             final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitGroupRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> userRegistry) {
+            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> unitRegistry) {
         this.agentRegistry = agentRegistry;
         this.appRegistry = appRegistry;
         this.authorizationGroupRegistry = authorizationGroupRegistry;
@@ -72,7 +72,7 @@ public class LocationUnitIdConsistencyHandler extends AbstractProtoBufRegistryCo
         this.deviceRegistry = deviceRegistry;
         this.sceneRegistry = scneRegistry;
         this.unitGroupRegistry = unitGroupRegistry;
-        this.userRegistry = userRegistry;
+        this.unitRegistry = unitRegistry;
     }
 
     @Override
@@ -112,7 +112,7 @@ public class LocationUnitIdConsistencyHandler extends AbstractProtoBufRegistryCo
             allUnits.addAll(deviceRegistry.getMessages());
             allUnits.addAll(sceneRegistry.getMessages());
             allUnits.addAll(unitGroupRegistry.getMessages());
-            allUnits.addAll(userRegistry.getMessages());
+            allUnits.addAll(unitRegistry.getMessages());
             for (UnitConfig unitConfig : allUnits) {
 
                 // skip units with no placenment config
