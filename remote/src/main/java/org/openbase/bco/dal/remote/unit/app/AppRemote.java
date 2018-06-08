@@ -26,7 +26,7 @@ import org.openbase.bco.dal.lib.layer.unit.app.App;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
@@ -54,12 +54,7 @@ public class AppRemote extends AbstractUnitRemote<AppData> implements App {
 
     @Override
     public Future<ActionFuture> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-        try {
-            return applyAction(updateActionDescription(actionDescription, activationState, ServiceType.ACTIVATION_STATE_SERVICE).build());
-        } catch (InterruptedException ex) {
-            throw new CouldNotPerformException("Interrupted while setting activationState.", ex);
-        }
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(activationState, ServiceType.ACTIVATION_STATE_SERVICE, this));
     }
 
     @Override

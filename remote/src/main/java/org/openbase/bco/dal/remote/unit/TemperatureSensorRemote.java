@@ -21,6 +21,7 @@ package org.openbase.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
@@ -31,7 +32,6 @@ import rst.domotic.unit.dal.TemperatureSensorDataType.TemperatureSensorData;
 import org.openbase.bco.dal.lib.layer.unit.TemperatureSensor;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class TemperatureSensorRemote extends AbstractUnitRemote<TemperatureSensorData> implements TemperatureSensor {
@@ -62,5 +62,4 @@ public class TemperatureSensorRemote extends AbstractUnitRemote<TemperatureSenso
             throw new NotAvailableException("TemperatureAlarmStateState", ex);
         }
     }
-
 }

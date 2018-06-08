@@ -434,7 +434,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
     }
 
     @Override
-    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
         try {
             if (!actionDescription.hasDescription() || actionDescription.getDescription().isEmpty()) {
                 // Fallback print in case the description is not available. 

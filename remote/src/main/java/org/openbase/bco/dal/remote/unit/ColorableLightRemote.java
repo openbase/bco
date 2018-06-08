@@ -28,7 +28,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import rsb.converter.DefaultConverterRepository;
@@ -164,12 +164,7 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
 
     @Override
     public Future<ActionFutureType.ActionFuture> setColorState(final ColorState colorState) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-        try {
-            return applyAction(updateActionDescription(actionDescription, colorState, ServiceType.COLOR_STATE_SERVICE).build());
-        } catch (InterruptedException ex) {
-            throw new CouldNotPerformException("Interrupted while setting colorState.", ex);
-        }
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(colorState, ServiceType.COLOR_STATE_SERVICE, this));
     }
 
     @Override
@@ -179,12 +174,7 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
 
     @Override
     public Future<ActionFuture> setBrightnessState(BrightnessState brightnessState) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-        try {
-            return applyAction(updateActionDescription(actionDescription, brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE).build());
-        } catch (InterruptedException ex) {
-            throw new CouldNotPerformException("Interrupted while setting brightnessState.", ex);
-        }
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(brightnessState, ServiceType.BRIGHTNESS_STATE_SERVICE, this));
     }
 
     @Override
@@ -197,13 +187,8 @@ public class ColorableLightRemote extends AbstractUnitRemote<ColorableLightData>
     }
 
     @Override
-    public Future<ActionFuture> setPowerState(PowerState powerState) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-        try {
-            return applyAction(updateActionDescription(actionDescription, powerState, ServiceType.POWER_STATE_SERVICE).build());
-        } catch (InterruptedException ex) {
-            throw new CouldNotPerformException("Interrupted while setting powerState.", ex);
-        }
+    public Future<ActionFuture> setPowerState(final PowerState powerState) throws CouldNotPerformException {
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(powerState, ServiceType.POWER_STATE_SERVICE, this));
     }
 
     @Override

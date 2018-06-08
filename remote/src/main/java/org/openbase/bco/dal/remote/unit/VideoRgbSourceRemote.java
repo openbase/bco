@@ -28,7 +28,6 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.unit.dal.VideoRgbSourceDataType.VideoRgbSourceData;
 
 /**
- *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class VideoRgbSourceRemote extends AbstractUnitRemote<VideoRgbSourceData> implements VideoDepthSource {
@@ -40,5 +39,4 @@ public class VideoRgbSourceRemote extends AbstractUnitRemote<VideoRgbSourceData>
     public VideoRgbSourceRemote() {
         super(VideoRgbSourceData.class);
     }
-    
 }

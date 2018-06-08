@@ -36,10 +36,19 @@ import java.util.concurrent.Future;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface ServiceProvider {
-    
+
+    /**
+     * Method applies the action on this instance.
+     *
+     * @param actionDescription the description of the action.
+     *
+     * @return a future which gives feedback about the action execution state.
+     *
+     * @throws CouldNotPerformException is thrown if the action could not be applied.
+     */
     @RPCMethod
     Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException;
-    
+
     void addServiceStateObserver(final ServiceType serviceType, final Observer observer);
 
     void removeServiceStateObserver(final ServiceType serviceType, final Observer observer);

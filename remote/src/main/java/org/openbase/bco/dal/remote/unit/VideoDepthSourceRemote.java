@@ -28,7 +28,6 @@ import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.unit.dal.VideoDepthSourceDataType.VideoDepthSourceData;
 
 /**
- *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class VideoDepthSourceRemote extends AbstractUnitRemote<VideoDepthSourceData> implements VideoDepthSource {

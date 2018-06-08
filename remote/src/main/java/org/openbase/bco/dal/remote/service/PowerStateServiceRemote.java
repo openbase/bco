@@ -25,16 +25,14 @@ package org.openbase.bco.dal.remote.service;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.PowerStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
-import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
-import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
@@ -49,7 +47,6 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.Collection;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -123,28 +120,12 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
 
     @Override
     public Future<ActionFuture> setPowerState(final PowerState powerState) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-        actionDescription.setMultiResourceAllocationStrategy(MultiResourceAllocationStrategy.newBuilder().setStrategy(MultiResourceAllocationStrategy.Strategy.ALL_OR_NOTHING)).build();
-        try {
-            return applyAction(Services.updateActionDescription(actionDescription, powerState, getServiceType()).build());
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new CouldNotPerformException("Could not set powerState", ex);
-        }
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(powerState, getServiceType()));
     }
 
     @Override
     public Future<ActionFuture> setPowerState(final PowerState powerState, final UnitType unitType) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
-        serviceStateDescription.setUnitType(unitType);
-
-        try {
-            return applyAction(Services.updateActionDescription(actionDescription, powerState, getServiceType()).build());
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new CouldNotPerformException("Could not set powerState", ex);
-        }
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(powerState, getServiceType(), unitType));
     }
 
     /**

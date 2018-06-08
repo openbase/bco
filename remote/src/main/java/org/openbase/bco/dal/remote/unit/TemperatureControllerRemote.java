@@ -21,11 +21,13 @@ package org.openbase.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import java.util.concurrent.Future;
+
 import org.openbase.bco.dal.lib.layer.unit.TemperatureController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
@@ -37,7 +39,6 @@ import rst.domotic.state.TemperatureStateType.TemperatureState;
 import rst.domotic.unit.dal.TemperatureControllerDataType.TemperatureControllerData;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class TemperatureControllerRemote extends AbstractUnitRemote<TemperatureControllerData> implements TemperatureController {
@@ -62,12 +63,7 @@ public class TemperatureControllerRemote extends AbstractUnitRemote<TemperatureC
 
     @Override
     public Future<ActionFuture> setTargetTemperatureState(final TemperatureState temperatureState) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-        try {
-            return applyAction(updateActionDescription(actionDescription, temperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE).build());
-        } catch (InterruptedException ex) {
-            throw new CouldNotPerformException("Interrupted while setting temperatureState.", ex);
-        }
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(temperatureState, ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, this));
     }
 
     @Override

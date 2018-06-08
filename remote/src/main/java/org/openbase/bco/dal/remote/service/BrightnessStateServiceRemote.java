@@ -31,7 +31,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.BrightnessStateOperation
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
@@ -59,28 +59,12 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
 
     @Override
     public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-
-        try {
-            return applyAction(Services.updateActionDescription(actionDescription, brightnessState, getServiceType()).build());
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new CouldNotPerformException("Could not set brightnessState", ex);
-        }
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(brightnessState, getServiceType()));
     }
 
     @Override
     public Future<ActionFuture> setBrightnessState(final BrightnessState brightnessState, final UnitType unitType) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
-        serviceStateDescription.setUnitType(unitType);
-        
-        try {
-            return applyAction(Services.updateActionDescription(actionDescription, brightnessState, getServiceType()).build());
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new CouldNotPerformException("Could not set brightnessState", ex);
-        }
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(brightnessState, getServiceType(), unitType));
     }
 
     /**
@@ -102,7 +86,6 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
 
     @Override
     public BrightnessState getBrightnessState(final UnitType unitType) throws NotAvailableException {
-
 
         Collection<BrightnessStateOperationService> brightnessStateOperationServices = getServices(unitType);
         int serviceNumber = brightnessStateOperationServices.size();

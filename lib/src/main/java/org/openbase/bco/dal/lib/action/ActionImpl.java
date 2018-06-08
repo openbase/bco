@@ -38,7 +38,6 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
@@ -77,7 +76,7 @@ public class ActionImpl implements Action {
     }
 
     @Override
-    public void init(final ActionDescription actionDescription) throws InitializationException, InterruptedException {
+    public void init(final ActionDescription actionDescription) throws InitializationException {
         try {
             // verify
             this.verifyActionDescription(actionDescription);

@@ -21,12 +21,14 @@ package org.openbase.bco.dal.remote.unit.scene;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import java.util.concurrent.Future;
+
 import org.openbase.bco.dal.lib.layer.unit.scene.Scene;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
@@ -38,7 +40,6 @@ import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.unit.scene.SceneDataType.SceneData;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class SceneRemote extends AbstractUnitRemote<SceneData> implements Scene {
@@ -55,12 +56,7 @@ public class SceneRemote extends AbstractUnitRemote<SceneData> implements Scene 
 
     @Override
     public Future<ActionFuture> setActivationState(ActivationState activationState) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-        try {
-            return applyAction(updateActionDescription(actionDescription, activationState, ServiceType.ACTIVATION_STATE_SERVICE).build());
-        } catch (InterruptedException ex) {
-            throw new CouldNotPerformException("Interrupted while setting activationState.", ex);
-        }
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(activationState, ServiceType.ACTIVATION_STATE_SERVICE, this));
     }
 
     @Override

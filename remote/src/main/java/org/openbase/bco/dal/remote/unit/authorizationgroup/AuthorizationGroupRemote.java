@@ -22,20 +22,18 @@ package org.openbase.bco.dal.remote.unit.authorizationgroup;
  * #L%
  */
 import java.util.concurrent.Future;
+
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.unit.authorizationgroup.AuthorizationGroup;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
-import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
-import rst.domotic.action.ActionAuthorityType.ActionAuthority;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.state.UserTransitStateType.UserTransitState;
+import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.unit.authorizationgroup.AuthorizationGroupDataType.AuthorizationGroupData;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
 
@@ -56,21 +54,16 @@ public class AuthorizationGroupRemote extends AbstractUnitRemote<AuthorizationGr
     }
 
     @Override
-    public UserTransitState getUserTransitState() throws NotAvailableException {
-        try {
-            return getData().getUserTransitState();
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("user presence state", ex);
-        }
+    public Future<ActionFuture> setPresenceState(PresenceState presenceState) throws CouldNotPerformException {
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(presenceState, ServiceType.PRESENCE_STATE_SERVICE, this));
     }
 
     @Override
-    public Future<ActionFuture> setUserTransitState(UserTransitState userTransitState) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
+    public PresenceState getPresenceState() throws NotAvailableException {
         try {
-            return applyAction(updateActionDescription(actionDescription, userTransitState, ServiceType.PRESENCE_STATE_SERVICE).build());
-        } catch (InterruptedException ex) {
-            throw new CouldNotPerformException("Interrupted while setting activationState.", ex);
+            return getData().getPresenceState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("user presence state", ex);
         }
     }
 }

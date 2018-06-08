@@ -22,11 +22,14 @@ package org.openbase.bco.dal.remote.unit.agent;
  * #L%
  */
 import java.util.concurrent.Future;
+
+import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.agent.Agent;
 import org.openbase.bco.dal.remote.unit.AbstractUnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
@@ -56,13 +59,7 @@ public class AgentRemote extends AbstractUnitRemote<AgentData> implements Agent 
 
     @Override
     public Future<ActionFuture> setActivationState(final ActivationState activationState) throws CouldNotPerformException {
-        logger.info("Calling remote setActivationState to [" + activationState.getValue() + "] for agent");
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-        try {
-            return applyAction(updateActionDescription(actionDescription, activationState, ServiceType.ACTIVATION_STATE_SERVICE).build());
-        } catch (InterruptedException ex) {
-            throw new CouldNotPerformException("Interrupted while setting activationState.", ex);
-        }
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(activationState, ServiceType.ACTIVATION_STATE_SERVICE, this));
     }
 
     @Override
@@ -72,12 +69,7 @@ public class AgentRemote extends AbstractUnitRemote<AgentData> implements Agent 
 
     @Override
     public Future<ActionFuture> setEmphasisState(EmphasisState emphasisState) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-        try {
-            return applyAction(updateActionDescription(actionDescription, emphasisState, ServiceType.EMPHASIS_STATE_SERVICE).build());
-        } catch (InterruptedException ex) {
-            throw new CouldNotPerformException("Interrupted while setting emphasisState.", ex);
-        }
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(emphasisState, ServiceType.EMPHASIS_STATE_SERVICE, this));
     }
 
     @Override

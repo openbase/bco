@@ -24,6 +24,7 @@ package org.openbase.bco.dal.lib.layer.unit;
 
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.service.collection.*;
+import org.openbase.bco.dal.lib.layer.service.operation.EmphasisStateOperationService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.annotation.RPCMethod;
@@ -34,6 +35,7 @@ import rst.domotic.state.*;
 import rst.domotic.state.BlindStateType.BlindState;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.ColorStateType.ColorState;
+import rst.domotic.state.EmphasisStateType.EmphasisState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.StandbyStateType.StandbyState;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
@@ -57,7 +59,8 @@ public interface MultiUnitServiceFusion extends BrightnessStateOperationServiceC
         TemperatureStateProviderServiceCollection,
         PowerConsumptionStateProviderServiceCollection,
         TamperStateProviderServiceCollection,
-        IlluminanceStateProviderServiceCollection {
+        IlluminanceStateProviderServiceCollection,
+        EmphasisStateOperationServiceCollection {
 
     Set<ServiceType> getSupportedServiceTypes() throws NotAvailableException, InterruptedException;
 
@@ -269,5 +272,25 @@ public interface MultiUnitServiceFusion extends BrightnessStateOperationServiceC
     @Override
     default Future<ActionFuture> setNeutralWhite() throws CouldNotPerformException {
         return ((ColorStateOperationServiceCollection) getServiceRemote(ServiceType.COLOR_STATE_SERVICE)).setNeutralWhite();
+    }
+
+    @Override
+    default EmphasisStateType.EmphasisState getEmphasisState() throws NotAvailableException {
+        return ((EmphasisStateOperationServiceCollection) getServiceRemote(ServiceType.EMPHASIS_STATE_SERVICE)).getEmphasisState();
+    }
+
+    @Override
+    default EmphasisStateType.EmphasisState getEmphasisState(final UnitType unitType) throws NotAvailableException {
+        return ((EmphasisStateOperationServiceCollection) getServiceRemote(ServiceType.EMPHASIS_STATE_SERVICE)).getEmphasisState(unitType);
+    }
+
+    @Override
+    default Future<ActionFuture> setEmphasisState(final EmphasisState emphasisState) throws CouldNotPerformException {
+        return ((EmphasisStateOperationServiceCollection) getServiceRemote(ServiceType.EMPHASIS_STATE_SERVICE)).setEmphasisState(emphasisState);
+    }
+
+    @Override
+    default Future<ActionFuture> setEmphasisState(final EmphasisState emphasisState, final UnitType unitType) throws CouldNotPerformException {
+        return ((EmphasisStateOperationServiceCollection) getServiceRemote(ServiceType.EMPHASIS_STATE_SERVICE)).setEmphasisState(emphasisState, unitType);
     }
 }

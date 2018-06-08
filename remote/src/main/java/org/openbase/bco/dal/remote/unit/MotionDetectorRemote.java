@@ -21,6 +21,7 @@ package org.openbase.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
@@ -30,7 +31,6 @@ import rst.domotic.unit.dal.MotionDetectorDataType.MotionDetectorData;
 import org.openbase.bco.dal.lib.layer.unit.MotionDetector;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class MotionDetectorRemote extends AbstractUnitRemote<MotionDetectorData> implements MotionDetector {
@@ -52,5 +52,4 @@ public class MotionDetectorRemote extends AbstractUnitRemote<MotionDetectorData>
             throw new NotAvailableException("MotionState", ex);
         }
     }
-
 }

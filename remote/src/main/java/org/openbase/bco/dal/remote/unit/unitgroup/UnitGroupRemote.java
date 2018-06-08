@@ -192,7 +192,7 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
     }
 
     @Override
-    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
         return serviceRemoteManager.applyAction(actionDescription);
     }
 

@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -35,7 +35,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.iface.Activatable;
 import org.openbase.jul.iface.Snapshotable;
 import org.openbase.jul.iface.provider.PingProvider;
@@ -194,6 +194,7 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
      * Method checks if the given {@code ServiceType} is currently available by this {@code ServiceRemoteManager}
      *
      * @param serviceType the {@code ServiceType} to check.
+     *
      * @return returns true if the {@code ServiceType} is available, otherwise false.
      */
     public boolean isServiceAvailable(final ServiceType serviceType) {
@@ -393,13 +394,13 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
             // of action descriptions which are initialized accordingly, this way the deserialization does not have to be done here
             // Furthermore restoring a snapshot itself should be have an action description which is the cause
             Message.Builder serviceAttribute = serviceJSonProcessor.deserialize(serviceStateDescription.getServiceAttribute(), serviceStateDescription.getServiceAttributeType()).toBuilder();
-            if (Services.hasResponsibleAction(serviceAttribute)) {
-                ActionDescription responsibleAction = Services.getResponsibleAction(serviceAttribute);
-                Services.clearResponsibleAction(serviceAttribute);
+            if (ActionDescriptionProcessor.hasResponsibleAction(serviceAttribute)) {
+                ActionDescription responsibleAction = ActionDescriptionProcessor.getResponsibleAction(serviceAttribute);
+                ActionDescriptionProcessor.clearResponsibleAction(serviceAttribute);
 
                 ActionDescriptionProcessor.updateActionChain(actionDescription, responsibleAction);
             }
-            unitRemote.updateActionDescription(actionDescription, serviceAttribute.build(), serviceStateDescription.getServiceType());
+            ActionDescriptionProcessor.updateActionDescription(actionDescription, serviceAttribute.build(), serviceStateDescription.getServiceType(), unitRemote);
 
             if (ticketAuthenticatorWrapper != null) {
                 // prepare authenticated value to request action
@@ -471,16 +472,13 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
         return connectionPing;
     }
 
-    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws
-            CouldNotPerformException, InterruptedException {
+    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
         return getServiceRemote(actionDescription.getServiceStateDescription().getServiceType()).applyAction(actionDescription);
     }
 
-    protected abstract Set<ServiceType> getManagedServiceTypes() throws
-            NotAvailableException, InterruptedException;
+    protected abstract Set<ServiceType> getManagedServiceTypes() throws NotAvailableException, InterruptedException;
 
-    protected abstract void notifyServiceUpdate(final Observable source, final Object data) throws
-            NotAvailableException, InterruptedException;
+    protected abstract void notifyServiceUpdate(final Observable source, final Object data) throws NotAvailableException, InterruptedException;
 
     @Override
     public boolean isDataAvailable() {

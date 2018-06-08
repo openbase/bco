@@ -28,7 +28,7 @@ import org.openbase.bco.dal.lib.layer.service.operation.BlindStateOperationServi
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
@@ -116,27 +116,11 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
 
     @Override
     public Future<ActionFuture> setBlindState(final BlindState blindState) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-
-        try {
-            return applyAction(Services.updateActionDescription(actionDescription, blindState, getServiceType()).build());
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new CouldNotPerformException("Could not set blindState", ex);
-        }
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(blindState, getServiceType()));
     }
 
     @Override
     public Future<ActionFuture> setBlindState(final BlindState blindState, final UnitType unitType) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
-        serviceStateDescription.setUnitType(unitType);
-        
-        try {
-            return applyAction(Services.updateActionDescription(actionDescription, blindState, getServiceType()).build());
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new CouldNotPerformException("Could not set blindState", ex);
-        }
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(blindState, getServiceType(), unitType));
     }
 }

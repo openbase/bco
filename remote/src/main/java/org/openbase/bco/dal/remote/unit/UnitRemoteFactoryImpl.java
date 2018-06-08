@@ -21,7 +21,9 @@ package org.openbase.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import java.util.concurrent.TimeUnit;
+
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
@@ -65,7 +67,9 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
      * Creates an unit remote out of the given unit configuration.
      *
      * @param config the unit configuration which defines the remote type.
+     *
      * @return the new created unit remote.
+     *
      * @throws CouldNotPerformException
      * @deprecated use newInstance instead!
      */
@@ -80,11 +84,12 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
      * configuration.
      *
      * @param config the unit configuration which defines the remote type and is
-     * used for the remote initialization.
+     *               used for the remote initialization.
+     *
      * @return the new created unit remote.
+     *
      * @throws CouldNotPerformException
-     * @throws org.openbase.jul.exception.InitializationException
-     * * @deprecated use newInitializedInstance instead!
+     * @throws org.openbase.jul.exception.InitializationException * @deprecated use newInitializedInstance instead!
      */
     @Override
     @Deprecated
@@ -100,7 +105,9 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
      * Method resolves the unit remote class of the given unit config.
      *
      * @param config the unit config to detect the unit class.
+     *
      * @return the unit remote class is returned.
+     *
      * @throws CouldNotPerformException is thrown if something went wrong during class loading.
      */
     public static Class<? extends AbstractUnitRemote> loadUnitRemoteClass(final UnitConfig config) throws CouldNotPerformException {
@@ -111,7 +118,9 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
      * Method resolves the unit remote class of the given unit type.
      *
      * @param unitType the unit type to detect the unit class.
+     *
      * @return the unit remote class is returned.
+     *
      * @throws CouldNotPerformException is thrown if something went wrong during class loading.
      */
     public static Class<? extends AbstractUnitRemote> loadUnitRemoteClass(final UnitType unitType) throws CouldNotPerformException {
@@ -135,7 +144,9 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
      * {@inheritDoc}
      *
      * @param config {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws InstantiationException {@inheritDoc}
      */
     @Override
@@ -151,7 +162,9 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
      * {@inheritDoc}
      *
      * @param unitRemoteClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws InstantiationException {@inheritDoc}
      */
     @Override
@@ -167,7 +180,9 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
      * {@inheritDoc}
      *
      * @param type {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws InstantiationException {@inheritDoc}
      */
     @Override
@@ -184,7 +199,9 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
      * {@inheritDoc}
      *
      * @param unitId {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws InstantiationException {@inheritDoc}
      */
     @Override
@@ -197,7 +214,9 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
      * {@inheritDoc}
      *
      * @param scope {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws InstantiationException {@inheritDoc}
      */
     @Override
@@ -210,10 +229,12 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
      * {@inheritDoc}
      *
      * @param config {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws InitializationException {@inheritDoc}
-     * @throws InstantiationException {@inheritDoc}
-     * @throws InterruptedException {@inheritDoc}
+     * @throws InstantiationException  {@inheritDoc}
+     * @throws InterruptedException    {@inheritDoc}
      */
     @Override
     public UnitRemote newInitializedInstance(final UnitConfig config) throws InitializationException, InstantiationException, InterruptedException {
@@ -226,11 +247,13 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
      * {@inheritDoc}
      *
      * @param scope {@inheritDoc}
-     * @param type {@inheritDoc}
+     * @param type  {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws InitializationException {@inheritDoc}
-     * @throws InstantiationException {@inheritDoc}
-     * @throws InterruptedException {@inheritDoc}
+     * @throws InstantiationException  {@inheritDoc}
+     * @throws InterruptedException    {@inheritDoc}
      */
     @Override
     public UnitRemote newInitializedInstance(final Scope scope, final UnitType type) throws InitializationException, InstantiationException, InterruptedException {
@@ -242,12 +265,14 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
     /**
      * {@inheritDoc}
      *
-     * @param scope {@inheritDoc}
+     * @param scope           {@inheritDoc}
      * @param unitRemoteClass {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws InitializationException {@inheritDoc}
-     * @throws InstantiationException {@inheritDoc}
-     * @throws InterruptedException {@inheritDoc}
+     * @throws InstantiationException  {@inheritDoc}
+     * @throws InterruptedException    {@inheritDoc}
      */
     @Override
     public <R extends AbstractUnitRemote> R newInitializedInstance(final Scope scope, final Class<R> unitRemoteClass) throws InitializationException, InstantiationException, InterruptedException {
@@ -259,14 +284,16 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
     /**
      * {@inheritDoc}
      *
-     * @param scope {@inheritDoc}
-     * @param timeout {@inheritDoc}
+     * @param scope    {@inheritDoc}
+     * @param timeout  {@inheritDoc}
      * @param timeUnit {@inheritDoc}
+     *
      * @return {@inheritDoc}
-     * @throws InitializationException {@inheritDoc}
-     * @throws InstantiationException {@inheritDoc}
+     *
+     * @throws InitializationException  {@inheritDoc}
+     * @throws InstantiationException   {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
-     * @throws InterruptedException {@inheritDoc}
+     * @throws InterruptedException     {@inheritDoc}
      */
     @Override
     public UnitRemote newInitializedInstance(ScopeType.Scope scope, long timeout, TimeUnit timeUnit) throws InitializationException, InstantiationException, CouldNotPerformException, InterruptedException {
@@ -277,14 +304,16 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
     /**
      * {@inheritDoc}
      *
-     * @param unitId {@inheritDoc}
-     * @param timeout {@inheritDoc}
+     * @param unitId   {@inheritDoc}
+     * @param timeout  {@inheritDoc}
      * @param timeUnit {@inheritDoc}
+     *
      * @return {@inheritDoc}
-     * @throws InitializationException {@inheritDoc}
-     * @throws InstantiationException {@inheritDoc}
+     *
+     * @throws InitializationException  {@inheritDoc}
+     * @throws InstantiationException   {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
-     * @throws InterruptedException {@inheritDoc}
+     * @throws InterruptedException     {@inheritDoc}
      */
     @Override
     public UnitRemote newInitializedInstance(final String unitId, long timeout, TimeUnit timeUnit) throws InitializationException, InstantiationException, CouldNotPerformException, InterruptedException {

@@ -23,31 +23,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 
 import com.google.protobuf.GeneratedMessage;
-import com.google.protobuf.Message;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.dal.lib.layer.service.Services;
-import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.annotation.Experimental;
-import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.ConfigurableRemote;
 import rsb.Scope;
-import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
-import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation.Initiator;
-import rst.domotic.action.ActionAuthorityType.ActionAuthority;
-import rst.domotic.action.ActionAuthorityType.ActionAuthority.Authority;
-import rst.domotic.action.ActionAuthorityType.ActionAuthority.Builder;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.rsb.ScopeType;
-
-import java.util.Locale;
 
 /**
  * @param <M> Message
@@ -120,147 +101,4 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, Configu
      * @return the current session manager.
      */
     SessionManager getSessionManager();
-
-    /**
-     * Generates an action description according to the configuration of this unit remote.
-     * The action description is generated using the ActionDescriptionProcessor.
-     * This method will set the service state description according to the service attribute and service type
-     * and replace several keys in the description to make it human readable.
-     * Additionally the initiator and the authority is detected by using the session manager as well as the user id is properly configured.
-     *
-     * @param serviceAttribute  the service attribute that will be applied by this action
-     * @param serviceType       the service type according to the service attribute
-     *
-     * @return the generated action description
-     *
-     * @throws CouldNotPerformException if accessing the unit registry fails or if the service attribute cannot be
-     *                                  verified or serialized
-     */
-    default ActionDescription.Builder generateActionDescriptionBuilder(final Message serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
-        final ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), detectInitiator());
-        final Builder actionAuthorityBuilder = actionDescriptionBuilder.getActionAuthorityBuilder();
-
-        if(getSessionManager().getUserId() != null) {
-            actionAuthorityBuilder.setUserId(getSessionManager().getUserId());
-        } else {
-            actionAuthorityBuilder.setUserId(getSessionManager().getClientId());
-        }
-        actionAuthorityBuilder.setAuthority(detectAuthority());
-        return updateActionDescription(actionDescriptionBuilder, serviceAttribute, serviceType);
-    }
-
-    /**
-     * Update an action description according to the configuration of this unit remote.
-     * The action description should be generated using the ActionDescriptionProcessor.
-     * This method will set the service state description according to the service attribute and service type
-     * and replace several keys in the description to make it human readable.
-     *
-     * @param actionDescription the action description which will be updated
-     * @param serviceAttribute  the service attribute that will be applied by this action
-     * @param serviceType       the service type according to the service attribute
-     *
-     * @return the updated action description
-     *
-     * @throws CouldNotPerformException if accessing the unit registry fails or if the service attribute cannot be
-     *                                  verified or serialized
-     */
-    default ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute, final ServiceType serviceType) throws CouldNotPerformException {
-
-        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
-        ResourceAllocation.Builder resourceAllocation = actionDescription.getResourceAllocationBuilder();
-
-        if (!actionDescription.hasDescription() || actionDescription.getDescription().isEmpty()) {
-            actionDescription.setDescription(ActionDescriptionProcessor.GENERIC_ACTION_DESCRIPTION);
-        }
-
-        serviceStateDescription.setUnitId(getId());
-        resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(getScope()));
-
-        actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
-
-        String username = "";
-        if (getSessionManager().getUserId() != null) {
-            username += Registries.getUnitRegistry().getUnitConfigById(getSessionManager().getUserId()).getUserConfig().getUserName();
-        }
-        if (getSessionManager().getClientId() != null) {
-            if (!username.isEmpty()) {
-                username += "@";
-            }
-            username += Registries.getUnitRegistry().getUnitConfigById(getSessionManager().getClientId()).getUserConfig().getUserName();
-        }
-        if (username.isEmpty()) {
-            username = "Other";
-        }
-        actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.AUTHORITY_KEY, username));
-
-        //TODO: provide label in different languages for LabelProcessor and replace according to user logged in
-        final String label = LabelProcessor.getFirstLabel(actionDescription.getLabel());
-        actionDescription.clearLabel();
-        LabelProcessor.addLabel(actionDescription.getLabelBuilder(), Locale.ENGLISH, label.replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
-
-        return Services.updateActionDescription(actionDescription, serviceAttribute, serviceType);
-    }
-
-    /**
-     * Method detects if a human or the system is triggering this action.
-     * @return
-     * @throws NotAvailableException
-     */
-    @Experimental
-    default Initiator detectInitiator() throws NotAvailableException {
-        try {
-            // because system instances are always logged in it has to be a human.
-            if(!getSessionManager().isLoggedIn() || getSessionManager().getUserId() == null) {
-                return Initiator.HUMAN;
-            }
-
-            if (Registries.getUnitRegistry().getUnitConfigById(getSessionManager().getUserId()).getUserConfig().getIsSystemUser()) {
-                return Initiator.SYSTEM;
-            } else {
-                return Initiator.HUMAN;
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Initiator", ex);
-        }
-    }
-
-    /**
-     * Method detects if a user or the system is triggering this action.
-     * @return
-     * @throws NotAvailableException
-     */
-    @Experimental
-    default Authority detectAuthority() throws NotAvailableException {
-        try {
-            // because system instances are always logged in it has to be a human.
-            if(!getSessionManager().isLoggedIn() || getSessionManager().getUserId() == null) {
-                return Authority.USER;
-            }
-
-            if (Registries.getUnitRegistry().getUnitConfigById(getSessionManager().getUserId()).getUserConfig().getIsSystemUser()) {
-                return Authority.SYSTEM;
-            } else {
-                return Authority.USER;
-            }
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Authority", ex);
-        }
-    }
-
-//    /**
-//     * Update an action description according to the configuration of this unit remote.
-//     * The action description should be generated using the ActionDescriptionProcessor.
-//     * This method will set the service state description according to the service attribute and service type
-//     * and replace several keys in the description to make is human readable.
-//     * This method tries to automatically resolve the service type for a given service attribute.
-//     *
-//     * @param actionDescription the action description which will be updated
-//     * @param serviceAttribute  the service attribute that will be applied by this action
-//     * @return the updated action description
-//     * @throws CouldNotPerformException if accessing the unit registry fails or if the service attribute cannot be
-//     *                                  verified or serialized or if the service type cannot be resolved
-//     */
-//    default ActionDescription.Builder updateActionDescription(final ActionDescription.Builder actionDescription, final Message serviceAttribute) throws CouldNotPerformException {
-//        return updateActionDescription(actionDescription, serviceAttribute, Services.getServiceType(serviceAttribute));
-//    }
 }

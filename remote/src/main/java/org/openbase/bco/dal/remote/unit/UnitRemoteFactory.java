@@ -21,7 +21,9 @@ package org.openbase.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import java.util.concurrent.TimeUnit;
+
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
@@ -36,7 +38,7 @@ import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- *
+ * <p>
  * The unit remote factory interface.
  */
 public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
@@ -45,7 +47,9 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      * Creates and initializes an unit remote out of the given unit configuration.
      *
      * @param config the unit configuration which defines the remote type and is used for the remote initialization.
+     *
      * @return the new created unit remote.
+     *
      * @throws CouldNotPerformException is thrown if any other error occurs during buildup.
      * @deprecated use newInitializedInstance instead!
      */
@@ -56,7 +60,9 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      * Creates an unit remote out of the given unit configuration.
      *
      * @param config the unit configuration which defines the remote type.
+     *
      * @return the new created unit remote.
+     *
      * @throws CouldNotPerformException is thrown if any other error occurs during buildup.
      * @deprecated use newInstance instead!
      */
@@ -67,7 +73,9 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      * Creates and initializes an unit remote out of the given unit configuration.
      *
      * @param config the unit configuration which defines the remote type and is used for the remote initialization.
+     *
      * @return the new created unit remote.
+     *
      * @throws CouldNotPerformException is thrown if any other error occurs during buildup.
      * @throws InterruptedException
      */
@@ -77,7 +85,9 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      * Creates an unit remote out of the given unit configuration.
      *
      * @param config the unit configuration which defines the remote type.
+     *
      * @return the new created unit remote.
+     *
      * @throws InstantiationException
      */
     @Override
@@ -86,9 +96,11 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
     /**
      * Creates an unit remote out of the given unit class.
      *
-     * @param <R> the unit remote class type.
+     * @param <R>             the unit remote class type.
      * @param unitRemoteClass the unit class which defines the remote type.
+     *
      * @return the new created unit remote.
+     *
      * @throws InstantiationException
      */
     public <R extends AbstractUnitRemote> R newInstance(final Class<R> unitRemoteClass) throws InstantiationException;
@@ -96,24 +108,28 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
     /**
      * Creates an unit remote out of the given unit id.
      *
-     * @param unitId the unit id which defines the remote type.
-     * @param timeout the timeout for the unit registry lookup.
+     * @param unitId   the unit id which defines the remote type.
+     * @param timeout  the timeout for the unit registry lookup.
      * @param timeUnit the time unit of the timeout.
+     *
      * @return the new created unit remote.
+     *
      * @throws InstantiationException is thrown if the unit could not be instantiated with the given information.
-     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     * @throws InterruptedException   is thrown if the thread was externally interrupted.
      */
     public UnitRemote newInstance(String unitId, long timeout, final TimeUnit timeUnit) throws InstantiationException, CouldNotPerformException, InterruptedException;
 
     /**
      * Creates an unit remote out of the given unit scope.
      *
-     * @param scope the unit scope which defines the remote type..
-     * @param timeout the timeout for the unit registry lookup.
+     * @param scope    the unit scope which defines the remote type..
+     * @param timeout  the timeout for the unit registry lookup.
      * @param timeUnit the time unit of the timeout.
+     *
      * @return the new created unit remote.
+     *
      * @throws InstantiationException is thrown if the unit could not be instantiated with the given information.
-     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     * @throws InterruptedException   is thrown if the thread was externally interrupted.
      */
     public UnitRemote newInstance(ScopeType.Scope scope, long timeout, final TimeUnit timeUnit) throws InstantiationException, CouldNotPerformException, InterruptedException;
 
@@ -121,54 +137,62 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      * Creates and initializes an unit remote out of the given unit scope and type declaration.
      *
      * @param scope the unit scope which is used for the remote initialization.
-     * @param type the unit to instantiate.
+     * @param type  the unit to instantiate.
+     *
      * @return the new created unit remote.
-     * @throws InitializationException is thrown if the unit could not be initialized with the given information.
-     * @throws InstantiationException is thrown if the unit could not be instantiated with the given information.
+     *
+     * @throws InitializationException  is thrown if the unit could not be initialized with the given information.
+     * @throws InstantiationException   is thrown if the unit could not be instantiated with the given information.
      * @throws CouldNotPerformException is thrown if any other error occurs during buildup.
-     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     * @throws InterruptedException     is thrown if the thread was externally interrupted.
      */
     public UnitRemote newInitializedInstance(final Scope scope, final UnitType type) throws InitializationException, InstantiationException, CouldNotPerformException, InterruptedException;
 
     /**
      * Creates and initializes an unit remote out of the given unit scope and class type.
      *
-     * @param <R> the unit remote class type.
-     * @param scope the unit scope which is used for the remote initialization.
+     * @param <R>             the unit remote class type.
+     * @param scope           the unit scope which is used for the remote initialization.
      * @param unitRemoteClass to identify the unit type.
+     *
      * @return the new created and initialized unit remote.
-     * @throws InitializationException is thrown if the unit could not be initialized with the given information.
-     * @throws InstantiationException is thrown if the unit could not be instantiated with the given information.
+     *
+     * @throws InitializationException  is thrown if the unit could not be initialized with the given information.
+     * @throws InstantiationException   is thrown if the unit could not be instantiated with the given information.
      * @throws CouldNotPerformException is thrown if any other error occurs during buildup.
-     * @throws InterruptedException is thrown if the thread was externally interrupted. is thrown if the thread was externally interrupted.
+     * @throws InterruptedException     is thrown if the thread was externally interrupted. is thrown if the thread was externally interrupted.
      */
     public <R extends AbstractUnitRemote> R newInitializedInstance(final Scope scope, final Class<R> unitRemoteClass) throws InitializationException, InstantiationException, CouldNotPerformException, InterruptedException;
 
     /**
      * Creates and initializes an unit remote out of the given unit scope.
      *
-     * @param scope the unit scope which is used for the remote initialization.
-     * @param timeout the timeout for the unit registry lookup.
+     * @param scope    the unit scope which is used for the remote initialization.
+     * @param timeout  the timeout for the unit registry lookup.
      * @param timeUnit the time unit of the timeout.
+     *
      * @return the new created and initialized unit remote.
-     * @throws InitializationException is thrown if the unit could not be initialized with the given information.
-     * @throws InstantiationException is thrown if the unit could not be instantiated with the given information.
+     *
+     * @throws InitializationException  is thrown if the unit could not be initialized with the given information.
+     * @throws InstantiationException   is thrown if the unit could not be instantiated with the given information.
      * @throws CouldNotPerformException is thrown if any other error occurs during buildup.
-     * @throws InterruptedException is thrown if the thread was externally interrupted. is thrown if the thread was externally interrupted.
+     * @throws InterruptedException     is thrown if the thread was externally interrupted. is thrown if the thread was externally interrupted.
      */
     public UnitRemote newInitializedInstance(final Scope scope, long timeout, final TimeUnit timeUnit) throws InitializationException, InstantiationException, CouldNotPerformException, InterruptedException;
 
     /**
      * Creates and initializes an unit remote out of the given unit id.
      *
-     * @param unitId the unit id which is used for the remote initialization.
-     * @param timeout the timeout for the unit registry lookup.
+     * @param unitId   the unit id which is used for the remote initialization.
+     * @param timeout  the timeout for the unit registry lookup.
      * @param timeUnit the time unit of the timeout.
+     *
      * @return the new created and initialized unit remote.
-     * @throws InitializationException is thrown if the unit could not be initialized with the given information.
-     * @throws InstantiationException is thrown if the unit could not be instantiated with the given information.
+     *
+     * @throws InitializationException  is thrown if the unit could not be initialized with the given information.
+     * @throws InstantiationException   is thrown if the unit could not be instantiated with the given information.
      * @throws CouldNotPerformException is thrown if any other error occurs during buildup.
-     * @throws InterruptedException is thrown if the thread was externally interrupted.
+     * @throws InterruptedException     is thrown if the thread was externally interrupted.
      */
     public UnitRemote newInitializedInstance(final String unitId, long timeout, final TimeUnit timeUnit) throws InitializationException, InstantiationException, CouldNotPerformException, InterruptedException;
 
@@ -176,7 +200,9 @@ public interface UnitRemoteFactory extends Factory<UnitRemote, UnitConfig> {
      * Creates an unit remote out of the given unit configuration.
      *
      * @param type the unit type which is used for the remote initialization.
+     *
      * @return the new created and initialized unit remote.
+     *
      * @throws InstantiationException is thrown if the unit could not be instantiated with the given information.
      */
     public UnitRemote newInstance(final UnitType type) throws InstantiationException;

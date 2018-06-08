@@ -31,7 +31,6 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -95,20 +94,15 @@ public class RemoteAction implements Action {
     @Override
     public Future<ActionFuture> execute() throws CouldNotPerformException {
         synchronized (executionSync) {
-            try {
-                ResourceAllocation.Builder resourceAllocation = ResourceAllocation.newBuilder();
-                resourceAllocation.setPolicy(ResourceAllocation.Policy.FIRST);
-                resourceAllocation.setInitiator(ResourceAllocation.Initiator.SYSTEM);
-                resourceAllocation.setPriority(ResourceAllocation.Priority.NORMAL);
-                resourceAllocation.setId(UUID.randomUUID().toString());
-                resourceAllocation.setState(ResourceAllocation.State.REQUESTED);
-                resourceAllocation.setSlot(Interval.getDefaultInstance());
-                actionDescription = actionDescription.toBuilder().setResourceAllocation(resourceAllocation).build();
-                return serviceRemote.applyAction(getActionDescription());
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-                throw new CouldNotPerformException("Could not execute remote action[" + this + "] because of interruption");
-            }
+            ResourceAllocation.Builder resourceAllocation = ResourceAllocation.newBuilder();
+            resourceAllocation.setPolicy(ResourceAllocation.Policy.FIRST);
+            resourceAllocation.setInitiator(ResourceAllocation.Initiator.SYSTEM);
+            resourceAllocation.setPriority(ResourceAllocation.Priority.NORMAL);
+            resourceAllocation.setId(UUID.randomUUID().toString());
+            resourceAllocation.setState(ResourceAllocation.State.REQUESTED);
+            resourceAllocation.setSlot(Interval.getDefaultInstance());
+            actionDescription = actionDescription.toBuilder().setResourceAllocation(resourceAllocation).build();
+            return serviceRemote.applyAction(getActionDescription());
         }
     }
 
@@ -132,6 +126,7 @@ public class RemoteAction implements Action {
      * {@inheritDoc }
      *
      * @return {@inheritDoc }
+     *
      * @throws NotAvailableException {@inheritDoc }
      */
     @Override

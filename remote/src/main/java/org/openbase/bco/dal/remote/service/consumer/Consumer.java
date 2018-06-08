@@ -22,6 +22,7 @@ package org.openbase.bco.dal.remote.service.consumer;
  * #L%
  */
 import com.google.protobuf.GeneratedMessage;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitController;
@@ -53,7 +54,7 @@ public class Consumer implements Manageable<ServiceConfig> {
         this.active = false;
         this.serviceStateObserver = (Observer) (final Observable source, final Object data) -> {
             try {
-                ActionDescription responsibleAction = Services.getResponsibleAction(((GeneratedMessage) data));
+                ActionDescription responsibleAction = ActionDescriptionProcessor.getResponsibleAction(((GeneratedMessage) data));
                 
                 // build consumer action out of responsible action
                 ActionDescription.Builder consumerActionBuilder = responsibleAction.toBuilder();

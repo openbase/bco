@@ -22,6 +22,7 @@ package org.openbase.bco.dal.lib.layer.unit.location;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.service.collection.EmphasisStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.provider.PresenceStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
 import org.openbase.bco.dal.lib.layer.unit.MultiUnitServiceFusion;
@@ -46,16 +47,6 @@ import java.util.concurrent.Future;
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public interface Location extends BaseUnit<LocationData>, PresenceStateProviderService, Snapshotable<Snapshot>, MultiUnitServiceFusion {
-
-    /**
-     * TODO release: is not used anymore and can be removed
-     *
-     * @return
-     * @throws CouldNotPerformException
-     * @deprecated
-     */
-    @Deprecated
-    List<String> getNeighborLocationIds() throws CouldNotPerformException;
 
     @Override
     default Set<ServiceType> getSupportedServiceTypes() throws NotAvailableException, InterruptedException {

@@ -21,6 +21,7 @@ package org.openbase.bco.dal.remote.unit;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rsb.converter.DefaultConverterRepository;
@@ -30,7 +31,6 @@ import rst.domotic.unit.dal.PowerConsumptionSensorDataType.PowerConsumptionSenso
 import org.openbase.bco.dal.lib.layer.unit.PowerConsumptionSensor;
 
 /**
- *
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class PowerConsumptionSensorRemote extends AbstractUnitRemote<PowerConsumptionSensorData> implements PowerConsumptionSensor {

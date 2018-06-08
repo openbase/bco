@@ -29,8 +29,7 @@ import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.pattern.Observable;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
@@ -39,9 +38,7 @@ import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.SnapshotType.Snapshot;
-import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
-import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -49,6 +46,7 @@ import rst.domotic.state.AlarmStateType;
 import rst.domotic.state.BlindStateType;
 import rst.domotic.state.BrightnessStateType;
 import rst.domotic.state.ColorStateType;
+import rst.domotic.state.EmphasisStateType.EmphasisState;
 import rst.domotic.state.MotionStateType;
 import rst.domotic.state.PowerConsumptionStateType;
 import rst.domotic.state.PowerStateType;
@@ -166,35 +164,6 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
         return serviceRemoteManager.getServiceRemote(serviceType);
     }
 
-    /**
-     * @return
-     *
-     * @throws CouldNotPerformException
-     * @deprecated please use Registries.getUnitRegistry().getNeighborLocations(String locationId) instead.
-     */
-    @Override
-    @Deprecated
-    public List<String> getNeighborLocationIds() throws CouldNotPerformException {
-        final List<String> neighborIdList = new ArrayList<>();
-        for (UnitConfig locationConfig : Registries.getUnitRegistry().getNeighborLocations(getId())) {
-            neighborIdList.add(locationConfig.getId());
-        }
-        return neighborIdList;
-    }
-
-    // TODO: move into interface as default implementation
-    public List<LocationRemote> getNeighborLocationList(final boolean waitForData) throws CouldNotPerformException {
-        final List<LocationRemote> neighborList = new ArrayList<>();
-        try {
-            for (UnitConfig locationUnitConfig : Registries.getUnitRegistry().getNeighborLocations(getId())) {
-                neighborList.add(Units.getUnit(locationUnitConfig, waitForData, LOCATION));
-            }
-        } catch (InterruptedException ex) {
-            throw new CouldNotPerformException("Could not get all neighbors!", ex);
-        }
-        return neighborList;
-    }
-
     public List<LocationRemote> getChildLocationList(final boolean waitForData) throws CouldNotPerformException {
         final List<LocationRemote> childList = new ArrayList<>();
         for (String childId : getConfig().getLocationConfig().getChildIdList()) {
@@ -277,18 +246,6 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
     }
 
     /**
-     * @return
-     *
-     * @throws NotAvailableException
-     * @throws InterruptedException
-     * @deprecated please use getUnitMap() instead.
-     */
-    @Deprecated
-    public Map<UnitType, List<UnitRemote>> getProvidedUnitMap() throws NotAvailableException, InterruptedException {
-        return getUnitMap();
-    }
-
-    /**
      * Returns a Map of all units which directly or recursively provided by this location..
      *
      * @return the Map of provided units sorted by their UnitType.
@@ -296,7 +253,6 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
      * @throws org.openbase.jul.exception.NotAvailableException is thrown if the map is not available.
      * @throws java.lang.InterruptedException                   is thrown if the current thread was externally interrupted.
      */
-    // TODO: move into interface as default implementation
     public Map<UnitType, List<UnitRemote>> getUnitMap() throws NotAvailableException, InterruptedException {
         return getUnitMap(true);
     }
@@ -311,7 +267,6 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
      * @throws org.openbase.jul.exception.NotAvailableException is thrown if the map is not available.
      * @throws java.lang.InterruptedException                   is thrown if the current thread was externally interrupted.
      */
-    // TODO: move into interface as default implementation
     public Map<UnitType, List<UnitRemote>> getUnitMap(final boolean recursive) throws NotAvailableException, InterruptedException {
         try {
             final Map<UnitType, List<UnitRemote>> unitRemoteMap = new TreeMap<>();
@@ -359,7 +314,6 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
      * @throws CouldNotPerformException is thrown in case something went wrong.
      * @throws InterruptedException     is thrown if the current thread was externally interrupted.
      */
-    // TODO: move into interface as default implementation
     public <UR extends UnitRemote<?>> Collection<UR> getUnits(final UnitType unitType, final boolean waitForData, final Class<UR> unitRemoteClass) throws CouldNotPerformException, InterruptedException {
         return getUnits(unitType, waitForData, unitRemoteClass, true);
     }
@@ -379,7 +333,6 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
      * @throws CouldNotPerformException is thrown in case something went wrong.
      * @throws InterruptedException     is thrown if the current thread was externally interrupted.
      */
-    // TODO: move into interface as default implementation
     public <UR extends UnitRemote<?>> Collection<UR> getUnits(final UnitType unitType, final boolean waitForData, final Class<UR> unitRemoteClass, final boolean recursive) throws CouldNotPerformException, InterruptedException {
         final List<UR> unitRemote = new ArrayList<>();
         MultiException.ExceptionStack exceptionStack = null;
@@ -412,7 +365,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
      */
     public UnitTemplate getTemplate(final boolean onlyAvailableServices) throws NotAvailableException {
 
-        // todo: move this method to the unit interface or at least to the MultiUnitServiceFusion interface shared by the location and group units.
+        // todo release: move this method to the unit interface or at least to the MultiUnitServiceFusion interface shared by the location and group units.
         // return the unfiltered unit template if filter is not active.
         if (!onlyAvailableServices) {
             return super.getUnitTemplate();
@@ -437,7 +390,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
      */
     public Set<ServiceType> getAvailableServiceTypes() throws NotAvailableException {
 
-        // todo: move this method to the unit interface or at least to the MultiUnitServiceFusion interface shared by the location and group units.
+        // todo release: move this method to the unit interface or at least to the MultiUnitServiceFusion interface shared by the location and group units.
         final Set<ServiceType> serviceTypeList = new HashSet<>();
 
         for (final ServiceDescription serviceDescription : getTemplate(true).getServiceDescriptionList()) {
@@ -455,7 +408,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
      */
     public Set<ServiceDescription> getAvailableServiceDescriptions() throws NotAvailableException {
 
-        // todo: move this method to the unit interface or at least to the MultiUnitServiceFusion interface shared by the location and group units.
+        // todo release: move this method to the unit interface or at least to the MultiUnitServiceFusion interface shared by the location and group units.
         final Set<ServiceDescription> serviceDescriptionList = new HashSet<>();
 
         for (final ServiceDescription serviceDescription : getTemplate(true).getServiceDescriptionList()) {
@@ -466,12 +419,7 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
 
     @Override
     public Future<ActionFuture> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-        try {
-            return applyAction(updateActionDescription(actionDescription, standbyState, ServiceType.STANDBY_STATE_SERVICE).build());
-        } catch (InterruptedException ex) {
-            throw new CouldNotPerformException("Interrupted while setting StandbyState.", ex);
-        }
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(standbyState, ServiceType.STANDBY_STATE_SERVICE, this));
     }
 
     @Override
@@ -480,6 +428,20 @@ public class LocationRemote extends AbstractUnitRemote<LocationData> implements 
             return this.getData().getStandbyState();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("StandbyState", ex);
+        }
+    }
+
+    @Override
+    public Future<ActionFuture> setEmphasisState(final EmphasisState emphasisState) throws CouldNotPerformException {
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(emphasisState, ServiceType.EMPHASIS_STATE_SERVICE, this));
+    }
+
+    @Override
+    public EmphasisState getEmphasisState() throws NotAvailableException {
+        try {
+            return this.getData().getEmphasisState();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("EmphasisState", ex);
         }
     }
 }

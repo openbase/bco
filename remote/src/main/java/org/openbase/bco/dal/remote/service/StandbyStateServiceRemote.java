@@ -25,11 +25,9 @@ package org.openbase.bco.dal.remote.service;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.StandbyStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.StandbyStateOperationService;
-import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
-import org.openbase.jul.extension.rst.processing.TimestampProcessor;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
@@ -42,7 +40,6 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.Collection;
 import java.util.concurrent.Future;
-import java.util.concurrent.TimeUnit;
 
 /**
  * * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -55,28 +52,12 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
 
     @Override
     public Future<ActionFuture> setStandbyState(final StandbyState standbyState) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-
-        try {
-            return applyAction(Services.updateActionDescription(actionDescription, standbyState, getServiceType()).build());
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new CouldNotPerformException("Could not set standbyState", ex);
-        }
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(standbyState, getServiceType()));
     }
 
     @Override
     public Future<ActionFuture> setStandbyState(final StandbyState standbyState, final UnitType unitType) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
-        serviceStateDescription.setUnitType(unitType);
-
-        try {
-            return applyAction(Services.updateActionDescription(actionDescription, standbyState, getServiceType()).build());
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new CouldNotPerformException("Could not set standbyState", ex);
-        }
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(standbyState, getServiceType(), unitType));
     }
 
     public Collection<StandbyStateOperationService> getStandbyStateOperationServices() {

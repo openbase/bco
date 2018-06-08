@@ -56,7 +56,7 @@ public class ObjectRemote extends AbstractUnitRemote<ObjectData> {
     }
 
     @Override
-    public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException, RejectedException {
+    public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, RejectedException {
         throw new NotSupportedException("Method[applyAction]", this);
     }
 

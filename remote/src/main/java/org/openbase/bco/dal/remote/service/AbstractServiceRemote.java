@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -28,7 +28,6 @@ import com.google.protobuf.Message;
 import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
 import org.openbase.bco.dal.lib.layer.service.*;
-import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
 import org.openbase.bco.dal.lib.layer.unit.MultiUnitServiceFusion;
 import org.openbase.bco.dal.lib.layer.unit.UnitAllocation;
 import org.openbase.bco.dal.lib.layer.unit.UnitAllocator;
@@ -42,7 +41,7 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
@@ -54,9 +53,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
+import rst.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.ActionReferenceType.ActionReference;
-import rst.domotic.authentication.AuthenticatedValueType.AuthenticatedValue;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActionStateType.ActionState;
@@ -498,7 +497,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      * {@inheritDoc}
      */
     @Override
-    public Collection<org.openbase.bco.dal.lib.layer.unit.UnitRemote> getInternalUnits(UnitType unitType) throws CouldNotPerformException, InterruptedException {
+    public Collection<org.openbase.bco.dal.lib.layer.unit.UnitRemote> getInternalUnits(UnitType unitType) throws CouldNotPerformException {
         List<UnitRemote> unitRemotes = new ArrayList<>();
         for (UnitRemote unitRemote : unitRemoteMap.values()) {
             if (unitType == UnitType.UNKNOWN || unitType == unitRemote.getUnitType() || UnitConfigProcessor.isBaseUnit(unitRemote.getUnitType()) || Registries.getTemplateRegistry().getSubUnitTypes(unitType).contains(unitRemote.getUnitType())) {
@@ -552,33 +551,39 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         return serviceType;
     }
 
+
+    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException {
+        return applyAction(actionDescription.toBuilder());
+    }
+
     @Override
-    public Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+    public Future<ActionFuture> applyAction(final ActionDescription.Builder actionDescriptionBuilder) throws CouldNotPerformException {
         try {
-            if (!actionDescription.getServiceStateDescription().getServiceType().equals(getServiceType())) {
+            if (!actionDescriptionBuilder.getServiceStateDescription().getServiceType().equals(getServiceType())) {
                 throw new VerificationFailedException("Service type is not compatible to given action config!");
             }
 
             if (!JPService.getProperty(JPResourceAllocation.class).getValue()) {
                 final List<Future> actionFutureList = new ArrayList<>();
-                final Message serviceAttribute = new ServiceJSonProcessor().deserialize(actionDescription.getServiceStateDescription().getServiceAttribute(), actionDescription.getServiceStateDescription().getServiceAttributeType());
-                for (final UnitRemote unitRemote : getInternalUnits(actionDescription.getServiceStateDescription().getUnitType())) {
-                    ActionDescription.Builder unitActionDescription = ActionDescription.newBuilder(actionDescription);
+                final Message serviceAttribute = new ServiceJSonProcessor().deserialize(actionDescriptionBuilder.getServiceStateDescription().getServiceAttribute(), actionDescriptionBuilder.getServiceStateDescription().getServiceAttributeType());
+                for (final UnitRemote unitRemote : getInternalUnits(actionDescriptionBuilder.getServiceStateDescription().getUnitType())) {
 
-                    unitRemote.updateActionDescription(unitActionDescription, serviceAttribute, actionDescription.getServiceStateDescription().getServiceType());
+
+
+                    ActionDescriptionProcessor.updateActionDescription(actionDescriptionBuilder, serviceAttribute, actionDescriptionBuilder.getServiceStateDescription().getServiceType(), unitRemote);
 
                     ActionReference.Builder actionReference = ActionReference.newBuilder();
-                    actionReference.setActionId(actionDescription.getId());
-                    actionReference.setAuthority(actionDescription.getActionAuthority());
-                    actionReference.setServiceStateDescription(actionDescription.getServiceStateDescription());
-                    unitActionDescription.addActionChain(actionReference);
+                    actionReference.setActionId(actionDescriptionBuilder.getId());
+                    actionReference.setAuthority(actionDescriptionBuilder.getActionAuthority());
+                    actionReference.setServiceStateDescription(actionDescriptionBuilder.getServiceStateDescription());
+                    actionDescriptionBuilder.addActionChain(actionReference);
 
-                    actionFutureList.add(unitRemote.applyAction(unitActionDescription.build()));
+                    actionFutureList.add(unitRemote.applyAction(actionDescriptionBuilder.build()));
                 }
                 return GlobalCachedExecutorService.allOf(ActionFuture.getDefaultInstance(), actionFutureList);
             } else {
                 Map<String, UnitRemote> scopeUnitMap = new HashMap();
-                for (final UnitRemote unitRemote : getInternalUnits(actionDescription.getServiceStateDescription().getUnitType())) {
+                for (final UnitRemote unitRemote : getInternalUnits(actionDescriptionBuilder.getServiceStateDescription().getUnitType())) {
                     if (unitRemote instanceof MultiUnitServiceFusion) {
                         /*
                          * For units which control other units themselves, e.g. locations, do not list the unit itself
@@ -591,7 +596,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                          * homeautomation.
                          */
                         MultiUnitServiceFusion multiUnitServiceFusion = (MultiUnitServiceFusion) unitRemote;
-                        Collection<UnitRemote> units = (Collection<UnitRemote>) multiUnitServiceFusion.getServiceRemote(serviceType).getInternalUnits(actionDescription.getServiceStateDescription().getUnitType());
+                        Collection<UnitRemote> units = (Collection<UnitRemote>) multiUnitServiceFusion.getServiceRemote(serviceType).getInternalUnits(actionDescriptionBuilder.getServiceStateDescription().getUnitType());
                         for (UnitRemote unit : units) {
                             scopeUnitMap.put(ScopeGenerator.generateStringRep(unit.getScope()), unit);
                         }
@@ -601,7 +606,6 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                 }
 
                 // Setup ActionDescription with resource ids, token and slot
-                ActionDescription.Builder actionDescriptionBuilder = actionDescription.toBuilder();
                 ResourceAllocation.Builder resourceAllocation = actionDescriptionBuilder.getResourceAllocationBuilder();
                 resourceAllocation.clearResourceIds();
                 resourceAllocation.addAllResourceIds(scopeUnitMap.keySet());
@@ -621,8 +625,8 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                             actionFutureList.add(unitRemote.applyAction(unitActionDescription));
                         }
 
-                        logger.info("Waiting [" + actionDescription.getExecutionTimePeriod() / actionFutureList.size() + "]ms per future");
-                        return GlobalCachedExecutorService.atLeastOne(actionFuture.build(), actionFutureList, actionDescription.getExecutionTimePeriod() / actionFutureList.size(), TimeUnit.MILLISECONDS);
+                        logger.info("Waiting [" + actionDescriptionBuilder.getExecutionTimePeriod() / actionFutureList.size() + "]ms per future");
+                        return GlobalCachedExecutorService.atLeastOne(actionFuture.build(), actionFutureList, actionDescriptionBuilder.getExecutionTimePeriod() / actionFutureList.size(), TimeUnit.MILLISECONDS);
                     case ALL_OR_NOTHING:
                         logger.info("ALL_OR_NOTHING!");
                         if (scopeUnitMap.isEmpty()) {
@@ -647,7 +651,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                         return unitAllocation.getTaskExecutor().getFuture();
 
                     default:
-                        throw new FatalImplementationErrorException("Resource allocation strategy[" + actionDescription.getMultiResourceAllocationStrategy().getStrategy().name() + "] not handled", this);
+                        throw new FatalImplementationErrorException("Resource allocation strategy[" + actionDescriptionBuilder.getMultiResourceAllocationStrategy().getStrategy().name() + "] not handled", this);
                 }
             }
         } catch (CouldNotPerformException ex) {

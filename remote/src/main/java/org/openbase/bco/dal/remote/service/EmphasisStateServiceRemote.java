@@ -24,14 +24,14 @@ package org.openbase.bco.dal.remote.service;
 import java.util.Collection;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
-import org.openbase.bco.dal.lib.layer.service.Service;
+
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.EmphasisStateOperationServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.operation.EmphasisStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionAuthorityType.ActionAuthority;
@@ -62,29 +62,13 @@ public class EmphasisStateServiceRemote extends AbstractServiceRemote<EmphasisSt
     }
 
     @Override
-    public Future<ActionFutureType.ActionFuture> setEmphasisState(EmphasisState emphasisState) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-
-        try {
-            return applyAction(Services.updateActionDescription(actionDescription, emphasisState, getServiceType()).build());
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new CouldNotPerformException("Could not set brightnessState", ex);
-        }
+    public Future<ActionFutureType.ActionFuture> setEmphasisState(final EmphasisState emphasisState) throws CouldNotPerformException {
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(emphasisState, getServiceType()));
     }
 
     @Override
-    public Future<ActionFutureType.ActionFuture> setEmphasisState(EmphasisState emphasisState, UnitType unitType) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
-        serviceStateDescription.setUnitType(unitType);
-
-        try {
-            return applyAction(Services.updateActionDescription(actionDescription, emphasisState, getServiceType()).build());
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new CouldNotPerformException("Could not set brightnessState", ex);
-        }
+    public Future<ActionFutureType.ActionFuture> setEmphasisState(final EmphasisState emphasisState, UnitType unitType) throws CouldNotPerformException {
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(emphasisState, getServiceType(), unitType));
     }
 
     @Override

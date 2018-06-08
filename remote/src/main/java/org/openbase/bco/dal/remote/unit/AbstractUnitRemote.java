@@ -77,6 +77,7 @@ import java.util.concurrent.TimeUnit;
 
 /**
  * @param <D> The unit data type.
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends AbstractAuthenticatedConfigurableRemote<D, UnitConfig> implements UnitRemote<D> {
@@ -150,6 +151,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @param id
+     *
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
      */
@@ -166,6 +168,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @param label
+     *
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
      */
@@ -190,6 +193,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @param scope
+     *
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
      */
@@ -206,6 +210,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @param scope
+     *
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
      */
@@ -222,6 +227,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @param scope
+     *
      * @throws org.openbase.jul.exception.InitializationException
      * @throws java.lang.InterruptedException
      */
@@ -264,26 +270,6 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         }
     }
 
-    //TODO: check that its okay that this has been moved to an observer registered in the contstructor
-//    @Override
-//    protected void notifyDataUpdate(final D data) throws CouldNotPerformException {
-//        super.notifyDataUpdate(data);
-//
-//        final Set<ServiceType> serviceTypeSet = new HashSet<>();
-//        for (final ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
-//
-//            // check if already handled
-//            if (!serviceTypeSet.contains(serviceDescription.getServiceType())) {
-//                serviceTypeSet.add(serviceDescription.getServiceType());
-//                try {
-//                    Object serviceData = Services.invokeProviderServiceMethod(serviceDescription.getServiceType(), data);
-//                    serviceStateObservableMap.get(serviceDescription.getServiceType()).notifyObservers(serviceData);
-//                } catch (CouldNotPerformException ex) {
-//                    logger.debug("Could not notify state update for service[" + serviceDescription.getServiceType() + "] because this service is not supported by this remote controller.", ex);
-//                }
-//            }
-//        }
-//    }
     @Override
     public void addServiceStateObserver(final ServiceTempus serviceTempus, final ServiceType serviceType, final Observer observer) {
         serviceTempusServiceTypeObservableMap.get(serviceTempus).get(serviceType).addObserver(observer);
@@ -318,7 +304,9 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @param unitConfig {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      * @throws java.lang.InterruptedException                      {@inheritDoc}
      */
@@ -412,6 +400,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      *
      * @param timeout  {@inheritDoc}
      * @param timeUnit {@inheritDoc}
+     *
      * @throws CouldNotPerformException       {@inheritDoc}
      * @throws java.lang.InterruptedException {@inheritDoc}
      */
@@ -479,6 +468,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @return
+     *
      * @throws org.openbase.jul.exception.NotAvailableException
      */
     @Override
@@ -503,6 +493,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * {@inheritDoc}
      *
      * @return {@inheritDoc}
+     *
      * @throws org.openbase.jul.exception.NotAvailableException {@inheritDoc}
      */
     @Override
@@ -515,49 +506,36 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     }
 
     /**
-     * Method returns the parent location config of this unit.
+     * This method returns the base location config of this unit.
+     * If this unit is a location, than its parent location config is returned,
+     * otherwise the base location config is returned which refers the location where this unit is placed in.
      *
-     * @return a unit config of the parent location.
+     * @return a unit config of the base location.
+     *
      * @throws NotAvailableException is thrown if the location config is currently not available.
      */
-    public UnitConfig getParentLocationConfig() throws NotAvailableException, InterruptedException {
+    public UnitConfig getBaseLocationConfig() throws NotAvailableException {
         try {
-            // TODO implement get unit config by type and id;
-            return Registries.getUnitRegistry().getUnitConfigById(getConfig().getPlacementConfig().getLocationId());
+            return Registries.getUnitRegistry().getUnitConfigById(getConfig().getPlacementConfig().getLocationId(), UnitType.LOCATION);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("LocationConfig", ex);
         }
     }
 
     /**
-     * @return
-     * @throws NotAvailableException
-     * @deprecated please use getParentLocationConfig() instead.
-     */
-    @Deprecated
-    public UnitConfig getLocationConfig() throws NotAvailableException {
-        try {
-            return getParentLocationConfig();
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new NotAvailableException(ex);
-        }
-    }
-
-    /**
-     * Method returns the parent location remote of this unit.
+     * This method returns the base location remote of this unit.
+     * If this unit is a location, than its parent location remote is returned,
+     * otherwise the base location remote is returned which refers the location where this unit is placed in.
      *
      * @param waitForData flag defines if the method should block until the remote is fully synchronized.
+     *
      * @return a location remote instance.
+     *
      * @throws NotAvailableException          is thrown if the location remote is currently not available.
      * @throws java.lang.InterruptedException is thrown if the current was externally interrupted.
      */
-    public LocationRemote getParentLocationRemote(final boolean waitForData) throws NotAvailableException, InterruptedException {
-        try {
-            return Units.getUnit(getConfig().getPlacementConfig().getLocationId(), waitForData, Units.LOCATION);
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("LocationRemote", ex);
-        }
+    public LocationRemote getBaseLocationRemote(final boolean waitForData) throws NotAvailableException, InterruptedException {
+        return Units.getUnit(getConfig().getPlacementConfig().getLocationId(), waitForData, Units.LOCATION);
     }
 
     /**
@@ -575,6 +553,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * Method returns the transformation between the root location and this unit.
      *
      * @return a transformation future
+     *
      * @throws InterruptedException is thrown if the thread was externally interrupted.
      * @deprecated please use {@code getRootToUnitTransformationFuture()} instead.
      */
@@ -587,11 +566,17 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         }
     }
 
+    public Future<ActionFuture> applyAction(ActionDescription.Builder actionDescription) throws CouldNotPerformException {
+        return applyAction(actionDescription.build());
+    }
+
     /**
      * {@inheritDoc}
      *
      * @param actionDescription {@inheritDoc}
+     *
      * @return {@inheritDoc}
+     *
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
      */
     @Override

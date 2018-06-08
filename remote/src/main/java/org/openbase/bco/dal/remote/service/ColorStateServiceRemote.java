@@ -35,7 +35,7 @@ import org.openbase.jul.extension.rst.transform.HSBColorToRGBColorTransformer;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.CouldNotTransformException;
 import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
@@ -78,28 +78,12 @@ public class ColorStateServiceRemote extends AbstractServiceRemote<ColorStateOpe
 
     @Override
     public Future<ActionFuture> setColorState(final ColorState colorState) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-
-        try {
-            return applyAction(Services.updateActionDescription(actionDescription, colorState, getServiceType()).build());
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new CouldNotPerformException("Could not set colorState", ex);
-        }
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(colorState, getServiceType()));
     }
 
     @Override
     public Future<ActionFuture> setColorState(final ColorState colorState, final UnitType unitType) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescription = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), ResourceAllocation.Initiator.SYSTEM);
-        ServiceStateDescription.Builder serviceStateDescription = actionDescription.getServiceStateDescriptionBuilder();
-        serviceStateDescription.setUnitType(unitType);
-        
-        try {
-            return applyAction(Services.updateActionDescription(actionDescription, colorState, getServiceType()).build());
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
-            throw new CouldNotPerformException("Could not set colorState", ex);
-        }
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilder(colorState, getServiceType(), unitType));
     }
 
     @Override
