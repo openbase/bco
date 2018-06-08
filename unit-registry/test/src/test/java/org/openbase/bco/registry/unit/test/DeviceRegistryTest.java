@@ -114,9 +114,14 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
         String company = "Company";
 
         DeviceClass deviceClass = registerDeviceClass(generateDeviceClass("WithoutLabel", productNumber, company));
-        UnitConfig deviceWithoutLabel = unitRegistry.registerUnitConfig(generateDeviceUnitConfig("", serialNumber, deviceClass)).get();
+        UnitConfig deviceWithoutLabel = generateDeviceUnitConfig("", serialNumber, deviceClass).toBuilder().clearLabel().build();
+        deviceWithoutLabel = unitRegistry.registerUnitConfig(deviceWithoutLabel).get();
 
-        assertEquals("The device label is not set as the id if it is empty!", deviceClass.getCompany() + " " + deviceClass.getLabel() + " " + deviceWithoutLabel.getAlias(0), deviceWithoutLabel.getLabel());
+        assertEquals("The device label is not set as the id if it is empty!",
+                deviceClass.getCompany() + " " +
+                        LabelProcessor.getFirstLabel(deviceClass.getLabel()) + " " +
+                        deviceWithoutLabel.getAlias(0),
+                LabelProcessor.getFirstLabel(deviceWithoutLabel.getLabel()));
     }
 
     /**
@@ -222,8 +227,8 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
 
         Registries.getClassRegistry().addDataObserver(notifyChangeObserver);
         BindingConfig bindingConfig = BindingConfig.newBuilder().setBindingId("OPENHAB").build();
-        DeviceClass clazz = classRegistry.registerDeviceClass(generateDeviceClass("unittemplateUnitConfigTest", "0149283794283", "company").toBuilder().addUnitTemplateConfig(unitTemplateConfig1).addUnitTemplateConfig(unitTemplateConfig2).setBindingConfig(bindingConfig).build()).get();
-        assertTrue(clazz.getUnitTemplateConfigCount() == 2);
+        DeviceClass clazz = classRegistry.registerDeviceClass(generateDeviceClass("unitTemplateUnitConfigTest", "0149283794283", "company").toBuilder().addUnitTemplateConfig(unitTemplateConfig1).addUnitTemplateConfig(unitTemplateConfig2).setBindingConfig(bindingConfig).build()).get();
+        assertEquals(2, clazz.getUnitTemplateConfigCount());
         waitForDeviceClass(clazz);
         Registries.getClassRegistry().removeDataObserver(notifyChangeObserver);
 
@@ -242,7 +247,7 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
                 assertTrue("The service type of the light unit does not match", unit.getServiceConfig(0).getServiceDescription().getServiceType().equals(serviceTemplate1.getServiceType()));
             } else if (unit.getUnitType().equals(unitTemplateConfig2.getType())) {
                 containsHandlseSensor = true;
-                assertTrue("The handle sensor unit contains more or less services than the template config", unit.getServiceConfigCount() == unitTemplateConfig2.getServiceTemplateConfigCount());
+                assertEquals("The handle sensor unit contains more or less services than the template config", unitTemplateConfig2.getServiceTemplateConfigCount(), unit.getServiceConfigCount());
                 assertEquals("The service type of the handle sensor unit does not match", unit.getServiceConfig(0).getServiceDescription().getServiceType(), serviceTemplate2.getServiceType());
                 assertEquals("The service type of the handle sensor unit does not match", unit.getServiceConfig(1).getServiceDescription().getServiceType(), serviceTemplate3.getServiceType());
             }
@@ -389,10 +394,11 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
 
         label = label + "-2";
         UnitConfig.Builder deviceBuilder = device.clearLabel();
+        deviceBuilder.getDeviceConfigBuilder().clearUnitId();
         LabelProcessor.addLabel(deviceBuilder.getLabelBuilder(), Locale.ENGLISH, label);
         device = unitRegistry.updateUnitConfig(deviceBuilder.build()).get().toBuilder();
         dalUnit = unitRegistry.getUnitConfigById(device.getDeviceConfig().getUnitId(0));
-        assertEquals(device.getLabel(), dalUnit.getLabel());
+        assertEquals(LabelProcessor.getFirstLabel(device.getLabel()), LabelProcessor.getFirstLabel(dalUnit.getLabel()));
 
         deviceConfig = device.getDeviceConfigBuilder();
         inventoryState = deviceConfig.getInventoryStateBuilder();
@@ -466,13 +472,12 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
 
         try {
             ExceptionPrinter.setBeQuit(Boolean.TRUE);
-            unitRegistry.updateUnitConfig(newDeviceUnitConfig).get();
+            unitRegistry.registerUnitConfig(newDeviceUnitConfig.toBuilder().clearId().build()).get();
             fail("No exception thrown after updating a device with to have the same label as another");
         } catch (Exception ex) {
+            assertEquals("DeviceConfig has been changed event though the update has been rejected", newDeviceUnitConfig, unitRegistry.getUnitConfigById(newDeviceUnitConfig.getId()));
         } finally {
             ExceptionPrinter.setBeQuit(Boolean.FALSE);
         }
-
-        assertEquals("DeviceConfig has been changed event though the update has been rejected", newDeviceUnitConfig, unitRegistry.getUnitConfigById(newDeviceUnitConfig.getId()));
     }
 }

@@ -21,23 +21,24 @@ package org.openbase.bco.registry.unit.core.consistency.connectionconfig;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
+
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class BaseUnitLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
@@ -62,11 +63,12 @@ public class BaseUnitLabelConsistencyHandler extends AbstractProtoBufRegistryCon
             throw new NotAvailableException("baseunit.placement.locationId");
         }
 
-        String key = unitConfig.getLabel() + unitConfig.getPlacementConfig().getLocationId();
+
+        String key = LabelProcessor.getFirstLabel(unitConfig.getLabel()) + unitConfig.getPlacementConfig().getLocationId();
 
         if (baseUnitMap.containsKey(key)) {
             final String typeName = StringProcessor.transformUpperCaseToCamelCase(unitConfig.getUnitType().name());
-            throw new InvalidStateException(typeName+"[" + unitConfig.getAlias(0) + "] and "+typeName+"[" + baseUnitMap.get(key).getAlias(0) + "] are registered with the same label and type at the same location.");
+            throw new InvalidStateException(typeName + "[" + unitConfig.getAlias(0) + "] and " + typeName + "[" + baseUnitMap.get(key).getAlias(0) + "] are registered with the same label and type at the same location.");
         }
 
         baseUnitMap.put(key, unitConfig);

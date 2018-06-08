@@ -22,10 +22,6 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 
-import java.util.HashSet;
-import java.util.Locale;
-import java.util.Set;
-import java.util.concurrent.ExecutionException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -45,6 +41,7 @@ import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.binding.BindingConfigType.BindingConfig;
+import rst.domotic.registry.ClassRegistryDataType.ClassRegistryData;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -56,19 +53,23 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 import rst.domotic.unit.device.DeviceConfigType.DeviceConfig;
 
+import java.util.HashSet;
+import java.util.Locale;
+import java.util.Set;
+import java.util.concurrent.ExecutionException;
+
 /**
- *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
 public abstract class AbstractBCORegistryTest {
-    
-    protected final Logger logger = LoggerFactory.getLogger(getClass());
 
-    protected MockRegistry mockRegistry;
+    final Logger logger = LoggerFactory.getLogger(getClass());
 
-    protected UnitRegistryController unitRegistry;
-    protected ClassRegistryController classRegistry;
-    protected TemplateRegistryController templateRegistry;
+    MockRegistry mockRegistry;
+
+    UnitRegistryController unitRegistry;
+    ClassRegistryController classRegistry;
+    TemplateRegistryController templateRegistry;
 
     @BeforeClass
     public static void setUpClass() throws Exception {
@@ -96,8 +97,8 @@ public abstract class AbstractBCORegistryTest {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
     }
-    
-    protected UnitConfig generateDeviceUnitConfig(String label, String serialNumber, DeviceClass clazz) {
+
+    UnitConfig generateDeviceUnitConfig(String label, String serialNumber, DeviceClass clazz) {
         InventoryState inventoryState = InventoryState.newBuilder().setValue(InventoryStateType.InventoryState.State.IN_STOCK).build();
         DeviceConfig deviceConfig = DeviceConfig.newBuilder().setDeviceClassId(clazz.getId()).setSerialNumber(serialNumber).setInventoryState(inventoryState).build();
         UnitConfig.Builder unitConfig = UnitConfig.newBuilder().setUnitType(UnitType.DEVICE).setDeviceConfig(deviceConfig);
@@ -105,7 +106,7 @@ public abstract class AbstractBCORegistryTest {
         return unitConfig.build();
     }
 
-    protected DeviceClass generateDeviceClass(String label, String productNumber, String company, UnitType... unitTypes) throws CouldNotPerformException {
+    DeviceClass generateDeviceClass(String label, String productNumber, String company, UnitType... unitTypes) throws CouldNotPerformException {
         DeviceClass.Builder deviceClass = DeviceClass.newBuilder().setProductNumber(productNumber).setCompany(company);
         LabelProcessor.addLabel(deviceClass.getLabelBuilder(), Locale.ENGLISH, label);
         deviceClass.setBindingConfig(BindingConfig.newBuilder().setBindingId("OPENHAB"));
@@ -115,8 +116,8 @@ public abstract class AbstractBCORegistryTest {
         return deviceClass.build();
     }
 
-    protected UnitTemplateConfig getUnitTemplateConfig(UnitType unitType) throws CouldNotPerformException {
-        Set<ServiceType> serviceTypeSet = new HashSet();
+    UnitTemplateConfig getUnitTemplateConfig(UnitType unitType) throws CouldNotPerformException {
+        Set<ServiceType> serviceTypeSet = new HashSet<>();
         UnitTemplateConfig.Builder unitTemplateConfig = UnitTemplateConfig.newBuilder().setType(unitType);
         for (ServiceDescription serviceDescription : templateRegistry.getUnitTemplateByType(unitType).getServiceDescriptionList()) {
             if (!serviceTypeSet.contains(serviceDescription.getServiceType())) {
@@ -127,7 +128,7 @@ public abstract class AbstractBCORegistryTest {
         return unitTemplateConfig.build();
     }
 
-    protected DeviceClass registerDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException, ExecutionException, InterruptedException {
+    DeviceClass registerDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException, ExecutionException, InterruptedException {
         CachedClassRegistryRemote.getRegistry().addDataObserver(notifyChangeObserver);
         DeviceClass clazz = classRegistry.registerDeviceClass(deviceClass).get();
         waitForDeviceClass(clazz);
@@ -135,8 +136,8 @@ public abstract class AbstractBCORegistryTest {
         return clazz;
     }
 
-    final SyncObject LOCK = new SyncObject("WaitForDeviceClassLock");
-    final Observer notifyChangeObserver = (Observer) (Observable source, Object data) -> {
+    private final SyncObject LOCK = new SyncObject("WaitForDeviceClassLock");
+    final Observer<ClassRegistryData> notifyChangeObserver = (Observer<ClassRegistryData>) (Observable<ClassRegistryData> source, ClassRegistryData data) -> {
         synchronized (LOCK) {
             LOCK.notifyAll();
         }
@@ -147,9 +148,9 @@ public abstract class AbstractBCORegistryTest {
      * DeviceClass.
      *
      * @param deviceClass the DeviceClass tested
-     * @throws CouldNotPerformException
+     * @throws CouldNotPerformException if the class registry cannot be accessed
      */
-    protected void waitForDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
+    void waitForDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
 
         synchronized (LOCK) {
             try {

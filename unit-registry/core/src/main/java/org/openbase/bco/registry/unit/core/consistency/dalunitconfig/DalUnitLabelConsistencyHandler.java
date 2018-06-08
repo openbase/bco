@@ -22,10 +22,6 @@ package org.openbase.bco.registry.unit.core.consistency.dalunitconfig;
  * #L%
  */
 
-import java.util.HashMap;
-import java.util.Locale;
-import java.util.Map;
-
 import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
 import org.openbase.bco.registry.lib.util.DeviceConfigUtils;
 import org.openbase.bco.registry.lib.util.UnitConfigProcessor;
@@ -36,16 +32,18 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
-import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import org.openbase.jul.storage.registry.Registry;
+import org.openbase.jul.storage.registry.*;
 import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 
+import java.util.HashMap;
+import java.util.Locale;
+import java.util.Map;
+
 /**
+ * TODO: this has to ba changed to sync all label not only the first one
+ *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class DalUnitLabelConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {

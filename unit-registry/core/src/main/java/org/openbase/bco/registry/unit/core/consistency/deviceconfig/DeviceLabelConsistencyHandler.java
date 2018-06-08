@@ -28,6 +28,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.storage.registry.Registry;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
@@ -64,7 +65,7 @@ public class DeviceLabelConsistencyHandler extends BaseUnitLabelConsistencyHandl
             }
 
             final DeviceClass deviceClass = deviceClassRegistry.get(unitConfig.getDeviceConfig().getDeviceClassId()).getMessage();
-            return deviceClass.getCompany() + " " + deviceClass.getLabel() + " " + super.generateDefaultLabel(unitConfig);
+            return deviceClass.getCompany() + " " + LabelProcessor.getFirstLabel(deviceClass.getLabel()) + " " + super.generateDefaultLabel(unitConfig);
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not generate unit label!", ex);
         }
