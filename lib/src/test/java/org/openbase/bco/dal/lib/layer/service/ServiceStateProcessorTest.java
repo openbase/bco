@@ -55,18 +55,23 @@ public class ServiceStateProcessorTest {
         PresenceState.Builder builder = PresenceState.newBuilder();
         ServiceStateProcessor.updateLatestValueOccurrence(State.PRESENT, 2000, builder);
 //        System.out.println(builder.build());
-        assertEquals("", 2000, ServiceStateProcessor.getLatestValueOccurrence(State.PRESENT, builder).getTime());
+        assertEquals("Timestamp update not correctly handled.", 2000, ServiceStateProcessor.getLatestValueOccurrence(State.PRESENT, builder).getTime());
 //        System.out.println("==============");
         ServiceStateProcessor.updateLatestValueOccurrence(State.ABSENT, 2002, builder);
 //        System.out.println(builder.build());
-        assertEquals("", 2000, ServiceStateProcessor.getLatestValueOccurrence(State.PRESENT, builder).getTime());
-        assertEquals("", 2002, ServiceStateProcessor.getLatestValueOccurrence(State.ABSENT, builder).getTime());
+        assertEquals("Timestamp update not correctly handled.", 2000, ServiceStateProcessor.getLatestValueOccurrence(State.PRESENT, builder).getTime());
+        assertEquals("Timestamp update not correctly handled.", 2002, ServiceStateProcessor.getLatestValueOccurrence(State.ABSENT, builder).getTime());
 //        System.out.println("==============");
         ServiceStateProcessor.updateLatestValueOccurrence(State.PRESENT, 2004, builder);
 //        System.out.println(builder.build());
-        assertEquals("", 2004, ServiceStateProcessor.getLatestValueOccurrence(State.PRESENT, builder).getTime());
-        assertEquals("", 2002, ServiceStateProcessor.getLatestValueOccurrence(State.ABSENT, builder).getTime());
+        assertEquals("Timestamp update not correctly handled.", 2004, ServiceStateProcessor.getLatestValueOccurrence(State.PRESENT, builder).getTime());
+        assertEquals("Timestamp update not correctly handled.", 2002, ServiceStateProcessor.getLatestValueOccurrence(State.ABSENT, builder).getTime());
 //        System.out.println("==============");
+        ServiceStateProcessor.updateLatestValueOccurrence(State.PRESENT, 1200, builder);
+        ServiceStateProcessor.updateLatestValueOccurrence(State.ABSENT, 2200, builder);
+        ServiceStateProcessor.updateLatestValueOccurrence(State.ABSENT, -1, builder);
+        assertEquals("", 2004, ServiceStateProcessor.getLatestValueOccurrence(State.PRESENT, builder).getTime());
+        assertEquals("", 2200, ServiceStateProcessor.getLatestValueOccurrence(State.ABSENT, builder).getTime());
     }
 
     @Test
