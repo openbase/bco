@@ -118,7 +118,7 @@ public class AuthorizationHelper {
 
         // BUG WORKAROUND
         // todo remove me after fixing openbase/bco.authentication#61
-//        if(unitConfig.getType() == UnitType.UNKNOWN) {
+//        if(unitConfig.getUnitType() == UnitType.UNKNOWN) {
 //            return true;
 //        }
 
