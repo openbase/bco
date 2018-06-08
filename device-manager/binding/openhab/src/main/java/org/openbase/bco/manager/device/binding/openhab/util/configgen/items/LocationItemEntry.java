@@ -40,10 +40,10 @@ public class LocationItemEntry extends AbstractItemEntry {
     public LocationItemEntry(final UnitConfig locationUnitConfig, final ServiceDescription serviceDescription) throws org.openbase.jul.exception.InstantiationException {
         super(locationUnitConfig, null);
         try {
-            this.itemId = generateItemId(locationUnitConfig, serviceDescription.getType());
+            this.itemId = generateItemId(locationUnitConfig, serviceDescription.getServiceType());
             this.icon = "";
-            this.commandType = getDefaultCommand(serviceDescription.getType());
-            this.label = locationUnitConfig.getLabel() + "_" + StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getType().name());
+            this.commandType = getDefaultCommand(serviceDescription.getServiceType());
+            this.label = locationUnitConfig.getLabel() + "_" + StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getServiceType().name());
             if ("Number".equals(commandType)) {
                 label += " [%.0f]";
             }

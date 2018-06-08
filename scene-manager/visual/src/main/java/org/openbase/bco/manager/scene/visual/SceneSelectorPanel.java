@@ -283,7 +283,7 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
                         continue;
                     }
 
-                    serviceTypeHolderList.add(new ServiceTypeHolder(serviceDescription.getType()));
+                    serviceTypeHolderList.add(new ServiceTypeHolder(serviceDescription.getServiceType()));
                 }
                 Collections.sort(serviceTypeHolderList);
                 selectedServiceTypeComboBox.setModel(new DefaultComboBoxModel(serviceTypeHolderList.toArray()));

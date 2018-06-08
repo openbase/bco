@@ -130,8 +130,8 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
     }
 
     private boolean unitHasService(UnitConfig unitConfig, ServiceType serviceType, ServicePattern servicePattern) throws CouldNotPerformException, NotAvailableException, InterruptedException {
-        for (ServiceDescription serviceDescription : Registries.getTemplateRegistry().getUnitTemplateByType(unitConfig.getType()).getServiceDescriptionList()) {
-            if (serviceDescription.getType() == serviceType && serviceDescription.getPattern() == servicePattern) {
+        for (ServiceDescription serviceDescription : Registries.getTemplateRegistry().getUnitTemplateByType(unitConfig.getUnitType()).getServiceDescriptionList()) {
+            if (serviceDescription.getServiceType() == serviceType && serviceDescription.getPattern() == servicePattern) {
                 return true;
             }
         }
@@ -265,7 +265,7 @@ public class LocationRemoteTest extends AbstractBCOLocationManagerTest{
                     continue;
                 }
 
-                if (lightTypes.contains(dalUnitConfig.getType())) {
+                if (lightTypes.contains(dalunitConfig.getUnitType())) {
                     UnitController unitController = deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(dalUnitConfig.getId());
                     powerServiceList.add((PowerStateOperationService) unitController);
                 }

@@ -80,8 +80,8 @@ public class UnitGroupRemoteTest extends AbstractBCODeviceManagerTest {
     }
 
     private static UnitConfig registerUnitGroup() throws Exception {
-        ServiceDescription powerStateOperationService = ServiceDescription.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.OPERATION).build();
-        ServiceDescription powerStateProviderService = ServiceDescription.newBuilder().setType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.PROVIDER).build();
+        ServiceDescription powerStateOperationService = ServiceDescription.newBuilder().setServiceType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.OPERATION).build();
+        ServiceDescription powerStateProviderService = ServiceDescription.newBuilder().setServiceType(ServiceType.POWER_STATE_SERVICE).setPattern(ServicePattern.PROVIDER).build();
         UnitGroupConfig.Builder unitGroupConfig = UnitGroupConfig.newBuilder().addServiceDescription(powerStateOperationService).addServiceDescription(powerStateProviderService);
         unitGroupConfig.setUnitType(UnitTemplateType.UnitTemplate.UnitType.UNKNOWN);
         for (Unit<?> unit : deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().getEntries()) {
@@ -100,12 +100,12 @@ public class UnitGroupRemoteTest extends AbstractBCODeviceManagerTest {
         List<ServiceConfig> unitServiceConfigList = unit.getConfig().getServiceConfigList();
         Set<ServiceType> unitServiceTypeList = new HashSet<>();
         unitServiceConfigList.stream().forEach((serviceConfig) -> {
-            unitServiceTypeList.add(serviceConfig.getServiceDescription().getType());
+            unitServiceTypeList.add(serviceConfig.getServiceDescription().getServiceType());
         });
 
         boolean servicePatternValid;
         for (ServiceDescription serviceDescription : unitGroup.getServiceDescriptionList()) {
-            if (!unitServiceTypeList.contains(serviceDescription.getType())) {
+            if (!unitServiceTypeList.contains(serviceDescription.getServiceType())) {
                 return false;
             }
 

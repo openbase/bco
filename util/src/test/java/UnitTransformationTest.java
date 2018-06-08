@@ -102,12 +102,12 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
             verifyTransformations();
 
             for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs()) {
-                if ((unitConfig.getType() == UnitType.USER || unitConfig.getType() == UnitType.AUTHORIZATION_GROUP) && unitConfig.getLabel().equals("Admin")) {
+                if ((unitConfig.getUnitType() == UnitType.USER || unitConfig.getUnitType() == UnitType.AUTHORIZATION_GROUP) && unitConfig.getLabel().equals("Admin")) {
                     // no permissions for change of admin user or group
                     continue;
                 }
 
-//                System.out.println("setup transformation of " + unitConfig.getLabel() + ", " + unitConfig.getType().name());
+//                System.out.println("setup transformation of " + unitConfig.getLabel() + ", " + unitConfig.getUnitType().name());
                 final UnitConfig.Builder unitConfigBuilder = unitConfig.toBuilder();
                 unitConfigBuilder.getPlacementConfigBuilder().setPosition(pose);
                 unitConfig = Registries.getUnitRegistry().updateUnitConfig(unitConfigBuilder.build()).get();

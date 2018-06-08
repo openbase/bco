@@ -263,8 +263,8 @@ public abstract class AbstractItemEntry implements ItemEntry, Comparable<Abstrac
     public int compareTo(AbstractItemEntry o) {
 
         // unit type sort
-        if (!getUnitTypeOrder(unitConfig.getType()).equals(getUnitTypeOrder(o.unitConfig.getType()))) {
-            return getUnitTypeOrder(unitConfig.getType()).compareTo(getUnitTypeOrder(o.unitConfig.getType()));
+        if (!getUnitTypeOrder(unitConfig.getUnitType()).equals(getUnitTypeOrder(o.unitConfig.getUnitType()))) {
+            return getUnitTypeOrder(unitConfig.getUnitType()).compareTo(getUnitTypeOrder(o.unitConfig.getUnitType()));
         }
 
         // command type sort

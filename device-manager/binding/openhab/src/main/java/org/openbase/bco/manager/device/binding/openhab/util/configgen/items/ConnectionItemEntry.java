@@ -41,9 +41,9 @@ public class ConnectionItemEntry extends AbstractItemEntry {
     public ConnectionItemEntry(final UnitConfig connectionUnitConfig, final ServiceDescription serviceDescription) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         super(connectionUnitConfig, null);
         try {
-            this.itemId = generateItemId(connectionUnitConfig, serviceDescription.getType());
+            this.itemId = generateItemId(connectionUnitConfig, serviceDescription.getServiceType());
             this.icon = "";
-            this.commandType = getDefaultCommand(serviceDescription.getType());
+            this.commandType = getDefaultCommand(serviceDescription.getServiceType());
             this.label = connectionUnitConfig.getLabel();
             this.itemHardwareConfig = "rsb=\"" + LOCATION_RSB_BINDING_CONFIG + ":" + connectionUnitConfig.getId() + "\"";
             

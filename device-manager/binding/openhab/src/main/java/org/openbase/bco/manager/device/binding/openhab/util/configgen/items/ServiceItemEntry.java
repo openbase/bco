@@ -77,7 +77,7 @@ public class ServiceItemEntry extends AbstractItemEntry {
             try {
                 configPool.register(new MetaConfigVariableProvider("ServiceTemplateMetaConfig", lookupServiceTemplate(deviceClass, unitConfig, serviceConfig).getMetaConfig()));
             } catch (final NotAvailableException ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service template meta config for Service[" + serviceConfig.getServiceDescription().getType().name() + "] of Unit[" + unitConfig.getLabel() + "]", ex), logger, LogLevel.ERROR);
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not load service template meta config for Service[" + serviceConfig.getServiceDescription().getServiceType().name() + "] of Unit[" + unitConfig.getLabel() + "]", ex), logger, LogLevel.ERROR);
             }
 
             try {
@@ -95,7 +95,7 @@ public class ServiceItemEntry extends AbstractItemEntry {
             try {
                 this.commandType = configPool.getValue(SERVICE_TEMPLATE_BINDING_COMMAND);
             } catch (NotAvailableException ex) {
-                this.commandType = getDefaultCommand(serviceConfig.getServiceDescription().getType());
+                this.commandType = getDefaultCommand(serviceConfig.getServiceDescription().getServiceType());
             }
 
             try {
@@ -104,12 +104,12 @@ public class ServiceItemEntry extends AbstractItemEntry {
                 this.icon = "";
             }
 
-            this.groups.add(ItemIdGenerator.generateUnitGroupID(unitConfig.getType()));
-            for (final UnitType unitType : Registries.getUnitRegistry(true).getSuperUnitTypes(unitConfig.getType())) {
+            this.groups.add(ItemIdGenerator.generateUnitGroupID(unitConfig.getUnitType()));
+            for (final UnitType unitType : Registries.getUnitRegistry(true).getSuperUnitTypes(unitConfig.getUnitType())) {
                 this.groups.add(ItemIdGenerator.generateUnitGroupID(unitType));
             }
 
-            this.groups.add(ItemIdGenerator.generateServiceGroupID(serviceConfig.getServiceDescription().getType()));
+            this.groups.add(ItemIdGenerator.generateServiceGroupID(serviceConfig.getServiceDescription().getServiceType()));
 
             try {
                 // just add location group if unit is visible.
@@ -136,7 +136,7 @@ public class ServiceItemEntry extends AbstractItemEntry {
 
     private boolean checkAlreadyAvailableThrougOtherComponents(final UnitConfig unitConfig, final ServiceConfig serviceConfig) {
         // skip if function is already available through other components
-        if (unitConfig.getType() == UnitType.COLORABLE_LIGHT && serviceConfig.getServiceDescription().getType() == ServiceType.BRIGHTNESS_STATE_SERVICE) {
+        if (unitConfig.getUnitType() == UnitType.COLORABLE_LIGHT && serviceConfig.getServiceDescription().getServiceType() == ServiceType.BRIGHTNESS_STATE_SERVICE) {
             return true;
         }
         return false;
@@ -171,17 +171,17 @@ public class ServiceItemEntry extends AbstractItemEntry {
             if (unitTemplateConfig.getId().equals(unitConfig.getUnitTemplateConfigId())) {
                 List<ServiceTemplateConfig> serviceTemplateList = unitTemplateConfig.getServiceTemplateConfigList();
                 for (ServiceTemplateConfig serviceTemplate : serviceTemplateList) {
-                    if (serviceTemplate.getServiceType().equals(serviceConfig.getServiceDescription().getType())) {
+                    if (serviceTemplate.getServiceType().equals(serviceConfig.getServiceDescription().getServiceType())) {
                         return serviceTemplate;
                     }
                 }
             }
         }
-        throw new NotAvailableException("service template for ServiceType[" + serviceConfig.getServiceDescription().getType().name() + "]");
+        throw new NotAvailableException("service template for ServiceType[" + serviceConfig.getServiceDescription().getServiceType().name() + "]");
     }
 
     private UnitTemplateConfig lookupUnitTemplateConfig(final DeviceClass deviceClass, final UnitConfig unitConfig) throws NotAvailableException {
-        return lookupUnitTemplateConfig(deviceClass, unitConfig.getType());
+        return lookupUnitTemplateConfig(deviceClass, unitConfig.getUnitType());
     }
 
     private UnitTemplateConfig lookupUnitTemplateConfig(final DeviceClass deviceClass, final UnitType unitType) throws NotAvailableException {

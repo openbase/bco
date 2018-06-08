@@ -43,10 +43,10 @@ public class UnitGroupItemEntry extends AbstractItemEntry {
     public UnitGroupItemEntry(final UnitConfigType.UnitConfig unitGroupUnitConfig, final ServiceDescription serviceDescription) throws org.openbase.jul.exception.InstantiationException {
         super(unitGroupUnitConfig, null);
         try {
-            this.itemId = generateItemId(unitGroupUnitConfig, serviceDescription.getType());
+            this.itemId = generateItemId(unitGroupUnitConfig, serviceDescription.getServiceType());
             this.icon = "";
-            this.commandType = getDefaultCommand(serviceDescription.getType());
-            this.label = unitGroupUnitConfig.getLabel() + "_" + StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getType().name());
+            this.commandType = getDefaultCommand(serviceDescription.getServiceType());
+            this.label = unitGroupUnitConfig.getLabel() + "_" + StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getServiceType().name());
             if ("Number".equals(commandType)) {
                 label += " [%.0f]";
             }

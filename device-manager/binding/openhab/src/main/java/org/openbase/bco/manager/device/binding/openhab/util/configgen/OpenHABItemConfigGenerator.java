@@ -21,24 +21,8 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.io.File;
-import java.nio.charset.Charset;
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Map;
-import java.util.Set;
 import org.apache.commons.io.FileUtils;
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.AbstractItemEntry;
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.AgentItemEntry;
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.AppItemEntry;
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.ItemIdGenerator;
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.LocationItemEntry;
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.SceneItemEntry;
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.ServiceItemEntry;
-import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.UnitGroupItemEntry;
+import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.*;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABItemConfig;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
@@ -60,6 +44,10 @@ import rst.domotic.state.InventoryStateType.InventoryState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
+
+import java.io.File;
+import java.nio.charset.Charset;
+import java.util.*;
 
 /**
  *
@@ -149,23 +137,23 @@ public class OpenHABItemConfigGenerator {
                 Map<ServiceType, ServiceDescription> serviceDescriptionsOnLocation = new HashMap<>();
                 for (final String childUnitId : locationUnitConfig.getLocationConfig().getChildIdList()) {
                     final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(childUnitId);
-                    for (ServiceDescription serviceDescription : Registries.getTemplateRegistry().getUnitTemplateByType(unitConfig.getType()).getServiceDescriptionList()) {
-                        if (!serviceDescriptionsOnLocation.containsKey(serviceDescription.getType())) {
-                            serviceDescriptionsOnLocation.put(serviceDescription.getType(), serviceDescription);
+                    for (ServiceDescription serviceDescription : Registries.getTemplateRegistry().getUnitTemplateByType(unitConfig.getUnitType()).getServiceDescriptionList()) {
+                        if (!serviceDescriptionsOnLocation.containsKey(serviceDescription.getServiceType())) {
+                            serviceDescriptionsOnLocation.put(serviceDescription.getServiceType(), serviceDescription);
                         } else {
-                            if (serviceDescriptionsOnLocation.get(serviceDescription.getType()).getPattern() == ServiceTemplate.ServicePattern.PROVIDER
+                            if (serviceDescriptionsOnLocation.get(serviceDescription.getServiceType()).getPattern() == ServiceTemplate.ServicePattern.PROVIDER
                                     && serviceDescription.getPattern() == ServiceTemplate.ServicePattern.OPERATION) {
-                                serviceDescriptionsOnLocation.put(serviceDescription.getType(), serviceDescription);
+                                serviceDescriptionsOnLocation.put(serviceDescription.getServiceType(), serviceDescription);
                             }
                         }
                     }
                 }
                 for (ServiceDescription serviceDescription : serviceDescriptionsOnLocation.values()) {
-                    if (serviceDescription.getType() == ServiceType.COLOR_STATE_SERVICE
-                            || serviceDescription.getType() == ServiceType.POWER_STATE_SERVICE
-                            || serviceDescription.getType() == ServiceType.POWER_CONSUMPTION_STATE_SERVICE
-                            || serviceDescription.getType() == ServiceType.TEMPERATURE_STATE_SERVICE
-                            || serviceDescription.getType() == ServiceType.MOTION_STATE_SERVICE) {
+                    if (serviceDescription.getServiceType() == ServiceType.COLOR_STATE_SERVICE
+                            || serviceDescription.getServiceType() == ServiceType.POWER_STATE_SERVICE
+                            || serviceDescription.getServiceType() == ServiceType.POWER_CONSUMPTION_STATE_SERVICE
+                            || serviceDescription.getServiceType() == ServiceType.TEMPERATURE_STATE_SERVICE
+                            || serviceDescription.getServiceType() == ServiceType.MOTION_STATE_SERVICE) {
                         LocationItemEntry entry = new LocationItemEntry(locationUnitConfig, serviceDescription);
                         itemEntryList.add(entry);
                         logger.debug("Added location entry [" + entry.buildStringRep() + "]");
@@ -175,13 +163,13 @@ public class OpenHABItemConfigGenerator {
             for (UnitConfig unitGroupUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.UNIT_GROUP)) {
                 Set<ServiceType> serviceTypeSet = new HashSet<>();
                 for (ServiceDescription serviceDescription : unitGroupUnitConfig.getUnitGroupConfig().getServiceDescriptionList()) {
-                    logger.info("Generate ItemEntry for group[" + unitGroupUnitConfig.getLabel() + "] for service [" + serviceDescription.getType() + "]");
-                    if (serviceDescription.getType() == ServiceType.COLOR_STATE_SERVICE || serviceDescription.getType() == ServiceType.POWER_STATE_SERVICE) {
-                        if (!serviceTypeSet.contains(serviceDescription.getType())) {
+                    logger.info("Generate ItemEntry for group[" + unitGroupUnitConfig.getLabel() + "] for service [" + serviceDescription.getServiceType() + "]");
+                    if (serviceDescription.getServiceType() == ServiceType.COLOR_STATE_SERVICE || serviceDescription.getServiceType() == ServiceType.POWER_STATE_SERVICE) {
+                        if (!serviceTypeSet.contains(serviceDescription.getServiceType())) {
                             UnitGroupItemEntry entry = new UnitGroupItemEntry(unitGroupUnitConfig, serviceDescription);
                             itemEntryList.add(entry);
                             logger.debug("Added unit group entry [" + entry.buildStringRep() + "]");
-                            serviceTypeSet.add(serviceDescription.getType());
+                            serviceTypeSet.add(serviceDescription.getServiceType());
                         }
                     }
                 }
@@ -231,26 +219,26 @@ public class OpenHABItemConfigGenerator {
                             continue;
                         }
 
-                        if (serviceTypeSet.contains(serviceConfig.getServiceDescription().getType())) {
+                        if (serviceTypeSet.contains(serviceConfig.getServiceDescription().getServiceType())) {
                             continue;
                         }
 
                         if (serviceConfig.getServiceDescription().getPattern() == ServicePattern.PROVIDER) {
-                            if (unitHasServiceAsOperationService(unitConfig, serviceConfig.getServiceDescription().getType())) {
+                            if (unitHasServiceAsOperationService(unitConfig, serviceConfig.getServiceDescription().getServiceType())) {
                                 continue;
                             }
                         }
 
                         // TODO: fix that this has to be skipped, issue: https://github.com/openbase/bco.manager/issues/43
-                        if (serviceConfig.getServiceDescription().getType() == ServiceType.TEMPERATURE_ALARM_STATE_SERVICE) {
+                        if (serviceConfig.getServiceDescription().getServiceType() == ServiceType.TEMPERATURE_ALARM_STATE_SERVICE) {
                             continue;
                         }
 
-                        serviceTypeSet.add(serviceConfig.getServiceDescription().getType());
+                        serviceTypeSet.add(serviceConfig.getServiceDescription().getServiceType());
                         try {
                             itemEntryList.add(new ServiceItemEntry(deviceClass, deviceUnitConfig.getMetaConfig(), unitConfig, serviceConfig));
                         } catch (Exception ex) {
-                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not generate item for Service[" + serviceConfig.getServiceDescription().getType().name() + "] of Unit[" + unitConfig.getLabel() + "]", ex), logger, LogLevel.WARN);
+                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not generate item for Service[" + serviceConfig.getServiceDescription().getServiceType().name() + "] of Unit[" + unitConfig.getLabel() + "]", ex), logger, LogLevel.WARN);
                         }
                     }
                 }
@@ -316,7 +304,7 @@ public class OpenHABItemConfigGenerator {
     }
 
     private boolean unitHasServiceAsOperationService(UnitConfig unitConfig, ServiceType serviceType) {
-        return unitConfig.getServiceConfigList().stream().anyMatch((tmpServiceConfig) -> (tmpServiceConfig.getServiceDescription().getType() == serviceType
+        return unitConfig.getServiceConfigList().stream().anyMatch((tmpServiceConfig) -> (tmpServiceConfig.getServiceDescription().getServiceType() == serviceType
                 && tmpServiceConfig.getServiceDescription().getPattern() == ServiceTemplate.ServicePattern.OPERATION));
     }
 }

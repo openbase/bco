@@ -175,7 +175,7 @@ public class SceneRemoteTest {
                     continue;
                 }
 
-                if (unitRegistry.getSubUnitTypes(UnitType.LIGHT).contains(unitConfig.getType()) || unitConfig.getType() == UnitType.LIGHT || unitConfig.getType() == UnitType.POWER_SWITCH) {
+                if (unitRegistry.getSubUnitTypes(UnitType.LIGHT).contains(unitConfig.getUnitType()) || unitConfig.getUnitType() == UnitType.LIGHT || unitConfig.getUnitType() == UnitType.POWER_SWITCH) {
                     serviceStateDescription.clearUnitId();
                     serviceStateDescription.setUnitId(unitConfig.getId());
                     serviceStateDescriptionList.add(serviceStateDescription.build());
@@ -193,7 +193,7 @@ public class SceneRemoteTest {
                     continue;
                 }
 
-                if (unitConfig.getType() == UnitType.COLORABLE_LIGHT) {
+                if (unitConfig.getUnitType() == UnitType.COLORABLE_LIGHT) {
                     serviceStateDescription.clearUnitId();
                     serviceStateDescription.setUnitId(unitConfig.getId());
                     serviceStateDescriptionList.add(serviceStateDescription.build());
