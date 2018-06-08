@@ -31,6 +31,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.ConfigurableRemote;
 import rsb.Scope;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
@@ -39,6 +40,8 @@ import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.rsb.ScopeType;
+
+import java.util.Locale;
 
 /**
  * @param <M> Message
@@ -154,7 +157,11 @@ public interface UnitRemote<M extends GeneratedMessage> extends Unit<M>, Configu
             username = "Other";
         }
         actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.AUTHORITY_KEY, username));
-        actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
+
+        //TODO: provide label in different languages for LabelProcessor and replace according to user logged in
+        final String label = LabelProcessor.getFirstLabel(actionDescription.getLabel());
+        actionDescription.clearLabel();
+        LabelProcessor.addLabel(actionDescription.getLabelBuilder(), Locale.ENGLISH, label.replace(ActionDescriptionProcessor.LABEL_KEY, getLabel()));
 
         return Services.updateActionDescription(actionDescription, serviceAttribute, serviceType);
     }

@@ -34,6 +34,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,6 +50,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Locale;
 
 import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_LABEL;
 import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKAGE;
@@ -322,7 +324,9 @@ public class Services {
         // TODO: also replace SERVICE_ATTRIBUTE_KEY in description with a nice serviceAttribute representation
         String serviceAttributeRepresentation = StringProcessor.formatHumanReadable(serviceAttribute.toBuilder().clearField(ProtoBufFieldProcessor.getFieldDescriptor(serviceAttribute, Service.RESPONSIBLE_ACTION_FIELD_NAME)).build().toString());
         description = description.replace(ActionDescriptionProcessor.SERVICE_ATTRIBUTE_KEY, serviceAttributeRepresentation);
-        actionDescription.setLabel(actionDescription.getLabel().replace(ActionDescriptionProcessor.SERVICE_ATTRIBUTE_KEY, serviceAttributeRepresentation));
+        final String label = LabelProcessor.getFirstLabel(actionDescription.getLabel());
+        actionDescription.clearLabel();
+        LabelProcessor.addLabel(actionDescription.getLabelBuilder(), Locale.ENGLISH, label.replace(ActionDescriptionProcessor.SERVICE_ATTRIBUTE_KEY, serviceAttributeRepresentation));
         return actionDescription.setDescription(StringProcessor.removeDoubleWhiteSpaces(description));
     }
 

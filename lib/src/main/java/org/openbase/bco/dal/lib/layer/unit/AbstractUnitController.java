@@ -10,12 +10,12 @@ package org.openbase.bco.dal.lib.layer.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -56,6 +56,7 @@ import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
@@ -92,7 +93,6 @@ import static rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePat
 /**
  * @param <D>  the data type of this unit used for the state synchronization.
  * @param <DB> the builder used to build the unit data instance.
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public abstract class AbstractUnitController<D extends GeneratedMessage, DB extends D.Builder<DB>> extends AbstractAuthenticatedConfigurableController<D, DB, UnitConfig> implements UnitController<D, DB> {
@@ -189,8 +189,8 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 throw new NotAvailableException("config.label");
             }
 
-            if (config.getLabel().isEmpty()) {
-                throw new NotAvailableException("Field config.label is emty!");
+            if (LabelProcessor.isEmpty(config.getLabel())) {
+                throw new NotAvailableException("Field config.label is empty!");
             }
 
             super.init(config);
@@ -245,7 +245,6 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
     /**
      * @return
-     *
      * @deprecated please use Registries.getUnitRegistry(true) instead;
      */
     @Deprecated
@@ -344,10 +343,10 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 throw new NotAvailableException("unitconfig.label");
             }
 
-            if (tmpConfig.getLabel().isEmpty()) {
+            if (LabelProcessor.isEmpty(tmpConfig.getLabel())) {
                 throw new InvalidStateException("unitconfig.label is empty");
             }
-            return getConfig().getLabel();
+            return LabelProcessor.getFirstLabel(getConfig().getLabel());
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("label", ex);
         }
@@ -587,13 +586,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 try {
                     FieldDescriptor valueFieldDescriptor = serviceStateBuilder.getDescriptorForType().findFieldByName("value");
                     FieldDescriptor timestampFieldDescriptor = serviceStateBuilder.getDescriptorForType().findFieldByName("timestamp");
-                    if(valueFieldDescriptor != null) {
+                    if (valueFieldDescriptor != null) {
                         ServiceStateProcessor.updateLatestValueOccurrence((ProtocolMessageEnum) serviceStateBuilder.getField(valueFieldDescriptor), ((Timestamp) serviceStateBuilder.getField(timestampFieldDescriptor)), serviceStateBuilder);
                     }
                 } catch (CouldNotPerformException ex) {
                     throw new CouldNotPerformException("Could not update state value occurrence timestamp!", ex);
                 }
-            } catch(Exception ex) {
+            } catch (Exception ex) {
                 ExceptionPrinter.printHistory("Could not update timestamp!", ex, logger);
             }
 

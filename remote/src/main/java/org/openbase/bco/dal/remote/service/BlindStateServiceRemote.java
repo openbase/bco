@@ -84,7 +84,7 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
                 continue;
             }
 
-            switch (service.getBlindState().getMovementState()) {
+            switch (service.getBlindState().getValue()) {
                 case DOWN:
                     down++;
                     break;
@@ -101,16 +101,16 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
         }
 
         openingRatioAverage /= serviceNumber;
-        BlindState.MovementState mostOccurrences;
+        BlindState.State mostOccurrences;
         if (stop >= up && stop >= down) {
-            mostOccurrences = BlindState.MovementState.STOP;
+            mostOccurrences = BlindState.State.STOP;
         } else if (up >= stop && up >= down) {
-            mostOccurrences = BlindState.MovementState.UP;
+            mostOccurrences = BlindState.State.UP;
         } else {
-            mostOccurrences = BlindState.MovementState.DOWN;
+            mostOccurrences = BlindState.State.DOWN;
         }
 
-        return TimestampProcessor.updateTimestamp(timestamp, BlindState.newBuilder().setMovementState(mostOccurrences).setOpeningRatio(openingRatioAverage), TimeUnit.MICROSECONDS, logger).build();
+        return TimestampProcessor.updateTimestamp(timestamp, BlindState.newBuilder().setValue(mostOccurrences).setOpeningRatio(openingRatioAverage), TimeUnit.MICROSECONDS, logger).build();
     }
 
     @Override

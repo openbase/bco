@@ -10,12 +10,12 @@ package org.openbase.bco.dal.remote.unit;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -28,16 +28,12 @@ import org.openbase.bco.authentication.lib.AuthenticationClientHandler;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.com.AbstractAuthenticatedConfigurableRemote;
 import org.openbase.bco.authentication.lib.com.AuthenticatedGenericMessageProcessor;
-import org.openbase.bco.authentication.lib.future.AuthenticatedActionFuture;
 import org.openbase.bco.dal.lib.layer.service.ServiceDataFilteredObservable;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitDataFilteredObservable;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
-import org.openbase.bco.dal.remote.unit.future.UnitSynchronisationFuture;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
-import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -47,6 +43,7 @@ import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
 import org.openbase.jul.extension.rst.iface.ScopeProvider;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.FutureProcessor;
@@ -487,7 +484,16 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
     @Override
     public String getLabel() throws NotAvailableException {
         try {
-            return getConfig().getLabel();
+            if (getSessionManager().isLoggedIn()) {
+                try {
+                    UnitConfig user = Registries.getUnitRegistry().getUnitConfigById(getSessionManager().getUserId());
+                    return LabelProcessor.getLabelByLanguage(user.getUserConfig().getLanguage(), getConfig().getLabel());
+                } catch (CouldNotPerformException ex) {
+                    // as a backup use the first label as seen below
+                    //TODO: this should parse a value from the root location meta config that defines a default label
+                }
+            }
+            return LabelProcessor.getFirstLabel(getConfig().getLabel());
         } catch (NullPointerException | NotAvailableException ex) {
             throw new NotAvailableException("unit label", ex);
         }
@@ -607,42 +613,42 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
         }
     }
 
-    private ActionDescription initializeRequest(final ActionDescription actionDescription) throws CouldNotPerformException {
-        ActionDescription.Builder actionDescriptionBuilder = actionDescription.toBuilder();
-
-        // if not authenticated, but was and is able to login again, then do so, otherwise log out
-        if (this.isLoggedIn()) {
-            try {
-                this.isAuthenticated();
-            } catch (CouldNotPerformException ex) {
-                try {
-                    this.sessionManager.relog();
-                } catch (CouldNotPerformException ex2) {
-                    // Logout and return CouldNotPerformException, if anything went wrong
-                    this.sessionManager.logout();
-                    ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
-                    throw new CouldNotPerformException("Your session has expired. You have been logged out for security reasons. Please log in again.");
-                }
-            }
-        }
-
-        // then, after relog or in case unit was already or never authenticated
-        if (this.isAuthenticated()) {
-            try {
-                TicketAuthenticatorWrapper wrapper = AuthenticationClientHandler.initServiceServerRequest(this.sessionManager.getSessionKey(), this.sessionManager.getTicketAuthenticatorWrapper());
-                ActionAuthority.Builder actionAuthorityBuilder = actionDescriptionBuilder.getActionAuthorityBuilder();
-                actionAuthorityBuilder.setTicketAuthenticatorWrapper(wrapper);
-            } catch (IOException | BadPaddingException ex) {
-                throw new CouldNotPerformException("Could not initialize client server ticket for request", ex);
-            }
-        } else {
-            // if still not authenticated and cannot login again all rights are used
-            // to make this clear to the receiving controller clear the actionAuthority
-            actionDescriptionBuilder.clearActionAuthority();
-        }
-
-        return actionDescriptionBuilder.build();
-    }
+//    private ActionDescription initializeRequest(final ActionDescription actionDescription) throws CouldNotPerformException {
+//        ActionDescription.Builder actionDescriptionBuilder = actionDescription.toBuilder();
+//
+//        // if not authenticated, but was and is able to login again, then do so, otherwise log out
+//        if (this.isLoggedIn()) {
+//            try {
+//                this.isAuthenticated();
+//            } catch (CouldNotPerformException ex) {
+//                try {
+//                    this.sessionManager.relog();
+//                } catch (CouldNotPerformException ex2) {
+//                    // Logout and return CouldNotPerformException, if anything went wrong
+//                    this.sessionManager.logout();
+//                    ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
+//                    throw new CouldNotPerformException("Your session has expired. You have been logged out for security reasons. Please log in again.");
+//                }
+//            }
+//        }
+//
+//        // then, after relog or in case unit was already or never authenticated
+//        if (this.isAuthenticated()) {
+//            try {
+//                TicketAuthenticatorWrapper wrapper = AuthenticationClientHandler.initServiceServerRequest(this.sessionManager.getSessionKey(), this.sessionManager.getTicketAuthenticatorWrapper());
+//                ActionAuthority.Builder actionAuthorityBuilder = actionDescriptionBuilder.getActionAuthorityBuilder();
+//                actionAuthorityBuilder.setTicketAuthenticatorWrapper(wrapper);
+//            } catch (IOException | BadPaddingException ex) {
+//                throw new CouldNotPerformException("Could not initialize client server ticket for request", ex);
+//            }
+//        } else {
+//            // if still not authenticated and cannot login again all rights are used
+//            // to make this clear to the receiving controller clear the actionAuthority
+//            actionDescriptionBuilder.clearActionAuthority();
+//        }
+//
+//        return actionDescriptionBuilder.build();
+//    }
 
     private boolean isLoggedIn() {
         return sessionManager != null && sessionManager.isLoggedIn();

@@ -25,6 +25,7 @@ package org.openbase.bco.dal.lib.layer.service;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
+import com.google.protobuf.MessageOrBuilder;
 import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -50,7 +51,7 @@ public class ServiceStateProcessor {
      *
      * @throws CouldNotPerformException is thrown if the timestamp is not available.
      */
-    public static Timestamp getLatestValueOccurrence(final ProtocolMessageEnum enumStateValue, GeneratedMessage.Builder serviceState) throws CouldNotPerformException {
+    public static Timestamp getLatestValueOccurrence(final ProtocolMessageEnum enumStateValue, MessageOrBuilder serviceState) throws CouldNotPerformException {
         FieldDescriptor mapFieldDescriptor = serviceState.getDescriptorForType().findFieldByName("last_value_occurrence");
         if (mapFieldDescriptor == null) {
             throw new NotAvailableException("Field[ast_value_occurrence] does not exist for type " + serviceState.getClass().getName());

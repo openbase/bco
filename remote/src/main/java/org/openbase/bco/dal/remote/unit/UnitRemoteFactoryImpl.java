@@ -104,7 +104,7 @@ public class UnitRemoteFactoryImpl implements UnitRemoteFactory {
      * @throws CouldNotPerformException is thrown if something went wrong during class loading.
      */
     public static Class<? extends AbstractUnitRemote> loadUnitRemoteClass(final UnitConfig config) throws CouldNotPerformException {
-        return loadUnitRemoteClass(config.getType());
+        return loadUnitRemoteClass(config.getUnitType());
     }
 
     /**

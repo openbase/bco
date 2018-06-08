@@ -23,14 +23,18 @@ package org.openbase.bco.dal.remote.service;
  */
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
+
+import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.bco.dal.lib.layer.service.collection.MotionStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.MotionStateType.MotionState;
+import rst.domotic.state.MotionStateType.MotionState.State;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.timing.TimestampType.Timestamp;
 
@@ -81,6 +85,7 @@ public class MotionStateServiceRemote extends AbstractServiceRemote<MotionStateP
                 motionValue = MotionState.State.MOTION;
             }
 
+            Timestamp lastMotionTimestamp = ServiceStateProcessor.getLatestValueOccurrence(State.MOTION, motionState);
             if (motionState.hasLastMotion() && motionState.getLastMotion().getTime() > lastMotion) {
                 lastMotion = motionState.getLastMotion().getTime();
             }
