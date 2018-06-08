@@ -302,7 +302,7 @@ public class VirtualRegistrySyncTest {
 //                        for (String id : locationRegistry.getRootLocationConfig().getLocationConfig().getUnitIdList()) {
 ////                            UnitConfig unitConfig = unitRegistry.getUnitConfigById(id);
 //                            deviceUnitConfigList.add(unitRegistry.getUnitConfigById(id));
-////                            units += "[" + unitConfig.getLabel() + ", " + unitConfig.getType() + "]\n";
+////                            units += "[" + unitConfig.getLabel() + ", " + unitConfig.getUnitType() + "]\n";
 //                        }
 ////                        LOGGER.info("Devices registered in location:\n" + units);
 //                        try {

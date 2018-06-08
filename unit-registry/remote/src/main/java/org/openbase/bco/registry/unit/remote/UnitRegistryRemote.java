@@ -440,7 +440,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
 //        validateData();
 //        List<UnitConfig> unitConfigList = new ArrayList<>();
 //        for (UnitConfig unitGroupUnitConfig : unitGroupUnitConfigRemoteRegistry.getMessages()) {
-//            if (unitGroupUnitConfig.getType() == type || getSubUnitTypesOfUnitType(type).contains(unitGroupUnitConfig.getType())) {
+//            if (unitGroupunitConfig.getUnitType() == type || getSubUnitTypesOfUnitType(type).contains(unitGroupunitConfig.getUnitType())) {
 //                unitConfigList.add(unitGroupUnitConfig);
 //            }
 //        }
@@ -454,7 +454,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
 //        for (UnitConfig unitGroupUnitConfig : unitGroupUnitConfigRemoteRegistry.getMessages()) {
 //            boolean skipGroup = false;
 //            for (ServiceDescription serviceDescription : unitGroupUnitConfig.getUnitGroupConfig().getServiceDescriptionList()) {
-//                if (!serviceTypes.contains(serviceDescription.getType())) {
+//                if (!serviceTypes.contains(serviceDescription.getServiceType())) {
 //                    skipGroup = true;
 //                }
 //            }
@@ -487,7 +487,7 @@ public class UnitRegistryRemote extends AbstractRegistryRemote<UnitRegistryData>
 //            foundServiceType = false;
 //            for (ServiceTemplateType.ServiceTemplate.ServiceType serviceType : serviceTypes) {
 //                for (ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-//                    if (serviceConfig.getServiceDescription().getType() == serviceType) {
+//                    if (serviceConfig.getServiceDescription().getServiceType() == serviceType) {
 //                        foundServiceType = true;
 //                    }
 //                }
