@@ -102,6 +102,8 @@ public class BrightnessStateServiceRemote extends AbstractServiceRemote<Brightne
 
     @Override
     public BrightnessState getBrightnessState(final UnitType unitType) throws NotAvailableException {
+
+
         Collection<BrightnessStateOperationService> brightnessStateOperationServices = getServices(unitType);
         int serviceNumber = brightnessStateOperationServices.size();
         Double average = 0d;

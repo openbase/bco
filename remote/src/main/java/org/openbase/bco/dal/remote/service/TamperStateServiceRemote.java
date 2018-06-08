@@ -25,6 +25,7 @@ import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.TamperStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.provider.TamperStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -73,40 +74,10 @@ public class TamperStateServiceRemote extends AbstractServiceRemote<TamperStateP
 
     @Override
     public TamperState getTamperState(final UnitType unitType) throws NotAvailableException {
-        final Builder tamperStateBuilder = TamperState.newBuilder().setValue(State.NO_TAMPER);
-        long timestamp = 0;
-
-        for (TamperStateProviderService service : getServices(unitType)) {
-
-            // do not handle if data is not synced yet.
-            if (!((UnitRemote) service).isDataAvailable()) {
-                continue;
-            }
-
-            // handle state
-            TamperState tamperState = service.getTamperState();
-            if (tamperState.getValue() == State.TAMPER) {
-                tamperStateBuilder.setValue(TamperState.State.TAMPER);
-            }
-
-            // handle latest occurrence timestamps
-            for (final MapFieldEntry entry : tamperState.getLastValueOccurrenceList()) {
-
-                try {
-                    ServiceStateProcessor.updateLatestValueOccurrence(entry.getKey(), entry.getValue(), tamperStateBuilder);
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory("Could not update latest occurrence timestamp of Entry[" + entry + "]", ex, logger);
-                }
-            }
-
-            // handle timestamp
-            timestamp = Math.max(timestamp, tamperState.getTimestamp().getTime());
+        try {
+            return (TamperState) generateFusedState(unitType, State.NO_TAMPER, State.TAMPER).build();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException(Services.getServiceStateName(getServiceType()), ex);
         }
-
-        // update final timestamp
-        TimestampProcessor.updateTimestamp(timestamp, tamperStateBuilder, TimeUnit.MICROSECONDS, logger);
-
-        // return merged state
-        return tamperStateBuilder.build();
     }
 }

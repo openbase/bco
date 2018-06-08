@@ -37,6 +37,7 @@ import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.StandbyStateType.StandbyState;
+import rst.domotic.state.StandbyStateType.StandbyState.State;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.Collection;
@@ -101,20 +102,10 @@ public class StandbyStateServiceRemote extends AbstractServiceRemote<StandbyStat
 
     @Override
     public StandbyState getStandbyState(final UnitType unitType) throws NotAvailableException {
-        StandbyState.State standbyValue = StandbyState.State.STANDBY;
-        long timestamp = 0;
-        for (StandbyStateOperationService service : getServices(unitType)) {
-            if (!((UnitRemote) service).isDataAvailable()) {
-                continue;
-            }
-
-            if (service.getStandbyState().getValue() == StandbyState.State.RUNNING) {
-                standbyValue = StandbyState.State.RUNNING;
-            }
-
-            timestamp = Math.max(timestamp, service.getStandbyState().getTimestamp().getTime());
+        try {
+            return (StandbyState) generateFusedState(unitType, State.RUNNING, State.STANDBY).build();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException(Services.getServiceStateName(getServiceType()), ex);
         }
-
-        return TimestampProcessor.updateTimestamp(timestamp, StandbyState.newBuilder().setValue(standbyValue), TimeUnit.MICROSECONDS, logger).build();
     }
 }

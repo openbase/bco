@@ -23,6 +23,8 @@ package org.openbase.bco.dal.remote.service;
  */
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
+
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.SmokeAlarmStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.provider.SmokeAlarmStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -31,6 +33,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.AlarmStateType.AlarmState;
+import rst.domotic.state.AlarmStateType.AlarmState.State;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
@@ -66,19 +69,10 @@ public class SmokeAlarmStateServiceRemote extends AbstractServiceRemote<SmokeAla
 
     @Override
     public AlarmState getSmokeAlarmState(final UnitType unitType) throws NotAvailableException {
-        AlarmState.State alarmValue = AlarmState.State.NO_ALARM;
-        long timestamp = 0;
-        for (SmokeAlarmStateProviderService service : getServices(unitType)) {
-            if (!((UnitRemote) service).isDataAvailable()) {
-                continue;
-            }
-
-            if (service.getSmokeAlarmState().getValue() == AlarmState.State.ALARM) {
-                alarmValue = AlarmState.State.ALARM;
-            }
-
-            timestamp = Math.max(timestamp, service.getSmokeAlarmState().getTimestamp().getTime());
+        try {
+            return (AlarmState) generateFusedState(unitType, State.NO_ALARM, State.ALARM).build();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException(Services.getServiceStateName(getServiceType()), ex);
         }
-        return TimestampProcessor.updateTimestamp(timestamp, AlarmState.newBuilder().setValue(alarmValue), TimeUnit.MICROSECONDS, logger).build();
     }
 }

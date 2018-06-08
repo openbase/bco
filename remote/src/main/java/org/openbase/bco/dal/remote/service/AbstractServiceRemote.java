@@ -22,12 +22,13 @@ package org.openbase.bco.dal.remote.service;
  * #L%
  */
 
+import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
+import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
-import org.openbase.bco.dal.lib.layer.service.Service;
-import org.openbase.bco.dal.lib.layer.service.ServiceJSonProcessor;
-import org.openbase.bco.dal.lib.layer.service.ServiceRemote;
+import org.openbase.bco.dal.lib.layer.service.*;
+import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
 import org.openbase.bco.dal.lib.layer.unit.MultiUnitServiceFusion;
 import org.openbase.bco.dal.lib.layer.unit.UnitAllocation;
 import org.openbase.bco.dal.lib.layer.unit.UnitAllocator;
@@ -42,6 +43,7 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rst.processing.ActionDescriptionProcessor;
+import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
@@ -59,14 +61,19 @@ import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActionStateType.ActionState;
 import rst.domotic.state.EnablingStateType.EnablingState.State;
+import rst.domotic.state.PresenceStateType.PresenceState.Builder;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.timing.TimestampType.Timestamp;
 
 import java.util.*;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
+
+import static org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor.*;
+import static org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor.FIELD_NAME_TIMESTAMP;
 
 /**
  * @param <S>  generic definition of the overall service type for this remote.
@@ -666,6 +673,80 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
         serviceStateDescription.setUnitId((String) unitRemote.getId());
 
         return unitActionDescription.build();
+    }
+
+    /**
+     * Method generates a new service state out of the compatible service providers provided the units referred by the {@code unitType}.
+     *
+     * @param unitType       the unit type to filter the service provider collection. Use UNKNOWN as wildcard.
+     * @param neutralState   the neutral state which is only used if all other instances are in the neutral state.
+     * @param effectiveState the effective state which is set if at least one provider is referring this state.
+     *
+     * @return a new generated service state builder containing all fused states.
+     *
+     * @throws CouldNotPerformException is thrown in case the fusion fails.
+     */
+    protected GeneratedMessage.Builder generateFusedState(final UnitType unitType, final ProtocolMessageEnum neutralState, final ProtocolMessageEnum effectiveState) throws CouldNotPerformException {
+
+        try {
+            // generate builder
+            final Builder stateBuilder = Services.generateServiceStateBuilder(getServiceType(), neutralState);
+
+            // lookup field descriptors
+            final FieldDescriptor keyDescriptor = stateBuilder.getDescriptorForType().findFieldByName(FIELD_NAME_KEY);
+            final FieldDescriptor valueDescriptor = stateBuilder.getDescriptorForType().findFieldByName(FIELD_NAME_VALUE);
+            final FieldDescriptor mapFieldDescriptor = stateBuilder.getDescriptorForType().findFieldByName(FIELD_NAME_LAST_FALUE_OCCURRENCE);
+            final FieldDescriptor timestampDescriptor = stateBuilder.getDescriptorForType().findFieldByName(FIELD_NAME_TIMESTAMP);
+
+            // verify field descriptors
+            if (keyDescriptor == null) {
+                throw new NotAvailableException("Field[" + FIELD_NAME_KEY + "] does not exist for type " + stateBuilder.getClass().getName());
+            } else if (valueDescriptor == null) {
+                throw new NotAvailableException("Field[" + FIELD_NAME_VALUE + "] does not exist for type " + stateBuilder.getClass().getName());
+            } else if (mapFieldDescriptor == null) {
+                throw new NotAvailableException("Field[" + FIELD_NAME_LAST_FALUE_OCCURRENCE + "] does not exist for type " + stateBuilder.getClass().getName());
+            } else if (timestampDescriptor == null) {
+                throw new NotAvailableException("Field[" + FIELD_NAME_TIMESTAMP + "] does not exist for type " + stateBuilder.getClass().getName());
+            }
+
+            // pre init timestamp
+            long timestamp = 0;
+
+            for (S service : getServices(unitType)) {
+
+                // do not handle if data is not synced yet.
+                if (!((UnitRemote) service).isDataAvailable()) {
+                    continue;
+                }
+
+                // handle state
+                GeneratedMessage state = (GeneratedMessage) Services.invokeProviderServiceMethod(getServiceType(), service);
+                if (state.getField(valueDescriptor) == effectiveState) {
+                    stateBuilder.setField(valueDescriptor, state.getField(valueDescriptor));
+                }
+
+                // handle latest occurrence timestamps
+                for (int i = 0; i < state.getRepeatedFieldCount(mapFieldDescriptor); i++) {
+                    final GeneratedMessage entry = (GeneratedMessage) state.getRepeatedField(mapFieldDescriptor, i);
+                    try {
+                        ServiceStateProcessor.updateLatestValueOccurrence((ProtocolMessageEnum) entry.getField(keyDescriptor), (Timestamp) entry.getField(valueDescriptor), stateBuilder);
+                    } catch (CouldNotPerformException ex) {
+                        ExceptionPrinter.printHistory("Could not update latest occurrence timestamp of Entry[" + entry + "]", ex, logger);
+                    }
+                }
+
+                // handle timestamp
+                timestamp = Math.max(timestamp, ((Timestamp) state.getField(timestampDescriptor)).getTime());
+            }
+
+            // update final timestamp
+            TimestampProcessor.updateTimestamp(timestamp, stateBuilder, TimeUnit.MICROSECONDS, logger);
+
+            // return merged state
+            return stateBuilder;
+        } catch (final CouldNotPerformException ex) {
+            throw new CouldNotPerformException("Could not fuse service state!", ex);
+        }
     }
 
     /**

@@ -38,7 +38,7 @@ import java.util.concurrent.Future;
 public interface ServiceProvider {
     
     @RPCMethod
-    Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException;
+    Future<ActionFuture> applyAction(final ActionDescription actionDescription) throws CouldNotPerformException;
     
     void addServiceStateObserver(final ServiceType serviceType, final Observer observer);
 

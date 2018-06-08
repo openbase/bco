@@ -119,7 +119,7 @@ public class UnitGroupRemote extends AbstractUnitRemote<UnitGroupData> implement
         try {
             UnitGroupData.Builder dataBuilder = UnitGroupData.newBuilder();
             dataBuilder.setId(getConfig().getId());
-            dataBuilder.setLabel(getConfig().getLabel());
+            dataBuilder.addAllAlias(getConfig().getAliasList());
             return dataBuilder;
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("UnitGroupData.Builder", ex);

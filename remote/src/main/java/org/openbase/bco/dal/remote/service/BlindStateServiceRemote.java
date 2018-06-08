@@ -75,6 +75,7 @@ public class BlindStateServiceRemote extends AbstractServiceRemote<BlindStateOpe
 
     @Override
     public BlindState getBlindState(UnitType unitType) throws NotAvailableException {
+
         int serviceNumber = getServices(unitType).size(), stop = 0, down = 0, up = 0;
         long timestamp = 0;
         float openingRatioAverage = 0;

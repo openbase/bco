@@ -38,6 +38,7 @@ public class ServiceStateProcessor {
 
     public static final String INTERNAL_MAP_CLASS_NAME = "$MapFieldEntry";
     public static final String FIELD_NAME_LAST_FALUE_OCCURRENCE = "last_value_occurrence";
+    public static final String FIELD_NAME_TIMESTAMP = "timestamp";
     public static final String FIELD_NAME_KEY = "key";
     public static final String FIELD_NAME_VALUE = "value";
 
@@ -102,11 +103,19 @@ public class ServiceStateProcessor {
             final Class mapFieldEntryClass = Class.forName(serviceState.getClass().getDeclaringClass().getName() + INTERNAL_MAP_CLASS_NAME);
             final GeneratedMessage.Builder entryMessageBuilder = (GeneratedMessage.Builder) mapFieldEntryClass.getMethod("newBuilder").invoke(null);
 
-            final FieldDescriptor key = entryMessageBuilder.build().getDescriptorForType().findFieldByName(FIELD_NAME_KEY);
-            final FieldDescriptor value = entryMessageBuilder.build().getDescriptorForType().findFieldByName(FIELD_NAME_VALUE);
+            final FieldDescriptor keyDescriptor = entryMessageBuilder.build().getDescriptorForType().findFieldByName(FIELD_NAME_KEY);
+            final FieldDescriptor valueDescriptor = entryMessageBuilder.build().getDescriptorForType().findFieldByName(FIELD_NAME_VALUE);
 
-            entryMessageBuilder.setField(value, timestamp);
-            entryMessageBuilder.setField(key, enumStateValue.getValueDescriptor());
+            if (keyDescriptor == null) {
+                throw new NotAvailableException("Field[KEY] does not exist for type " + entryMessageBuilder.getClass().getName());
+            }
+
+            if (valueDescriptor == null) {
+                throw new NotAvailableException("Field[VALUE] does not exist for type " + entryMessageBuilder.getClass().getName());
+            }
+
+            entryMessageBuilder.setField(valueDescriptor, timestamp);
+            entryMessageBuilder.setField(keyDescriptor, enumStateValue.getValueDescriptor());
             entryMessage = entryMessageBuilder.build();
         } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | ClassCastException ex) {
             throw new CouldNotPerformException("Could not build service state entry!", ex);
@@ -126,7 +135,7 @@ public class ServiceStateProcessor {
      * @throws CouldNotPerformException is thrown if the update could not be performed.
      */
     public static void updateValueOccurrence(final Message entryMessage, GeneratedMessage.Builder serviceState) throws CouldNotPerformException {
-        FieldDescriptor mapFieldDescriptor = serviceState.getDescriptorForType().findFieldByName(FIELD_NAME_LAST_FALUE_OCCURRENCE);
+        final FieldDescriptor mapFieldDescriptor = serviceState.getDescriptorForType().findFieldByName(FIELD_NAME_LAST_FALUE_OCCURRENCE);
         if (mapFieldDescriptor == null) {
             throw new NotAvailableException("Field[last_value_occurrence] does not exist for type " + serviceState.getClass().getName());
         }

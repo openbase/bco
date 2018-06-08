@@ -593,15 +593,10 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
      * @param actionDescription {@inheritDoc}
      * @return {@inheritDoc}
      * @throws org.openbase.jul.exception.CouldNotPerformException {@inheritDoc}
-     * @throws java.lang.InterruptedException                      {@inheritDoc}
      */
     @Override
-    public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException, InterruptedException {
+    public Future<ActionFuture> applyAction(ActionDescription actionDescription) throws CouldNotPerformException {
         return AuthenticatedServiceProcessor.requestAuthenticatedAction(actionDescription, ActionFuture.class, this.getSessionManager(), this, this::applyActionAuthenticated);
-//        if (!actionDescription.hasActionAuthority() || !actionDescription.getActionAuthority().hasTicketAuthenticatorWrapper()) {
-//            actionDescription = initializeRequest(actionDescription);
-//        }
-//        return new UnitSynchronisationFuture(new AuthenticatedActionFuture(RPCHelper.callRemoteMethod(actionDescription, this, ActionFuture.class), actionDescription.getActionAuthority().getTicketAuthenticatorWrapper(), this.sessionManager), this);
     }
 
     @Override
@@ -612,43 +607,6 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
             throw new CouldNotPerformException("Could not apply action!", ex);
         }
     }
-
-//    private ActionDescription initializeRequest(final ActionDescription actionDescription) throws CouldNotPerformException {
-//        ActionDescription.Builder actionDescriptionBuilder = actionDescription.toBuilder();
-//
-//        // if not authenticated, but was and is able to login again, then do so, otherwise log out
-//        if (this.isLoggedIn()) {
-//            try {
-//                this.isAuthenticated();
-//            } catch (CouldNotPerformException ex) {
-//                try {
-//                    this.sessionManager.relog();
-//                } catch (CouldNotPerformException ex2) {
-//                    // Logout and return CouldNotPerformException, if anything went wrong
-//                    this.sessionManager.logout();
-//                    ExceptionPrinter.printHistory(ex, logger, LogLevel.ERROR);
-//                    throw new CouldNotPerformException("Your session has expired. You have been logged out for security reasons. Please log in again.");
-//                }
-//            }
-//        }
-//
-//        // then, after relog or in case unit was already or never authenticated
-//        if (this.isAuthenticated()) {
-//            try {
-//                TicketAuthenticatorWrapper wrapper = AuthenticationClientHandler.initServiceServerRequest(this.sessionManager.getSessionKey(), this.sessionManager.getTicketAuthenticatorWrapper());
-//                ActionAuthority.Builder actionAuthorityBuilder = actionDescriptionBuilder.getActionAuthorityBuilder();
-//                actionAuthorityBuilder.setTicketAuthenticatorWrapper(wrapper);
-//            } catch (IOException | BadPaddingException ex) {
-//                throw new CouldNotPerformException("Could not initialize client server ticket for request", ex);
-//            }
-//        } else {
-//            // if still not authenticated and cannot login again all rights are used
-//            // to make this clear to the receiving controller clear the actionAuthority
-//            actionDescriptionBuilder.clearActionAuthority();
-//        }
-//
-//        return actionDescriptionBuilder.build();
-//    }
 
     private boolean isLoggedIn() {
         return sessionManager != null && sessionManager.isLoggedIn();

@@ -43,6 +43,7 @@ import rst.domotic.action.MultiResourceAllocationStrategyType.MultiResourceAlloc
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.state.PowerStateType.PowerState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
@@ -165,21 +166,11 @@ public class PowerStateServiceRemote extends AbstractServiceRemote<PowerStateOpe
 
     @Override
     public PowerState getPowerState(final UnitType unitType) throws NotAvailableException {
-        PowerState.State powerStateValue = PowerState.State.OFF;
-        long timestamp = 0;
-        for (PowerStateOperationService service : getServices(unitType)) {
-            if (!((UnitRemote) service).isDataAvailable()) {
-                continue;
-            }
-
-            if (service.getPowerState().getValue() == PowerState.State.ON) {
-                powerStateValue = PowerState.State.ON;
-            }
-
-            timestamp = Math.max(timestamp, service.getPowerState().getTimestamp().getTime());
+        try {
+            return (PowerState) generateFusedState(unitType, State.OFF, State.ON).build();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException(Services.getServiceStateName(getServiceType()), ex);
         }
-
-        return TimestampProcessor.updateTimestamp(timestamp, PowerState.newBuilder().setValue(powerStateValue), TimeUnit.MICROSECONDS, logger).build();
     }
 
     /**

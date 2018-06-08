@@ -64,7 +64,7 @@ public class GenericServiceSimulator extends AbstractRandomServiceSimulator<Gene
             Services.getServiceStateValues(serviceType).forEach((stateValue) -> {
                 try {
                     // filter unknown state values
-                    if (stateValue.name().equals("UNKNOWN")) {
+                    if (stateValue.getValueDescriptor().getName().equals("UNKNOWN")) {
                         return;
                     }
 

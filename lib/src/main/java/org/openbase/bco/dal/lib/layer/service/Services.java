@@ -26,6 +26,7 @@ import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
+import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
@@ -135,18 +136,33 @@ public class Services {
      * @return a collection of enum values of the service state.
      * @throws NotAvailableException is thrown in case the referred service state does not contain any state values.
      */
-    public static Collection<? extends Enum> getServiceStateValues(final ServiceType serviceType) throws NotAvailableException {
+    public static Collection<? extends ProtocolMessageEnum> getServiceStateValues(final ServiceType serviceType) throws NotAvailableException {
         final String serviceBaseName = getServiceBaseName(serviceType);
         final String serviceEnumName = SERVICE_STATE_PACKAGE.getName() + "." + serviceBaseName + "Type$" + serviceBaseName + "$State";
         try {
-            return Arrays.asList((Enum[]) (Class.forName(serviceEnumName).getMethod("values").invoke(null)));
+            return Arrays.asList((ProtocolMessageEnum[]) (Class.forName(serviceEnumName).getMethod("values").invoke(null)));
         } catch (ClassNotFoundException | IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException ex) {
             throw new NotAvailableException("ServiceStateValues", serviceEnumName, ex);
         }
     }
 
     /**
-     * Method builds a new service state related to the given service type and initializes this instance with the given state value.
+     * Method generates a new service state builder related to the given {@code serviceType}.
+     *
+     * @param serviceType the service type of the service state.
+     * @throws CouldNotPerformException is thrown if something went wrong during the generation.
+     */
+    public static GeneratedMessage.Builder generateServiceStateBuilder(final ServiceType serviceType) throws CouldNotPerformException {
+        try {
+            // create new service state builder
+            return (GeneratedMessage.Builder) Services.getServiceStateClass(serviceType).getMethod("newBuilder").invoke(null);
+        } catch (final IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException | NotAvailableException | ClassCastException ex) {
+            throw new CouldNotPerformException("Could not generate service state builder!", ex);
+        }
+    }
+
+    /**
+     * Method generates a new service state builder related to the given {@code serviceType} and initializes this instance with the given {@code stateValue}.
      *
      * @param <SC>        the service class of the service state.
      * @param <SV>        the state enum of the service.
@@ -155,17 +171,36 @@ public class Services {
      * @return a new service state initialized with the state value.
      * @throws CouldNotPerformException is thrown in case the given arguments are not compatible with each other or something else went wrong during the build.
      */
-    public static <SC extends GeneratedMessage, SV extends Enum> SC buildServiceState(final ServiceType serviceType, SV stateValue) throws CouldNotPerformException {
+    public static <SC extends GeneratedMessage.Builder, SV extends ProtocolMessageEnum> SC generateServiceStateBuilder(final ServiceType serviceType, SV stateValue) throws CouldNotPerformException {
         try {
             // create new service state builder
-            Object serviceStateBuilder = Services.getServiceStateClass(serviceType).getMethod("newBuilder").invoke(null);
+            GeneratedMessage.Builder serviceStateBuilder = generateServiceStateBuilder(serviceType);
 
             // set service state value
             serviceStateBuilder.getClass().getMethod("setValue", stateValue.getClass()).invoke(serviceStateBuilder, stateValue);
 
-            // build service state and return
-            return (SC) serviceStateBuilder.getClass().getMethod("build").invoke(serviceStateBuilder);
+            // return
+            return (SC) serviceStateBuilder;
         } catch (final IllegalAccessException | IllegalArgumentException | NoSuchMethodException | SecurityException | InvocationTargetException | NotAvailableException | ClassCastException ex) {
+            throw new CouldNotPerformException("Could not build service state!", ex);
+        }
+    }
+
+    /**
+     * Method builds a new service state related to the given {@code serviceType} and initializes this instance with the given {@code stateValue}.
+     *
+     * @param <SC>        the service class of the service state.
+     * @param <SV>        the state enum of the service.
+     * @param serviceType the service type of the service state.
+     * @param stateValue  a compatible state value related to the given service state.
+     * @return a new service state initialized with the state value.
+     * @throws CouldNotPerformException is thrown in case the given arguments are not compatible with each other or something else went wrong during the build.
+     */
+    public static <SC extends GeneratedMessage, SV extends ProtocolMessageEnum> SC buildServiceState(final ServiceType serviceType, SV stateValue) throws CouldNotPerformException {
+        try {
+            // create new service state builder with new state and build.
+            return (SC) generateServiceStateBuilder(serviceType, stateValue).build();
+        } catch (IllegalArgumentException | SecurityException | NotAvailableException | ClassCastException ex) {
             throw new CouldNotPerformException("Could not build service state!", ex);
         }
     }
@@ -262,8 +297,8 @@ public class Services {
         }
     }
 
-    public static Object invokeProviderServiceMethod(final ServiceType serviceType, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
-        return invokeServiceMethod(serviceType, ServicePattern.PROVIDER, instance, arguments);
+    public static Object invokeProviderServiceMethod(final ServiceType serviceType, final Object instance) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {
+        return invokeServiceMethod(serviceType, ServicePattern.PROVIDER, instance);
     }
 
     public static Object invokeOperationServiceMethod(final ServiceType serviceType, final Object instance, final Object... arguments) throws CouldNotPerformException, NotSupportedException, IllegalArgumentException {

@@ -25,9 +25,14 @@ package org.openbase.bco.dal.remote.service;
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
+import com.google.protobuf.Descriptors.FieldDescriptor;
+import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.PresenceStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.provider.PresenceStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -37,7 +42,11 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PresenceStateType.PresenceState;
 import rst.domotic.state.PresenceStateType.PresenceState.Builder;
 import rst.domotic.state.PresenceStateType.PresenceState.MapFieldEntry;
+import rst.domotic.state.PresenceStateType.PresenceState.State;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.timing.TimestampType.Timestamp;
+
+import static org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor.*;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -67,41 +76,11 @@ public class PresenceStateServiceRemote extends AbstractServiceRemote<PresenceSt
 
     @Override
     public PresenceState getPresenceState(final UnitType unitType) throws NotAvailableException {
-        final Builder presenceStateBuilder = PresenceState.newBuilder().setValue(PresenceState.State.ABSENT);
-        long timestamp = 0;
-
-        for (PresenceStateProviderService service : getServices(unitType)) {
-
-            // do not handle if data is not synced yet.
-            if (!((UnitRemote) service).isDataAvailable()) {
-                continue;
-            }
-
-            // handle state
-            PresenceState presenceState = service.getPresenceState();
-            if (presenceState.getValue() == PresenceState.State.PRESENT) {
-                presenceStateBuilder.setValue(PresenceState.State.PRESENT);
-            }
-
-            // handle latest occurrence timestamps
-            for (final MapFieldEntry entry : presenceState.getLastValueOccurrenceList()) {
-
-                try {
-                    ServiceStateProcessor.updateLatestValueOccurrence(entry.getKey(), entry.getValue(), presenceStateBuilder);
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory("Could not update latest occurrence timestamp of Entry[" + entry + "]", ex, logger);
-                }
-            }
-
-            // handle timestamp
-            timestamp = Math.max(timestamp, presenceState.getTimestamp().getTime());
+        try {
+            return (PresenceState) generateFusedState(unitType, State.ABSENT, State.PRESENT).build();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException(Services.getServiceStateName(getServiceType()), ex);
         }
-
-        // update final timestamp
-        TimestampProcessor.updateTimestamp(timestamp, presenceStateBuilder, TimeUnit.MICROSECONDS, logger);
-
-        // return merged state
-        return presenceStateBuilder.build();
     }
 
     public Collection<PresenceStateProviderService> getPresenceStateProviderServices() throws CouldNotPerformException {

@@ -51,11 +51,6 @@ public class ConnectionRemote extends AbstractUnitRemote<ConnectionData> impleme
     }
 
     @Override
-    public String getLabel() throws NotAvailableException {
-        return getConfig().getLabel();
-    }
-
-    @Override
     public DoorState getDoorState() throws NotAvailableException {
         try {
             return getData().getDoorState();

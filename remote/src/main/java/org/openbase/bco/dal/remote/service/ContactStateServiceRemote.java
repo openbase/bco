@@ -23,6 +23,8 @@ package org.openbase.bco.dal.remote.service;
  */
 import java.util.Collection;
 import java.util.concurrent.TimeUnit;
+
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.ContactStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.provider.ContactStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -31,6 +33,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ContactStateType.ContactState;
+import rst.domotic.state.ContactStateType.ContactState.State;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
@@ -72,18 +75,10 @@ public class ContactStateServiceRemote extends AbstractServiceRemote<ContactStat
 
     @Override
     public ContactState getContactState(final UnitType unitType) throws NotAvailableException {
-        ContactState.State contactValue = ContactState.State.CLOSED;
-        long timestamp = 0;
-        for (ContactStateProviderService service : getServices(unitType)) {
-            if (!((UnitRemote) service).isDataAvailable()) {
-                continue;
-            }
-
-            if (service.getContactState().getValue() == ContactState.State.OPEN) {
-                contactValue = ContactState.State.OPEN;
-            }
-            timestamp = Math.max(timestamp, service.getContactState().getTimestamp().getTime());
+        try {
+            return (ContactState) generateFusedState(unitType, State.CLOSED, State.OPEN).build();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException(Services.getServiceStateName(getServiceType()), ex);
         }
-        return TimestampProcessor.updateTimestamp(timestamp, ContactState.newBuilder().setValue(contactValue), TimeUnit.MICROSECONDS, logger).build();
     }
 }

@@ -36,9 +36,9 @@ import rst.domotic.state.UserTransitStateType.UserTransitState;
 public interface UserTransitStateOperationService extends OperationService, UserTransitStateProviderService {
 
     @RPCMethod
-    public Future<ActionFuture> setUserTransitState(UserTransitState userTransitState) throws CouldNotPerformException;
+    Future<ActionFuture> setUserTransitState(UserTransitState userTransitState) throws CouldNotPerformException;
 
-    default public Future<ActionFuture> setUserTransitState(UserTransitState.State userTransitState) throws CouldNotPerformException {
+    default Future<ActionFuture> setUserTransitState(UserTransitState.State userTransitState) throws CouldNotPerformException {
         return setUserTransitState(UserTransitState.newBuilder().setValue(userTransitState).build());
     }
 }

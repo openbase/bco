@@ -26,6 +26,7 @@ import java.util.Collection;
 import java.util.concurrent.TimeUnit;
 
 import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
+import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.service.collection.MotionStateProviderServiceCollection;
 import org.openbase.bco.dal.lib.layer.service.provider.MotionStateProviderService;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -74,41 +75,10 @@ public class MotionStateServiceRemote extends AbstractServiceRemote<MotionStateP
 
     @Override
     public MotionState getMotionState(UnitType unitType) throws NotAvailableException {
-
-        final Builder motionStateBuilder = MotionState.newBuilder().setValue(State.NO_MOTION);
-        long timestamp = 0;
-
-        for (MotionStateProviderService service : getServices(unitType)) {
-
-            // do not handle if data is not synced yet.
-            if (!((UnitRemote) service).isDataAvailable()) {
-                continue;
-            }
-
-            // handle state
-            MotionState motionState = service.getMotionState();
-            if (motionState.getValue() == MotionState.State.MOTION) {
-                motionStateBuilder.setValue(MotionState.State.MOTION);
-            }
-
-            // handle latest occurrence timestamps
-            for (final MapFieldEntry entry : motionState.getLastValueOccurrenceList()) {
-
-                try {
-                    ServiceStateProcessor.updateLatestValueOccurrence(entry.getKey(), entry.getValue(), motionStateBuilder);
-                } catch (CouldNotPerformException ex) {
-                    ExceptionPrinter.printHistory("Could not update latest occurrence timestamp of Entry[" + entry + "]", ex, logger);
-                }
-            }
-
-            // handle timestamp
-            timestamp = Math.max(timestamp, motionState.getTimestamp().getTime());
+        try {
+            return (MotionState) generateFusedState(unitType, State.NO_MOTION, State.MOTION).build();
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException(Services.getServiceStateName(getServiceType()), ex);
         }
-
-        // update final timestamp
-        TimestampProcessor.updateTimestamp(timestamp, motionStateBuilder, TimeUnit.MICROSECONDS, logger);
-
-        // return merged state
-        return motionStateBuilder.build();
     }
 }
