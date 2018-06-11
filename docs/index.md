@@ -38,7 +38,7 @@ layout: default
 <dependency>
     <groupId>org.openbase.bco</groupId>
     <artifactId>dal.remote</artifactId>
-    <version>[1.4,1.5-alpha)</version>
+    <version>[1.6,1.7-SNAPSHOT)</version>
 </dependency>
 ```
 
@@ -53,7 +53,7 @@ Repository: <https://github.com/openbase/bco.dal.git>
 <dependency>
     <groupId>org.openbase.bco</groupId>
     <artifactId>registry</artifactId>
-    <version>[1.4,1.5-alpha)</version>
+    <version>[1.6,1.7-SNAPSHOT)</version>
 </dependency>
 ```
 
@@ -68,7 +68,7 @@ Repository: <https://github.com/openbase/bco.registry.git>
 <dependency>
     <groupId>org.openbase.bco</groupId>
     <artifactId>manager</artifactId>
-    <version>[1.4,1.5-alpha)</version>
+    <version>[1.6,1.7-SNAPSHOT)</version>
 </dependency>
 ```
 
@@ -221,7 +221,7 @@ enabled = 0
 enabled = 1
 host    = localhost
 ``` 
-If your bco runtime is hosted on another maschine than your local one and there is already a spread daemon running, just refere to this host instead linking to your local host.
+If your bco runtime is hosted on another mschine than your local one and there is already a spread daemon running, just refere to this host instead linking to your local host.
 ```
 #host    = localhost
 host    = 192.168.x.x
@@ -229,7 +229,7 @@ host    = 192.168.x.x
 
 ## BCO Installation
 
-Create a new developen directory if it not already exists (e.g. ``~/workspace/openbase``) and change into these directory.
+Create a new developer directory if it not already exists (e.g. ``~/workspace/openbase``) and change into these directory.
 ```
 mkdir -p ~/workspace/openbase
 cd ~/workspace/openbase
@@ -242,7 +242,7 @@ Download the bco core repository into your development workspace:
 cd ~/workspace/openbase
 git clone -b latest-stable https://github.com/openbase/bco.git
 ```
-This core repository provides all binaries and libaries. If you plan to extend or bugfix any BCO core components, you can download all submodules (optional for bco development) via the following command:
+This core repository provides all binaries and libaries. If you plan to extend or bugfix any BCO core components, you can download all submodules (exclusive for bco development) via the following command:
 ```
 cd ~/workspace/openbase/bco
 ./workspace-prepare.sh
@@ -270,7 +270,7 @@ git clone https://github.com/csra/bco.registry.csra-db db
 
 First of all we need at least one running spread daemon in your network to provide the communication between all distributed bco components. You can choose to start your own spread daemon or to connect to an already running instance.
 
-* Start a new spread daemon on your localhost maschine
+* Start a new spread daemon on your localhost machine
     * just execute ```spread```
 * Connect to an already running instance
     * Make sure the external spread host is properly defined in the rsb configuration. 
