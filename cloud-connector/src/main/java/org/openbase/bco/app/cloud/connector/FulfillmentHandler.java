@@ -30,7 +30,7 @@ import org.openbase.bco.app.cloud.connector.mapping.lib.Command;
 import org.openbase.bco.app.cloud.connector.mapping.lib.ErrorCode;
 import org.openbase.bco.app.cloud.connector.mapping.lib.Trait;
 import org.openbase.bco.app.cloud.connector.mapping.service.ServiceTypeTraitMapping;
-import org.openbase.bco.app.cloud.connector.mapping.unit.UnitTypeMapper;
+import org.openbase.bco.app.cloud.connector.mapping.unit.UnitDataMapper;
 import org.openbase.bco.app.cloud.connector.mapping.unit.UnitTypeMapping;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
@@ -40,6 +40,7 @@ import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.TimeoutException;
+import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.Logger;
@@ -70,7 +71,6 @@ import java.util.concurrent.TimeUnit;
 public class FulfillmentHandler {
 
     //TODO: Exceptions caught and processed in response should be printed by exception printer or logger
-    //TODO: test ex.toString()
     public static final String INTENT_PREFIX = "action.devices.";
     public static final String SYNC_INTENT = INTENT_PREFIX + "SYNC";
     public static final String QUERY_INTENT = INTENT_PREFIX + "QUERY";
@@ -188,8 +188,8 @@ public class FulfillmentHandler {
                 }
 
                 device.addProperty(ID_KEY, unitConfig.getId());
-                //TODO: maybe we want this
-                device.addProperty("willReportState", false);
+
+                device.addProperty("willReportState", false); // This could be activated in the future
                 device.addProperty("roomHint", LabelProcessor.getFirstLabel(unitRegistryRemote.getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel()));
 
                 final JsonObject attributes = new JsonObject();
@@ -206,7 +206,7 @@ public class FulfillmentHandler {
                         final ServiceTypeTraitMapping serviceTypeTraitMapping = ServiceTypeTraitMapping.getByServiceType(serviceType);
                         for (final Trait trait : serviceTypeTraitMapping.getTraitSet()) {
                             traits.add(trait.getRepresentation());
-                            trait.getTraitMapper().addAttributes(unitConfig, attributes);
+                            trait.getServiceStateMapper().addAttributes(unitConfig, attributes);
                         }
                     } catch (NotAvailableException ex) {
                         LOGGER.warn("Skip serviceType[" + serviceType.name() + "] for unit[" + unitConfig.getAlias(0) + "] because no trait mapping available");
@@ -299,7 +299,7 @@ public class FulfillmentHandler {
                     deviceState.addProperty("online", true);
 
                     // map state of unit remote into device state object
-                    UnitTypeMapper.getByType(unitRemote.getUnitType()).map(unitRemote, deviceState);
+                    UnitDataMapper.getByType(unitRemote.getUnitType()).map(unitRemote, deviceState);
                 } catch (NotAvailableException ex) {
                     // thrown if the unit remote is not available so propagate deviceNotFound error
                     setError(deviceState, ex, ErrorCode.DEVICE_NOT_FOUND);
@@ -406,9 +406,9 @@ public class FulfillmentHandler {
                         // find trait by command type and params
                         final Trait trait = Trait.getByCommand(commandType, params);
                         // get service type for trait
-                        final ServiceType serviceType = trait.getTraitMapper().getServiceType();
+                        final ServiceType serviceType = trait.getServiceStateMapper().getServiceType();
                         // parse trait param into service state
-                        final GeneratedMessage serviceState = trait.getTraitMapper().map(params, commandType);
+                        final GeneratedMessage serviceState = trait.getServiceStateMapper().map(params, commandType);
                         // invoke setter for service type on remote
                         final Future serviceFuture = (Future)
                                 Services.invokeOperationServiceMethod(serviceType, unitRemote, serviceState);
@@ -513,9 +513,11 @@ public class FulfillmentHandler {
 
     public static void setError(final JsonObject jsonObject, final Exception exception, final ErrorCode errorCode) {
         setError(jsonObject, exception.toString(), errorCode);
+
+        ExceptionPrinter.printHistory(exception, LOGGER);
     }
 
-    public static void setError(final JsonObject jsonObject, final String debugString, final ErrorCode errorCode) {
+    private static void setError(final JsonObject jsonObject, final String debugString, final ErrorCode errorCode) {
         jsonObject.addProperty(ERROR_CODE_KEY, errorCode.toString());
         jsonObject.addProperty(DEBUG_CODE_KEY, debugString);
     }

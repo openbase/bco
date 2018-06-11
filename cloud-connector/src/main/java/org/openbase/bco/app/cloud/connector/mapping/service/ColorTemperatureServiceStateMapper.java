@@ -31,7 +31,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.vision.ColorType.Color.Type;
 import rst.vision.RGBColorType.RGBColor;
 
-public class ColorTemperatureTraitMapper extends AbstractTraitMapper<ColorState> {
+public class ColorTemperatureServiceStateMapper extends AbstractServiceStateMapper<ColorState> {
 
     public static final String MIN_KELVIN_ATTRIBUTE_KEY = "temperatureMinK";
     public static final String MAX_KELVIN_ATTRIBUTE_KEY = "temperatureMaxK";
@@ -41,19 +41,19 @@ public class ColorTemperatureTraitMapper extends AbstractTraitMapper<ColorState>
 
     public static final String TEMPERATURE_KEY = "temperature";
 
-    public ColorTemperatureTraitMapper() {
+    public ColorTemperatureServiceStateMapper() {
         super(ServiceType.COLOR_STATE_SERVICE);
     }
 
     @Override
     protected ColorState map(final JsonObject jsonObject) throws CouldNotPerformException {
-        if (!jsonObject.has(ColorSpectrumTraitMapper.COLOR_KEY)) {
-            throw new CouldNotPerformException("Could not map from jsonObject[" + jsonObject.toString() + "] to [" + ColorState.class.getSimpleName() + "]. Attribute[" + ColorSpectrumTraitMapper.COLOR_KEY + "] is missing");
+        if (!jsonObject.has(ColorSpectrumServiceStateMapper.COLOR_KEY)) {
+            throw new CouldNotPerformException("Could not map from jsonObject[" + jsonObject.toString() + "] to [" + ColorState.class.getSimpleName() + "]. Attribute[" + ColorSpectrumServiceStateMapper.COLOR_KEY + "] is missing");
         }
 
         //TODO: name for color, maybe from device class or generic -> then unit config/remote has to be given as a parameter
         try {
-            final JsonObject color = jsonObject.get(ColorSpectrumTraitMapper.COLOR_KEY).getAsJsonObject();
+            final JsonObject color = jsonObject.get(ColorSpectrumServiceStateMapper.COLOR_KEY).getAsJsonObject();
 
             if (!color.has(TEMPERATURE_KEY)) {
                 throw new CouldNotPerformException("Could not map from jsonObject[" + color.toString() + "] to [" + ColorState.class.getSimpleName() + "]. Attribute[" + TEMPERATURE_KEY + "] is missing");
@@ -71,7 +71,7 @@ public class ColorTemperatureTraitMapper extends AbstractTraitMapper<ColorState>
             }
         } catch (ClassCastException | IllegalStateException ex) {
             // thrown if it is not a json object
-            throw new CouldNotPerformException("Could not map from jsonObject[" + jsonObject.toString() + "] to [" + ColorState.class.getSimpleName() + "]. Attribute[" + ColorSpectrumTraitMapper.COLOR_KEY + "] is not an object");
+            throw new CouldNotPerformException("Could not map from jsonObject[" + jsonObject.toString() + "] to [" + ColorState.class.getSimpleName() + "]. Attribute[" + ColorSpectrumServiceStateMapper.COLOR_KEY + "] is not an object");
         }
     }
 
@@ -90,7 +90,7 @@ public class ColorTemperatureTraitMapper extends AbstractTraitMapper<ColorState>
         //TODO: name for color
         color.addProperty(TEMPERATURE_KEY, RGBToColorTemperature(rgbColor));
 
-        jsonObject.add(ColorSpectrumTraitMapper.COLOR_KEY, color);
+        jsonObject.add(ColorSpectrumServiceStateMapper.COLOR_KEY, color);
     }
 
     @Override

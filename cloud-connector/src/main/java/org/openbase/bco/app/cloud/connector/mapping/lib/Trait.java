@@ -41,31 +41,31 @@ import java.util.Set;
  */
 public enum Trait {
 
-    BRIGHTNESS(new BrightnessTraitMapper(), Command.BRIGHTNESS_ABSOLUTE),
-    COLOR_SPECTRUM(new ColorSpectrumTraitMapper(), Command.COLOR_ABSOLUTE),
-    COLOR_TEMPERATURE(new ColorTemperatureTraitMapper(), Command.COLOR_ABSOLUTE),
-    ON_OFF(new OnOffTraitMapper(), Command.ON_OFF),
-    SCENE(new SceneTraitMapper(), Command.ACTIVATE_SCENE),
-    TEMPERATURE_SETTING(new TemperatureSettingTraitMapper(), Command.THERMOSTAT_TEMPERATURE_SETPOINT);
+    BRIGHTNESS(new BrightnessServiceStateMapper(), Command.BRIGHTNESS_ABSOLUTE),
+    COLOR_SPECTRUM(new ColorSpectrumServiceStateMapper(), Command.COLOR_ABSOLUTE),
+    COLOR_TEMPERATURE(new ColorTemperatureServiceStateMapper(), Command.COLOR_ABSOLUTE),
+    ON_OFF(new OnOffServiceStateMapper(), Command.ON_OFF),
+    SCENE(new SceneServiceStateMapper(), Command.ACTIVATE_SCENE),
+    TEMPERATURE_SETTING(new TemperatureSettingServiceStateMapper(), Command.THERMOSTAT_TEMPERATURE_SETPOINT);
 
     public static final String REPRESENTATION_PREFIX = "action.devices.traits.";
 
     private final String representation;
-    private final TraitMapper traitMapper;
+    private final ServiceStateMapper serviceStateMapper;
     private final Set<Command> commandSet;
 
-    Trait(final TraitMapper traitMapper, final Command... commands) {
+    Trait(final ServiceStateMapper serviceStateMapper, final Command... commands) {
         this.representation = REPRESENTATION_PREFIX + StringProcessor.transformUpperCaseToCamelCase(this.name());
         this.commandSet = new HashSet<>(Arrays.asList(commands));
-        this.traitMapper = traitMapper;
+        this.serviceStateMapper = serviceStateMapper;
     }
 
     public String getRepresentation() {
         return representation;
     }
 
-    public TraitMapper getTraitMapper() {
-        return traitMapper;
+    public ServiceStateMapper getServiceStateMapper() {
+        return serviceStateMapper;
     }
 
     public Set<Command> getCommandSet() {
@@ -75,10 +75,10 @@ public enum Trait {
     public static Trait getByCommand(final Command command, final JsonObject params) throws NotAvailableException {
 
         if (command == Command.COLOR_ABSOLUTE) {
-            JsonObject color = params.getAsJsonObject(ColorSpectrumTraitMapper.COLOR_KEY);
-            if (color.has(ColorTemperatureTraitMapper.TEMPERATURE_KEY)) {
+            JsonObject color = params.getAsJsonObject(ColorSpectrumServiceStateMapper.COLOR_KEY);
+            if (color.has(ColorTemperatureServiceStateMapper.TEMPERATURE_KEY)) {
                 return COLOR_TEMPERATURE;
-            } else if (color.has(ColorSpectrumTraitMapper.COLOR_SPECTRUM_KEY)) {
+            } else if (color.has(ColorSpectrumServiceStateMapper.COLOR_SPECTRUM_KEY)) {
                 return COLOR_SPECTRUM;
             }
         }

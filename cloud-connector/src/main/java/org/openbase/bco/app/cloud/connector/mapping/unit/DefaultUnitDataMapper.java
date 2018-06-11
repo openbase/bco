@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloud.connector.mapping.unit;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -26,8 +26,8 @@ import com.google.gson.JsonObject;
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.app.cloud.connector.FulfillmentHandler;
 import org.openbase.bco.app.cloud.connector.mapping.lib.ErrorCode;
-import org.openbase.bco.app.cloud.connector.mapping.service.ServiceTypeTraitMapping;
 import org.openbase.bco.app.cloud.connector.mapping.lib.Trait;
+import org.openbase.bco.app.cloud.connector.mapping.service.ServiceTypeTraitMapping;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -41,7 +41,7 @@ import java.util.Set;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class DefaultUnitTypeMapper<UR extends UnitRemote> implements UnitTypeMapper<UR> {
+public class DefaultUnitDataMapper<UR extends UnitRemote> implements UnitDataMapper<UR> {
 
     @Override
     public void map(UR unitRemote, JsonObject deviceState) {
@@ -60,7 +60,7 @@ public class DefaultUnitTypeMapper<UR extends UnitRemote> implements UnitTypeMap
                 for (Trait trait : byServiceType.getTraitSet()) {
                     try {
                         // map service state to trait
-                        trait.getTraitMapper().map((GeneratedMessage) Services.invokeProviderServiceMethod(serviceDescription.getServiceType(), unitRemote), deviceState);
+                        trait.getServiceStateMapper().map((GeneratedMessage) Services.invokeProviderServiceMethod(serviceDescription.getServiceType(), unitRemote), deviceState);
                     } catch (CouldNotPerformException ex) {
                         // getting service value failed
                         FulfillmentHandler.setError(deviceState, ex, ErrorCode.UNKNOWN_ERROR);

@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloud.connector.mapping.service;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -28,15 +28,17 @@ import org.openbase.jul.exception.CouldNotTransformException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActivationStateType.ActivationState;
 import rst.domotic.state.ActivationStateType.ActivationState.State;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class SceneTraitMapper extends AbstractTraitMapper<ActivationState> {
+public class SceneServiceStateMapper extends AbstractServiceStateMapper<ActivationState> {
 
     public static final String DEACTIVATE_PARAM_KEY = "deactivate";
+    public static final String REVERSIBLE_KEY = "sceneReversible";
 
-    public SceneTraitMapper() {
+    public SceneServiceStateMapper() {
         super(ServiceType.ACTIVATION_STATE_SERVICE);
     }
 
@@ -74,6 +76,16 @@ public class SceneTraitMapper extends AbstractTraitMapper<ActivationState> {
             default:
                 throw new CouldNotTransformException("Could not map [" + activationState.getClass().getSimpleName()
                         + ", " + activationState.getValue().name() + "] to jsonObject");
+        }
+    }
+
+    @Override
+    public void addAttributes(UnitConfig unitConfig, JsonObject jsonObject) {
+        switch (unitConfig.getUnitType()) {
+            case SCENE:
+                jsonObject.addProperty(REVERSIBLE_KEY, false);
+            default:
+                jsonObject.addProperty(REVERSIBLE_KEY, true);
         }
     }
 }

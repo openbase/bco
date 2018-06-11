@@ -29,14 +29,31 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
-public interface TraitMapper<SERVICE_STATE extends GeneratedMessage> {
+/**
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ */
+public abstract class AbstractServiceStateMapper<SERVICE_STATE extends GeneratedMessage> implements ServiceStateMapper<SERVICE_STATE> {
 
-    SERVICE_STATE map(final JsonObject jsonObject, final Command command) throws CouldNotPerformException;
+    private final ServiceType serviceType;
 
-    void map(final SERVICE_STATE serviceState, final JsonObject jsonObject) throws CouldNotPerformException;
+    public AbstractServiceStateMapper(ServiceType serviceType) {
+        this.serviceType = serviceType;
+    }
 
-    ServiceType getServiceType();
+    @Override
+    public SERVICE_STATE map(JsonObject jsonObject, Command command) throws CouldNotPerformException {
+        return map(jsonObject);
+    }
 
-    void addAttributes(final UnitConfig unitConfig, final JsonObject jsonObject) throws CouldNotPerformException;
+    protected abstract SERVICE_STATE map(JsonObject jsonObject) throws CouldNotPerformException;
 
+    @Override
+    public void addAttributes(UnitConfig unitConfig, JsonObject jsonObject) {
+
+    }
+
+    @Override
+    public ServiceType getServiceType() {
+        return serviceType;
+    }
 }

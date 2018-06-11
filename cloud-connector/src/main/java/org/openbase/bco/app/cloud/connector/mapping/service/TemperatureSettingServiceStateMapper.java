@@ -24,19 +24,23 @@ package org.openbase.bco.app.cloud.connector.mapping.service;
 
 import com.google.gson.JsonObject;
 import org.openbase.bco.app.cloud.connector.mapping.lib.Command;
-import org.openbase.bco.app.cloud.connector.mapping.unit.TemperatureControllerUnitTypeMapper;
+import org.openbase.bco.app.cloud.connector.mapping.unit.TemperatureControllerDataMapper;
 import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.TemperatureStateType.TemperatureState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class TemperatureSettingTraitMapper extends AbstractTraitMapper<TemperatureState> {
+public class TemperatureSettingServiceStateMapper extends AbstractServiceStateMapper<TemperatureState> {
 
     public static final String TEMPERATURE_SETPOINT_KEY = "thermostatTemperatureSetpoint";
 
-    public TemperatureSettingTraitMapper() {
+    public static final String THERMOSTAT_MODES_KEY = "availableThermostatModes";
+    public static final String TEMPERATURE_UNIT_KEY = "thermostatTemperatureUnit";
+
+    public TemperatureSettingServiceStateMapper() {
         super(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
     }
 
@@ -70,6 +74,14 @@ public class TemperatureSettingTraitMapper extends AbstractTraitMapper<Temperatu
     @Override
     public void map(TemperatureState temperatureState, JsonObject jsonObject) throws CouldNotPerformException {
         throw new CouldNotPerformException("Operation not supported, should be handled by " +
-                TemperatureControllerUnitTypeMapper.class.getSimpleName());
+                TemperatureControllerDataMapper.class.getSimpleName());
+    }
+
+    @Override
+    public void addAttributes(UnitConfig unitConfig, JsonObject jsonObject) {
+        // currently modes not yet supported
+        jsonObject.addProperty(THERMOSTAT_MODES_KEY, "");
+        // C for Celsius, F for Fahrenheit
+        jsonObject.addProperty(TEMPERATURE_UNIT_KEY, "C");
     }
 }

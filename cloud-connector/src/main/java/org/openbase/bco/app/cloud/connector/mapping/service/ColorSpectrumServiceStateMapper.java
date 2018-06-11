@@ -33,7 +33,7 @@ import rst.vision.HSBColorType.HSBColor;
 
 import java.awt.*;
 
-public class ColorSpectrumTraitMapper extends AbstractTraitMapper<ColorState> {
+public class ColorSpectrumServiceStateMapper extends AbstractServiceStateMapper<ColorState> {
 
     public static final String COLOR_MODEL_ATTRIBUTE_KEY = "colorModel";
     public static final String COLOR_MODEL_RGB = "rgb";
@@ -43,19 +43,19 @@ public class ColorSpectrumTraitMapper extends AbstractTraitMapper<ColorState> {
     public static final String COLOR_NAME_KEY = "name";
     public static final String COLOR_SPECTRUM_KEY = "spectrumRGB";
 
-    public ColorSpectrumTraitMapper() {
+    public ColorSpectrumServiceStateMapper() {
         super(ServiceType.COLOR_STATE_SERVICE);
     }
 
     @Override
     protected ColorState map(JsonObject jsonObject) throws CouldNotPerformException {
-        if (!jsonObject.has(ColorSpectrumTraitMapper.COLOR_KEY)) {
-            throw new CouldNotPerformException("Could not map from jsonObject[" + jsonObject.toString() + "] to [" + ColorState.class.getSimpleName() + "]. Attribute[" + ColorSpectrumTraitMapper.COLOR_KEY + "] is missing");
+        if (!jsonObject.has(ColorSpectrumServiceStateMapper.COLOR_KEY)) {
+            throw new CouldNotPerformException("Could not map from jsonObject[" + jsonObject.toString() + "] to [" + ColorState.class.getSimpleName() + "]. Attribute[" + ColorSpectrumServiceStateMapper.COLOR_KEY + "] is missing");
         }
 
         //TODO: name for color
         try {
-            final JsonObject color = jsonObject.get(ColorSpectrumTraitMapper.COLOR_KEY).getAsJsonObject();
+            final JsonObject color = jsonObject.get(ColorSpectrumServiceStateMapper.COLOR_KEY).getAsJsonObject();
 
             if (!color.has(COLOR_SPECTRUM_KEY)) {
                 throw new CouldNotPerformException("Could not map from jsonObject[" + color.toString() + "] to [" + ColorState.class.getSimpleName() + "]. Attribute[" + COLOR_SPECTRUM_KEY + "] is missing");
