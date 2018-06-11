@@ -36,7 +36,7 @@
                     <target>${maven.compiler.target}</target>
                 </configuration>
             </plugin>
-            <!--plugin>
+            <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>appassembler-maven-plugin</artifactId>
                 <version>1.8.1</version>
@@ -51,15 +51,15 @@
                 <configuration>
                     <programs>
                         <program>
-                            <mainClass>org.openbase.bco.registry.location.core.LocationRegistryLauncher</mainClass>
-                            <id>bco-registry-location</id>
+                            <mainClass>org.openbase.bco.app.cloud.connector.CloudConnectorLauncher</mainClass>
+                            <id>bco-cloud-connector</id>
                             <platforms>
                                 <platform>unix</platform>
                             </platforms>
                         </program>
                     </programs>
                 </configuration>
-            </plugin-->
+            </plugin>
             <plugin>
                 <groupId>org.codehaus.mojo</groupId>
                 <artifactId>license-maven-plugin</artifactId>

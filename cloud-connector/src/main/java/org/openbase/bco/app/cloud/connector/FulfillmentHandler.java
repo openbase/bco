@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloud.connector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -30,7 +30,6 @@ import org.openbase.bco.app.cloud.connector.mapping.lib.Command;
 import org.openbase.bco.app.cloud.connector.mapping.lib.ErrorCode;
 import org.openbase.bco.app.cloud.connector.mapping.lib.Trait;
 import org.openbase.bco.app.cloud.connector.mapping.service.ServiceTypeTraitMapping;
-import org.openbase.bco.app.cloud.connector.mapping.unit.UnitTypeDeviceTypeMapping;
 import org.openbase.bco.app.cloud.connector.mapping.unit.UnitTypeMapper;
 import org.openbase.bco.app.cloud.connector.mapping.unit.UnitTypeMapping;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -41,13 +40,14 @@ import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.TimeoutException;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.configuration.LabelType.Label;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -70,7 +70,6 @@ import java.util.concurrent.TimeUnit;
 public class FulfillmentHandler {
 
     //TODO: Exceptions caught and processed in response should be printed by exception printer or logger
-    //TODO: add timeout as static variable here
     //TODO: test ex.toString()
     public static final String INTENT_PREFIX = "action.devices.";
     public static final String SYNC_INTENT = INTENT_PREFIX + "SYNC";
@@ -101,9 +100,9 @@ public class FulfillmentHandler {
     public static final String EXECUTE_OFFLINE = "OFFLINE";
     public static final String EXECUTE_ERROR = "ERROR";
 
-    public static final Long REGISTRY_TIMEOUT = 5l;
-    public static final Long UNIT_DATA_TIMEOUT = 2l;
-    public static final Long UNIT_TASK_TIMEOUT = 1l;
+    public static final Long REGISTRY_TIMEOUT = 5L;
+    public static final Long UNIT_DATA_TIMEOUT = 2L;
+    public static final Long UNIT_TASK_TIMEOUT = 1L;
 
     private static final Logger LOGGER = LoggerFactory.getLogger(FulfillmentHandler.class);
 
@@ -181,23 +180,23 @@ public class FulfillmentHandler {
                 final JsonObject device = new JsonObject();
 
                 try {
-                    final UnitTypeDeviceTypeMapping unitTypeDeviceTypeMapping = UnitTypeDeviceTypeMapping.getByUnitType(unitConfig.getType());
-                    device.addProperty(TYPE_KEY, unitTypeDeviceTypeMapping.getDeviceType().getRepresentation());
+                    final UnitTypeMapping unitTypeTypeMapping = UnitTypeMapping.getByUnitType(unitConfig.getUnitType());
+                    device.addProperty(TYPE_KEY, unitTypeTypeMapping.getDeviceType().getRepresentation());
                 } catch (NotAvailableException ex) {
-                    LOGGER.warn("Skip unit[" + unitConfig.getAlias(0) + "] because no mapping for unitType[" + unitConfig.getType().name() + "] available");
+                    LOGGER.warn("Skip unit[" + unitConfig.getAlias(0) + "] because no mapping for unitType[" + unitConfig.getUnitType().name() + "] available");
                     continue;
                 }
 
                 device.addProperty(ID_KEY, unitConfig.getId());
                 //TODO: maybe we want this
                 device.addProperty("willReportState", false);
-                device.addProperty("roomHint", unitRegistryRemote.getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel());
+                device.addProperty("roomHint", LabelProcessor.getFirstLabel(unitRegistryRemote.getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel()));
 
                 final JsonObject attributes = new JsonObject();
                 final JsonArray traits = new JsonArray();
                 final Set<ServiceType> serviceTypeSet = new HashSet<>();
                 for (final ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                    final ServiceType serviceType = serviceConfig.getServiceDescription().getType();
+                    final ServiceType serviceType = serviceConfig.getServiceDescription().getServiceType();
                     if (serviceTypeSet.contains(serviceType)) {
                         continue;
                     }
@@ -223,13 +222,21 @@ public class FulfillmentHandler {
                 device.add("attributes", attributes);
 
                 final JsonObject name = new JsonObject();
-                name.addProperty("name", unitConfig.getLabel());
+                name.addProperty("name", LabelProcessor.getFirstLabel(unitConfig.getLabel()));
                 final JsonArray defaultNames = new JsonArray();
                 for (final String alias : unitConfig.getAliasList()) {
                     defaultNames.add(alias.replace("-", " "));
                 }
                 name.add("defaultNames", defaultNames);
-                //TODO: nicknames are missing
+
+                final JsonArray nickNames = new JsonArray();
+                for (final Label.MapFieldEntry mapFieldEntry : unitConfig.getLabel().getEntryList()) {
+                    for (final String label : mapFieldEntry.getValueList()) {
+                        nickNames.add(label);
+                    }
+                }
+                name.add("nickNames", nickNames);
+
                 device.add(NAME_KEY, name);
 
                 final JsonObject deviceInfo = new JsonObject();
@@ -253,6 +260,7 @@ public class FulfillmentHandler {
      * @param payload the payload of the response
      * @param input   the input object as send by Google
      */
+    @SuppressWarnings("unchecked")
     private void handleQuery(final JsonObject payload, final JsonObject input) {
         // parse device ids from request input
         final List<String> deviceIdList = new ArrayList<>();

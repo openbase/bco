@@ -61,7 +61,7 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
 
     private ServiceConfig loadServiceConfig() throws CouldNotPerformException {
         for (final ServiceConfig serviceConfig : unit.getConfig().getServiceConfigList()) {
-            if (serviceConfig.getServiceDescription().getType().equals(serviceType)) {
+            if (serviceConfig.getServiceDescription().getServiceType().equals(serviceType)) {
                 return serviceConfig;
             }
         }

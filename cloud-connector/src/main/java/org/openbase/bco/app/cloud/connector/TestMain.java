@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloud.connector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -24,19 +24,13 @@ package org.openbase.bco.app.cloud.connector;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
-import com.google.gson.JsonArray;
-import com.google.gson.JsonObject;
-import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.StackTracePrinter;
+import org.openbase.bco.app.cloud.connector.jp.JPCloudServerURI;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.exception.printer.LogLevel;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
-import java.util.UUID;
+import java.net.URI;
 
 public class TestMain {
 
@@ -46,9 +40,37 @@ public class TestMain {
         final Gson gson = new GsonBuilder().setPrettyPrinting().create();
         final FulfillmentHandler fulfillmentHandler = new FulfillmentHandler();
 
-        LOGGER.info(new CouldNotPerformException("Could not do this").toString());
+        try {
+            JPService.registerProperty(JPCloudServerURI.class, new URI("http://localhost:5000"));
+            CloudConnectorLauncher cloudConnectorLauncher = new CloudConnectorLauncher();
+            LOGGER.info("launch cloud connector...");
+            cloudConnectorLauncher.launch();
+            CloudConnector cloudConnector = cloudConnectorLauncher.getLaunchable();
+            LOGGER.info("Cloud connector is active: " + cloudConnector.isActive());
+            Thread.sleep(1000);
+            cloudConnector.requestSync();
+        } catch (Exception ex) {
+            ExceptionPrinter.printHistory(ex, LOGGER);
+        }
 
-        // test sync
+//        try {
+//            JPService.registerProperty(JPCloudServerURI.class);
+////            String[] testArgs = {"--cloud-server", "localhost"};
+//            String[] testArgs = {};
+//            JPService.parse(testArgs);
+//            URI uri = JPService.getProperty(JPCloudServerURI.class).getValue();
+//            LOGGER.info(uri.getPath());
+//            LOGGER.info(String.valueOf(uri.getPort()));
+//            LOGGER.info(uri.getUserInfo());
+//            LOGGER.info(uri.getAuthority());
+//            LOGGER.info(uri.getHost());
+//            LOGGER.info(uri.getScheme());
+//        } catch (JPServiceException ex) {
+//            LOGGER.info("", ex);
+//        }
+//        LOGGER.info(new CouldNotPerformException("Could not do this").toString());
+
+//         test sync
 //        JsonObject syncRequest = new JsonObject();
 //        syncRequest.addProperty(FulfillmentHandler.REQUEST_ID_KEY, /*UUID.randomUUID().toString()*/"id");
 //        JsonArray inputs = new JsonArray();
@@ -58,12 +80,8 @@ public class TestMain {
 //        syncRequest.add("inputs", inputs);
 //        System.out.println(gson.toJson(syncRequest).replace("\"", "\\\""));
 //
-//        try {
-//            JsonObject jsonObject = fulfillmentHandler.handleRequest(syncRequest);
-//            System.out.println(gson.toJson(jsonObject));
-//        } catch (CouldNotPerformException ex) {
-//            System.err.println("Error: " + ex);
-//        }
+//        JsonObject jsonObject = fulfillmentHandler.handleRequest(syncRequest);
+//        System.out.println(gson.toJson(jsonObject));
 
         // test query
 //        JsonObject query = new JsonObject();
@@ -94,51 +112,51 @@ public class TestMain {
 //        }
 
         // test execution
-        JsonObject request = new JsonObject();
-        request.addProperty(FulfillmentHandler.REQUEST_ID_KEY, UUID.randomUUID().toString());
-        JsonArray inputs = new JsonArray();
-        request.add("inputs", inputs);
-        JsonObject input = new JsonObject();
-        inputs.add(input);
-        input.addProperty("intent", "action.devices.EXECUTE");
-        JsonObject payload = new JsonObject();
-        input.add("payload", payload);
-        JsonArray commands = new JsonArray();
-        payload.add("commands", commands);
-        JsonObject command = new JsonObject();
-        commands.add(command);
-        JsonArray devices = new JsonArray();
-        command.add("devices", devices);
-        try {
-            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs(UnitType.LIGHT)) {
-                JsonObject device = new JsonObject();
-                device.addProperty("id", unitConfig.getId());
-                devices.add(device);
-            }
-
-            JsonArray execution = new JsonArray();
-            command.add("execution", execution);
-            JsonObject execute = new JsonObject();
-            execution.add(execute);
-            execute.addProperty("command", "action.devices.commands.OnOff");
-            JsonObject params = new JsonObject();
-            execute.add("params", params);
-            params.addProperty("on", true);
-
-            System.out.println(gson.toJson(request));
-
-            JsonObject jsonObject = fulfillmentHandler.handleRequest(request);
-            System.out.println(gson.toJson(jsonObject));
-        } catch (Exception ex) {
-            StackTracePrinter.printStackTrace(ex.getStackTrace(), LoggerFactory.getLogger(TestMain.class), LogLevel.INFO);
-            ExceptionPrinter.printHistory(ex, LoggerFactory.getLogger(TestMain.class));
-            System.exit(1);
-        }
-        System.exit(0);
+//        JsonObject request = new JsonObject();
+//        request.addProperty(FulfillmentHandler.REQUEST_ID_KEY, UUID.randomUUID().toString());
+//        JsonArray inputs = new JsonArray();
+//        request.add("inputs", inputs);
+//        JsonObject input = new JsonObject();
+//        inputs.add(input);
+//        input.addProperty("intent", "action.devices.EXECUTE");
+//        JsonObject payload = new JsonObject();
+//        input.add("payload", payload);
+//        JsonArray commands = new JsonArray();
+//        payload.add("commands", commands);
+//        JsonObject command = new JsonObject();
+//        commands.add(command);
+//        JsonArray devices = new JsonArray();
+//        command.add("devices", devices);
+//        try {
+//            for (UnitConfig unitConfig : Registries.getUnitRegistry(true).getUnitConfigs(UnitType.LIGHT)) {
+//                JsonObject device = new JsonObject();
+//                device.addProperty("id", unitConfig.getId());
+//                devices.add(device);
+//            }
+//
+//            JsonArray execution = new JsonArray();
+//            command.add("execution", execution);
+//            JsonObject execute = new JsonObject();
+//            execution.add(execute);
+//            execute.addProperty("command", "action.devices.commands.OnOff");
+//            JsonObject params = new JsonObject();
+//            execute.add("params", params);
+//            params.addProperty("on", true);
+//
+//            System.out.println(gson.toJson(request));
+//
+//            JsonObject jsonObject = fulfillmentHandler.handleRequest(request);
+//            System.out.println(gson.toJson(jsonObject));
+//        } catch (Exception ex) {
+//            StackTracePrinter.printStackTrace(ex.getStackTrace(), LoggerFactory.getLogger(TestMain.class), LogLevel.INFO);
+//            ExceptionPrinter.printHistory(ex, LoggerFactory.getLogger(TestMain.class));
+//            System.exit(1);
+//        }
+//        System.exit(0);
 
 
 //        try {
-////            Socket socket = IO.socket("http://localhost:5000");
+//            Socket socket = IO.socket("http://localhost:5000");
 //            Socket socket = IO.socket("https://bco-cloud.herokuapp.com/");
 //            socket.on(Socket.EVENT_CONNECT, objects -> {
 //                LOGGER.info("CONNECTED");

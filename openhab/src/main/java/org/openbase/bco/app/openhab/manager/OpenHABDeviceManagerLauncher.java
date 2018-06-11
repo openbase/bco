@@ -16,8 +16,6 @@ public class OpenHABDeviceManagerLauncher extends AbstractLauncher<OpenHABDevice
 
     /**
      * @param args the command line arguments
-     * @throws java.lang.InterruptedException
-     * @throws org.openbase.jul.exception.CouldNotPerformException
      */
     public static void main(final String[] args) {
         BCO.printLogo();

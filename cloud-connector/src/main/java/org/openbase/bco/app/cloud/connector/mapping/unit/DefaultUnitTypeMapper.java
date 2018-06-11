@@ -1,5 +1,27 @@
 package org.openbase.bco.app.cloud.connector.mapping.unit;
 
+/*-
+ * #%L
+ * BCO Cloud Connector
+ * %%
+ * Copyright (C) 2018 openbase.org
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
 import com.google.gson.JsonObject;
 import com.google.protobuf.GeneratedMessage;
 import org.openbase.bco.app.cloud.connector.FulfillmentHandler;
@@ -28,17 +50,17 @@ public class DefaultUnitTypeMapper<UR extends UnitRemote> implements UnitTypeMap
         final Set<ServiceType> serviceTypeSet = new HashSet<>();
         try {
             for (ServiceDescription serviceDescription : unitRemote.getUnitTemplate().getServiceDescriptionList()) {
-                if (serviceTypeSet.contains(serviceDescription.getType())) {
+                if (serviceTypeSet.contains(serviceDescription.getServiceType())) {
                     continue;
                 }
-                serviceTypeSet.add(serviceDescription.getType());
+                serviceTypeSet.add(serviceDescription.getServiceType());
 
                 // find traits for the given service type
-                ServiceTypeTraitMapping byServiceType = ServiceTypeTraitMapping.getByServiceType(serviceDescription.getType());
+                ServiceTypeTraitMapping byServiceType = ServiceTypeTraitMapping.getByServiceType(serviceDescription.getServiceType());
                 for (Trait trait : byServiceType.getTraitSet()) {
                     try {
                         // map service state to trait
-                        trait.getTraitMapper().map((GeneratedMessage) Services.invokeProviderServiceMethod(serviceDescription.getType(), unitRemote), deviceState);
+                        trait.getTraitMapper().map((GeneratedMessage) Services.invokeProviderServiceMethod(serviceDescription.getServiceType(), unitRemote), deviceState);
                     } catch (CouldNotPerformException ex) {
                         // getting service value failed
                         FulfillmentHandler.setError(deviceState, ex, ErrorCode.UNKNOWN_ERROR);
