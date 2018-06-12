@@ -28,7 +28,9 @@ import com.google.gson.JsonObject;
 import com.google.gson.JsonParser;
 import io.socket.client.Ack;
 import io.socket.client.IO;
+import io.socket.client.Manager;
 import io.socket.client.Socket;
+import io.socket.engineio.client.Transport;
 import org.openbase.bco.app.cloud.connector.jp.JPCloudServerURI;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -41,6 +43,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import java.net.URI;
+import java.util.Collections;
+import java.util.List;
+import java.util.Map;
+import java.util.UUID;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -56,6 +62,9 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
     private Socket socket;
     private boolean active;
     private URI cloudURI;
+    private String accessToken;
+
+    private final String id = "86b2d03d-0c38-4b3e-bf4c-6206c4ad6650";
 
     public CloudConnector() {
         this.active = false;
@@ -67,29 +76,55 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
     @Override
     public void init() throws InitializationException {
         try {
+            LOGGER.info("ID[" + id + "]");
             // get cloud uri from property
             cloudURI = JPService.getProperty(JPCloudServerURI.class).getValue();
 
             // create socket
             socket = IO.socket(cloudURI);
 
+            //TODO: send id as a combination of BCO (and logged in user id), and token if available, else handle authentication
+            // add id to header for cloud server
+            socket.io().on(Manager.EVENT_TRANSPORT, args -> {
+                Transport transport = (Transport) args[0];
+
+                transport.on(Transport.EVENT_REQUEST_HEADERS, args1 -> {
+                    try {
+                        @SuppressWarnings("unchecked")
+                        Map<String, List<String>> headers = (Map<String, List<String>>) args1[0];
+                        // add bco id to request header
+                        headers.put("id", Collections.singletonList(id));
+                    } catch (Exception ex) {
+                        ExceptionPrinter.printHistory(ex, LOGGER);
+                    }
+                });
+            });
+
             // add listener to socket events
             socket.on(Socket.EVENT_CONNECT, objects -> {
                 // when socket is connected
                 LOGGER.info("CONNECTED");
 
-                // authenticate
-                LOGGER.info("Authenticate...");
-//                final String pwd = "DevelopmentAccess!";
-                final String pwd = "socketPassword";
-                socket.emit("authenticate", pwd, (Ack) objects1 -> {
+                JsonObject loginInfo = new JsonObject();
+                LOGGER.info("Send loginInfo [" + gson.toJson(loginInfo) + "]");
+                socket.emit("login", gson.toJson(loginInfo), (Ack) objects1 -> {
                     try {
-                        final String response = (String) objects1[0];
-                        if (response.contains("failed")) {
-                            LOGGER.error("Authentication with cloud[" + cloudURI.toString() + "] failed");
-                            shutdown();
-                        } else {
+                        final String resp = objects1[0].toString();
+                        if (resp.startsWith("ERROR")) {
+                            // TODO: handle this
+                            LOGGER.error("Could not login at cloud server[" + resp + "]");
+                            return;
+                        }
+
+                        final JsonObject response = jsonParser.parse(resp).getAsJsonObject();
+                        if (response.get("success").getAsBoolean()) {
                             LOGGER.info("Authenticated successfully");
+                            if (response.has("accessToken")) {
+                                accessToken = response.get("accessToken").getAsString();
+                                LOGGER.info("Received accessToken[" + accessToken + "]");
+                            }
+                        } else {
+                            LOGGER.info("Authentication failed");
                         }
                     } catch (ArrayIndexOutOfBoundsException | ClassCastException ex) {
                         ExceptionPrinter.printHistory("Unexpected response for authentication request", ex, LOGGER);
@@ -123,6 +158,8 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
                 }
                 // when disconnected
                 LOGGER.info("Socket disconnected: " + objects[0].toString());
+            }).on(Socket.EVENT_ERROR, objects -> {
+                LOGGER.info("Received error: " + objects[0]);
             });
         } catch (JPNotAvailableException ex) {
             throw new InitializationException(this, ex);

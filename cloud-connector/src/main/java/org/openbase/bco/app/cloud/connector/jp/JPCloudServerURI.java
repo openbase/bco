@@ -33,7 +33,7 @@ import java.util.List;
 public class JPCloudServerURI extends AbstractJavaProperty<URI> {
 
     private static final String[] ARGUMENT_IDENTIFIERS = {"URI"};
-    private static final String[] COMMAND_IDENTIFIERS = {"--cloud-server"};
+    private static final String[] COMMAND_IDENTIFIERS = {"--cloud"};
 
     private static final String DEFAULT_URI = "https://bco-cloud.herokuapp.com/";
 
