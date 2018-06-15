@@ -114,7 +114,7 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
                 String unitHostLabel;
                 try {
                     if (unitConfig.hasUnitHostId() && !unitConfig.getUnitHostId().isEmpty()) {
-                        unitHostLabel = LabelProcessor.getFirstLabel(Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId()).getLabel());
+                        unitHostLabel = LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId()).getLabel());
                     } else {
                         unitHostLabel = "";
                     }
@@ -124,12 +124,12 @@ public class GenericUnitPanel<RS extends AbstractUnitRemote> extends UnitRemoteV
 
                 String locationLabel;
                 try {
-                    locationLabel = LabelProcessor.getFirstLabel(Registries.getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel());
+                    locationLabel = LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel());
                 } catch (CouldNotPerformException ex) {
                     locationLabel = "?";
                 }
 
-                remoteLabel = unitConfig.getLabel()
+                remoteLabel = LabelProcessor.getBestMatch(unitConfig.getLabel())
                         + " (" + StringProcessor.transformUpperCaseToCamelCase(unitConfig.getUnitType().name()) + ")"
                         + " @ " + locationLabel
                         + (unitHostLabel.isEmpty() ? "" : "of " + unitHostLabel)

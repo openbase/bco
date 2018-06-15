@@ -33,6 +33,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.MultiException;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.SyncObject;
@@ -131,7 +132,7 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
                     }
                 }
             }
-            MultiException.checkAndThrow("Could not proccess all units!", exceptionStack);
+            MultiException.checkAndThrow("Could not process all units!", exceptionStack);
             return unitPanelList;
         } catch (CouldNotPerformException ex) {
             throw new CouldNotPerformException("Could not add all matching units for Label[" + unitLabel + "]", ex);
@@ -139,7 +140,7 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
     }
 
     public GenericUnitPanel add(final UnitConfig unitConfig) throws CouldNotPerformException, InterruptedException {
-        LOGGER.info("Add " + unitConfig.getLabel() + " to unit panel.");
+        LOGGER.info("Add " + LabelProcessor.getBestMatch(unitConfig.getLabel()) + " to unit panel.");
         synchronized (unitPanelMapLock) {
             GenericUnitPanel genericUnitPanel;
             try {
@@ -156,7 +157,7 @@ public class GenericUnitCollectionPanel<RS extends AbstractUnitRemote> extends j
     }
 
     public GenericUnitPanel add(final UnitConfig unitConfig, final ServiceType serviceType, final Object serviceAttribute, final boolean removable) throws CouldNotPerformException, InterruptedException {
-        LOGGER.info("Add " + unitConfig.getLabel() + " with " + serviceType.name() + " " + serviceAttribute + "to unit panel.");
+        LOGGER.info("Add " + LabelProcessor.getBestMatch(unitConfig.getLabel()) + " with " + serviceType.name() + " " + serviceAttribute + "to unit panel.");
         synchronized (unitPanelMapLock) {
             GenericUnitPanel genericUnitPanel;
             try {   

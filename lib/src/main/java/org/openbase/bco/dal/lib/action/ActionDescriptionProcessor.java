@@ -1,10 +1,5 @@
 package org.openbase.bco.dal.lib.action;
 
-import java.util.Collection;
-import java.util.List;
-import java.util.Locale;
-import java.util.UUID;
-
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
@@ -40,7 +35,10 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.timing.IntervalType.Interval;
 
-import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_LABEL;
+import java.util.Collection;
+import java.util.List;
+import java.util.Locale;
+import java.util.UUID;
 
 /*-
  * #%L
@@ -97,7 +95,6 @@ public class ActionDescriptionProcessor {
      * @param actionParameter type which contains several parameters which are updated in the actionDescription
      * @param actionAuthority the actionAuthority for the actionDescription
      * @param initiator       the initiator type for the resourceAllocation in the actionDescription
-     *
      * @return an ActionDescription that only misses unit and service information
      */
     public static ActionDescription.Builder getActionDescription(final ActionParameter actionParameter, final ActionAuthority actionAuthority, final ResourceAllocation.Initiator initiator) {
@@ -162,7 +159,6 @@ public class ActionDescriptionProcessor {
      *
      * @param actionAuthority the actionAuthority for the actionDescription
      * @param initiator       the initiator type for the resourceAllocation in the actionDescription
-     *
      * @return
      */
     public static ActionDescription.Builder getActionDescription(final ActionAuthority actionAuthority, final ResourceAllocation.Initiator initiator) {
@@ -207,7 +203,6 @@ public class ActionDescriptionProcessor {
      * Updates the executionTimePeriod of the given actionDescription.
      *
      * @param actionDescription actionDescription
-     *
      * @return an Interval generated as described above
      */
     public static Interval getAllocationInterval(final ActionDescription.Builder actionDescription) {
@@ -227,7 +222,6 @@ public class ActionDescriptionProcessor {
      * To generate the slot the method {@link #getAllocationInterval(ActionDescription.Builder) getAllocationInterval} is used.
      *
      * @param actionDescription the ActionDescription inside which the ResourceAllocation is updated
-     *
      * @return the updated ActionDescription
      */
     public static ActionDescription.Builder updateResourceAllocationSlot(final ActionDescription.Builder actionDescription) {
@@ -240,7 +234,6 @@ public class ActionDescriptionProcessor {
      * Build an ActionReference from a given ActionDescription which can be added to an action chain.
      *
      * @param actionDescription the ActionDescription from which the ActionReference is generated
-     *
      * @return an ActionReference for the given ActionDescription
      */
     public static ActionReference getActionReferenceFromActionDescription(final ActionDescriptionOrBuilder actionDescription) {
@@ -259,7 +252,6 @@ public class ActionDescriptionProcessor {
      *
      * @param actionDescription the ActionDescription which is updated
      * @param parentAction      the ActionDescription of the action which is the cause for the new action
-     *
      * @return the updated ActionDescription
      */
     public static ActionDescription.Builder updateActionChain(final ActionDescription.Builder actionDescription, final ActionDescriptionOrBuilder parentAction) {
@@ -272,7 +264,6 @@ public class ActionDescriptionProcessor {
      * Check if the ResourceAllocation inside the ActionDescription has a token in its id field.
      *
      * @param actionDescription the ActionDescription which is checked
-     *
      * @return true if the id field contains a # which it the token separator and else false
      */
     public static boolean hasResourceAllocationToken(final ActionDescriptionOrBuilder actionDescription) {
@@ -284,7 +275,6 @@ public class ActionDescriptionProcessor {
      * This method does nothing if the id already contains a token.
      *
      * @param actionDescription the ActionDescription which is updated
-     *
      * @return the updated ActionDescription
      */
     public static ActionDescription.Builder generateToken(final ActionDescription.Builder actionDescription) {
@@ -303,7 +293,6 @@ public class ActionDescriptionProcessor {
      * while keeping the token if there si one.
      *
      * @param actionDescription the action description which is updated as described above
-     *
      * @return the action description which is updated as described above
      */
     public static ActionDescription.Builder updateResourceAllocationId(final ActionDescription.Builder actionDescription) {
@@ -322,7 +311,6 @@ public class ActionDescriptionProcessor {
      * Method generates a description for the given action pipeline.
      *
      * @param actionDescriptionCollection a collection of depending action descriptions.
-     *
      * @return a human readable description of the action pipeline.
      */
     public static String getDescription(final Collection<ActionDescription> actionDescriptionCollection) {
@@ -343,9 +331,7 @@ public class ActionDescriptionProcessor {
      *
      * @param serviceAttribute the service attribute that will be applied by this action
      * @param serviceType      the service type according to the service attribute
-     *
      * @return the generated action description
-     *
      * @throws CouldNotPerformException if accessing the unit registry fails or if the service attribute cannot be
      *                                  verified or serialized
      */
@@ -353,11 +339,16 @@ public class ActionDescriptionProcessor {
         final ActionDescription.Builder actionDescriptionBuilder = ActionDescriptionProcessor.getActionDescription(ActionAuthority.getDefaultInstance(), detectInitiator());
         final Builder actionAuthorityBuilder = actionDescriptionBuilder.getActionAuthorityBuilder();
 
-        if (SessionManager.getInstance().getUserId() != null) {
-            actionAuthorityBuilder.setUserId(SessionManager.getInstance().getUserId());
+        if (SessionManager.getInstance().isLoggedIn()) {
+            if (SessionManager.getInstance().getUserId() != null) {
+                actionAuthorityBuilder.setUserId(SessionManager.getInstance().getUserId());
+            } else {
+                actionAuthorityBuilder.setUserId(SessionManager.getInstance().getClientId());
+            }
         } else {
-            actionAuthorityBuilder.setUserId(SessionManager.getInstance().getClientId());
+            actionAuthorityBuilder.setUserId("Other");
         }
+        
         actionAuthorityBuilder.setAuthority(detectAuthority());
         return updateActionDescription(actionDescriptionBuilder, serviceAttribute, serviceType);
     }
@@ -369,10 +360,8 @@ public class ActionDescriptionProcessor {
      *
      * @param serviceAttribute the service attribute that will be applied by this action
      * @param serviceType      the service type according to the service attribute
-     * @param unitType      the service type according to the service attribute
-     *
+     * @param unitType         the service type according to the service attribute
      * @return the generated action description
-     *
      * @throws CouldNotPerformException if accessing the unit registry fails or if the service attribute cannot be
      *                                  verified or serialized
      */
@@ -397,9 +386,7 @@ public class ActionDescriptionProcessor {
      *
      * @param serviceAttribute the service attribute that will be applied by this action
      * @param serviceType      the service type according to the service attribute
-     *
      * @return the generated action description
-     *
      * @throws CouldNotPerformException if accessing the unit registry fails or if the service attribute cannot be
      *                                  verified or serialized
      */
@@ -416,9 +403,7 @@ public class ActionDescriptionProcessor {
      * @param actionDescription the action description which will be updated
      * @param serviceAttribute  the service attribute that will be applied by this action
      * @param serviceType       the service type according to the service attribute
-     *
      * @return the updated action description
-     *
      * @throws CouldNotPerformException if accessing the unit registry fails or if the service attribute cannot be
      *                                  verified or serialized
      */
@@ -463,7 +448,6 @@ public class ActionDescriptionProcessor {
      * Method detects if a human or the system is triggering this action.
      *
      * @return
-     *
      * @throws NotAvailableException
      */
     @Experimental
@@ -488,7 +472,6 @@ public class ActionDescriptionProcessor {
      * Method detects if a user or the system is triggering this action.
      *
      * @return
-     *
      * @throws NotAvailableException
      */
     @Experimental
