@@ -707,9 +707,6 @@ public class MockRegistry {
             waitForDeviceClass(reedSwitchClass);
 
             registerDeviceUnitConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass));
-            for (UnitConfig unitCOnfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.REED_CONTACT)) {
-                LOGGER.warn("UnitConfig with alias: " + unitCOnfig.getAlias(0));
-            }
             unitRegistry.registerUnitConfig(getDeviceConfig("Reed_Heaven_Stairs", serialNumber, reedSwitchClass, LOCATION_STAIRWAY_TO_HEAVEN_LABEL)).get();
             unitRegistry.registerUnitConfig(getDeviceConfig("Reed_Hell_Stairs", serialNumber, reedSwitchClass, LOCATION_STAIRWAY_TO_HEAVEN_LABEL)).get();
             unitRegistry.registerUnitConfig(getDeviceConfig("Reed_Stairway_Window", serialNumber, reedSwitchClass, LOCATION_STAIRWAY_TO_HEAVEN_LABEL)).get();
