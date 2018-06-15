@@ -167,7 +167,7 @@ public class CredentialStore {
         return (this.credentials.size() == 1 && this.credentials.containsKey(SERVICE_SERVER_ID));
     }
 
-    /**
+    /*
      * --------------------- MANIPULATIVE METHODS ------------------------------
      */
     /**
