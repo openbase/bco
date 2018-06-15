@@ -1,5 +1,27 @@
 package org.openbase.bco.app.openhab.manager.service;
 
+/*-
+ * #%L
+ * BCO Openhab App
+ * %%
+ * Copyright (C) 2018 openbase.org
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
 import org.eclipse.smarthome.core.types.Command;
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
 import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemHelper;
@@ -13,6 +35,7 @@ import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.binding.openhab.OpenhabCommandType;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
@@ -60,7 +83,7 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
 
     private ServiceConfig loadServiceConfig() throws CouldNotPerformException {
         for (final ServiceConfig serviceConfig : unit.getConfig().getServiceConfigList()) {
-            if (serviceConfig.getServiceDescription().getType().equals(serviceType)) {
+            if (serviceConfig.getServiceDescription().getServiceType().equals(serviceType)) {
                 return serviceConfig;
             }
         }
@@ -79,7 +102,7 @@ public abstract class OpenHABService<ST extends Service & Unit<?>> implements Se
         return itemName;
     }
 
-    public Future executeCommand(final Command command) throws CouldNotPerformException {
+    public Future<ActionFuture> executeCommand(final Command command) throws CouldNotPerformException {
         if (itemName == null) {
             throw new NotAvailableException("itemID");
         }

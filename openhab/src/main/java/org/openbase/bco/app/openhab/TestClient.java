@@ -1,10 +1,36 @@
 package org.openbase.bco.app.openhab;
 
-import com.google.gson.Gson;
-import org.openbase.bco.app.openhab.manager.OpenHABDeviceManager;
+/*-
+ * #%L
+ * BCO Openhab App
+ * %%
+ * Copyright (C) 2018 openbase.org
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.schedule.Stopwatch;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+
+import java.util.List;
+import java.util.Random;
 
 public class TestClient {
 
@@ -12,114 +38,54 @@ public class TestClient {
 
     public static void main(String[] args) {
         try {
-//        try {
-//            List<DiscoveryResultDTO> thingsFromInbox = OpenHABRestCommunicator.getInstance().getThingsFromInbox();
-//            LOGGER.info("Things in inbox[" + thingsFromInbox.size() + "]");
-//            DiscoveryResultDTO thing = thingsFromInbox.get(0);
-//            LOGGER.info(thing.thingTypeUID + ", " + ", " + thing.label + ", " + thing.thingUID);
+//            final Gson gson = new GsonBuilder().setPrettyPrinting().create();
+//            final JsonParser jsonParser = new JsonParser();
 //
-//            thing.label = "Motion Sensor Test";
+//            System.out.println("Start...");
+//            Client client = ClientBuilder.newClient();
+//            WebTarget webTarget = client.target("http://localhost:8080/rest/events");
 //
-//            OpenHABRestCommunicator.getInstance().approve(thing);
+//            SseEventSource sseEventSource = SseEventSource.target(webTarget).build();
+//            sseEventSource.register(inboundSseEvent -> {
+//                final String payload = inboundSseEvent.readData();
+//                final JsonElement payloadAsJson = jsonParser.parse(payload);
 //
-//
-////            for (final EnrichedThingDTO thing : OpenHABRestCommunicator.getInstance().getThings()) {
-//////                System.out.println("Thing: " + thing.thingTypeUID);
-//////
-//////                try {
-//////                    registerDeviceForThing(thing);
-//////                } catch (CouldNotPerformException ex) {
-//////                    ExceptionPrinter.printHistory(ex, LOGGER);
-//////                }
-////                if (thing.label.startsWith("Motion")) {
-//////                    thing.label = "Motion Sensor";
-//////                    thing.location = "Home";
-//////
-//////                    OpenHABRestCommunicator.getInstance().updateThing(thing);
-////
-////                    OpenHABRestCommunicator.getInstance().deleteThing(thing.UID);
-////                }
-////            }
-//        } catch (CouldNotPerformException ex) {
-//            ExceptionPrinter.printHistory(ex, LOGGER);
-//        }
+//                System.out.printf("Received event:\n" + gson.toJson(payloadAsJson));
+//            });
+//            sseEventSource.open();
+//            System.out.println("Opened sse source!");
 
-//        try {
-//            EnrichedThingDTO thingOne = OpenHABRestCommunicator.getInstance().getThings().get(0);
-//            EnrichedThingDTO thingTwo = OpenHABRestCommunicator.getInstance().getThings().get(0);
-//
-//            IdentifiableEnrichedThingDTO one = new IdentifiableEnrichedThingDTO(thingOne);
-//            IdentifiableEnrichedThingDTO two = new IdentifiableEnrichedThingDTO(thingTwo);
-//
-//            System.out.println(one.equals(two));
-//
-//            thingOne.label = "test";
-//
-//            System.out.println(one.equals(two));
-//        } catch (CouldNotPerformException ex) {
-//            ExceptionPrinter.printHistory(ex, LOGGER);
-//        }
-//
-//        System.exit(0);
-//        EnrichedItemDTO enrichedItemDTO = gson.fromJson(res, EnrichedItemDTO.class);
-//
-//        System.out.println("Parsed item: [" + enrichedItemDTO.link + ", " + enrichedItemDTO.state + ", "+enrichedItemDTO.name+"]");
+            Random random = new Random();
+            Registries.waitForData();
+            List<UnitConfig> unitConfigs = Registries.getUnitRegistry().getUnitConfigs();
+            Stopwatch stopwatch = new Stopwatch();
+            stopwatch.start();
+            for (int i = 0; i < 1000; i++) {
+                final UnitConfig unitConfig = unitConfigs.get(random.nextInt(unitConfigs.size()));
+                final String alias = unitConfig.getAlias(random.nextInt(unitConfig.getAliasCount()));
+                Registries.getUnitRegistry().getUnitConfigByAlias(alias);
+            }
+            long stop = stopwatch.stop();
+            LOGGER.info("Getting 1000 units by alias took: " + stop + "ms");
 
-//        try {
-//            OpenHABConfigSynchronizer openHABConfigSynchronizer = new OpenHABConfigSynchronizer();
-//            openHABConfigSynchronizer.init();
-//            openHABConfigSynchronizer.activate();
-//        } catch (CouldNotPerformException ex) {
-//            ExceptionPrinter.printHistory(ex, LOGGER);
-//        }
+            stopwatch.restart();
+            for(int i = 0; i < 1000; i++) {
+                final UnitConfig unitConfig = unitConfigs.get(random.nextInt(unitConfigs.size()));
+                final String alias = unitConfig.getAlias(random.nextInt(unitConfig.getAliasCount()));
 
-            final Gson gson = new Gson();
-//        List<ItemDTO> itemDTOList = new ArrayList<>();
-//
-//        ItemDTO itemDTO = new ItemDTO();
-//        itemDTO.name = "testName";
-//        itemDTO.label = "testLabek";
-//        itemDTO.category = "testCategory";
-//        itemDTO.type = "testType";
-//
-//        System.out.println(gson.toJson(itemDTO));
-//
-//        itemDTOList.add(itemDTO);
-//        System.out.println(gson.toJson(itemDTOList));
-
-//        List<Integer> integerList = new ArrayList<>();
-//        integerList.add(0);
-//        integerList.add(100);
-//        integerList.add(100);
-//        integerList.add(null);
-//        System.out.println(gson.toJson(gson.toJson(integerList)));
-//
-//        OpenHABRestCommunicator openhabCommunicator = new OpenHABRestCommunicator();
-//        try {
-//            List<EnrichedItemDTO> items = openhabCommunicator.getItems();
-//
-//            for (EnrichedItemDTO item : items) {
-//                LOGGER.info("Item[" + item.name + "] has state[" + item.state + ", " + item.stateDescription + "]");
-//                LOGGER.info(item.type + ", " + item.category);
-//
-//                OpenHABRestCommunicator.getInstance().postCommand(item.name, integerList);
-//            }
-//        } catch (CouldNotPerformException ex) {
-//            ExceptionPrinter.printHistory(ex, LOGGER);
-//        }
-//        try {
-            OpenHABDeviceManager openHABDeviceManager = new OpenHABDeviceManager();
-            openHABDeviceManager.init();
-            openHABDeviceManager.activate();
-//        } catch (Exception ex) {
-//            ExceptionPrinter.printHistory(ex, LOGGER);
-//        }
-//            OpenHABRestCommunicator.getInstance().postCommand("ColorableLight_4", "0,0,10");
+                for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigs()) {
+                    for(String unitAlias : config.getAliasList()) {
+                        if(unitAlias.equals(alias)) {
+                            continue;
+                        }
+                    }
+                }
+            }
+            stop = stopwatch.stop();
+            LOGGER.info("Getting 1000 units by alias took: " + stop + "ms");
 
         } catch (Exception ex) {
             ExceptionPrinter.printHistory(ex, LOGGER);
         }
     }
-
-
 }

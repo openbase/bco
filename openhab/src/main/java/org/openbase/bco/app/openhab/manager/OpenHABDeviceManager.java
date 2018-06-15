@@ -1,43 +1,79 @@
 package org.openbase.bco.app.openhab.manager;
 
-import org.eclipse.smarthome.core.library.types.HSBType;
+/*-
+ * #%L
+ * BCO Openhab App
+ * %%
+ * Copyright (C) 2018 openbase.org
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
 import org.openbase.bco.app.openhab.manager.service.OpenHABServiceFactory;
-import org.openbase.bco.app.openhab.manager.transform.OpenHABColorStateTransformer;
-import org.openbase.bco.app.openhab.registry.synchronizer.OpenHABItemHelper;
-import org.openbase.bco.dal.lib.layer.unit.UnitController;
 import org.openbase.bco.manager.device.core.DeviceManagerController;
+import org.openbase.bco.manager.device.lib.DeviceController;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
-import org.openbase.jul.schedule.GlobalScheduledExecutorService;
+import org.openbase.jul.pattern.Observer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.service.ServiceConfigType.ServiceConfig;
-import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.ColorStateType.ColorState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 
-import java.util.HashSet;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.Set;
-import java.util.concurrent.ScheduledFuture;
-import java.util.concurrent.TimeUnit;
 
 public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable {
 
-    private final Logger logger = LoggerFactory.getLogger(OpenHABDeviceManager.class);
+    public static final String ITEM_STATE_TOPIC_FILTER = "/smarthome/items/*/state";
+
+    private static final Logger LOGGER = LoggerFactory.getLogger(OpenHABDeviceManager.class);
 
     private final DeviceManagerController deviceManagerController;
-    private ScheduledFuture updateTask;
+    private final CommandExecutor commandExecutor;
+    private final Observer<Map<String, DeviceController>> synchronizationObserver;
 
     public OpenHABDeviceManager() throws InterruptedException, InstantiationException {
-        deviceManagerController = new DeviceManagerController(new OpenHABServiceFactory());
+        this.deviceManagerController = new DeviceManagerController(new OpenHABServiceFactory()) {
+
+            @Override
+            public boolean isSupported(UnitConfig config) throws CouldNotPerformException {
+                DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(config.getDeviceConfig().getDeviceClassId());
+                if (!deviceClass.getBindingConfig().getBindingId().equals("OPENHAB")) {
+                    return false;
+                }
+
+                return super.isSupported(config);
+            }
+        };
+        this.commandExecutor = new CommandExecutor(deviceManagerController.getUnitControllerRegistry());
+        this.synchronizationObserver = ((observable, value) -> {
+            for (final Entry<String, String> entry : OpenHABRestCommunicator.getInstance().getStates().entrySet()) {
+                try {
+                    commandExecutor.applyStateUpdate(entry.getKey(), entry.getValue());
+                } catch (CouldNotPerformException ex) {
+                    LOGGER.warn("Skip synchronization of item[" + entry.getKey() + "] state[" + entry.getValue() + "] because unit not available");
+                }
+            }
+        });
     }
 
     @Override
@@ -47,55 +83,20 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
+        deviceManagerController.getDeviceControllerRegistry().addObserver(synchronizationObserver);
         deviceManagerController.activate();
-        updateTask = GlobalScheduledExecutorService.scheduleAtFixedRate(() -> {
-            try {
-                Map<String, String> states = OpenHABRestCommunicator.getInstance().getStates();
-                for (Entry<String, String> entry : states.entrySet()) {
-                    logger.info("Update for item[" + entry.getKey() + "] to state[" + entry.getValue() + "]");
-
-                    for (UnitController<?, ?> unitController : deviceManagerController.getUnitControllerRegistry().getEntries()) {
-                        final UnitConfig unitConfig = unitController.getConfig();
-                        final Set<ServiceType> serviceTypeSet = new HashSet<>();
-                        for (final ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                            if (serviceTypeSet.contains(serviceConfig.getServiceDescription().getType())) {
-                                continue;
-                            }
-                            serviceTypeSet.add(serviceConfig.getServiceDescription().getType());
-
-                            String itemName = OpenHABItemHelper.generateItemName(unitConfig, serviceConfig.getServiceDescription().getType());
-                            if (itemName.equals(entry.getKey())) {
-                                switch (serviceConfig.getServiceDescription().getType()) {
-                                    case COLOR_STATE_SERVICE:
-                                        ColorState colorState = OpenHABColorStateTransformer.transform(HSBType.valueOf(entry.getValue()));
-                                        unitController.applyDataUpdate(TimestampProcessor.updateTimestampWithCurrentTime(colorState), ServiceType.COLOR_STATE_SERVICE);
-                                        break;
-                                    case POWER_STATE_SERVICE:
-                                        break;
-                                    case BRIGHTNESS_STATE_SERVICE:
-                                        break;
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch (CouldNotPerformException ex) {
-                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not sync item states", ex), logger);
-            }
-        }, 5, 5, TimeUnit.SECONDS);
+        OpenHABRestCommunicator.getInstance().addSSEObserver(commandExecutor, ITEM_STATE_TOPIC_FILTER);
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
-        if (updateTask != null) {
-            updateTask.cancel(true);
-            updateTask = null;
-        }
+        deviceManagerController.getDeviceControllerRegistry().removeObserver(synchronizationObserver);
+        OpenHABRestCommunicator.getInstance().removeSSEObserver(commandExecutor, ITEM_STATE_TOPIC_FILTER);
         deviceManagerController.deactivate();
     }
 
     @Override
     public boolean isActive() {
-        return deviceManagerController.isActive() && updateTask != null;
+        return deviceManagerController.isActive();
     }
 }

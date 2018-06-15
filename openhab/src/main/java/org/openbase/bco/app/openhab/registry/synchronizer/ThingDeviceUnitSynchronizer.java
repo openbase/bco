@@ -1,5 +1,27 @@
 package org.openbase.bco.app.openhab.registry.synchronizer;
 
+/*-
+ * #%L
+ * BCO Openhab App
+ * %%
+ * Copyright (C) 2018 openbase.org
+ * %%
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as
+ * published by the Free Software Foundation, either version 3 of the
+ * License, or (at your option) any later version.
+ * 
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ * 
+ * You should have received a copy of the GNU General Public
+ * License along with this program.  If not, see
+ * <http://www.gnu.org/licenses/gpl-3.0.html>.
+ * #L%
+ */
+
 import org.eclipse.smarthome.core.items.dto.ItemDTO;
 import org.eclipse.smarthome.core.thing.dto.ChannelDTO;
 import org.eclipse.smarthome.core.thing.dto.ThingDTO;
@@ -10,6 +32,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
@@ -24,13 +47,9 @@ import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 
-import java.util.ArrayList;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 import java.util.Map.Entry;
 import java.util.concurrent.ExecutionException;
-import java.util.concurrent.TimeUnit;
 
 public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, IdentifiableEnrichedThingDTO> {
 
@@ -38,23 +57,8 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
     public static final String OPENHAB_THING_CLASS_KEY = "OPENHAB_THING_CLASS";
     public static final String OPENHAB_THING_CHANNEL_TYPE_UID_KEY = "OPENHAB_THING_CHANNEL_TYPE_UID";
 
-    //TODO: parse from java property
-    public static final long PERIOD_AND_INITIAL_DELAY = 60;
-
     public ThingDeviceUnitSynchronizer() throws InstantiationException {
-        super(new ScheduledDataProvider(PERIOD_AND_INITIAL_DELAY, PERIOD_AND_INITIAL_DELAY, TimeUnit.SECONDS));
-    }
-
-    @Override
-    public void activate() throws CouldNotPerformException, InterruptedException {
-        super.activate();
-        ((ScheduledDataProvider) getDataProvider()).activate();
-    }
-
-    @Override
-    public void deactivate() throws CouldNotPerformException, InterruptedException {
-        ((ScheduledDataProvider) getDataProvider()).deactivate();
-        super.deactivate();
+        super(new ThingObservable());
     }
 
     @Override
@@ -64,8 +68,9 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
         // get device unit config for the thing
         final UnitConfig.Builder deviceUnitConfig = getDeviceForThing(updatedThing).toBuilder();
 
+        // TODO: only adding the label, or remove the old one, or at least move new one to higher priority?
         // update label and location
-        deviceUnitConfig.setLabel(updatedThing.label);
+        LabelProcessor.addLabel(deviceUnitConfig.getLabelBuilder(), Locale.ENGLISH, updatedThing.label);
         if (updatedThing.location != null) {
             final String locationId = getLocationForThing(updatedThing).getId();
 
@@ -83,7 +88,6 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
 
     @Override
     public void register(IdentifiableEnrichedThingDTO identifiableEnrichedThingDTO) throws CouldNotPerformException, InterruptedException {
-        //TODO: handle initial sync
         final ThingDTO thingDTO = identifiableEnrichedThingDTO.getDTO();
 
         // handle initial sync
@@ -101,7 +105,7 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
 
         // create device for this class
         UnitConfig.Builder unitConfig = UnitConfig.newBuilder();
-        unitConfig.setType(UnitType.DEVICE);
+        unitConfig.setUnitType(UnitType.DEVICE);
         unitConfig.getDeviceConfigBuilder().setDeviceClassId(deviceClass.getId());
         unitConfig.getDeviceConfigBuilder().getInventoryStateBuilder().setValue(State.INSTALLED).setTimestamp(TimestampProcessor.getCurrentTimestamp());
 
@@ -116,8 +120,9 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
             logger.info("Thing has no location defined so it will be added at the root location");
         }
 
+        //TODO: which language to use
         // update label according to thing
-        unitConfig.setLabel(thingDTO.label);
+        LabelProcessor.addLabel(unitConfig.getLabelBuilder(), Locale.ENGLISH, thingDTO.label);
 
         // add thing uid to meta config to have a mapping between thing and device
         unitConfig.getMetaConfigBuilder().addEntryBuilder().setKey(OPENHAB_THING_UID_KEY).setValue(thingDTO.UID);
@@ -194,7 +199,7 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
 
     private UnitConfig getLocationForThing(final ThingDTO thingDTO) throws CouldNotPerformException, InterruptedException {
         if (thingDTO.location != null) {
-            List<UnitConfig> locationConfigs = Registries.getLocationRegistry(true).getLocationConfigsByLabel(thingDTO.location);
+            List<UnitConfig> locationConfigs = Registries.getUnitRegistry(true).getUnitConfigsByLabelAndUnitType(thingDTO.location, UnitType.LOCATION);
 
             if (locationConfigs.size() == 0) {
                 throw new NotAvailableException("Location[" + thingDTO.location + "] for thing[" + thingDTO + "]");
@@ -221,12 +226,12 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
                     continue;
                 }
 
-                if (!serviceTypePatternMap.containsKey(serviceConfig.getServiceDescription().getType())) {
-                    serviceTypePatternMap.put(serviceConfig.getServiceDescription().getType(), serviceConfig.getServiceDescription().getPattern());
+                if (!serviceTypePatternMap.containsKey(serviceConfig.getServiceDescription().getServiceType())) {
+                    serviceTypePatternMap.put(serviceConfig.getServiceDescription().getServiceType(), serviceConfig.getServiceDescription().getPattern());
                 } else {
-                    if (serviceTypePatternMap.get(serviceConfig.getServiceDescription().getType()) == ServicePattern.PROVIDER) {
+                    if (serviceTypePatternMap.get(serviceConfig.getServiceDescription().getServiceType()) == ServicePattern.PROVIDER) {
                         if (serviceConfig.getServiceDescription().getPattern() == ServicePattern.OPERATION) {
-                            serviceTypePatternMap.put(serviceConfig.getServiceDescription().getType(), serviceConfig.getServiceDescription().getPattern());
+                            serviceTypePatternMap.put(serviceConfig.getServiceDescription().getServiceType(), serviceConfig.getServiceDescription().getPattern());
                         }
                     }
                 }
@@ -238,7 +243,7 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
                 logger.info("Register item for service[" + serviceType.name() + "] of unit[" + dalUnitConfig.getAlias(0) + "]");
 
                 String channelUID = "";
-                final DeviceClass deviceClass = Registries.getDeviceRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
+                final DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(deviceUnitConfig.getDeviceConfig().getDeviceClassId());
                 outer:
                 for (final UnitTemplateConfig unitTemplateConfig : deviceClass.getUnitTemplateConfigList()) {
                     if (!unitTemplateConfig.getId().equals(dalUnitConfig.getUnitTemplateConfigId())) {
@@ -273,7 +278,7 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
 
                 // create and register item
                 ItemDTO itemDTO = new ItemDTO();
-                itemDTO.label = dalUnitConfig.getLabel();
+                itemDTO.label = LabelProcessor.getFirstLabel(dalUnitConfig.getLabel());
                 itemDTO.name = OpenHABItemHelper.generateItemName(dalUnitConfig, serviceType);
                 itemDTO.type = OpenHABItemHelper.getItemType(serviceType, servicePattern);
                 itemDTO = OpenHABRestCommunicator.getInstance().registerItem(itemDTO);
@@ -290,7 +295,7 @@ public class ThingDeviceUnitSynchronizer extends AbstractSynchronizer<String, Id
 
     private DeviceClass getDeviceClassByThing(final ThingDTO thingDTO) throws CouldNotPerformException, InterruptedException {
         // iterate over all device classes
-        for (final DeviceClass deviceClass : Registries.getDeviceRegistry(true).getDeviceClasses()) {
+        for (final DeviceClass deviceClass : Registries.getClassRegistry(true).getDeviceClasses()) {
             // get the most global meta config
             final MetaConfigPool metaConfigPool = new MetaConfigPool();
             metaConfigPool.register(new MetaConfigVariableProvider("DeviceClassMetaConfig", deviceClass.getMetaConfig()));
