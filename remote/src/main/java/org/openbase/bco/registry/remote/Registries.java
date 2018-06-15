@@ -399,7 +399,7 @@ public class Registries {
      */
     @Experimental
     public static Message getById(final String id, final MessageOrBuilder messageOrBuilder) throws CouldNotPerformException {
-        return (Message) invokeMethod(getMethodName("get", "ById", messageOrBuilder), messageOrBuilder);
+        return (Message) invokeMethod(getMethodName("get", "ById", messageOrBuilder), messageOrBuilder, id);
     }
 
     /**
@@ -414,7 +414,7 @@ public class Registries {
     public static <M extends Message> List<M> getMessageList(MessageOrBuilder messageOrBuilder) throws CouldNotPerformException {
         String methodName;
         if (messageOrBuilder.getDescriptorForType().getName().endsWith("Class")) {
-            methodName = getMethodName("get", "s", messageOrBuilder);
+            methodName = getMethodName("get", "es", messageOrBuilder);
         } else {
             methodName = getMethodName("get", "s", messageOrBuilder);
         }
