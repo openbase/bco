@@ -42,7 +42,6 @@
       <set>
         <option value="$PROJECT_DIR$/module/bco.app/cloud-connector/pom.xml" />
         <option value="$PROJECT_DIR$/module/bco.app/openhab/pom.xml" />
-        <option value="$PROJECT_DIR$/module/bco.app/pom.xml" />
         <option value="$PROJECT_DIR$/module/bco.authentication/core/pom.xml" />
         <option value="$PROJECT_DIR$/module/bco.authentication/lib/pom.xml" />
         <option value="$PROJECT_DIR$/module/bco.authentication/test/pom.xml" />
