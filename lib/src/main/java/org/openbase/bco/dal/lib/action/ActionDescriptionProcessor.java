@@ -50,12 +50,12 @@ import java.util.UUID;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
@@ -348,7 +348,7 @@ public class ActionDescriptionProcessor {
         } else {
             actionAuthorityBuilder.setUserId("Other");
         }
-        
+
         actionAuthorityBuilder.setAuthority(detectAuthority());
         return updateActionDescription(actionDescriptionBuilder, serviceAttribute, serviceType);
     }
@@ -437,9 +437,11 @@ public class ActionDescriptionProcessor {
         actionDescription.setDescription(actionDescription.getDescription().replace(ActionDescriptionProcessor.AUTHORITY_KEY, username));
 
         //TODO: provide label in different languages for LabelProcessor and replace according to user logged in
-        final String label = LabelProcessor.getFirstLabel(actionDescription.getLabel());
-        actionDescription.clearLabel();
-        LabelProcessor.addLabel(actionDescription.getLabelBuilder(), Locale.ENGLISH, label.replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel()));
+        if (actionDescription.hasLabel() && !LabelProcessor.isEmpty(actionDescription.getLabel())) {
+            final String label = LabelProcessor.getFirstLabel(actionDescription.getLabel());
+            actionDescription.clearLabel();
+            LabelProcessor.addLabel(actionDescription.getLabelBuilder(), Locale.ENGLISH, label.replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel()));
+        }
 
         return updateActionDescription(actionDescription, serviceAttribute, serviceType);
     }
@@ -525,9 +527,11 @@ public class ActionDescriptionProcessor {
         // TODO: also replace SERVICE_ATTRIBUTE_KEY in description with a nice serviceAttribute representation
         String serviceAttributeRepresentation = StringProcessor.formatHumanReadable(serviceAttribute.toBuilder().clearField(ProtoBufFieldProcessor.getFieldDescriptor(serviceAttribute, Service.RESPONSIBLE_ACTION_FIELD_NAME)).build().toString());
         description = description.replace(ActionDescriptionProcessor.SERVICE_ATTRIBUTE_KEY, serviceAttributeRepresentation);
-        final String label = LabelProcessor.getFirstLabel(actionDescription.getLabel());
-        actionDescription.clearLabel();
-        LabelProcessor.addLabel(actionDescription.getLabelBuilder(), Locale.ENGLISH, label.replace(ActionDescriptionProcessor.SERVICE_ATTRIBUTE_KEY, serviceAttributeRepresentation));
+        if (actionDescription.hasLabel() && !LabelProcessor.isEmpty(actionDescription.getLabel())) {
+            final String label = LabelProcessor.getFirstLabel(actionDescription.getLabel());
+            actionDescription.clearLabel();
+            LabelProcessor.addLabel(actionDescription.getLabelBuilder(), Locale.ENGLISH, label.replace(ActionDescriptionProcessor.SERVICE_ATTRIBUTE_KEY, serviceAttributeRepresentation));
+        }
         return actionDescription.setDescription(StringProcessor.removeDoubleWhiteSpaces(description));
     }
 
