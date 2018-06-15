@@ -22,7 +22,6 @@ package org.openbase.bco.dal.lib.layer.service;
  * #L%
  */
 
-import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 import com.google.protobuf.MessageOrBuilder;
@@ -30,19 +29,14 @@ import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
 import org.openbase.bco.dal.lib.layer.service.operation.OperationService;
 import org.openbase.bco.dal.lib.layer.service.provider.ProviderService;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
-import org.openbase.jul.extension.protobuf.processing.ProtoBufFieldProcessor;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
-import org.openbase.jul.schedule.WatchDog.ServiceState;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-import rst.domotic.action.ActionDescriptionType.ActionDescription;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
-import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -52,9 +46,7 @@ import java.lang.reflect.InvocationTargetException;
 import java.lang.reflect.Method;
 import java.util.Arrays;
 import java.util.Collection;
-import java.util.Locale;
 
-import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_LABEL;
 import static org.openbase.bco.dal.lib.layer.service.Service.SERVICE_STATE_PACKAGE;
 
 /**
@@ -72,7 +64,6 @@ public class Services extends ServiceStateProcessor {
      * e.g. the base name of service PowerStateService is PowerState.
      *
      * @param serviceType the service type to extract the base name.
-     *
      * @return the service base name.
      */
     public static String getServiceBaseName(ServiceType serviceType) {
@@ -96,9 +87,7 @@ public class Services extends ServiceStateProcessor {
      * Method returns the state name of the appurtenant service.
      *
      * @param serviceType the service type which is used to generate the service name.
-     *
      * @return The state type name as string.
-     *
      * @throws org.openbase.jul.exception.NotAvailableException is thrown in case the given serviceType is null.
      */
     public static String getServiceStateName(final ServiceType serviceType) throws NotAvailableException {
@@ -117,9 +106,7 @@ public class Services extends ServiceStateProcessor {
      * Method returns the state name of the appurtenant service.
      *
      * @param template The service template.
-     *
      * @return The state type name as string.
-     *
      * @throws org.openbase.jul.exception.NotAvailableException is thrown in case the given template is null.
      *                                                          //
      */
@@ -139,9 +126,7 @@ public class Services extends ServiceStateProcessor {
      * Method returns a collection of service state values.
      *
      * @param serviceType the service type to identify the service state class.
-     *
      * @return a collection of enum values of the service state.
-     *
      * @throws NotAvailableException is thrown in case the referred service state does not contain any state values.
      */
     public static Collection<? extends ProtocolMessageEnum> getServiceStateValues(final ServiceType serviceType) throws NotAvailableException {
@@ -158,7 +143,6 @@ public class Services extends ServiceStateProcessor {
      * Method generates a new service state builder related to the given {@code serviceType}.
      *
      * @param serviceType the service type of the service state.
-     *
      * @throws CouldNotPerformException is thrown if something went wrong during the generation.
      */
     public static GeneratedMessage.Builder generateServiceStateBuilder(final ServiceType serviceType) throws CouldNotPerformException {
@@ -177,9 +161,7 @@ public class Services extends ServiceStateProcessor {
      * @param <SV>        the state enum of the service.
      * @param serviceType the service type of the service state.
      * @param stateValue  a compatible state value related to the given service state.
-     *
      * @return a new service state initialized with the state value.
-     *
      * @throws CouldNotPerformException is thrown in case the given arguments are not compatible with each other or something else went wrong during the build.
      */
     public static <SC extends GeneratedMessage.Builder, SV extends ProtocolMessageEnum> SC generateServiceStateBuilder(final ServiceType serviceType, SV stateValue) throws CouldNotPerformException {
@@ -204,9 +186,7 @@ public class Services extends ServiceStateProcessor {
      * @param <SV>        the state enum of the service.
      * @param serviceType the service type of the service state.
      * @param stateValue  a compatible state value related to the given service state.
-     *
      * @return a new service state initialized with the state value.
-     *
      * @throws CouldNotPerformException is thrown in case the given arguments are not compatible with each other or something else went wrong during the build.
      */
     public static <SC extends GeneratedMessage, SV extends ProtocolMessageEnum> SC buildServiceState(final ServiceType serviceType, SV stateValue) throws CouldNotPerformException {
@@ -230,14 +210,18 @@ public class Services extends ServiceStateProcessor {
      * Method detects and returns the service state class.
      *
      * @param serviceType the given service type to resolve the class.
-     *
      * @return the service state class.
-     *
      * @throws NotAvailableException is thrown in case the class could not be detected.
      */
     public static Class<? extends GeneratedMessage> getServiceStateClass(final ServiceType serviceType) throws NotAvailableException {
-        final String serviceBaseName = getServiceBaseName(serviceType);
-        final String serviceClassName = SERVICE_STATE_PACKAGE.getName() + "." + serviceBaseName + "Type$" + serviceBaseName;
+        String serviceStateName;
+        try {
+            serviceStateName = StringProcessor.transformUpperCaseToCamelCase(Registries.getTemplateRegistry().getServiceTemplateByType(serviceType).getCommunicationType().name());
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("CommunicationType for serviceType[" + serviceType + "]");
+        }
+
+        final String serviceClassName = SERVICE_STATE_PACKAGE.getName() + "." + serviceStateName + "Type$" + serviceStateName;
         try {
             return (Class<? extends GeneratedMessage>) Class.forName(serviceClassName);
         } catch (NullPointerException | ClassNotFoundException | ClassCastException ex) {

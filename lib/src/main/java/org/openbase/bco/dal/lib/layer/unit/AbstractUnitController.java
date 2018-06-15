@@ -79,6 +79,7 @@ import rst.domotic.service.ServiceTempusTypeType.ServiceTempusType.ServiceTempus
 import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.rsb.ScopeType;
 import rst.timing.TimestampType.Timestamp;
 
@@ -380,8 +381,10 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
         // collect and register service interface methods via unit templates
         HashMap<String, ServiceDescription> serviceInterfaceMap = new HashMap<>();
         for (ServiceDescription serviceDescription : getUnitTemplate().getServiceDescriptionList()) {
-            serviceInterfaceMap.put(StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getServiceType().name())
-                    + StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getPattern().name()), serviceDescription);
+            final String serviceInterfaceName =
+                    StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getServiceType().name()) +
+                    StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getPattern().name());
+            serviceInterfaceMap.put(serviceInterfaceName, serviceDescription);
         }
 
         Class<? extends Service> serviceInterfaceClass = null;
