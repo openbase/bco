@@ -108,7 +108,6 @@ public class ActivityRegistryController extends AbstractRegistryController<Activ
      * {@inheritDoc}
      *
      * @throws CouldNotPerformException {@inheritDoc}
-     * @throws InterruptedException     {@inheritDoc}
      */
     @Override
     protected void registerPlugins() throws CouldNotPerformException {
@@ -128,7 +127,6 @@ public class ActivityRegistryController extends AbstractRegistryController<Activ
      * {@inheritDoc}
      *
      * @throws CouldNotPerformException {@inheritDoc}
-     * @throws InterruptedException     {@inheritDoc}
      */
     @Override
     public final void syncRegistryFlags() throws CouldNotPerformException {

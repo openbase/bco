@@ -216,8 +216,6 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
     /**
      * {@inheritDoc}
-     *
-     * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     protected void registerRegistries() {

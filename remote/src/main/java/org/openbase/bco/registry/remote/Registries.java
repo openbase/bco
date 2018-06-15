@@ -126,7 +126,6 @@ public class Registries {
      *
      * @return the remote registry instance.
      * @throws NotAvailableException
-     * @throws InterruptedException  is thrown if thread is externally interrupted.
      */
     public static TemplateRegistryRemote getTemplateRegistry() throws NotAvailableException {
         return CachedTemplateRegistryRemote.getRegistry();

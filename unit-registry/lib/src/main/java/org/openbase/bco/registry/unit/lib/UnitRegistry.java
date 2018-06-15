@@ -200,7 +200,7 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      *
      * @param unitConfigLabel the label to identify a set of units.
      * @throws CouldNotPerformException is thrown if the request fails.
-     * @returna list of the requested unit configs.
+     * @return a list of the requested unit configs.
      */
     default List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException {
         List<UnitConfig> unitConfigs = Collections.synchronizedList(new ArrayList<>());

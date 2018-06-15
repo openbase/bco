@@ -396,7 +396,6 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      *
      * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
-     * @throws InterruptedException {@inheritDoc}
      */
     @Override
     public Boolean containsAppClass(AppClass appClass) throws CouldNotPerformException {
