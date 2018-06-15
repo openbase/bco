@@ -10,6 +10,21 @@
       <module fileurl="file://$PROJECT_DIR$/module/bco.ontology/lib/bco.ontology.lib.iml" filepath="$PROJECT_DIR$/module/bco.ontology/lib/bco.ontology.lib.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.ontology/owl/bco.ontology.owl.iml" filepath="$PROJECT_DIR$/module/bco.ontology/owl/bco.ontology.owl.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.ontology/visual/bco.ontology.visual.iml" filepath="$PROJECT_DIR$/module/bco.ontology/visual/bco.ontology.visual.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/activity-registry/bco.registry.activity.iml" filepath="$PROJECT_DIR$/module/bco.registry/activity-registry/bco.registry.activity.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/activity-registry/core/bco.registry.activity.core.iml" filepath="$PROJECT_DIR$/module/bco.registry/activity-registry/core/bco.registry.activity.core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/activity-registry/lib/bco.registry.activity.lib.iml" filepath="$PROJECT_DIR$/module/bco.registry/activity-registry/lib/bco.registry.activity.lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/activity-registry/remote/bco.registry.activity.remote.iml" filepath="$PROJECT_DIR$/module/bco.registry/activity-registry/remote/bco.registry.activity.remote.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/activity-registry/test/bco.registry.activity.test.iml" filepath="$PROJECT_DIR$/module/bco.registry/activity-registry/test/bco.registry.activity.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/class-registry/bco.registry.class.iml" filepath="$PROJECT_DIR$/module/bco.registry/class-registry/bco.registry.class.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/class-registry/core/bco.registry.class.core.iml" filepath="$PROJECT_DIR$/module/bco.registry/class-registry/core/bco.registry.class.core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/class-registry/lib/bco.registry.class.lib.iml" filepath="$PROJECT_DIR$/module/bco.registry/class-registry/lib/bco.registry.class.lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/class-registry/remote/bco.registry.class.remote.iml" filepath="$PROJECT_DIR$/module/bco.registry/class-registry/remote/bco.registry.class.remote.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/class-registry/test/bco.registry.class.test.iml" filepath="$PROJECT_DIR$/module/bco.registry/class-registry/test/bco.registry.class.test.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/template-registry/bco.registry.template.iml" filepath="$PROJECT_DIR$/module/bco.registry/template-registry/bco.registry.template.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/template-registry/core/bco.registry.template.core.iml" filepath="$PROJECT_DIR$/module/bco.registry/template-registry/core/bco.registry.template.core.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/template-registry/lib/bco.registry.template.lib.iml" filepath="$PROJECT_DIR$/module/bco.registry/template-registry/lib/bco.registry.template.lib.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/template-registry/remote/bco.registry.template.remote.iml" filepath="$PROJECT_DIR$/module/bco.registry/template-registry/remote/bco.registry.template.remote.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/template-registry/test/bco.registry.template.test.iml" filepath="$PROJECT_DIR$/module/bco.registry/template-registry/test/bco.registry.template.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.bcozy/bcozy.iml" filepath="$PROJECT_DIR$/module/bco.bcozy/bcozy.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.dal/dal.iml" filepath="$PROJECT_DIR$/module/bco.dal/dal.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.dal/example/dal.example.iml" filepath="$PROJECT_DIR$/module/bco.dal/example/dal.example.iml" />
@@ -21,6 +36,7 @@
       <module fileurl="file://$PROJECT_DIR$/module/bco.registry.editor/editor.iml" filepath="$PROJECT_DIR$/module/bco.registry.editor/editor.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.eveson/eveson.iml" filepath="$PROJECT_DIR$/module/bco.eveson/eveson.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/jul/jul.iml" filepath="$PROJECT_DIR$/module/jul/jul.iml" />
+      <module fileurl="file://$PROJECT_DIR$/module/jul/annotation/jul.annotation.iml" filepath="$PROJECT_DIR$/module/jul/annotation/jul.annotation.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/jul/audio/jul.audio.iml" filepath="$PROJECT_DIR$/module/jul/audio/jul.audio.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/jul/exception/jul.exception.iml" filepath="$PROJECT_DIR$/module/jul/exception/jul.exception.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/jul/extension/jul.extension.iml" filepath="$PROJECT_DIR$/module/jul/extension/jul.extension.iml" />
@@ -105,48 +121,13 @@
       <module fileurl="file://$PROJECT_DIR$/module/bco.psc/skeleton-merging/psc.skeleton-merging.iml" filepath="$PROJECT_DIR$/module/bco.psc/skeleton-merging/psc.skeleton-merging.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.psc/utility/psc.util.iml" filepath="$PROJECT_DIR$/module/bco.psc/utility/psc.util.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.registry/registry.iml" filepath="$PROJECT_DIR$/module/bco.registry/registry.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/agent-registry/registry.agent.iml" filepath="$PROJECT_DIR$/module/bco.registry/agent-registry/registry.agent.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/agent-registry/core/registry.agent.core.iml" filepath="$PROJECT_DIR$/module/bco.registry/agent-registry/core/registry.agent.core.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/agent-registry/lib/registry.agent.lib.iml" filepath="$PROJECT_DIR$/module/bco.registry/agent-registry/lib/registry.agent.lib.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/agent-registry/remote/registry.agent.remote.iml" filepath="$PROJECT_DIR$/module/bco.registry/agent-registry/remote/registry.agent.remote.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/agent-registry/test/registry.agent.test.iml" filepath="$PROJECT_DIR$/module/bco.registry/agent-registry/test/registry.agent.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/app-registry/registry.app.iml" filepath="$PROJECT_DIR$/module/bco.registry/app-registry/registry.app.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/app-registry/core/registry.app.core.iml" filepath="$PROJECT_DIR$/module/bco.registry/app-registry/core/registry.app.core.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/app-registry/lib/registry.app.lib.iml" filepath="$PROJECT_DIR$/module/bco.registry/app-registry/lib/registry.app.lib.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/app-registry/remote/registry.app.remote.iml" filepath="$PROJECT_DIR$/module/bco.registry/app-registry/remote/registry.app.remote.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/app-registry/test/registry.app.test.iml" filepath="$PROJECT_DIR$/module/bco.registry/app-registry/test/registry.app.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/device-registry/registry.device.iml" filepath="$PROJECT_DIR$/module/bco.registry/device-registry/registry.device.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/device-registry/core/registry.device.core.iml" filepath="$PROJECT_DIR$/module/bco.registry/device-registry/core/registry.device.core.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/device-registry/lib/registry.device.lib.iml" filepath="$PROJECT_DIR$/module/bco.registry/device-registry/lib/registry.device.lib.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/device-registry/remote/registry.device.remote.iml" filepath="$PROJECT_DIR$/module/bco.registry/device-registry/remote/registry.device.remote.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/device-registry/test/registry.device.test.iml" filepath="$PROJECT_DIR$/module/bco.registry/device-registry/test/registry.device.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.registry/lib/registry.lib.iml" filepath="$PROJECT_DIR$/module/bco.registry/lib/registry.lib.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/location-registry/registry.location.iml" filepath="$PROJECT_DIR$/module/bco.registry/location-registry/registry.location.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/location-registry/core/registry.location.core.iml" filepath="$PROJECT_DIR$/module/bco.registry/location-registry/core/registry.location.core.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/location-registry/lib/registry.location.lib.iml" filepath="$PROJECT_DIR$/module/bco.registry/location-registry/lib/registry.location.lib.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/location-registry/remote/registry.location.remote.iml" filepath="$PROJECT_DIR$/module/bco.registry/location-registry/remote/registry.location.remote.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/location-registry/test/registry.location.test.iml" filepath="$PROJECT_DIR$/module/bco.registry/location-registry/test/registry.location.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.registry/remote/registry.remote.iml" filepath="$PROJECT_DIR$/module/bco.registry/remote/registry.remote.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/scene-registry/registry.scene.iml" filepath="$PROJECT_DIR$/module/bco.registry/scene-registry/registry.scene.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/scene-registry/core/registry.scene.core.iml" filepath="$PROJECT_DIR$/module/bco.registry/scene-registry/core/registry.scene.core.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/scene-registry/lib/registry.scene.lib.iml" filepath="$PROJECT_DIR$/module/bco.registry/scene-registry/lib/registry.scene.lib.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/scene-registry/remote/registry.scene.remote.iml" filepath="$PROJECT_DIR$/module/bco.registry/scene-registry/remote/registry.scene.remote.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/scene-registry/test/registry.scene.test.iml" filepath="$PROJECT_DIR$/module/bco.registry/scene-registry/test/registry.scene.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.registry/unit-registry/registry.unit.iml" filepath="$PROJECT_DIR$/module/bco.registry/unit-registry/registry.unit.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.registry/unit-registry/core/registry.unit.core.iml" filepath="$PROJECT_DIR$/module/bco.registry/unit-registry/core/registry.unit.core.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.registry/unit-registry/lib/registry.unit.lib.iml" filepath="$PROJECT_DIR$/module/bco.registry/unit-registry/lib/registry.unit.lib.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.registry/unit-registry/remote/registry.unit.remote.iml" filepath="$PROJECT_DIR$/module/bco.registry/unit-registry/remote/registry.unit.remote.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.registry/unit-registry/test/registry.unit.test.iml" filepath="$PROJECT_DIR$/module/bco.registry/unit-registry/test/registry.unit.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/user-registry/registry.user.iml" filepath="$PROJECT_DIR$/module/bco.registry/user-registry/registry.user.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/user-activity-registry/registry.user.activity.iml" filepath="$PROJECT_DIR$/module/bco.registry/user-activity-registry/registry.user.activity.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/user-activity-registry/core/registry.user.activity.core.iml" filepath="$PROJECT_DIR$/module/bco.registry/user-activity-registry/core/registry.user.activity.core.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/user-activity-registry/lib/registry.user.activity.lib.iml" filepath="$PROJECT_DIR$/module/bco.registry/user-activity-registry/lib/registry.user.activity.lib.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/user-activity-registry/remote/registry.user.activity.remote.iml" filepath="$PROJECT_DIR$/module/bco.registry/user-activity-registry/remote/registry.user.activity.remote.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/user-activity-registry/test/registry.user.activity.test.iml" filepath="$PROJECT_DIR$/module/bco.registry/user-activity-registry/test/registry.user.activity.test.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/user-registry/core/registry.user.core.iml" filepath="$PROJECT_DIR$/module/bco.registry/user-registry/core/registry.user.core.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/user-registry/lib/registry.user.lib.iml" filepath="$PROJECT_DIR$/module/bco.registry/user-registry/lib/registry.user.lib.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/user-registry/remote/registry.user.remote.iml" filepath="$PROJECT_DIR$/module/bco.registry/user-registry/remote/registry.user.remote.iml" />
-      <module fileurl="file://$PROJECT_DIR$/module/bco.registry/user-registry/test/registry.user.test.iml" filepath="$PROJECT_DIR$/module/bco.registry/user-registry/test/registry.user.test.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.registry/util/registry.util.iml" filepath="$PROJECT_DIR$/module/bco.registry/util/registry.util.iml" />
       <module fileurl="file://$PROJECT_DIR$/module/bco.stage/stage.iml" filepath="$PROJECT_DIR$/module/bco.stage/stage.iml" />
     </modules>
