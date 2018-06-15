@@ -392,8 +392,8 @@ public class SceneRemoteTest {
     public void testTriggerSceneWithAllDevicesOfLocationActionPerRemoteAndVerifiesUnitModification() throws Exception {
         System.out.println("testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification");
 
-        LightRemote internalLight = Units.getUnitsByLabel(MockRegistry.LIGHT_LABEL, true, Units.LIGHT).get(0);
-        PowerSwitchRemote internalPowerSwitch = Units.getUnitsByLabel(MockRegistry.POWER_SWITCH_LABEL, true, Units.POWER_SWITCH).get(0);
+        LightRemote internalLight = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.LIGHT), true, Units.LIGHT);
+        PowerSwitchRemote internalPowerSwitch = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.POWER_SWITCH), true, Units.POWER_SWITCH);
 
         internalLight.setPowerState(POWER_ON).get();
         internalPowerSwitch.setPowerState(POWER_ON).get();
@@ -448,8 +448,8 @@ public class SceneRemoteTest {
     public void testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification() throws Exception {
         System.out.println("testTriggerSceneWithLocationActionPerRemoteAndVerifiesUnitModification");
 
-        LightRemote internalLight = Units.getUnitByLabel(MockRegistry.LIGHT_LABEL, true, Units.LIGHT);
-        PowerSwitchRemote internalPowerSwitch = Units.getUnitByLabel(MockRegistry.POWER_SWITCH_LABEL, true, Units.POWER_SWITCH);
+        LightRemote internalLight = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.LIGHT), true, Units.LIGHT);
+        PowerSwitchRemote internalPowerSwitch = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.POWER_SWITCH), true, Units.POWER_SWITCH);
 
         internalLight.setPowerState(POWER_ON).get();
         internalPowerSwitch.setPowerState(POWER_ON).get();

@@ -51,7 +51,9 @@ import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.dal.ButtonDataType.ButtonData;
 import rst.domotic.unit.scene.SceneDataType.SceneData;
 
+import java.awt.*;
 import java.util.*;
+import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.*;
 import java.util.concurrent.TimeoutException;
@@ -112,7 +114,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
             synchronized (buttonObserverLock) {
                 for (final ButtonRemote button : buttonRemoteSet) {
                     try {
-                        logger.info("update: remove " + getConfig().getLabel() + " for button  " + button.getLabel());
+                        logger.info("update: remove " + LabelProcessor.getBestMatch(getConfig().getLabel()) + " for button  " + button.getLabel());
                     } catch (NotAvailableException ex) {
                         Logger.getLogger(SceneControllerImpl.class.getName()).log(Level.SEVERE, null, ex);
                     }
@@ -127,13 +129,13 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
                         buttonRemote = Units.getUnit(unitConfig, false, Units.BUTTON);
                         buttonRemoteSet.add(buttonRemote);
                     } catch (CouldNotPerformException ex) {
-                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register remote for Button[" + unitConfig.getLabel() + "]!", ex), logger);
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not register remote for Button[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "]!", ex), logger);
                     }
                 }
                 if (isActive()) {
                     for (final ButtonRemote button : buttonRemoteSet) {
                         try {
-                            logger.info("update: register " + getConfig().getLabel() + " for button  " + button.getLabel());
+                            logger.info("update: register " + LabelProcessor.getBestMatch(getConfig().getLabel()) + " for button  " + button.getLabel());
                         } catch (NotAvailableException ex) {
                             Logger.getLogger(SceneControllerImpl.class.getName()).log(Level.SEVERE, null, ex);
                         }
@@ -191,7 +193,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
 
     @Override
     public void deactivate() throws InterruptedException, CouldNotPerformException {
-        logger.debug("deactivate " + getConfig().getLabel());
+        logger.debug("deactivate " + LabelProcessor.getBestMatch(getConfig().getLabel()));
         synchronized (buttonObserverLock) {
             buttonRemoteSet.stream().forEach((button) -> {
                 button.removeDataObserver(buttonObserver);
@@ -202,7 +204,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
 
     @Override
     protected void execute() throws CouldNotPerformException, InterruptedException {
-        logger.info("Activate Scene[" + getConfig().getLabel() + "]");
+        logger.info("Activate Scene[" + LabelProcessor.getBestMatch(getConfig().getLabel()) + "]");
 
         final Map<Future<ActionFuture>, RemoteAction> executionFutureList = new HashMap<>();
 
@@ -234,9 +236,9 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
                 }
             }
             MultiException.checkAndThrow("Could not execute all actions!", exceptionStack);
-            logger.info("Deactivate Scene[" + getConfig().getLabel() + "] because all actions are successfully executed.");
+            logger.info("Deactivate Scene[" + getLabel() + "] because all actions are successfully executed.");
         } catch (CouldNotPerformException | CancellationException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Scene[" + getConfig().getLabel() + "] execution failed!", ex), logger);
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(new CouldNotPerformException("Scene[" + getLabel() + "] execution failed!", ex), logger);
         } finally {
             for (Entry<Future<ActionFuture>, RemoteAction> futureActionEntry : executionFutureList.entrySet()) {
                 if (!futureActionEntry.getKey().isDone()) {
@@ -249,7 +251,7 @@ public class SceneControllerImpl extends AbstractExecutableBaseUnitController<Sc
 
     @Override
     protected void stop() throws CouldNotPerformException, InterruptedException {
-        logger.debug("Finished scene: " + getConfig().getLabel());
+        logger.debug("Finished scene: " + getLabel());
     }
 
     @Override

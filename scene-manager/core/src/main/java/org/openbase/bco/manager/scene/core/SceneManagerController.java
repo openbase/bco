@@ -55,7 +55,7 @@ public class SceneManagerController implements SceneManager, Launchable<Void>, V
             this.factory = SceneFactoryImpl.getInstance();
             this.sceneRegistry = new ControllerRegistryImpl<>();
 
-            this.sceneRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, SceneController, UnitConfig, UnitConfig.Builder>(sceneRegistry, Registries.getUnitRegistry().getUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {
+            this.sceneRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, SceneController, UnitConfig, UnitConfig.Builder>(sceneRegistry, Registries.getUnitRegistry().getSceneUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {
 
                 @Override
                 public boolean enablingCondition(UnitConfig config) {
