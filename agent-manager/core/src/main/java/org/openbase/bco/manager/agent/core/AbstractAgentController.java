@@ -21,21 +21,18 @@ package org.openbase.bco.manager.agent.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.CompletableFuture;
-import java.util.concurrent.Future;
-
 import com.google.protobuf.Message;
-import org.openbase.bco.dal.lib.layer.service.Services;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.layer.unit.AbstractExecutableBaseUnitController;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
-import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.pattern.trigger.TriggerPool;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.calendar.DateTimeType;
@@ -51,6 +48,9 @@ import rst.domotic.state.EmphasisStateType.EmphasisState;
 import rst.domotic.unit.UnitTemplateType;
 import rst.domotic.unit.agent.AgentDataType;
 import rst.domotic.unit.agent.AgentDataType.AgentData;
+
+import java.util.concurrent.CompletableFuture;
+import java.util.concurrent.Future;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -99,7 +99,7 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
             long executionTimePeriod,
             ResourceAllocationType.ResourceAllocation.Policy policy,
             ResourceAllocationType.ResourceAllocation.Priority priority,
-            UnitRemote unitRemote,
+            UnitRemote<?> unitRemote,
             Message serviceAttribute,
             UnitTemplateType.UnitTemplate.UnitType unitType,
             ServiceTemplateType.ServiceTemplate.ServiceType serviceType,
@@ -117,14 +117,12 @@ public abstract class AbstractAgentController extends AbstractExecutableBaseUnit
         resourceAllocation.setPolicy(policy);
         resourceAllocation.setPriority(priority);
         resourceAllocation.addResourceIds(ScopeGenerator.generateStringRep(unitRemote.getScope()));
-
-        Services.updateActionDescription(actionDescriptionBuilder, serviceAttribute, serviceType);
+        ActionDescriptionProcessor.updateActionDescription(actionDescriptionBuilder, serviceAttribute, serviceType);
         ServiceStateDescriptionType.ServiceStateDescription.Builder serviceStateDescription = actionDescriptionBuilder.getServiceStateDescriptionBuilder();
         serviceStateDescription.setUnitId(unitRemote.getId().toString());
         serviceStateDescription.setUnitType(unitType);
-
         actionDescriptionBuilder.setDescription(actionDescriptionBuilder.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel()));
-        actionDescriptionBuilder.setLabel(actionDescriptionBuilder.getLabel().replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel()));
+        actionDescriptionBuilder.setLabel(LabelProcessor.replace(actionDescriptionBuilder.getLabel(), ActionDescriptionProcessor.LABEL_KEY, unitRemote.getConfig().getLabel()));
 
         ActionDescriptionProcessor.updateResourceAllocationSlot(actionDescriptionBuilder);
         ActionDescriptionProcessor.updateResourceAllocationId(actionDescriptionBuilder);

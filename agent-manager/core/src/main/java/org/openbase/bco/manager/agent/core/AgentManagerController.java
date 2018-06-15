@@ -31,7 +31,6 @@ import org.openbase.bco.manager.agent.lib.AgentManager;
 import org.openbase.bco.registry.login.SystemLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.storage.registry.ControllerRegistryImpl;
@@ -56,7 +55,7 @@ public class AgentManagerController implements AgentManager, Launchable<Void>, V
             this.factory = AgentFactoryImpl.getInstance();
             this.agentRegistry = new ControllerRegistryImpl<>();
 
-            this.agentRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder>(agentRegistry, Registries.getUnitRegistry().getAgentConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {
+            this.agentRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder>(agentRegistry, Registries.getUnitRegistry().getAgentUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {
 
                 @Override
                 public boolean enablingCondition(final UnitConfig config) {
