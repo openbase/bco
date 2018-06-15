@@ -21,7 +21,7 @@ package org.openbase.bco.manager.util.launch;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.registry.lib.BCO;
+
 import org.openbase.bco.manager.agent.binding.openhab.AgentBindingOpenHABLauncher;
 import org.openbase.bco.manager.agent.core.AgentManagerLauncher;
 import org.openbase.bco.manager.app.binding.openhab.AppBindingOpenHABLauncher;
@@ -33,15 +33,12 @@ import org.openbase.bco.manager.location.core.LocationManagerLauncher;
 import org.openbase.bco.manager.scene.binding.openhab.SceneBindingOpenHABLauncher;
 import org.openbase.bco.manager.scene.core.SceneManagerLauncher;
 import org.openbase.bco.manager.user.core.UserManagerLauncher;
-import org.openbase.bco.registry.agent.core.AgentRegistryLauncher;
-import org.openbase.bco.registry.app.core.AppRegistryLauncher;
-import org.openbase.bco.registry.device.core.DeviceRegistryLauncher;
-import org.openbase.jul.pattern.launch.AbstractLauncher;
-import org.openbase.bco.registry.location.core.LocationRegistryLauncher;
-import org.openbase.bco.registry.scene.core.SceneRegistryLauncher;
+import org.openbase.bco.registry.activity.core.ActivityRegistryLauncher;
+import org.openbase.bco.registry.clazz.core.ClassRegistryLauncher;
+import org.openbase.bco.registry.lib.BCO;
+import org.openbase.bco.registry.template.core.TemplateRegistryLauncher;
 import org.openbase.bco.registry.unit.core.UnitRegistryLauncher;
-import org.openbase.bco.registry.user.activity.core.ActivityRegistryLauncher;
-import org.openbase.bco.registry.user.core.UnitRegistryLauncher;
+import org.openbase.jul.pattern.launch.AbstractLauncher;
 
 /**
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -57,14 +54,11 @@ public class BCOBindingOpenhabLauncher {
                 /**
                  * Registry *
                  */
-                DeviceRegistryLauncher.class,
-                AppRegistryLauncher.class,
-                AgentRegistryLauncher.class,
-                UnitRegistryLauncher.class,
-                LocationRegistryLauncher.class,
-                UnitRegistryLauncher.class,
-                SceneRegistryLauncher.class,
+                TemplateRegistryLauncher.class,
+                TemplateRegistryLauncher.class,
+                ClassRegistryLauncher.class,
                 ActivityRegistryLauncher.class,
+                UnitRegistryLauncher.class,
                 /**
                  * Manager *
                  */
