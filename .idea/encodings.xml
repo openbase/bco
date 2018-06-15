@@ -2,6 +2,7 @@
 <project version="4">
   <component name="Encoding">
     <file url="file://$PROJECT_DIR$/module/bco.app" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.app/cloud-connector" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.app/openhab" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.authentication" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.authentication/core" charset="UTF-8" />
@@ -72,6 +73,11 @@
     <file url="file://$PROJECT_DIR$/module/bco.psc/utility" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.registry" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.registry.editor" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.registry/activity-registry" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.registry/activity-registry/core" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.registry/activity-registry/lib" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.registry/activity-registry/remote" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.registry/activity-registry/test" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.registry/agent-registry" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.registry/agent-registry/core" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.registry/agent-registry/lib" charset="UTF-8" />
@@ -82,6 +88,11 @@
     <file url="file://$PROJECT_DIR$/module/bco.registry/app-registry/lib" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.registry/app-registry/remote" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.registry/app-registry/test" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.registry/class-registry" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.registry/class-registry/core" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.registry/class-registry/lib" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.registry/class-registry/remote" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/bco.registry/class-registry/test" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.registry/device-registry" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.registry/device-registry/core" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.registry/device-registry/lib" charset="UTF-8" />
@@ -122,6 +133,7 @@
     <file url="file://$PROJECT_DIR$/module/bco.registry/util" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/bco.stage" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul" charset="UTF-8" />
+    <file url="file://$PROJECT_DIR$/module/jul/annotation" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/audio" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/exception" charset="UTF-8" />
     <file url="file://$PROJECT_DIR$/module/jul/extension" charset="UTF-8" />
