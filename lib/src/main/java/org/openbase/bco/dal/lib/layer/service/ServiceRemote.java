@@ -75,7 +75,6 @@ public interface ServiceRemote<S extends Service, ST extends GeneratedMessage> e
      * @return an unmodifiable collection of unit remotes limited limited to the type and service interface.
      *
      * @throws NotAvailableException          thrown if the type of an internally used unit remote is not available
-     * @throws java.lang.InterruptedException
      */
     Collection<UnitRemote> getInternalUnits(UnitType unitType) throws CouldNotPerformException;
 
