@@ -100,16 +100,11 @@
         <module name="psc.ray-extractor" />
         <module name="psc.skeleton-merging" />
         <module name="psc.util" />
-        <module name="registry.device.core" />
         <module name="registry.device.lib" />
         <module name="registry.device.remote" />
         <module name="registry.device.test" />
         <module name="registry.lib" />
         <module name="registry.remote" />
-        <module name="registry.scene.core" />
-        <module name="registry.scene.lib" />
-        <module name="registry.scene.remote" />
-        <module name="registry.scene.test" />
         <module name="registry.unit.core" />
         <module name="registry.unit.lib" />
         <module name="registry.unit.remote" />
@@ -123,6 +118,10 @@
       <module name="authentication.core" target="1.8" />
       <module name="authentication.lib" target="1.8" />
       <module name="authentication.test" target="1.8" />
+      <module name="bco.app" target="1.8" />
+      <module name="bco.app.cloud.connector" target="1.8" />
+      <module name="bco.app.openhab" target="1.8" />
+      <module name="bco.ontology" target="1.8" />
       <module name="bco.ontology.lib" target="1.8" />
       <module name="bco.ontology.owl" target="1.8" />
       <module name="bco.ontology.visual" target="1.8" />
@@ -131,16 +130,51 @@
       <module name="bco.registry.activity.lib" target="1.8" />
       <module name="bco.registry.activity.remote" target="1.8" />
       <module name="bco.registry.activity.test" target="1.8" />
+      <module name="bco.registry.agent" target="1.8" />
+      <module name="bco.registry.agent.core" target="1.8" />
+      <module name="bco.registry.agent.lib" target="1.8" />
+      <module name="bco.registry.agent.remote" target="1.8" />
+      <module name="bco.registry.agent.test" target="1.8" />
+      <module name="bco.registry.app" target="1.8" />
+      <module name="bco.registry.app.core" target="1.8" />
+      <module name="bco.registry.app.lib" target="1.8" />
+      <module name="bco.registry.app.remote" target="1.8" />
+      <module name="bco.registry.app.test" target="1.8" />
       <module name="bco.registry.class" target="1.8" />
       <module name="bco.registry.class.core" target="1.8" />
       <module name="bco.registry.class.lib" target="1.8" />
       <module name="bco.registry.class.remote" target="1.8" />
       <module name="bco.registry.class.test" target="1.8" />
+      <module name="bco.registry.device" target="1.8" />
+      <module name="bco.registry.device.core" target="1.8" />
+      <module name="bco.registry.device.lib" target="1.8" />
+      <module name="bco.registry.device.remote" target="1.8" />
+      <module name="bco.registry.device.test" target="1.8" />
+      <module name="bco.registry.location" target="1.8" />
+      <module name="bco.registry.location.core" target="1.8" />
+      <module name="bco.registry.location.lib" target="1.8" />
+      <module name="bco.registry.location.remote" target="1.8" />
+      <module name="bco.registry.location.test" target="1.8" />
+      <module name="bco.registry.scene" target="1.8" />
+      <module name="bco.registry.scene.core" target="1.8" />
+      <module name="bco.registry.scene.lib" target="1.8" />
+      <module name="bco.registry.scene.remote" target="1.8" />
+      <module name="bco.registry.scene.test" target="1.8" />
       <module name="bco.registry.template" target="1.8" />
       <module name="bco.registry.template.core" target="1.8" />
       <module name="bco.registry.template.lib" target="1.8" />
       <module name="bco.registry.template.remote" target="1.8" />
       <module name="bco.registry.template.test" target="1.8" />
+      <module name="bco.registry.user" target="1.8" />
+      <module name="bco.registry.user.activity" target="1.8" />
+      <module name="bco.registry.user.activity.core" target="1.8" />
+      <module name="bco.registry.user.activity.lib" target="1.8" />
+      <module name="bco.registry.user.activity.remote" target="1.8" />
+      <module name="bco.registry.user.activity.test" target="1.8" />
+      <module name="bco.registry.user.core" target="1.8" />
+      <module name="bco.registry.user.lib" target="1.8" />
+      <module name="bco.registry.user.remote" target="1.8" />
+      <module name="bco.registry.user.test" target="1.8" />
       <module name="bcozy" target="1.8" />
       <module name="dal" target="1.8" />
       <module name="dal.example" target="1.8" />
@@ -231,7 +265,6 @@
       <module name="manager.user.test" target="1.8" />
       <module name="manager.util" target="1.8" />
       <module name="ontology" target="1.8" />
-      <module name="ontology.lib" target="1.8" />
       <module name="org.openhab.binding.rsb" target="1.8" />
       <module name="psc" target="1.5" />
       <module name="psc.control" target="1.8" />

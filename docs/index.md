@@ -38,7 +38,7 @@ layout: default
 <dependency>
     <groupId>org.openbase.bco</groupId>
     <artifactId>dal.remote</artifactId>
-    <version>[1.4,1.5-alpha)</version>
+    <version>[1.6,1.7-SNAPSHOT)</version>
 </dependency>
 ```
 
@@ -53,7 +53,7 @@ Repository: <https://github.com/openbase/bco.dal.git>
 <dependency>
     <groupId>org.openbase.bco</groupId>
     <artifactId>registry</artifactId>
-    <version>[1.4,1.5-alpha)</version>
+    <version>[1.6,1.7-SNAPSHOT)</version>
 </dependency>
 ```
 
@@ -68,7 +68,7 @@ Repository: <https://github.com/openbase/bco.registry.git>
 <dependency>
     <groupId>org.openbase.bco</groupId>
     <artifactId>manager</artifactId>
-    <version>[1.4,1.5-alpha)</version>
+    <version>[1.6,1.7-SNAPSHOT)</version>
 </dependency>
 ```
 
@@ -146,8 +146,7 @@ bcomfy
         * Experimental (Only reachable from the university of bielefeld network)
             * <http://projects.cit-ec.uni-bielefeld.de/git/rst-experimental.proto.git>
                 * BCO Types are placed in ```proto/experimental/rst/domotic```
-         
-
+                
 # Development Installation Guide - Ubuntu / Debian
 
 ## Reqirements
@@ -164,7 +163,7 @@ bcomfy
 
 Define where to install the bco distribution via the prefix variable.
 ```
-echo 'export prefix="/usr/local/bco"' >> ~/.bashrc
+echo 'export prefix="$HOME/local/bco"' >> ~/.bashrc
 ```
 Add the ```bin``` folder to your global ```$PATH``` variable to support direct binary execution.
 ```
@@ -183,36 +182,6 @@ Make sure you have right permissions to ```$prefix```
 sudo chown -R $USER $prefix
 chmod -R 750 $prefix
 ```
-Create your working directory if it not already exists and change into these directory.
-```
-mkdir -p ~/workspace/openbase/bco
-```
-
-## Repository Download 
-
-Download the core repositories into your development workspace:
-```
-cd ~/workspace/openbase/bco
-git clone https://github.com/openbase/bco.registry.git registry
-git clone https://github.com/openbase/bco.dal.git dal
-git clone https://github.com/openbase/bco.manager.git manager
-```
-If needed you can download the following bco repos as well:
-```
-cd ~/workspace/openbase/bco
-git clone https://github.com/openbase/bco.registry.editor.git registry-editor
-git clone https://github.com/openbase/bco.bcozy.git bcozy
-git clone https://github.com/openbase/bco.bcomfy.git bcomfy
-git clone https://github.com/openbase/bco.ontology.git ontology
-git clone https://github.com/openbase/bco.ontology.lib.git ontology-lib
-git clone https://github.com/openbase/openhab-binding-rsb.git openhab-binding-rsb
-```
-Further openbase projects bco directly depends on (only needed if you plan to extend those libs):
-```
-cd ~/workspace/openbase
-git clone https://github.com/openbase/jps.git jul
-git clone https://github.com/openbase/jul.git jul
-```
 
 ## Setup Cor-Lab Debian Repository
 
@@ -230,7 +199,7 @@ This repository provides a collection of precompiled libs and tools for rsb. Thi
 [Spread](http://www.spread.org/download.html) is the recommended and most stable transport protocol for bco.
 
 * Installation via Cor-Lab Debian Repository
-    * ```sudo apt-get install spread librsbspread0.15```
+    * ```sudo apt-get install spread librsbspread0.17```
 * Official Installation Guide
     * <http://www.spread.org/download.html>
     
@@ -238,7 +207,7 @@ This repository provides a collection of precompiled libs and tools for rsb. Thi
 
 The rsb python and c++ libs can be installed via the cor-lab debian repository as well as the rsb developer tools:
 ```
-sudo apt-get install librsc0.16 librsb0.16 rsb0.16 rst0.16 librsc0.17 librsb0.17 rsb0.17 rst0.17 cl-rsb rsb-tools-cpp0.18 rsb-tools-cl0.18
+sudo apt-get install librsc0.17 librsb0.17 rsb0.17 rst0.17 cl-rsb rsb-tools-cpp0.18 rsb-tools-cl0.18
 ```
 
 ## RSB Configuration
@@ -252,7 +221,7 @@ enabled = 0
 enabled = 1
 host    = localhost
 ``` 
-If your bco runtime is hosted on another maschine than your local one and there is already a spread daemon running, just refere to this host instead linking to your local host.
+If your bco runtime is hosted on another mschine than your local one and there is already a spread daemon running, just refere to this host instead linking to your local host.
 ```
 #host    = localhost
 host    = 192.168.x.x
@@ -260,28 +229,39 @@ host    = 192.168.x.x
 
 ## BCO Installation
 
-Before the installation you should checkout the latest-stable branch for the core components. Else you install a snapshot version and you need to configure your maven settings: <https://github.com/openbase/bco.bcozy/wiki/IDE-Setup>.
+Create a new developer directory if it not already exists (e.g. ``~/workspace/openbase``) and change into these directory.
+```
+mkdir -p ~/workspace/openbase
+cd ~/workspace/openbase
+```
 
-Now, you should be able to start the installation. During this, all bco core components are installed to the previously defined ```$prefix```. To perform the installation (or update the components later on) execute the installation script in each downloaded repository.
+## Repository Download 
+
+Download the bco core repository into your development workspace:
+```
+cd ~/workspace/openbase
+git clone -b latest-stable https://github.com/openbase/bco.git
+```
+This core repository provides all binaries and libaries. If you plan to extend or bugfix any BCO core components, you can download all submodules (exclusive for bco development) via the following command:
+```
+cd ~/workspace/openbase/bco
+./workspace-prepare.sh
+```
+
+## Installation
+
+Now, you should be able to start the installation. During this, all bco core components are installed to the previously defined ```$prefix```. To perform the installation (or update the components later on) execute the installation script provided by the bco folder.
 ```
 ./install.sh
 ```
 
 ## Setup Registry DB
 
-Download the example db into you development workspace
+Download the example db.
 ```
-git clone https://github.com/csra/bco.registry.csra-db
-```
-and install the db into your local bco distribution by executing:
-```
-cd bco.registry.csra-db
-./install.sh
-```
-This installs the database in a read only directory. If you
-want to make changes you have to copy it to the var directory:
-```
-cp -R $prefix/share/bco $prefix/var/
+mkdir -p ~/.config/bco/var/registry
+cd ~/.config/bco/var/registry
+git clone https://github.com/csra/bco.registry.csra-db db
 ```
 
 ## How to start BCO
@@ -290,10 +270,8 @@ cp -R $prefix/share/bco $prefix/var/
 
 First of all we need at least one running spread daemon in your network to provide the communication between all distributed bco components. You can choose to start your own spread daemon or to connect to an already running instance.
 
-* Start a new spread daemon on your localhost maschine
-    * Make sure your local machine is properly defined as spread host in the rsb configuration 
-        * ```~/.config/rsb.conf``` should contain ```host    = localhost```
-    * just start ```spread```
+* Start a new spread daemon on your localhost machine
+    * just execute ```spread```
 * Connect to an already running instance
     * Make sure the external spread host is properly defined in the rsb configuration. 
         * Example: If there is a spread instance running on host ```spider``` your config file should provide the following entry.
@@ -306,12 +284,6 @@ You can start the bco runtime with the following command:
 ```
 bco
 ```
-
-## IDE Setup
-
-### Netbeans
-
-TODO
 
 # Code Examples
 
@@ -327,7 +299,7 @@ For running any java examples you only need to include the dal remote dependency
 <dependency>
     <groupId>org.openbase.bco</groupId>
     <artifactId>dal.remote</artifactId>
-    <version>[1.4,1.5-SNAPSHOT)</version>
+    <version>[1.6,1.7-SNAPSHOT)</version>
 </dependency>
 ```
 

@@ -30,10 +30,6 @@
 	path = module/bco.eveson
     url = https://github.com/openbase/bco.eveson.git
     branch = master
-[submodule "module/bco.ontology.lib"]
-	path = module/bco.ontology.lib
-    url = https://github.com/openbase/bco.ontology.lib.git
-    branch = master
 [submodule "module/bco.ontology"]
 	path = module/bco.ontology
     url = https://github.com/openbase/bco.ontology.git
@@ -50,3 +46,6 @@
 	path = module/bco.stage
     url = https://github.com/openbase/bco.stage.git
     branch = master
+[submodule "module/bco.app"]
+	path = module/bco.app
+	url = https://github.com/openbase/bco.app.git
