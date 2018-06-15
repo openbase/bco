@@ -34,6 +34,7 @@ import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BlindStateType.BlindState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -50,7 +51,7 @@ public class RollerShutterRemoteTest extends AbstractBCODeviceManagerTest {
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
 
-        rollerShutterRemote = Units.getUnitsByLabel(MockRegistry.ROLLER_SHUTTER_LABEL, true, RollerShutterRemote.class).get(0);
+        rollerShutterRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.ROLLER_SHUTTER), true, RollerShutterRemote.class);
     }
 
     @Before

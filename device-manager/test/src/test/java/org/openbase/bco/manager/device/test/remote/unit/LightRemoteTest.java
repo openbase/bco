@@ -37,6 +37,7 @@ import org.slf4j.LoggerFactory;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.dal.LightDataType.LightData;
 
 import static org.junit.Assert.assertEquals;
@@ -55,7 +56,7 @@ public class LightRemoteTest extends AbstractBCODeviceManagerTest {
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
 
-        lightRemote = Units.getUnitsByLabel(MockRegistry.LIGHT_LABEL, true, LightRemote.class).get(0);
+        lightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.LIGHT), true, LightRemote.class);
     }
 
     @Before

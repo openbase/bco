@@ -21,16 +21,9 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.junit.After;
-import static org.junit.Assert.assertEquals;
-import static org.junit.Assert.assertFalse;
-import static org.junit.Assert.assertTrue;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+
+import org.junit.*;
 import org.openbase.bco.dal.lib.layer.service.Services;
-import org.openbase.bco.dal.lib.layer.unit.ButtonController;
 import org.openbase.bco.dal.remote.unit.ButtonRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
@@ -41,9 +34,11 @@ import org.openbase.jul.schedule.Stopwatch;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ButtonStateType.ButtonState;
 import rst.domotic.state.ButtonStateType.ButtonState.State;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import static org.junit.Assert.*;
 
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
@@ -57,7 +52,7 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
 
-        buttonRemote = Units.getUnitsByLabel(MockRegistry.BUTTON_LABEL, true, ButtonRemote.class).get(0);
+        buttonRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.BUTTON), true, ButtonRemote.class);
     }
 
     @Before
@@ -84,7 +79,7 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
     public void testGetButtonState() throws Exception {
         System.out.println("getButtonState");
         ButtonState buttonState = TimestampProcessor.updateTimestampWithCurrentTime(ButtonState.newBuilder().setValue(ButtonState.State.PRESSED)).build();
-        ((ButtonController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId())).applyDataUpdate(buttonState, ServiceType.BUTTON_STATE_SERVICE);
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId()).applyDataUpdate(buttonState, ServiceType.BUTTON_STATE_SERVICE);
         buttonRemote.requestData().get();
         assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
     }
@@ -102,11 +97,11 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
 
         stopwatch.start();
         ButtonState buttonState = TimestampProcessor.updateTimestampWithCurrentTime(ButtonState.newBuilder().setValue(ButtonState.State.DOUBLE_PRESSED)).build();
-        ((ButtonController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId())).applyDataUpdate(buttonState, ServiceType.BUTTON_STATE_SERVICE);
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId()).applyDataUpdate(buttonState, ServiceType.BUTTON_STATE_SERVICE);
         stopwatch.stop();
         buttonRemote.requestData().get();
         assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
-        timestamp = TimestampJavaTimeTransform.transform(Services.getLatestValueOccurrence(State.PRESSED, buttonRemote.getButtonState()));
+        timestamp = TimestampJavaTimeTransform.transform(Services.getLatestValueOccurrence(State.DOUBLE_PRESSED, buttonRemote.getButtonState()));
         assertTrue("The timestamp of the button state has not been updated!", (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
 
         // just to be safe that the next test does not set the motion state in the same millisecond 
@@ -114,7 +109,7 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
 
         stopwatch.start();
         buttonState = TimestampProcessor.updateTimestampWithCurrentTime(ButtonState.newBuilder().setValue(ButtonState.State.PRESSED)).build();
-        ((ButtonController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId())).applyDataUpdate(buttonState, ServiceType.BUTTON_STATE_SERVICE);
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId()).applyDataUpdate(buttonState, ServiceType.BUTTON_STATE_SERVICE);
         stopwatch.stop();
         buttonRemote.requestData().get();
         assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
@@ -126,11 +121,11 @@ public class ButtonRemoteTest extends AbstractBCODeviceManagerTest {
 
         stopwatch.start();
         buttonState = TimestampProcessor.updateTimestampWithCurrentTime(ButtonState.newBuilder().setValue(ButtonState.State.RELEASED)).build();
-        ((ButtonController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId())).applyDataUpdate(buttonState, ServiceType.BUTTON_STATE_SERVICE);
+        deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(buttonRemote.getId()).applyDataUpdate(buttonState, ServiceType.BUTTON_STATE_SERVICE);
         stopwatch.stop();
         buttonRemote.requestData().get();
         assertEquals("The getter for the button returns the wrong value!", buttonState.getValue(), buttonRemote.getButtonState().getValue());
         timestamp = TimestampJavaTimeTransform.transform(Services.getLatestValueOccurrence(State.PRESSED, buttonRemote.getButtonState()));
-        assertFalse("The timestamp of the button state has been updated even though it sould not!", (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
+        assertFalse("The timestamp of the button state has been updated even though it should not!", (timestamp >= stopwatch.getStartTime() && timestamp <= stopwatch.getEndTime()));
     }
 }

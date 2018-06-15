@@ -34,6 +34,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Remote.ConnectionState;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
@@ -54,7 +55,6 @@ import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
@@ -84,13 +84,13 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
         System.out.println("testRegisterDeviceWhileRunning");
 
         // create a device class, save and remove the second unit template config
-        DeviceClass.Builder deviceClassBuilder = MockRegistry.getDeviceClass("TestRegisterDeviceWhileRunnint", "DeviceManagerLauncherAndCoKG123456", "DeviceManagerLauncherAndCoKG", UnitType.COLORABLE_LIGHT, UnitType.POWER_SWITCH).toBuilder();
+        DeviceClass.Builder deviceClassBuilder = MockRegistry.getDeviceClass("TestRegisterDeviceWhileRunning", "DeviceManagerLauncherAndCoKG123456", "DeviceManagerLauncherAndCoKG", UnitType.COLORABLE_LIGHT, UnitType.POWER_SWITCH).toBuilder();
         UnitTemplateConfig powerSwitchTemplateConfig = deviceClassBuilder.getUnitTemplateConfig(1);
         deviceClassBuilder.removeUnitTemplateConfig(1);
 
         // register the device class
         DeviceClass deviceClass = Registries.getClassRegistry().registerDeviceClass(deviceClassBuilder.build()).get();
-        mockRegistry.waitForDeviceClass(deviceClass);
+//        mockRegistry.waitForDeviceClass(deviceClass);
 
         // register a device with that class and retrieve the colorable light
         UnitConfig deviceUnitConfig = Registries.getUnitRegistry().registerUnitConfig(MockRegistry.getDeviceConfig(DEVICE_CONFIG_LABEL, "DeviceManagerLauncherTestSerialNumber", deviceClass)).get();
@@ -109,7 +109,7 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
 
         // update the device class
         deviceClass = Registries.getClassRegistry().updateDeviceClass(deviceClassBuilder.build()).get();
-        mockRegistry.waitForDeviceClass(deviceClass);
+//        mockRegistry.waitForDeviceClass(deviceClass);
 
         // wait up to half a second until the device is updated, is done in this way because it can fail but is a specific unit test failure
         long currentTime = System.currentTimeMillis();
@@ -136,7 +136,7 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
         deviceClassBuilder.removeUnitTemplateConfig(1);
 
         deviceClass = Registries.getClassRegistry().updateDeviceClass(deviceClassBuilder.build()).get();
-        mockRegistry.waitForDeviceClass(deviceClass);
+//        mockRegistry.waitForDeviceClass(deviceClass);
 
         // wait up to half a second until the device is updated, is done in this way because it can fail but is a specific unit test failure
         currentTime = System.currentTimeMillis();
@@ -173,7 +173,8 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
         DeviceClass.Builder deviceClassBuilder = MockRegistry.getDeviceClass(deviceClassLabel, productNumber, company, UnitType.COLORABLE_LIGHT, UnitType.COLORABLE_LIGHT, UnitType.POWER_SWITCH).toBuilder();
 
         DeviceClass deviceClass = Registries.getClassRegistry().registerDeviceClass(deviceClassBuilder.build()).get();
-        mockRegistry.waitForDeviceClass(deviceClass);
+        System.out.println("Registered deviceClass[" + LabelProcessor.getBestMatch(deviceClass.getLabel()) + "]");
+//        mockRegistry.waitForDeviceClass(deviceClass);
 
         final List<UnitConfig> registeredUnitConfigs = new ArrayList<>();
         final SyncObject synchronizer = new SyncObject("synchronizer");

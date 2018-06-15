@@ -33,6 +33,7 @@ import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.IlluminanceStateType.IlluminanceState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -49,7 +50,7 @@ public class LightSensorRemoteTest extends AbstractBCODeviceManagerTest {
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
 
-        lightSensorRemote = Units.getUnitsByLabel(MockRegistry.LIGHT_SENSOR_LABEL, true, LightSensorRemote.class).get(0);
+        lightSensorRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.LIGHT_SENSOR), true, LightSensorRemote.class);
     }
 
     @Before

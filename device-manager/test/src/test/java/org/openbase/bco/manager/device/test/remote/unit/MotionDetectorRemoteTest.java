@@ -41,6 +41,7 @@ import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.MotionStateType.MotionState;
 import rst.domotic.state.MotionStateType.MotionState.State;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -59,7 +60,7 @@ public class MotionDetectorRemoteTest extends AbstractBCODeviceManagerTest {
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
 
-        motionDetectorRemote = Units.getUnitsByLabel(MockRegistry.MOTION_DETECTOR_LABEL, true, MotionDetectorRemote.class).get(0);
+        motionDetectorRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.MOTION_DETECTOR), true, MotionDetectorRemote.class);
     }
 
     @Before

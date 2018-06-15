@@ -67,14 +67,14 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
             this.connectionFactory = ConnectionFactoryImpl.getInstance();
             this.locationRegistry = new ControllerRegistryImpl<>();
             this.connectionRegistry = new ControllerRegistryImpl<>();
-            this.locationRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, LocationController, UnitConfig, UnitConfig.Builder>(locationRegistry, Registries.getUnitRegistry().getUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), locationFactory) {
+            this.locationRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, LocationController, UnitConfig, UnitConfig.Builder>(locationRegistry, Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), locationFactory) {
 
                 @Override
                 public boolean activationCondition(final UnitConfig config) {
                     return config.getEnablingState().getValue() == State.ENABLED;
                 }
             };
-            this.connectionRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, ConnectionController, UnitConfig, UnitConfig.Builder>(connectionRegistry, Registries.getUnitRegistry().getUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), connectionFactory) {
+            this.connectionRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, ConnectionController, UnitConfig, UnitConfig.Builder>(connectionRegistry, Registries.getUnitRegistry().getConnectionUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), connectionFactory) {
 
                 @Override
                 public boolean activationCondition(final UnitConfig config) {

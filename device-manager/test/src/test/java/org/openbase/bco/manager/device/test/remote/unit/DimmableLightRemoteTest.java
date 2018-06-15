@@ -21,12 +21,8 @@ package org.openbase.bco.manager.device.test.remote.unit;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.junit.After;
-import static org.junit.Assert.assertEquals;
-import org.junit.Before;
-import org.junit.BeforeClass;
-import org.junit.Ignore;
-import org.junit.Test;
+
+import org.junit.*;
 import org.openbase.bco.dal.lib.layer.unit.DimmableLightController;
 import org.openbase.bco.dal.remote.unit.DimmableLightRemote;
 import org.openbase.bco.dal.remote.unit.Units;
@@ -35,6 +31,9 @@ import org.openbase.bco.registry.mock.MockRegistry;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.PowerStateType.PowerState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import static org.junit.Assert.assertEquals;
 
 /**
  * TODO reactivate this test.
@@ -52,7 +51,7 @@ public class DimmableLightRemoteTest extends AbstractBCODeviceManagerTest {
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
 
-        dimmableLightRemote = Units.getUnitsByLabel(MockRegistry.DIMMABLE_LIGHT_LABEL, true, DimmableLightRemote.class).get(0);
+        dimmableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.DIMMABLE_LIGHT), true, DimmableLightRemote.class);
     }
 
     @Before

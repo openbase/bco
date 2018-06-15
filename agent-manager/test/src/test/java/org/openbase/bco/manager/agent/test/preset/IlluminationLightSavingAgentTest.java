@@ -10,21 +10,18 @@ package org.openbase.bco.manager.agent.test.preset;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.ExecutionException;
-import org.junit.After;
-import static org.junit.Assert.assertEquals;
-import org.junit.Before;
+
 import org.junit.Test;
 import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
 import org.openbase.bco.dal.lib.layer.service.operation.PowerStateOperationService;
@@ -35,11 +32,9 @@ import org.openbase.bco.dal.remote.service.PowerStateServiceRemote;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
 import org.openbase.bco.dal.remote.unit.LightSensorRemote;
 import org.openbase.bco.dal.remote.unit.Units;
-import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.unit.util.UnitStateAwaiter;
 import org.openbase.bco.manager.agent.core.preset.IlluminationLightSavingAgent;
-
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
@@ -47,23 +42,19 @@ import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.slf4j.LoggerFactory;
-import rst.configuration.EntryType;
-import rst.configuration.MetaConfigType;
+import rst.configuration.MetaConfigType.MetaConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.ActivationStateType.ActivationState;
-import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.state.IlluminanceStateType.IlluminanceState;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.domotic.unit.agent.AgentClassType.AgentClass;
 import rst.domotic.unit.dal.ColorableLightDataType.ColorableLightData;
 import rst.domotic.unit.dal.LightSensorDataType.LightSensorData;
 import rst.domotic.unit.location.LocationDataType.LocationData;
-import rst.spatial.PlacementConfigType.PlacementConfig;
+
+import static org.junit.Assert.assertEquals;
 
 /**
- *
  * * @author <a href="mailto:tmichalski@techfak.uni-bielefeld.de">Timo
  * Michalski</a>
  */
@@ -73,19 +64,7 @@ public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTes
 
     public static final String ILLUMINATION_LIGHT_SAVING_AGENT_LABEL = "Illumination_Light_Saving_Agent_Unit_Test";
 
-    private static final String LOCATION_LABEL = "Stairway to Heaven";
-
-    private AgentRemote agent;
-
     public IlluminationLightSavingAgentTest() throws Exception {
-    }
-
-    @Before
-    public void setUp() {
-    }
-
-    @After
-    public void tearDown() {
     }
 
     /**
@@ -105,24 +84,15 @@ public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTes
         }
 
         System.out.println("testIlluminationLightSavingAgent");
-        Registries.waitForData();
 
-        UnitConfig config = registerAgent();
-        agent = Units.getUnit(config, true, Units.AGENT);
-        agent.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()).get();
-
-        // It can take some time until the execute() method of the agent has finished
-        // TODO: enable to acces controller instances via remoteRegistry to check and wait for the execution of the agent
-        Registries.waitForData();
-
-        LocationRemote locationRemote = Units.getUnitsByLabel(LOCATION_LABEL, true, Units.LOCATION).get(0);
-        ColorableLightRemote colorableLightRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocationLabel(UnitType.COLORABLE_LIGHT, LOCATION_LABEL).get(0), true, Units.COLORABLE_LIGHT);
-        LightSensorRemote lightSensorRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocationLabel(UnitType.LIGHT_SENSOR, LOCATION_LABEL).get(0), true, LightSensorRemote.class);
+        LocationRemote locationRemote = Units.getUnit(MockRegistry.getLocationByLabel(MockRegistry.LOCATION_STAIRWAY_TO_HEAVEN_LABEL), true, Units.LOCATION);
+        ColorableLightRemote colorableLightRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.COLORABLE_LIGHT, MockRegistry.LOCATION_STAIRWAY_TO_HEAVEN_LABEL).get(0), true, Units.COLORABLE_LIGHT);
+        LightSensorRemote lightSensorRemote = Units.getUnit(Registries.getUnitRegistry().getUnitConfigsByLocation(UnitType.LIGHT_SENSOR, MockRegistry.LOCATION_STAIRWAY_TO_HEAVEN_LABEL).get(0), true, LightSensorRemote.class);
         LightSensorController lightSensorController = (LightSensorController) deviceManagerLauncher.getLaunchable().getUnitControllerRegistry().get(lightSensorRemote.getId());
 
-        UnitStateAwaiter<LightSensorData, LightSensorRemote> lightSensorStateAwaiter = new UnitStateAwaiter(lightSensorRemote);
-        UnitStateAwaiter<ColorableLightData, ColorableLightRemote> colorableLightStateAwaiter = new UnitStateAwaiter(colorableLightRemote);
-        UnitStateAwaiter<LocationData, LocationRemote> locationStateAwaiter = new UnitStateAwaiter(locationRemote);
+        UnitStateAwaiter<LightSensorData, LightSensorRemote> lightSensorStateAwaiter = new UnitStateAwaiter<>(lightSensorRemote);
+        UnitStateAwaiter<ColorableLightData, ColorableLightRemote> colorableLightStateAwaiter = new UnitStateAwaiter<>(colorableLightRemote);
+        UnitStateAwaiter<LocationData, LocationRemote> locationStateAwaiter = new UnitStateAwaiter<>(locationRemote);
 
         // create intial values with lights on and illuminance of 5000.0
         lightSensorController.applyDataUpdate(IlluminanceState.newBuilder().setIlluminance(5000.0).build(), ServiceType.ILLUMINANCE_STATE_SERVICE);
@@ -202,33 +172,15 @@ public class IlluminationLightSavingAgentTest extends AbstractBCOAgentManagerTes
         //assertEquals("PowerState of Location[" + locationRemote.getLabel() + "] has changes without intention", PowerState.State.OFF, locationRemote.getPowerState().getValue());
     }
 
-    private UnitConfig registerAgent() throws CouldNotPerformException, InterruptedException, ExecutionException {
-        System.out.println("Register the IlluminationLightSavingAgent...");
+    @Override
+    UnitConfig getAgentConfig() throws CouldNotPerformException {
+        final UnitConfig.Builder agentConfig = generateAgentConfig(MockRegistry.ILLUMINATION_LIGHT_SAVING_AGENT_LABEL, ILLUMINATION_LIGHT_SAVING_AGENT_LABEL, MockRegistry.getLocationByLabel(MockRegistry.LOCATION_STAIRWAY_TO_HEAVEN_LABEL).getId());
 
-        EnablingState enablingState = EnablingState.newBuilder().setValue(EnablingState.State.ENABLED).build();
-        PlacementConfig.Builder placementConfig = PlacementConfig.newBuilder().setLocationId(Registries.getUnitRegistry().getUnitConfigsByLabel(LOCATION_LABEL).get(0).getId());
+        // generate meta config
+        final MetaConfig.Builder metaConfig = agentConfig.getMetaConfigBuilder();
+        metaConfig.addEntryBuilder().setKey(IlluminationLightSavingAgent.MINIMUM_NEEDED_KEY).setValue("3000");
+        metaConfig.addEntryBuilder().setKey(IlluminationLightSavingAgent.MAXIMUM_WANTED_KEY).setValue("6000");
 
-        String agentClassId = null;
-        for (AgentClass agentClass : Registries.getUnitRegistry().getAgentClasses()) {
-            if (MockRegistry.ILLUMINATION_LIGHT_SAVING_AGENT_LABEL.equals(agentClass.getLabel())) {
-                agentClassId = agentClass.getId();
-            }
-        }
-        if (agentClassId == null) {
-            throw new CouldNotPerformException("Could not find id for AgentClass with label [" + MockRegistry.ILLUMINATION_LIGHT_SAVING_AGENT_LABEL + "]");
-        }
-        System.out.println("Foung agentClassId: [" + agentClassId + "]");
-
-        EntryType.Entry.Builder minimumNeeded = EntryType.Entry.newBuilder().setKey(IlluminationLightSavingAgent.MINIMUM_NEEDED_KEY).setValue("3000");
-        EntryType.Entry.Builder maximumWanted = EntryType.Entry.newBuilder().setKey(IlluminationLightSavingAgent.MAXIMUM_WANTED_KEY).setValue("6000");
-
-        MetaConfigType.MetaConfig metaConfig = MetaConfigType.MetaConfig.newBuilder()
-                .addEntry(minimumNeeded)
-                .addEntry(maximumWanted)
-                .build();
-
-        UnitConfig.Builder agentUnitConfig = UnitConfig.newBuilder().setLabel(ILLUMINATION_LIGHT_SAVING_AGENT_LABEL).setType(UnitType.AGENT).setPlacementConfig(placementConfig).setMetaConfig(metaConfig).setEnablingState(enablingState);
-        agentUnitConfig.getAgentConfigBuilder().setAgentClassId(agentClassId);
-        return Registries.getUnitRegistry().registerAgentConfig(agentUnitConfig.build()).get();
+        return agentConfig.build();
     }
 }

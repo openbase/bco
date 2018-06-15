@@ -35,6 +35,7 @@ import org.openbase.bco.registry.mock.MockRegistry;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.AlarmStateType.AlarmState;
 import rst.domotic.state.SmokeStateType.SmokeState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -51,7 +52,7 @@ public class SmokeDetectorRemoteTest extends AbstractBCODeviceManagerTest {
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
 
-        smokeDetectorRemote = Units.getUnitsByLabel(MockRegistry.SMOKE_DETECTOR_LABEL, true, SmokeDetectorRemote.class).get(0);
+        smokeDetectorRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.SMOKE_DETECTOR), true, SmokeDetectorRemote.class);
     }
 
     @Before

@@ -34,6 +34,7 @@ import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -50,7 +51,7 @@ public class PowerConsumptionSensorRemoteTest extends AbstractBCODeviceManagerTe
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
 
-        powerConsumptionRemote = Units.getUnitsByLabel(MockRegistry.POWER_CONSUMPTION_LABEL, true, PowerConsumptionSensorRemote.class).get(0);
+        powerConsumptionRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.POWER_CONSUMPTION_SENSOR), true, PowerConsumptionSensorRemote.class);
     }
 
     @Before

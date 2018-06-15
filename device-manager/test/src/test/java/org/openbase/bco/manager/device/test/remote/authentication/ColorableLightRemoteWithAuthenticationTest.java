@@ -69,7 +69,7 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         boolean result = sessionManager.login(adminId, password);
         assertEquals(true, result);
         
-        colorableLightRemote = Units.getUnitsByLabel(MockRegistry.COLORABLE_LIGHT_LABEL, true, ColorableLightRemote.class).get(0);
+        colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, ColorableLightRemote.class);
         colorableLightRemote.setSessionManager(sessionManager);
     }
 

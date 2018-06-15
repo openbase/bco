@@ -41,6 +41,7 @@ import org.openbase.jul.schedule.Stopwatch;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.TamperStateType.TamperState;
 import rst.domotic.state.TamperStateType.TamperState.State;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 /**
  *
@@ -57,7 +58,7 @@ public class TamperDetectorRemoteTest extends AbstractBCODeviceManagerTest {
     public static void setUpClass() throws Throwable {
         AbstractBCODeviceManagerTest.setUpClass();
 
-        tamperDetectorRemote = Units.getUnitsByLabel(MockRegistry.TAMPER_DETECTOR_LABEL, true, TamperDetectorRemote.class).get(0);
+        tamperDetectorRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.TAMPER_DETECTOR), true, TamperDetectorRemote.class);
     }
 
     @Before

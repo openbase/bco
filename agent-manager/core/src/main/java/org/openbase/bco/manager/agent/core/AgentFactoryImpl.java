@@ -30,6 +30,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -84,7 +85,7 @@ public class AgentFactoryImpl implements AgentFactory {
             AgentClass agentClass = Registries.getClassRegistry(true).getAgentClassById(agentUnitConfig.getAgentConfig().getAgentClassId());
             return AbstractAgentController.class.getPackage().getName() + "."
                     + "preset."
-                    + agentClass.getLabel()
+                    + LabelProcessor.getBestMatch(agentClass.getLabel())
                     + "Agent";
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("AgentClass", ex);

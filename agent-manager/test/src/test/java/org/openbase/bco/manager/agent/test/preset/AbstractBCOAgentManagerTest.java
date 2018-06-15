@@ -21,39 +21,43 @@ package org.openbase.bco.manager.agent.test.preset;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.concurrent.TimeUnit;
+
+import org.junit.After;
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
+import org.openbase.bco.dal.remote.unit.Units;
+import org.openbase.bco.dal.remote.unit.agent.AgentRemote;
 import org.openbase.bco.dal.test.AbstractBCOTest;
 import org.openbase.bco.manager.agent.core.AgentManagerLauncher;
 import org.openbase.bco.manager.device.core.DeviceManagerLauncher;
 import org.openbase.bco.manager.location.core.LocationManagerLauncher;
+import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.openbase.jul.extension.rsb.com.RPCHelper;
-import org.openbase.jul.extension.rsb.com.RSBFactoryImpl;
-import org.openbase.jul.extension.rsb.com.RSBSharedConnectionConfig;
-import org.openbase.jul.extension.rsb.iface.RSBListener;
-import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.slf4j.LoggerFactory;
-import rsb.Event;
-import rsb.Handler;
-import rsb.Listener;
-import rst.domotic.registry.DeviceRegistryDataType.DeviceRegistryData;
+import rst.domotic.state.ActivationStateType.ActivationState;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+
+import java.util.Locale;
+import java.util.concurrent.TimeUnit;
 
 /**
- *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public class AbstractBCOAgentManagerTest extends AbstractBCOTest {
+public abstract class AbstractBCOAgentManagerTest extends AbstractBCOTest {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(AbstractBCOAgentManagerTest.class);
 
     protected static AgentManagerLauncher agentManagerLauncher;
     protected static DeviceManagerLauncher deviceManagerLauncher;
     protected static LocationManagerLauncher locationManagerLauncher;
+
+    UnitConfig agentConfig = null;
+    AgentRemote agentRemote = null;
 
     @BeforeClass
     public static void setUpClass() throws Throwable {
@@ -93,5 +97,36 @@ public class AbstractBCOAgentManagerTest extends AbstractBCOTest {
         } catch (Throwable ex) {
             throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
         }
+    }
+
+    @Before
+    public void setUp() throws Exception {
+        try {
+            // register agent
+            agentConfig = Registries.getUnitRegistry().registerUnitConfig(getAgentConfig()).get(5, TimeUnit.SECONDS);
+            // activate agent
+            agentRemote = Units.getUnit(agentConfig, true, Units.AGENT);
+            agentRemote.setActivationState(ActivationState.newBuilder().setValue(ActivationState.State.ACTIVE).build()).get();
+
+            // it can take a while until the execute method has finished
+            //TODO: implement something to wait for that
+            Registries.waitForData();
+        } catch (Exception ex) {
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+        }
+    }
+
+    @After
+    public void tearDown() {
+    }
+
+    abstract UnitConfig getAgentConfig() throws CouldNotPerformException;
+
+    UnitConfig.Builder generateAgentConfig(final String agentClassLabel, final String label, final String locationId) {
+        final UnitConfig.Builder agentUnitConfig = UnitConfig.newBuilder().setUnitType(UnitType.AGENT);
+        agentUnitConfig.getAgentConfigBuilder().setAgentClassId(MockRegistry.AGENT_LABEL_ID_MAP.get(agentClassLabel));
+        agentUnitConfig.getPlacementConfigBuilder().setLocationId(locationId);
+        LabelProcessor.addLabel(agentUnitConfig.getLabelBuilder(), Locale.ENGLISH, label);
+        return agentUnitConfig;
     }
 }

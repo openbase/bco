@@ -95,12 +95,13 @@ public class UserRemoteTest extends AbstractBCOUserManagerTest {
         ActivityState activity = ActivityState.newBuilder().setActivityId(activityId).build();
         PresenceState presenceState = PresenceState.newBuilder().setValue(State.PRESENT).build();
 
-        userRemote.setActivityState(activity).get();
+        //TODO: reactivate again or adapt when multi service support is there
+//        userRemote.setActivityState(activity).get();
         userRemote.setPresenceState(presenceState).get();
 
         userRemote.requestData().get();
 
-        assertEquals("ActivityState has not been set!", activityId, userRemote.getActivityState().getActivityId());
+//        assertEquals("ActivityState has not been set!", activityId, userRemote.getActivityState().getActivityId());
         assertEquals("UserTransitState has not been set!", presenceState.getValue(), userRemote.getPresenceState().getValue());
     }
 }

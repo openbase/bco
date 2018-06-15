@@ -222,7 +222,7 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
     @Override
     public void registerMethods(RSBLocalServer server) throws CouldNotPerformException {
         // TODO Tamino: Make sure the unit template of connections already contains all services which are defined in the connection interface.
-        // afterwarts remove this method because all services should be registered by the abstract unit class. Please make sure the mock registry registeres these services as well. 
+        // afterwards remove this method because all services should be registered by the abstract unit class. Please make sure the mock registry registers these services as well.
         RPCHelper.registerInterface(Connection.class, this, server);
         super.registerMethods(server);
     }
