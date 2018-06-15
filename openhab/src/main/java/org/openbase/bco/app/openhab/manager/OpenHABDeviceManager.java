@@ -25,21 +25,31 @@ package org.openbase.bco.app.openhab.manager;
 import org.openbase.bco.app.openhab.OpenHABRestCommunicator;
 import org.openbase.bco.app.openhab.manager.service.OpenHABServiceFactory;
 import org.openbase.bco.manager.device.core.DeviceManagerController;
+import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
+import org.openbase.jul.pattern.Observer;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
+
+import java.util.Map;
+import java.util.Map.Entry;
 
 public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable {
 
     public static final String ITEM_STATE_TOPIC_FILTER = "/smarthome/items/*/state";
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(OpenHABDeviceManager.class);
+
     private final DeviceManagerController deviceManagerController;
     private final CommandExecutor commandExecutor;
+    private final Observer<Map<String, DeviceController>> synchronizationObserver;
 
     public OpenHABDeviceManager() throws InterruptedException, InstantiationException {
         this.deviceManagerController = new DeviceManagerController(new OpenHABServiceFactory()) {
@@ -47,7 +57,7 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
             @Override
             public boolean isSupported(UnitConfig config) throws CouldNotPerformException {
                 DeviceClass deviceClass = Registries.getClassRegistry().getDeviceClassById(config.getDeviceConfig().getDeviceClassId());
-                if(!deviceClass.getBindingConfig().getBindingId().equals("OPENHAB")) {
+                if (!deviceClass.getBindingConfig().getBindingId().equals("OPENHAB")) {
                     return false;
                 }
 
@@ -55,6 +65,15 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
             }
         };
         this.commandExecutor = new CommandExecutor(deviceManagerController.getUnitControllerRegistry());
+        this.synchronizationObserver = ((observable, value) -> {
+            for (final Entry<String, String> entry : OpenHABRestCommunicator.getInstance().getStates().entrySet()) {
+                try {
+                    commandExecutor.applyStateUpdate(entry.getKey(), entry.getValue());
+                } catch (CouldNotPerformException ex) {
+                    LOGGER.warn("Skip synchronization of item[" + entry.getKey() + "] state[" + entry.getValue() + "] because unit not available");
+                }
+            }
+        });
     }
 
     @Override
@@ -64,14 +83,14 @@ public class OpenHABDeviceManager implements Launchable<Void>, VoidInitializable
 
     @Override
     public void activate() throws CouldNotPerformException, InterruptedException {
+        deviceManagerController.getDeviceControllerRegistry().addObserver(synchronizationObserver);
         deviceManagerController.activate();
         OpenHABRestCommunicator.getInstance().addSSEObserver(commandExecutor, ITEM_STATE_TOPIC_FILTER);
-
-        //TODO: perform an initial sync?, this has to wait for the synchronizer in the device manager controller
     }
 
     @Override
     public void deactivate() throws CouldNotPerformException, InterruptedException {
+        deviceManagerController.getDeviceControllerRegistry().removeObserver(synchronizationObserver);
         OpenHABRestCommunicator.getInstance().removeSSEObserver(commandExecutor, ITEM_STATE_TOPIC_FILTER);
         deviceManagerController.deactivate();
     }
