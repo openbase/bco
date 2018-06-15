@@ -74,7 +74,7 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
             Registries.waitForData();
 
             // load bound to unithost unit
-            UnitConfig lightUnitConfig = Registries.getUnitRegistry().getUnitConfigsByLabel(MockRegistry.COLORABLE_LIGHT_LABEL).get(0);
+            UnitConfig lightUnitConfig = Registries.getUnitRegistry().getUnitConfigByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT));
             Assert.assertTrue(lightUnitConfig.getBoundToUnitHost());
 
             // change unit host position
