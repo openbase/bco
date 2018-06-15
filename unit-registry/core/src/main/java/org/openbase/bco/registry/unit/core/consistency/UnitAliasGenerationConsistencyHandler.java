@@ -46,7 +46,7 @@ public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegis
 
     public static final String ALIAS_NUMBER_SEPARATOR = "-";
 
-    private final Map<UnitType, Integer> unitTypeAliasNumberMap;
+    private Map<UnitType, Integer> unitTypeAliasNumberMap;
     private final UnitRegistry unitRegistry;
     private boolean updateNeeded = true;
 
@@ -57,7 +57,13 @@ public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegis
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, Builder> entry, ProtoBufMessageMap<String, UnitConfig, Builder> entryMap, ProtoBufRegistry<String, UnitConfig, Builder> registry) throws CouldNotPerformException, EntryModification {
-        if (entry.getMessage().getAliasList().isEmpty()) {
+        final UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
+
+        if (unitConfig.getAliasList().isEmpty()) {
+            Map<UnitType, Integer> copy = null;
+            if (registry.isSandbox()) {
+                copy = new HashMap<>(unitTypeAliasNumberMap);
+            }
 
             if (updateNeeded) {
                 try {
@@ -67,8 +73,12 @@ public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegis
                 }
             }
 
-            UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
-            unitConfig.addAlias(generateAndRegisterAlias(unitConfig.getUnitType()));
+            final String alias = generateAndRegisterAlias(unitConfig.getUnitType());
+            unitConfig.addAlias(alias);
+
+            if (registry.isSandbox()) {
+                unitTypeAliasNumberMap = copy;
+            }
             throw new EntryModification(entry.setMessage(unitConfig), this);
         }
     }
@@ -119,7 +129,7 @@ public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegis
             Integer number = Integer.parseInt(numberFromGeneratedAlias);
             registerNumber(number, unitType);
         } catch (NumberFormatException ex) {
-            return;
+            // do nothing
         }
     }
 
@@ -132,6 +142,5 @@ public class UnitAliasGenerationConsistencyHandler extends AbstractProtoBufRegis
     @Override
     public void reset() {
         updateNeeded = true;
-        super.reset();
     }
 }
