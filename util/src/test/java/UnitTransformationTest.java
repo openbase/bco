@@ -27,6 +27,7 @@ import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.EnablingStateType;
@@ -102,7 +103,7 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
             verifyTransformations();
 
             for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs()) {
-                if ((unitConfig.getUnitType() == UnitType.USER || unitConfig.getUnitType() == UnitType.AUTHORIZATION_GROUP) && unitConfig.getLabel().equals("Admin")) {
+                if ((unitConfig.getUnitType() == UnitType.USER || unitConfig.getUnitType() == UnitType.AUTHORIZATION_GROUP) && LabelProcessor.getFirstLabel(unitConfig.getLabel()).equals("Admin")) {
                     // no permissions for change of admin user or group
                     continue;
                 }
