@@ -45,6 +45,7 @@ import org.openbase.jul.extension.protobuf.IdentifiableMessageMap;
 import org.openbase.jul.extension.protobuf.ProtobufListDiff;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
 import org.openbase.jul.extension.rsb.scope.ScopeTransformer;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.iface.Shutdownable;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
@@ -556,7 +557,7 @@ public class Units {
             }
             return waitForData(getUnitRemote(unitConfig), waitForData);
         } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Unit[" + unitConfig.getId() + "|" + unitConfig.getLabel() + "]", ex);
+            throw new NotAvailableException("Unit[" + unitConfig.getId() + "|" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "]", ex);
         }
     }
 
@@ -586,7 +587,7 @@ public class Units {
         try {
             return (UR) getUnit(unitConfig, waitForData);
         } catch (ClassCastException ex) {
-            throw new NotAvailableException("Unit[" + unitConfig.getId() + "]", new InvalidStateException("Requested Unit[" + unitConfig.getLabel() + "] of UnitType[" + unitConfig.getUnitType() + "] is not compatible with defined UnitRemoteClass[" + unitRemoteClass + "]!", ex));
+            throw new NotAvailableException("Unit[" + unitConfig.getId() + "]", new InvalidStateException("Requested Unit[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "] of UnitType[" + unitConfig.getUnitType() + "] is not compatible with defined UnitRemoteClass[" + unitRemoteClass + "]!", ex));
         }
     }
 

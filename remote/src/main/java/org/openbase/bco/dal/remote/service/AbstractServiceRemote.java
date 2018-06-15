@@ -22,10 +22,12 @@ package org.openbase.bco.dal.remote.service;
  * #L%
  */
 
+import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 import com.google.protobuf.ProtocolMessageEnum;
+import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.bco.dal.lib.jp.JPResourceAllocation;
 import org.openbase.bco.dal.lib.layer.service.*;
 import org.openbase.bco.dal.lib.layer.unit.MultiUnitServiceFusion;
@@ -41,7 +43,6 @@ import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
-import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
@@ -59,7 +60,6 @@ import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.ActionStateType.ActionState;
 import rst.domotic.state.EnablingStateType.EnablingState.State;
-import rst.domotic.state.PresenceStateType.PresenceState.Builder;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.timing.TimestampType.Timestamp;
@@ -71,7 +71,6 @@ import java.util.concurrent.Future;
 import java.util.concurrent.TimeUnit;
 
 import static org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor.*;
-import static org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor.FIELD_NAME_TIMESTAMP;
 
 /**
  * @param <S>  generic definition of the overall service type for this remote.
@@ -689,22 +688,19 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
      *
      * @throws CouldNotPerformException is thrown in case the fusion fails.
      */
-    protected GeneratedMessage.Builder generateFusedState(final UnitType unitType, final ProtocolMessageEnum neutralState, final ProtocolMessageEnum effectiveState) throws CouldNotPerformException {
+    protected Message.Builder generateFusedState(final UnitType unitType, final ProtocolMessageEnum neutralState, final ProtocolMessageEnum effectiveState) throws CouldNotPerformException {
 
         try {
             // generate builder
-            final Builder stateBuilder = Services.generateServiceStateBuilder(getServiceType(), neutralState);
+            final Message.Builder stateBuilder = Services.generateServiceStateBuilder(getServiceType(), neutralState);
 
             // lookup field descriptors
-            final FieldDescriptor keyDescriptor = stateBuilder.getDescriptorForType().findFieldByName(FIELD_NAME_KEY);
             final FieldDescriptor valueDescriptor = stateBuilder.getDescriptorForType().findFieldByName(FIELD_NAME_VALUE);
             final FieldDescriptor mapFieldDescriptor = stateBuilder.getDescriptorForType().findFieldByName(FIELD_NAME_LAST_VALUE_OCCURRENCE);
             final FieldDescriptor timestampDescriptor = stateBuilder.getDescriptorForType().findFieldByName(FIELD_NAME_TIMESTAMP);
 
             // verify field descriptors
-            if (keyDescriptor == null) {
-                throw new NotAvailableException("Field[" + FIELD_NAME_KEY + "] does not exist for type " + stateBuilder.getClass().getName());
-            } else if (valueDescriptor == null) {
+            if (valueDescriptor == null) {
                 throw new NotAvailableException("Field[" + FIELD_NAME_VALUE + "] does not exist for type " + stateBuilder.getClass().getName());
             } else if (mapFieldDescriptor == null) {
                 throw new NotAvailableException("Field[" + FIELD_NAME_LAST_VALUE_OCCURRENCE + "] does not exist for type " + stateBuilder.getClass().getName());
@@ -715,6 +711,8 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             // pre init timestamp
             long timestamp = 0;
 
+            FieldDescriptor mapEntryKeyDescriptor = null;
+            FieldDescriptor mapEntryValueDescriptor = null;
             for (S service : getServices(unitType)) {
 
                 // do not handle if data is not synced yet.
@@ -723,16 +721,28 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
                 }
 
                 // handle state
-                GeneratedMessage state = (GeneratedMessage) Services.invokeProviderServiceMethod(getServiceType(), service);
-                if (state.getField(valueDescriptor) == effectiveState) {
+                final Message state = (Message) Services.invokeProviderServiceMethod(getServiceType(), service);
+                if (state.getField(valueDescriptor).equals(effectiveState.getValueDescriptor())) {
                     stateBuilder.setField(valueDescriptor, state.getField(valueDescriptor));
                 }
 
                 // handle latest occurrence timestamps
                 for (int i = 0; i < state.getRepeatedFieldCount(mapFieldDescriptor); i++) {
-                    final GeneratedMessage entry = (GeneratedMessage) state.getRepeatedField(mapFieldDescriptor, i);
+                    final Message entry = (Message) state.getRepeatedField(mapFieldDescriptor, i);
+
+                    if(mapEntryKeyDescriptor == null) {
+                        mapEntryKeyDescriptor = entry.getDescriptorForType().findFieldByName(FIELD_NAME_KEY);
+                        mapEntryValueDescriptor = entry.getDescriptorForType().findFieldByName(FIELD_NAME_VALUE);
+
+                        if(mapEntryKeyDescriptor == null) {
+                            throw new NotAvailableException("Field[" + FIELD_NAME_KEY + "] does not exist for type " + entry.getClass().getName());
+                        } else if(mapEntryValueDescriptor == null) {
+                            throw new NotAvailableException("Field[" + FIELD_NAME_VALUE + "] does not exist for type " + entry.getClass().getName());
+                        }
+                    }
+
                     try {
-                        ServiceStateProcessor.updateLatestValueOccurrence((ProtocolMessageEnum) entry.getField(keyDescriptor), (Timestamp) entry.getField(valueDescriptor), stateBuilder);
+                        ServiceStateProcessor.updateLatestValueOccurrence((EnumValueDescriptor) entry.getField(mapEntryKeyDescriptor), (Timestamp) entry.getField(mapEntryValueDescriptor),stateBuilder);
                     } catch (CouldNotPerformException ex) {
                         ExceptionPrinter.printHistory("Could not update latest occurrence timestamp of Entry[" + entry + "]", ex, logger);
                     }

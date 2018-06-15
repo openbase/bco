@@ -27,7 +27,6 @@ import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
-import com.google.protobuf.ProtocolMessageEnum;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager.TicketEvaluationWrapper;
 import org.openbase.bco.authentication.lib.AuthenticatedServiceProcessor;
 import org.openbase.bco.authentication.lib.AuthorizationHelper;
@@ -533,7 +532,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                 Message requestedState = (Message) Services.invokeServiceMethod(serviceType, PROVIDER, ServiceTempus.REQUESTED, internalBuilder);
                 for (Descriptors.FieldDescriptor field : value.getDescriptorForType().getFields()) {
                     // ignore repeated fields, which should be last value occurrences
-                    if(field.isRepeated()) {
+                    if (field.isRepeated()) {
                         continue;
                     }
 
@@ -541,7 +540,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                     if (field.getName().equals(TimestampProcessor.TIMESTEMP_FIELD.toLowerCase())) {
                         continue;
                     }
-                    
+
                     if (value.hasField(field) && requestedState.hasField(field) && !(value.getField(field).equals(requestedState.getField(field)))) {
                         equalFields = false;
                         break;
@@ -575,10 +574,12 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(newState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
             newState = newState.toBuilder().setField(descriptor, newState.getField(descriptor)).build();
 
-            // copy latestValueOccurrence map from current state
-            Message oldServiceState = (Message) Services.invokeProviderServiceMethod(serviceType, this);
-            Descriptors.FieldDescriptor latestValueOccurrenceField = ProtoBufFieldProcessor.getFieldDescriptor(oldServiceState, ServiceStateProcessor.FIELD_NAME_LAST_VALUE_OCCURRENCE);
-            newState = newState.toBuilder().setField(latestValueOccurrenceField, oldServiceState.getField(latestValueOccurrenceField)).build();
+            // copy latestValueOccurrence map from current state, only if available
+            Descriptors.FieldDescriptor latestValueOccurrenceField = ProtoBufFieldProcessor.getFieldDescriptor(newState, ServiceStateProcessor.FIELD_NAME_LAST_VALUE_OCCURRENCE);
+            if (latestValueOccurrenceField != null) {
+                Message oldServiceState = (Message) Services.invokeProviderServiceMethod(serviceType, this);
+                newState = newState.toBuilder().setField(latestValueOccurrenceField, oldServiceState.getField(latestValueOccurrenceField)).build();
+            }
 
             // update the current state
             Services.invokeServiceMethod(serviceType, OPERATION, ServiceTempus.CURRENT, internalBuilder, newState);
