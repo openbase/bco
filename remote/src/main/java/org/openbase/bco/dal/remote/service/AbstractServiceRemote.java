@@ -53,7 +53,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.communicationpatterns.ResourceAllocationType.ResourceAllocation;
 import rst.domotic.action.ActionDescriptionType.ActionDescription;
-import rst.domotic.action.ActionDescriptionType.ActionDescriptionOrBuilder;
 import rst.domotic.action.ActionFutureType.ActionFuture;
 import rst.domotic.action.ActionReferenceType.ActionReference;
 import rst.domotic.service.ServiceStateDescriptionType.ServiceStateDescription;
@@ -699,7 +698,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             // lookup field descriptors
             final FieldDescriptor keyDescriptor = stateBuilder.getDescriptorForType().findFieldByName(FIELD_NAME_KEY);
             final FieldDescriptor valueDescriptor = stateBuilder.getDescriptorForType().findFieldByName(FIELD_NAME_VALUE);
-            final FieldDescriptor mapFieldDescriptor = stateBuilder.getDescriptorForType().findFieldByName(FIELD_NAME_LAST_FALUE_OCCURRENCE);
+            final FieldDescriptor mapFieldDescriptor = stateBuilder.getDescriptorForType().findFieldByName(FIELD_NAME_LAST_VALUE_OCCURRENCE);
             final FieldDescriptor timestampDescriptor = stateBuilder.getDescriptorForType().findFieldByName(FIELD_NAME_TIMESTAMP);
 
             // verify field descriptors
@@ -708,7 +707,7 @@ public abstract class AbstractServiceRemote<S extends Service, ST extends Genera
             } else if (valueDescriptor == null) {
                 throw new NotAvailableException("Field[" + FIELD_NAME_VALUE + "] does not exist for type " + stateBuilder.getClass().getName());
             } else if (mapFieldDescriptor == null) {
-                throw new NotAvailableException("Field[" + FIELD_NAME_LAST_FALUE_OCCURRENCE + "] does not exist for type " + stateBuilder.getClass().getName());
+                throw new NotAvailableException("Field[" + FIELD_NAME_LAST_VALUE_OCCURRENCE + "] does not exist for type " + stateBuilder.getClass().getName());
             } else if (timestampDescriptor == null) {
                 throw new NotAvailableException("Field[" + FIELD_NAME_TIMESTAMP + "] does not exist for type " + stateBuilder.getClass().getName());
             }

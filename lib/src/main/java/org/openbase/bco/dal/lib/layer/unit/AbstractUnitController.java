@@ -23,6 +23,7 @@ package org.openbase.bco.dal.lib.layer.unit;
  */
 
 import com.google.protobuf.Descriptors;
+import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
@@ -531,10 +532,16 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
                 Message requestedState = (Message) Services.invokeServiceMethod(serviceType, PROVIDER, ServiceTempus.REQUESTED, internalBuilder);
                 for (Descriptors.FieldDescriptor field : value.getDescriptorForType().getFields()) {
+                    // ignore repeated fields, which should be last value occurrences
+                    if(field.isRepeated()) {
+                        continue;
+                    }
+
                     // ignore timestamps
                     if (field.getName().equals(TimestampProcessor.TIMESTEMP_FIELD.toLowerCase())) {
                         continue;
                     }
+                    
                     if (value.hasField(field) && requestedState.hasField(field) && !(value.getField(field).equals(requestedState.getField(field)))) {
                         equalFields = false;
                         break;
@@ -568,9 +575,13 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             Descriptors.FieldDescriptor descriptor = ProtoBufFieldProcessor.getFieldDescriptor(newState, Service.RESPONSIBLE_ACTION_FIELD_NAME);
             newState = newState.toBuilder().setField(descriptor, newState.getField(descriptor)).build();
 
+            // copy latestValueOccurrence map from current state
+            Message oldServiceState = (Message) Services.invokeProviderServiceMethod(serviceType, this);
+            Descriptors.FieldDescriptor latestValueOccurrenceField = ProtoBufFieldProcessor.getFieldDescriptor(oldServiceState, ServiceStateProcessor.FIELD_NAME_LAST_VALUE_OCCURRENCE);
+            newState = newState.toBuilder().setField(latestValueOccurrenceField, oldServiceState.getField(latestValueOccurrenceField)).build();
+
             // update the current state
             Services.invokeServiceMethod(serviceType, OPERATION, ServiceTempus.CURRENT, internalBuilder, newState);
-
 
             // Update timestamps
             try {
@@ -578,7 +589,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
 
                 //Set timestamp if missing
                 if (!serviceStateBuilder.hasField(serviceStateBuilder.getDescriptorForType().findFieldByName("timestamp"))) {
-                    logger.warn("State[" + serviceStateBuilder.getClass().getSimpleName() + "] of " + this + " does not contain any state related timestampe!");
+                    logger.warn("State[" + serviceStateBuilder.getClass().getSimpleName() + "] of " + this + " does not contain any state related timestamp!");
                     TimestampProcessor.updateTimestampWithCurrentTime(serviceStateBuilder, logger);
                 }
 
@@ -587,7 +598,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
                     FieldDescriptor valueFieldDescriptor = serviceStateBuilder.getDescriptorForType().findFieldByName("value");
                     FieldDescriptor timestampFieldDescriptor = serviceStateBuilder.getDescriptorForType().findFieldByName("timestamp");
                     if (valueFieldDescriptor != null) {
-                        ServiceStateProcessor.updateLatestValueOccurrence((ProtocolMessageEnum) serviceStateBuilder.getField(valueFieldDescriptor), ((Timestamp) serviceStateBuilder.getField(timestampFieldDescriptor)), serviceStateBuilder);
+                        ServiceStateProcessor.updateLatestValueOccurrence((EnumValueDescriptor) serviceStateBuilder.getField(valueFieldDescriptor), ((Timestamp) serviceStateBuilder.getField(timestampFieldDescriptor)), serviceStateBuilder);
                     }
                 } catch (CouldNotPerformException ex) {
                     throw new CouldNotPerformException("Could not update state value occurrence timestamp!", ex);

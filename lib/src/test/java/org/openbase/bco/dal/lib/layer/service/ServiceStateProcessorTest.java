@@ -24,7 +24,6 @@ package org.openbase.bco.dal.lib.layer.service;
 
 import com.google.protobuf.Message;
 import org.junit.Test;
-import org.openbase.bco.dal.lib.layer.service.ServiceStateProcessor;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.extension.protobuf.MessageObservable;
@@ -74,7 +73,13 @@ public class ServiceStateProcessorTest {
         assertEquals("", 2200, ServiceStateProcessor.getLatestValueOccurrence(State.ABSENT, builder).getTime());
     }
 
-    @Test
+    /**
+     * Disabled because timestamps from latest value occurrences are not filtered because it is a repeated field
+     * Additionally timestamp filtering should not be done anymore
+     *
+     * @throws Exception
+     */
+//    @Test
     public void testForNestedType() throws Exception {
         System.out.println("testForNestedType");
 

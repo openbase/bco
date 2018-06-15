@@ -10,18 +10,19 @@ package org.openbase.bco.dal.lib.layer.service;
  * it under the terms of the GNU Lesser General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
+import com.google.protobuf.Descriptors.EnumValueDescriptor;
 import com.google.protobuf.Descriptors.FieldDescriptor;
 import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
@@ -37,7 +38,7 @@ import java.lang.reflect.InvocationTargetException;
 public class ServiceStateProcessor {
 
     public static final String INTERNAL_MAP_CLASS_NAME = "$MapFieldEntry";
-    public static final String FIELD_NAME_LAST_FALUE_OCCURRENCE = "last_value_occurrence";
+    public static final String FIELD_NAME_LAST_VALUE_OCCURRENCE = "last_value_occurrence";
     public static final String FIELD_NAME_TIMESTAMP = "timestamp";
     public static final String FIELD_NAME_KEY = "key";
     public static final String FIELD_NAME_VALUE = "value";
@@ -47,17 +48,27 @@ public class ServiceStateProcessor {
      *
      * @param enumStateValue the value to identify the state.
      * @param serviceState   the service state type which provides the occurrence list.
-     *
      * @return the timestamp of the last occurrence.
-     *
-     * @throws CouldNotPerformException is thrown if the timestamp is not available.
+     * @throws NotAvailableException is thrown if the timestamp is not available.
      */
     public static Timestamp getLatestValueOccurrence(final ProtocolMessageEnum enumStateValue, MessageOrBuilder serviceState) throws NotAvailableException {
+        return getLatestValueOccurrence(enumStateValue.getValueDescriptor(), serviceState);
+    }
+
+    /**
+     * Method returns the timestamp of the latest occurrence of the given service state value.
+     *
+     * @param enumValueDescriptor the enum value descriptor of the value to identify the state.
+     * @param serviceState        the service state type which provides the occurrence list.
+     * @return the timestamp of the last occurrence.
+     * @throws NotAvailableException is thrown if the timestamp is not available.
+     */
+    public static Timestamp getLatestValueOccurrence(final EnumValueDescriptor enumValueDescriptor, MessageOrBuilder serviceState) throws NotAvailableException {
         FieldDescriptor mapFieldDescriptor = serviceState.getDescriptorForType().findFieldByName("last_value_occurrence");
         if (mapFieldDescriptor == null) {
             throw new NotAvailableException("Field[ast_value_occurrence] does not exist for type " + serviceState.getClass().getName());
         }
-        return (Timestamp) ProtoBufFieldProcessor.getMapEntry(enumStateValue, mapFieldDescriptor, serviceState);
+        return (Timestamp) ProtoBufFieldProcessor.getMapEntry(enumValueDescriptor, mapFieldDescriptor, serviceState);
     }
 
     /**
@@ -68,7 +79,6 @@ public class ServiceStateProcessor {
      * @param enumStateValue the state value which as been occurred.
      * @param timestamp      the timestamp of the occurrence.
      * @param serviceState   the service state message which holds the service value.
-     *
      * @throws CouldNotPerformException is thrown if the update could not be performed.
      */
     public static void updateLatestValueOccurrence(final ProtocolMessageEnum enumStateValue, long timestamp, GeneratedMessage.Builder serviceState) throws CouldNotPerformException {
@@ -83,14 +93,41 @@ public class ServiceStateProcessor {
      * @param enumStateValue the state value which as been occurred.
      * @param timestamp      the timestamp of the occurrence.
      * @param serviceState   the service state message which holds the service value.
-     *
      * @throws CouldNotPerformException is thrown if the update could not be performed.
      */
     public static void updateLatestValueOccurrence(final ProtocolMessageEnum enumStateValue, final Timestamp timestamp, GeneratedMessage.Builder serviceState) throws CouldNotPerformException {
+        updateLatestValueOccurrence(enumStateValue.getValueDescriptor(), timestamp, serviceState);
+    }
+
+    /**
+     * This method updates the last occurrence of the given service state value.
+     * <p>
+     * Note: This action takes only place if the given timestamp is newer than the currently stored one.
+     *
+     * @param enumValueDescriptor the enum value descriptor of the state value which as been occurred.
+     * @param timestamp           the timestamp of the occurrence.
+     * @param serviceState        the service state message which holds the service value.
+     * @throws CouldNotPerformException is thrown if the update could not be performed.
+     */
+    public static void updateLatestValueOccurrence(final EnumValueDescriptor enumValueDescriptor, long timestamp, GeneratedMessage.Builder serviceState) throws CouldNotPerformException {
+        updateLatestValueOccurrence(enumValueDescriptor, Timestamp.newBuilder().setTime(timestamp).build(), serviceState);
+    }
+
+    /**
+     * This method updates the last occurrence of the given service state value.
+     * <p>
+     * Note: This action takes only place if the given timestamp is newer than the currently stored one.
+     *
+     * @param enumValueDescriptor the enum value descriptor of the value which as been occurred.
+     * @param timestamp           the timestamp of the occurrence.
+     * @param serviceState        the service state message which holds the service value.
+     * @throws CouldNotPerformException is thrown if the update could not be performed.
+     */
+    public static void updateLatestValueOccurrence(final EnumValueDescriptor enumValueDescriptor, final Timestamp timestamp, GeneratedMessage.Builder serviceState) throws CouldNotPerformException {
 
         // skip update if given timestamp is outdated.
         try {
-            if (timestamp.getTime() <= getLatestValueOccurrence(enumStateValue, serviceState).getTime()) {
+            if (timestamp.getTime() <= getLatestValueOccurrence(enumValueDescriptor, serviceState).getTime()) {
                 return;
             }
         } catch (NotAvailableException ex) {
@@ -115,7 +152,7 @@ public class ServiceStateProcessor {
             }
 
             entryMessageBuilder.setField(valueDescriptor, timestamp);
-            entryMessageBuilder.setField(keyDescriptor, enumStateValue.getValueDescriptor());
+            entryMessageBuilder.setField(keyDescriptor, enumValueDescriptor);
             entryMessage = entryMessageBuilder.build();
         } catch (ClassNotFoundException | NoSuchMethodException | InvocationTargetException | IllegalAccessException | ClassCastException ex) {
             throw new CouldNotPerformException("Could not build service state entry!", ex);
@@ -131,11 +168,10 @@ public class ServiceStateProcessor {
      *
      * @param entryMessage the entry containing the service state value and the timestamp.
      * @param serviceState the service state message which holds the service value.
-     *
      * @throws CouldNotPerformException is thrown if the update could not be performed.
      */
     public static void updateValueOccurrence(final Message entryMessage, GeneratedMessage.Builder serviceState) throws CouldNotPerformException {
-        final FieldDescriptor mapFieldDescriptor = serviceState.getDescriptorForType().findFieldByName(FIELD_NAME_LAST_FALUE_OCCURRENCE);
+        final FieldDescriptor mapFieldDescriptor = serviceState.getDescriptorForType().findFieldByName(FIELD_NAME_LAST_VALUE_OCCURRENCE);
         if (mapFieldDescriptor == null) {
             throw new NotAvailableException("Field[last_value_occurrence] does not exist for type " + serviceState.getClass().getName());
         }
