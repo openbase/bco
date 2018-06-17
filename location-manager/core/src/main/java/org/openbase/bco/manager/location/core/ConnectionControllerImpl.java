@@ -47,6 +47,7 @@ import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
 import org.openbase.jul.extension.rsb.com.RPCHelper;
 import org.openbase.jul.extension.rsb.iface.RSBLocalServer;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.extension.rst.processing.TimestampProcessor;
 import org.openbase.jul.pattern.Observable;
@@ -154,7 +155,6 @@ public class ConnectionControllerImpl extends AbstractBaseUnitController<Connect
 
     @Override
     public void init(final UnitConfig config) throws InitializationException, InterruptedException {
-        LOGGER.debug("Init connection [" + config.getLabel() + "]");
         try {
             Registries.waitForData();
         } catch (CouldNotPerformException ex) {

@@ -48,6 +48,7 @@ import org.openbase.jul.extension.xml.exception.XMLParsingException;
 import org.openbase.jul.extension.xml.processing.XMLProcessor;
 import org.openbase.jul.processing.VariableProvider;
 import org.slf4j.LoggerFactory;
+import rst.domotic.state.EnablingStateType.EnablingState.State;
 import rst.domotic.state.InventoryStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -102,7 +103,7 @@ public class OpenHABminConfigGenerator {
                         }
 
                         // check if installed
-                        if (deviceUnitConfig.getDeviceConfig().getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
+                        if (deviceUnitConfig.getEnablingState().getValue() != State.ENABLED) {
                             continue;
                         }
 
@@ -116,9 +117,9 @@ public class OpenHABminConfigGenerator {
                         }
 
                         updateZwaveNodeConfig(zwaveNodeConfigFile, deviceUnitConfig);
-                        logger.info("Successful updated zwave Node[" + zwaveNodeID + "] of Device[" + deviceUnitConfig.getLabel() + "].");
+                        logger.info("Successful updated zwave Node[" + zwaveNodeID + "] of Device[" + LabelProcessor.getBestMatch(deviceUnitConfig.getLabel())+ "].");
                     } catch (Exception ex) {
-                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update node entry for Device[" + deviceUnitConfig.getLabel() + "]!", ex), logger, LogLevel.ERROR);
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not update node entry for Device[" + LabelProcessor.getBestMatch(deviceUnitConfig.getLabel()) + "]!", ex), logger, LogLevel.ERROR);
                     }
                 }
 
@@ -154,7 +155,7 @@ public class OpenHABminConfigGenerator {
             Element locationElement = new Element("location");
 
             // add values
-            nameElement.appendChild(deviceDeviceConfig.getLabel() + " " + Registries.getUnitRegistry().getUnitConfigById(deviceDeviceConfig.getPlacementConfig().getLocationId()).getLabel());
+            nameElement.appendChild(LabelProcessor.getBestMatch(deviceDeviceConfig.getLabel()) + " " + Registries.getUnitRegistry().getUnitConfigById(deviceDeviceConfig.getPlacementConfig().getLocationId()).getLabel());
             locationElement.appendChild(LabelProcessor.getFirstLabel(Registries.getUnitRegistry().getUnitConfigById(deviceDeviceConfig.getPlacementConfig().getLocationId()).getLabel()));
             // as a backup use the first label as seen below
             //TODO: this should parse a value from the root location meta config that defines a default label
@@ -171,7 +172,7 @@ public class OpenHABminConfigGenerator {
             }
 
         } catch (final XMLParsingException | IOException | CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not update zwave node config of Device[" + deviceDeviceConfig.getLabel() + "]!", ex);
+            throw new CouldNotPerformException("Could not update zwave node config of Device[" + LabelProcessor.getBestMatch(deviceDeviceConfig.getLabel()) + "]!", ex);
         }
     }
 

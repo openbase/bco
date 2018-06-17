@@ -23,6 +23,7 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen.items;
  */
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -43,7 +44,7 @@ public class LocationItemEntry extends AbstractItemEntry {
             this.itemId = generateItemId(locationUnitConfig, serviceDescription.getServiceType());
             this.icon = "";
             this.commandType = getDefaultCommand(serviceDescription.getServiceType());
-            this.label = locationUnitConfig.getLabel() + "_" + StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getServiceType().name());
+            this.label = LabelProcessor.getBestMatch(locationUnitConfig.getLabel()) + "_" + StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getServiceType().name());
             if ("Number".equals(commandType)) {
                 label += " [%.0f]";
             }

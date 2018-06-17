@@ -35,6 +35,7 @@ import org.openbase.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.EnablingStateType;
+import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
@@ -58,7 +59,7 @@ public class SceneManagerController implements SceneManager, Launchable<Void>, V
 
                 @Override
                 public boolean enablingCondition(UnitConfig config) {
-                    return config.getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED);
+                    return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
                 }
             };
         } catch (CouldNotPerformException ex) {

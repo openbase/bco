@@ -59,7 +59,6 @@ public class SceneControllerFactoryImpl implements SceneControllerFactory {
             if (config == null) {
                 throw new NotAvailableException("UnitConfig");
             }
-            logger.debug("Creating scene [" + config.getId() + "]");
             scene = new SceneControllerImpl();
             scene.init(config);
         } catch (CouldNotPerformException | SecurityException | IllegalArgumentException | InterruptedException ex) {

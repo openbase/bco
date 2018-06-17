@@ -40,6 +40,7 @@ import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
 import org.openbase.jul.extension.protobuf.ClosableDataBuilder;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
 import org.openbase.jul.schedule.GlobalScheduledExecutorService;
@@ -144,14 +145,13 @@ public class LocationControllerImpl extends AbstractBaseUnitController<LocationD
     }
 
     @Override
-    public void init(final UnitConfig config) throws InitializationException, InterruptedException {
-        LOGGER.debug("Init location [" + config.getLabel() + "]");
+    public void init(final UnitConfig unitConfig) throws InitializationException, InterruptedException {
         try {
             Registries.waitForData();
         } catch (CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
-        super.init(config);
+        super.init(unitConfig);
 
         // do not notify because not activated yet
         try (ClosableDataBuilder<LocationData.Builder> dataBuilder = getDataBuilder(this, false)) {

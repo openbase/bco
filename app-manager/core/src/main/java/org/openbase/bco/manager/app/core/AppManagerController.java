@@ -35,6 +35,7 @@ import org.openbase.jul.storage.registry.EnableableEntryRegistrySynchronizer;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.EnablingStateType;
+import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
@@ -58,7 +59,7 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
 
                 @Override
                 public boolean enablingCondition(final UnitConfig config) {
-                    return config.getEnablingState().getValue() == EnablingStateType.EnablingState.State.ENABLED;
+                    return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
                 }
             };
 

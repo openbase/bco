@@ -35,6 +35,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.VerificationFailedException;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.storage.registry.ActivatableEntryRegistrySynchronizer;
@@ -42,6 +43,7 @@ import org.openbase.jul.storage.registry.ControllerRegistryImpl;
 import org.openbase.jul.storage.registry.RegistryImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.state.EnablingStateType.EnablingState.State;
 import rst.domotic.state.InventoryStateType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -110,9 +112,8 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
                             return false;
                         }
 
-                        // verify device state.
-                        if (config.getDeviceConfig().getInventoryState().getValue() != InventoryStateType.InventoryState.State.INSTALLED) {
-                            LOGGER.debug("Skip Device[" + config.getLabel() + "] because it is currently not installed!");
+                        // skip if device is not enabled
+                        if (config.getEnablingState().getValue() != State.ENABLED) {
                             return false;
                         }
                         return true;

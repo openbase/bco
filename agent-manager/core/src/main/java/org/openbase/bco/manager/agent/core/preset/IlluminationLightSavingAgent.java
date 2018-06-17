@@ -28,6 +28,7 @@ import org.openbase.bco.dal.remote.unit.location.LocationRemote;
 import org.openbase.bco.dal.remote.unit.unitgroup.UnitGroupRemote;
 import org.openbase.bco.dal.remote.action.ActionRescheduler;
 import org.openbase.bco.dal.remote.trigger.preset.IlluminanceDualBoundaryTrigger;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.trigger.TriggerPool;
 import org.openbase.bco.registry.unit.remote.CachedUnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -79,7 +80,7 @@ public class IlluminationLightSavingAgent extends AbstractResourceAllocationAgen
     public void init(final UnitConfigType.UnitConfig config) throws InitializationException, InterruptedException {
         super.init(config);
         try {
-            logger.debug("Initializing IlluminationLightSavingAgent[" + config.getLabel() + "]");
+            logger.debug("Initializing IlluminationLightSavingAgent[" + LabelProcessor.getBestMatch(config.getLabel()) + "]");
             CachedUnitRegistryRemote.waitForData();
 
             MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("IlluminationLightSavingAgent", config.getMetaConfig());

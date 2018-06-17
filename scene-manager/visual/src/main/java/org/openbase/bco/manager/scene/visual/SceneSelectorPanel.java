@@ -41,6 +41,7 @@ import org.openbase.jul.exception.InvalidStateException;
 import org.openbase.jul.exception.MultiException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.ObservableImpl;
 import org.openbase.jul.pattern.Observer;
@@ -222,16 +223,16 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
                             unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getUnitRegistry().getUnitConfigById(config.getPlacementConfig().getLocationId())));
                         }
                     } else {
-                        for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigs()) {
+                        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs()) {
                             try {
                                 // ignore non installed units
-                                if (!config.getEnablingState().getValue().equals(EnablingState.State.ENABLED)) {
+                                if (unitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                                     continue;
                                 }
-                                if (config.getPlacementConfig().getLocationId().isEmpty()) {
-                                    throw new InvalidStateException("Could not load location unit of " + config.getLabel() + " because its not configured!");
+                                if (unitConfig.getPlacementConfig().getLocationId().isEmpty()) {
+                                    throw new InvalidStateException("Could not load location unit of " + LabelProcessor.getBestMatch(unitConfig.getLabel()) + " because its not configured!");
                                 }
-                                unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getUnitRegistry().getUnitConfigById(config.getPlacementConfig().getLocationId())));
+                                unitConfigHolderList.add(new UnitConfigHolder(unitConfig, Registries.getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId())));
                             } catch (CouldNotPerformException ex) {
                                 exceptionStack = MultiException.push(this, ex, exceptionStack);
                             }
@@ -247,13 +248,13 @@ public class SceneSelectorPanel extends javax.swing.JPanel {
                             }
                         }
                     } else {
-                        for (UnitConfig config : Registries.getUnitRegistry().getUnitConfigs(selectedUnitType)) {
+                        for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs(selectedUnitType)) {
                             try {
                                 // ignore non installed units
-                                if (!config.getEnablingState().getValue().equals(EnablingState.State.ENABLED)) {
+                                if (unitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                                     continue;
                                 }
-                                unitConfigHolderList.add(new UnitConfigHolder(config, Registries.getUnitRegistry().getUnitConfigById(config.getPlacementConfig().getLocationId())));
+                                unitConfigHolderList.add(new UnitConfigHolder(unitConfig, Registries.getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId())));
                             } catch (CouldNotPerformException ex) {
                                 exceptionStack = MultiException.push(this, ex, exceptionStack);
                             }

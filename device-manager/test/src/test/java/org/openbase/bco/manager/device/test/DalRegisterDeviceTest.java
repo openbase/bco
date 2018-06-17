@@ -212,11 +212,11 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
             for (int i = 0; i < 10; ++i) {
                 String serialNumber = productNumber + "-" + i;
                 System.out.println("Register device");
-                UnitConfig deviceUnitConfig = Registries.getUnitRegistry().registerUnitConfig(MockRegistry.getDeviceConfig(deviceConfigLabel + "_" + i, serialNumber, deviceClass)).get();
-                assertTrue("DeviceUnitConfig[" + deviceUnitConfig.getLabel() + "] is not available after registration!", Registries.getUnitRegistry().containsUnitConfigById(deviceUnitConfig.getId()));
-                UnitConfig colorableLightConfig1 = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(0));
-                UnitConfig colorableLightConfig2 = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(1));
-                UnitConfig powerSwitchConfig = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(2));
+                final UnitConfig deviceUnitConfig = Registries.getUnitRegistry().registerUnitConfig(MockRegistry.getDeviceConfig(deviceConfigLabel + "_" + i, serialNumber, deviceClass)).get();
+                assertTrue("DeviceUnitConfig[" + LabelProcessor.getBestMatch(deviceUnitConfig.getLabel())+ "] is not available after registration!", Registries.getUnitRegistry().containsUnitConfigById(deviceUnitConfig.getId()));
+                final UnitConfig colorableLightConfig1 = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(0));
+                final UnitConfig colorableLightConfig2 = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(1));
+                final UnitConfig powerSwitchConfig = Registries.getUnitRegistry().getUnitConfigById(deviceUnitConfig.getDeviceConfig().getUnitId(2));
 
                 System.out.println("Add to list");
                 registeredUnitConfigs.add(deviceUnitConfig);
@@ -229,11 +229,11 @@ public class DalRegisterDeviceTest extends AbstractBCODeviceManagerTest {
                 }
 
                 System.out.println("GetColorRemote1");
-                ColorableLightRemote colorableLightRemote1 = Units.getUnit(colorableLightConfig1, true, ColorableLightRemote.class);
+                final ColorableLightRemote colorableLightRemote1 = Units.getUnit(colorableLightConfig1, true, ColorableLightRemote.class);
                 System.out.println("GetColorRemote2");
-                ColorableLightRemote colorableLightRemote2 = Units.getUnit(colorableLightConfig2, true, ColorableLightRemote.class);
+                final ColorableLightRemote colorableLightRemote2 = Units.getUnit(colorableLightConfig2, true, ColorableLightRemote.class);
                 System.out.println("GetPowerRemote");
-                PowerSwitchRemote powerSwitchRemote = Units.getUnit(powerSwitchConfig, true, PowerSwitchRemote.class);
+                final PowerSwitchRemote powerSwitchRemote = Units.getUnit(powerSwitchConfig, true, PowerSwitchRemote.class);
 
                 System.out.println("SetPowerState1");
                 colorableLightRemote1.setPowerState(PowerState.State.ON).get();

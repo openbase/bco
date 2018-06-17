@@ -26,6 +26,7 @@ import static org.openbase.bco.manager.device.binding.openhab.util.configgen.ite
 import static org.openbase.bco.manager.device.binding.openhab.util.configgen.items.AbstractItemEntry.ITEM_SUBSEGMENT_DELIMITER;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType;
@@ -46,7 +47,7 @@ public class UnitGroupItemEntry extends AbstractItemEntry {
             this.itemId = generateItemId(unitGroupUnitConfig, serviceDescription.getServiceType());
             this.icon = "";
             this.commandType = getDefaultCommand(serviceDescription.getServiceType());
-            this.label = unitGroupUnitConfig.getLabel() + "_" + StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getServiceType().name());
+            this.label = LabelProcessor.getBestMatch(unitGroupUnitConfig.getLabel()) + "_" + StringProcessor.transformUpperCaseToCamelCase(serviceDescription.getServiceType().name());
             if ("Number".equals(commandType)) {
                 label += " [%.0f]";
             }

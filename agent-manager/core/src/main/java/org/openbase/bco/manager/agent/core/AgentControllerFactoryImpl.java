@@ -36,6 +36,8 @@ import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.agent.AgentClassType.AgentClass;
 
+import java.util.Locale;
+
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
@@ -85,7 +87,7 @@ public class AgentControllerFactoryImpl implements AgentControllerFactory {
             AgentClass agentClass = Registries.getClassRegistry(true).getAgentClassById(agentUnitConfig.getAgentConfig().getAgentClassId());
             return AbstractAgentController.class.getPackage().getName() + "."
                     + "preset."
-                    + LabelProcessor.getBestMatch(agentClass.getLabel())
+                    + LabelProcessor.getLabelByLanguage(Locale.ENGLISH, agentClass.getLabel())
                     + "Agent";
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("AgentClass", ex);

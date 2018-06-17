@@ -55,7 +55,6 @@ public class AuthorizationGroupControllerFactoryImpl implements AuthorizationGro
             if (config == null) {
                 throw new NotAvailableException("unit config");
             }
-            logger.debug("Creating authorizationGroup [" + config.getLabel() + "]");
             authorizationGroup = new AuthorizationGroupControllerImpl();
             authorizationGroup.init(config);
         } catch (CouldNotPerformException | SecurityException | IllegalArgumentException | InterruptedException ex) {

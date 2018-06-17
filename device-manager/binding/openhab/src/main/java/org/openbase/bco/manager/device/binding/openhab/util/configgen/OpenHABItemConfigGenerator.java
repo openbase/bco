@@ -10,17 +10,18 @@ package org.openbase.bco.manager.device.binding.openhab.util.configgen;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import org.apache.commons.io.FileUtils;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.items.*;
 import org.openbase.bco.manager.device.binding.openhab.util.configgen.jp.JPOpenHABItemConfig;
@@ -31,6 +32,7 @@ import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.processing.StringProcessor;
 import org.slf4j.LoggerFactory;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
@@ -38,9 +40,8 @@ import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServicePattern;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.EnablingStateType;
 import rst.domotic.state.EnablingStateType.EnablingState;
-import rst.domotic.state.InventoryStateType.InventoryState;
+import rst.domotic.state.EnablingStateType.EnablingState.State;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
@@ -50,7 +51,6 @@ import java.nio.charset.Charset;
 import java.util.*;
 
 /**
- *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
 public class OpenHABItemConfigGenerator {
@@ -163,7 +163,7 @@ public class OpenHABItemConfigGenerator {
             for (UnitConfig unitGroupUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.UNIT_GROUP)) {
                 Set<ServiceType> serviceTypeSet = new HashSet<>();
                 for (ServiceDescription serviceDescription : unitGroupUnitConfig.getUnitGroupConfig().getServiceDescriptionList()) {
-                    logger.info("Generate ItemEntry for group[" + unitGroupUnitConfig.getLabel() + "] for service [" + serviceDescription.getServiceType() + "]");
+                    logger.info("Generate ItemEntry for group[" + LabelProcessor.getBestMatch(unitGroupUnitConfig.getLabel()) + "] for service [" + serviceDescription.getServiceType() + "]");
                     if (serviceDescription.getServiceType() == ServiceType.COLOR_STATE_SERVICE || serviceDescription.getServiceType() == ServiceType.POWER_STATE_SERVICE) {
                         if (!serviceTypeSet.contains(serviceDescription.getServiceType())) {
                             UnitGroupItemEntry entry = new UnitGroupItemEntry(unitGroupUnitConfig, serviceDescription);
@@ -178,9 +178,10 @@ public class OpenHABItemConfigGenerator {
             // Scenes
             for (final UnitConfig sceneUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.SCENE)) {
                 // Skip disabled scenes
-                if (sceneUnitConfig.getEnablingState().getValue() == EnablingStateType.EnablingState.State.ENABLED) {
-                    itemEntryList.add(new SceneItemEntry(sceneUnitConfig));
+                if (sceneUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
+                    continue;
                 }
+                itemEntryList.add(new SceneItemEntry(sceneUnitConfig));
             }
 
             final List<UnitConfig> deviceUnitConfigList = Registries.getUnitRegistry().getUnitConfigs(UnitType.DEVICE);
@@ -196,7 +197,7 @@ public class OpenHABItemConfigGenerator {
                 }
 
                 // ignore non installed items
-                if (deviceUnitConfig.getDeviceConfig().getInventoryState().getValue() != InventoryState.State.INSTALLED) {
+                if (deviceUnitConfig.getEnablingState().getValue() != State.ENABLED) {
                     continue;
                 }
 
@@ -209,7 +210,7 @@ public class OpenHABItemConfigGenerator {
                 for (final UnitConfig unitConfig : dalUnitConfigList) {
 
                     // ignore disabled units
-                    if (!unitConfig.getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED)) {
+                    if (unitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                         continue;
                     }
 
@@ -238,7 +239,7 @@ public class OpenHABItemConfigGenerator {
                         try {
                             itemEntryList.add(new ServiceItemEntry(deviceClass, deviceUnitConfig.getMetaConfig(), unitConfig, serviceConfig));
                         } catch (Exception ex) {
-                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not generate item for Service[" + serviceConfig.getServiceDescription().getServiceType().name() + "] of Unit[" + unitConfig.getLabel() + "]", ex), logger, LogLevel.WARN);
+                            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not generate item for Service[" + serviceConfig.getServiceDescription().getServiceType().name() + "] of Unit[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "]", ex), logger, LogLevel.WARN);
                         }
                     }
                 }
@@ -246,16 +247,18 @@ public class OpenHABItemConfigGenerator {
 
             for (final UnitConfig agentUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.AGENT)) {
                 // Skip disabled agents
-                if (agentUnitConfig.getEnablingState().getValue() == EnablingState.State.ENABLED) {
-                    itemEntryList.add(new AgentItemEntry(agentUnitConfig, null));
+                if (agentUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
+                    continue;
                 }
+                itemEntryList.add(new AgentItemEntry(agentUnitConfig, null));
             }
 
             for (UnitConfig appUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitType.APP)) {
                 // Skip disabled apps
-                if (appUnitConfig.getEnablingState().getValue() == EnablingState.State.ENABLED) {
-                    itemEntryList.add(new AppItemEntry(appUnitConfig));
+                if (appUnitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
+                    continue;
                 }
+                itemEntryList.add(new AppItemEntry(appUnitConfig));
             }
 
             // sort items by command type and label

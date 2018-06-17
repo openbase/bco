@@ -36,6 +36,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rsb.scope.ScopeGenerator;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.pattern.Observable;
 import org.openbase.jul.pattern.Observer;
@@ -158,7 +159,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
         }
 
         try {
-            logger.info("ApplyConfigUpdate for PowerStateSynchroniserAgent[" + config.getLabel() + "]");
+            logger.info("ApplyConfigUpdate for PowerStateSynchroniserAgent[" + LabelProcessor.getBestMatch(config.getLabel()) + "]");
             Registries.waitForData();
 
             MetaConfigVariableProvider configVariableProvider = new MetaConfigVariableProvider("PowerStateSynchroniserAgent", config.getMetaConfig());
@@ -205,7 +206,7 @@ public class PowerStateSynchroniserAgent extends AbstractAgentController {
                 targetBehaviour = DEFAULT_TARGET_BEHAVIOR;
             }
         } catch (CouldNotPerformException ex) {
-            throw new CouldNotPerformException("Could not apply config update for PowerStateSynchroniser[" + config.getLabel() + "]", ex);
+            throw new CouldNotPerformException("Could not apply config update for PowerStateSynchroniser[" + LabelProcessor.getBestMatch(config.getLabel()) + "]", ex);
         }
 
 

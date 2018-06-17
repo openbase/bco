@@ -31,6 +31,7 @@ import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.state.EnablingStateType;
+import rst.domotic.state.EnablingStateType.EnablingState;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.geometry.PoseType;
@@ -108,13 +109,14 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
                     continue;
                 }
 
-//                System.out.println("setup transformation of " + unitConfig.getLabel() + ", " + unitConfig.getUnitType().name());
+//                System.out.println("setup transformation of " + LabelProcessor.getBestMatch(unitConfig.getLabel())+ ", " + unitConfig.getUnitType().name());
                 final UnitConfig.Builder unitConfigBuilder = unitConfig.toBuilder();
                 unitConfigBuilder.getPlacementConfigBuilder().setPosition(pose);
                 unitConfig = Registries.getUnitRegistry().updateUnitConfig(unitConfigBuilder.build()).get();
 //                System.out.println("request modified transformation of " + unitConfig.getLabel());
 
-                if (!unitConfig.getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED)) {
+                // skip disabled units
+                if (unitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
 //                    System.out.println("filter disabled unit " + unitConfig.getLabel());
                     continue;
                 }
@@ -124,11 +126,11 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
 //                    System.out.println("waiting for transformation of " + unitConfig.getLabel());
                     Units.getRootToUnitTransformationFuture(unitConfig).get(5000, TimeUnit.MILLISECONDS);
                 } catch (TimeoutException ex) {
-                    LOGGER.error("transformation of " + unitConfig.getLabel() + " NOT AVAILABLE!");
+                    LOGGER.error("transformation of " + LabelProcessor.getBestMatch(unitConfig.getLabel())+ " NOT AVAILABLE!");
                     Units.getRootToUnitTransformationFuture(unitConfig).get();
                 }
 
-//                System.out.println("transformation of" + unitConfig.getLabel() + " is available.");
+//                System.out.println("transformation of" + LabelProcessor.getBestMatch(unitConfig.getLabel())+ " is available.");
             }
             // System.out.println("finished.");
         } catch (Exception ex) {
@@ -139,8 +141,7 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
     private void verifyTransformations() throws NotAvailableException, InterruptedException, CouldNotPerformException, ExecutionException {
         for (final UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs()) {
 
-            if (!unitConfig.getEnablingState().getValue().equals(EnablingStateType.EnablingState.State.ENABLED)) {
-                // System.out.println("filter disabled unit " + unitConfig.getLabel());
+            if (unitConfig.getEnablingState().getValue() != EnablingState.State.ENABLED) {
                 continue;
             }
 
@@ -149,7 +150,7 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
                     || !unitConfig.getPlacementConfig().hasTransformationFrameId()
                     || unitConfig.getPlacementConfig().getTransformationFrameId().isEmpty()) {
 
-                // System.out.println("filter unit " + unitConfig.getLabel() + " because no transformation available.");
+                // System.out.println("filter unit " + LabelProcessor.getBestMatch(unitConfig.getLabel())+ " because no transformation available.");
                 continue;
             }
 
@@ -159,7 +160,7 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
                 // System.out.println("waiting for transformation of " + unitConfig.getLabel());
                 Units.getRootToUnitTransformationFuture(unitConfig).get(5000, TimeUnit.MILLISECONDS);
             } catch (TimeoutException ex) {
-                LOGGER.error("transformation of " + unitConfig.getLabel() + " NOT AVAILABLE!");
+                LOGGER.error("transformation of " + LabelProcessor.getBestMatch(unitConfig.getLabel())+ " NOT AVAILABLE!");
                 Units.getRootToUnitTransformationFuture(unitConfig).get();
             }
         }
