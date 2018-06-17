@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="CompilerConfiguration">
+    <annotationProcessing>
+      <profile name="Maven default annotation processors profile" enabled="true">
+        <sourceOutputDir name="target/generated-sources/annotations" />
+        <sourceTestOutputDir name="target/generated-test-sources/test-annotations" />
+        <outputRelativeToContentRoot value="true" />
+        <module name="bco.manager.agent.binding.openhab" />
+        <module name="bco.manager.agent.core" />
+        <module name="bco.manager.agent.lib" />
+        <module name="bco.manager.agent.remote" />
+        <module name="bco.manager.agent.test" />
+        <module name="bco.manager.app.binding.openhab" />
+        <module name="bco.manager.app.core" />
+        <module name="bco.manager.app.lib" />
+        <module name="bco.manager.app.remote" />
+        <module name="bco.manager.app.test" />
+        <module name="bco.manager.device.binding.openhab" />
+        <module name="bco.manager.device.core" />
+        <module name="bco.manager.device.lib" />
+        <module name="bco.manager.device.remote" />
+        <module name="bco.manager.device.test" />
+        <module name="bco.manager.location.binding.openhab" />
+        <module name="bco.manager.location.core" />
+        <module name="bco.manager.location.lib" />
+        <module name="bco.manager.location.remote" />
+        <module name="bco.manager.location.test" />
+        <module name="bco.manager.scene.binding.openhab" />
+        <module name="bco.manager.scene.core" />
+        <module name="bco.manager.scene.lib" />
+        <module name="bco.manager.scene.remote" />
+        <module name="bco.manager.scene.test" />
+        <module name="bco.manager.scene.visual" />
+        <module name="bco.manager.user.core" />
+        <module name="bco.manager.user.lib" />
+        <module name="bco.manager.user.remote" />
+        <module name="bco.manager.user.test" />
+        <module name="bco.manager.util" />
+      </profile>
+    </annotationProcessing>
+    <bytecodeTargetLevel>
+      <module name="bco.manager" target="1.8" />
+      <module name="bco.manager.agent" target="1.8" />
+      <module name="bco.manager.agent.binding" target="1.8" />
+      <module name="bco.manager.agent.binding.openhab" target="1.8" />
+      <module name="bco.manager.agent.core" target="1.8" />
+      <module name="bco.manager.agent.lib" target="1.8" />
+      <module name="bco.manager.agent.remote" target="1.8" />
+      <module name="bco.manager.agent.test" target="1.8" />
+      <module name="bco.manager.app" target="1.8" />
+      <module name="bco.manager.app.binding" target="1.8" />
+      <module name="bco.manager.app.binding.openhab" target="1.8" />
+      <module name="bco.manager.app.core" target="1.8" />
+      <module name="bco.manager.app.lib" target="1.8" />
+      <module name="bco.manager.app.remote" target="1.8" />
+      <module name="bco.manager.app.test" target="1.8" />
+      <module name="bco.manager.device" target="1.8" />
+      <module name="bco.manager.device.binding" target="1.8" />
+      <module name="bco.manager.device.binding.openhab" target="1.8" />
+      <module name="bco.manager.device.core" target="1.8" />
+      <module name="bco.manager.device.lib" target="1.8" />
+      <module name="bco.manager.device.remote" target="1.8" />
+      <module name="bco.manager.device.test" target="1.8" />
+      <module name="bco.manager.location" target="1.8" />
+      <module name="bco.manager.location.binding" target="1.8" />
+      <module name="bco.manager.location.binding.openhab" target="1.8" />
+      <module name="bco.manager.location.core" target="1.8" />
+      <module name="bco.manager.location.lib" target="1.8" />
+      <module name="bco.manager.location.remote" target="1.8" />
+      <module name="bco.manager.location.test" target="1.8" />
+      <module name="bco.manager.scene" target="1.8" />
+      <module name="bco.manager.scene.binding" target="1.8" />
+      <module name="bco.manager.scene.binding.openhab" target="1.8" />
+      <module name="bco.manager.scene.core" target="1.8" />
+      <module name="bco.manager.scene.lib" target="1.8" />
+      <module name="bco.manager.scene.remote" target="1.8" />
+      <module name="bco.manager.scene.test" target="1.8" />
+      <module name="bco.manager.scene.visual" target="1.8" />
+      <module name="bco.manager.user" target="1.8" />
+      <module name="bco.manager.user.core" target="1.8" />
+      <module name="bco.manager.user.lib" target="1.8" />
+      <module name="bco.manager.user.remote" target="1.8" />
+      <module name="bco.manager.user.test" target="1.8" />
+      <module name="bco.manager.util" target="1.8" />
+    </bytecodeTargetLevel>
+  </component>
+</project>

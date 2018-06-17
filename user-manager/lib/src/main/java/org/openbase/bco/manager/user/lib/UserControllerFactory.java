@@ -1,8 +1,8 @@
-package org.openbase.bco.manager.app.lib;
+package org.openbase.bco.manager.user.lib;
 
 /*
  * #%L
- * BCO Manager App Library
+ * BCO Manager User Library
  * %%
  * Copyright (C) 2015 - 2018 openbase.org
  * %%
@@ -22,16 +22,18 @@ package org.openbase.bco.manager.app.lib;
  * #L%
  */
 
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.Factory;
+import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface AppFactory extends Factory<AppController, UnitConfig> {
+public interface UserControllerFactory extends Factory<UserController, UnitConfigType.UnitConfig> {
 
     @Override
-    public AppController newInstance(final UnitConfig config) throws org.openbase.jul.exception.InstantiationException;
+    public UserController newInstance(final UnitConfig config) throws InstantiationException;
 
 }

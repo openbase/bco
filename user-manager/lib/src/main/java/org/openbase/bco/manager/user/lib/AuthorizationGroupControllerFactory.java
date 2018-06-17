@@ -1,6 +1,6 @@
 package org.openbase.bco.manager.user.lib;
 
-/*
+/*-
  * #%L
  * BCO Manager User Library
  * %%
@@ -22,18 +22,11 @@ package org.openbase.bco.manager.user.lib;
  * #L%
  */
 
-import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.Factory;
-import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import org.openbase.jul.exception.InstantiationException;
 
-/**
- *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
- */
-public interface UserFactory extends Factory<UserController, UnitConfigType.UnitConfig> {
+public interface AuthorizationGroupControllerFactory extends Factory<AuthorizationGroupController, UnitConfig> {
 
-    @Override
-    public UserController newInstance(final UnitConfig config) throws InstantiationException;
-
+    AuthorizationGroupController newInstance(final UnitConfig config) throws InstantiationException;
 }

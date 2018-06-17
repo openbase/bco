@@ -1,8 +1,8 @@
-package org.openbase.bco.manager.agent.lib;
+package org.openbase.bco.manager.device.core;
 
 /*
  * #%L
- * BCO Manager Agent Library
+ * BCO Manager Device Core
  * %%
  * Copyright (C) 2015 - 2018 openbase.org
  * %%
@@ -15,24 +15,33 @@ package org.openbase.bco.manager.agent.lib;
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- *  
+ * 
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
+import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.jul.exception.InstantiationException;
-import org.openbase.jul.pattern.Factory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface AgentFactory extends Factory<AgentController, UnitConfig> {
+public class DeviceControllerFactoryImpl extends AbstractDeviceControllerFactory {
+
+    private final ServiceFactory serviceFactory;
+
+    public DeviceControllerFactoryImpl(final ServiceFactory serviceFactory) throws InstantiationException {
+        assert serviceFactory != null;
+        this.serviceFactory = serviceFactory;
+    }
 
     @Override
-    public AgentController newInstance(final UnitConfig config) throws InstantiationException;
-
+    public DeviceController newInstance(final UnitConfig config) throws InstantiationException, InterruptedException {
+        return newInstance(config, serviceFactory);
+    }
 }

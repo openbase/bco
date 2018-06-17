@@ -1,8 +1,8 @@
-package org.openbase.bco.manager.scene.lib;
+package org.openbase.bco.manager.device.lib;
 
 /*
  * #%L
- * BCO Manager Scene Library
+ * BCO Manager Device Library
  * %%
  * Copyright (C) 2015 - 2018 openbase.org
  * %%
@@ -22,15 +22,18 @@ package org.openbase.bco.manager.scene.lib;
  * #L%
  */
 
+import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.Factory;
+import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface SceneFactory extends Factory<SceneController, UnitConfig> {
+public interface DeviceControllerFactory extends Factory<DeviceController, UnitConfig> {
 
-    @Override
-    public SceneController newInstance(final UnitConfig config) throws org.openbase.jul.exception.InstantiationException;
+    public DeviceController newInstance(final UnitConfigType.UnitConfig deviceUnitConfig, final ServiceFactory serviceFactory) throws InstantiationException, InterruptedException;
+
 }

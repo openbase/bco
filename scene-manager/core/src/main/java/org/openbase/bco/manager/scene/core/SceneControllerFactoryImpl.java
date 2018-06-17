@@ -1,8 +1,8 @@
-package org.openbase.bco.manager.user.core;
+package org.openbase.bco.manager.scene.core;
 
 /*
  * #%L
- * BCO Manager User Core
+ * BCO Manager Scene Core
  * %%
  * Copyright (C) 2015 - 2018 openbase.org
  * %%
@@ -21,11 +21,11 @@ package org.openbase.bco.manager.user.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.manager.user.lib.User;
-import org.openbase.bco.manager.user.lib.UserController;
-import org.openbase.bco.manager.user.lib.UserFactory;
+
+import org.openbase.bco.manager.scene.lib.Scene;
+import org.openbase.bco.manager.scene.lib.SceneController;
+import org.openbase.bco.manager.scene.lib.SceneControllerFactory;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -33,38 +33,38 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class UserFactoryImpl implements UserFactory {
+public class SceneControllerFactoryImpl implements SceneControllerFactory {
 
-    protected final Logger logger = LoggerFactory.getLogger(UserFactoryImpl.class);
-    private static UserFactoryImpl instance;
+    protected final Logger logger = LoggerFactory.getLogger(SceneControllerFactoryImpl.class);
+    private static SceneControllerFactoryImpl instance;
 
-    public synchronized static UserFactory getInstance() {
+    public synchronized static SceneControllerFactoryImpl getInstance() {
 
         if (instance == null) {
-            instance = new UserFactoryImpl();
+            instance = new SceneControllerFactoryImpl();
         }
         return instance;
     }
 
-    private UserFactoryImpl() {
+    private SceneControllerFactoryImpl() {
 
     }
 
     @Override
-    public UserController newInstance(final UnitConfig config) throws InstantiationException {
-        UserController user;
+    public SceneController newInstance(final UnitConfig config) throws org.openbase.jul.exception.InstantiationException {
+        SceneController scene;
         try {
             if (config == null) {
-                throw new NotAvailableException("unitconfig");
+                throw new NotAvailableException("UnitConfig");
             }
-            logger.debug("Creating user [" + config.getUserConfig().getUserName() + "]");
-            user = new UserControllerImpl();
-            user.init(config);
+            logger.debug("Creating scene [" + config.getId() + "]");
+            scene = new SceneControllerImpl();
+            scene.init(config);
         } catch (CouldNotPerformException | SecurityException | IllegalArgumentException | InterruptedException ex) {
-            throw new InstantiationException(User.class, config.getId(), ex);
+            throw new org.openbase.jul.exception.InstantiationException(Scene.class, config.getId(), ex);
         }
-        return user;
+        return scene;
     }
 }

@@ -46,8 +46,8 @@ public class UserManagerController implements UserManager, Launchable<Void>, Voi
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(UserManagerController.class);
 
-    private final UserFactory userFactory;
-    private final AuthorizationGroupFactory authorizationGroupFactory;
+    private final UserControllerFactory userControllerFactory;
+    private final AuthorizationGroupControllerFactory authorizationGroupControllerFactory;
 
     private final ControllerRegistryImpl<String, UserController> unitRegistry;
     private final ControllerRegistryImpl<String, AuthorizationGroupController> authorizationGroupRegistry;
@@ -57,20 +57,20 @@ public class UserManagerController implements UserManager, Launchable<Void>, Voi
 
     public UserManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
-            this.userFactory = UserFactoryImpl.getInstance();
-            this.authorizationGroupFactory = AuthorizationGroupFactoryImpl.getInstance();
+            this.userControllerFactory = UserControllerFactoryImpl.getInstance();
+            this.authorizationGroupControllerFactory = AuthorizationGroupControllerFactoryImpl.getInstance();
 
             this.unitRegistry = new ControllerRegistryImpl<>();
             this.authorizationGroupRegistry = new ControllerRegistryImpl<>();
 
-            this.unitRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, UserController, UnitConfig, UnitConfig.Builder>(unitRegistry, Registries.getUnitRegistry().getUserUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), userFactory) {
+            this.unitRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, UserController, UnitConfig, UnitConfig.Builder>(unitRegistry, Registries.getUnitRegistry().getUserUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), userControllerFactory) {
 
                 @Override
                 public boolean enablingCondition(UnitConfig config) {
                     return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
                 }
             };
-            this.authorizationGroupRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, AuthorizationGroupController, UnitConfig, Builder>(authorizationGroupRegistry, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), authorizationGroupFactory) {
+            this.authorizationGroupRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, AuthorizationGroupController, UnitConfig, Builder>(authorizationGroupRegistry, Registries.getUnitRegistry().getAuthorizationGroupUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), authorizationGroupControllerFactory) {
                 @Override
                 public boolean activationCondition(UnitConfig config) {
                     return config.getEnablingState().getValue() == State.ENABLED;

@@ -27,7 +27,7 @@ import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistry;
 import org.openbase.bco.dal.lib.layer.unit.UnitControllerRegistryImpl;
 import org.openbase.bco.dal.lib.simulation.UnitSimulationManager;
 import org.openbase.bco.manager.device.lib.DeviceController;
-import org.openbase.bco.manager.device.lib.DeviceFactory;
+import org.openbase.bco.manager.device.lib.DeviceControllerFactory;
 import org.openbase.bco.manager.device.lib.DeviceManager;
 import org.openbase.bco.registry.login.SystemLogin;
 import org.openbase.bco.registry.remote.Registries;
@@ -57,7 +57,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
     //TODO: please remove in future release
     private static DeviceManagerController instance;
 
-    private final DeviceFactory deviceFactory;
+    private final DeviceControllerFactory deviceControllerFactory;
     private final ServiceFactory serviceFactory;
     private final UnitSimulationManager unitSimulationManager;
 
@@ -79,14 +79,14 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
     }
 
     public DeviceManagerController(final ServiceFactory serviceFactory) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
-        this(serviceFactory, new DeviceFactoryImpl(serviceFactory));
+        this(serviceFactory, new DeviceControllerFactoryImpl(serviceFactory));
     }
 
-    public DeviceManagerController(final ServiceFactory serviceFactory, final DeviceFactory deviceFactory) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
+    public DeviceManagerController(final ServiceFactory serviceFactory, final DeviceControllerFactory deviceControllerFactory) throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             DeviceManagerController.instance = this;
 
-            this.deviceFactory = deviceFactory;
+            this.deviceControllerFactory = deviceControllerFactory;
             this.serviceFactory = serviceFactory;
 
             this.unitControllerRegistry = new UnitControllerRegistryImpl();
@@ -94,7 +94,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
 
             Registries.waitForData();
 
-            this.deviceRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, DeviceController, UnitConfig, UnitConfig.Builder>(deviceControllerRegistry, Registries.getUnitRegistry().getDeviceUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), deviceFactory) {
+            this.deviceRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, DeviceController, UnitConfig, UnitConfig.Builder>(deviceControllerRegistry, Registries.getUnitRegistry().getDeviceUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), deviceControllerFactory) {
 
                 @Override
                 public boolean activationCondition(final UnitConfig config) {
@@ -202,7 +202,7 @@ public class DeviceManagerController implements DeviceManager, Launchable<Void>,
     }
 
     @Override
-    public DeviceFactory getDeviceFactory() throws NotAvailableException {
-        return deviceFactory;
+    public DeviceControllerFactory getDeviceControllerFactory() throws NotAvailableException {
+        return deviceControllerFactory;
     }
 }

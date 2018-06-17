@@ -1,8 +1,8 @@
-package org.openbase.bco.manager.location.lib.unitgroup;
+package org.openbase.bco.manager.app.lib;
 
-/*-
+/*
  * #%L
- * BCO Manager Location Library
+ * BCO Manager App Library
  * %%
  * Copyright (C) 2015 - 2018 openbase.org
  * %%
@@ -27,8 +27,11 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface UnitGroupFactory extends Factory<UnitGroupController, UnitConfig> {
-    
+public interface AppControllerFactory extends Factory<AppController, UnitConfig> {
+
+    @Override
+    public AppController newInstance(final UnitConfig config) throws org.openbase.jul.exception.InstantiationException;
+
 }

@@ -23,7 +23,7 @@ package org.openbase.bco.manager.agent.core;
  */
 import org.openbase.bco.manager.agent.lib.Agent;
 import org.openbase.bco.manager.agent.lib.AgentController;
-import org.openbase.bco.manager.agent.lib.AgentFactory;
+import org.openbase.bco.manager.agent.lib.AgentControllerFactory;
 
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -40,20 +40,20 @@ import rst.domotic.unit.agent.AgentClassType.AgentClass;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public class AgentFactoryImpl implements AgentFactory {
+public class AgentControllerFactoryImpl implements AgentControllerFactory {
 
-    protected final Logger logger = LoggerFactory.getLogger(AgentFactoryImpl.class);
-    private static AgentFactoryImpl instance;
+    protected final Logger logger = LoggerFactory.getLogger(AgentControllerFactoryImpl.class);
+    private static AgentControllerFactoryImpl instance;
 
-    public synchronized static AgentFactory getInstance() {
+    public synchronized static AgentControllerFactory getInstance() {
 
         if (instance == null) {
-            instance = new AgentFactoryImpl();
+            instance = new AgentControllerFactoryImpl();
         }
         return instance;
     }
 
-    private AgentFactoryImpl() {
+    private AgentControllerFactoryImpl() {
 
     }
 

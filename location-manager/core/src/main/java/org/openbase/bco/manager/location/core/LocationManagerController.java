@@ -22,12 +22,12 @@ package org.openbase.bco.manager.location.core;
  * #L%
  */
 import org.openbase.bco.manager.location.lib.ConnectionController;
-import org.openbase.bco.manager.location.lib.ConnectionFactory;
+import org.openbase.bco.manager.location.lib.ConnectionControllerFactory;
 import org.openbase.bco.manager.location.lib.LocationController;
 import org.openbase.bco.manager.location.lib.LocationFactory;
 import org.openbase.bco.manager.location.lib.LocationManager;
 import org.openbase.bco.manager.location.lib.unitgroup.UnitGroupController;
-import org.openbase.bco.manager.location.lib.unitgroup.UnitGroupFactory;
+import org.openbase.bco.manager.location.lib.unitgroup.UnitGroupControllerFactory;
 import org.openbase.bco.registry.login.SystemLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -51,20 +51,20 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
     protected static final Logger LOGGER = LoggerFactory.getLogger(LocationManagerController.class);
 
     private final LocationFactory locationFactory;
-    private final ConnectionFactory connectionFactory;
+    private final ConnectionControllerFactory connectionControllerFactory;
     private final ControllerRegistryImpl<String, LocationController> locationRegistry;
     private final ControllerRegistryImpl<String, ConnectionController> connectionRegistry;
     private final ActivatableEntryRegistrySynchronizer<String, LocationController, UnitConfig, UnitConfig.Builder> locationRegistrySynchronizer;
     private final ActivatableEntryRegistrySynchronizer<String, ConnectionController, UnitConfig, UnitConfig.Builder> connectionRegistrySynchronizer;
 
-    private final UnitGroupFactory unitGrouptFactory;
+    private final UnitGroupControllerFactory unitGrouptFactory;
     private final ControllerRegistryImpl<String, UnitGroupController> unitGroupRegistry;
     private final ActivatableEntryRegistrySynchronizer<String, UnitGroupController, UnitConfig, UnitConfig.Builder> unitGroupRegistrySynchronizer;
 
     public LocationManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
             this.locationFactory = LocationFactoryImpl.getInstance();
-            this.connectionFactory = ConnectionFactoryImpl.getInstance();
+            this.connectionControllerFactory = ConnectionControllerFactoryImpl.getInstance();
             this.locationRegistry = new ControllerRegistryImpl<>();
             this.connectionRegistry = new ControllerRegistryImpl<>();
             this.locationRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, LocationController, UnitConfig, UnitConfig.Builder>(locationRegistry, Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), locationFactory) {
@@ -74,7 +74,7 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
                     return config.getEnablingState().getValue() == State.ENABLED;
                 }
             };
-            this.connectionRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, ConnectionController, UnitConfig, UnitConfig.Builder>(connectionRegistry, Registries.getUnitRegistry().getConnectionUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), connectionFactory) {
+            this.connectionRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, ConnectionController, UnitConfig, UnitConfig.Builder>(connectionRegistry, Registries.getUnitRegistry().getConnectionUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), connectionControllerFactory) {
 
                 @Override
                 public boolean activationCondition(final UnitConfig config) {
@@ -82,7 +82,7 @@ public class LocationManagerController implements LocationManager, Launchable<Vo
                 }
             };
 
-            this.unitGrouptFactory = UnitGroupFactoryImpl.getInstance();
+            this.unitGrouptFactory = UnitGroupControllerFactoryImpl.getInstance();
             this.unitGroupRegistry = new ControllerRegistryImpl<>();
             this.unitGroupRegistrySynchronizer = new ActivatableEntryRegistrySynchronizer<String, UnitGroupController, UnitConfig, UnitConfig.Builder>(unitGroupRegistry, Registries.getUnitRegistry().getUnitGroupUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), unitGrouptFactory) {
 

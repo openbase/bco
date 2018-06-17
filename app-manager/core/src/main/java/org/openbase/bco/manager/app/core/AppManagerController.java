@@ -23,7 +23,7 @@ package org.openbase.bco.manager.app.core;
  */
 
 import org.openbase.bco.manager.app.lib.AppController;
-import org.openbase.bco.manager.app.lib.AppFactory;
+import org.openbase.bco.manager.app.lib.AppControllerFactory;
 import org.openbase.bco.manager.app.lib.AppManager;
 import org.openbase.bco.registry.login.SystemLogin;
 import org.openbase.bco.registry.remote.Registries;
@@ -45,13 +45,13 @@ public class AppManagerController implements AppManager, Launchable<Void>, VoidI
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(AppManagerController.class);
 
-    private final AppFactory factory;
+    private final AppControllerFactory factory;
     private final ControllerRegistryImpl<String, AppController> appRegistry;
     private final EnableableEntryRegistrySynchronizer<String, AppController, UnitConfig, UnitConfig.Builder> appRegistrySynchronizer;
 
     public AppManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
-            this.factory = AppFactoryImpl.getInstance();
+            this.factory = AppControllerFactoryImpl.getInstance();
             this.appRegistry = new ControllerRegistryImpl<>();
 
             this.appRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AppController, UnitConfig, UnitConfig.Builder>(appRegistry, Registries.getUnitRegistry().getAppUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {

@@ -1,6 +1,6 @@
 package org.openbase.bco.manager.user.core;
 
-/*-
+/*
  * #%L
  * BCO Manager User Core
  * %%
@@ -21,10 +21,9 @@ package org.openbase.bco.manager.user.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import org.openbase.bco.dal.lib.layer.unit.authorizationgroup.AuthorizationGroup;
-import org.openbase.bco.manager.user.lib.AuthorizationGroupController;
-import org.openbase.bco.manager.user.lib.AuthorizationGroupFactory;
+import org.openbase.bco.manager.user.lib.User;
+import org.openbase.bco.manager.user.lib.UserController;
+import org.openbase.bco.manager.user.lib.UserControllerFactory;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -32,35 +31,40 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
-public class AuthorizationGroupFactoryImpl implements AuthorizationGroupFactory {
+/**
+ *
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ */
+public class UserControllerFactoryImpl implements UserControllerFactory {
 
-    protected final Logger logger = LoggerFactory.getLogger(AuthorizationGroupFactoryImpl.class);
-    private static AuthorizationGroupFactoryImpl instance;
+    protected final Logger logger = LoggerFactory.getLogger(UserControllerFactoryImpl.class);
+    private static UserControllerFactoryImpl instance;
 
-    public synchronized static AuthorizationGroupFactory getInstance() {
+    public synchronized static UserControllerFactory getInstance() {
 
         if (instance == null) {
-            instance = new AuthorizationGroupFactoryImpl();
+            instance = new UserControllerFactoryImpl();
         }
         return instance;
     }
 
-    private AuthorizationGroupFactoryImpl() {
+    private UserControllerFactoryImpl() {
+
     }
 
     @Override
-    public AuthorizationGroupController newInstance(final UnitConfig config) throws InstantiationException {
-        AuthorizationGroupController authorizationGroup;
+    public UserController newInstance(final UnitConfig config) throws InstantiationException {
+        UserController user;
         try {
             if (config == null) {
-                throw new NotAvailableException("unit config");
+                throw new NotAvailableException("unitconfig");
             }
-            logger.debug("Creating authorizationGroup [" + config.getLabel() + "]");
-            authorizationGroup = new AuthorizationGroupControllerImpl();
-            authorizationGroup.init(config);
+            logger.debug("Creating user [" + config.getUserConfig().getUserName() + "]");
+            user = new UserControllerImpl();
+            user.init(config);
         } catch (CouldNotPerformException | SecurityException | IllegalArgumentException | InterruptedException ex) {
-            throw new InstantiationException(AuthorizationGroup.class, config.getId(), ex);
+            throw new InstantiationException(User.class, config.getId(), ex);
         }
-        return authorizationGroup;
+        return user;
     }
 }

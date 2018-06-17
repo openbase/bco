@@ -1,8 +1,8 @@
-package org.openbase.bco.manager.location.lib;
+package org.openbase.bco.manager.agent.lib;
 
 /*
  * #%L
- * BCO Manager Location Library
+ * BCO Manager Agent Library
  * %%
  * Copyright (C) 2015 - 2018 openbase.org
  * %%
@@ -15,20 +15,24 @@ package org.openbase.bco.manager.location.lib;
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Lesser Public License for more details.
- * 
+ *  
  * You should have received a copy of the GNU General Lesser Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
 
+import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.Factory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface ConnectionFactory extends Factory<ConnectionController, UnitConfig> {
-    
+public interface AgentControllerFactory extends Factory<AgentController, UnitConfig> {
+
+    @Override
+    public AgentController newInstance(final UnitConfig config) throws InstantiationException;
+
 }

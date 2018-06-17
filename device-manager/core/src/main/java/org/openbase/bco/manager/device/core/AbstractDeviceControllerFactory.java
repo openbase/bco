@@ -25,7 +25,7 @@ package org.openbase.bco.manager.device.core;
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
 import org.openbase.bco.manager.device.lib.Device;
 import org.openbase.bco.manager.device.lib.DeviceController;
-import org.openbase.bco.manager.device.lib.DeviceFactory;
+import org.openbase.bco.manager.device.lib.DeviceControllerFactory;
 import org.openbase.bco.manager.device.lib.DeviceManager;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InstantiationException;
@@ -36,9 +36,9 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public abstract class AbstractDeviceFactory implements DeviceFactory {
+public abstract class AbstractDeviceControllerFactory implements DeviceControllerFactory {
 
-    public AbstractDeviceFactory() throws InstantiationException {
+    public AbstractDeviceControllerFactory() throws InstantiationException {
         super();
     }
 

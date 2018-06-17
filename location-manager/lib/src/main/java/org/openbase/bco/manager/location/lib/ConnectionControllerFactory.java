@@ -1,8 +1,8 @@
-package org.openbase.bco.manager.user.lib;
+package org.openbase.bco.manager.location.lib;
 
-/*-
+/*
  * #%L
- * BCO Manager User Library
+ * BCO Manager Location Library
  * %%
  * Copyright (C) 2015 - 2018 openbase.org
  * %%
@@ -24,9 +24,11 @@ package org.openbase.bco.manager.user.lib;
 
 import org.openbase.jul.pattern.Factory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
-import org.openbase.jul.exception.InstantiationException;
 
-public interface AuthorizationGroupFactory extends Factory<AuthorizationGroupController, UnitConfig> {
-
-    AuthorizationGroupController newInstance(final UnitConfig config) throws InstantiationException;
+/**
+ *
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
+ */
+public interface ConnectionControllerFactory extends Factory<ConnectionController, UnitConfig> {
+    
 }

@@ -1,8 +1,8 @@
-package org.openbase.bco.manager.device.lib;
+package org.openbase.bco.manager.location.lib.unitgroup;
 
-/*
+/*-
  * #%L
- * BCO Manager Device Library
+ * BCO Manager Location Library
  * %%
  * Copyright (C) 2015 - 2018 openbase.org
  * %%
@@ -22,18 +22,13 @@ package org.openbase.bco.manager.device.lib;
  * #L%
  */
 
-import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
-import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.pattern.Factory;
-import rst.domotic.unit.UnitConfigType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
+ * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public interface DeviceFactory extends Factory<DeviceController, UnitConfig> {
-
-    public DeviceController newInstance(final UnitConfigType.UnitConfig deviceUnitConfig, final ServiceFactory serviceFactory) throws InstantiationException, InterruptedException;
-
+public interface UnitGroupControllerFactory extends Factory<UnitGroupController, UnitConfig> {
+    
 }

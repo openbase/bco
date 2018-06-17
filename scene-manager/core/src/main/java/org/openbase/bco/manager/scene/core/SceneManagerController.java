@@ -22,12 +22,11 @@ package org.openbase.bco.manager.scene.core;
  * #L%
  */
 import org.openbase.bco.manager.scene.lib.SceneController;
-import org.openbase.bco.manager.scene.lib.SceneFactory;
+import org.openbase.bco.manager.scene.lib.SceneControllerFactory;
 import org.openbase.bco.manager.scene.lib.SceneManager;
 import org.openbase.bco.registry.login.SystemLogin;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.storage.registry.ControllerRegistryImpl;
@@ -46,13 +45,13 @@ public class SceneManagerController implements SceneManager, Launchable<Void>, V
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(SceneManagerController.class);
 
-    private final SceneFactory factory;
+    private final SceneControllerFactory factory;
     private final ControllerRegistryImpl<String, SceneController> sceneRegistry;
     private final EnableableEntryRegistrySynchronizer<String, SceneController, UnitConfig, UnitConfig.Builder> sceneRegistrySynchronizer;
 
     public SceneManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
-            this.factory = SceneFactoryImpl.getInstance();
+            this.factory = SceneControllerFactoryImpl.getInstance();
             this.sceneRegistry = new ControllerRegistryImpl<>();
 
             this.sceneRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, SceneController, UnitConfig, UnitConfig.Builder>(sceneRegistry, Registries.getUnitRegistry().getSceneUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {

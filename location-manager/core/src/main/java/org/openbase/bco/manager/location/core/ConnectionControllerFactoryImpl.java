@@ -1,6 +1,6 @@
 package org.openbase.bco.manager.location.core;
 
-/*-
+/*
  * #%L
  * BCO Manager Location Core
  * %%
@@ -21,9 +21,8 @@ package org.openbase.bco.manager.location.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-
-import org.openbase.bco.manager.location.lib.unitgroup.UnitGroupController;
-import org.openbase.bco.manager.location.lib.unitgroup.UnitGroupFactory;
+import org.openbase.bco.manager.location.lib.ConnectionController;
+import org.openbase.bco.manager.location.lib.ConnectionControllerFactory;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.InstantiationException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -31,31 +30,31 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  *
- * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
+ * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class UnitGroupFactoryImpl implements UnitGroupFactory {
+public class ConnectionControllerFactoryImpl implements ConnectionControllerFactory {
 
-    private static UnitGroupFactoryImpl instance;
+    private static ConnectionControllerFactoryImpl instance;
 
-    public synchronized static UnitGroupFactoryImpl getInstance() {
+    public synchronized static ConnectionControllerFactoryImpl getInstance() {
         if (instance == null) {
-            instance = new UnitGroupFactoryImpl();
+            instance = new ConnectionControllerFactoryImpl();
         }
         return instance;
     }
 
     @Override
-    public UnitGroupController newInstance(final UnitConfig config) throws InstantiationException, InterruptedException {
-        UnitGroupControllerImpl unitGroupController;
+    public ConnectionController newInstance(final UnitConfig config) throws InstantiationException, InterruptedException {
+        ConnectionController connectionController;
         try {
             if (config == null) {
-                throw new NotAvailableException("unitgroupconfig");
+                throw new NotAvailableException("connectionConfig");
             }
-            unitGroupController = new UnitGroupControllerImpl();
-            unitGroupController.init(config);
-            return unitGroupController;
+            connectionController = new ConnectionControllerImpl();
+            connectionController.init(config);
+            return connectionController;
         } catch (InstantiationException | NotAvailableException | InitializationException ex) {
-            throw new InstantiationException(UnitGroupFactoryImpl.class, config.getId(), ex);
+            throw new InstantiationException(ConnectionControllerImpl.class, config.getId(), ex);
         }
     }
 }

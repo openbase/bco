@@ -26,7 +26,7 @@ package org.openbase.bco.manager.agent.core;
  */
 
 import org.openbase.bco.manager.agent.lib.AgentController;
-import org.openbase.bco.manager.agent.lib.AgentFactory;
+import org.openbase.bco.manager.agent.lib.AgentControllerFactory;
 import org.openbase.bco.manager.agent.lib.AgentManager;
 import org.openbase.bco.registry.login.SystemLogin;
 import org.openbase.bco.registry.remote.Registries;
@@ -46,13 +46,13 @@ public class AgentManagerController implements AgentManager, Launchable<Void>, V
 
     protected static final Logger LOGGER = LoggerFactory.getLogger(AgentManagerController.class);
 
-    private final AgentFactory factory;
+    private final AgentControllerFactory factory;
     private final ControllerRegistryImpl<String, AgentController> agentRegistry;
     private final EnableableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder> agentRegistrySynchronizer;
 
     public AgentManagerController() throws org.openbase.jul.exception.InstantiationException, InterruptedException {
         try {
-            this.factory = AgentFactoryImpl.getInstance();
+            this.factory = AgentControllerFactoryImpl.getInstance();
             this.agentRegistry = new ControllerRegistryImpl<>();
 
             this.agentRegistrySynchronizer = new EnableableEntryRegistrySynchronizer<String, AgentController, UnitConfig, UnitConfig.Builder>(agentRegistry, Registries.getUnitRegistry().getAgentUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {

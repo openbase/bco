@@ -23,7 +23,7 @@ package org.openbase.bco.manager.app.core;
  */
 import org.openbase.bco.dal.lib.layer.unit.app.App;
 import org.openbase.bco.manager.app.lib.AppController;
-import org.openbase.bco.manager.app.lib.AppFactory;
+import org.openbase.bco.manager.app.lib.AppControllerFactory;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -31,24 +31,27 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.app.AppClassType.AppClass;
+import org.openbase.jul.extension.rst.processing.LabelProcessor;
+
+import java.util.Locale;
 
 /**
  *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class AppFactoryImpl implements AppFactory {
+public class AppControllerFactoryImpl implements AppControllerFactory {
 
-    protected final Logger logger = LoggerFactory.getLogger(AppFactoryImpl.class);
-    private static AppFactoryImpl instance;
+    protected final Logger logger = LoggerFactory.getLogger(AppControllerFactoryImpl.class);
+    private static AppControllerFactoryImpl instance;
 
-    public synchronized static AppFactoryImpl getInstance() {
+    public synchronized static AppControllerFactoryImpl getInstance() {
         if (instance == null) {
-            instance = new AppFactoryImpl();
+            instance = new AppControllerFactoryImpl();
         }
         return instance;
     }
 
-    private AppFactoryImpl() {
+    private AppControllerFactoryImpl() {
     }
 
     @Override
@@ -75,7 +78,7 @@ public class AppFactoryImpl implements AppFactory {
             AppClass appClass = Registries.getClassRegistry().getAppClassById(appUnitConfig.getAppConfig().getAppClassId());
             return AbstractAppController.class.getPackage().getName() + "."
                     + "preset."
-                    + appClass.getLabel()
+                    + LabelProcessor.getLabelByLanguage(Locale.ENGLISH, appClass.getLabel())
                     + "App";
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("AppClass", ex);
