@@ -55,7 +55,7 @@
     </build>
     
     <properties>
-        <skipTests>false</skipTests>
+        <skipTests>${skipTests}</skipTests>
     </properties>
     
     <dependencies>
