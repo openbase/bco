@@ -63,6 +63,9 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
     public ActivityState getActivityState() throws NotAvailableException {
         try {
             // todo: implement multi service state support (openbase/bco.dal#113)
+            if(getData().getActivityStateCount() == 0) {
+                throw new CouldNotPerformException("No activity known for user "+getLabel());
+            }
             return getData().getActivityState(0);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("user activity", ex);

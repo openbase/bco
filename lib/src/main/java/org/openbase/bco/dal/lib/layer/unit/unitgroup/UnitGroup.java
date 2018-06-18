@@ -27,6 +27,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.service.ServiceDescriptionType.ServiceDescription;
 import rst.domotic.service.ServiceTemplateType;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.unitgroup.UnitGroupDataType.UnitGroupData;
 
 import java.util.HashSet;
@@ -38,7 +39,7 @@ import java.util.Set;
 public interface UnitGroup extends BaseUnit<UnitGroupData>, MultiUnitServiceFusion {
 
     @Override
-    default public Set<ServiceTemplateType.ServiceTemplate.ServiceType> getSupportedServiceTypes() throws NotAvailableException, InterruptedException {
+    default Set<ServiceType> getSupportedServiceTypes() throws NotAvailableException, InterruptedException {
         final Set<ServiceTemplateType.ServiceTemplate.ServiceType> serviceTypeSet = new HashSet<>();
         try {
             for (final ServiceDescription serviceDescription : getConfig().getUnitGroupConfig().getServiceDescriptionList()) {

@@ -223,7 +223,7 @@ public abstract class ServiceRemoteManager<D> implements Activatable, Snapshotab
 
     public <B> B updateBuilderWithAvailableServiceStates(final B builder, final Class dataClass, final Set<ServiceType> supportedServiceTypeSet) throws InterruptedException {
         try {
-            for (final ServiceTemplateType.ServiceTemplate.ServiceType serviceType : supportedServiceTypeSet) {
+            for (final ServiceType serviceType : supportedServiceTypeSet) {
 
                 final Object serviceState;
 

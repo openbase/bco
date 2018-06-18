@@ -483,7 +483,7 @@ public abstract class AbstractUnitRemote<D extends GeneratedMessage> extends Abs
                     //TODO: this should parse a value from the root location meta config that defines a default label
                 }
             }
-            return LabelProcessor.getFirstLabel(getConfig().getLabel());
+            return LabelProcessor.getBestMatch(getConfig().getLabel());
         } catch (NullPointerException | NotAvailableException ex) {
             throw new NotAvailableException("unit label", ex);
         }
