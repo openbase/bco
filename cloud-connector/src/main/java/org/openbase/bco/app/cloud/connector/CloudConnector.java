@@ -119,7 +119,10 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
                 if (isLoggedIn) {
                     socket.emit("requestSync");
                 }
-                LOGGER.info("new sync:\n" + gson.toJson(jsonObject));
+                JsonObject test = new JsonObject();
+                test.addProperty(FulfillmentHandler.REQUEST_ID_KEY, "12345678");
+                test.add(FulfillmentHandler.PAYLOAD_KEY, jsonObject);
+                LOGGER.info("new sync[" + isLoggedIn + "]:\n" + gson.toJson(test));
             });
 
             // add listener to socket events
@@ -128,8 +131,6 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
                 LOGGER.info("CONNECTED");
 
                 JsonObject loginInfo = new JsonObject();
-                loginInfo.addProperty("username", "bco");
-                loginInfo.addProperty("password", "pwd");
                 LOGGER.info("Send loginInfo [" + gson.toJson(loginInfo) + "]");
                 socket.emit("login", gson.toJson(loginInfo), (Ack) objects1 -> {
                     try {
@@ -158,9 +159,14 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
                 });
             }).on(Socket.EVENT_MESSAGE, objects -> {
                 // received a message
-                LOGGER.info("Received message: " + objects[0]);
+                LOGGER.info("Received request!");
+                // TODO: build try catch exception around and report error
+                // e.g. nullpointer is thrown if the request is in the wrong format
+
                 // parse as json
                 final JsonElement parse = jsonParser.parse((String) objects[0]);
+
+                LOGGER.info("Request: " + gson.toJson(parse));
 
                 // handle request and create response
                 LOGGER.info("Call handler");
@@ -174,7 +180,7 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
                 ack.call(response);
             }).on(Socket.EVENT_DISCONNECT, objects -> {
 
-                //TODO: what when server down? try to reconnect every 30 seconds or so?
+                //TODO: what when server down? try to reconnect every 30 seconds or shutdown?
 //                if (active) {
 //                    socket.connect();
 //                }

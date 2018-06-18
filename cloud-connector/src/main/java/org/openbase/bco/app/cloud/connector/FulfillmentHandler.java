@@ -131,14 +131,17 @@ public class FulfillmentHandler {
             // decide what to do based on the intent
             switch (intent) {
                 case SYNC_INTENT:
+                    LOGGER.info("Handle SYNC");
                     // method will handle a sync intent and fill the payload of the response accordingly
                     handleSync(payload);
                     break;
                 case QUERY_INTENT:
+                    LOGGER.info("Handle QUERY");
                     // method will handle a query intent and fill the payload of the response accordingly
                     handleQuery(payload, input);
                     break;
                 case EXECUTE_INTENT:
+                    LOGGER.info("Handle EXECUTE");
                     // method will handle an execute intent and fill the payload of the response accordingly
                     handleExecute(payload, input);
                     break;
@@ -235,7 +238,7 @@ public class FulfillmentHandler {
                         nickNames.add(label);
                     }
                 }
-                name.add("nickNames", nickNames);
+                name.add("nicknames", nickNames);
 
                 device.add(NAME_KEY, name);
 
@@ -464,6 +467,8 @@ public class FulfillmentHandler {
                     } else {
                         // something failed so add as error
                         error.add(entry.getKey());
+                        // print failure reason
+                        ExceptionPrinter.printHistory(new CouldNotPerformException("Could not perform execute commands for unit[" + entry.getKey() + "]", ex), LOGGER);
                     }
                 }
             }

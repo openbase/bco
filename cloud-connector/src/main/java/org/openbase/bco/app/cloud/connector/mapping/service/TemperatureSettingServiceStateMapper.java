@@ -80,7 +80,7 @@ public class TemperatureSettingServiceStateMapper extends AbstractServiceStateMa
     @Override
     public void addAttributes(UnitConfig unitConfig, JsonObject jsonObject) {
         // currently modes not yet supported
-        jsonObject.addProperty(THERMOSTAT_MODES_KEY, "");
+        jsonObject.addProperty(THERMOSTAT_MODES_KEY, "off");
         // C for Celsius, F for Fahrenheit
         jsonObject.addProperty(TEMPERATURE_UNIT_KEY, "C");
     }

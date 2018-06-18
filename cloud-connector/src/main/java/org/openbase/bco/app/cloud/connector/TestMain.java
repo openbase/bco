@@ -24,6 +24,8 @@ package org.openbase.bco.app.cloud.connector;
 
 import com.google.gson.Gson;
 import com.google.gson.GsonBuilder;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
 import org.openbase.bco.app.cloud.connector.jp.JPCloudServerURI;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
@@ -40,18 +42,18 @@ public class TestMain {
         final Gson gson = new GsonBuilder().setPrettyPrinting().create();
         final FulfillmentHandler fulfillmentHandler = new FulfillmentHandler();
 
-        try {
-            JPService.registerProperty(JPCloudServerURI.class, new URI("http://localhost:5000"));
-            CloudConnectorLauncher cloudConnectorLauncher = new CloudConnectorLauncher();
-            LOGGER.info("launch cloud connector...");
-            cloudConnectorLauncher.launch();
-            CloudConnector cloudConnector = cloudConnectorLauncher.getLaunchable();
-            LOGGER.info("Cloud connector is active: " + cloudConnector.isActive());
-            Thread.sleep(1000);
-            cloudConnector.requestSync();
-        } catch (Exception ex) {
-            ExceptionPrinter.printHistory(ex, LOGGER);
-        }
+//        try {
+//            JPService.registerProperty(JPCloudServerURI.class, new URI("http://localhost:5000"));
+//            CloudConnectorLauncher cloudConnectorLauncher = new CloudConnectorLauncher();
+//            LOGGER.info("launch cloud connector...");
+//            cloudConnectorLauncher.launch();
+//            CloudConnector cloudConnector = cloudConnectorLauncher.getLaunchable();
+//            LOGGER.info("Cloud connector is active: " + cloudConnector.isActive());
+//            Thread.sleep(1000);
+//            cloudConnector.requestSync();
+//        } catch (Exception ex) {
+//            ExceptionPrinter.printHistory(ex, LOGGER);
+//        }
 
 //        try {
 //            JPService.registerProperty(JPCloudServerURI.class);
@@ -71,14 +73,14 @@ public class TestMain {
 //        LOGGER.info(new CouldNotPerformException("Could not do this").toString());
 
 //         test sync
-//        JsonObject syncRequest = new JsonObject();
-//        syncRequest.addProperty(FulfillmentHandler.REQUEST_ID_KEY, /*UUID.randomUUID().toString()*/"id");
-//        JsonArray inputs = new JsonArray();
-//        JsonObject input = new JsonObject();
-//        inputs.add(input);
-//        input.addProperty("intent", "action.devices.SYNC");
-//        syncRequest.add("inputs", inputs);
-//        System.out.println(gson.toJson(syncRequest).replace("\"", "\\\""));
+        JsonObject syncRequest = new JsonObject();
+        syncRequest.addProperty(FulfillmentHandler.REQUEST_ID_KEY, /*UUID.randomUUID().toString()*/"id");
+        JsonArray inputs = new JsonArray();
+        JsonObject input = new JsonObject();
+        inputs.add(input);
+        input.addProperty("intent", "action.devices.SYNC");
+        syncRequest.add("inputs", inputs);
+        System.out.println(gson.toJson(syncRequest).replace("\"", "\\\""));
 //
 //        JsonObject jsonObject = fulfillmentHandler.handleRequest(syncRequest);
 //        System.out.println(gson.toJson(jsonObject));

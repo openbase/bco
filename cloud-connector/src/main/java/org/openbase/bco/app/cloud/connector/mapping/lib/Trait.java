@@ -78,7 +78,7 @@ public enum Trait {
             JsonObject color = params.getAsJsonObject(ColorSpectrumServiceStateMapper.COLOR_KEY);
             if (color.has(ColorTemperatureServiceStateMapper.TEMPERATURE_KEY)) {
                 return COLOR_TEMPERATURE;
-            } else if (color.has(ColorSpectrumServiceStateMapper.COLOR_SPECTRUM_KEY)) {
+            } else if (color.has(ColorSpectrumServiceStateMapper.COLOR_MODEL_HSB)) {
                 return COLOR_SPECTRUM;
             }
         }
