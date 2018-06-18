@@ -22,23 +22,23 @@ package org.openbase.bco.app.cloud.connector;
  * #L%
  */
 
-import com.google.gson.Gson;
-import com.google.gson.JsonElement;
-import com.google.gson.JsonObject;
-import com.google.gson.JsonParser;
+import com.google.gson.*;
 import io.socket.client.Ack;
 import io.socket.client.IO;
 import io.socket.client.Manager;
 import io.socket.client.Socket;
 import io.socket.engineio.client.Transport;
 import org.openbase.bco.app.cloud.connector.jp.JPCloudServerURI;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
+import org.openbase.jul.pattern.ObservableImpl;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,7 +46,6 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
-import java.util.UUID;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -61,24 +60,27 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
 
     private Socket socket;
     private boolean active;
-    private URI cloudURI;
     private String accessToken;
 
-    private final String id = "86b2d03d-0c38-4b3e-bf4c-6206c4ad6650";
+    private final ObservableImpl<JsonObject> syncPayloadObservable;
+    public static final String ID = "86b2d03d-0c38-4b3e-bf4c-6206c4ad6650";
+
+    private boolean isLoggedIn = false;
 
     public CloudConnector() {
         this.active = false;
         this.fulfillmentHandler = new FulfillmentHandler();
         this.jsonParser = new JsonParser();
-        this.gson = new Gson();
+        this.gson = new GsonBuilder().setPrettyPrinting().create();
+        this.syncPayloadObservable = new ObservableImpl<>();
     }
 
     @Override
     public void init() throws InitializationException {
         try {
-            LOGGER.info("ID[" + id + "]");
+            LOGGER.info("ID[" + ID + "]");
             // get cloud uri from property
-            cloudURI = JPService.getProperty(JPCloudServerURI.class).getValue();
+            URI cloudURI = JPService.getProperty(JPCloudServerURI.class).getValue();
 
             // create socket
             socket = IO.socket(cloudURI);
@@ -93,11 +95,31 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
                         @SuppressWarnings("unchecked")
                         Map<String, List<String>> headers = (Map<String, List<String>>) args1[0];
                         // add bco id to request header
-                        headers.put("id", Collections.singletonList(id));
+                        headers.put("id", Collections.singletonList(ID));
                     } catch (Exception ex) {
                         ExceptionPrinter.printHistory(ex, LOGGER);
                     }
                 });
+            });
+
+            // add observer to unit registry that test if the sync request would be answered differently on changes
+            try {
+                Registries.getUnitRegistry().addDataObserver((observable, unitRegistryData) -> {
+                    final JsonObject syncResponsePayload = new JsonObject();
+                    fulfillmentHandler.handleSync(syncResponsePayload);
+                    syncPayloadObservable.notifyObservers(syncResponsePayload);
+                });
+            } catch (NotAvailableException ex) {
+                throw new InitializationException(this, ex);
+            }
+
+            // trigger syncRequest from google when the payload of a sync request would change
+            syncPayloadObservable.addObserver((observable, jsonObject) -> {
+                //TODO: trigger when logged in
+                if (isLoggedIn) {
+                    socket.emit("requestSync");
+                }
+                LOGGER.info("new sync:\n" + gson.toJson(jsonObject));
             });
 
             // add listener to socket events
@@ -106,6 +128,8 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
                 LOGGER.info("CONNECTED");
 
                 JsonObject loginInfo = new JsonObject();
+                loginInfo.addProperty("username", "bco");
+                loginInfo.addProperty("password", "pwd");
                 LOGGER.info("Send loginInfo [" + gson.toJson(loginInfo) + "]");
                 socket.emit("login", gson.toJson(loginInfo), (Ack) objects1 -> {
                     try {
@@ -120,6 +144,7 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
                         if (response.get("success").getAsBoolean()) {
                             LOGGER.info("Authenticated successfully");
                             if (response.has("accessToken")) {
+                                isLoggedIn = true;
                                 accessToken = response.get("accessToken").getAsString();
                                 LOGGER.info("Received accessToken[" + accessToken + "]");
                             }

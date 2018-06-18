@@ -160,11 +160,11 @@ public class FulfillmentHandler {
      *
      * @param payload the payload of the response send to Google.
      */
-    private void handleSync(final JsonObject payload) {
+    public void handleSync(final JsonObject payload) {
         // TODO: debug string and error optional for payload
 
         // TODO: this has to be an id for a bco instance
-        payload.addProperty(AGENT_USER_ID_KEY, UUID.randomUUID().toString());
+        payload.addProperty(AGENT_USER_ID_KEY, CloudConnector.ID);
 
         final JsonArray devices = new JsonArray();
         try {

@@ -86,11 +86,13 @@ public class ColorTemperatureServiceStateMapper extends AbstractServiceStateMapp
 
         JsonObject color = new JsonObject();
 
-        //TODO: what to do if color is not a valid temperature, e.g. violet
         //TODO: name for color
-        color.addProperty(TEMPERATURE_KEY, RGBToColorTemperature(rgbColor));
-
-        jsonObject.add(ColorSpectrumServiceStateMapper.COLOR_KEY, color);
+        int colorTemperature = RGBToColorTemperature(rgbColor);
+        // only add property if its a valid color temperature
+        if(colorTemperature >= MIN_KELVIN_DEFAULT && colorTemperature <= MAX_KELVIN_DEFAULT) {
+            color.addProperty(TEMPERATURE_KEY, colorTemperature);
+            jsonObject.add(ColorSpectrumServiceStateMapper.COLOR_KEY, color);
+        }
     }
 
     @Override

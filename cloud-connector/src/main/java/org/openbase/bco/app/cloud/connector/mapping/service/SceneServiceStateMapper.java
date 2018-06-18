@@ -84,6 +84,7 @@ public class SceneServiceStateMapper extends AbstractServiceStateMapper<Activati
         switch (unitConfig.getUnitType()) {
             case SCENE:
                 jsonObject.addProperty(REVERSIBLE_KEY, false);
+                break;
             default:
                 jsonObject.addProperty(REVERSIBLE_KEY, true);
         }
