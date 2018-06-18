@@ -22,7 +22,14 @@ package org.openbase.bco.registry.unit.core.dbconvert;
  * #L%
  */
 
+import com.google.gson.JsonArray;
+import com.google.gson.JsonElement;
+import com.google.gson.JsonObject;
+import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.storage.registry.version.DBVersionControl;
+
+import java.io.File;
+import java.util.Map;
 
 /**
  * Converter which updates unit groups to the new label structure.
@@ -31,7 +38,37 @@ import org.openbase.jul.storage.registry.version.DBVersionControl;
  */
 public class UnitGroupConfig_3_To_4_DBConverter extends LabelAndTypeDBConverter {
 
+
+    public static final String TYPE_KEY = "type";
+    public static final String SERVICE_TYPE_KEY = "service_type";
+    public static final String SERVICE_DESCRIPTION_KEY = "service_description";
+
     public UnitGroupConfig_3_To_4_DBConverter(DBVersionControl versionControl) {
         super(versionControl);
+    }
+
+    @Override
+    public JsonObject upgrade(JsonObject outdatedDBEntry, Map<File, JsonObject> dbSnapshot) throws CouldNotPerformException {
+
+        // convert labels
+        final JsonObject jsonObject = super.upgrade(outdatedDBEntry, dbSnapshot);
+        final JsonObject unitGroupConfig = jsonObject.getAsJsonObject("unit_group_config");
+
+        // updated service_descriptions
+        if (unitGroupConfig.has(SERVICE_DESCRIPTION_KEY)) {
+            final JsonArray serviceDescriptionList = unitGroupConfig.getAsJsonArray(SERVICE_DESCRIPTION_KEY);
+
+            for (final JsonElement arrayEntry : serviceDescriptionList) {
+                final JsonObject serviceDescription = arrayEntry.getAsJsonObject();
+
+                if (serviceDescription.has(TYPE_KEY)) {
+                    final String serviceType = serviceDescription.get(TYPE_KEY).getAsString();
+                    serviceDescription.remove(TYPE_KEY);
+                    serviceDescription.addProperty(SERVICE_TYPE_KEY, serviceType);
+                }
+            }
+        }
+
+        return jsonObject;
     }
 }
