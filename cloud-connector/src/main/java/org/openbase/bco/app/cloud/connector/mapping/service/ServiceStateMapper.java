@@ -23,13 +23,13 @@ package org.openbase.bco.app.cloud.connector.mapping.service;
  */
 
 import com.google.gson.JsonObject;
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.app.cloud.connector.mapping.lib.Command;
 import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
-public interface ServiceStateMapper<SERVICE_STATE extends GeneratedMessage> {
+public interface ServiceStateMapper<SERVICE_STATE extends Message> {
 
     SERVICE_STATE map(final JsonObject jsonObject, final Command command) throws CouldNotPerformException;
 

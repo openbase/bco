@@ -23,7 +23,7 @@ package org.openbase.bco.app.cloud.connector.mapping.service;
  */
 
 import com.google.gson.JsonObject;
-import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.app.cloud.connector.mapping.lib.Command;
 import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -32,7 +32,7 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public abstract class AbstractServiceStateMapper<SERVICE_STATE extends GeneratedMessage> implements ServiceStateMapper<SERVICE_STATE> {
+public abstract class AbstractServiceStateMapper<SERVICE_STATE extends Message> implements ServiceStateMapper<SERVICE_STATE> {
 
     private final ServiceType serviceType;
 

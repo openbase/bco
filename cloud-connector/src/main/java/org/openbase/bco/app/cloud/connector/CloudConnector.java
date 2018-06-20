@@ -131,6 +131,8 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
                 LOGGER.info("CONNECTED");
 
                 JsonObject loginInfo = new JsonObject();
+                loginInfo.addProperty("username", "BCOUser");
+                loginInfo.addProperty("password", "password_bco");
                 LOGGER.info("Send loginInfo [" + gson.toJson(loginInfo) + "]");
                 socket.emit("login", gson.toJson(loginInfo), (Ack) objects1 -> {
                     try {

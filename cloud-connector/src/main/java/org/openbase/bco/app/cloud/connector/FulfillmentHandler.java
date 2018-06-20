@@ -26,6 +26,7 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
 import com.google.protobuf.GeneratedMessage;
+import com.google.protobuf.Message;
 import org.openbase.bco.app.cloud.connector.mapping.lib.Command;
 import org.openbase.bco.app.cloud.connector.mapping.lib.ErrorCode;
 import org.openbase.bco.app.cloud.connector.mapping.lib.Trait;
@@ -408,10 +409,11 @@ public class FulfillmentHandler {
                         final Command commandType = Command.getByRepresentation(commandName);
                         // find trait by command type and params
                         final Trait trait = Trait.getByCommand(commandType, params);
+                        //TODO: mapping for trait and service type is not possible
                         // get service type for trait
                         final ServiceType serviceType = trait.getServiceStateMapper().getServiceType();
                         // parse trait param into service state
-                        final GeneratedMessage serviceState = trait.getServiceStateMapper().map(params, commandType);
+                        final Message serviceState = trait.getServiceStateMapper().map(params, commandType);
                         // invoke setter for service type on remote
                         final Future serviceFuture = (Future)
                                 Services.invokeOperationServiceMethod(serviceType, unitRemote, serviceState);

@@ -35,10 +35,11 @@ import java.util.Map;
  */
 public enum Command {
 
+    ACTIVATE_SCENE,
     BRIGHTNESS_ABSOLUTE,
     COLOR_ABSOLUTE,
     ON_OFF,
-    ACTIVATE_SCENE,
+    SET_MODES,
     THERMOSTAT_TEMPERATURE_SETPOINT;
 
     /**

@@ -30,6 +30,7 @@ package org.openbase.bco.app.cloud.connector.mapping.lib;
 public enum DeviceType {
 
     LIGHT,
+    OUTLET,
     SCENE,
     SWITCH,
     THERMOSTAT;

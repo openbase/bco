@@ -44,6 +44,7 @@ public enum Trait {
     BRIGHTNESS(new BrightnessServiceStateMapper(), Command.BRIGHTNESS_ABSOLUTE),
     COLOR_SPECTRUM(new ColorSpectrumServiceStateMapper(), Command.COLOR_ABSOLUTE),
     COLOR_TEMPERATURE(new ColorTemperatureServiceStateMapper(), Command.COLOR_ABSOLUTE),
+    MODES(null, Command.SET_MODES),
     ON_OFF(new OnOffServiceStateMapper(), Command.ON_OFF),
     SCENE(new SceneServiceStateMapper(), Command.ACTIVATE_SCENE),
     TEMPERATURE_SETTING(new TemperatureSettingServiceStateMapper(), Command.THERMOSTAT_TEMPERATURE_SETPOINT);
