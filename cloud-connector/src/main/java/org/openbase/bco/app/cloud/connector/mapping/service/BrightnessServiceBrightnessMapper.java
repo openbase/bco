@@ -28,11 +28,11 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.BrightnessStateType.BrightnessState;
 import rst.domotic.state.BrightnessStateType.BrightnessState.DataUnit;
 
-public class BrightnessServiceStateMapper extends AbstractServiceStateMapper<BrightnessState> {
+public class BrightnessServiceBrightnessMapper extends AbstractServiceTraitMapper<BrightnessState> {
 
     public static final String BRIGHTNESS_TRAIT_KEY = "brightness";
 
-    public BrightnessServiceStateMapper() {
+    public BrightnessServiceBrightnessMapper() {
         super(ServiceType.BRIGHTNESS_STATE_SERVICE);
     }
 

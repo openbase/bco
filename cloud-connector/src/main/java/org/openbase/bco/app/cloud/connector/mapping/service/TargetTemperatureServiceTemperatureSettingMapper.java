@@ -33,14 +33,14 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class TemperatureSettingServiceStateMapper extends AbstractServiceStateMapper<TemperatureState> {
+public class TargetTemperatureServiceTemperatureSettingMapper extends AbstractServiceTraitMapper<TemperatureState> {
 
     public static final String TEMPERATURE_SETPOINT_KEY = "thermostatTemperatureSetpoint";
 
     public static final String THERMOSTAT_MODES_KEY = "availableThermostatModes";
     public static final String TEMPERATURE_UNIT_KEY = "thermostatTemperatureUnit";
 
-    public TemperatureSettingServiceStateMapper() {
+    public TargetTemperatureServiceTemperatureSettingMapper() {
         super(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE);
     }
 

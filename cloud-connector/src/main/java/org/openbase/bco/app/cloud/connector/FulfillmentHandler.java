@@ -25,12 +25,12 @@ package org.openbase.bco.app.cloud.connector;
 import com.google.gson.JsonArray;
 import com.google.gson.JsonElement;
 import com.google.gson.JsonObject;
-import com.google.protobuf.GeneratedMessage;
 import com.google.protobuf.Message;
 import org.openbase.bco.app.cloud.connector.mapping.lib.Command;
 import org.openbase.bco.app.cloud.connector.mapping.lib.ErrorCode;
 import org.openbase.bco.app.cloud.connector.mapping.lib.Trait;
-import org.openbase.bco.app.cloud.connector.mapping.service.ServiceTypeTraitMapping;
+import org.openbase.bco.app.cloud.connector.mapping.service.ServiceTraitMapperFactory;
+import org.openbase.bco.app.cloud.connector.mapping.service.ServiceTraitMapper;
 import org.openbase.bco.app.cloud.connector.mapping.unit.UnitDataMapper;
 import org.openbase.bco.app.cloud.connector.mapping.unit.UnitTypeMapping;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -47,7 +47,6 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.configuration.LabelType.Label;
-import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
@@ -183,47 +182,9 @@ public class FulfillmentHandler {
             for (final UnitConfig unitConfig : unitRegistryRemote.getUnitConfigs()) {
                 final JsonObject device = new JsonObject();
 
-                try {
-                    final UnitTypeMapping unitTypeTypeMapping = UnitTypeMapping.getByUnitType(unitConfig.getUnitType());
-                    device.addProperty(TYPE_KEY, unitTypeTypeMapping.getDeviceType().getRepresentation());
-                } catch (NotAvailableException ex) {
-                    LOGGER.warn("Skip unit[" + unitConfig.getAlias(0) + "] because no mapping for unitType[" + unitConfig.getUnitType().name() + "] available");
-                    continue;
-                }
-
                 device.addProperty(ID_KEY, unitConfig.getId());
-
                 device.addProperty("willReportState", false); // This could be activated in the future
                 device.addProperty("roomHint", LabelProcessor.getFirstLabel(unitRegistryRemote.getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel()));
-
-                final JsonObject attributes = new JsonObject();
-                final JsonArray traits = new JsonArray();
-                final Set<ServiceType> serviceTypeSet = new HashSet<>();
-                for (final ServiceConfig serviceConfig : unitConfig.getServiceConfigList()) {
-                    final ServiceType serviceType = serviceConfig.getServiceDescription().getServiceType();
-                    if (serviceTypeSet.contains(serviceType)) {
-                        continue;
-                    }
-                    serviceTypeSet.add(serviceType);
-
-                    try {
-                        final ServiceTypeTraitMapping serviceTypeTraitMapping = ServiceTypeTraitMapping.getByServiceType(serviceType);
-                        for (final Trait trait : serviceTypeTraitMapping.getTraitSet()) {
-                            traits.add(trait.getRepresentation());
-                            trait.getServiceStateMapper().addAttributes(unitConfig, attributes);
-                        }
-                    } catch (NotAvailableException ex) {
-                        LOGGER.warn("Skip serviceType[" + serviceType.name() + "] for unit[" + unitConfig.getAlias(0) + "] because no trait mapping available");
-                    }
-                }
-
-                if (traits.size() == 0) {
-                    // skip because no traits have been added
-                    LOGGER.warn("Skip unit[" + unitConfig.getAlias(0) + "] because no traits could be added");
-                    continue;
-                }
-                device.add(TRAITS_KEY, traits);
-                device.add("attributes", attributes);
 
                 final JsonObject name = new JsonObject();
                 name.addProperty("name", LabelProcessor.getFirstLabel(unitConfig.getLabel()));
@@ -240,8 +201,39 @@ public class FulfillmentHandler {
                     }
                 }
                 name.add("nicknames", nickNames);
-
                 device.add(NAME_KEY, name);
+
+                UnitTypeMapping unitTypeMapping;
+                try {
+                    unitTypeMapping = UnitTypeMapping.getByUnitType(unitConfig.getUnitType());
+                } catch (NotAvailableException ex) {
+                    LOGGER.warn("Skip unit[" + unitConfig.getAlias(0) + "] because no mapping for unitType[" + unitConfig.getUnitType().name() + "] available");
+                    continue;
+                }
+                device.addProperty(TYPE_KEY, unitTypeMapping.getDeviceType().getRepresentation());
+
+                final JsonObject attributes = new JsonObject();
+                final JsonArray traits = new JsonArray();
+                final Set<ServiceType> serviceTypeSet = new HashSet<>();
+                for (final Trait trait : unitTypeMapping.getTraitSet()) {
+                    final ServiceType serviceType = unitTypeMapping.getServiceType(trait);
+                    traits.add(trait.getRepresentation());
+                    try {
+                        ServiceTraitMapperFactory.getInstance().getServiceStateMapper(serviceType, trait).addAttributes(unitConfig, attributes);
+                    } catch (CouldNotPerformException ex) {
+                        LOGGER.warn("Skip trait[" + trait.name() + "] serviceType[" + serviceType.name() + "] " +
+                                "combination for unit[" + unitConfig.getAlias(0) + "] because no trait mapping available");
+                        continue;
+                    }
+                }
+
+                if (traits.size() == 0) {
+                    // skip because no traits have been added
+                    LOGGER.warn("Skip unit[" + unitConfig.getAlias(0) + "] because no traits could be added");
+                    continue;
+                }
+                device.add(TRAITS_KEY, traits);
+                device.add("attributes", attributes);
 
                 final JsonObject deviceInfo = new JsonObject();
 //                deviceInfo.addProperty("manufacturer", Registries.getClassRegistry(true).getDeviceClassById(Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId()).getDeviceConfig().getDeviceClassId()).getCompany());
@@ -409,11 +401,14 @@ public class FulfillmentHandler {
                         final Command commandType = Command.getByRepresentation(commandName);
                         // find trait by command type and params
                         final Trait trait = Trait.getByCommand(commandType, params);
-                        //TODO: mapping for trait and service type is not possible
+                        // resolve unit type mapping for remote
+                        final UnitTypeMapping unitTypeMapping = UnitTypeMapping.getByUnitType(unitRemote.getUnitType());
                         // get service type for trait
-                        final ServiceType serviceType = trait.getServiceStateMapper().getServiceType();
+                        final ServiceType serviceType = unitTypeMapping.getServiceType(trait);
+                        // resolve mapping for the combination of service type and trait
+                        final ServiceTraitMapper serviceTraitMapper = ServiceTraitMapperFactory.getInstance().getServiceStateMapper(serviceType, trait);
                         // parse trait param into service state
-                        final Message serviceState = trait.getServiceStateMapper().map(params, commandType);
+                        final Message serviceState = serviceTraitMapper.map(params, commandType);
                         // invoke setter for service type on remote
                         final Future serviceFuture = (Future)
                                 Services.invokeOperationServiceMethod(serviceType, unitRemote, serviceState);

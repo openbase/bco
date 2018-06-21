@@ -22,38 +22,36 @@ package org.openbase.bco.app.cloud.connector.mapping.service;
  * #L%
  */
 
-import com.google.gson.JsonObject;
 import com.google.protobuf.Message;
-import org.openbase.bco.app.cloud.connector.mapping.lib.Command;
+import org.openbase.bco.app.cloud.connector.mapping.lib.Mode;
 import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+
+import java.util.*;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public abstract class AbstractServiceStateMapper<SERVICE_STATE extends Message> implements ServiceStateMapper<SERVICE_STATE> {
+public abstract class AbstractSingleModeServiceProviderTraitMapper<SERVICE_STATE extends Message> extends AbstractModeServiceProviderTraitMapper<SERVICE_STATE> {
 
-    private final ServiceType serviceType;
 
-    public AbstractServiceStateMapper(ServiceType serviceType) {
-        this.serviceType = serviceType;
+    public AbstractSingleModeServiceProviderTraitMapper(ServiceType serviceType) {
+        super(serviceType);
     }
 
     @Override
-    public SERVICE_STATE map(JsonObject jsonObject, Command command) throws CouldNotPerformException {
-        return map(jsonObject);
-    }
-
-    protected abstract SERVICE_STATE map(JsonObject jsonObject) throws CouldNotPerformException;
-
-    @Override
-    public void addAttributes(UnitConfig unitConfig, JsonObject jsonObject) {
-
+    public Map<String, String> getSettings(SERVICE_STATE serviceState) throws CouldNotPerformException {
+        final Map<String, String> modeSettingMap = new HashMap<>();
+        modeSettingMap.put(getMode().getName(), getSetting(serviceState));
+        return modeSettingMap;
     }
 
     @Override
-    public ServiceType getServiceType() {
-        return serviceType;
+    public List<Mode> getModes() {
+        return Collections.singletonList(getMode());
     }
+
+    public abstract Mode getMode();
+
+    public abstract String getSetting(final SERVICE_STATE serviceState) throws CouldNotPerformException;
 }

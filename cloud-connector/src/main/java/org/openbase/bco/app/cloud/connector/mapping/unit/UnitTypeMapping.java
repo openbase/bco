@@ -25,10 +25,11 @@ package org.openbase.bco.app.cloud.connector.mapping.unit;
 import org.openbase.bco.app.cloud.connector.mapping.lib.DeviceType;
 import org.openbase.bco.app.cloud.connector.mapping.lib.Trait;
 import org.openbase.jul.exception.NotAvailableException;
+import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
-import java.util.Arrays;
-import java.util.HashSet;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Set;
 
 /**
@@ -36,26 +37,45 @@ import java.util.Set;
  */
 public enum UnitTypeMapping {
 
-    AGENT_MAPPING(UnitType.AGENT, DeviceType.SCENE, Trait.SCENE),
-    APP_MAPPING(UnitType.APP, DeviceType.SCENE, Trait.SCENE),
-    COLORABLE_LIGHT_MAPPING(UnitType.COLORABLE_LIGHT, DeviceType.LIGHT, Trait.ON_OFF, Trait.BRIGHTNESS, Trait.COLOR_SPECTRUM, Trait.COLOR_TEMPERATURE),
-    DIMMABLE_LIGHT_MAPPING(UnitType.DIMMABLE_LIGHT, DeviceType.LIGHT, Trait.ON_OFF, Trait.BRIGHTNESS),
-    DIMMER_MAPPING(UnitType.DIMMER, DeviceType.LIGHT, Trait.ON_OFF, Trait.BRIGHTNESS),
-    LIGHT_MAPPING(UnitType.LIGHT, DeviceType.LIGHT, Trait.ON_OFF),
-    POWER_SWITCH_MAPPING(UnitType.POWER_SWITCH, DeviceType.SWITCH, Trait.ON_OFF),
-    SCENE_MAPPING(UnitType.SCENE, DeviceType.SCENE, Trait.SCENE),
-    TEMPERATURE_CONTROLLER_MAPPING(UnitType.TEMPERATURE_CONTROLLER, DeviceType.THERMOSTAT, Trait.TEMPERATURE_SETTING);
+    AGENT_MAPPING(UnitType.AGENT, DeviceType.SCENE,
+            map(ServiceType.ACTIVATION_STATE_SERVICE, Trait.SCENE)),
+    APP_MAPPING(UnitType.APP, DeviceType.SCENE,
+            map(ServiceType.ACTIVATION_STATE_SERVICE, Trait.SCENE)),
+    COLORABLE_LIGHT_MAPPING(UnitType.COLORABLE_LIGHT, DeviceType.LIGHT,
+            map(ServiceType.POWER_STATE_SERVICE, Trait.ON_OFF),
+            map(ServiceType.BRIGHTNESS_STATE_SERVICE, Trait.BRIGHTNESS),
+            map(ServiceType.COLOR_STATE_SERVICE, Trait.COLOR_SPECTRUM),
+            map(ServiceType.COLOR_STATE_SERVICE, Trait.COLOR_TEMPERATURE)),
+    DIMMABLE_LIGHT_MAPPING(UnitType.DIMMABLE_LIGHT, DeviceType.LIGHT,
+            map(ServiceType.POWER_STATE_SERVICE, Trait.ON_OFF),
+            map(ServiceType.BRIGHTNESS_STATE_SERVICE, Trait.BRIGHTNESS)),
+    DIMMER_MAPPING(UnitType.DIMMER, DeviceType.LIGHT,
+            map(ServiceType.POWER_STATE_SERVICE, Trait.ON_OFF),
+            map(ServiceType.BRIGHTNESS_STATE_SERVICE, Trait.BRIGHTNESS)),
+    LIGHT_MAPPING(UnitType.LIGHT, DeviceType.LIGHT,
+            map(ServiceType.POWER_STATE_SERVICE, Trait.ON_OFF)),
+    POWER_CONSUMPTION_SENSOR_MAPPING(UnitType.POWER_CONSUMPTION_SENSOR, DeviceType.OUTLET,
+            map(ServiceType.POWER_CONSUMPTION_STATE_SERVICE, Trait.MODES)),
+    POWER_SWITCH_MAPPING(UnitType.POWER_SWITCH, DeviceType.SWITCH,
+            map(ServiceType.POWER_STATE_SERVICE, Trait.ON_OFF)),
+    SCENE_MAPPING(UnitType.SCENE, DeviceType.SCENE,
+            map(ServiceType.ACTIVATION_STATE_SERVICE, Trait.SCENE)),
+    TEMPERATURE_CONTROLLER_MAPPING(UnitType.TEMPERATURE_CONTROLLER, DeviceType.THERMOSTAT,
+            map(ServiceType.TARGET_TEMPERATURE_STATE_SERVICE, Trait.TEMPERATURE_SETTING));
 
     public static final String POSTFIX = "_MAPPING";
 
     private final UnitType unitType;
     private final DeviceType deviceType;
-    private final Set<Trait> traitSet;
+    private final Map<Trait, ServiceType> traitServiceTypeMap;
 
-    UnitTypeMapping(final UnitType unitType, final DeviceType deviceType, final Trait... traits) {
+    UnitTypeMapping(final UnitType unitType, final DeviceType deviceType, final TraitServiceTypeMapping... mappings) {
         this.unitType = unitType;
         this.deviceType = deviceType;
-        this.traitSet = new HashSet<>(Arrays.asList(traits));
+        this.traitServiceTypeMap = new HashMap<>();
+        for (final TraitServiceTypeMapping mapping : mappings) {
+            traitServiceTypeMap.put(mapping.getTrait(), mapping.getServiceType());
+        }
     }
 
     public UnitType getUnitType() {
@@ -67,7 +87,11 @@ public enum UnitTypeMapping {
     }
 
     public Set<Trait> getTraitSet() {
-        return traitSet;
+        return traitServiceTypeMap.keySet();
+    }
+
+    public ServiceType getServiceType(final Trait trait) {
+        return traitServiceTypeMap.get(trait);
     }
 
     public static UnitTypeMapping getByUnitType(final UnitType unitType) throws NotAvailableException {
@@ -75,6 +99,28 @@ public enum UnitTypeMapping {
             return UnitTypeMapping.valueOf(unitType.name() + POSTFIX);
         } catch (IllegalArgumentException ex) {
             throw new NotAvailableException("UnitTypeMapping for unitType[" + unitType.name() + "]");
+        }
+    }
+
+    private static TraitServiceTypeMapping map(final ServiceType serviceType, final Trait trait) {
+        return new TraitServiceTypeMapping(serviceType, trait);
+    }
+
+    private static class TraitServiceTypeMapping {
+        private final ServiceType serviceType;
+        private final Trait trait;
+
+        public TraitServiceTypeMapping(final ServiceType serviceType, final Trait trait) {
+            this.serviceType = serviceType;
+            this.trait = trait;
+        }
+
+        public ServiceType getServiceType() {
+            return serviceType;
+        }
+
+        public Trait getTrait() {
+            return trait;
         }
     }
 }

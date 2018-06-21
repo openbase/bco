@@ -23,7 +23,8 @@ package org.openbase.bco.app.cloud.connector.mapping.lib;
  */
 
 import com.google.gson.JsonObject;
-import org.openbase.bco.app.cloud.connector.mapping.service.*;
+import org.openbase.bco.app.cloud.connector.mapping.service.ColorServiceColorSpectrumMapper;
+import org.openbase.bco.app.cloud.connector.mapping.service.ColorServiceColorTemperatureMapper;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.processing.StringProcessor;
 
@@ -41,32 +42,26 @@ import java.util.Set;
  */
 public enum Trait {
 
-    BRIGHTNESS(new BrightnessServiceStateMapper(), Command.BRIGHTNESS_ABSOLUTE),
-    COLOR_SPECTRUM(new ColorSpectrumServiceStateMapper(), Command.COLOR_ABSOLUTE),
-    COLOR_TEMPERATURE(new ColorTemperatureServiceStateMapper(), Command.COLOR_ABSOLUTE),
-    MODES(null, Command.SET_MODES),
-    ON_OFF(new OnOffServiceStateMapper(), Command.ON_OFF),
-    SCENE(new SceneServiceStateMapper(), Command.ACTIVATE_SCENE),
-    TEMPERATURE_SETTING(new TemperatureSettingServiceStateMapper(), Command.THERMOSTAT_TEMPERATURE_SETPOINT);
+    BRIGHTNESS(Command.BRIGHTNESS_ABSOLUTE),
+    COLOR_SPECTRUM(Command.COLOR_ABSOLUTE),
+    COLOR_TEMPERATURE(Command.COLOR_ABSOLUTE),
+    MODES(Command.SET_MODES),
+    ON_OFF(Command.ON_OFF),
+    SCENE(Command.ACTIVATE_SCENE),
+    TEMPERATURE_SETTING(Command.THERMOSTAT_TEMPERATURE_SETPOINT);
 
     public static final String REPRESENTATION_PREFIX = "action.devices.traits.";
 
     private final String representation;
-    private final ServiceStateMapper serviceStateMapper;
     private final Set<Command> commandSet;
 
-    Trait(final ServiceStateMapper serviceStateMapper, final Command... commands) {
+    Trait(final Command... commands) {
         this.representation = REPRESENTATION_PREFIX + StringProcessor.transformUpperCaseToCamelCase(this.name());
         this.commandSet = new HashSet<>(Arrays.asList(commands));
-        this.serviceStateMapper = serviceStateMapper;
     }
 
     public String getRepresentation() {
         return representation;
-    }
-
-    public ServiceStateMapper getServiceStateMapper() {
-        return serviceStateMapper;
     }
 
     public Set<Command> getCommandSet() {
@@ -74,12 +69,11 @@ public enum Trait {
     }
 
     public static Trait getByCommand(final Command command, final JsonObject params) throws NotAvailableException {
-
         if (command == Command.COLOR_ABSOLUTE) {
-            JsonObject color = params.getAsJsonObject(ColorSpectrumServiceStateMapper.COLOR_KEY);
-            if (color.has(ColorTemperatureServiceStateMapper.TEMPERATURE_KEY)) {
+            JsonObject color = params.getAsJsonObject(ColorServiceColorSpectrumMapper.COLOR_KEY);
+            if (color.has(ColorServiceColorTemperatureMapper.TEMPERATURE_KEY)) {
                 return COLOR_TEMPERATURE;
-            } else if (color.has(ColorSpectrumServiceStateMapper.COLOR_MODEL_HSB)) {
+            } else if (color.has(ColorServiceColorSpectrumMapper.COLOR_MODEL_HSB)) {
                 return COLOR_SPECTRUM;
             }
         }

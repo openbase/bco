@@ -32,7 +32,7 @@ import rst.vision.ColorType.Color;
 import rst.vision.ColorType.Color.Type;
 import rst.vision.HSBColorType.HSBColor;
 
-public class ColorSpectrumServiceStateMapper extends AbstractServiceStateMapper<ColorState> {
+public class ColorServiceColorSpectrumMapper extends AbstractServiceTraitMapper<ColorState> {
 
     public static final String COLOR_MODEL_ATTRIBUTE_KEY = "colorModel";
     //    public static final String COLOR_MODEL_RGB = "rgb";
@@ -46,7 +46,7 @@ public class ColorSpectrumServiceStateMapper extends AbstractServiceStateMapper<
     public static final String HSV_SATURATION_KEY = "saturation";
     public static final String HSV_VALUE_KEY = "value";
 
-    public ColorSpectrumServiceStateMapper() {
+    public ColorServiceColorSpectrumMapper() {
         super(ServiceType.COLOR_STATE_SERVICE);
     }
 

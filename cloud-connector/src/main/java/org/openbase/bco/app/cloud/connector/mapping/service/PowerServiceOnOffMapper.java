@@ -29,11 +29,11 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerStateType.PowerState;
 import rst.domotic.state.PowerStateType.PowerState.State;
 
-public class OnOffServiceStateMapper extends AbstractServiceStateMapper<PowerState> {
+public class PowerServiceOnOffMapper extends AbstractServiceTraitMapper<PowerState> {
 
     public static final String ON_PARAM_KEY = "on";
 
-    public OnOffServiceStateMapper() {
+    public PowerServiceOnOffMapper() {
         super(ServiceType.POWER_STATE_SERVICE);
     }
 
