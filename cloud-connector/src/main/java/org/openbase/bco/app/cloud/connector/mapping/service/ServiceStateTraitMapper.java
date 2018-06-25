@@ -29,7 +29,7 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
-public interface ServiceTraitMapper<SERVICE_STATE extends Message> {
+public interface ServiceStateTraitMapper<SERVICE_STATE extends Message> {
 
     SERVICE_STATE map(final JsonObject jsonObject, final Command command) throws CouldNotPerformException;
 

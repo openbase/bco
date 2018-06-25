@@ -29,8 +29,8 @@ import com.google.protobuf.Message;
 import org.openbase.bco.app.cloud.connector.mapping.lib.Command;
 import org.openbase.bco.app.cloud.connector.mapping.lib.ErrorCode;
 import org.openbase.bco.app.cloud.connector.mapping.lib.Trait;
-import org.openbase.bco.app.cloud.connector.mapping.service.ServiceTraitMapper;
-import org.openbase.bco.app.cloud.connector.mapping.service.ServiceTraitMapperFactory;
+import org.openbase.bco.app.cloud.connector.mapping.service.ServiceStateTraitMapper;
+import org.openbase.bco.app.cloud.connector.mapping.service.ServiceStateTraitMapperFactory;
 import org.openbase.bco.app.cloud.connector.mapping.unit.UnitDataMapper;
 import org.openbase.bco.app.cloud.connector.mapping.unit.UnitTypeMapping;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -308,7 +308,7 @@ public class FulfillmentHandler {
                 final ServiceType serviceType = entry.getValue().getServiceType(trait);
                 traits.add(trait.getRepresentation());
                 try {
-                    ServiceTraitMapperFactory.getInstance().getServiceStateMapper(serviceType, trait).addAttributes(entry.getKey(), attributes);
+                    ServiceStateTraitMapperFactory.getInstance().getServiceStateMapper(serviceType, trait).addAttributes(entry.getKey(), attributes);
                 } catch (CouldNotPerformException ex) {
                     LOGGER.warn("Skip trait[" + trait.name() + "] serviceType[" + serviceType.name() + "]: " + ex.getMessage());
                 }
@@ -414,10 +414,10 @@ public class FulfillmentHandler {
      * Create a query task that will fill the device state according the the state of a unit.
      * The unit is given by its config and all actions on the device state are synchronized using the syncObject.
      *
-     * @param unitConfig
-     * @param deviceState
-     * @param syncObject
-     * @return
+     * @param unitConfig  the unit config for which a remote is created and its state synchronized into the device state
+     * @param deviceState the device state into which the unit state is filled
+     * @param syncObject  object used to synchronize every access to the device state
+     * @return a future for the created task
      */
     private Future createQueryTask(final UnitConfig unitConfig, final JsonObject deviceState, final SyncObject syncObject) {
         return GlobalCachedExecutorService.submit((Callable<Void>) () -> {
@@ -650,9 +650,9 @@ public class FulfillmentHandler {
                     continue;
                 }
                 // resolve mapping for the combination of service type and trait
-                final ServiceTraitMapper serviceTraitMapper = ServiceTraitMapperFactory.getInstance().getServiceStateMapper(serviceType, trait);
+                final ServiceStateTraitMapper serviceStateTraitMapper = ServiceStateTraitMapperFactory.getInstance().getServiceStateMapper(serviceType, trait);
                 // parse trait param into service state
-                final Message serviceState = serviceTraitMapper.map(params, commandType);
+                final Message serviceState = serviceStateTraitMapper.map(params, commandType);
                 // invoke setter for service type on remote
                 final Future serviceFuture = (Future)
                         Services.invokeOperationServiceMethod(serviceType, unitRemote, serviceState);

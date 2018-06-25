@@ -31,12 +31,12 @@ import rst.domotic.state.StandbyStateType.StandbyState.State;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class StandbyServiceTogglesMapper extends AbstractServiceTogglesTraitMapper<StandbyState> {
+public class StandbyStateTogglesMapper extends AbstractServiceStateTogglesMapper<StandbyState> {
 
     private final Toggle standbyToggle;
     private final Named running, standby;
 
-    public StandbyServiceTogglesMapper() {
+    public StandbyStateTogglesMapper() {
         super(ServiceType.STANDBY_STATE_SERVICE);
 
         this.running = new Named("running", "an", "läuft");

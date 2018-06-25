@@ -30,9 +30,9 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public abstract class AbstractServiceProviderSingleModesTraitMapper<SERVICE_STATE extends Message> extends AbstractServiceSingleModesTraitMapper<SERVICE_STATE> {
+public abstract class AbstractServiceStateProviderSingleModeMapper<SERVICE_STATE extends Message> extends AbstractServiceStateSingleModeMapper<SERVICE_STATE> {
 
-    public AbstractServiceProviderSingleModesTraitMapper(ServiceType serviceType) {
+    public AbstractServiceStateProviderSingleModeMapper(ServiceType serviceType) {
         super(serviceType);
     }
 

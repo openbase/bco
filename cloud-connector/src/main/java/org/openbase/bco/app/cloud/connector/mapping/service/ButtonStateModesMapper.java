@@ -33,12 +33,12 @@ import java.util.Arrays;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class ButtonServiceModesMapper extends AbstractServiceProviderSingleModesTraitMapper<ButtonState> {
+public class ButtonStateModesMapper extends AbstractServiceStateProviderSingleModeMapper<ButtonState> {
 
     private final Mode mode;
     private final Setting released, pressed, doublePressed;
 
-    public ButtonServiceModesMapper() {
+    public ButtonStateModesMapper() {
         super(ServiceType.BUTTON_STATE_SERVICE);
 
         this.mode = new Mode("pressed", false, "drück");

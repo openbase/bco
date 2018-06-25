@@ -22,35 +22,27 @@ package org.openbase.bco.app.cloud.connector.mapping.service;
  * #L%
  */
 
-import org.openbase.bco.app.cloud.connector.mapping.lib.Named;
-import org.openbase.bco.app.cloud.connector.mapping.lib.Toggle;
+import com.google.gson.JsonObject;
+import com.google.protobuf.Message;
+import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.state.MotionStateType.MotionState;
-import rst.domotic.state.MotionStateType.MotionState.State;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class MotionServiceTogglesMapper extends AbstractServiceProviderTogglesTraitMapper<MotionState> {
+public abstract class AbstractServiceStateProviderTogglesMapper<SERVICE_STATE extends Message> extends AbstractServiceStateTogglesMapper<SERVICE_STATE> {
 
-    private final Toggle motionToggle;
-    private final Named motion, noMotion;
-
-    public MotionServiceTogglesMapper() {
-        super(ServiceType.MOTION_STATE_SERVICE);
-
-        motion = new Named("motion", "bewegung");
-        noMotion = new Named("no motion", "keine bewegung");
-        motionToggle = new Toggle(motion, noMotion);
+    public AbstractServiceStateProviderTogglesMapper(ServiceType serviceType) {
+        super(serviceType);
     }
 
     @Override
-    public Toggle getToggle() {
-        return motionToggle;
+    protected SERVICE_STATE map(JsonObject jsonObject) throws CouldNotPerformException {
+        throw new CouldNotPerformException("Setting toggle not supported for serviceType[" + getServiceType().name() + "]");
     }
 
     @Override
-    public boolean isOn(MotionState motionState) {
-        return motionState.getValue() == State.MOTION;
+    public SERVICE_STATE getServiceState(boolean on) throws CouldNotPerformException {
+        throw new CouldNotPerformException("Provider service cannot map from[" + on + "] to service state");
     }
 }

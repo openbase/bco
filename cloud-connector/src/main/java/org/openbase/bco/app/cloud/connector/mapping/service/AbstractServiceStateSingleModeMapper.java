@@ -35,9 +35,9 @@ import java.util.Map;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public abstract class AbstractServiceSingleModesTraitMapper<SERVICE_STATE extends Message> extends AbstractServiceModesTraitMapper<SERVICE_STATE> {
+public abstract class AbstractServiceStateSingleModeMapper<SERVICE_STATE extends Message> extends AbstractServiceStateModesMapper<SERVICE_STATE> {
 
-    public AbstractServiceSingleModesTraitMapper(ServiceType serviceType) {
+    public AbstractServiceStateSingleModeMapper(ServiceType serviceType) {
         super(serviceType);
     }
 

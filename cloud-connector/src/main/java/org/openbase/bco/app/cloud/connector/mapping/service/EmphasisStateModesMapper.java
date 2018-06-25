@@ -33,7 +33,7 @@ import java.util.*;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class EmphasisServiceModesMapper extends AbstractServiceModesTraitMapper<EmphasisState> {
+public class EmphasisStateModesMapper extends AbstractServiceStateModesMapper<EmphasisState> {
 
     private static final String SETTING_NAME_LOW = "low";
     private static final String SETTING_NAME_MEDIUM = "medium";
@@ -47,7 +47,7 @@ public class EmphasisServiceModesMapper extends AbstractServiceModesTraitMapper<
     private final Mode comfort, energy, security;
     private final Setting low, medium, high;
 
-    public EmphasisServiceModesMapper() {
+    public EmphasisStateModesMapper() {
         super(ServiceType.EMPHASIS_STATE_SERVICE);
 
         this.low = new Setting(SETTING_NAME_LOW, "niedrig", "gering");

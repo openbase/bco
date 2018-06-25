@@ -34,12 +34,12 @@ import java.util.Locale;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class BatteryServiceModesMapper extends AbstractServiceProviderSingleModesTraitMapper<BatteryState> {
+public class BatteryStateModesMapper extends AbstractServiceStateProviderSingleModeMapper<BatteryState> {
 
     private final Mode mode;
     private final Setting okay, critical, insufficient, unknown;
 
-    public BatteryServiceModesMapper() {
+    public BatteryStateModesMapper() {
         super(ServiceType.BATTERY_STATE_SERVICE);
 
         this.mode = new Mode("battery", true, "batterie", "akku");

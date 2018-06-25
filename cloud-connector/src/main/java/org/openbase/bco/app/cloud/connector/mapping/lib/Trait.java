@@ -23,8 +23,8 @@ package org.openbase.bco.app.cloud.connector.mapping.lib;
  */
 
 import com.google.gson.JsonObject;
-import org.openbase.bco.app.cloud.connector.mapping.service.ColorServiceColorSpectrumMapper;
-import org.openbase.bco.app.cloud.connector.mapping.service.ColorServiceColorTemperatureMapper;
+import org.openbase.bco.app.cloud.connector.mapping.service.ColorStateColorSpectrumMapper;
+import org.openbase.bco.app.cloud.connector.mapping.service.ColorStateColorTemperatureMapper;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.processing.StringProcessor;
 
@@ -71,10 +71,10 @@ public enum Trait {
 
     public static Trait getByCommand(final Command command, final JsonObject params) throws NotAvailableException {
         if (command == Command.COLOR_ABSOLUTE) {
-            JsonObject color = params.getAsJsonObject(ColorServiceColorSpectrumMapper.COLOR_KEY);
-            if (color.has(ColorServiceColorTemperatureMapper.TEMPERATURE_KEY)) {
+            JsonObject color = params.getAsJsonObject(ColorStateColorSpectrumMapper.COLOR_KEY);
+            if (color.has(ColorStateColorTemperatureMapper.TEMPERATURE_KEY)) {
                 return COLOR_TEMPERATURE;
-            } else if (color.has(ColorServiceColorSpectrumMapper.COLOR_MODEL_HSB)) {
+            } else if (color.has(ColorStateColorSpectrumMapper.COLOR_MODEL_HSB)) {
                 return COLOR_SPECTRUM;
             }
         }

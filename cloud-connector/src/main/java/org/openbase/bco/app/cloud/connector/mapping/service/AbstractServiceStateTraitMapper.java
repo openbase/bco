@@ -24,25 +24,36 @@ package org.openbase.bco.app.cloud.connector.mapping.service;
 
 import com.google.gson.JsonObject;
 import com.google.protobuf.Message;
+import org.openbase.bco.app.cloud.connector.mapping.lib.Command;
 import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public abstract class AbstractServiceProviderTogglesTraitMapper<SERVICE_STATE extends Message> extends AbstractServiceTogglesTraitMapper<SERVICE_STATE> {
+public abstract class AbstractServiceStateTraitMapper<SERVICE_STATE extends Message> implements ServiceStateTraitMapper<SERVICE_STATE> {
 
-    public AbstractServiceProviderTogglesTraitMapper(ServiceType serviceType) {
-        super(serviceType);
+    private final ServiceType serviceType;
+
+    public AbstractServiceStateTraitMapper(ServiceType serviceType) {
+        this.serviceType = serviceType;
     }
 
     @Override
-    protected SERVICE_STATE map(JsonObject jsonObject) throws CouldNotPerformException {
-        throw new CouldNotPerformException("Setting toggle not supported for serviceType[" + getServiceType().name() + "]");
+    public SERVICE_STATE map(JsonObject jsonObject, Command command) throws CouldNotPerformException {
+        return map(jsonObject);
+    }
+
+    protected abstract SERVICE_STATE map(JsonObject jsonObject) throws CouldNotPerformException;
+
+    @Override
+    public void addAttributes(UnitConfig unitConfig, JsonObject jsonObject) throws CouldNotPerformException {
+
     }
 
     @Override
-    public SERVICE_STATE getServiceState(boolean on) throws CouldNotPerformException {
-        throw new CouldNotPerformException("Provider service cannot map from[" + on + "] to service state");
+    public ServiceType getServiceType() {
+        return serviceType;
     }
 }

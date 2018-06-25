@@ -22,10 +22,11 @@ package org.openbase.bco.app.cloud.connector.mapping.service;
  * #L%
  */
 
-import org.junit.internal.Classes;
 import org.openbase.bco.app.cloud.connector.mapping.lib.Trait;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.processing.StringProcessor;
+import rst.domotic.service.ServiceCommunicationTypeType.ServiceCommunicationType.CommunicationType;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
 import java.lang.reflect.InvocationTargetException;
@@ -35,44 +36,45 @@ import java.util.Map;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class ServiceTraitMapperFactory {
+public class ServiceStateTraitMapperFactory {
 
     private static final String MAPPER_CLASS_NAME_ENDING = "Mapper";
 
-    private static ServiceTraitMapperFactory instance;
+    private static ServiceStateTraitMapperFactory instance;
 
-    public static synchronized ServiceTraitMapperFactory getInstance() {
+    public static synchronized ServiceStateTraitMapperFactory getInstance() {
         if (instance == null) {
-            instance = new ServiceTraitMapperFactory();
+            instance = new ServiceStateTraitMapperFactory();
         }
         return instance;
     }
 
-    private final Map<String, ServiceTraitMapper> mapperMap;
+    private final Map<String, ServiceStateTraitMapper> mapperMap;
 
-    private ServiceTraitMapperFactory() {
+    private ServiceStateTraitMapperFactory() {
         this.mapperMap = new HashMap<>();
     }
 
-    public ServiceTraitMapper getServiceStateMapper(final ServiceType serviceType, final Trait trait) throws CouldNotPerformException {
-        final String key = StringProcessor.transformUpperCaseToCamelCase(serviceType.name() + "_" + trait.name());
+    public ServiceStateTraitMapper getServiceStateMapper(final ServiceType serviceType, final Trait trait) throws CouldNotPerformException {
+        final CommunicationType communicationType = Registries.getTemplateRegistry().getServiceTemplateByType(serviceType).getCommunicationType();
+        final String key = StringProcessor.transformUpperCaseToCamelCase(communicationType.name() + "_" + trait.name());
         if (!mapperMap.containsKey(key)) {
-            mapperMap.put(key, loadMapper(serviceType, trait));
+            mapperMap.put(key, loadMapper(communicationType, trait));
         }
 
         return mapperMap.get(key);
     }
 
-    private ServiceTraitMapper loadMapper(final ServiceType serviceType, final Trait trait) throws CouldNotPerformException {
-        final String serviceTypeComponent = StringProcessor.transformUpperCaseToCamelCase(serviceType.name()).replace("State", "");
+    private ServiceStateTraitMapper loadMapper(final CommunicationType communicationType, final Trait trait) throws CouldNotPerformException {
+        final String serviceTypeComponent = StringProcessor.transformUpperCaseToCamelCase(communicationType.name());
         final String traitComponent = StringProcessor.transformUpperCaseToCamelCase(trait.name());
         final String className = serviceTypeComponent + traitComponent + MAPPER_CLASS_NAME_ENDING;
         final String fullClassName = getClass().getPackage().getName() + "." + className;
 
         try {
-            return (ServiceTraitMapper) getClass().getClassLoader().loadClass(fullClassName).getConstructor().newInstance();
+            return (ServiceStateTraitMapper) getClass().getClassLoader().loadClass(fullClassName).getConstructor().newInstance();
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException | ClassCastException ex) {
-            throw new CouldNotPerformException("Could not load class[" + className + "] for combination of serviceType[" + serviceType.name() + "] and trait[" + trait.name() + "]");
+            throw new CouldNotPerformException("Could not load class[" + className + "] for combination of serviceType[" + communicationType.name() + "] and trait[" + trait.name() + "]");
         }
     }
 }

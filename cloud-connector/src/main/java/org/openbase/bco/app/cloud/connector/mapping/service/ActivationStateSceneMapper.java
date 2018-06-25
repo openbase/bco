@@ -33,12 +33,12 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class ActivationServiceSceneMapper extends AbstractServiceTraitMapper<ActivationState> {
+public class ActivationStateSceneMapper extends AbstractServiceStateTraitMapper<ActivationState> {
 
     public static final String DEACTIVATE_PARAM_KEY = "deactivate";
     public static final String REVERSIBLE_KEY = "sceneReversible";
 
-    public ActivationServiceSceneMapper() {
+    public ActivationStateSceneMapper() {
         super(ServiceType.ACTIVATION_STATE_SERVICE);
     }
 

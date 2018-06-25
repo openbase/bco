@@ -33,12 +33,12 @@ import java.util.Locale;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class PowerConsumptionServiceModesMapper extends AbstractServiceProviderSingleModesTraitMapper<PowerConsumptionState> {
+public class PowerConsumptionStateModesMapper extends AbstractServiceStateProviderSingleModeMapper<PowerConsumptionState> {
 
     private final Mode mode;
     private final Setting low, medium, high;
 
-    public PowerConsumptionServiceModesMapper() {
+    public PowerConsumptionStateModesMapper() {
         super(ServiceType.POWER_CONSUMPTION_STATE_SERVICE);
 
         this.mode = new Mode("consumption", true, "verbrauch", "stromverbrauch", "energieverbrauch");

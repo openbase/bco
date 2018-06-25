@@ -26,7 +26,6 @@ import com.google.gson.JsonArray;
 import com.google.gson.JsonObject;
 import com.google.protobuf.Message;
 import org.openbase.bco.app.cloud.connector.mapping.lib.Mode;
-import org.openbase.bco.app.cloud.connector.mapping.lib.Setting;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -41,14 +40,14 @@ import java.util.Map.Entry;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public abstract class AbstractServiceModesTraitMapper<SERVICE_STATE extends Message> extends AbstractServiceTraitMapper<SERVICE_STATE> {
+public abstract class AbstractServiceStateModesMapper<SERVICE_STATE extends Message> extends AbstractServiceStateTraitMapper<SERVICE_STATE> {
 
     private static final String AVAILABLE_MODES_KEY = "availableModes";
 
     private static final String UPDATE_MODE_SETTINGS_KEY = "updateModeSettings";
     private static final String CURRENT_MODE_SETTINGS_KEY = "currentModeSettings";
 
-    AbstractServiceModesTraitMapper(ServiceType serviceType) {
+    AbstractServiceStateModesMapper(ServiceType serviceType) {
         super(serviceType);
     }
 

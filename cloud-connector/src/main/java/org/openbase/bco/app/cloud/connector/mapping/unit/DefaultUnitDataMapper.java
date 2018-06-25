@@ -27,8 +27,8 @@ import com.google.protobuf.Message;
 import org.openbase.bco.app.cloud.connector.FulfillmentHandler;
 import org.openbase.bco.app.cloud.connector.mapping.lib.ErrorCode;
 import org.openbase.bco.app.cloud.connector.mapping.lib.Trait;
-import org.openbase.bco.app.cloud.connector.mapping.service.ServiceTraitMapperFactory;
-import org.openbase.bco.app.cloud.connector.mapping.service.ServiceTraitMapper;
+import org.openbase.bco.app.cloud.connector.mapping.service.ServiceStateTraitMapperFactory;
+import org.openbase.bco.app.cloud.connector.mapping.service.ServiceStateTraitMapper;
 import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -50,8 +50,8 @@ public class DefaultUnitDataMapper<UR extends UnitRemote> implements UnitDataMap
 
                 try {
                     final Message serviceState = (Message) Services.invokeProviderServiceMethod(serviceType, unitRemote);
-                    final ServiceTraitMapper serviceTraitMapper = ServiceTraitMapperFactory.getInstance().getServiceStateMapper(serviceType, trait);
-                    serviceTraitMapper.map(serviceState, deviceState);
+                    final ServiceStateTraitMapper serviceStateTraitMapper = ServiceStateTraitMapperFactory.getInstance().getServiceStateMapper(serviceType, trait);
+                    serviceStateTraitMapper.map(serviceState, deviceState);
                 } catch (CouldNotPerformException ex) {
                     // getting service value or resolving mapper failed
                     FulfillmentHandler.setError(deviceState, ex, ErrorCode.UNKNOWN_ERROR);

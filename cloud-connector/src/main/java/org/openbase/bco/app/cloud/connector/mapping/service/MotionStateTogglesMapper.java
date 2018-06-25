@@ -22,38 +22,35 @@ package org.openbase.bco.app.cloud.connector.mapping.service;
  * #L%
  */
 
-import com.google.gson.JsonObject;
-import com.google.protobuf.Message;
-import org.openbase.bco.app.cloud.connector.mapping.lib.Command;
-import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.bco.app.cloud.connector.mapping.lib.Named;
+import org.openbase.bco.app.cloud.connector.mapping.lib.Toggle;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.state.MotionStateType.MotionState;
+import rst.domotic.state.MotionStateType.MotionState.State;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public abstract class AbstractServiceTraitMapper<SERVICE_STATE extends Message> implements ServiceTraitMapper<SERVICE_STATE> {
+public class MotionStateTogglesMapper extends AbstractServiceStateProviderTogglesMapper<MotionState> {
 
-    private final ServiceType serviceType;
+    private final Toggle motionToggle;
+    private final Named motion, noMotion;
 
-    public AbstractServiceTraitMapper(ServiceType serviceType) {
-        this.serviceType = serviceType;
+    public MotionStateTogglesMapper() {
+        super(ServiceType.MOTION_STATE_SERVICE);
+
+        motion = new Named("motion", "bewegung");
+        noMotion = new Named("no motion", "keine bewegung");
+        motionToggle = new Toggle(motion, noMotion);
     }
 
     @Override
-    public SERVICE_STATE map(JsonObject jsonObject, Command command) throws CouldNotPerformException {
-        return map(jsonObject);
-    }
-
-    protected abstract SERVICE_STATE map(JsonObject jsonObject) throws CouldNotPerformException;
-
-    @Override
-    public void addAttributes(UnitConfig unitConfig, JsonObject jsonObject) throws CouldNotPerformException {
-
+    public Toggle getToggle() {
+        return motionToggle;
     }
 
     @Override
-    public ServiceType getServiceType() {
-        return serviceType;
+    public boolean isOn(MotionState motionState) {
+        return motionState.getValue() == State.MOTION;
     }
 }

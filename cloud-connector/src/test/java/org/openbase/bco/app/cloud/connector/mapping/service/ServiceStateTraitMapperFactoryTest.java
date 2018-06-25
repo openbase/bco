@@ -22,9 +22,13 @@ package org.openbase.bco.app.cloud.connector.mapping.service;
  * #L%
  */
 
+import org.junit.After;
+import org.junit.Before;
 import org.junit.Test;
 import org.openbase.bco.app.cloud.connector.mapping.lib.Trait;
 import org.openbase.bco.app.cloud.connector.mapping.unit.UnitTypeMapping;
+import org.openbase.bco.registry.mock.MockRegistryHolder;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -39,9 +43,21 @@ import static junit.framework.TestCase.assertEquals;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class ServiceTraitMapperFactoryTest {
+public class ServiceStateTraitMapperFactoryTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceTraitMapperFactoryTest.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(ServiceStateTraitMapperFactoryTest.class);
+
+    @Before
+    public void setUp() throws Exception {
+        MockRegistryHolder.newMockRegistry();
+
+        Registries.getTemplateRegistry(true);
+    }
+
+    @After
+    public void tearDown() {
+        MockRegistryHolder.shutdownMockRegistry();
+    }
 
     /**
      * Test if for all defined combinations of services and traits a mapper is available.
@@ -51,14 +67,14 @@ public class ServiceTraitMapperFactoryTest {
         LOGGER.info("testMapperAvailability");
 
         final Map<String, CouldNotPerformException> mapperExceptionMap = new HashMap<>();
-        ServiceTraitMapperFactory serviceTraitMapperFactory = ServiceTraitMapperFactory.getInstance();
+        final ServiceStateTraitMapperFactory serviceStateTraitMapperFactory = ServiceStateTraitMapperFactory.getInstance();
 
         for (final UnitTypeMapping unitTypeMapping : UnitTypeMapping.values()) {
             for (final Trait trait : unitTypeMapping.getTraitSet()) {
                 final ServiceType serviceType = unitTypeMapping.getServiceType(trait);
 
                 try {
-                    serviceTraitMapperFactory.getServiceStateMapper(serviceType, trait);
+                    serviceStateTraitMapperFactory.getServiceStateMapper(serviceType, trait);
                 } catch (CouldNotPerformException ex) {
                     mapperExceptionMap.put(serviceType.name() + "_" + trait.name(), ex);
                 }

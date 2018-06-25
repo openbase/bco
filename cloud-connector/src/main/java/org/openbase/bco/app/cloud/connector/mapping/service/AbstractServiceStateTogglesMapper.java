@@ -32,12 +32,12 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public abstract class AbstractServiceTogglesTraitMapper<SERVICE_STATE extends Message> extends AbstractServiceTraitMapper<SERVICE_STATE> {
+public abstract class AbstractServiceStateTogglesMapper<SERVICE_STATE extends Message> extends AbstractServiceStateTraitMapper<SERVICE_STATE> {
 
     private static final String CURRENT_TOGGLE_SETTINGS_KEY = "currentToggleSettings";
     private static final String UPDATE_TOGGLE_SETTINGS_KEY = "updateToggleSettings";
 
-    public AbstractServiceTogglesTraitMapper(ServiceType serviceType) {
+    public AbstractServiceStateTogglesMapper(ServiceType serviceType) {
         super(serviceType);
     }
 

@@ -35,7 +35,7 @@ import java.util.Arrays;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class BlindServiceModesMapper extends AbstractServiceSingleModesTraitMapper<BlindState> {
+public class BlindStateModesMapper extends AbstractServiceStateSingleModeMapper<BlindState> {
 
     private static final String UP_SETTING_NAME = "up";
     private static final String DOWN_SETTING_NAME = "down";
@@ -44,7 +44,7 @@ public class BlindServiceModesMapper extends AbstractServiceSingleModesTraitMapp
     private final Mode mode;
     private final Setting up, down, stop;
 
-    public BlindServiceModesMapper() {
+    public BlindStateModesMapper() {
         super(ServiceType.BLIND_STATE_SERVICE);
 
         this.mode = new Mode("movement", false, "bewegung");
