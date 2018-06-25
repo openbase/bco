@@ -42,6 +42,19 @@ public class Setting {
         languageSynonymMap.put(Locale.GERMAN.getLanguage(), Arrays.asList(germanSynonyms));
     }
 
+    public void addLanguageSynonyms(final Locale locale, final String... synonyms) {
+        if (languageSynonymMap.containsKey(locale.getLanguage())) {
+            final List<String> synonymList = languageSynonymMap.get(locale.getLanguage());
+            for (final String synonym : synonyms) {
+                if (!synonymList.contains(synonym)) {
+                    synonymList.add(synonym);
+                }
+            }
+        } else {
+            languageSynonymMap.put(locale.getLanguage(), Arrays.asList(synonyms));
+        }
+    }
+
     public String getName() {
         return name;
     }

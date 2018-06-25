@@ -29,8 +29,8 @@ import com.google.protobuf.Message;
 import org.openbase.bco.app.cloud.connector.mapping.lib.Command;
 import org.openbase.bco.app.cloud.connector.mapping.lib.ErrorCode;
 import org.openbase.bco.app.cloud.connector.mapping.lib.Trait;
-import org.openbase.bco.app.cloud.connector.mapping.service.ServiceTraitMapperFactory;
 import org.openbase.bco.app.cloud.connector.mapping.service.ServiceTraitMapper;
+import org.openbase.bco.app.cloud.connector.mapping.service.ServiceTraitMapperFactory;
 import org.openbase.bco.app.cloud.connector.mapping.unit.UnitDataMapper;
 import org.openbase.bco.app.cloud.connector.mapping.unit.UnitTypeMapping;
 import org.openbase.bco.dal.lib.layer.service.Services;
@@ -39,16 +39,21 @@ import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.MultiException;
+import org.openbase.jul.exception.MultiException.ExceptionStack;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.TimeoutException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
+import org.openbase.jul.processing.StringProcessor;
 import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import rst.configuration.LabelType.Label;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
 import java.util.*;
 import java.util.Map.Entry;
@@ -156,6 +161,19 @@ public class FulfillmentHandler {
         return response;
     }
 
+    private Set<UnitConfig> getUnitConfigsHandledByDevice(final UnitConfig deviceUnitConfig) throws CouldNotPerformException {
+        final Set<UnitConfig> handledByDevice = new HashSet<>();
+        for (final String hostedUnitId : deviceUnitConfig.getDeviceConfig().getUnitIdList()) {
+            final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(hostedUnitId);
+
+            if (unitConfig.getBoundToUnitHost() && unitConfig.getLabel().equals(deviceUnitConfig.getLabel())) {
+                handledByDevice.add(unitConfig);
+            }
+        }
+
+        return handledByDevice;
+    }
+
     /**
      * Handle a sync intent from the Google Assistant.
      * This method will fill the payload object according to this intents specification
@@ -174,79 +192,145 @@ public class FulfillmentHandler {
             final UnitRegistryRemote unitRegistryRemote = Registries.getUnitRegistry();
             try {
                 unitRegistryRemote.waitForData(REGISTRY_TIMEOUT, TimeUnit.SECONDS);
+                Registries.getTemplateRegistry().waitForData(REGISTRY_TIMEOUT, TimeUnit.SECONDS);
             } catch (CouldNotPerformException | InterruptedException ex) {
                 setError(payload, ex, ErrorCode.TIMEOUT);
                 return;
             }
 
-            for (final UnitConfig unitConfig : unitRegistryRemote.getUnitConfigs()) {
-                final JsonObject device = new JsonObject();
+            final Set<String> handledUnitConfigs = new HashSet<>();
 
-                device.addProperty(ID_KEY, unitConfig.getId());
-                device.addProperty("willReportState", false); // This could be activated in the future
-                device.addProperty("roomHint", LabelProcessor.getFirstLabel(unitRegistryRemote.getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getLabel()));
-
-                final JsonObject name = new JsonObject();
-                name.addProperty("name", LabelProcessor.getFirstLabel(unitConfig.getLabel()));
-                final JsonArray defaultNames = new JsonArray();
-                for (final String alias : unitConfig.getAliasList()) {
-                    defaultNames.add(alias.replace("-", " "));
-                }
-                name.add("defaultNames", defaultNames);
-
-                final JsonArray nickNames = new JsonArray();
-                for (final Label.MapFieldEntry mapFieldEntry : unitConfig.getLabel().getEntryList()) {
-                    for (final String label : mapFieldEntry.getValueList()) {
-                        nickNames.add(label);
-                    }
-                }
-                name.add("nicknames", nickNames);
-                device.add(NAME_KEY, name);
-
-                UnitTypeMapping unitTypeMapping;
-                try {
-                    unitTypeMapping = UnitTypeMapping.getByUnitType(unitConfig.getUnitType());
-                } catch (NotAvailableException ex) {
-                    LOGGER.warn("Skip unit[" + unitConfig.getAlias(0) + "] because no mapping for unitType[" + unitConfig.getUnitType().name() + "] available");
+            // if a unit config is bound to and hosted by a device and this device hosts more than one unit
+            // with the same label which are all bound to it, register them as one
+            for (final UnitConfig deviceUnitConfig : unitRegistryRemote.getUnitConfigs(UnitType.DEVICE)) {
+                if (deviceUnitConfig.getDeviceConfig().getUnitIdCount() < 2) {
                     continue;
                 }
-                device.addProperty(TYPE_KEY, unitTypeMapping.getDeviceType().getRepresentation());
 
-                final JsonObject attributes = new JsonObject();
-                final JsonArray traits = new JsonArray();
-                final Set<ServiceType> serviceTypeSet = new HashSet<>();
-                for (final Trait trait : unitTypeMapping.getTraitSet()) {
-                    final ServiceType serviceType = unitTypeMapping.getServiceType(trait);
-                    traits.add(trait.getRepresentation());
+                final Map<UnitConfig, UnitTypeMapping> unitConfigTypeMapping = new HashMap<>();
+                for (final UnitConfig hostedUnit : getUnitConfigsHandledByDevice(deviceUnitConfig)) {
                     try {
-                        ServiceTraitMapperFactory.getInstance().getServiceStateMapper(serviceType, trait).addAttributes(unitConfig, attributes);
-                    } catch (CouldNotPerformException ex) {
-                        LOGGER.warn("Skip trait[" + trait.name() + "] serviceType[" + serviceType.name() + "] " +
-                                "combination for unit[" + unitConfig.getAlias(0) + "] because no trait mapping available");
-                        continue;
+                        final UnitTypeMapping unitTypeMapping = UnitTypeMapping.getByUnitType(hostedUnit.getUnitType());
+                        unitConfigTypeMapping.put(hostedUnit, unitTypeMapping);
+                    } catch (NotAvailableException ex) {
+                        // print warning
+                        LOGGER.warn("Skip unit[" + hostedUnit.getAlias(0) + "]: " + ex.getMessage());
+                        // unit does not need to be handled later because no type mapping exists
+                        handledUnitConfigs.add(hostedUnit.getId());
                     }
                 }
 
-                if (traits.size() == 0) {
-                    // skip because no traits have been added
-                    LOGGER.warn("Skip unit[" + unitConfig.getAlias(0) + "] because no traits could be added");
+                // test if there are at least to units hosted by this devices which are bound and have the same label
+                if (unitConfigTypeMapping.size() > 1) {
+                    try {
+                        // create google device for this device with all its internal units
+                        devices.add(createJsonDevice(deviceUnitConfig, unitConfigTypeMapping));
+                        // add all units already handled by this routine
+                        for (final UnitConfig unitConfig : unitConfigTypeMapping.keySet()) {
+                            handledUnitConfigs.add(unitConfig.getId());
+                        }
+                    } catch (NotAvailableException ex) {
+                        LOGGER.warn("Skip device[" + deviceUnitConfig.getAlias(0) + "]: " + ex.getMessage());
+                    }
+                }
+            }
+
+            for (final UnitConfig unitConfig : unitRegistryRemote.getUnitConfigs()) {
+                if (unitConfig.getUnitType() == UnitType.LOCATION || unitConfig.getUnitType() == UnitType.DEVICE) {
+                    // skip locations and devices
                     continue;
                 }
-                device.add(TRAITS_KEY, traits);
-                device.add("attributes", attributes);
 
-                final JsonObject deviceInfo = new JsonObject();
-//                deviceInfo.addProperty("manufacturer", Registries.getClassRegistry(true).getDeviceClassById(Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId()).getDeviceConfig().getDeviceClassId()).getCompany());
-                //TODO: missing: model, hwVersion, swVersion
-                device.add("deviceInfo", deviceInfo);
+                if (handledUnitConfigs.contains(unitConfig.getId())) {
+                    // unit already handled by device routine above
+                    continue;
+                }
 
-                //TODO: custom data missing
-                devices.add(device);
+                try {
+                    final UnitTypeMapping unitTypeMapping = UnitTypeMapping.getByUnitType(unitConfig.getUnitType());
+                    final Map<UnitConfig, UnitTypeMapping> unitConfigTypeMapping = new HashMap<>();
+                    unitConfigTypeMapping.put(unitConfig, unitTypeMapping);
+
+                    devices.add(createJsonDevice(unitConfig, unitConfigTypeMapping));
+                } catch (NotAvailableException ex) {
+                    LOGGER.warn("Skip unit[" + unitConfig.getAlias(0) + "]: " + ex.getMessage());
+                }
             }
             payload.add(DEVICES_KEY, devices);
         } catch (CouldNotPerformException ex) {
             setError(payload, ex, ErrorCode.UNKNOWN_ERROR);
         }
+    }
+
+    private JsonObject createJsonDevice(final UnitConfig host, final Map<UnitConfig, UnitTypeMapping> mappings) throws CouldNotPerformException {
+        final JsonObject device = new JsonObject();
+
+        device.addProperty(ID_KEY, host.getId());
+        device.addProperty("willReportState", false); // This could be activated in the future
+        device.addProperty("roomHint", LabelProcessor.getFirstLabel(Registries.getUnitRegistry().getUnitConfigById(host.getPlacementConfig().getLocationId()).getLabel()));
+
+        final JsonObject name = new JsonObject();
+        final String mainName = StringProcessor.insertSpaceBetweenCamelCase(LabelProcessor.getBestMatch(host.getLabel()));
+        name.addProperty("name", mainName);
+        final JsonArray defaultNames = new JsonArray();
+        for (final String alias : host.getAliasList()) {
+            defaultNames.add(StringProcessor.insertSpaceBetweenCamelCase(alias.replace("-", " ")));
+        }
+        name.add("defaultNames", defaultNames);
+
+        final JsonArray nickNames = new JsonArray();
+        for (final Label.MapFieldEntry mapFieldEntry : host.getLabel().getEntryList()) {
+            for (final String label : mapFieldEntry.getValueList()) {
+                final String nickName = StringProcessor.insertSpaceBetweenCamelCase(label);
+                if (nickName.equals(mainName)) {
+                    continue;
+                }
+
+                nickNames.add(StringProcessor.insertSpaceBetweenCamelCase(label));
+            }
+        }
+        if (nickNames.size() != 0) {
+            name.add("nicknames", nickNames);
+        }
+        device.add(NAME_KEY, name);
+
+        if (mappings.isEmpty()) {
+            throw new NotAvailableException("UnitTypeMappings for host[" + host.getAliasList().get(0) + "]");
+        }
+        //TODO: can this be solved differently
+        // user the first unit type mapping to resolve the device type
+        device.addProperty(TYPE_KEY, mappings.values().iterator().next().getDeviceType().getRepresentation());
+
+        final JsonObject attributes = new JsonObject();
+        final JsonArray traits = new JsonArray();
+        for (final Entry<UnitConfig, UnitTypeMapping> entry : mappings.entrySet()) {
+            for (final Trait trait : entry.getValue().getTraitSet()) {
+                final ServiceType serviceType = entry.getValue().getServiceType(trait);
+                traits.add(trait.getRepresentation());
+                try {
+                    ServiceTraitMapperFactory.getInstance().getServiceStateMapper(serviceType, trait).addAttributes(entry.getKey(), attributes);
+                } catch (CouldNotPerformException ex) {
+                    LOGGER.warn("Skip trait[" + trait.name() + "] serviceType[" + serviceType.name() + "] " +
+                            "combination for unit[" + entry.getKey().getAlias(0) + "] because no trait mapping available");
+                }
+            }
+        }
+
+
+        if (traits.size() == 0) {
+            // skip because no traits have been added
+            throw new NotAvailableException("Traits for unit[" + host.getAlias(0) + "]");
+        }
+        device.add(TRAITS_KEY, traits);
+        device.add("attributes", attributes);
+
+        final JsonObject deviceInfo = new JsonObject();
+//                deviceInfo.addProperty("manufacturer", Registries.getClassRegistry(true).getDeviceClassById(Registries.getUnitRegistry().getUnitConfigById(unitConfig.getUnitHostId()).getDeviceConfig().getDeviceClassId()).getCompany());
+        //TODO: missing: model, hwVersion, swVersion
+        device.add("deviceInfo", deviceInfo);
+
+        //TODO: custom data missing
+        return device;
     }
 
     /**
@@ -256,7 +340,6 @@ public class FulfillmentHandler {
      * @param payload the payload of the response
      * @param input   the input object as send by Google
      */
-    @SuppressWarnings("unchecked")
     private void handleQuery(final JsonObject payload, final JsonObject input) {
         // parse device ids from request input
         final List<String> deviceIdList = new ArrayList<>();
@@ -275,40 +358,34 @@ public class FulfillmentHandler {
             final JsonObject deviceState = new JsonObject();
             devices.add(id, deviceState);
 
-            // create a task which will fill the device state accordingly
-            // this is a separate task because it will be waited for unit data and this should be done for all requested in parallel
-            final Future future = GlobalCachedExecutorService.submit((Callable<Void>) () -> {
-                try {
-                    // get unit remote by id
-                    final UnitRemote unitRemote = Units.getUnit(id, false);
+            // create a tasks which will fill the device state accordingly
+            // this is done in separate tasks because it will be waited for unit data and this should be done for all requested in parallel
+            try {
+                final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(id);
+                final SyncObject syncObject = new SyncObject(unitConfig.getAlias(0));
+                if (unitConfig.getUnitType() == UnitType.DEVICE) {
+                    // if unit is a device start tasks for all its internal dal units
+                    final Future future = GlobalCachedExecutorService.submit(() -> {
+                        final Set<Future> internalFutureSet = new HashSet<>();
+                        // start task for all internal units
+                        for (final UnitConfig hostedUnit : getUnitConfigsHandledByDevice(unitConfig)) {
+                            internalFutureSet.add(createQueryTask(hostedUnit, deviceState, syncObject));
+                        }
 
-                    try {
-                        // wait for data
-                        unitRemote.waitForData(UNIT_DATA_TIMEOUT, TimeUnit.SECONDS);
-                    } catch (CouldNotPerformException ex) {
-                        // this is thrown on a timeout so assume the unit is not online
-                        deviceState.addProperty(DEBUG_CODE_KEY, ex.getMessage());
-                        deviceState.addProperty("online", false);
+                        // wait for them to finish
+                        for (final Future internalFuture : internalFutureSet) {
+                            internalFuture.get();
+                        }
                         return null;
-                    }
-                    // received data so unit is online
-                    deviceState.addProperty("online", true);
-
-                    // map state of unit remote into device state object
-                    UnitDataMapper.getByType(unitRemote.getUnitType()).map(unitRemote, deviceState);
-                } catch (NotAvailableException ex) {
-                    // thrown if the unit remote is not available so propagate deviceNotFound error
-                    setError(deviceState, ex, ErrorCode.DEVICE_NOT_FOUND);
-                } catch (InterruptedException ex) {
-                    // interrupted so propagate a timeout error
-                    setError(deviceState, ex, ErrorCode.TIMEOUT);
+                    });
+                    idFutureMap.put(unitConfig.getId(), future);
+                } else {
+                    // unit is not a device so just start a task
+                    idFutureMap.put(unitConfig.getId(), createQueryTask(unitConfig, deviceState, syncObject));
                 }
-
-                return null;
-            });
-
-            // save future mapped to id
-            idFutureMap.put(id, future);
+            } catch (CouldNotPerformException ex) {
+                setError(deviceState, ex, ErrorCode.UNKNOWN_ERROR);
+            }
         }
 
         // wait for all futures
@@ -335,6 +412,55 @@ public class FulfillmentHandler {
     }
 
     /**
+     * Create a query task that will fill the device state according the the state of a unit.
+     * The unit is given by its config and all actions on the device state are synchronized using the syncObject.
+     *
+     * @param unitConfig
+     * @param deviceState
+     * @param syncObject
+     * @return
+     */
+    private Future createQueryTask(final UnitConfig unitConfig, final JsonObject deviceState, final SyncObject syncObject) {
+        return GlobalCachedExecutorService.submit((Callable<Void>) () -> {
+            try {
+                // get unit remote by id
+                final UnitRemote unitRemote = Units.getUnit(unitConfig, false);
+
+                try {
+                    // wait for data
+                    unitRemote.waitForData(UNIT_DATA_TIMEOUT, TimeUnit.SECONDS);
+                } catch (CouldNotPerformException ex) {
+                    // this is thrown on a timeout so assume the unit is not online
+                    synchronized (syncObject) {
+                        deviceState.addProperty(DEBUG_CODE_KEY, ex.getMessage());
+                        deviceState.addProperty("online", false);
+                    }
+                    return null;
+                }
+                // received data so unit is online
+                synchronized (syncObject) {
+                    deviceState.addProperty("online", true);
+
+                    // map state of unit remote into device state object
+                    UnitDataMapper.getByType(unitRemote.getUnitType()).map(unitRemote, deviceState);
+                }
+            } catch (NotAvailableException ex) {
+                // thrown if the unit remote is not available so propagate deviceNotFound error
+                synchronized (syncObject) {
+                    setError(deviceState, ex, ErrorCode.DEVICE_NOT_FOUND);
+                }
+            } catch (InterruptedException ex) {
+                // interrupted so propagate a timeout error
+                synchronized (syncObject) {
+                    setError(deviceState, ex, ErrorCode.TIMEOUT);
+                }
+            }
+
+            return null;
+        });
+    }
+
+    /**
      * Handle an execute intent from the Google Assistant.
      * This method will fill the payload object according to this intents specification
      * and the received input.
@@ -350,7 +476,7 @@ public class FulfillmentHandler {
             // treat command as json object
             final JsonObject command = commandElem.getAsJsonObject();
 
-            // convert all execution objects into the command into a list
+            // convert all execution objects in the command into a list
             List<JsonObject> executionList = new ArrayList<>();
             for (JsonElement executeElem : command.getAsJsonArray(EXECUTION_KEY)) {
                 executionList.add(executeElem.getAsJsonObject());
@@ -375,63 +501,61 @@ public class FulfillmentHandler {
         payload.add(COMMANDS_KEY, commands);
 
         final Map<String, Future> idFutureMap = new HashMap<>();
+        // iterate over all entries, start according tasks to execute the given commands and save futures of these tasks
         for (final Entry<String, List<JsonObject>> idCommand : idCommandMap.entrySet()) {
             try {
-                final UnitRemote unitRemote = Units.getUnit(idCommand.getKey(), false);
+                final UnitConfig unitConfig = Registries.getUnitRegistry().getUnitConfigById(idCommand.getKey());
+                final Future future;
 
-                final Future future = GlobalCachedExecutorService.submit((Callable<Void>) () -> {
-                    try {
-                        // wait for data
-                        unitRemote.waitForData(UNIT_DATA_TIMEOUT, TimeUnit.SECONDS);
-                    } catch (CouldNotPerformException ex) {
-                        // throw timeout so that thread waiting for this tasks knows that waiting for data failed
-                        throw new TimeoutException();
-                    } catch (InterruptedException ex) {
-                        // interrupted so just return to finish this task
-                        return null;
-                    }
-
-                    // iterate over all executions
-                    for (final JsonObject execution : idCommand.getValue()) {
-                        // extract command name and param object
-                        final String commandName = execution.get(COMMAND_KEY).getAsString();
-                        final JsonObject params = execution.getAsJsonObject(PARAMS_KEY);
-
-                        // find command type by name
-                        final Command commandType = Command.getByRepresentation(commandName);
-                        // find trait by command type and params
-                        final Trait trait = Trait.getByCommand(commandType, params);
-                        // resolve unit type mapping for remote
-                        final UnitTypeMapping unitTypeMapping = UnitTypeMapping.getByUnitType(unitRemote.getUnitType());
-                        // get service type for trait
-                        final ServiceType serviceType = unitTypeMapping.getServiceType(trait);
-                        // resolve mapping for the combination of service type and trait
-                        final ServiceTraitMapper serviceTraitMapper = ServiceTraitMapperFactory.getInstance().getServiceStateMapper(serviceType, trait);
-                        // parse trait param into service state
-                        final Message serviceState = serviceTraitMapper.map(params, commandType);
-                        // invoke setter for service type on remote
-                        final Future serviceFuture = (Future)
-                                Services.invokeOperationServiceMethod(serviceType, unitRemote, serviceState);
-
-                        // wait for result
+                if (unitConfig.getUnitType() == UnitType.DEVICE) {
+                    // device was used to group some dal units together so create a task which will handle all internal
+                    // dal unit tasks
+                    future = GlobalCachedExecutorService.submit((Callable<Void>) () -> {
+                        final Set<Future> internalFutureSet = new HashSet<>();
                         try {
-                            serviceFuture.get(UNIT_TASK_TIMEOUT, TimeUnit.SECONDS);
-                        } catch (InterruptedException ex) {
-                            // cancel internal task and finish normally
-                            serviceFuture.cancel(true);
-                        } catch (ExecutionException ex) {
-                            // throw exception to inform task waiting for this one
-                            throw new CouldNotPerformException("Invoking service[" + serviceType.name() + "] " +
-                                    "operation method failed for unit[" + unitRemote + "]", ex);
-                        }
-                    }
+                            // create tasks for all grouped dal units
+                            for (final UnitConfig hostedUnitConfig : getUnitConfigsHandledByDevice(unitConfig)) {
+                                internalFutureSet.add(createExecutionTask(Units.getUnit(hostedUnitConfig, false), idCommand.getValue()));
+                            }
 
-                    return null;
-                });
+                            // wait for all tasks and gather exceptions
+                            ExceptionStack exceptionStack = null;
+                            for (final Future internalFuture : internalFutureSet) {
+                                try {
+                                    // timeout is not needed because the created tasks are implemented in a way that
+                                    // they will no block forever
+                                    internalFuture.get();
+                                } catch (ExecutionException ex) {
+                                    // gather throws exception on stack
+                                    exceptionStack = MultiException.push(internalFuture, ex, exceptionStack);
+                                    /* Note: It could be differentiated by exception cause as done below to allow the
+                                     * code below to handle tha failure of this future correctly. However, it is not
+                                     * clear how this should be done. What if one dal unit fails because it is offline
+                                     * and another could not execute the given action. Therefore it is not differentiated
+                                     * and this task fails if one internal task fails.
+                                     */
+                                }
+                            }
+                            // throw exception if at least one internal task has failed
+                            MultiException.checkAndThrow("Could not execute one command for internal units of device[" + unitConfig.getAlias(0) + "]", exceptionStack);
+                        } catch (InterruptedException ex) {
+                            // interrupted, so cancel all internal tasks and finish normally
+                            for (final Future internalFuture : internalFutureSet) {
+                                if (!internalFuture.isDone()) {
+                                    internalFuture.cancel(true);
+                                }
+                            }
+                        }
+                        return null;
+                    });
+                } else {
+                    // dal unit so create a normal execution task
+                    future = createExecutionTask(Units.getUnit(unitConfig, false), idCommand.getValue());
+                }
 
                 // add future to a map
                 idFutureMap.put(idCommand.getKey(), future);
-            } catch (NotAvailableException ex) {
+            } catch (CouldNotPerformException ex) {
                 // thrown if the unit remote is not available so propagate deviceNotFound error
                 setError(payload, ex, ErrorCode.DEVICE_NOT_FOUND);
             } catch (InterruptedException ex) {
@@ -446,7 +570,7 @@ public class FulfillmentHandler {
         Set<String> offline = new HashSet<>();
         Set<String> error = new HashSet<>();
         try {
-            // iterate and wait for every task
+            // iterate and wait for every task to validate its execution
             for (Entry<String, Future> entry : idFutureMap.entrySet()) {
                 try {
                     // wait without timeout because internal tasks should only be able to run for a limited amount of time
@@ -485,6 +609,70 @@ public class FulfillmentHandler {
         addExecuteResults(commands, pending, EXECUTE_PENDING);
         addExecuteResults(commands, offline, EXECUTE_OFFLINE);
         addExecuteResults(commands, error, EXECUTE_ERROR);
+    }
+
+    /**
+     * Create a task and returns its future that will try to execute some actions for a unit remote.
+     * This task will not block forever because on all internal tasks is waited with a timeout.
+     *
+     * @param unitRemote    the unit remote on which the actions will be executed
+     * @param executionList a list of json objects defining the actions to be executed
+     * @return a future of the task created that will execute all actions for the given unit remote
+     */
+    private Future createExecutionTask(final UnitRemote unitRemote, final List<JsonObject> executionList) {
+        return GlobalCachedExecutorService.submit((Callable<Void>) () -> {
+            try {
+                // wait for data
+                unitRemote.waitForData(UNIT_DATA_TIMEOUT, TimeUnit.SECONDS);
+            } catch (CouldNotPerformException ex) {
+                // throw timeout so that thread waiting for this tasks knows that waiting for data failed
+                throw new TimeoutException();
+            } catch (InterruptedException ex) {
+                // interrupted so just return to finish this task
+                return null;
+            }
+
+            // iterate over all executions
+            for (final JsonObject execution : executionList) {
+                // extract command name and param object
+                final String commandName = execution.get(COMMAND_KEY).getAsString();
+                final JsonObject params = execution.getAsJsonObject(PARAMS_KEY);
+
+                // find command type by name
+                final Command commandType = Command.getByRepresentation(commandName);
+                // find trait by command type and params
+                final Trait trait = Trait.getByCommand(commandType, params);
+                // resolve unit type mapping for remote
+                final UnitTypeMapping unitTypeMapping = UnitTypeMapping.getByUnitType(unitRemote.getUnitType());
+                // get service type for trait
+                final ServiceType serviceType = unitTypeMapping.getServiceType(trait);
+                // service type is null if the given command is not supported by this unit
+                if (serviceType == null) {
+                    continue;
+                }
+                // resolve mapping for the combination of service type and trait
+                final ServiceTraitMapper serviceTraitMapper = ServiceTraitMapperFactory.getInstance().getServiceStateMapper(serviceType, trait);
+                // parse trait param into service state
+                final Message serviceState = serviceTraitMapper.map(params, commandType);
+                // invoke setter for service type on remote
+                final Future serviceFuture = (Future)
+                        Services.invokeOperationServiceMethod(serviceType, unitRemote, serviceState);
+
+                // wait for result
+                try {
+                    serviceFuture.get(UNIT_TASK_TIMEOUT, TimeUnit.SECONDS);
+                } catch (InterruptedException ex) {
+                    // cancel internal task and finish normally
+                    serviceFuture.cancel(true);
+                } catch (ExecutionException ex) {
+                    // throw exception to inform task waiting for this one
+                    throw new CouldNotPerformException("Invoking service[" + serviceType.name() + "] " +
+                            "operation method failed for unit[" + unitRemote + "]", ex);
+                }
+            }
+
+            return null;
+        });
     }
 
     /**

@@ -65,7 +65,14 @@ public abstract class AbstractModeServiceProviderTraitMapper<SERVICE_STATE exten
 
     @Override
     public void map(SERVICE_STATE serviceState, JsonObject jsonObject) throws CouldNotPerformException {
-        final JsonObject currentModeSettings = new JsonObject();
+        final JsonObject currentModeSettings;
+        if (jsonObject.has(CURRENT_MODE_SETTINGS_KEY)) {
+            currentModeSettings = jsonObject.getAsJsonObject(CURRENT_MODE_SETTINGS_KEY);
+        } else {
+            currentModeSettings = new JsonObject();
+            jsonObject.add(CURRENT_MODE_SETTINGS_KEY, currentModeSettings);
+        }
+
         final Map<String, String> modeSettingMap = getSettings(serviceState);
         if (modeSettingMap.isEmpty()) {
             throw new CouldNotPerformException("Could not resolve mode settings for serviceState[" + serviceState + "] of serviceType[" + getServiceType().name() + "]");
@@ -74,12 +81,17 @@ public abstract class AbstractModeServiceProviderTraitMapper<SERVICE_STATE exten
         for (final Entry<String, String> entry : modeSettingMap.entrySet()) {
             currentModeSettings.addProperty(entry.getKey(), entry.getValue());
         }
-        jsonObject.add(CURRENT_MODE_SETTINGS_KEY, currentModeSettings);
     }
 
     @Override
     public void addAttributes(final UnitConfig unitConfig, final JsonObject jsonObject) throws CouldNotPerformException {
-        final JsonArray availableModes = new JsonArray();
+        final JsonArray availableModes;
+        if (jsonObject.has(AVAILABLE_MODES_KEY)) {
+            availableModes = jsonObject.getAsJsonArray(AVAILABLE_MODES_KEY);
+        } else {
+            availableModes = new JsonArray();
+            jsonObject.add(AVAILABLE_MODES_KEY, availableModes);
+        }
 
         final List<Mode> modeList = getModes();
 
@@ -117,7 +129,6 @@ public abstract class AbstractModeServiceProviderTraitMapper<SERVICE_STATE exten
 
             availableModes.add(modeJson);
         }
-        jsonObject.add(AVAILABLE_MODES_KEY, availableModes);
     }
 
     private JsonArray synonymMapToJsonArray(final Map<String, List<String>> languageSynonymMap, final String synonymKey) throws CouldNotPerformException {

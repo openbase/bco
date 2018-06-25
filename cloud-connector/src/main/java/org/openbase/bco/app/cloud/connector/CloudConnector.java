@@ -29,6 +29,7 @@ import io.socket.client.Manager;
 import io.socket.client.Socket;
 import io.socket.engineio.client.Transport;
 import org.openbase.bco.app.cloud.connector.jp.JPCloudServerURI;
+import org.openbase.bco.app.cloud.connector.mapping.lib.ErrorCode;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
@@ -39,6 +40,8 @@ import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.pattern.ObservableImpl;
+import org.openbase.jul.schedule.GlobalCachedExecutorService;
+import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -46,26 +49,32 @@ import java.net.URI;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.Callable;
+import java.util.concurrent.Future;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class CloudConnector implements Launchable<Void>, VoidInitializable {
 
-    private final static Logger LOGGER = LoggerFactory.getLogger(CloudConnector.class);
+    private static final Logger LOGGER = LoggerFactory.getLogger(CloudConnector.class);
+    //TODO: this is has to come from the registry
+    public static final String ID = "86b2d03d-0c38-4b3e-bf4c-6206c4ad6650";
 
     private final FulfillmentHandler fulfillmentHandler;
     private final JsonParser jsonParser;
     private final Gson gson;
+
+    private final SyncObject syncRequestLock = new SyncObject("SyncRequestLock");
+    private Future syncRequestFuture = null;
 
     private Socket socket;
     private boolean active;
     private String accessToken;
 
     private final ObservableImpl<JsonObject> syncPayloadObservable;
-    public static final String ID = "86b2d03d-0c38-4b3e-bf4c-6206c4ad6650";
 
-    private boolean isLoggedIn = false;
+    private boolean loggedIn = false;
 
     public CloudConnector() {
         this.active = false;
@@ -115,14 +124,38 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
 
             // trigger syncRequest from google when the payload of a sync request would change
             syncPayloadObservable.addObserver((observable, jsonObject) -> {
-                //TODO: trigger when logged in
-                if (isLoggedIn) {
+                if (isLoggedIn()) {
+                    // trigger sync if socket is connected and logged in
                     socket.emit("requestSync");
+                } else {
+                    // not logged or connected so create a task that will trigger the sync when logged in
+                    if (syncRequestFuture != null && !syncRequestFuture.isDone()) {
+                        // task has already been created an is running
+                        return;
+                    }
+
+                    // create task
+                    syncRequestFuture = GlobalCachedExecutorService.submit((Callable<Void>) () -> {
+                        System.out.println("Start task to wait for logged in before requesting sync");
+                        // wait until logged in
+                        synchronized (syncRequestLock) {
+                            if (!isLoggedIn()) {
+                                syncRequestLock.wait();
+                            }
+                        }
+
+                        System.out.println("Request sync");
+                        // trigger sync
+                        socket.emit("requestSync");
+                        return null;
+                    });
                 }
+
+                // debug print
                 JsonObject test = new JsonObject();
                 test.addProperty(FulfillmentHandler.REQUEST_ID_KEY, "12345678");
                 test.add(FulfillmentHandler.PAYLOAD_KEY, jsonObject);
-                LOGGER.info("new sync[" + isLoggedIn + "]:\n" + gson.toJson(test));
+                LOGGER.info("new sync[" + isLoggedIn() + "]:\n" + gson.toJson(test));
             });
 
             // add listener to socket events
@@ -147,7 +180,7 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
                         if (response.get("success").getAsBoolean()) {
                             LOGGER.info("Authenticated successfully");
                             if (response.has("accessToken")) {
-                                isLoggedIn = true;
+                                setLoggedIn(true);
                                 accessToken = response.get("accessToken").getAsString();
                                 LOGGER.info("Received accessToken[" + accessToken + "]");
                             }
@@ -162,24 +195,32 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
             }).on(Socket.EVENT_MESSAGE, objects -> {
                 // received a message
                 LOGGER.info("Received request!");
-                // TODO: build try catch exception around and report error
-                // e.g. nullpointer is thrown if the request is in the wrong format
-
-                // parse as json
-                final JsonElement parse = jsonParser.parse((String) objects[0]);
-
-                LOGGER.info("Request: " + gson.toJson(parse));
-
-                // handle request and create response
-                LOGGER.info("Call handler");
-                final JsonObject jsonObject = fulfillmentHandler.handleRequest(parse.getAsJsonObject());
-                final String response = gson.toJson(jsonObject);
-
                 // get acknowledgement object
                 final Ack ack = (Ack) objects[objects.length - 1];
-                LOGGER.info("Handler produced response: " + response);
-                // send back response
-                ack.call(response);
+
+                try {
+                    // parse as json
+                    final JsonElement parse = jsonParser.parse((String) objects[0]);
+
+                    LOGGER.info("Request: " + gson.toJson(parse));
+
+                    // handle request and create response
+                    LOGGER.info("Call handler");
+                    final JsonObject jsonObject = fulfillmentHandler.handleRequest(parse.getAsJsonObject());
+                    final String response = gson.toJson(jsonObject);
+                    LOGGER.info("Handler produced response: " + response);
+                    // send back response
+                    ack.call(response);
+                } catch (Exception ex) {
+
+
+                    // send back an error response
+                    final JsonObject response = new JsonObject();
+                    final JsonObject payload = new JsonObject();
+                    response.add(FulfillmentHandler.PAYLOAD_KEY, payload);
+                    FulfillmentHandler.setError(payload, ex, ErrorCode.UNKNOWN_ERROR);
+                    ack.call(gson.toJson(response));
+                }
             }).on(Socket.EVENT_DISCONNECT, objects -> {
 
                 //TODO: what when server down? try to reconnect every 30 seconds or shutdown?
@@ -222,10 +263,25 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
             LOGGER.info("Disconnect from deactivate");
             socket.disconnect();
         }
+
+        if (syncRequestFuture != null && !syncRequestFuture.isDone()) {
+            syncRequestFuture.cancel(true);
+        }
     }
 
     @Override
     public boolean isActive() {
         return active;
+    }
+
+    private void setLoggedIn(final boolean loggedIn) {
+        synchronized (syncRequestLock) {
+            this.loggedIn = loggedIn;
+            syncRequestLock.notifyAll();
+        }
+    }
+
+    public boolean isLoggedIn() {
+        return loggedIn;
     }
 }

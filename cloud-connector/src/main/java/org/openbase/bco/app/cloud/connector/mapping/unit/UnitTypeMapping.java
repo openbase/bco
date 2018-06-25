@@ -41,6 +41,8 @@ public enum UnitTypeMapping {
             map(ServiceType.ACTIVATION_STATE_SERVICE, Trait.SCENE)),
     APP_MAPPING(UnitType.APP, DeviceType.SCENE,
             map(ServiceType.ACTIVATION_STATE_SERVICE, Trait.SCENE)),
+    BATTERY_MAPPING(UnitType.BATTERY, DeviceType.OUTLET,
+            map(ServiceType.BATTERY_STATE_SERVICE, Trait.MODES)),
     COLORABLE_LIGHT_MAPPING(UnitType.COLORABLE_LIGHT, DeviceType.LIGHT,
             map(ServiceType.POWER_STATE_SERVICE, Trait.ON_OFF),
             map(ServiceType.BRIGHTNESS_STATE_SERVICE, Trait.BRIGHTNESS),

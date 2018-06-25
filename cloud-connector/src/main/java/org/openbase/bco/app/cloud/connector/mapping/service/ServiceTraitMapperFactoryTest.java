@@ -1,4 +1,4 @@
-package org.openbase.bco.app.cloud.connector.mapping.unit;
+package org.openbase.bco.app.cloud.connector.mapping.service;
 
 /*-
  * #%L
@@ -24,7 +24,7 @@ package org.openbase.bco.app.cloud.connector.mapping.unit;
 
 import org.junit.Test;
 import org.openbase.bco.app.cloud.connector.mapping.lib.Trait;
-import org.openbase.bco.app.cloud.connector.mapping.service.ServiceTraitMapperFactory;
+import org.openbase.bco.app.cloud.connector.mapping.unit.UnitTypeMapping;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -34,7 +34,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import static org.junit.Assert.assertEquals;
+import static junit.framework.TestCase.assertEquals;
+import static junit.framework.TestCase.assertTrue;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>

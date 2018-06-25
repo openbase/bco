@@ -28,6 +28,7 @@ import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.state.PowerConsumptionStateType.PowerConsumptionState;
 
 import java.util.Arrays;
+import java.util.Locale;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
@@ -41,9 +42,13 @@ public class PowerConsumptionServiceModesMapper extends AbstractSingleModeServic
         super(ServiceType.POWER_CONSUMPTION_STATE_SERVICE);
 
         this.mode = new Mode("consumption", true, "verbrauch", "stromverbrauch", "energieverbrauch");
+        this.mode.getLanguageSynonymMap().put(Locale.ENGLISH.getLanguage(), Arrays.asList("consumption", "energy consumption"));
         this.low = new Setting("low", "niedrig", "gering");
+        this.low.getLanguageSynonymMap().put(Locale.ENGLISH.getLanguage(), Arrays.asList("low", "little"));
         this.medium = new Setting("medium", "mittel", "normal");
+        this.medium.addLanguageSynonyms(Locale.ENGLISH, "medium", "normal");
         this.high = new Setting("high", "hoch", "stark");
+        this.high.addLanguageSynonyms(Locale.ENGLISH, "high");
         this.mode.getSettingList().addAll(Arrays.asList(low, medium, high));
     }
 

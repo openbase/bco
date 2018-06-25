@@ -35,7 +35,7 @@ public class JPCloudServerURI extends AbstractJavaProperty<URI> {
     private static final String[] ARGUMENT_IDENTIFIERS = {"URI"};
     private static final String[] COMMAND_IDENTIFIERS = {"--cloud"};
 
-    private static final String DEFAULT_URI = "https://bco-cloud.herokuapp.com/";
+    private static final String DEFAULT_URI = "https://bco-cloud-test.herokuapp.com/";
 
     public JPCloudServerURI() {
         super(COMMAND_IDENTIFIERS);
