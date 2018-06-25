@@ -22,44 +22,28 @@ package org.openbase.bco.app.cloud.connector.mapping.lib;
  * #L%
  */
 
-import java.util.*;
+import com.google.gson.JsonObject;
+import org.openbase.jul.exception.CouldNotPerformException;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class Setting {
+public class Setting extends Named {
 
-    private final String name;
-    private final Map<String, List<String>> languageSynonymMap;
+    private static final String SETTING_NAME_KEY = "setting_name";
+    private static final String SETTING_VALUES_KEY = "setting_values";
+    private static final String SETTING_SYNONYM_KEY = "setting_synonym";
 
     public Setting(final String name) {
-        this.name = name;
-        this.languageSynonymMap = new HashMap<>();
+        super(name);
     }
 
     public Setting(final String name, final String... germanSynonyms) {
-        this(name);
-        languageSynonymMap.put(Locale.GERMAN.getLanguage(), Arrays.asList(germanSynonyms));
+        super(name, germanSynonyms);
     }
 
-    public void addLanguageSynonyms(final Locale locale, final String... synonyms) {
-        if (languageSynonymMap.containsKey(locale.getLanguage())) {
-            final List<String> synonymList = languageSynonymMap.get(locale.getLanguage());
-            for (final String synonym : synonyms) {
-                if (!synonymList.contains(synonym)) {
-                    synonymList.add(synonym);
-                }
-            }
-        } else {
-            languageSynonymMap.put(locale.getLanguage(), Arrays.asList(synonyms));
-        }
-    }
-
-    public String getName() {
-        return name;
-    }
-
-    public Map<String, List<String>> getLanguageSynonymMap() {
-        return languageSynonymMap;
+    @Override
+    public JsonObject toJson() throws CouldNotPerformException {
+        return super.toJson(SETTING_NAME_KEY, SETTING_VALUES_KEY, SETTING_SYNONYM_KEY);
     }
 }

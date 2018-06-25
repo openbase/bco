@@ -33,7 +33,7 @@ import java.util.Locale;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class PowerConsumptionServiceModesMapper extends AbstractSingleModeServiceProviderTraitMapper<PowerConsumptionState> {
+public class PowerConsumptionServiceModesMapper extends AbstractServiceProviderSingleModesTraitMapper<PowerConsumptionState> {
 
     private final Mode mode;
     private final Setting low, medium, high;

@@ -59,7 +59,7 @@ public class ActivationServiceSceneMapper extends AbstractServiceTraitMapper<Act
         } catch (ClassCastException | IllegalStateException ex) {
             // thrown if it is not a boolean
             throw new CouldNotPerformException("Could not map from jsonObject[" + jsonObject.toString() + "] to ["
-                    + ActivationState.class.getSimpleName() + "]. Attribute[" + DEACTIVATE_PARAM_KEY + "] is not boolean");
+                    + ActivationState.class.getSimpleName() + "]. Attribute[" + DEACTIVATE_PARAM_KEY + "] is not boolean", ex);
         }
     }
 

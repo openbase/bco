@@ -27,20 +27,31 @@ import org.openbase.bco.app.cloud.connector.mapping.lib.Mode;
 import org.openbase.jul.exception.CouldNotPerformException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 
-import java.util.*;
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public abstract class AbstractSingleModeServiceProviderTraitMapper<SERVICE_STATE extends Message> extends AbstractModeServiceProviderTraitMapper<SERVICE_STATE> {
+public abstract class AbstractServiceSingleModesTraitMapper<SERVICE_STATE extends Message> extends AbstractServiceModesTraitMapper<SERVICE_STATE> {
 
-
-    public AbstractSingleModeServiceProviderTraitMapper(ServiceType serviceType) {
+    public AbstractServiceSingleModesTraitMapper(ServiceType serviceType) {
         super(serviceType);
     }
 
     @Override
-    public Map<String, String> getSettings(SERVICE_STATE serviceState) throws CouldNotPerformException {
+    public SERVICE_STATE getServiceState(final Map<String, String> modeNameSettingNameMap) throws CouldNotPerformException {
+        if (modeNameSettingNameMap.size() > 1) {
+            throw new CouldNotPerformException("Mapper for single modes received command with [" + modeNameSettingNameMap.size() + "] modes");
+        }
+
+        return getServiceState(modeNameSettingNameMap.get(getMode().getName()));
+    }
+
+    @Override
+    public Map<String, String> getSettings(final SERVICE_STATE serviceState) throws CouldNotPerformException {
         final Map<String, String> modeSettingMap = new HashMap<>();
         modeSettingMap.put(getMode().getName(), getSetting(serviceState));
         return modeSettingMap;
@@ -54,4 +65,6 @@ public abstract class AbstractSingleModeServiceProviderTraitMapper<SERVICE_STATE
     public abstract Mode getMode();
 
     public abstract String getSetting(final SERVICE_STATE serviceState) throws CouldNotPerformException;
+
+    public abstract SERVICE_STATE getServiceState(final String settingName) throws CouldNotPerformException;
 }

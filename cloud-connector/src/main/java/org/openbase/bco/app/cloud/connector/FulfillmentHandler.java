@@ -310,8 +310,7 @@ public class FulfillmentHandler {
                 try {
                     ServiceTraitMapperFactory.getInstance().getServiceStateMapper(serviceType, trait).addAttributes(entry.getKey(), attributes);
                 } catch (CouldNotPerformException ex) {
-                    LOGGER.warn("Skip trait[" + trait.name() + "] serviceType[" + serviceType.name() + "] " +
-                            "combination for unit[" + entry.getKey().getAlias(0) + "] because no trait mapping available");
+                    LOGGER.warn("Skip trait[" + trait.name() + "] serviceType[" + serviceType.name() + "]: " + ex.getMessage());
                 }
             }
         }

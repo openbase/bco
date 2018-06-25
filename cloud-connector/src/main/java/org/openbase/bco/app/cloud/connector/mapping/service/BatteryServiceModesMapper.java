@@ -34,7 +34,7 @@ import java.util.Locale;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class BatteryServiceModesMapper extends AbstractSingleModeServiceProviderTraitMapper<BatteryState> {
+public class BatteryServiceModesMapper extends AbstractServiceProviderSingleModesTraitMapper<BatteryState> {
 
     private final Mode mode;
     private final Setting okay, critical, insufficient, unknown;

@@ -29,9 +29,11 @@ import org.openbase.bco.app.cloud.connector.mapping.lib.Mode;
 import org.openbase.bco.app.cloud.connector.mapping.lib.Setting;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.FatalImplementationErrorException;
+import org.openbase.jul.exception.NotAvailableException;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -39,28 +41,42 @@ import java.util.Map.Entry;
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public abstract class AbstractModeServiceProviderTraitMapper<SERVICE_STATE extends Message> extends AbstractServiceTraitMapper<SERVICE_STATE> {
+public abstract class AbstractServiceModesTraitMapper<SERVICE_STATE extends Message> extends AbstractServiceTraitMapper<SERVICE_STATE> {
 
     private static final String AVAILABLE_MODES_KEY = "availableModes";
-    private static final String NAME_KEY = "name";
-    private static final String NAME_VALUES_KEY = "name_values";
-    private static final String NAME_SYNONYM_KEY = "name_synonym";
-    private static final String LANGUAGE_KEY = "lang";
-    private static final String SETTINGS_KEY = "settings";
-    private static final String SETTING_NAME_KEY = "setting_name";
-    private static final String SETTING_VALUES_KEY = "setting_values";
-    private static final String SETTING_SYNONYM_KEY = "setting_synonym";
-    private static final String ORDERED_KEY = "ordered";
 
+    private static final String UPDATE_MODE_SETTINGS_KEY = "updateModeSettings";
     private static final String CURRENT_MODE_SETTINGS_KEY = "currentModeSettings";
 
-    AbstractModeServiceProviderTraitMapper(ServiceType serviceType) {
+    AbstractServiceModesTraitMapper(ServiceType serviceType) {
         super(serviceType);
     }
 
     @Override
     protected SERVICE_STATE map(JsonObject jsonObject) throws CouldNotPerformException {
-        throw new CouldNotPerformException("Setting mode not supported for [" + getServiceType().name() + "]");
+        if (!jsonObject.has(UPDATE_MODE_SETTINGS_KEY)) {
+            throw new CouldNotPerformException("Could not map from jsonObject[" + jsonObject.toString() + "]. " +
+                    "Attribute[" + UPDATE_MODE_SETTINGS_KEY + "] is missing");
+        }
+
+        try {
+            final JsonObject updateModeSettings = jsonObject.getAsJsonObject(UPDATE_MODE_SETTINGS_KEY);
+
+            final Map<String, String> modeNameSettingNameMap = new HashMap<>();
+            for (final Mode mode : getModes()) {
+                if (updateModeSettings.has(mode.getName())) {
+                    modeNameSettingNameMap.put(mode.getName(), updateModeSettings.get(mode.getName()).getAsString());
+                }
+            }
+            if (modeNameSettingNameMap.isEmpty()) {
+                throw new NotAvailableException("Supported mode in [" + updateModeSettings.toString() + "]");
+            }
+
+            return getServiceState(modeNameSettingNameMap);
+        } catch (ClassCastException | IllegalStateException ex) {
+            // expected data type from json do not match, e.g. updateModeSettings is not a jsonObject
+            throw new CouldNotPerformException("Could not map from jsonObject[" + jsonObject.toString() + "]", ex);
+        }
     }
 
     @Override
@@ -100,8 +116,6 @@ public abstract class AbstractModeServiceProviderTraitMapper<SERVICE_STATE exten
         }
 
         for (final Mode mode : modeList) {
-            final JsonObject modeJson = new JsonObject();
-
             if (mode.getName().isEmpty()) {
                 throw new FatalImplementationErrorException("Mode without a name", this);
             }
@@ -110,60 +124,11 @@ public abstract class AbstractModeServiceProviderTraitMapper<SERVICE_STATE exten
                 throw new FatalImplementationErrorException("Mode[" + mode.getName() + "] has only one setting", this);
             }
 
-            modeJson.addProperty(NAME_KEY, mode.getName());
-            modeJson.addProperty(ORDERED_KEY, mode.isOrdered());
-            modeJson.add(NAME_VALUES_KEY, synonymMapToJsonArray(mode.getLanguageSynonymMap(), NAME_SYNONYM_KEY));
-
-            final JsonArray settings = new JsonArray();
-            for (final Setting setting : mode.getSettingList()) {
-                if (setting.getName().isEmpty()) {
-                    throw new FatalImplementationErrorException("Setting without a name", this);
-                }
-
-                final JsonObject settingJson = new JsonObject();
-                settingJson.addProperty(SETTING_NAME_KEY, setting.getName());
-                settingJson.add(SETTING_VALUES_KEY, synonymMapToJsonArray(setting.getLanguageSynonymMap(), SETTING_SYNONYM_KEY));
-                settings.add(settingJson);
-            }
-            modeJson.add(SETTINGS_KEY, settings);
-
-            availableModes.add(modeJson);
+            availableModes.add(mode.toJson());
         }
     }
 
-    private JsonArray synonymMapToJsonArray(final Map<String, List<String>> languageSynonymMap, final String synonymKey) throws CouldNotPerformException {
-        if (languageSynonymMap.isEmpty()) {
-            throw new FatalImplementationErrorException("Empty language synonym map[" + synonymKey + "]", this);
-        }
-
-        final JsonArray nameValues = new JsonArray();
-        for (final Entry<String, List<String>> entry : languageSynonymMap.entrySet()) {
-            //TODO: validate languageCode (entry.getKey())
-            if (entry.getValue().isEmpty() || entry.getValue().get(0).isEmpty()) {
-                // skip if list is empty, or first synonym is empty
-                continue;
-            }
-
-            final JsonObject nameValue = new JsonObject();
-            final JsonArray nameSynonyms = new JsonArray();
-            for (final String synonym : entry.getValue()) {
-                if (synonym.isEmpty()) {
-                    continue;
-                }
-
-                nameSynonyms.add(synonym);
-            }
-            nameValue.add(synonymKey, nameSynonyms);
-            nameValue.addProperty(LANGUAGE_KEY, entry.getKey());
-
-            nameValues.add(nameValue);
-        }
-
-        if (nameValues.size() == 0) {
-            throw new FatalImplementationErrorException("Name values could not be extracted from map[" + synonymKey + "]", this);
-        }
-        return nameValues;
-    }
+    public abstract SERVICE_STATE getServiceState(final Map<String, String> modeNameSettingNameMap) throws CouldNotPerformException;
 
     public abstract Map<String, String> getSettings(final SERVICE_STATE service_state) throws CouldNotPerformException;
 

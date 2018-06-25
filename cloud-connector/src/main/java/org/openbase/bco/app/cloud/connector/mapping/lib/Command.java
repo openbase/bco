@@ -40,6 +40,7 @@ public enum Command {
     COLOR_ABSOLUTE,
     ON_OFF,
     SET_MODES,
+    SET_TOGGLES,
     THERMOSTAT_TEMPERATURE_SETPOINT;
 
     /**

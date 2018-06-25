@@ -70,7 +70,7 @@ public class ServiceTraitMapperFactory {
         final String fullClassName = getClass().getPackage().getName() + "." + className;
 
         try {
-            return (ServiceTraitMapper) Classes.getClass(fullClassName).getConstructor().newInstance();
+            return (ServiceTraitMapper) getClass().getClassLoader().loadClass(fullClassName).getConstructor().newInstance();
         } catch (InstantiationException | IllegalAccessException | InvocationTargetException | NoSuchMethodException | ClassNotFoundException | ClassCastException ex) {
             throw new CouldNotPerformException("Could not load class[" + className + "] for combination of serviceType[" + serviceType.name() + "] and trait[" + trait.name() + "]");
         }

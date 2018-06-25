@@ -22,49 +22,48 @@ package org.openbase.bco.app.cloud.connector.mapping.lib;
  * #L%
  */
 
-import java.util.*;
+import com.google.gson.JsonArray;
+import com.google.gson.JsonObject;
+import org.openbase.jul.exception.CouldNotPerformException;
+
+import java.util.ArrayList;
+import java.util.List;
 
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class Mode {
+public class Mode extends Named {
 
-    private final String name;
-    private final Map<String, List<String>> languageSynonymMap;
+    private static final String SETTINGS_KEY = "settings";
+    private static final String ORDERED_KEY = "ordered";
+
     private final List<Setting> settingList;
     private final boolean ordered;
 
     public Mode(final String name, final boolean ordered) {
-        this.name = name;
+        super(name);
         this.ordered = ordered;
-        this.languageSynonymMap = new HashMap<>();
         this.settingList = new ArrayList<>();
     }
 
     public Mode(final String name, final boolean ordered, final String... germanSynonyms) {
-        this(name, ordered);
-        this.languageSynonymMap.put(Locale.GERMAN.getLanguage(), Arrays.asList(germanSynonyms));
+        super(name, germanSynonyms);
+        this.ordered = ordered;
+        this.settingList = new ArrayList<>();
     }
 
-    public void addLanguageSynonyms(final Locale locale, final String... synonyms) {
-        if (languageSynonymMap.containsKey(locale.getLanguage())) {
-            final List<String> synonymList = languageSynonymMap.get(locale.getLanguage());
-            for (final String synonym : synonyms) {
-                if (!synonymList.contains(synonym)) {
-                    synonymList.add(synonym);
-                }
-            }
-        } else {
-            languageSynonymMap.put(locale.getLanguage(), Arrays.asList(synonyms));
+    @Override
+    public JsonObject toJson() throws CouldNotPerformException {
+        final JsonObject jsonObject = super.toJson();
+        jsonObject.addProperty(ORDERED_KEY, isOrdered());
+
+        final JsonArray settings = new JsonArray();
+        for (final Setting setting : getSettingList()) {
+            settings.add(setting.toJson());
         }
-    }
+        jsonObject.add(SETTINGS_KEY, settings);
 
-    public String getName() {
-        return name;
-    }
-
-    public Map<String, List<String>> getLanguageSynonymMap() {
-        return languageSynonymMap;
+        return jsonObject;
     }
 
     public List<Setting> getSettingList() {

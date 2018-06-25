@@ -48,7 +48,8 @@ public enum Trait {
     MODES(Command.SET_MODES),
     ON_OFF(Command.ON_OFF),
     SCENE(Command.ACTIVATE_SCENE),
-    TEMPERATURE_SETTING(Command.THERMOSTAT_TEMPERATURE_SETPOINT);
+    TEMPERATURE_SETTING(Command.THERMOSTAT_TEMPERATURE_SETPOINT),
+    TOGGLES(Command.SET_TOGGLES);
 
     public static final String REPRESENTATION_PREFIX = "action.devices.traits.";
 

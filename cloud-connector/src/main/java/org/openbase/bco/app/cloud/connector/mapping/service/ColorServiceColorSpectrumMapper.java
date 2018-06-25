@@ -57,7 +57,7 @@ public class ColorServiceColorSpectrumMapper extends AbstractServiceTraitMapper<
                     ColorState.class.getSimpleName() + "]. Attribute[" + COLOR_KEY + "] is missing");
         }
 
-        //TODO: name for color
+        // TODO: name for color
         try {
             final JsonObject colorJson = jsonObject.get(COLOR_KEY).getAsJsonObject();
 
