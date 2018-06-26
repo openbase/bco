@@ -29,6 +29,8 @@ package org.openbase.bco.app.cloud.connector.mapping.lib;
  */
 public enum DeviceType {
 
+    AC_UNIT,
+    DRYER,
     LIGHT,
     OUTLET,
     SCENE,
@@ -41,10 +43,6 @@ public enum DeviceType {
 
     DeviceType() {
         this.representation = REPRESENTATION_PREFIX + this.name();
-    }
-
-    DeviceType(final String postfix) {
-        this.representation = REPRESENTATION_PREFIX + postfix;
     }
 
     public String getRepresentation() {

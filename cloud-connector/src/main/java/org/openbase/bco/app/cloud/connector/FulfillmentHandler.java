@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloud.connector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -235,8 +235,38 @@ public class FulfillmentHandler {
                 }
             }
 
+            // register unit groups separately because they depend on the unit type of their group configuration
+            for (final UnitConfig unitGroup : Registries.getUnitRegistry().getUnitConfigs(UnitType.UNIT_GROUP)) {
+                final UnitType unitType = unitGroup.getUnitGroupConfig().getUnitType();
+
+                if (unitType == UnitType.UNKNOWN) {
+                    //TODO: this could possibly be handled by a mapping of services to traits and choosing a random device
+                    LOGGER.warn("Skip unit group[" + unitGroup.getAlias(0) + "] because unit type is unknown");
+                } else {
+                    try {
+                        final UnitTypeMapping unitTypeMapping = UnitTypeMapping.getByUnitType(unitGroup.getUnitGroupConfig().getUnitType());
+                        devices.add(createJsonDevice(unitGroup, unitTypeMapping));
+                    } catch (NotAvailableException ex) {
+                        LOGGER.warn("Skip unit group[" + unitGroup.getAlias(0) + "]: " + ex.getMessage());
+                    }
+                }
+            }
+
             for (final UnitConfig unitConfig : unitRegistryRemote.getUnitConfigs()) {
-                if (unitConfig.getUnitType() == UnitType.LOCATION || unitConfig.getUnitType() == UnitType.DEVICE) {
+                switch (unitConfig.getUnitType()) {
+                    case LOCATION:
+                    case DEVICE:
+                    case USER:
+                    case AUTHORIZATION_GROUP:
+                    case UNIT_GROUP:
+                        // skip locations, devices, user ...
+                        // skip unit groups because they are handled above
+                }
+                if (unitConfig.getUnitType() == UnitType.LOCATION ||
+                        unitConfig.getUnitType() == UnitType.DEVICE ||
+                        unitConfig.getUnitType() == UnitType.USER ||
+                        unitConfig.getUnitType() == UnitType.AUTHORIZATION_GROUP ||
+                        unitConfig.getUnitType() == UnitType.UNIT_GROUP) {
                     // skip locations and devices
                     continue;
                 }
@@ -248,10 +278,7 @@ public class FulfillmentHandler {
 
                 try {
                     final UnitTypeMapping unitTypeMapping = UnitTypeMapping.getByUnitType(unitConfig.getUnitType());
-                    final Map<UnitConfig, UnitTypeMapping> unitConfigTypeMapping = new HashMap<>();
-                    unitConfigTypeMapping.put(unitConfig, unitTypeMapping);
-
-                    devices.add(createJsonDevice(unitConfig, unitConfigTypeMapping));
+                    devices.add(createJsonDevice(unitConfig, unitTypeMapping));
                 } catch (NotAvailableException ex) {
                     LOGGER.warn("Skip unit[" + unitConfig.getAlias(0) + "]: " + ex.getMessage());
                 }
@@ -260,6 +287,12 @@ public class FulfillmentHandler {
         } catch (CouldNotPerformException ex) {
             setError(payload, ex, ErrorCode.UNKNOWN_ERROR);
         }
+    }
+
+    private JsonObject createJsonDevice(final UnitConfig unitConfig, final UnitTypeMapping unitTypeMapping) throws CouldNotPerformException {
+        final Map<UnitConfig, UnitTypeMapping> unitConfigTypeMapping = new HashMap<>();
+        unitConfigTypeMapping.put(unitConfig, unitTypeMapping);
+        return createJsonDevice(unitConfig, unitConfigTypeMapping);
     }
 
     private JsonObject createJsonDevice(final UnitConfig host, final Map<UnitConfig, UnitTypeMapping> mappings) throws CouldNotPerformException {
@@ -618,7 +651,7 @@ public class FulfillmentHandler {
      * @param executionList a list of json objects defining the actions to be executed
      * @return a future of the task created that will execute all actions for the given unit remote
      */
-    private Future createExecutionTask(final UnitRemote unitRemote, final List<JsonObject> executionList) {
+    private Future createExecutionTask(final UnitRemote<?> unitRemote, final List<JsonObject> executionList) {
         return GlobalCachedExecutorService.submit((Callable<Void>) () -> {
             try {
                 // wait for data
@@ -642,7 +675,12 @@ public class FulfillmentHandler {
                 // find trait by command type and params
                 final Trait trait = Trait.getByCommand(commandType, params);
                 // resolve unit type mapping for remote
-                final UnitTypeMapping unitTypeMapping = UnitTypeMapping.getByUnitType(unitRemote.getUnitType());
+                final UnitTypeMapping unitTypeMapping;
+                if (unitRemote.getUnitType() == UnitType.UNIT_GROUP) {
+                    unitTypeMapping = UnitTypeMapping.getByUnitType(unitRemote.getConfig().getUnitGroupConfig().getUnitType());
+                } else {
+                    unitTypeMapping = UnitTypeMapping.getByUnitType(unitRemote.getUnitType());
+                }
                 // get service type for trait
                 final ServiceType serviceType = unitTypeMapping.getServiceType(trait);
                 // service type is null if the given command is not supported by this unit

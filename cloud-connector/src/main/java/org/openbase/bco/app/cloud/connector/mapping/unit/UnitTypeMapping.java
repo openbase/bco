@@ -42,7 +42,7 @@ public enum UnitTypeMapping {
             map(ServiceType.EMPHASIS_STATE_SERVICE, Trait.MODES)),
     APP_MAPPING(UnitType.APP, DeviceType.SCENE,
             map(ServiceType.ACTIVATION_STATE_SERVICE, Trait.SCENE)),
-    BATTERY_MAPPING(UnitType.BATTERY, DeviceType.OUTLET,
+    BATTERY_MAPPING(UnitType.BATTERY, DeviceType.DRYER,
             map(ServiceType.BATTERY_STATE_SERVICE, Trait.MODES)),
     BUTTON_MAPPING(UnitType.BUTTON, DeviceType.OUTLET,
             map(ServiceType.BUTTON_STATE_SERVICE, Trait.MODES)),
@@ -104,6 +104,12 @@ public enum UnitTypeMapping {
     }
 
     public static UnitTypeMapping getByUnitType(final UnitType unitType) throws NotAvailableException {
+        switch (unitType) {
+            case MOTION_DETECTOR:
+            case BUTTON:
+            case POWER_CONSUMPTION_SENSOR:
+                throw new NotAvailableException(unitType.name() + " ignored for testing");
+        }
         try {
             return UnitTypeMapping.valueOf(unitType.name() + POSTFIX);
         } catch (IllegalArgumentException ex) {
