@@ -68,9 +68,26 @@ import java.util.stream.Collectors;
 public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransformationProviderRegistry<UnitRegistryData>, UnitConfigCollectionProvider, Shutdownable, RegistryService {
 
     /**
+     * This alias can be used for fast lookups of the admin authorization group.
+     */
+    String ADMIN_GROUP_ALIAS = "AdminGroup";
+    /**
+     * This alias can be used for fast lookups of the bco authorization group.
+     */
+    String BCO_GROUP_ALIAS = "BCOGroup";
+    /**
+     * This alias can be used for fast lookups of the admin user.
+     */
+    String ADMIN_USER_ALIAS = "AdminUser";
+    /**
+     * This alias can be used for fast lookups of the bco user.
+     */
+    String BCO_USER_ALIAS = "BCOUser";
+
+    /**
      * The default radius used for the unit by coordinate lookup is set to 1 metre.
      */
-    static final double DEFAULT_RADIUS = 1d;
+    double DEFAULT_RADIUS = 1d;
 
     /**
      * This method registers the given unit config in the registry.
@@ -199,8 +216,8 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * Note: PLEASE DO NOT USE THIS METHOD TO REQUEST DEVICES FOR THE CONTROLLING PURPOSE BECAUSE LABELS ARE NOT A STABLE IDENTIFIER! USE ID OR ALIAS INSTEAD!
      *
      * @param unitConfigLabel the label to identify a set of units.
-     * @throws CouldNotPerformException is thrown if the request fails.
      * @return a list of the requested unit configs.
+     * @throws CouldNotPerformException is thrown if the request fails.
      */
     default List<UnitConfig> getUnitConfigsByLabel(final String unitConfigLabel) throws CouldNotPerformException {
         List<UnitConfig> unitConfigs = Collections.synchronizedList(new ArrayList<>());

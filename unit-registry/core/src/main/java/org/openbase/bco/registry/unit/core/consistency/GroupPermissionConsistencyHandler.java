@@ -21,67 +21,59 @@ package org.openbase.bco.registry.unit.core.consistency;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.List;
-import org.openbase.bco.registry.unit.core.plugin.AuthorizationGroupCreationPlugin;
+
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.protobuf.container.ProtoBufMessageMap;
 import org.openbase.jul.storage.registry.AbstractProtoBufRegistryConsistencyHandler;
 import org.openbase.jul.storage.registry.EntryModification;
-import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
 import rst.domotic.authentication.PermissionType.Permission;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 
+import java.util.List;
+import java.util.Map;
+
 /**
- *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class GroupPermissionConsistencyHandler extends AbstractProtoBufRegistryConsistencyHandler<String, UnitConfig, UnitConfig.Builder> {
 
     private static final Permission ALL_PERMISSION = Permission.newBuilder().setAccess(true).setRead(true).setWrite(true).build();
 
-    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupConfigRegistry;
-    private String adminGroupId;
-    private String bcoGroupId;
+    private final Map<String, String> aliasIdMap;
 
-    public GroupPermissionConsistencyHandler(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupConfigRegistry) {
-        this.authorizationGroupConfigRegistry = authorizationGroupConfigRegistry;
+    public GroupPermissionConsistencyHandler(final Map<String, String> aliasIdMap) {
+        this.aliasIdMap = aliasIdMap;
     }
 
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
-        UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
+        final UnitConfig.Builder unitConfig = entry.getMessage().toBuilder();
 
-        // Set permissions only for the root location and for units without a location.
+        // Set permissions only for the root location and units without a location.
         if ((!unitConfig.hasLocationConfig() || !unitConfig.getLocationConfig().getRoot())
                 && unitConfig.hasPlacementConfig() && unitConfig.getPlacementConfig().hasLocationId()) {
             return;
         }
 
-        PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();
-
-        if (adminGroupId == null || bcoGroupId == null) {
-            for (UnitConfig authorizationGroupConfig : authorizationGroupConfigRegistry.getMessages()) {
-                if (authorizationGroupConfig.getLabel().equals(AuthorizationGroupCreationPlugin.ADMIN_GROUP_LABEL)) {
-                    adminGroupId = authorizationGroupConfig.getId();
-                } else if (authorizationGroupConfig.getLabel().equals(AuthorizationGroupCreationPlugin.BCO_GROUP_LABEL)) {
-                    bcoGroupId = authorizationGroupConfig.getId();
-                }
-            }
-        }
-        if (adminGroupId == null || bcoGroupId == null) {
+        // do nothing if the groups cannot be resolved
+        if (aliasIdMap.containsKey(UnitRegistry.ADMIN_GROUP_ALIAS) || !aliasIdMap.containsKey(UnitRegistry.BCO_GROUP_ALIAS)) {
             return;
         }
+
+        final PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();
+        final String adminGroupId = aliasIdMap.get(UnitRegistry.ADMIN_GROUP_ALIAS);
+        final String bcoGroupId = aliasIdMap.get(UnitRegistry.BCO_GROUP_ALIAS);
 
         boolean modification = false;
         boolean containsAdminGroup = false;
         boolean containsBCOGroup = false;
-        List<PermissionConfig.MapFieldEntry> groupPermissionList = permissionConfig.getGroupPermissionList();
+        final List<PermissionConfig.MapFieldEntry> groupPermissionList = permissionConfig.getGroupPermissionList();
         permissionConfig.clearGroupPermission();
-        for (PermissionConfig.MapFieldEntry mapFieldEntry : groupPermissionList) {
+        for (final PermissionConfig.MapFieldEntry mapFieldEntry : groupPermissionList) {
             if (mapFieldEntry.getGroupId().equals(adminGroupId)) {
                 containsAdminGroup = true;
                 if (!mapFieldEntry.getPermission().equals(ALL_PERMISSION)) {

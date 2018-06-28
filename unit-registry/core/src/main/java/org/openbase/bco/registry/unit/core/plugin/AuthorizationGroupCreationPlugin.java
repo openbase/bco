@@ -22,67 +22,104 @@ package org.openbase.bco.registry.unit.core.plugin;
  * #L%
  */
 
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.RejectedException;
+import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import org.openbase.jul.storage.registry.ProtoBufRegistry;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 
-import java.util.HashSet;
+import java.util.HashMap;
 import java.util.Locale;
-import java.util.Set;
+import java.util.Map;
+import java.util.Map.Entry;
 
 /**
+ * This plugin will create a default BCO and admin authorization group.
+ * Additionally it makes sure that these groups always contain their destined aliases and that
+ * they will not be removed.
+ *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class AuthorizationGroupCreationPlugin extends ProtobufRegistryPluginAdapter<String, UnitConfig, Builder> {
 
-    public static final String ADMIN_GROUP_LABEL = "Admin";
-    public static final String BCO_GROUP_LABEL = "BCO";
+    private static final String ADMIN_GROUP_LABEL = "Admin";
+    private static final String BCO_GROUP_LABEL = "BCO";
 
-    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupRegistry;
-    private final Set<String> labelSet;
+    private final Map<String, String> aliasLabelMap;
+    private final Map<String, String> idAliasMap;
 
     //TODO: these groups should not be found by label but by alias
-    public AuthorizationGroupCreationPlugin(ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupRegistry) {
-        this.authorizationGroupRegistry = authorizationGroupRegistry;
+    public AuthorizationGroupCreationPlugin() {
+        this.aliasLabelMap = new HashMap<>();
+        this.aliasLabelMap.put(UnitRegistry.ADMIN_GROUP_ALIAS, ADMIN_GROUP_LABEL);
+        this.aliasLabelMap.put(UnitRegistry.BCO_GROUP_ALIAS, BCO_GROUP_LABEL);
 
-        this.labelSet = new HashSet<>();
-        this.labelSet.add(ADMIN_GROUP_LABEL);
-        this.labelSet.add(BCO_GROUP_LABEL);
+        this.idAliasMap = new HashMap<>();
     }
 
     @Override
-    public void init(ProtoBufRegistry<String, UnitConfig, Builder> registry) throws InitializationException, InterruptedException {
+    public void init(final ProtoBufRegistry<String, UnitConfig, Builder> authorizationGroupRegistry) throws InitializationException, InterruptedException {
+        super.init(authorizationGroupRegistry);
         try {
-            UnitConfig.Builder authorizationGoupUnitConfig = UnitConfig.newBuilder();
-            authorizationGoupUnitConfig.setUnitType(UnitType.AUTHORIZATION_GROUP);
-
             // create missing authorization groups
-            for (String label : this.labelSet) {
-                if (!containsAuthorizationGroupByLabel(label)) {
-                    authorizationGoupUnitConfig.clearLabel();
-                    LabelProcessor.addLabel(authorizationGoupUnitConfig.getLabelBuilder(), Locale.ENGLISH, label);
-                    this.authorizationGroupRegistry.register(authorizationGoupUnitConfig.build());
+            for (final Entry<String, String> entry : aliasLabelMap.entrySet()) {
+                String id;
+                try {
+                    id = getAuthorizationGroupByAlias(entry.getKey()).getId();
+                } catch (NotAvailableException ex) {
+                    // not available so register;
+                    final UnitConfig.Builder authorizationGroup = UnitConfig.newBuilder();
+                    authorizationGroup.addAlias(entry.getKey()).setUnitType(UnitType.AUTHORIZATION_GROUP);
+                    LabelProcessor.addLabel(authorizationGroup.getLabelBuilder(), Locale.ENGLISH, entry.getValue());
+                    id = authorizationGroupRegistry.register(authorizationGroup.build()).getId();
                 }
+                idAliasMap.put(id, entry.getKey());
             }
         } catch (CouldNotPerformException ex) {
-            throw new InitializationException("Could not init " + getClass().getSimpleName() + "!", ex);
+            throw new InitializationException(this, ex);
         }
     }
 
-    private boolean containsAuthorizationGroupByLabel(String label) throws CouldNotPerformException {
-        for (UnitConfig unitConfig : authorizationGroupRegistry.getMessages()) {
-            if (LabelProcessor.contains(unitConfig.getLabel(), label)) {
-                return true;
+    private UnitConfig getAuthorizationGroupByAlias(final String alias) throws CouldNotPerformException {
+        for (final UnitConfig unitConfig : getRegistry().getMessages()) {
+            for (final String unitAlias : unitConfig.getAliasList()) {
+                if (unitAlias.equals(alias)) {
+                    return unitConfig;
+                }
             }
         }
-        return false;
+        throw new NotAvailableException("AuthorizationGroup with alias[" + alias + "]");
     }
 
+    @Override
+    public void beforeUpdate(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws RejectedException {
+        final UnitConfig authorizationGroup = identifiableMessage.getMessage();
+        if (!idAliasMap.containsKey(authorizationGroup.getId())) {
+            return;
+        }
+
+        final String expectedAlias = idAliasMap.get(authorizationGroup.getId());
+        for (final String alias : authorizationGroup.getAliasList()) {
+            if (alias.equals(expectedAlias)) {
+                return;
+            }
+        }
+
+        throw new RejectedException("AuthorizationGroup[" + authorizationGroup.getId() + "] should contain the alias[" + expectedAlias + "]");
+    }
+
+    @Override
+    public void beforeRemove(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws RejectedException {
+        final String id = identifiableMessage.getMessage().getId();
+        if (idAliasMap.containsKey(id)) {
+            throw new RejectedException("AuthorizationGroup[" + identifiableMessage.getMessage().getId() + "] cannot be removed because it is the " + idAliasMap.get(id));
+        }
+    }
 }

@@ -21,198 +21,143 @@ package org.openbase.bco.registry.unit.core.plugin;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
+import org.openbase.bco.authentication.core.AuthenticatorController;
+import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
+import org.openbase.bco.authentication.lib.EncryptionHelper;
+import org.openbase.bco.authentication.lib.SessionManager;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
+import org.openbase.jul.exception.CouldNotPerformException;
+import org.openbase.jul.exception.InitializationException;
+import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.RejectedException;
+import org.openbase.jul.extension.protobuf.IdentifiableMessage;
+import org.openbase.jul.storage.registry.ProtoBufRegistry;
+import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
+import org.slf4j.LoggerFactory;
+import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
+import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
+import rst.domotic.authentication.PermissionType.Permission;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
+import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
+import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
+import rst.domotic.unit.user.UserConfigType.UserConfig;
+
 import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
-import org.openbase.bco.authentication.core.AuthenticatorController;
-import org.openbase.bco.authentication.lib.CachedAuthenticationRemote;
-import org.openbase.bco.authentication.lib.EncryptionHelper;
-import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.InitializationException;
-import org.openbase.jul.exception.NotAvailableException;
-import org.openbase.jul.extension.protobuf.IdentifiableMessage;
-import org.openbase.jul.extension.rst.processing.LabelProcessor;
-import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.openbase.jul.storage.registry.ProtoBufRegistry;
-import org.openbase.jul.storage.registry.Registry;
-import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
-import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
-import org.slf4j.LoggerFactory;
-import rst.domotic.authentication.LoginCredentialsChangeType.LoginCredentialsChange;
-import rst.domotic.authentication.PermissionConfigType.PermissionConfig;
-import rst.domotic.authentication.PermissionType.Permission;
-import rst.domotic.registry.UnitRegistryDataType.UnitRegistryData;
-import rst.domotic.unit.UnitConfigType.UnitConfig;
-import rst.domotic.unit.UnitConfigType.UnitConfig.Builder;
-import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
-import rst.domotic.unit.authorizationgroup.AuthorizationGroupConfigType.AuthorizationGroupConfig;
-import rst.domotic.unit.user.UserConfigType.UserConfig;
 
 /**
- *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
 public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, UnitConfig, Builder> {
 
-    public static final String DEFAULT_ADMIN_USERNAME_AND_PASSWORD = "admin";
-    public static final String BCO_USERNAME = "BCO";
+    private static final String ADMIN_USERNAME = "admin";
+    private static final String BCO_USERNAME = "BCO";
+    public static final String ADMIN_PASSWORD = ADMIN_USERNAME;
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(UserCreationPlugin.class);
 
-    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> userUnitConfigRegistry;
-    private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupConfigRegistry;
+    private final Map<String, String> idAliasMap;
 
-    public UserCreationPlugin(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> userUnitConfigRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> authorizationGroupConfigRegistry) {
-        this.userUnitConfigRegistry = userUnitConfigRegistry;
-        this.authorizationGroupConfigRegistry = authorizationGroupConfigRegistry;
+    public UserCreationPlugin() {
+        this.idAliasMap = new HashMap<>();
     }
 
     @Override
-    public void init(ProtoBufRegistry<String, UnitConfig, Builder> registry) throws InitializationException, InterruptedException {
-        super.init(registry);
+    public void init(final ProtoBufRegistry<String, UnitConfig, Builder> userRegistry) throws InitializationException, InterruptedException {
+        super.init(userRegistry);
 
         try {
-            UnitConfig.Builder adminGroupConfig = null;
-            UnitConfig.Builder bcoGroupConfig = null;
-            for (UnitConfig authorizationGroup : authorizationGroupConfigRegistry.getMessages()) {
-                if (LabelProcessor.contains(authorizationGroup.getLabel(), AuthorizationGroupCreationPlugin.ADMIN_GROUP_LABEL)) {
-                    adminGroupConfig = authorizationGroup.toBuilder();
-                } else if (LabelProcessor.contains(authorizationGroup.getLabel(), AuthorizationGroupCreationPlugin.BCO_GROUP_LABEL)) {
-                    bcoGroupConfig = authorizationGroup.toBuilder();
-                }
-            }
-            if (adminGroupConfig == null) {
-                throw new InitializationException(this, new NotAvailableException("Admin AuthorizationGroupUnitConfigConfig"));
-            }
-            if (bcoGroupConfig == null) {
-                throw new InitializationException(this, new NotAvailableException("BCO AuthorizationGroupUnitConfigConfig"));
+            UnitConfig admin;
+            try {
+                admin = getUserByAlias(UnitRegistry.ADMIN_USER_ALIAS);
+            } catch (NotAvailableException ex) {
+                // admin not registered at all
+                admin = registerAdmin();
             }
 
-            boolean adminExists = false;
-            UnitConfig defaultAdminUnitConfig = null;
-            UnitConfig bcoUserConfig = null;
-            for (UnitConfig userUnitConfig : userUnitConfigRegistry.getMessages()) {
-                if (CachedAuthenticationRemote.getRemote().isAdmin(userUnitConfig.getId()).get(1, TimeUnit.SECONDS)) {
-                    adminExists = true;
-                    if (!adminGroupConfig.getAuthorizationGroupConfig().getMemberIdList().contains(userUnitConfig.getId())) {
-                        // user is admin but not in group, so add him
-                        AuthorizationGroupConfig.Builder authorizationGroup = adminGroupConfig.getAuthorizationGroupConfigBuilder();
-                        authorizationGroup.addMemberId(userUnitConfig.getId());
-                        authorizationGroupConfigRegistry.update(adminGroupConfig.build());
-                    }
-                }
-                if (userUnitConfig.getUserConfig().getUserName().equals(DEFAULT_ADMIN_USERNAME_AND_PASSWORD)) {
-                    defaultAdminUnitConfig = userUnitConfig;
-                }
-                if (userUnitConfig.getUserConfig().getUserName().equals(BCO_USERNAME)) {
-                    bcoUserConfig = userUnitConfig;
-                }
+            if (!CachedAuthenticationRemote.getRemote().isAdmin(admin.getId()).get(1, TimeUnit.SECONDS)) {
+                // admin registered in registry but not at authenticator
+                registerAdminAtAuthenticator(admin.getId());
             }
 
-            if (defaultAdminUnitConfig != null) {
-                // default admin is already registered
-                if (!adminExists) {
-                    // no other admin exists or he is not registered at the authenticator
-                    String initialRegistrationPassword = AuthenticatorController.getInitialPassword();
-                    if (initialRegistrationPassword == null) {
-                        LOGGER.error("The user registry contains the default administrator but no admin is registered at the authenticator. Please use --reset-credentials to reset the credentials!");
-                        System.exit(1);
-                    }
+            UnitConfig bco;
+            try {
+                bco = getUserByAlias(UnitRegistry.BCO_USER_ALIAS);
+            } catch (NotAvailableException ex) {
+                // bco user not registered at all
+                bco = registerBCO();
+            }
 
-                    LoginCredentialsChange.Builder loginCredentials = LoginCredentialsChange.newBuilder();
-                    loginCredentials.setId(defaultAdminUnitConfig.getId());
-                    try {
-                        loginCredentials.setNewCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(DEFAULT_ADMIN_USERNAME_AND_PASSWORD), EncryptionHelper.hash(initialRegistrationPassword)));
-                    } catch (IOException ex) {
-                        throw new CouldNotPerformException("Could not encrypt password", ex);
-                    }
-                    try {
-                        CachedAuthenticationRemote.getRemote().register(loginCredentials.build()).get();
-                    } catch (ExecutionException ex) {
-                        throw new CouldNotPerformException("Could not register default administrator at authenticator");
-                    } catch (InterruptedException ex) {
-                        Thread.currentThread().interrupt();
-                    }
-                    
-                    adminExists = true;
-                }
+            if (!CachedAuthenticationRemote.getRemote().hasUser(bco.getId()).get(1, TimeUnit.SECONDS)) {
+                // bco user registered in registry but not at the authenticator
+                registerBCOAtAuthenticator(bco.getId(), admin.getId());
             }
-            if (!adminExists) {
-                defaultAdminUnitConfig = registerDefaultAdmin(adminGroupConfig);
-            }
-            if (bcoUserConfig == null) {
-                registerBCOUser(bcoGroupConfig);
-            } else {
-                if (!SessionManager.getInstance().hasCredentialsForId(bcoUserConfig.getId()) || !CachedAuthenticationRemote.getRemote().hasUser(bcoUserConfig.getId()).get()) {
-                    if (defaultAdminUnitConfig == null) {
-                        throw new CouldNotPerformException("BCO user is not registered at the session manager and the default admin is not available");
-                    }
-                    SessionManager.getInstance().login(defaultAdminUnitConfig.getId(), DEFAULT_ADMIN_USERNAME_AND_PASSWORD);
-                    if (CachedAuthenticationRemote.getRemote().hasUser(bcoUserConfig.getId()).get()) {
-                        SessionManager.getInstance().removeUser(bcoUserConfig.getId());
-                    }
-                    SessionManager.getInstance().registerClient(bcoUserConfig.getId());
-                    SessionManager.getInstance().logout();
-                }
-            }
+
+            idAliasMap.put(admin.getId(), UnitRegistry.ADMIN_USER_ALIAS);
+            idAliasMap.put(bco.getId(), UnitRegistry.BCO_USER_ALIAS);
         } catch (CouldNotPerformException | ExecutionException | TimeoutException ex) {
-            LOGGER.warn("Failed", ex);
-            throw new InitializationException(this, new CouldNotPerformException("Could not check for register initial user accounts", ex));
-        } catch (InterruptedException ex) {
-            Thread.currentThread().interrupt();
+            throw new InitializationException(this, new CouldNotPerformException("Could not validate or register initial user accounts", ex));
         }
     }
 
-    public UnitConfig registerDefaultAdmin(UnitConfig.Builder adminGroupConfig) throws CouldNotPerformException {
-        String initialRegistrationPassword = AuthenticatorController.getInitialPassword();
+    private UnitConfig getUserByAlias(final String alias) throws CouldNotPerformException {
+        for (UnitConfig unitConfig : getRegistry().getMessages()) {
+            for (final String unitAlias : unitConfig.getAliasList()) {
+                if (unitAlias.equals(alias)) {
+                    return unitConfig;
+                }
+            }
+        }
+        throw new NotAvailableException("User with alias[" + alias + "]");
+    }
 
-        // check if a user with the default username does not already exist in the database
-        UnitConfig adminConfig = null;
-        for (UnitConfig unitConfig : userUnitConfigRegistry.getMessages()) {
-            if (unitConfig.getUserConfig().getUserName().equals(DEFAULT_ADMIN_USERNAME_AND_PASSWORD)) {
-                adminConfig = unitConfig;
+    @Override
+    public void beforeUpdate(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws RejectedException {
+        final UnitConfig user = identifiableMessage.getMessage();
+        if (!idAliasMap.containsKey(user.getId())) {
+            return;
+        }
+
+        final String expectedAlias = idAliasMap.get(user.getId());
+        for (final String alias : user.getAliasList()) {
+            if (alias.equals(expectedAlias)) {
+                return;
             }
         }
 
+        throw new RejectedException("User[" + user.getId() + "] should contain the alias[" + expectedAlias + "]");
+    }
+
+    @Override
+    public void beforeRemove(final IdentifiableMessage<String, UnitConfig, Builder> identifiableMessage) throws RejectedException {
+        final String id = identifiableMessage.getMessage().getId();
+        if (idAliasMap.containsKey(id)) {
+            throw new RejectedException("User[" + identifiableMessage.getMessage().getId() + "] cannot be removed because it is the " + idAliasMap.get(id));
+        }
+    }
+
+
+    private void registerAdminAtAuthenticator(final String adminId) throws CouldNotPerformException {
+        final String initialRegistrationPassword = AuthenticatorController.getInitialPassword();
+
+        // verify initial password
         if (initialRegistrationPassword == null) {
-            String errorMessage;
-            if (adminConfig == null) {
-                errorMessage = "No admin is yet registered and the initial registration password of the authenticator is not available. Please use the bco launcher for the initial start.";
-            } else {
-                errorMessage = "The default administrator is already registered at the registry but the authenticator already contains an administrator which is not"
-                        + " registered in the registry. Please reset your credentials with --reset-credentials";
-            }
-            LOGGER.error(errorMessage);
+            LOGGER.error("The initial registration password is not available even though no initial admin was registered at the authenticator." +
+                    "This means that either the authenticator has not been started in the same process or that a user is already registered which could not be identified as the default admin." +
+                    "Please verify that you used to bco launcher and reset all credentials with '--reset-credentials'");
             System.exit(1);
+            throw new NotAvailableException("initial registration password");
         }
 
-        // if not register one
-        if (adminConfig == null) {
-            UnitConfig.Builder unitConfig = UnitConfig.newBuilder();
-            unitConfig.setUnitType(UnitType.USER);
-
-            PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();
-            Permission.Builder otherPermission = permissionConfig.getOtherPermissionBuilder();
-            otherPermission.setRead(true).setAccess(true).setWrite(true);
-
-            UserConfig.Builder userConfig = unitConfig.getUserConfigBuilder();
-            userConfig.setFirstName("Initial");
-            userConfig.setLastName("Admin");
-            userConfig.setUserName(DEFAULT_ADMIN_USERNAME_AND_PASSWORD);
-
-            adminConfig = userUnitConfigRegistry.register(unitConfig.build());
-        }
-
-        // publish his credentials to the authenticator
-        LoginCredentialsChange.Builder loginCredentials = LoginCredentialsChange.newBuilder();
-        loginCredentials.setId(adminConfig.getId());
+        // register at authenticator
+        final LoginCredentialsChange.Builder loginCredentials = LoginCredentialsChange.newBuilder().setId(adminId);
         try {
-            loginCredentials.setNewCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(DEFAULT_ADMIN_USERNAME_AND_PASSWORD), EncryptionHelper.hash(initialRegistrationPassword)));
+            loginCredentials.setNewCredentials(EncryptionHelper.encryptSymmetric(EncryptionHelper.hash(ADMIN_PASSWORD), EncryptionHelper.hash(initialRegistrationPassword)));
         } catch (IOException ex) {
             throw new CouldNotPerformException("Could not encrypt password", ex);
         }
@@ -223,71 +168,49 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
         } catch (InterruptedException ex) {
             Thread.currentThread().interrupt();
         }
-
-        // add him to the admin group if he is not already in it
-        AuthorizationGroupConfig.Builder authorizationGroup = adminGroupConfig.getAuthorizationGroupConfigBuilder();
-        if (!authorizationGroup.getMemberIdList().contains(adminConfig.getId())) {
-            authorizationGroup.addMemberId(adminConfig.getId());
-            authorizationGroupConfigRegistry.update(adminGroupConfig.build());
-        }
-        return adminConfig;
     }
 
-    public void registerBCOUser(UnitConfig.Builder bcoGroupConfig) throws CouldNotPerformException {
-        try {
-            String adminId = null;
-            for (UnitConfig config : userUnitConfigRegistry.getMessages()) {
-                if (config.getUserConfig().getUserName().equals(DEFAULT_ADMIN_USERNAME_AND_PASSWORD)) {
-                    adminId = config.getId();
-                }
-            }
-            if (adminId == null) {
-                throw new NotAvailableException("adminId");
-            }
-            if (!SessionManager.getInstance().login(adminId, DEFAULT_ADMIN_USERNAME_AND_PASSWORD)) {
-                throw new CouldNotPerformException("Login as default admin failed");
-            }
-        } catch (CouldNotPerformException ex) {
-            LOGGER.error("Could not log in as the default admin user to create a bco user");
-            throw ex;
+    private UnitConfig registerAdmin() throws CouldNotPerformException {
+        final UnitConfig.Builder admin = UnitConfig.newBuilder();
+        admin.setUnitType(UnitType.USER).addAlias(UnitRegistry.ADMIN_USER_ALIAS);
+
+        PermissionConfig.Builder permissionConfig = admin.getPermissionConfigBuilder();
+        Permission.Builder otherPermission = permissionConfig.getOtherPermissionBuilder();
+        otherPermission.setRead(true).setAccess(true).setWrite(true);
+
+        UserConfig.Builder userConfig = admin.getUserConfigBuilder();
+        userConfig.setFirstName("Initial");
+        userConfig.setLastName("Admin");
+        userConfig.setUserName(ADMIN_USERNAME);
+
+        return getRegistry().register(admin.build());
+    }
+
+    private UnitConfig registerBCO() throws CouldNotPerformException {
+        final UnitConfig.Builder unitConfig = UnitConfig.newBuilder();
+        unitConfig.setUnitType(UnitType.USER).addAlias(UnitRegistry.BCO_USER_ALIAS);
+
+        final PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();
+        permissionConfig.getOtherPermissionBuilder().setRead(true).setAccess(true).setWrite(true);
+
+        final UserConfig.Builder userConfig = unitConfig.getUserConfigBuilder();
+        userConfig.setFirstName("System");
+        userConfig.setLastName("User");
+        userConfig.setUserName(BCO_USERNAME);
+
+        return getRegistry().register(unitConfig.build());
+    }
+
+    private void registerBCOAtAuthenticator(final String bcoId, final String adminId) throws CouldNotPerformException {
+        // login as admin
+        if (!SessionManager.getInstance().login(adminId, ADMIN_PASSWORD)) {
+            throw new CouldNotPerformException("Could not login as the default admin to register the bco user at the authenticator");
         }
 
-        // check if a user with the default username does not already exist in the database
-        String userId = "";
-        boolean bcoUserAlreadyInRegistry = false;
-        for (UnitConfig unitConfig : userUnitConfigRegistry.getMessages()) {
-            if (unitConfig.getUserConfig().getUserName().equals(BCO_USERNAME)) {
-                bcoUserAlreadyInRegistry = true;
-                userId = unitConfig.toBuilder().getId();
-            }
-        }
+        // register bco user as a client at the authenticator
+        SessionManager.getInstance().registerClient(bcoId);
 
-        // if not register one
-        if (!bcoUserAlreadyInRegistry) {
-            UnitConfig.Builder unitConfig = UnitConfig.newBuilder();
-            unitConfig.setUnitType(UnitType.USER);
-
-            PermissionConfig.Builder permissionConfig = unitConfig.getPermissionConfigBuilder();
-            Permission.Builder otherPermission = permissionConfig.getOtherPermissionBuilder();
-            otherPermission.setRead(true).setAccess(true).setWrite(true);
-
-            UserConfig.Builder userConfig = unitConfig.getUserConfigBuilder();
-            userConfig.setFirstName("System");
-            userConfig.setLastName("User");
-            userConfig.setUserName(BCO_USERNAME);
-
-            userId = userUnitConfigRegistry.register(unitConfig.build()).getId();
-        }
-
-        // register the bco user as a client at the authenticator
-        SessionManager.getInstance().registerClient(userId);
-
-        // add him to the bco group if he is not already in it
-        AuthorizationGroupConfig.Builder authorizationGroup = bcoGroupConfig.getAuthorizationGroupConfigBuilder();
-        if (!authorizationGroup.getMemberIdList().contains(userId)) {
-            authorizationGroup.addMemberId(userId);
-            authorizationGroupConfigRegistry.update(bcoGroupConfig.build());
-        }
+        // logout
         SessionManager.getInstance().logout();
     }
 }

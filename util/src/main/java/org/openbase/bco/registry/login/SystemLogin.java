@@ -26,6 +26,7 @@ import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.jp.JPAuthentication;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -57,14 +58,7 @@ public class SystemLogin {
 
         Registries.getUnitRegistry().waitForData();
 
-        for (final UnitConfig userUnitConfig : Registries.getUnitRegistry().getUnitConfigs(UnitTemplateType.UnitTemplate.UnitType.USER)) {
-            if (userUnitConfig.getUserConfig().getUserName().equals(UserCreationPlugin.BCO_USERNAME)) {
-                SessionManager.getInstance().login(userUnitConfig.getId());
-                return;
-            }
-        }
-
-        // system login not possible!
+        final UnitConfig bcoUser = Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.BCO_USER_ALIAS);
+        SessionManager.getInstance().login(bcoUser.getId());
     }
-
 }

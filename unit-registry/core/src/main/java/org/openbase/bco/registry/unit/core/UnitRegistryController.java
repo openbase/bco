@@ -37,11 +37,7 @@ import org.openbase.bco.registry.unit.core.consistency.agentconfig.AgentScopeCon
 import org.openbase.bco.registry.unit.core.consistency.appconfig.AppConfigAppClassIdConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.appconfig.AppLocationConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.appconfig.AppScopeConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.authorizationgroup.AuthorizationGroupConfigLabelConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.authorizationgroup.AuthorizationGroupConfigScopeConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.authorizationgroup.AuthorizationGroupPermissionConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.authorizationgroup.AuthorziationGroupDuplicateMemberConsistencyHandler;
-import org.openbase.bco.registry.unit.core.consistency.DefaultUnitLabelConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.authorizationgroup.*;
 import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionLocationConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.connectionconfig.ConnectionTilesConsistencyHandler;
@@ -50,10 +46,10 @@ import org.openbase.bco.registry.unit.core.consistency.deviceconfig.*;
 import org.openbase.bco.registry.unit.core.consistency.locationconfig.*;
 import org.openbase.bco.registry.unit.core.consistency.sceneconfig.SceneScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.unitgroupconfig.*;
-import org.openbase.bco.registry.unit.core.consistency.userconfig.UserUnitLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigScopeConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserConfigUserNameConsistencyHandler;
 import org.openbase.bco.registry.unit.core.consistency.userconfig.UserPermissionConsistencyHandler;
+import org.openbase.bco.registry.unit.core.consistency.userconfig.UserUnitLabelConsistencyHandler;
 import org.openbase.bco.registry.unit.core.plugin.*;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.lib.generator.UnitConfigIdGenerator;
@@ -320,8 +316,9 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
         try {
             if (JPService.getProperty(JPAuthentication.class).getValue()) {
+                authorizationGroupUnitConfigRegistry.registerConsistencyHandler(new AuthorizationGroupAdminAndBCOConsistencyHandler(aliasIdMap));
                 registerConsistencyHandler(new OtherPermissionConsistencyHandler(), UnitConfig.class);
-                registerConsistencyHandler(new GroupPermissionConsistencyHandler(authorizationGroupUnitConfigRegistry), UnitConfig.class);
+                registerConsistencyHandler(new GroupPermissionConsistencyHandler(aliasIdMap), UnitConfig.class);
             }
             if (JPService.getProperty(JPClearUnitPosition.class).getValue()) {
                 registerConsistencyHandler(new UnitPositionCleanerConsistencyHandler(), UnitConfig.class);
@@ -345,8 +342,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         locationUnitConfigRegistry.registerPlugin(new RootLocationPlugin());
         try {
             if (JPService.getProperty(JPAuthentication.class).getValue()) {
-                authorizationGroupUnitConfigRegistry.registerPlugin(new AuthorizationGroupCreationPlugin(authorizationGroupUnitConfigRegistry));
-                userUnitConfigRegistry.registerPlugin(new UserCreationPlugin(userUnitConfigRegistry, authorizationGroupUnitConfigRegistry));
+                authorizationGroupUnitConfigRegistry.registerPlugin(new AuthorizationGroupCreationPlugin());
+                userUnitConfigRegistry.registerPlugin(new UserCreationPlugin());
             }
         } catch (JPNotAvailableException ex) {
             ExceptionPrinter.printHistory("Could not load " + JPAuthentication.class.getSimpleName(), ex, LOGGER, LogLevel.WARN);

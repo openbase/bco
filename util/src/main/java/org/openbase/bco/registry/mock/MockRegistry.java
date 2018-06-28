@@ -93,14 +93,12 @@ import static org.openbase.bco.registry.mock.MockRegistry.MockServiceDescription
 /**
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
-public class MockRegistry {
+public class    MockRegistry {
 
     private static final org.slf4j.Logger LOGGER = LoggerFactory.getLogger(MockRegistry.class);
 
     public static final String USER_NAME = "uSeRnAmE";
     public static UnitConfig testUser;
-    public static UnitConfig admin;
-    public static String adminPassword = UserCreationPlugin.DEFAULT_ADMIN_USERNAME_AND_PASSWORD;
 
     public static final String LOCATION_PARADISE_LABEL = "Paradise";
     public static final String LOCATION_HELL_LABEL = "Hell";
@@ -586,13 +584,6 @@ public class MockRegistry {
     }
 
     private void registerUser() throws CouldNotPerformException, InterruptedException {
-        for (UnitConfig unitConfig : unitRegistry.getUnitConfigs(UnitType.USER)) {
-            if (unitConfig.getUserConfig().getUserName().equals(UserCreationPlugin.DEFAULT_ADMIN_USERNAME_AND_PASSWORD)) {
-                admin = unitConfig;
-                break;
-            }
-        }
-
         UserConfig.Builder config = UserConfig.newBuilder().setFirstName("Max").setLastName("Mustermann").setUserName(USER_NAME);
         UnitConfig.Builder userUnitConfig = UnitConfig.newBuilder().setUnitType(UnitType.USER).setUserConfig(config).setEnablingState(EnablingState.newBuilder().setValue(EnablingState.State.ENABLED));
         userUnitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setWrite(true).setAccess(true).setRead(true);
