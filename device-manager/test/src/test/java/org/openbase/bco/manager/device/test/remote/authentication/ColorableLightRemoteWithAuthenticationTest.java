@@ -21,12 +21,12 @@ package org.openbase.bco.manager.device.test.remote.authentication;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import org.junit.After;
-import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.Test;
-import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.AuthenticatedServerManager;
+import org.openbase.bco.authentication.lib.EncryptionHelper;
 import org.openbase.bco.authentication.lib.SessionManager;
 import org.openbase.bco.authentication.lib.jp.JPSessionTimeout;
 import org.openbase.bco.dal.remote.unit.ColorableLightRemote;
@@ -35,6 +35,7 @@ import org.openbase.bco.manager.device.test.AbstractBCODeviceManagerTest;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.extension.rst.processing.TimestampJavaTimeTransform;
@@ -47,28 +48,26 @@ import rst.domotic.unit.user.UserConfigType.UserConfig;
 import rst.timing.IntervalType;
 import rst.timing.IntervalType.Interval;
 
+import static org.junit.Assert.assertEquals;
+
 /**
- *
  * @author <a href="mailto:sfast@techfak.uni-bielefeld.de">Sebastian Fast</a>
  */
 public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODeviceManagerTest {
 
     private static ColorableLightRemote colorableLightRemote;
-    
+
     private final SessionManager sessionManager;
-    
+
     public ColorableLightRemoteWithAuthenticationTest() {
         sessionManager = new SessionManager();
     }
 
     @Before
     public void setUp() throws CouldNotPerformException, InterruptedException {
-        String adminId = MockRegistry.admin.getId();
-        String password = UserCreationPlugin.DEFAULT_ADMIN_USERNAME_AND_PASSWORD;
-
-        boolean result = sessionManager.login(adminId, password);
+        boolean result = sessionManager.login(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD);
         assertEquals(true, result);
-        
+
         colorableLightRemote = Units.getUnitByAlias(MockRegistry.getUnitAlias(UnitType.COLORABLE_LIGHT), true, ColorableLightRemote.class);
         colorableLightRemote.setSessionManager(sessionManager);
     }
@@ -111,39 +110,39 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
         userConfig.setLastName("Last");
         testClient.getPermissionConfigBuilder().getOtherPermissionBuilder().setWrite(true).setAccess(true).setRead(true);
         UnitConfig registered = Registries.getUnitRegistry().registerUnitConfig(testClient.build()).get();
-        
+
         // register client
         System.out.println("register client");
         sessionManager.registerClient(registered.getId());
-        
+
         // logout admin
         System.out.println("logout admin");
         sessionManager.logout();
-        
+
         // login client
         System.out.println("login client");
         boolean result = sessionManager.login(registered.getId());
         assertEquals(true, result);
-        
+
         // make ticket invalid
         byte[] serviceServerSecretKey = AuthenticatedServerManager.getInstance().getServiceServerSecretKey();
         System.out.println("make ticket invalid");
         Ticket ticket = EncryptionHelper.decryptSymmetric(sessionManager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
-        
+
         long currentTime = 0;
         Interval.Builder validityInterval = IntervalType.Interval.newBuilder();
         validityInterval.setBegin(TimestampJavaTimeTransform.transform(currentTime));
         validityInterval.setEnd(TimestampJavaTimeTransform.transform(currentTime + JPService.getProperty(JPSessionTimeout.class).getValue()));
         validityInterval.build();
-        
+
         Ticket.Builder cstb = ticket.toBuilder();
         cstb.setValidityPeriod(validityInterval.build());
 
         TicketAuthenticatorWrapper.Builder wrapperBuilder = sessionManager.getTicketAuthenticatorWrapper().toBuilder();
         wrapperBuilder.setTicket(EncryptionHelper.encryptSymmetric(cstb.build(), serviceServerSecretKey));
-          
+
         sessionManager.setTicketAuthenticatorWrapper(wrapperBuilder.build());
-        
+
         // execute action
         System.out.println("execute action");
         colorableLightRemote.setPowerState(PowerStateType.PowerState.State.ON).get();
@@ -160,26 +159,26 @@ public class ColorableLightRemoteWithAuthenticationTest extends AbstractBCODevic
     @Test(timeout = 10000)
     public void testSetColorWithUserWithoutAuthentication() throws Exception {
         System.out.println("testSetColorWithClientWithoutAuthentication");
-                        
+
         byte[] serviceServerSecretKey = AuthenticatedServerManager.getInstance().getServiceServerSecretKey();
         // make ticket invalid
         System.out.println("make ticket invalid");
         Ticket ticket = EncryptionHelper.decryptSymmetric(sessionManager.getTicketAuthenticatorWrapper().getTicket(), serviceServerSecretKey, Ticket.class);
-        
+
         long currentTime = 0;
         Interval.Builder validityInterval = IntervalType.Interval.newBuilder();
         validityInterval.setBegin(TimestampJavaTimeTransform.transform(currentTime));
         validityInterval.setEnd(TimestampJavaTimeTransform.transform(currentTime + JPService.getProperty(JPSessionTimeout.class).getValue()));
         validityInterval.build();
-        
+
         Ticket.Builder cstb = ticket.toBuilder();
         cstb.setValidityPeriod(validityInterval.build());
 
         TicketAuthenticatorWrapper.Builder wrapperBuilder = sessionManager.getTicketAuthenticatorWrapper().toBuilder();
         wrapperBuilder.setTicket(EncryptionHelper.encryptSymmetric(cstb.build(), serviceServerSecretKey));
-          
+
         sessionManager.setTicketAuthenticatorWrapper(wrapperBuilder.build());
-        
+
         // execute action
         System.out.println("execute action");
         colorableLightRemote.setPowerState(PowerStateType.PowerState.State.ON).get();
