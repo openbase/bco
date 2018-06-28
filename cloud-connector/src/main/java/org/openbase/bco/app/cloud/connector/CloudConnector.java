@@ -31,6 +31,7 @@ import io.socket.engineio.client.Transport;
 import org.openbase.bco.app.cloud.connector.jp.JPCloudServerURI;
 import org.openbase.bco.app.cloud.connector.mapping.lib.ErrorCode;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPNotAvailableException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -58,8 +59,6 @@ import java.util.concurrent.Future;
 public class CloudConnector implements Launchable<Void>, VoidInitializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CloudConnector.class);
-    //TODO: this is has to come from the registry
-    public static final String ID = "86b2d03d-0c38-4b3e-bf4c-6206c4ad6650";
 
     private final FulfillmentHandler fulfillmentHandler;
     private final JsonParser jsonParser;
@@ -87,7 +86,14 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
     @Override
     public void init() throws InitializationException {
         try {
-            LOGGER.info("ID[" + ID + "]");
+            try {
+                Registries.getUnitRegistry().waitForData();
+            } catch (CouldNotPerformException ex) {
+                throw new InitializationException(this, ex);
+            } catch (InterruptedException ex) {
+                Thread.currentThread().interrupt();
+                throw new InitializationException(this, ex);
+            }
             // get cloud uri from property
             URI cloudURI = JPService.getProperty(JPCloudServerURI.class).getValue();
 
@@ -104,7 +110,7 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
                         @SuppressWarnings("unchecked")
                         Map<String, List<String>> headers = (Map<String, List<String>>) args1[0];
                         // add bco id to request header
-                        headers.put("id", Collections.singletonList(ID));
+                        headers.put("id", Collections.singletonList(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.BCO_USER_ALIAS).getId()));
                     } catch (Exception ex) {
                         ExceptionPrinter.printHistory(ex, LOGGER);
                     }

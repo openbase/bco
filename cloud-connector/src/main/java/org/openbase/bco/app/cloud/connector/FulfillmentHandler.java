@@ -10,12 +10,12 @@ package org.openbase.bco.app.cloud.connector;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- *
+ * 
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- *
+ * 
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
@@ -37,6 +37,7 @@ import org.openbase.bco.dal.lib.layer.service.Services;
 import org.openbase.bco.dal.lib.layer.unit.UnitRemote;
 import org.openbase.bco.dal.remote.unit.Units;
 import org.openbase.bco.registry.remote.Registries;
+import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.bco.registry.unit.remote.UnitRegistryRemote;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.MultiException;
@@ -182,11 +183,6 @@ public class FulfillmentHandler {
      * @param payload the payload of the response send to Google.
      */
     public void handleSync(final JsonObject payload) {
-        // TODO: debug string and error optional for payload
-
-        // TODO: this has to be an id for a bco instance
-        payload.addProperty(AGENT_USER_ID_KEY, CloudConnector.ID);
-
         final JsonArray devices = new JsonArray();
         try {
             final UnitRegistryRemote unitRegistryRemote = Registries.getUnitRegistry();
@@ -197,6 +193,8 @@ public class FulfillmentHandler {
                 setError(payload, ex, ErrorCode.TIMEOUT);
                 return;
             }
+            // TODO: debug string and error optional for payload
+            payload.addProperty(AGENT_USER_ID_KEY, Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.BCO_USER_ALIAS).getId());
 
             final Set<String> handledUnitConfigs = new HashSet<>();
 
