@@ -613,16 +613,14 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
     @Override
     public Future<AuthenticatedValue> removeUnitConfigAuthenticated(final AuthenticatedValue authenticatedValue) throws CouldNotPerformException {
-        return GlobalCachedExecutorService.submit(() -> {
-            return AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, getAuthorizationGroupUnitConfigRegistry().getEntryMap(), getLocationUnitConfigRegistry().getEntryMap(), UnitConfig.class,
-                    this,
-                    (UnitConfig unitConfig) -> {
-                        UnitConfig result = getUnitConfigRegistry(unitConfig.getUnitType()).remove(unitConfig);
-                        return result;
-                    },
-                    (UnitConfig unitConfig) -> getUnitConfigById(unitConfig.getId())
-            );
-        });
+        return GlobalCachedExecutorService.submit(() -> AuthenticatedServiceProcessor.authenticatedAction(authenticatedValue, getAuthorizationGroupUnitConfigRegistry().getEntryMap(), getLocationUnitConfigRegistry().getEntryMap(), UnitConfig.class,
+                this,
+                (UnitConfig unitConfig) -> {
+                    UnitConfig result = getUnitConfigRegistry(unitConfig.getUnitType()).remove(unitConfig);
+                    return result;
+                },
+                (UnitConfig unitConfig) -> getUnitConfigById(unitConfig.getId())
+        ));
     }
 
     @Override

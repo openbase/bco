@@ -363,7 +363,7 @@ public class Registries {
      */
     @Experimental
     public static Boolean containsById(final String id, final MessageOrBuilder messageOrBuilder) throws CouldNotPerformException {
-        return (Boolean) invokeMethod(getMethodName("contains", "ById", messageOrBuilder), messageOrBuilder);
+        return (Boolean) invokeMethod(getMethodName("contains", "ById", messageOrBuilder), messageOrBuilder, id);
     }
 
     /**
