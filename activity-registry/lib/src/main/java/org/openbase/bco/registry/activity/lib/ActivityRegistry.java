@@ -23,12 +23,13 @@ package org.openbase.bco.registry.activity.lib;
  */
 
 import org.openbase.bco.registry.lib.provider.activity.ActivityConfigCollectionProvider;
+import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
-import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.RegistryService;
 import rst.domotic.activity.ActivityConfigType.ActivityConfig;
+import rst.domotic.communication.TransactionValueType.TransactionValue;
 import rst.domotic.registry.ActivityRegistryDataType.ActivityRegistryData;
 
 import java.util.concurrent.Future;
@@ -51,6 +52,16 @@ public interface ActivityRegistry extends ActivityConfigCollectionProvider, Data
     Future<ActivityConfig> registerActivityConfig(ActivityConfig activityConfig) throws CouldNotPerformException;
 
     /**
+     * Method registers an activity config encoded in a transaction id.
+     *
+     * @param transactionValue the activity config to be registered encoded in a transaction id.
+     * @return a transaction value containing the registered activity config and an id for this transaction
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    @RPCMethod
+    Future<TransactionValue> registerActivityConfigVerified(TransactionValue transactionValue) throws CouldNotPerformException;
+
+    /**
      * Method updates the given activity config.
      *
      * @param activityConfig the updated activity config.
@@ -61,6 +72,16 @@ public interface ActivityRegistry extends ActivityConfigCollectionProvider, Data
     Future<ActivityConfig> updateActivityConfig(ActivityConfig activityConfig) throws CouldNotPerformException;
 
     /**
+     * Method updates an activity config encoded in a transaction id.
+     *
+     * @param transactionValue the activity config to be updated encoded in a transaction id.
+     * @return a transaction value containing the updated activity config and an id for this transaction
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    @RPCMethod
+    Future<TransactionValue> updateActivityConfigVerified(TransactionValue transactionValue) throws CouldNotPerformException;
+
+    /**
      * Method removes the given activity config.
      *
      * @param activityConfig the activity config to be removed.
@@ -69,6 +90,17 @@ public interface ActivityRegistry extends ActivityConfigCollectionProvider, Data
      */
     @RPCMethod
     Future<ActivityConfig> removeActivityConfig(ActivityConfig activityConfig) throws CouldNotPerformException;
+
+    /**
+     * Method removes an activity config encoded in a transaction id.
+     *
+     * @param transactionValue the activity config to be removed encoded in a transaction id.
+     * @return a transaction value containing the removed activity config and an id for this transaction
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    @RPCMethod
+    Future<TransactionValue> removeActivityConfigVerified(TransactionValue transactionValue) throws CouldNotPerformException;
+
 
     /**
      * Method returns true if the underlying registry is marked as read only.

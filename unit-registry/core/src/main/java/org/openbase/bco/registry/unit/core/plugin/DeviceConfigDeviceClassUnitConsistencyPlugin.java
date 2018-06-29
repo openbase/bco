@@ -21,18 +21,13 @@ package org.openbase.bco.registry.unit.core.plugin;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.List;
 
 import org.openbase.bco.registry.clazz.remote.CachedClassRegistryRemote;
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.RejectedException;
 import org.openbase.jul.extension.protobuf.IdentifiableMessage;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
-import org.openbase.jul.storage.registry.Registry;
-import org.openbase.jul.storage.registry.plugin.FileRegistryPluginAdapter;
 import org.openbase.jul.storage.registry.plugin.ProtobufRegistryPluginAdapter;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,8 +43,10 @@ import rst.domotic.unit.UnitTemplateConfigType.UnitTemplateConfig;
 import rst.domotic.unit.device.DeviceClassType.DeviceClass;
 import rst.domotic.unit.device.DeviceConfigType;
 
+import java.util.ArrayList;
+import java.util.List;
+
 /**
- *
  * @author <a href="mailto:pleminoq@openbase.org">Tamino Huxohl</a>
  */
 public class DeviceConfigDeviceClassUnitConsistencyPlugin extends ProtobufRegistryPluginAdapter<String, UnitConfig, Builder> {
@@ -60,7 +57,7 @@ public class DeviceConfigDeviceClassUnitConsistencyPlugin extends ProtobufRegist
     private final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry;
 
     public DeviceConfigDeviceClassUnitConsistencyPlugin(final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> dalUnitRegistry,
-            final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceUnitRegistry) {
+                                                        final ProtoBufFileSynchronizedRegistry<String, UnitConfig, UnitConfig.Builder, UnitRegistryData.Builder> deviceUnitRegistry) {
         this.dalUnitRegistry = dalUnitRegistry;
         this.deviceUnitRegistry = deviceUnitRegistry;
     }
@@ -95,7 +92,11 @@ public class DeviceConfigDeviceClassUnitConsistencyPlugin extends ProtobufRegist
         DeviceClass deviceClass = CachedClassRegistryRemote.getRegistry().getDeviceClassById(deviceConfig.getDeviceClassId());
         List<UnitConfig> unitConfigs = new ArrayList<>();
         for (String unitId : deviceConfig.getUnitIdList()) {
-            unitConfigs.add(dalUnitRegistry.getMessage(unitId));
+            if(dalUnitRegistry.contains(unitId)) {
+                unitConfigs.add(dalUnitRegistry.getMessage(unitId));
+            } else {
+                logger.warn("Dal unit["+unitId+"] cannot be found anymore");
+            }
         }
 
         // remove all units that do not have an according unitTemplateConfig in the deviceClass
@@ -105,6 +106,7 @@ public class DeviceConfigDeviceClassUnitConsistencyPlugin extends ProtobufRegist
             if (templateForUnitExists(deviceClass.getUnitTemplateConfigList(), unitConfig.getUnitTemplateConfigId())) {
                 deviceConfig.addUnitId(unitConfig.getId());
             } else {
+                logger.warn("Removed unitConfig[" + unitConfig.getId() + "]");
                 dalUnitRegistry.remove(unitConfig);
                 unitConfigs.remove(unitConfig);
                 modification = true;

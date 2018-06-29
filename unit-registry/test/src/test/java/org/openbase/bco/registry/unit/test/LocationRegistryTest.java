@@ -24,6 +24,7 @@ package org.openbase.bco.registry.unit.test;
 
 import org.junit.Assert;
 import org.junit.Test;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
@@ -78,20 +79,20 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
         System.out.println("testChildConsistency");
 
         // get current root location
-        UnitConfig.Builder previousRootLocation = unitRegistry.getRootLocationConfig().toBuilder();
+        UnitConfig.Builder previousRootLocation = Registries.getUnitRegistry().getRootLocationConfig().toBuilder();
 
         // register a new location which will become root
         String rootLocationLabel = "NewRootLocation";
-        UnitConfig.Builder newRootLocation = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationType.ZONE, rootLocationLabel).build()).get().toBuilder();
+        UnitConfig.Builder newRootLocation = Registries.getUnitRegistry().registerUnitConfig(getLocationUnitBuilder(LocationType.ZONE, rootLocationLabel).build()).get().toBuilder();
         // validate that newRootLocation is not yet root and put under the old root location
         assertFalse("New location should not have been registered as root directly", newRootLocation.getLocationConfig().getRoot());
         assertEquals("New location should be put under the old root location", previousRootLocation.getId(), newRootLocation.getPlacementConfig().getLocationId());
 
         // put previous root location under the new root location
         previousRootLocation.getPlacementConfigBuilder().setLocationId(newRootLocation.getId());
-        previousRootLocation = unitRegistry.updateUnitConfig(previousRootLocation.build()).get().toBuilder();
+        previousRootLocation = Registries.getUnitRegistry().updateUnitConfig(previousRootLocation.build()).get().toBuilder();
         // retrieve updated new root location
-        newRootLocation = unitRegistry.getUnitConfigById(newRootLocation.getId()).toBuilder();
+        newRootLocation = Registries.getUnitRegistry().getUnitConfigById(newRootLocation.getId()).toBuilder();
         // validate that previous root location is not root anymore and that the new one is
         assertFalse("Previous root location is still root", previousRootLocation.getLocationConfig().getRoot());
         assertEquals("Previous root location should be put under the new one", newRootLocation.getId(), previousRootLocation.getPlacementConfig().getLocationId());
@@ -100,9 +101,9 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
 
         // try to do the change back again
         newRootLocation.getPlacementConfigBuilder().setLocationId(previousRootLocation.getId());
-        newRootLocation = unitRegistry.updateUnitConfig(newRootLocation.build()).get().toBuilder();
+        newRootLocation = Registries.getUnitRegistry().updateUnitConfig(newRootLocation.build()).get().toBuilder();
         // retrieve updated previous root
-        previousRootLocation = unitRegistry.getUnitConfigById(previousRootLocation.getId()).toBuilder();
+        previousRootLocation = Registries.getUnitRegistry().getUnitConfigById(previousRootLocation.getId()).toBuilder();
         // test if all changes have been reverted
         assertFalse("New root location is still root", newRootLocation.getLocationConfig().getRoot());
         assertEquals("New root location should be put under the previous one", previousRootLocation.getId(), newRootLocation.getPlacementConfig().getLocationId());
@@ -121,17 +122,17 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
         System.out.println("testParentChildConsistency");
 
         // register two locations under the root location on the same level
-        UnitConfig.Builder zone1 = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationType.ZONE, "zone one").build()).get().toBuilder();
-        UnitConfig.Builder zone2 = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationType.ZONE, "zone two").build()).get().toBuilder();
+        UnitConfig.Builder zone1 = Registries.getUnitRegistry().registerUnitConfig(getLocationUnitBuilder(LocationType.ZONE, "zone one").build()).get().toBuilder();
+        UnitConfig.Builder zone2 = Registries.getUnitRegistry().registerUnitConfig(getLocationUnitBuilder(LocationType.ZONE, "zone two").build()).get().toBuilder();
 
         // register a tile as a child of zone1
         UnitConfig.Builder childLocation = getLocationUnitBuilder(LocationType.TILE, "Child Location");
         childLocation.getPlacementConfigBuilder().setLocationId(zone1.getId());
-        childLocation = unitRegistry.registerUnitConfig(childLocation.build()).get().toBuilder();
+        childLocation = Registries.getUnitRegistry().registerUnitConfig(childLocation.build()).get().toBuilder();
 
         // retrieve updated zones
-        zone1 = unitRegistry.getUnitConfigById(zone1.getId()).toBuilder();
-        zone2 = unitRegistry.getUnitConfigById(zone2.getId()).toBuilder();
+        zone1 = Registries.getUnitRegistry().getUnitConfigById(zone1.getId()).toBuilder();
+        zone2 = Registries.getUnitRegistry().getUnitConfigById(zone2.getId()).toBuilder();
 
         // validate that child location is placed under zone1, that zone1 contains it as a child and that zone2 does not
         assertEquals("Child has not been placed under the correct location", zone1.getId(), childLocation.getPlacementConfig().getLocationId());
@@ -140,11 +141,11 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
 
         // move child under zone2
         childLocation.getPlacementConfigBuilder().setLocationId(zone2.getId());
-        childLocation = unitRegistry.updateUnitConfig(childLocation.build()).get().toBuilder();
+        childLocation = Registries.getUnitRegistry().updateUnitConfig(childLocation.build()).get().toBuilder();
 
         // retrieve updated zones
-        zone1 = unitRegistry.getUnitConfigById(zone1.getId()).toBuilder();
-        zone2 = unitRegistry.getUnitConfigById(zone2.getId()).toBuilder();
+        zone1 = Registries.getUnitRegistry().getUnitConfigById(zone1.getId()).toBuilder();
+        zone2 = Registries.getUnitRegistry().getUnitConfigById(zone2.getId()).toBuilder();
 
         // validate that child location is placed under zone2, that zone2 contains it as a child and that zone1 does not
         assertEquals("Child has not been placed under the correct location", zone2.getId(), childLocation.getPlacementConfig().getLocationId());
@@ -162,11 +163,11 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
         System.out.println("testLoopConsistency");
 
         // register a first location
-        UnitConfig.Builder zone1 = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationType.ZONE, "Looping Zone 1").build()).get().toBuilder();
+        UnitConfig.Builder zone1 = Registries.getUnitRegistry().registerUnitConfig(getLocationUnitBuilder(LocationType.ZONE, "Looping Zone 1").build()).get().toBuilder();
         // register second location under first location
         UnitConfig.Builder zone2 = getLocationUnitBuilder(LocationType.ZONE, "Looping Zone 2");
         zone2.getPlacementConfigBuilder().setLocationId(zone1.getId());
-        zone2 = unitRegistry.registerUnitConfig(zone2.build()).get().toBuilder();
+        zone2 = Registries.getUnitRegistry().registerUnitConfig(zone2.build()).get().toBuilder();
 
         // put first location also under second location to construct the loop
         zone1.getPlacementConfigBuilder().setLocationId(zone2.getId());
@@ -175,7 +176,7 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
             // set exception printer to quit because an exception is expected
             ExceptionPrinter.setBeQuit(Boolean.TRUE);
             // push loop to registry
-            zone1 = unitRegistry.updateUnitConfig(zone1.build()).get().toBuilder();
+            zone1 = Registries.getUnitRegistry().updateUnitConfig(zone1.build()).get().toBuilder();
             // fail if no exception has been thrown
             Assert.fail("No exception when registering a loop");
         } catch (ExecutionException ex) {
@@ -197,7 +198,7 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
         System.out.println("testChildWithSameLabelConsistency");
 
         // retrieve root location
-        final UnitConfig root = unitRegistry.getRootLocationConfig();
+        final UnitConfig root = Registries.getUnitRegistry().getRootLocationConfig();
         // create label
         final String label = "childish";
         // generate 2 identical location unit configs
@@ -207,12 +208,12 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
         child2.getPlacementConfigBuilder().setLocationId(root.getId());
 
         // register the first one
-        unitRegistry.registerUnitConfig(child1.build()).get();
+        Registries.getUnitRegistry().registerUnitConfig(child1.build()).get();
         try {
             // set exception printer to quit because an exception is expected
             ExceptionPrinter.setBeQuit(Boolean.TRUE);
             // register second child
-            unitRegistry.registerUnitConfig(child2.build()).get();
+            Registries.getUnitRegistry().registerUnitConfig(child2.build()).get();
             // fail if the no exception has been thrown
             Assert.fail("No exception thrown when registering a second child with the same label");
         } catch (ExecutionException ex) {
@@ -234,10 +235,10 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
         System.out.println("testConnectionTilesConsistency");
 
         // register a test location structure with two tiles and a region
-        UnitConfig root = unitRegistry.getRootLocationConfig();
-        UnitConfig tile1 = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.TILE, "Tile 1", root.getId()).build()).get();
-        UnitConfig tile2 = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.TILE, "Tile 2", root.getId()).build()).get();
-        UnitConfig region = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationType.REGION, "Region", tile1.getId()).build()).get();
+        UnitConfig root = Registries.getUnitRegistry().getRootLocationConfig();
+        UnitConfig tile1 = Registries.getUnitRegistry().registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.TILE, "Tile 1", root.getId()).build()).get();
+        UnitConfig tile2 = Registries.getUnitRegistry().registerUnitConfig(getLocationUnitBuilder(LocationConfig.LocationType.TILE, "Tile 2", root.getId()).build()).get();
+        UnitConfig region = Registries.getUnitRegistry().registerUnitConfig(getLocationUnitBuilder(LocationType.REGION, "Region", tile1.getId()).build()).get();
 
         // create a connection with only one tile id
         UnitConfig.Builder failingConnectionConfig = getConnectionUnitBuilder("Failing connection");
@@ -246,7 +247,7 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
             // set exception printer to quit because an exception is expected
             ExceptionPrinter.setBeQuit(Boolean.TRUE);
             // try to register the connection which should fail
-            unitRegistry.registerUnitConfig(failingConnectionConfig.build()).get();
+            Registries.getUnitRegistry().registerUnitConfig(failingConnectionConfig.build()).get();
             // fail of no exception has been thrown
             Assert.fail("Registered connection with less than one tile");
         } catch (ExecutionException ex) {
@@ -270,7 +271,7 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
                 tile2.getId()
         ));
         // register connection
-        connection = unitRegistry.registerUnitConfig(connection.build()).get().toBuilder();
+        connection = Registries.getUnitRegistry().registerUnitConfig(connection.build()).get().toBuilder();
 
         // verify that only the two tile ids remain in the tile id list
         assertEquals("Tile id list has not been reduced by removing fakes and duplicates", 2, connection.getConnectionConfig().getTileIdCount());
@@ -289,24 +290,24 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
         System.out.println("testLocationTypeConsistency");
 
         // try if the location type for the root location is recovered
-        UnitConfig.Builder root = unitRegistry.getRootLocationConfig().toBuilder();
+        UnitConfig.Builder root = Registries.getUnitRegistry().getRootLocationConfig().toBuilder();
         root.getLocationConfigBuilder().clearType();
-        root = unitRegistry.updateUnitConfig(root.build()).get().toBuilder();
+        root = Registries.getUnitRegistry().updateUnitConfig(root.build()).get().toBuilder();
         assertEquals("Location type zone has not been recovered for root location", LocationType.ZONE, root.getLocationConfig().getType());
 
         // register a tile
-        UnitConfig.Builder tile = unitRegistry.registerUnitConfig(getLocationUnitBuilder(LocationType.TILE, "Tile", root.getId()).build()).get().toBuilder();
+        UnitConfig.Builder tile = Registries.getUnitRegistry().registerUnitConfig(getLocationUnitBuilder(LocationType.TILE, "Tile", root.getId()).build()).get().toBuilder();
 
         // register a location under a tile, therefore it should be inferred to be a region
         UnitConfig.Builder region = getLocationUnitBuilder("Region");
         region.getPlacementConfigBuilder().setLocationId(tile.getId());
-        region = unitRegistry.registerUnitConfig(region.build()).get().toBuilder();
+        region = Registries.getUnitRegistry().registerUnitConfig(region.build()).get().toBuilder();
         assertEquals("Type has not been detected for region", LocationType.REGION, region.getLocationConfig().getType());
 
         // now the tile has a zone as its parent and a region as its child, therefore the consistency handler should be
         // able to recover its type
         tile.getLocationConfigBuilder().setType(LocationType.ZONE);
-        tile = unitRegistry.updateUnitConfig(tile.build()).get().toBuilder();
+        tile = Registries.getUnitRegistry().updateUnitConfig(tile.build()).get().toBuilder();
         assertEquals("Type of tile has not been recovered", LocationType.TILE, tile.getLocationConfig().getType());
     }
 
@@ -319,7 +320,7 @@ public class LocationRegistryTest extends AbstractBCORegistryTest {
     public void testGetLocationUnitConfigByScope() throws Exception {
         System.out.println("testGetLocationUnitConfigByScope");
 
-        final UnitConfig rootLocation = unitRegistry.getRootLocationConfig();
-        assertEquals("Could not resolve locationUnitConfig by its scope", rootLocation, unitRegistry.getUnitConfigByScope(rootLocation.getScope()));
+        final UnitConfig rootLocation = Registries.getUnitRegistry().getRootLocationConfig();
+        assertEquals("Could not resolve locationUnitConfig by its scope", rootLocation, Registries.getUnitRegistry().getUnitConfigByScope(rootLocation.getScope()));
     }
 }

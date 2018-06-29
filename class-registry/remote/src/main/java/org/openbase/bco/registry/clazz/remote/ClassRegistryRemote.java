@@ -25,6 +25,7 @@ package org.openbase.bco.registry.clazz.remote;
 import org.openbase.bco.registry.clazz.lib.ClassRegistry;
 import org.openbase.bco.registry.clazz.lib.jp.JPClassRegistryScope;
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
+import org.openbase.bco.registry.lib.com.RegistryVerifiedCommunicationHelper;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
@@ -38,6 +39,7 @@ import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.RegistryRemote;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.communication.TransactionValueType.TransactionValue;
 import rst.domotic.registry.ClassRegistryDataType.ClassRegistryData;
 import rst.domotic.unit.agent.AgentClassType.AgentClass;
 import rst.domotic.unit.app.AppClassType.AppClass;
@@ -157,7 +159,12 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      */
     @Override
     public Future<DeviceClass> registerDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(deviceClass, this, DeviceClass.class);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(deviceClass, this, this::registerDeviceClassVerified);
+    }
+
+    @Override
+    public Future<TransactionValue> registerDeviceClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class);
     }
 
     /**
@@ -195,7 +202,12 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      */
     @Override
     public Future<DeviceClass> updateDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(deviceClass, this, DeviceClass.class);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(deviceClass, this, this::updateDeviceClassVerified);
+    }
+
+    @Override
+    public Future<TransactionValue> updateDeviceClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class);
     }
 
     /**
@@ -207,7 +219,12 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      */
     @Override
     public Future<DeviceClass> removeDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(deviceClass, this, DeviceClass.class);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(deviceClass, this, this::removeDeviceClassVerified);
+    }
+
+    @Override
+    public Future<TransactionValue> removeDeviceClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class);
     }
 
     /**
@@ -269,7 +286,12 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      */
     @Override
     public Future<AgentClass> registerAgentClass(AgentClass agentClass) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(agentClass, this, AgentClass.class);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(agentClass, this, this::registerAgentClassVerified);
+    }
+
+    @Override
+    public Future<TransactionValue> registerAgentClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class);
     }
 
     /**
@@ -310,7 +332,12 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      */
     @Override
     public Future<AgentClass> updateAgentClass(AgentClass agentClass) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(agentClass, this, AgentClass.class);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(agentClass, this, this::updateAgentClassVerified);
+    }
+
+    @Override
+    public Future<TransactionValue> updateAgentClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class);
     }
 
     /**
@@ -323,7 +350,12 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      */
     @Override
     public Future<AgentClass> removeAgentClass(AgentClass agentClass) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(agentClass, this, AgentClass.class);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(agentClass, this, this::removeAgentClassVerified);
+    }
+
+    @Override
+    public Future<TransactionValue> removeAgentClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class);
     }
 
     /**
@@ -386,7 +418,12 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      */
     @Override
     public Future<AppClass> registerAppClass(AppClass appClass) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(appClass, this, AppClass.class);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(appClass, this, this::registerAppClassVerified);
+    }
+
+    @Override
+    public Future<TransactionValue> registerAppClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class);
     }
 
     /**
@@ -427,7 +464,12 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      */
     @Override
     public Future<AppClass> updateAppClass(AppClass appClass) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(appClass, this, AppClass.class);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(appClass, this, this::updateAppClassVerified);
+    }
+
+    @Override
+    public Future<TransactionValue> updateAppClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class);
     }
 
     /**
@@ -440,7 +482,12 @@ public class ClassRegistryRemote extends AbstractRegistryRemote<ClassRegistryDat
      */
     @Override
     public Future<AppClass> removeAppClass(AppClass appClass) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(appClass, this, AppClass.class);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(appClass, this, this::removeAppClassVerified);
+    }
+
+    @Override
+    public Future<TransactionValue> removeAppClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class);
     }
 
     /**

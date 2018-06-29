@@ -22,19 +22,15 @@ package org.openbase.bco.registry.unit.test;
  * #L%
  */
 
-import org.junit.*;
+import org.junit.After;
+import org.junit.Test;
 import org.openbase.bco.authentication.lib.SessionManager;
-import org.openbase.bco.registry.mock.MockRegistry;
-import org.openbase.bco.registry.mock.MockRegistryHolder;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.plugin.UserCreationPlugin;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
-import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate.UnitType;
 import rst.domotic.unit.user.UserConfigType.UserConfig;
@@ -47,39 +43,12 @@ import static org.junit.Assert.assertTrue;
 /**
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class RegistryFilteringTest {
+public class RegistryFilteringTest extends AbstractBCORegistryTest {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(RegistryFilteringTest.class);
-
-    private static MockRegistry mockRegistry;
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        JPService.setupJUnitTestMode();
-
-        try {
-            mockRegistry = MockRegistryHolder.newMockRegistry();
-        } catch (org.openbase.jul.exception.InstantiationException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Exception {
-        try {
-            MockRegistryHolder.shutdownMockRegistry();
-        } catch (Exception ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
-    }
-
-    @Before
-    public void setUp() {
-
-    }
 
     @After
-    public void tearDown() {
+    public void tearDown() throws Exception {
+        super.tearDown();
         SessionManager.getInstance().logout();
     }
 
@@ -91,15 +60,15 @@ public class RegistryFilteringTest {
         UserConfig.Builder userConfig = userUnitConfig.getUserConfigBuilder();
         userUnitConfig.setUnitType(UnitType.USER);
         userUnitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setWrite(true).setAccess(true).setRead(true);
-        userConfig.setFirstName("Le");
-        userConfig.setLastName("Chuck");
-        userConfig.setUserName("Admin");
+        userConfig.setFirstName("Tamino");
+        userConfig.setLastName("Huxohl");
+        userConfig.setUserName("LeChuck");
 
         SessionManager.getInstance().login(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.ADMIN_USER_ALIAS).getId(), UserCreationPlugin.ADMIN_PASSWORD);
         try {
             Registries.getUnitRegistry().registerUnitConfig(userUnitConfig.build()).get();
         } catch (InterruptedException | ExecutionException | CouldNotPerformException ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
+            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, logger);
         }
     }
 
@@ -130,7 +99,7 @@ public class RegistryFilteringTest {
         if (unitConfig == null) {
             throw new NotAvailableException("test location");
         }
-        LOGGER.info("Found suitable test location[" + unitConfig.getLabel() + "]");
+        logger.info("Found suitable test location[" + unitConfig.getLabel() + "]");
         // remove read and access permissions
         unitConfig.getPermissionConfigBuilder().getOtherPermissionBuilder().setRead(false).setAccess(false);
         Registries.getUnitRegistry().updateUnitConfig(unitConfig.build()).get();

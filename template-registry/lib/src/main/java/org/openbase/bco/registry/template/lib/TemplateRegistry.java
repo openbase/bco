@@ -25,12 +25,13 @@ package org.openbase.bco.registry.template.lib;
 import org.openbase.bco.registry.lib.provider.template.ActivityTemplateCollectionProvider;
 import org.openbase.bco.registry.lib.provider.template.ServiceTemplateCollectionProvider;
 import org.openbase.bco.registry.lib.provider.template.UnitTemplateCollectionProvider;
+import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
-import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.pattern.provider.DataProvider;
 import org.openbase.jul.storage.registry.RegistryService;
 import rst.domotic.activity.ActivityTemplateType.ActivityTemplate;
+import rst.domotic.communication.TransactionValueType.TransactionValue;
 import rst.domotic.registry.TemplateRegistryDataType.TemplateRegistryData;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.unit.UnitTemplateType.UnitTemplate;
@@ -50,6 +51,17 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
      */
     @RPCMethod
     Future<UnitTemplate> updateUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException;
+
+
+    /**
+     * Method updates a unit template encoded in a transaction value.
+     *
+     * @param transactionValue the unit template to update in a transaction id.
+     * @return a transaction value containing the transaction id from the controller and the updated unit template encoded.
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    @RPCMethod
+    Future<TransactionValue> updateUnitTemplateVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
 
     /**
      * Method returns true if the underlying registry is marked as read only.
@@ -83,6 +95,16 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
     Future<ServiceTemplate> updateServiceTemplate(final ServiceTemplate serviceTemplate) throws CouldNotPerformException;
 
     /**
+     * Method updates a service template encoded in a transaction value.
+     *
+     * @param transactionValue the service template to update in a transaction id.
+     * @return a transaction value containing the transaction id from the controller and the updated service template encoded.
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    @RPCMethod
+    Future<TransactionValue> updateServiceTemplateVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
+
+    /**
      * Method returns true if the underlying registry is marked as consistent.
      *
      * @return if the service template registry is consistent
@@ -112,6 +134,15 @@ public interface TemplateRegistry extends ActivityTemplateCollectionProvider, Se
     @RPCMethod
     Future<ActivityTemplate> updateActivityTemplate(ActivityTemplate activityTemplate) throws CouldNotPerformException;
 
+    /**
+     * Method updates a activity template encoded in a transaction value.
+     *
+     * @param transactionValue the activity template to update in a transaction id.
+     * @return a transaction value containing the transaction id from the controller and the updated activity template encoded.
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    @RPCMethod
+    Future<TransactionValue> updateActivityTemplateVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
 
     /**
      * Method returns true if the underlying registry is marked as consistent.

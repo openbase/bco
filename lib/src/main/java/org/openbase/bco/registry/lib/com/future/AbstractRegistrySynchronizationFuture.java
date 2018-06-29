@@ -43,6 +43,7 @@ import org.openbase.jul.storage.registry.RegistryRemote;
  * @author pleminoq
  * @param <M>
  */
+@Deprecated
 public abstract class AbstractRegistrySynchronizationFuture<M extends GeneratedMessage> extends AbstractSynchronizationFuture<M, RegistryRemote<?>> {
 
     private final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry;

@@ -23,6 +23,7 @@ package org.openbase.bco.registry.template.core;
  */
 
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
+import org.openbase.bco.registry.lib.com.RegistryVerifiedCommunicationHelper;
 import org.openbase.bco.registry.lib.generator.UUIDGenerator;
 import org.openbase.bco.registry.template.core.consistency.activitytemplate.ActivityTemplateUniqueTypeConsistencyHandler;
 import org.openbase.bco.registry.template.core.consistency.servicetemplate.ServiceTemplateUniqueTypeConsistencyHandler;
@@ -50,6 +51,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.activity.ActivityTemplateType.ActivityTemplate;
 import rst.domotic.activity.ActivityTemplateType.ActivityTemplate.ActivityType;
+import rst.domotic.communication.TransactionValueType.TransactionValue;
 import rst.domotic.registry.TemplateRegistryDataType.TemplateRegistryData;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -177,8 +179,13 @@ public class TemplateRegistryController extends AbstractRegistryController<Templ
     }
 
     @Override
-    public Future<UnitTemplate> updateUnitTemplate(UnitTemplate unitTemplate) throws CouldNotPerformException {
+    public Future<UnitTemplate> updateUnitTemplate(final UnitTemplate unitTemplate) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> unitTemplateRemoteRegistry.update(unitTemplate));
+    }
+
+    @Override
+    public Future<TransactionValue> updateUnitTemplateVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, UnitTemplate.class, this::updateUnitTemplate);
     }
 
     @Override
@@ -227,6 +234,11 @@ public class TemplateRegistryController extends AbstractRegistryController<Templ
     }
 
     @Override
+    public Future<TransactionValue> updateServiceTemplateVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, ServiceTemplate.class, this::updateServiceTemplate);
+    }
+
+    @Override
     public Boolean containsServiceTemplate(ServiceTemplate serviceTemplate) throws CouldNotPerformException {
         return serviceTemplateRemoteRegistry.contains(serviceTemplate);
     }
@@ -269,6 +281,11 @@ public class TemplateRegistryController extends AbstractRegistryController<Templ
     @Override
     public Future<ActivityTemplate> updateActivityTemplate(ActivityTemplate activityTemplate) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> activityTemplateRemoteRegistry.update(activityTemplate));
+    }
+
+    @Override
+    public Future<TransactionValue> updateActivityTemplateVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, ActivityTemplate.class, this::updateActivityTemplate);
     }
 
     @Override

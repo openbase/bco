@@ -37,6 +37,7 @@ import org.openbase.jul.storage.registry.RegistryRemote;
  * @author pleminoq
  * @param <M>
  */
+@Deprecated
 public class RemovalFuture<M extends GeneratedMessage> extends AbstractRegistrySynchronizationFuture<M> {
 
     public RemovalFuture(final Future<M> internalFuture, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry, final RegistryRemote registryRemote) {

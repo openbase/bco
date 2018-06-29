@@ -21,14 +21,14 @@ package org.openbase.bco.registry.unit.test;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
+
 import org.junit.AfterClass;
-import static org.junit.Assert.assertEquals;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
-import org.openbase.bco.registry.clazz.core.ClassRegistryController;
 import org.openbase.bco.registry.mock.MockRegistry;
 import org.openbase.bco.registry.mock.MockRegistryHolder;
+import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.core.UnitRegistryController;
 import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -44,42 +44,12 @@ import rst.spatial.PlacementConfigType.PlacementConfig;
 
 import java.util.Locale;
 
+import static org.junit.Assert.assertEquals;
+
 /**
- *
  * @author <a href="mailto:thuxohl@techfak.uni-bielefeld.de">Tamino Huxohl</a>
  */
-public class UnitGroupRegistryTest {
-
-    private static final Logger LOGGER = LoggerFactory.getLogger(DeviceRegistryTest.class);
-
-    private static MockRegistry mockRegistry;
-
-    private static UnitRegistryController unitRegistry;
-
-    private static UnitConfigType.UnitConfig LOCATION;
-
-    @BeforeClass
-    public static void setUpClass() throws Exception {
-        JPService.setupJUnitTestMode();
-    }
-
-    @AfterClass
-    public static void tearDownClass() throws Throwable {
-        try {
-            MockRegistryHolder.shutdownMockRegistry();
-        } catch (Throwable ex) {
-            throw ExceptionPrinter.printHistoryAndReturnThrowable(ex, LOGGER);
-        }
-    }
-
-    @Before
-    public void setUp() throws CouldNotPerformException {
-        mockRegistry = MockRegistryHolder.newMockRegistry();
-
-        unitRegistry = (UnitRegistryController) MockRegistry.getUnitRegistry();
-
-        LOCATION = unitRegistry.getRootLocationConfig();
-    }
+public class UnitGroupRegistryTest extends AbstractBCORegistryTest {
 
     /**
      * Test if changing the placement of a unit group works.
@@ -88,20 +58,20 @@ public class UnitGroupRegistryTest {
      */
     @Test(timeout = 10000)
     public void testPlacementChange() throws Exception {
-        LOGGER.info("testPlacementChange");
+        logger.info("testPlacementChange");
 
         UnitConfig.Builder unitConfig = UnitConfig.newBuilder();
         LabelProcessor.addLabel(unitConfig.getLabelBuilder(), Locale.ENGLISH, "PlacementChangeGroup");
         unitConfig.setUnitType(UnitType.UNIT_GROUP);
 
         PlacementConfig.Builder placement = unitConfig.getPlacementConfigBuilder();
-        placement.setLocationId(LOCATION.getId());
+        placement.setLocationId(Registries.getUnitRegistry().getRootLocationConfig().getId());
 
         UnitGroupConfig.Builder unitGroupConfig = unitConfig.getUnitGroupConfigBuilder();
         unitGroupConfig.setUnitType(UnitType.COLORABLE_LIGHT);
-        unitGroupConfig.addMemberId(unitRegistry.getUnitConfigs(UnitType.COLORABLE_LIGHT).get(0).getId());
+        unitGroupConfig.addMemberId(Registries.getUnitRegistry().getUnitConfigs(UnitType.COLORABLE_LIGHT).get(0).getId());
 
-        UnitConfig registeredGroup = unitRegistry.registerUnitConfig(unitConfig.build()).get();
+        UnitConfig registeredGroup = Registries.getUnitRegistry().registerUnitConfig(unitConfig.build()).get();
 
         assertEquals("BoundingBox was not generated!", registeredGroup.getPlacementConfig().getShape().getBoundingBox(), MockRegistry.DEFAULT_BOUNDING_BOX);
     }

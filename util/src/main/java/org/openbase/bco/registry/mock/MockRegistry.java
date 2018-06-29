@@ -612,20 +612,10 @@ public class    MockRegistry {
         return agentClass.build();
     }
 
-    final SyncObject LOCK = new SyncObject("WaitForDeviceClassLock");
-    final Observer notifyChangeObserver = (Observer) (Observable source, Object data) -> {
-        synchronized (LOCK) {
-            LOCK.notifyAll();
-        }
-    };
-
     private void registerDevices() throws CouldNotPerformException, InterruptedException {
         try {
-
-            Registries.getClassRegistry(true).addDataObserver(notifyChangeObserver);
             // colorable light
             DeviceClass colorableLightClass = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Philips_Hue_E27", "KV01_18U", "Philips", UnitType.COLORABLE_LIGHT)).get();
-            waitForDeviceClass(colorableLightClass);
 
             String serialNumber = "1234-5678-9100";
             registerDeviceUnitConfig(getDeviceConfig("PH_Hue_E27_Device", serialNumber, colorableLightClass));
@@ -642,7 +632,6 @@ public class    MockRegistry {
                     UnitType.LIGHT_SENSOR,
                     UnitType.TEMPERATURE_SENSOR,
                     UnitType.TAMPER_DETECTOR)).get();
-            waitForDeviceClass(motionSensorClass);
 
             registerDeviceUnitConfig(getDeviceConfig("F_MotionSensor_Device", serialNumber, motionSensorClass));
             unitRegistry.registerUnitConfig(getDeviceConfig("F_MotionSensor_Device_Stairway", serialNumber, motionSensorClass, LOCATION_STAIRWAY_TO_HEAVEN_LABEL)).get();
@@ -652,35 +641,30 @@ public class    MockRegistry {
             // button
             DeviceClass buttonClass = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Gira_429496730210000", "429496730210000", "Gira",
                     UnitType.BUTTON)).get();
-            waitForDeviceClass(buttonClass);
 
             registerDeviceUnitConfig(getDeviceConfig("GI_429496730210000_Device", serialNumber, buttonClass));
 
             // dimmableLight
             DeviceClass dimmableLightClass = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Hager_ABC", "ABC", "Hager",
                     UnitType.DIMMABLE_LIGHT)).get();
-            waitForDeviceClass(dimmableLightClass);
 
             registerDeviceUnitConfig(getDeviceConfig("HA_ABC_Device", serialNumber, dimmableLightClass));
 
             // dimmer
             DeviceClass dimmerClass = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Hager_TYA663A", "TYA663A", "Hager",
                     UnitType.DIMMER)).get();
-            waitForDeviceClass(dimmerClass);
 
             registerDeviceUnitConfig(getDeviceConfig("HA_TYA663A_Device", serialNumber, dimmerClass));
 
             // handle
             DeviceClass handleClass = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Homematic_RotaryHandleSensor", "Sec_RHS", "Homematic",
                     UnitType.HANDLE)).get();
-            waitForDeviceClass(handleClass);
 
             registerDeviceUnitConfig(getDeviceConfig("HM_RotaryHandleSensor_Device", serialNumber, handleClass));
 
             // light
             DeviceClass lightClass = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Fibaro_FGS_221", "FGS_221", "Fibaro",
                     UnitType.LIGHT)).get();
-            waitForDeviceClass(lightClass);
 
             registerDeviceUnitConfig(getDeviceConfig("F_FGS221_Device", serialNumber, lightClass));
 
@@ -688,14 +672,12 @@ public class    MockRegistry {
             DeviceClass powerPlugClass = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Plugwise_PowerPlug", "070140", "Plugwise",
                     UnitType.POWER_SWITCH,
                     UnitType.POWER_CONSUMPTION_SENSOR)).get();
-            waitForDeviceClass(powerPlugClass);
 
             registerDeviceUnitConfig(getDeviceConfig("PW_PowerPlug_Device", serialNumber, powerPlugClass));
 
             // reedSwitch
             DeviceClass reedSwitchClass = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Homematic_ReedSwitch", "Sec_SC_2", "Homematic",
                     UnitType.REED_CONTACT)).get();
-            waitForDeviceClass(reedSwitchClass);
 
             registerDeviceUnitConfig(getDeviceConfig("HM_ReedSwitch_Device", serialNumber, reedSwitchClass));
             unitRegistry.registerUnitConfig(getDeviceConfig("Reed_Heaven_Stairs", serialNumber, reedSwitchClass, LOCATION_STAIRWAY_TO_HEAVEN_LABEL)).get();
@@ -705,41 +687,24 @@ public class    MockRegistry {
             // roller shutter
             DeviceClass rollerShutterClass = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Hager_TYA628C", "TYA628C", "Hager",
                     UnitType.ROLLER_SHUTTER)).get();
-            waitForDeviceClass(rollerShutterClass);
 
             registerDeviceUnitConfig(getDeviceConfig("HA_TYA628C_Device", serialNumber, rollerShutterClass));
 
             // smoke detector
             DeviceClass smokeDetector = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Fibaro_FGSS_001", "FGSS_001", "Fibaro",
                     UnitType.SMOKE_DETECTOR)).get();
-            waitForDeviceClass(smokeDetector);
 
             registerDeviceUnitConfig(getDeviceConfig("Fibaro_SmokeDetector_Device", serialNumber, smokeDetector));
 
             // temperature controller
             DeviceClass temperatureControllerClass = Registries.getClassRegistry().registerDeviceClass(getDeviceClass("Gira_429496730250000", "429496730250000", "Gira",
                     UnitType.TEMPERATURE_CONTROLLER)).get();
-            waitForDeviceClass(temperatureControllerClass);
 
             registerDeviceUnitConfig(getDeviceConfig("Gire_TemperatureController_Device", serialNumber, temperatureControllerClass));
             unitRegistry.registerUnitConfig(getDeviceConfig("Gire_TemperatureController_Device_Stairway", serialNumber, temperatureControllerClass, LOCATION_STAIRWAY_TO_HEAVEN_LABEL)).get();
 
-            Registries.getClassRegistry(true).removeDataObserver(notifyChangeObserver);
         } catch (ExecutionException ex) {
             throw new CouldNotPerformException(ex);
-        }
-    }
-
-    private void waitForDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException {
-        synchronized (LOCK) {
-            try {
-                while (!Registries.getClassRegistry(false).containsDeviceClass(deviceClass)) {
-                    LOGGER.info("DeviceClass[" + LabelProcessor.getBestMatch(deviceClass.getLabel()) + "] not yet available");
-                    LOCK.wait();
-                }
-            } catch (InterruptedException ex) {
-                Thread.currentThread().interrupt();
-            }
         }
     }
 

@@ -25,10 +25,11 @@ package org.openbase.bco.registry.clazz.lib;
 import org.openbase.bco.registry.lib.provider.clazz.AgentClassCollectionProvider;
 import org.openbase.bco.registry.lib.provider.clazz.AppClassCollectionProvider;
 import org.openbase.bco.registry.lib.provider.clazz.DeviceClassCollectionProvider;
+import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.iface.Shutdownable;
-import org.openbase.jul.annotation.RPCMethod;
 import org.openbase.jul.pattern.provider.DataProvider;
+import rst.domotic.communication.TransactionValueType.TransactionValue;
 import rst.domotic.registry.ClassRegistryDataType.ClassRegistryData;
 import rst.domotic.unit.agent.AgentClassType.AgentClass;
 import rst.domotic.unit.app.AppClassType.AppClass;
@@ -51,6 +52,16 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
     Future<DeviceClass> registerDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException;
 
     /**
+     * Method registers a device class encoded in a transaction value.
+     *
+     * @param transactionValue the device class to be registered encoded in a transaction value
+     * @return a transaction value containing the registered device class and an id for this transaction
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    @RPCMethod
+    Future<TransactionValue> registerDeviceClassVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
+
+    /**
      * Method updates the given device class.
      *
      * @param deviceClass the updated device class.
@@ -61,6 +72,16 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
     Future<DeviceClass> updateDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException;
 
     /**
+     * Method updates a device class encoded in a transaction value.
+     *
+     * @param transactionValue the device class to be updated encoded in a transaction value
+     * @return a transaction value containing the updated device class and an id for this transaction
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    @RPCMethod
+    Future<TransactionValue> updateDeviceClassVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
+
+    /**
      * Method removes the given device class.
      *
      * @param deviceClass the device class to be removed.
@@ -69,6 +90,16 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      */
     @RPCMethod
     Future<DeviceClass> removeDeviceClass(final DeviceClass deviceClass) throws CouldNotPerformException;
+
+    /**
+     * Method removed a device class encoded in a transaction value.
+     *
+     * @param transactionValue the device class to be removed encoded in a transaction value
+     * @return a transaction value containing the removed device class and an id for this transaction
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    @RPCMethod
+    Future<TransactionValue> removeDeviceClassVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
 
     /**
      * Method returns true if the underlying registry is marked as read only.
@@ -101,6 +132,16 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
     Future<AgentClass> registerAgentClass(AgentClass agentClass) throws CouldNotPerformException;
 
     /**
+     * Method registers an agent class encoded in a transaction value.
+     *
+     * @param transactionValue the agent class to be registered encoded in a transaction value
+     * @return a transaction value containing the registered agent class and an id for this transaction
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    @RPCMethod
+    Future<TransactionValue> registerAgentClassVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
+
+    /**
      * Method updates the given agent class.
      *
      * @param agentClass the updated agent class.
@@ -111,6 +152,16 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
     Future<AgentClass> updateAgentClass(AgentClass agentClass) throws CouldNotPerformException;
 
     /**
+     * Method updates an agent class encoded in a transaction value.
+     *
+     * @param transactionValue the agent class to be updated encoded in a transaction value
+     * @return a transaction value containing the updated agent class and an id for this transaction
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    @RPCMethod
+    Future<TransactionValue> updateAgentClassVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
+
+    /**
      * Method removes the given agent class.
      *
      * @param agentClass the agent class to be removed.
@@ -119,6 +170,16 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      */
     @RPCMethod
     Future<AgentClass> removeAgentClass(AgentClass agentClass) throws CouldNotPerformException;
+
+    /**
+     * Method removes an agent class encoded in a transaction value.
+     *
+     * @param transactionValue the agent class to be removed encoded in a transaction value
+     * @return a transaction value containing the removed agent class and an id for this transaction
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    @RPCMethod
+    Future<TransactionValue> removeAgentClassVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
 
     /**
      * Method returns true if the underlying registry is marked as read only.
@@ -151,6 +212,16 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
     Future<AppClass> registerAppClass(AppClass appClass) throws CouldNotPerformException;
 
     /**
+     * Method registers an app class encoded in a transaction value.
+     *
+     * @param transactionValue the app class to be registered encoded in a transaction value
+     * @return a transaction value containing the registered app class and an id for this transaction
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    @RPCMethod
+    Future<TransactionValue> registerAppClassVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
+
+    /**
      * Method updates the given app class.
      *
      * @param appClass the updated app class.
@@ -161,6 +232,16 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
     Future<AppClass> updateAppClass(AppClass appClass) throws CouldNotPerformException;
 
     /**
+     * Method updates an app class encoded in a transaction value.
+     *
+     * @param transactionValue the app class to be updated encoded in a transaction value
+     * @return a transaction value containing the updated app class and an id for this transaction
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    @RPCMethod
+    Future<TransactionValue> updateAppClassVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
+
+    /**
      * Method removes the given app class.
      *
      * @param appClass the app class to be removed.
@@ -169,6 +250,16 @@ public interface ClassRegistry extends AppClassCollectionProvider, AgentClassCol
      */
     @RPCMethod
     Future<AppClass> removeAppClass(AppClass appClass) throws CouldNotPerformException;
+
+    /**
+     * Method removes an app class encoded in a transaction value.
+     *
+     * @param transactionValue the app class to be removed encoded in a transaction value
+     * @return a transaction value containing the removed app class and an id for this transaction
+     * @throws CouldNotPerformException is thrown if the request fails.
+     */
+    @RPCMethod
+    Future<TransactionValue> removeAppClassVerified(final TransactionValue transactionValue) throws CouldNotPerformException;
 
     /**
      * Method returns true if the underlying registry is marked as read only.

@@ -9,6 +9,7 @@ import org.openbase.bco.registry.clazz.lib.jp.JPAppClassDatabaseDirectory;
 import org.openbase.bco.registry.clazz.lib.jp.JPClassRegistryScope;
 import org.openbase.bco.registry.clazz.lib.jp.JPDeviceClassDatabaseDirectory;
 import org.openbase.bco.registry.lib.com.AbstractRegistryController;
+import org.openbase.bco.registry.lib.com.RegistryVerifiedCommunicationHelper;
 import org.openbase.bco.registry.lib.generator.UUIDGenerator;
 import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.jps.core.JPService;
@@ -23,6 +24,7 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.storage.registry.ProtoBufFileSynchronizedRegistry;
 import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
+import rst.domotic.communication.TransactionValueType.TransactionValue;
 import rst.domotic.registry.ClassRegistryDataType.ClassRegistryData;
 import rst.domotic.unit.agent.AgentClassType.AgentClass;
 import rst.domotic.unit.app.AppClassType.AppClass;
@@ -208,6 +210,11 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
         return GlobalCachedExecutorService.submit(() -> deviceClassRegistry.register(deviceClass));
     }
 
+    @Override
+    public Future<TransactionValue> registerDeviceClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, DeviceClass.class, this::registerDeviceClass);
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -244,6 +251,11 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
         return GlobalCachedExecutorService.submit(() -> deviceClassRegistry.update(deviceClass));
     }
 
+    @Override
+    public Future<TransactionValue> updateDeviceClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, DeviceClass.class, this::updateDeviceClass);
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -254,6 +266,11 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
     @Override
     public Future<DeviceClass> removeDeviceClass(DeviceClass deviceClass) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> deviceClassRegistry.remove(deviceClass));
+    }
+
+    @Override
+    public Future<TransactionValue> removeDeviceClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, DeviceClass.class, this::removeDeviceClass);
     }
 
     /**
@@ -301,6 +318,11 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
         return GlobalCachedExecutorService.submit(() -> agentClassRegistry.register(agentClass));
     }
 
+    @Override
+    public Future<TransactionValue> registerAgentClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, AgentClass.class, this::registerAgentClass);
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -337,6 +359,11 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
         return GlobalCachedExecutorService.submit(() -> agentClassRegistry.update(agentClass));
     }
 
+    @Override
+    public Future<TransactionValue> updateAgentClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, AgentClass.class, this::updateAgentClass);
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -347,6 +374,11 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
     @Override
     public Future<AgentClass> removeAgentClass(AgentClass agentClass) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> agentClassRegistry.remove(agentClass));
+    }
+
+    @Override
+    public Future<TransactionValue> removeAgentClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, AgentClass.class, this::removeAgentClass);
     }
 
     /**
@@ -406,6 +438,11 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
         return GlobalCachedExecutorService.submit(() -> appClassRegistry.register(appClass));
     }
 
+    @Override
+    public Future<TransactionValue> registerAppClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, AppClass.class, this::registerAppClass);
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -442,6 +479,11 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
         return GlobalCachedExecutorService.submit(() -> appClassRegistry.update(appClass));
     }
 
+    @Override
+    public Future<TransactionValue> updateAppClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, AppClass.class, this::updateAppClass);
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -452,6 +494,11 @@ public class ClassRegistryController extends AbstractRegistryController<ClassReg
     @Override
     public Future<AppClass> removeAppClass(AppClass appClass) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> appClassRegistry.remove(appClass));
+    }
+
+    @Override
+    public Future<TransactionValue> removeAppClassVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, AppClass.class, this::removeAppClass);
     }
 
     /**

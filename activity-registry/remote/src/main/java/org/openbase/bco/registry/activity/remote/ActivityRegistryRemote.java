@@ -22,11 +22,12 @@ package org.openbase.bco.registry.activity.remote;
  * #L%
  */
 
-import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
-import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
-import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.bco.registry.activity.lib.ActivityRegistry;
 import org.openbase.bco.registry.activity.lib.jp.JPActivityRegistryScope;
+import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
+import org.openbase.bco.registry.lib.com.RegistryVerifiedCommunicationHelper;
+import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
+import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jps.preset.JPReadOnly;
@@ -39,6 +40,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.activity.ActivityConfigType.ActivityConfig;
 import rst.domotic.activity.ActivityTemplateType.ActivityTemplate.ActivityType;
+import rst.domotic.communication.TransactionValueType.TransactionValue;
 import rst.domotic.registry.ActivityRegistryDataType.ActivityRegistryData;
 
 import java.util.ArrayList;
@@ -89,19 +91,29 @@ public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegis
      */
     @Override
     public Future<ActivityConfig> registerActivityConfig(ActivityConfig activityConfig) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(activityConfig, this, ActivityConfig.class);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(activityConfig, this, this::registerActivityConfigVerified);
+    }
+
+    @Override
+    public Future<TransactionValue> registerActivityConfigVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class);
     }
 
     /**
-     *  {@inheritDoc}
+     * {@inheritDoc}
      *
-     * @param activityConfig  {@inheritDoc}
+     * @param activityConfig {@inheritDoc}
      * @return {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
      */
     @Override
     public Future<ActivityConfig> updateActivityConfig(ActivityConfig activityConfig) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(activityConfig, this, ActivityConfig.class);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(activityConfig, this, this::updateActivityConfigVerified);
+    }
+
+    @Override
+    public Future<TransactionValue> updateActivityConfigVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class);
     }
 
     /**
@@ -113,7 +125,12 @@ public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegis
      */
     @Override
     public Future<ActivityConfig> removeActivityConfig(ActivityConfig activityConfig) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(activityConfig, this, ActivityConfig.class);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(activityConfig, this, this::removeActivityConfigVerified);
+    }
+
+    @Override
+    public Future<TransactionValue> removeActivityConfigVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class);
     }
 
     /**

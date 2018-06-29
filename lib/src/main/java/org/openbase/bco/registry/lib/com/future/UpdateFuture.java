@@ -39,6 +39,7 @@ import java.util.concurrent.Future;
  * @param <M>
  * @author pleminoq
  */
+@Deprecated
 public class UpdateFuture<M extends GeneratedMessage> extends AbstractRegistrySynchronizationFuture<M> {
 
     public UpdateFuture(final Future<M> internalFuture, final SynchronizedRemoteRegistry<String, M, ?> remoteRegistry, final RegistryRemote registryRemote) {

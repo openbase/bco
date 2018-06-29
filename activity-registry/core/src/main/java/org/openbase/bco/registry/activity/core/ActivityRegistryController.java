@@ -22,13 +22,14 @@ package org.openbase.bco.registry.activity.core;
  * #L%
  */
 
-import org.openbase.bco.registry.lib.com.AbstractRegistryController;
-import org.openbase.bco.registry.lib.generator.UUIDGenerator;
-import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.bco.registry.activity.core.consistency.ActivityConfigTemplateIdConsistencyHandler;
 import org.openbase.bco.registry.activity.lib.ActivityRegistry;
 import org.openbase.bco.registry.activity.lib.jp.JPActivityConfigDatabaseDirectory;
 import org.openbase.bco.registry.activity.lib.jp.JPActivityRegistryScope;
+import org.openbase.bco.registry.lib.com.AbstractRegistryController;
+import org.openbase.bco.registry.lib.com.RegistryVerifiedCommunicationHelper;
+import org.openbase.bco.registry.lib.generator.UUIDGenerator;
+import org.openbase.bco.registry.template.remote.CachedTemplateRegistryRemote;
 import org.openbase.jps.core.JPService;
 import org.openbase.jps.exception.JPServiceException;
 import org.openbase.jul.exception.CouldNotPerformException;
@@ -42,6 +43,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.activity.ActivityConfigType.ActivityConfig;
 import rst.domotic.activity.ActivityTemplateType.ActivityTemplate.ActivityType;
+import rst.domotic.communication.TransactionValueType.TransactionValue;
 import rst.domotic.registry.ActivityRegistryDataType.ActivityRegistryData;
 import rst.rsb.ScopeType;
 
@@ -167,6 +169,11 @@ public class ActivityRegistryController extends AbstractRegistryController<Activ
         return GlobalCachedExecutorService.submit(() -> activityConfigRegistry.register(activityConfig));
     }
 
+    @Override
+    public Future<TransactionValue> registerActivityConfigVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, ActivityConfig.class, this::registerActivityConfig);
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -179,6 +186,11 @@ public class ActivityRegistryController extends AbstractRegistryController<Activ
         return GlobalCachedExecutorService.submit(() -> activityConfigRegistry.update(activityConfig));
     }
 
+    @Override
+    public Future<TransactionValue> updateActivityConfigVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, ActivityConfig.class, this::updateActivityConfig);
+    }
+
     /**
      * {@inheritDoc}
      *
@@ -189,6 +201,11 @@ public class ActivityRegistryController extends AbstractRegistryController<Activ
     @Override
     public Future<ActivityConfig> removeActivityConfig(ActivityConfig activityConfig) throws CouldNotPerformException {
         return GlobalCachedExecutorService.submit(() -> activityConfigRegistry.remove(activityConfig));
+    }
+
+    @Override
+    public Future<TransactionValue> removeActivityConfigVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RegistryVerifiedCommunicationHelper.executeVerifiedAction(transactionValue, this, ActivityConfig.class, this::removeActivityConfig);
     }
 
     /**

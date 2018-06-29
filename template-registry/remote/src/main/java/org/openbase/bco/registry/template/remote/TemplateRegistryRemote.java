@@ -23,6 +23,7 @@ package org.openbase.bco.registry.template.remote;
  */
 
 import org.openbase.bco.registry.lib.com.AbstractRegistryRemote;
+import org.openbase.bco.registry.lib.com.RegistryVerifiedCommunicationHelper;
 import org.openbase.bco.registry.lib.com.SynchronizedRemoteRegistry;
 import org.openbase.bco.registry.template.lib.TemplateRegistry;
 import org.openbase.bco.registry.template.lib.jp.JPTemplateRegistryScope;
@@ -35,6 +36,7 @@ import rsb.converter.DefaultConverterRepository;
 import rsb.converter.ProtocolBufferConverter;
 import rst.domotic.activity.ActivityTemplateType.ActivityTemplate;
 import rst.domotic.activity.ActivityTemplateType.ActivityTemplate.ActivityType;
+import rst.domotic.communication.TransactionValueType.TransactionValue;
 import rst.domotic.registry.TemplateRegistryDataType.TemplateRegistryData;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate;
 import rst.domotic.service.ServiceTemplateType.ServiceTemplate.ServiceType;
@@ -133,7 +135,12 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      */
     @Override
     public Future<UnitTemplate> updateUnitTemplate(UnitTemplate unitTemplate) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(unitTemplate, this, UnitTemplate.class);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(unitTemplate, this, this::updateUnitTemplateVerified);
+    }
+
+    @Override
+    public Future<TransactionValue> updateUnitTemplateVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class);
     }
 
     /**
@@ -238,7 +245,12 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      */
     @Override
     public Future<ServiceTemplate> updateServiceTemplate(ServiceTemplate serviceTemplate) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(serviceTemplate,this, ServiceTemplate.class);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(serviceTemplate, this, this::updateServiceTemplateVerified);
+    }
+
+    @Override
+    public Future<TransactionValue> updateServiceTemplateVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class);
     }
 
     /**
@@ -343,7 +355,12 @@ public class TemplateRegistryRemote extends AbstractRegistryRemote<TemplateRegis
      */
     @Override
     public Future<ActivityTemplate> updateActivityTemplate(ActivityTemplate activityTemplate) throws CouldNotPerformException {
-        return RPCHelper.callRemoteMethod(activityTemplate,this, ActivityTemplate.class);
+        return RegistryVerifiedCommunicationHelper.requestVerifiedAction(activityTemplate, this, this::updateActivityTemplateVerified);
+    }
+
+    @Override
+    public Future<TransactionValue> updateActivityTemplateVerified(TransactionValue transactionValue) throws CouldNotPerformException {
+        return RPCHelper.callRemoteMethod(transactionValue, this, TransactionValue.class);
     }
 
     /**
