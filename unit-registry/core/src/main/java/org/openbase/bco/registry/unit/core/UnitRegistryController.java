@@ -944,7 +944,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
             final ConnectionConfig.Builder connectionConfig = connectionUnitConfig.getConnectionConfigBuilder();
             final List<String> filteredUnitIdList = readFilterByUnitId.filter(new ArrayList<>(connectionConfig.getUnitIdList()));
             connectionConfig.clearUnitId();
-            connectionConfig.addAllTileId(filteredUnitIdList);
+            connectionConfig.addAllUnitId(filteredUnitIdList);
         }
 
         return dataBuilder.build();
