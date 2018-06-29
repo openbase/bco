@@ -297,7 +297,7 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationHierarchyConsistencyHandler());
         locationUnitConfigRegistry.registerConsistencyHandler(new LocationShapeConsistencyHandler());
         locationUnitConfigRegistry.registerConsistencyHandler(new TileConnectionIdConsistencyHandler(connectionUnitConfigRegistry));
-        locationUnitConfigRegistry.registerConsistencyHandler(new RootLocationPermissionConsistencyHandler());
+        locationUnitConfigRegistry.registerConsistencyHandler(new RootLocationPermissionConsistencyHandler(aliasIdMap));
 
         sceneUnitConfigRegistry.registerConsistencyHandler(new DefaultUnitLabelConsistencyHandler());
         sceneUnitConfigRegistry.registerConsistencyHandler(new SceneScopeConsistencyHandler(locationUnitConfigRegistry));
