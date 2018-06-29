@@ -907,10 +907,8 @@ public class UnitRegistryController extends AbstractRegistryController<UnitRegis
 
     @Override
     protected UnitRegistryData filterDataForUser(final UnitRegistryData.Builder dataBuilder, final String userId) throws CouldNotPerformException {
-        // Create a filter which removes all unit configs from a list without read permissions its location by the user
-        final ListFilter<UnitConfig> readFilter = unitConfig -> {
-            return AuthorizationHelper.canRead(getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()), userId, authorizationGroupUnitConfigRegistry.getEntryMap(), locationUnitConfigRegistry.getEntryMap());
-        };
+        // Create a filter which removes all unit configs from a list without read permissions to its location by the user
+        final ListFilter<UnitConfig> readFilter = unitConfig -> AuthorizationHelper.canRead(getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()), userId, authorizationGroupUnitConfigRegistry.getEntryMap(), locationUnitConfigRegistry.getEntryMap());
         // Create a filter which removes unit ids if the user does have access permissions for them
         final ListFilter<String> readFilterByUnitId = unitId -> AuthorizationHelper.canRead(getUnitConfigById(unitId), userId, authorizationGroupUnitConfigRegistry.getEntryMap(), locationUnitConfigRegistry.getEntryMap());
         // iterate over all fields of unit registry data

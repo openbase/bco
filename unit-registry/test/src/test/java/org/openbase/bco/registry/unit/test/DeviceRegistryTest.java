@@ -63,11 +63,6 @@ import static junit.framework.TestCase.*;
  */
 public class DeviceRegistryTest extends AbstractBCORegistryTest {
 
-    @Test
-    public void integerTest() {
-        System.out.println("Max int+1: " + (Integer.MAX_VALUE + 1));
-    }
-
     /**
      * Test of registerUnitConfigWithUnits method, of class
      * DeviceRegistryImpl.
@@ -78,8 +73,8 @@ public class DeviceRegistryTest extends AbstractBCORegistryTest {
      * @throws java.lang.Exception
      */
     @Test(timeout = 5000)
-    public void testregisterUnitConfigWithUnits() throws Exception {
-        System.out.println("testregisterUnitConfigWithUnits");
+    public void testRegisterUnitConfigWithUnits() throws Exception {
+        System.out.println("testRegisterUnitConfigWithUnits");
         String productNumber = "ABCD-4321";
         String serialNumber = "1234-WXYZ";
         String company = "Fibaro";

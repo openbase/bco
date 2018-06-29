@@ -10,20 +10,20 @@ package org.openbase.bco.registry.unit.core.consistency;
  * it under the terms of the GNU General Public License as
  * published by the Free Software Foundation, either version 3 of the
  * License, or (at your option) any later version.
- * 
+ *
  * This program is distributed in the hope that it will be useful,
  * but WITHOUT ANY WARRANTY; without even the implied warranty of
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
- * 
+ *
  * You should have received a copy of the GNU General Public
  * License along with this program.  If not, see
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import javax.media.j3d.Transform3D;
-import javax.vecmath.Vector3d;
+
 import org.openbase.bco.registry.lib.util.LocationUtils;
+import org.openbase.jps.core.JPService;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.exception.printer.LogLevel;
@@ -38,6 +38,9 @@ import rst.domotic.unit.UnitConfigType.UnitConfig;
 import rst.math.Vec3DDoubleType.Vec3DDouble;
 import rst.spatial.FloorCeilingEdgeIndicesType.FloorCeilingEdgeIndices;
 import rst.spatial.ShapeType.Shape;
+
+import javax.media.j3d.Transform3D;
+import javax.vecmath.Vector3d;
 
 /**
  * This consistency handler adds missing ceiling coordinates and links between
@@ -55,12 +58,12 @@ public class LocationShapeConsistencyHandler extends AbstractProtoBufRegistryCon
     /**
      * {@inheritDoc}
      *
-     * @param id {@inheritDoc}
-     * @param entry {@inheritDoc}
+     * @param id       {@inheritDoc}
+     * @param entry    {@inheritDoc}
      * @param entryMap {@inheritDoc}
      * @param registry {@inheritDoc}
      * @throws CouldNotPerformException {@inheritDoc}
-     * @throws EntryModification {@inheritDoc}
+     * @throws EntryModification        {@inheritDoc}
      */
     @Override
     public void processData(String id, IdentifiableMessage<String, UnitConfig, UnitConfig.Builder> entry, ProtoBufMessageMap<String, UnitConfig, UnitConfig.Builder> entryMap, ProtoBufRegistry<String, UnitConfig, UnitConfig.Builder> registry) throws CouldNotPerformException, EntryModification {
@@ -80,11 +83,11 @@ public class LocationShapeConsistencyHandler extends AbstractProtoBufRegistryCon
         String rootLocationId;
 
         try {
-            // resolvement via more frequently updated entryMap via consistency checks if this entryMap contains the locations.
+            // resolving via more frequently updated entryMap via consistency checks if this entryMap contains the locations.
             rootLocationId = LocationUtils.getRootLocation(entryMap).getId();
         } catch (CouldNotPerformException ex) {
             try {
-                // resolvement via the location registry.
+                // resolving via the location registry.
                 rootLocationId = LocationUtils.getRootLocation(registry.getMessages()).getId();
             } catch (CouldNotPerformException exx) {
                 // if the root location could not be detected this consistency check is not needed.
@@ -112,7 +115,10 @@ public class LocationShapeConsistencyHandler extends AbstractProtoBufRegistryCon
             ExceptionPrinter.printHistory(new CouldNotPerformException("could not get root config", ex), logger);
             return;
         } catch (TransformerException ex) {
-            ExceptionPrinter.printHistory(new CouldNotPerformException("Could not get unitTransformation for unit " + unitConfig.getLabel() + " with id: " + unitConfig.getId(), ex), logger, LogLevel.WARN);
+            // TODO: does this need to be fixed in test mode, because it currently leads to a lot if warning printed in tests
+            if (!JPService.testMode()) {
+                ExceptionPrinter.printHistory(new CouldNotPerformException("Could not get unitTransformation for unit " + unitConfig.getAlias(0) + " with id: " + unitConfig.getId(), ex), logger, LogLevel.WARN);
+            }
             return;
         }
 
@@ -129,7 +135,7 @@ public class LocationShapeConsistencyHandler extends AbstractProtoBufRegistryCon
      * Uses a the default height to create the ceiling positions and links
      * between floor and ceiling positions.
      *
-     * @param shape The original shape.
+     * @param shape         The original shape.
      * @param unitTransform Transform from root to unit coordinates.
      * @return The shape with updated information.
      */
@@ -152,8 +158,8 @@ public class LocationShapeConsistencyHandler extends AbstractProtoBufRegistryCon
      * Sets the height of the vector to the default height in root coordinates,
      * then transforms it back to unit coordinates.
      *
-     * @param vector original vector in unit coordinates.
-     * @param transform transform from root to unit coordinates.
+     * @param vector           original vector in unit coordinates.
+     * @param transform        transform from root to unit coordinates.
      * @param inverseTransform transform from unit to root coordinates.
      * @return Transformed original vector in unit coordinates.
      */
