@@ -22,6 +22,7 @@ package org.openbase.bco.manager.util.launch;
  * #L%
  */
 
+import org.openbase.bco.authentication.core.AuthenticatorLauncher;
 import org.openbase.bco.manager.agent.binding.openhab.AgentBindingOpenHABLauncher;
 import org.openbase.bco.manager.agent.core.AgentManagerLauncher;
 import org.openbase.bco.manager.app.binding.openhab.AppBindingOpenHABLauncher;
@@ -51,6 +52,7 @@ public class BCOBindingOpenhabLauncher {
     public static void main(final String[] args) {
         BCO.printLogo();
         AbstractLauncher.main(args, BCO.class,
+                AuthenticatorLauncher.class,
                 /**
                  * Registry *
                  */
