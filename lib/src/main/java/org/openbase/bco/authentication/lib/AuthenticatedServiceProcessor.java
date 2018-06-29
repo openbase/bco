@@ -181,7 +181,7 @@ public class AuthenticatedServiceProcessor {
                     String userId = ticketEvaluationWrapper == null ? null : ticketEvaluationWrapper.getUserId();
                     // check for write permissions
                     if (!AuthorizationHelper.canDo(unitConfig, userId, authorizationGroupMap, locationMap, authorizationType)) {
-                        throw new PermissionDeniedException("User[" + userId + "] has no rights to register a unitConfig");
+                        throw new PermissionDeniedException("User[" + userId + "] has no rights to perform this action");
                     }
                 }
             } catch (JPNotAvailableException ex) {
