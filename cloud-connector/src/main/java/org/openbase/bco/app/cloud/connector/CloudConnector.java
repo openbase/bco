@@ -38,6 +38,8 @@ import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.exception.NotAvailableException;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
+import org.openbase.jul.extension.rst.processing.MetaConfigPool;
+import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
 import org.openbase.jul.iface.Launchable;
 import org.openbase.jul.iface.VoidInitializable;
 import org.openbase.jul.pattern.ObservableImpl;
@@ -45,6 +47,7 @@ import org.openbase.jul.schedule.GlobalCachedExecutorService;
 import org.openbase.jul.schedule.SyncObject;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+import rst.domotic.unit.UnitConfigType.UnitConfig;
 
 import java.net.URI;
 import java.util.Collections;
@@ -59,6 +62,9 @@ import java.util.concurrent.Future;
 public class CloudConnector implements Launchable<Void>, VoidInitializable {
 
     private static final Logger LOGGER = LoggerFactory.getLogger(CloudConnector.class);
+
+    private static final String CLOUD_USERNAME_KEY = "CLOUD_USERNAME";
+    private static final String CLOUD_PASSWORD_KEY = "CLOUD_PASSWORD";
 
     private final FulfillmentHandler fulfillmentHandler;
     private final JsonParser jsonParser;
@@ -86,6 +92,17 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
     @Override
     public void init() throws InitializationException {
         try {
+            // add observer to unit registry that test if the sync request would be answered differently on changes
+            try {
+                Registries.getUnitRegistry().addDataObserver((observable, unitRegistryData) -> {
+                    final JsonObject syncResponsePayload = new JsonObject();
+                    fulfillmentHandler.handleSync(syncResponsePayload);
+                    syncPayloadObservable.notifyObservers(syncResponsePayload);
+                });
+            } catch (NotAvailableException ex) {
+                throw new InitializationException(this, ex);
+            }
+
             try {
                 Registries.getUnitRegistry().waitForData();
             } catch (CouldNotPerformException ex) {
@@ -95,7 +112,15 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
                 throw new InitializationException(this, ex);
             }
             // get cloud uri from property
-            URI cloudURI = JPService.getProperty(JPCloudServerURI.class).getValue();
+            final URI cloudURI = JPService.getProperty(JPCloudServerURI.class).getValue();
+
+            // parse bco id, cloud password and cloud username
+            final UnitConfig bcoUser = Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.BCO_USER_ALIAS);
+            final String bcoId = bcoUser.getId();
+            MetaConfigPool metaConfigPool = new MetaConfigPool();
+            metaConfigPool.register(new MetaConfigVariableProvider("BCOUserMetaConfig", bcoUser.getMetaConfig()));
+            final String cloudUsername = metaConfigPool.getValue(CLOUD_USERNAME_KEY);
+            final String cloudPassword = metaConfigPool.getValue(CLOUD_PASSWORD_KEY);
 
             // create socket
             socket = IO.socket(cloudURI);
@@ -110,23 +135,12 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
                         @SuppressWarnings("unchecked")
                         Map<String, List<String>> headers = (Map<String, List<String>>) args1[0];
                         // add bco id to request header
-                        headers.put("id", Collections.singletonList(Registries.getUnitRegistry().getUnitConfigByAlias(UnitRegistry.BCO_USER_ALIAS).getId()));
+                        headers.put("id", Collections.singletonList(bcoId));
                     } catch (Exception ex) {
                         ExceptionPrinter.printHistory(ex, LOGGER);
                     }
                 });
             });
-
-            // add observer to unit registry that test if the sync request would be answered differently on changes
-            try {
-                Registries.getUnitRegistry().addDataObserver((observable, unitRegistryData) -> {
-                    final JsonObject syncResponsePayload = new JsonObject();
-                    fulfillmentHandler.handleSync(syncResponsePayload);
-                    syncPayloadObservable.notifyObservers(syncResponsePayload);
-                });
-            } catch (NotAvailableException ex) {
-                throw new InitializationException(this, ex);
-            }
 
             // trigger syncRequest from google when the payload of a sync request would change
             syncPayloadObservable.addObserver((observable, jsonObject) -> {
@@ -170,8 +184,8 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
                 LOGGER.info("CONNECTED");
 
                 JsonObject loginInfo = new JsonObject();
-                loginInfo.addProperty("username", "BCOUser");
-                loginInfo.addProperty("password", "password_bco");
+                loginInfo.addProperty("username", cloudUsername);
+                loginInfo.addProperty("password", cloudPassword);
                 LOGGER.info("Send loginInfo [" + gson.toJson(loginInfo) + "]");
                 socket.emit("login", gson.toJson(loginInfo), (Ack) objects1 -> {
                     try {
@@ -241,7 +255,7 @@ public class CloudConnector implements Launchable<Void>, VoidInitializable {
             }).on(Socket.EVENT_ERROR, objects -> {
                 LOGGER.info("Received error: " + objects[0]);
             });
-        } catch (JPNotAvailableException ex) {
+        } catch (JPNotAvailableException | CouldNotPerformException ex) {
             throw new InitializationException(this, ex);
         }
     }

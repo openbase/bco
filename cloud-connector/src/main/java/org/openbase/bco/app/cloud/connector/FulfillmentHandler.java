@@ -259,14 +259,7 @@ public class FulfillmentHandler {
                     case UNIT_GROUP:
                         // skip locations, devices, user ...
                         // skip unit groups because they are handled above
-                }
-                if (unitConfig.getUnitType() == UnitType.LOCATION ||
-                        unitConfig.getUnitType() == UnitType.DEVICE ||
-                        unitConfig.getUnitType() == UnitType.USER ||
-                        unitConfig.getUnitType() == UnitType.AUTHORIZATION_GROUP ||
-                        unitConfig.getUnitType() == UnitType.UNIT_GROUP) {
-                    // skip locations and devices
-                    continue;
+                        continue;
                 }
 
                 if (handledUnitConfigs.contains(unitConfig.getId())) {
@@ -336,6 +329,12 @@ public class FulfillmentHandler {
         final JsonArray traits = new JsonArray();
         for (final Entry<UnitConfig, UnitTypeMapping> entry : mappings.entrySet()) {
             for (final Trait trait : entry.getValue().getTraitSet()) {
+                switch (trait) {
+                    case MODES:
+                    case TOGGLES:
+                        // skip modes and toggles trait because they are currently not really supported by google
+                        continue;
+                }
                 final ServiceType serviceType = entry.getValue().getServiceType(trait);
                 traits.add(trait.getRepresentation());
                 try {
