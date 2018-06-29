@@ -80,7 +80,7 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
                 admin = registerAdmin();
             }
 
-            if (!CachedAuthenticationRemote.getRemote().isAdmin(admin.getId()).get(1, TimeUnit.SECONDS)) {
+            if (!CachedAuthenticationRemote.getRemote().isAdmin(admin.getId()).get(3, TimeUnit.SECONDS)) {
                 // admin registered in registry but not at authenticator
                 registerAdminAtAuthenticator(admin.getId());
             }
@@ -93,7 +93,7 @@ public class UserCreationPlugin extends ProtobufRegistryPluginAdapter<String, Un
                 bco = registerBCO();
             }
 
-            if (!CachedAuthenticationRemote.getRemote().hasUser(bco.getId()).get(1, TimeUnit.SECONDS)) {
+            if (!CachedAuthenticationRemote.getRemote().hasUser(bco.getId()).get(3, TimeUnit.SECONDS)) {
                 // bco user registered in registry but not at the authenticator
                 registerBCOAtAuthenticator(bco.getId(), admin.getId());
             }
