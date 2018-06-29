@@ -58,7 +58,7 @@ public class AppBindingOpenHABImpl extends AbstractOpenHABBinding {
             factory = new AppRemoteFactoryImpl();
             hardwareSimulationMode = JPService.getProperty(JPHardwareSimulationMode.class).getValue();
 
-            this.registrySynchronizer = new RegistrySynchronizer<String, AppRemote, UnitConfig, UnitConfig.Builder>(registry, Registries.getUnitRegistry().getUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {
+            this.registrySynchronizer = new RegistrySynchronizer<String, AppRemote, UnitConfig, UnitConfig.Builder>(registry, Registries.getUnitRegistry().getAppUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {
 
                 @Override
                 public boolean verifyConfig(final UnitConfig config) throws VerificationFailedException {

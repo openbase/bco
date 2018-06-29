@@ -59,7 +59,7 @@ public class SceneBindingOpenHABImpl extends AbstractOpenHABBinding {
             factory = new SceneRemoteFactoryImpl();
             hardwareSimulationMode = JPService.getProperty(JPHardwareSimulationMode.class).getValue();
 
-            this.registrySynchronizer = new RegistrySynchronizer<String, SceneRemote, UnitConfig, UnitConfig.Builder>(registry, Registries.getUnitRegistry().getUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {
+            this.registrySynchronizer = new RegistrySynchronizer<String, SceneRemote, UnitConfig, UnitConfig.Builder>(registry, Registries.getUnitRegistry().getSceneUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), factory) {
 
                 @Override
                 public boolean verifyConfig(final UnitConfig config) throws VerificationFailedException {
