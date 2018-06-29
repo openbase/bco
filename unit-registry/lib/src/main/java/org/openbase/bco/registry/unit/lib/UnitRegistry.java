@@ -1120,12 +1120,12 @@ public interface UnitRegistry extends DataProvider<UnitRegistryData>, UnitTransf
      * @throws CouldNotPerformException is thrown if the request fails.
      */
     default List<UnitConfig> getNeighborLocations(final String locationId) throws CouldNotPerformException {
-        UnitConfig locationConfig = getUnitConfigById(locationId);
+        final UnitConfig locationConfig = getUnitConfigById(locationId, UnitType.LOCATION);
         if (locationConfig.getLocationConfig().getType() != LocationType.TILE) {
             throw new CouldNotPerformException("Id[" + locationId + "] does not belong to a tile and therefore its neighbors aren't defined!");
         }
 
-        Map<String, UnitConfig> neighborMap = new HashMap<>();
+        final Map<String, UnitConfig> neighborMap = new HashMap<>();
         for (UnitConfig connectionConfig : getUnitConfigs(UnitType.CONNECTION)) {
             if (connectionConfig.getConnectionConfig().getTileIdList().contains(locationId)) {
                 for (String id : connectionConfig.getConnectionConfig().getTileIdList()) {
