@@ -36,10 +36,7 @@ import org.openbase.bco.dal.remote.unit.user.UserRemote;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.bco.registry.unit.lib.UnitRegistry;
 import org.openbase.jps.core.JPService;
-import org.openbase.jul.exception.CouldNotPerformException;
-import org.openbase.jul.exception.FatalImplementationErrorException;
-import org.openbase.jul.exception.InvalidStateException;
-import org.openbase.jul.exception.NotAvailableException;
+import org.openbase.jul.exception.*;
 import org.openbase.jul.exception.printer.ExceptionPrinter;
 import org.openbase.jul.extension.protobuf.IdentifiableMessageMap;
 import org.openbase.jul.extension.protobuf.ProtobufListDiff;
@@ -83,8 +80,6 @@ import java.util.concurrent.locks.ReentrantReadWriteLock;
  */
 public class Units {
 
-    private static final Logger LOGGER = LoggerFactory.getLogger(Units.class);
-
     /**
      * BASE Unit remote-class-constants which can be used to request unit
      * remotes.
@@ -100,7 +95,6 @@ public class Units {
     public static final Class<? extends ConnectionRemote> BASE_UNIT_CONNECTION_DOOR = ConnectionRemote.class;
     public static final Class<? extends ConnectionRemote> BASE_UNIT_CONNECTION_WINDOW = ConnectionRemote.class;
     public static final Class<? extends ConnectionRemote> BASE_UNIT_CONNECTION_PASSAGE = ConnectionRemote.class;
-
     // comfort
     public static final Class<? extends AgentRemote> UNIT_BASE_AGENT = BASE_UNIT_AGENT;
     public static final Class<? extends AppRemote> UNIT_BASE_APP = BASE_UNIT_APP;
@@ -113,7 +107,6 @@ public class Units {
     public static final Class<? extends ConnectionRemote> UNIT_BASE_CONNECTION_DOOR = BASE_UNIT_CONNECTION;
     public static final Class<? extends ConnectionRemote> UNIT_BASE_CONNECTION_WINDOW = BASE_UNIT_CONNECTION;
     public static final Class<? extends ConnectionRemote> UNIT_BASE_CONNECTION_PASSAGE = BASE_UNIT_CONNECTION;
-
     // simple
     public static final Class<? extends AgentRemote> AGENT = BASE_UNIT_AGENT;
     public static final Class<? extends AppRemote> APP = BASE_UNIT_APP;
@@ -126,7 +119,6 @@ public class Units {
     public static final Class<? extends ConnectionRemote> WINDOW = BASE_UNIT_CONNECTION;
     public static final Class<? extends ConnectionRemote> PASSAGE = BASE_UNIT_CONNECTION;
     public static final Class<? extends ConnectionRemote> CONNECTION = BASE_UNIT_CONNECTION;
-
     /**
      * DAL Unit remote-class-constants which can be used to request unit
      * remotes.
@@ -149,7 +141,6 @@ public class Units {
     public static final Class<? extends RollerShutterRemote> DAL_UNIT_ROLLER_SHUTTER = RollerShutterRemote.class;
     public static final Class<? extends SmokeDetectorRemote> DAL_UNIT_SMOKE_DETECTOR = SmokeDetectorRemote.class;
     public static final Class<? extends TamperDetectorRemote> DAL_UNIT_TAMPER_DETECTOR = TamperDetectorRemote.class;
-
     // comfort
     public static final Class<? extends LightRemote> UNIT_DAL_LIGHT = DAL_UNIT_LIGHT;
     public static final Class<? extends LightSensorRemote> UNIT_DAL_LIGHT_SENSOR = DAL_UNIT_LIGHT_SENSOR;
@@ -169,7 +160,6 @@ public class Units {
     public static final Class<? extends RollerShutterRemote> UNIT_DAL_ROLLER_SHUTTER = DAL_UNIT_ROLLER_SHUTTER;
     public static final Class<? extends SmokeDetectorRemote> UNIT_DAL_SMOKE_DETECTOR = DAL_UNIT_SMOKE_DETECTOR;
     public static final Class<? extends TamperDetectorRemote> UNIT_DAL_TAMPER_DETECTOR = DAL_UNIT_TAMPER_DETECTOR;
-
     //simple
     public static final Class<? extends LightRemote> LIGHT = DAL_UNIT_LIGHT;
     public static final Class<? extends LightSensorRemote> LIGHT_SENSOR = DAL_UNIT_LIGHT_SENSOR;
@@ -192,20 +182,16 @@ public class Units {
     public static final Class<? extends SmokeDetectorRemote> SMOKE_DETECTOR = DAL_UNIT_SMOKE_DETECTOR;
     public static final Class<? extends TamperDetectorRemote> TAMPER_DETECTOR = DAL_UNIT_TAMPER_DETECTOR;
 
+    private static final Logger LOGGER = LoggerFactory.getLogger(Units.class);
+    private static final ReentrantReadWriteLock UNIT_REMOTE_REGISTRY_LOCK = new ReentrantReadWriteLock();
+    private static final UnitRemoteFactory UNIT_REMOTE_FACTORY = UnitRemoteFactoryImpl.getInstance();
+    // register an observer that calls shutdown on units whose configs have been removed from the registry
+    private static final ProtobufListDiff<String, UnitConfig, UnitConfig.Builder> UNIT_DIFF = new ProtobufListDiff<>();
     //    public static final Class<? extends VideoRgbSourceRemote> VIDEO_RGB_SOURCE = VideoRgbSourceRemote.class;
 //    public static final Class<? extends VideoDepthSourceRemote> VIDEO_DEPTH_SOURCE = VideoDepthSourceRemote.class;
 //    public static final Class<? extends AudioSourceRemote> AUDIO_SOURCE = AudioSourceRemote.class;
     public static Units instance;
-
-    private static final ReentrantReadWriteLock UNIT_REMOTE_REGISTRY_LOCK = new ReentrantReadWriteLock();
-    private static final UnitRemoteFactory UNIT_REMOTE_FACTORY = UnitRemoteFactoryImpl.getInstance();
-
     private static RemoteControllerRegistry<String, org.openbase.bco.dal.lib.layer.unit.UnitRemote<? extends GeneratedMessage>> unitRemoteRegistry;
-
-    public static final SyncObject UNIT_POOL_LOCK = new SyncObject("UnitPoolLock");
-
-    // register an observer that calls shutdown on units whose configs have been removed from the registry
-    private static final ProtobufListDiff<String, UnitConfig, UnitConfig.Builder> UNIT_DIFF = new ProtobufListDiff<>();
     private static final Observer<UnitRegistryData> UNIT_REGISTRY_OBSERVER = new Observer<UnitRegistryData>() {
         @Override
         public void update(Observable<UnitRegistryData> source, UnitRegistryData data) throws Exception {
@@ -328,6 +314,25 @@ public class Units {
         }
 
         resetUnitRegistryObserver();
+    }
+
+    /**
+     * Method casts the given unit remote to the given unit remote class type if possible.
+     *
+     * @param unitRemote      the unit remote to cast.
+     * @param unitRemoteClass the type to cast
+     * @param <UR>            the unit remote type
+     *
+     * @return the casted remote instance
+     *
+     * @throws VerificationFailedException is thrown if the given instance is not compatible with the given remote class type.
+     */
+    private static <UR extends UnitRemote<?>> UR castUnitRemote(final UnitRemote<?> unitRemote, final Class<UR> unitRemoteClass) throws VerificationFailedException {
+        // check is needed because java does not care about invalid generic casts.
+        if (!unitRemoteClass.isInstance(unitRemote)) {
+            throw new VerificationFailedException("Remote[" + unitRemote + "] is not compatible!");
+        }
+        return (UR) unitRemote;
     }
 
     /**
@@ -585,8 +590,8 @@ public class Units {
      */
     public static <UR extends UnitRemote<?>> UR getUnit(final UnitConfig unitConfig, final boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
         try {
-            return (UR) getUnit(unitConfig, waitForData);
-        } catch (ClassCastException ex) {
+            return castUnitRemote(getUnit(unitConfig, waitForData), unitRemoteClass);
+        } catch (ClassCastException | VerificationFailedException ex) {
             throw new NotAvailableException("Unit[" + unitConfig.getId() + "]", new InvalidStateException("Requested Unit[" + LabelProcessor.getBestMatch(unitConfig.getLabel()) + "] of UnitType[" + unitConfig.getUnitType() + "] is not compatible with defined UnitRemoteClass[" + unitRemoteClass + "]!", ex));
         }
     }
@@ -615,8 +620,8 @@ public class Units {
      */
     public static <UR extends UnitRemote<?>> UR getUnit(final String unitId, boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
         try {
-            return (UR) getUnit(unitId, waitForData);
-        } catch (ClassCastException ex) {
+            return castUnitRemote(getUnit(unitId, waitForData), unitRemoteClass);
+        } catch (ClassCastException | VerificationFailedException ex) {
             throw new NotAvailableException("Unit[" + unitId + "]", new InvalidStateException("Requested Unit[" + unitId + "] is not compatible with defined UnitRemoteClass[" + unitRemoteClass + "]!", ex));
         }
     }
@@ -811,7 +816,7 @@ public class Units {
                 assert false;
                 throw new NotAvailableException("UnitAlias");
             }
-            return (UR) getUnit(getUnitRegistry().getUnitConfigByAlias(alias), waitForData);
+            return castUnitRemote(getUnit(getUnitRegistry().getUnitConfigByAlias(alias), waitForData), unitRemoteClass);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Unit", "alias:" + alias, ex);
         }
@@ -947,8 +952,8 @@ public class Units {
     public static <UR extends UnitRemote<?>> UR getUnitByLabel(final String label, boolean waitForData, final Class<UR> unitRemoteClass) throws NotAvailableException, InterruptedException {
         try {
             try {
-                return (UR) getUnitsByLabelAndType(label, Units.getUnitTypeByRemoteClass(unitRemoteClass), waitForData).get(0);
-            } catch (ClassCastException ex) {
+                return castUnitRemote(getUnitsByLabelAndType(label, Units.getUnitTypeByRemoteClass(unitRemoteClass), waitForData).get(0), unitRemoteClass);
+            } catch (ClassCastException | VerificationFailedException ex) {
                 throw new InvalidStateException("Requested Unit[" + label + "] is not compatible with defined UnitRemoteClass[" + unitRemoteClass + "]!", ex);
             }
         } catch (CouldNotPerformException ex) {
@@ -1074,56 +1079,6 @@ public class Units {
             return getUnitByScope(ScopeGenerator.generateScope(scope), waitForData);
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("Unit[" + scope + "]", ex);
-        }
-    }
-
-    /**
-     * Method establishes a connection to the unit referred by the given unit
-     * label and location scope. The returned unit remote object is fully
-     * synchronized with the unit controller and all states locally cached. Use
-     * the {@code waitForData} flag to block the current thread until the unit
-     * remote is fully synchronized with the unit controller during the startup
-     * phase. This synchronization is just done once and the current thread will
-     * not block if the unit remote was already synchronized before. To force a
-     * resynchronization call
-     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
-     * remote instance. Please avoid polling unit states! If you want to get
-     * informed about unit config or unit data state changes, please register
-     * new config or data observer on this remote instance.
-     *
-     * @param label         the label to identify the unit.
-     * @param locationScope the location scope to identify the unit.
-     * @param waitForData   if this flag is set to true the current thread will
-     *                      block until the unit remote is fully synchronized with the unit
-     *                      controller.
-     *
-     * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
-     *
-     * @throws NotAvailableException is thrown in case the unit is not available
-     *                               or the label is not unique enough to identify the unit.
-     * @throws InterruptedException  is thrown in case the thread is externally
-     *                               interrupted.
-     */
-    public UnitRemote<?> getUnitByLabelAndLocationScope(final String label, final String locationScope, boolean waitForData) throws NotAvailableException, InterruptedException {
-        try {
-            if (label == null) {
-                assert false;
-                throw new NotAvailableException("UnitLabel");
-            }
-            if (locationScope == null) {
-                assert false;
-                throw new NotAvailableException("UnitLocationScope");
-            }
-
-            for (UnitConfig unitConfig : getUnitRegistry().getUnitConfigsByLabel(label)) {
-                if (ScopeGenerator.generateStringRep(getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getScope()).equals(locationScope)) {
-                    return getUnit(unitConfig, waitForData);
-                }
-            }
-            throw new InvalidStateException("No unit with Label[" + label + "] found at Location[" + locationScope + "]");
-
-        } catch (CouldNotPerformException ex) {
-            throw new NotAvailableException("Unit[" + label + "]", ex);
         }
     }
 
@@ -1501,38 +1456,6 @@ public class Units {
     }
 
     /**
-     * Method establishes a connection to the unit referred by the given unit
-     * label and location scope. The returned unit remote object is fully
-     * synchronized with the unit controller and all states locally cached. Use
-     * the {@code waitForData} flag to block the current thread until the unit
-     * remote is fully synchronized with the unit controller during the startup
-     * phase. This synchronization is just done once and the current thread will
-     * not block if the unit remote was already synchronized before. To force a
-     * resynchronization call
-     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
-     * remote instance. Please avoid polling unit states! If you want to get
-     * informed about unit config or unit data state changes, please register
-     * new config or data observer on this remote instance.
-     *
-     * @param label         the label to identify the unit.
-     * @param locationScope the location scope to identify the unit.
-     * @param waitForData   if this flag is set to true the current thread will
-     *                      block until the unit remote is fully synchronized with the unit
-     *                      controller.
-     *
-     * @return a new or cached unit remote which can be used to control the unit
-     * or request all current unit states.
-     *
-     * @throws NotAvailableException is thrown in case the unit is not available
-     *                               or the label is not unique enough to identify the unit.
-     * @throws InterruptedException  is thrown in case the thread is externally
-     *                               interrupted.
-     */
-    public Future<UnitRemote<?>> getFutureUnitByLabelAndLocationScope(final String label, final String locationScope, boolean waitForData) throws NotAvailableException, InterruptedException {
-        return GlobalCachedExecutorService.submit(() -> getUnitByLabelAndLocationScope(label, locationScope, waitForData));
-    }
-
-    /**
      * Method resolves the UnitType of the given unit remote class.
      *
      * @param unitRemoteClass the unit remote class to resolve the unit type.
@@ -1633,5 +1556,87 @@ public class Units {
         } catch (CouldNotPerformException ex) {
             return FutureProcessor.canceledFuture(Transform.class, new NotAvailableException("UnitTransformation", ex));
         }
+    }
+
+    /**
+     * Method establishes a connection to the unit referred by the given unit
+     * label and location scope. The returned unit remote object is fully
+     * synchronized with the unit controller and all states locally cached. Use
+     * the {@code waitForData} flag to block the current thread until the unit
+     * remote is fully synchronized with the unit controller during the startup
+     * phase. This synchronization is just done once and the current thread will
+     * not block if the unit remote was already synchronized before. To force a
+     * resynchronization call
+     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
+     * remote instance. Please avoid polling unit states! If you want to get
+     * informed about unit config or unit data state changes, please register
+     * new config or data observer on this remote instance.
+     *
+     * @param label         the label to identify the unit.
+     * @param locationScope the location scope to identify the unit.
+     * @param waitForData   if this flag is set to true the current thread will
+     *                      block until the unit remote is fully synchronized with the unit
+     *                      controller.
+     *
+     * @return a new or cached unit remote which can be used to control the unit or request all current unit states.
+     *
+     * @throws NotAvailableException is thrown in case the unit is not available
+     *                               or the label is not unique enough to identify the unit.
+     * @throws InterruptedException  is thrown in case the thread is externally
+     *                               interrupted.
+     */
+    public UnitRemote<?> getUnitByLabelAndLocationScope(final String label, final String locationScope, boolean waitForData) throws NotAvailableException, InterruptedException {
+        try {
+            if (label == null) {
+                assert false;
+                throw new NotAvailableException("UnitLabel");
+            }
+            if (locationScope == null) {
+                assert false;
+                throw new NotAvailableException("UnitLocationScope");
+            }
+
+            for (UnitConfig unitConfig : getUnitRegistry().getUnitConfigsByLabel(label)) {
+                if (ScopeGenerator.generateStringRep(getUnitRegistry().getUnitConfigById(unitConfig.getPlacementConfig().getLocationId()).getScope()).equals(locationScope)) {
+                    return getUnit(unitConfig, waitForData);
+                }
+            }
+            throw new InvalidStateException("No unit with Label[" + label + "] found at Location[" + locationScope + "]");
+
+        } catch (CouldNotPerformException ex) {
+            throw new NotAvailableException("Unit[" + label + "]", ex);
+        }
+    }
+
+    /**
+     * Method establishes a connection to the unit referred by the given unit
+     * label and location scope. The returned unit remote object is fully
+     * synchronized with the unit controller and all states locally cached. Use
+     * the {@code waitForData} flag to block the current thread until the unit
+     * remote is fully synchronized with the unit controller during the startup
+     * phase. This synchronization is just done once and the current thread will
+     * not block if the unit remote was already synchronized before. To force a
+     * resynchronization call
+     * {@link org.openbase.bco.dal.lib.layer.unit.UnitRemote#requestData()} on the
+     * remote instance. Please avoid polling unit states! If you want to get
+     * informed about unit config or unit data state changes, please register
+     * new config or data observer on this remote instance.
+     *
+     * @param label         the label to identify the unit.
+     * @param locationScope the location scope to identify the unit.
+     * @param waitForData   if this flag is set to true the current thread will
+     *                      block until the unit remote is fully synchronized with the unit
+     *                      controller.
+     *
+     * @return a new or cached unit remote which can be used to control the unit
+     * or request all current unit states.
+     *
+     * @throws NotAvailableException is thrown in case the unit is not available
+     *                               or the label is not unique enough to identify the unit.
+     * @throws InterruptedException  is thrown in case the thread is externally
+     *                               interrupted.
+     */
+    public Future<UnitRemote<?>> getFutureUnitByLabelAndLocationScope(final String label, final String locationScope, boolean waitForData) throws NotAvailableException, InterruptedException {
+        return GlobalCachedExecutorService.submit(() -> getUnitByLabelAndLocationScope(label, locationScope, waitForData));
     }
 }
