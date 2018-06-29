@@ -70,14 +70,14 @@ public class LocationBindingOpenHABImpl extends AbstractOpenHABBinding {
             connectionRegistry = new RemoteControllerRegistryImpl<>();
             locationRemoteFactory = new LocationRemoteFactoryImpl();
             connectionRemoteFactory = new ConnectionRemoteFactoryImpl();
-            locationRegistrySynchronizer = new RegistrySynchronizer<String, LocationRemote, UnitConfig, UnitConfig.Builder>(locationRegistry, Registries.getUnitRegistry().getUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), locationRemoteFactory) {
+            locationRegistrySynchronizer = new RegistrySynchronizer<String, LocationRemote, UnitConfig, UnitConfig.Builder>(locationRegistry, Registries.getUnitRegistry().getLocationUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), locationRemoteFactory) {
 
                 @Override
                 public boolean verifyConfig(UnitConfig config) throws VerificationFailedException {
                     return config.getEnablingState().getValue() == EnablingState.State.ENABLED;
                 }
             };
-            this.connectionRegistrySynchronizer = new RegistrySynchronizer<String, ConnectionRemote, UnitConfig, UnitConfig.Builder>(connectionRegistry, Registries.getUnitRegistry().getUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), connectionRemoteFactory) {
+            this.connectionRegistrySynchronizer = new RegistrySynchronizer<String, ConnectionRemote, UnitConfig, UnitConfig.Builder>(connectionRegistry, Registries.getUnitRegistry().getConnectionUnitConfigRemoteRegistry(), Registries.getUnitRegistry(), connectionRemoteFactory) {
 
                 @Override
                 public boolean verifyConfig(UnitConfig config) throws VerificationFailedException {
