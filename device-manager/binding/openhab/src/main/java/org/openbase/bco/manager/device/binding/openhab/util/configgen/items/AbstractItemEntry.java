@@ -254,6 +254,18 @@ public abstract class AbstractItemEntry implements ItemEntry, Comparable<Abstrac
         if (itemId.contains("-")) {
             throw new VerificationFailedException("Found \"-\" in item id which is not allowed for openhab configurations!");
         }
+
+        if (label.contains("{")) {
+            throw new VerificationFailedException("Found \"{\" in label which is not allowed for openhab configurations!");
+        }
+
+        if (label.contains(":")) {
+            throw new VerificationFailedException("Found \":\" in label which is not allowed for openhab configurations!");
+        }
+
+        if (label.contains("\n")) {
+            throw new VerificationFailedException("Found newline in label which is not allowed for openhab configurations!");
+        }
     }
 
     @Override

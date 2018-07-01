@@ -41,7 +41,7 @@ public class AgentItemEntry extends AbstractItemEntry {
             this.itemId = generateItemId(unitConfig);
             this.icon = "";
             this.commandType = "Switch";
-            this.label = LabelProcessor.getFirstLabel(this.unitConfig.getLabel());
+            this.label = LabelProcessor.getBestMatch(this.unitConfig.getLabel());
             // as a backup use the first label as seen below
             //TODO: this should parse a value from the root location meta config that defines a default label
             this.itemHardwareConfig = "rsb=\"bco.manager.agent:" + unitConfig.getId() + "\"";

@@ -40,7 +40,7 @@ public class SceneItemEntry extends AbstractItemEntry {
             this.itemId = generateItemId(unitConfig);
             this.icon = "";
             this.commandType = "Switch";
-            this.label = LabelProcessor.getFirstLabel(unitConfig.getLabel());
+            this.label = LabelProcessor.getBestMatch(unitConfig.getLabel());
             // as a backup use the first label as seen below
             //TODO: this should parse a value from the root location meta config that defines a default label
             this.itemHardwareConfig = "rsb=\"bco.manager.scene:" + unitConfig.getId() + "\"";

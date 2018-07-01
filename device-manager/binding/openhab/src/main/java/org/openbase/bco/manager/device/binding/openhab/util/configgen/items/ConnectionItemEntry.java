@@ -45,7 +45,7 @@ public class ConnectionItemEntry extends AbstractItemEntry {
             this.itemId = generateItemId(unitConfig, serviceDescription.getServiceType());
             this.icon = "";
             this.commandType = getDefaultCommand(serviceDescription.getServiceType());
-            this.label = LabelProcessor.getFirstLabel(this.unitConfig.getLabel());
+            this.label = LabelProcessor.getBestMatch(this.unitConfig.getLabel());
             // as a backup use the first label as seen below
             //TODO: this should parse a value from the root location meta config that defines a default label
             this.itemHardwareConfig = "rsb=\"" + LOCATION_RSB_BINDING_CONFIG + ":" + unitConfig.getId() + "\"";
