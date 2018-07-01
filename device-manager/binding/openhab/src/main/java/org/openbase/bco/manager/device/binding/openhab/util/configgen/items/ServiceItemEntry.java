@@ -32,6 +32,8 @@ import org.openbase.jul.extension.protobuf.ProtobufVariableProvider;
 import org.openbase.jul.extension.rst.processing.LabelProcessor;
 import org.openbase.jul.extension.rst.processing.MetaConfigPool;
 import org.openbase.jul.extension.rst.processing.MetaConfigVariableProvider;
+import rst.configuration.LabelType.Label;
+import rst.configuration.LabelType.LabelOrBuilder;
 import rst.configuration.MetaConfigType.MetaConfig;
 import rst.domotic.service.ServiceConfigType.ServiceConfig;
 import rst.domotic.service.ServiceTemplateConfigType.ServiceTemplateConfig;
@@ -87,13 +89,16 @@ public class ServiceItemEntry extends AbstractItemEntry {
                 throw new NotAvailableException("itemId", ex);
             }
 
-            try {
-                this.label = configPool.getValue(SERVICE_TEMPLATE_BINDING_LABEL_DESCRIPTOR);
-            } catch (NotAvailableException ex) {
+//            try {
+                // todo reimplement because this does not work anymore since labels are not string types.
+                // method returns currently a string portobuf representation
+                // this causes an invalid openhab config
+//                this.label = configPool.getValue(SERVICE_TEMPLATE_BINDING_LABEL_DESCRIPTOR);
+//            } catch (NotAvailableException ex) {
                 // as a backup use the first label as seen below
                 //TODO: this should parse a value from the root location meta config that defines a default label
-                this.label = LabelProcessor.getFirstLabel(unitConfig.getLabel());
-            }
+                this.label = LabelProcessor.getBestMatch(unitConfig.getLabel());
+//            }
 
             try {
                 this.commandType = configPool.getValue(SERVICE_TEMPLATE_BINDING_COMMAND);
