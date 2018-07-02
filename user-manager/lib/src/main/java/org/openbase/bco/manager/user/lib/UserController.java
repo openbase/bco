@@ -21,6 +21,7 @@ package org.openbase.bco.manager.user.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.unit.user.User;
 import org.openbase.jul.exception.InitializationException;
 import org.openbase.jul.extension.protobuf.MessageController;
 import org.openbase.jul.iface.Configurable;

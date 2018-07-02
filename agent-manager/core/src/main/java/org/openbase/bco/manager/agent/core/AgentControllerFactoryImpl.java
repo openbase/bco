@@ -21,7 +21,7 @@ package org.openbase.bco.manager.agent.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.manager.agent.lib.Agent;
+import org.openbase.bco.dal.lib.layer.unit.agent.Agent;
 import org.openbase.bco.manager.agent.lib.AgentController;
 import org.openbase.bco.manager.agent.lib.AgentControllerFactory;
 

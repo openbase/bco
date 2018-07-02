@@ -21,6 +21,7 @@ package org.openbase.bco.manager.device.lib;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
+import org.openbase.bco.dal.lib.layer.unit.device.Device;
 import org.openbase.jul.storage.registry.Registry;
 
 /**

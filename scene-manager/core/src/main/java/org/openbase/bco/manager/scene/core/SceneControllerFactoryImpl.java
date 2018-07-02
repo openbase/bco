@@ -22,7 +22,7 @@ package org.openbase.bco.manager.scene.core;
  * #L%
  */
 
-import org.openbase.bco.manager.scene.lib.Scene;
+import org.openbase.bco.dal.lib.layer.unit.scene.Scene;
 import org.openbase.bco.manager.scene.lib.SceneController;
 import org.openbase.bco.manager.scene.lib.SceneControllerFactory;
 import org.openbase.jul.exception.CouldNotPerformException;

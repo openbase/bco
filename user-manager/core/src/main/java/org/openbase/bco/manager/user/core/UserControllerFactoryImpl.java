@@ -21,7 +21,7 @@ package org.openbase.bco.manager.user.core;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.manager.user.lib.User;
+import org.openbase.bco.dal.lib.layer.unit.user.User;
 import org.openbase.bco.manager.user.lib.UserController;
 import org.openbase.bco.manager.user.lib.UserControllerFactory;
 import org.openbase.jul.exception.CouldNotPerformException;

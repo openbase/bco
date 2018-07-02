@@ -23,7 +23,7 @@ package org.openbase.bco.manager.device.core;
  */
 
 import org.openbase.bco.dal.lib.layer.service.ServiceFactory;
-import org.openbase.bco.manager.device.lib.Device;
+import org.openbase.bco.dal.lib.layer.unit.device.Device;
 import org.openbase.bco.manager.device.lib.DeviceController;
 import org.openbase.bco.manager.device.lib.DeviceControllerFactory;
 import org.openbase.bco.manager.device.lib.DeviceManager;
