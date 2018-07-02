@@ -57,6 +57,7 @@ import java.util.concurrent.Future;
 public class ActivityRegistryController extends AbstractRegistryController<ActivityRegistryData, ActivityRegistryData.Builder> implements ActivityRegistry, Manageable<ScopeType.Scope> {
 
     static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TransactionValue.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivityRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivityConfig.getDefaultInstance()));
     }

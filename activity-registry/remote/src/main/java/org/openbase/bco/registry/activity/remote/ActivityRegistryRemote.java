@@ -53,6 +53,7 @@ import java.util.concurrent.Future;
 public class ActivityRegistryRemote extends AbstractRegistryRemote<ActivityRegistryData> implements ActivityRegistry, Remote<ActivityRegistryData> {
 
     static {
+        DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(TransactionValue.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivityRegistryData.getDefaultInstance()));
         DefaultConverterRepository.getDefaultConverterRepository().addConverter(new ProtocolBufferConverter<>(ActivityConfig.getDefaultInstance()));
     }
