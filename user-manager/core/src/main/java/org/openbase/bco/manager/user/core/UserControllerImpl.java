@@ -25,6 +25,7 @@ package org.openbase.bco.manager.user.core;
 import java.io.IOException;
 import java.net.InetAddress;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.Future;
@@ -172,10 +173,9 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     }
 
     @Override
-    public ActivityState getActivityState() throws NotAvailableException {
+    public List<ActivityState> getActivityStateList() throws NotAvailableException {
         try {
-            // todo: implement multi service state support (openbase/bco.dal#113)
-            return getData().getActivityState(0);
+            return getData().getActivityStateList();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("user activity", ex);
         }
@@ -191,15 +191,13 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
     }
 
     @Override
-    public Future<ActionFuture> setActivityState(ActivityState ActivityState) throws CouldNotPerformException {
-        // todo: implement multi service state support (openbase/bco.dal#113)
-        return FutureProcessor.canceledFuture(new NotSupportedException("multi service not supported yet!", this));
-//        try (ClosableDataBuilder<UserData.Builder> dataBuilder = getDataBuilder(this)) {
-//            dataBuilder.getInternalBuilder().setActivityState(ActivityState);
-//        } catch (CouldNotPerformException | NullPointerException ex) {
-//            throw new CouldNotPerformException("Could not set user activity to [" + ActivityState + "] for " + this + "!", ex);
-//        }
-//        return CompletableFuture.completedFuture(null);
+    public Future<ActionFuture> addActivityState(final ActivityState activityState) throws CouldNotPerformException {
+        try (ClosableDataBuilder<UserData.Builder> dataBuilder = getDataBuilder(this)) {
+            dataBuilder.getInternalBuilder().addActivityState(activityState);
+        } catch (CouldNotPerformException | NullPointerException ex) {
+            throw new CouldNotPerformException("Could not set activity to [" + activityState + "] for " + this + "!", ex);
+        }
+        return CompletableFuture.completedFuture(null);
     }
 
     @Override
