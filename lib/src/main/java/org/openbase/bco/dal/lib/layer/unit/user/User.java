@@ -21,7 +21,8 @@ package org.openbase.bco.dal.lib.layer.unit.user;
  * <http://www.gnu.org/licenses/lgpl-3.0.html>.
  * #L%
  */
-import org.openbase.bco.dal.lib.layer.service.operation.ActivityStateOperationService;
+
+import org.openbase.bco.dal.lib.layer.service.operation.MultiActivityStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.PresenceStateOperationService;
 import org.openbase.bco.dal.lib.layer.service.operation.UserTransitStateOperationService;
 import org.openbase.bco.dal.lib.layer.unit.BaseUnit;
@@ -34,7 +35,7 @@ import rst.domotic.unit.user.UserDataType.UserData;
  *
  * @author <a href="mailto:divine@openbase.org">Divine Threepwood</a>
  */
-public interface User extends BaseUnit<UserData>, ActivityStateOperationService, UserTransitStateOperationService, PresenceStateOperationService {
+public interface User extends BaseUnit<UserData>, MultiActivityStateOperationService, UserTransitStateOperationService, PresenceStateOperationService {
 
     public final static String TYPE_FIELD_USER_NAME = "user_name";
 

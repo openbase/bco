@@ -21,13 +21,10 @@ package org.openbase.bco.dal.visual.service;
  * <http://www.gnu.org/licenses/gpl-3.0.html>.
  * #L%
  */
-import java.util.ArrayList;
-import java.util.Collections;
-import java.util.List;
-import javax.swing.DefaultComboBoxModel;
+
 import org.openbase.bco.dal.lib.layer.service.consumer.ConsumerService;
-import org.openbase.bco.dal.lib.layer.service.operation.ActivityStateOperationService;
-import org.openbase.bco.dal.lib.layer.service.provider.ActivityStateProviderService;
+import org.openbase.bco.dal.lib.layer.service.operation.MultiActivityStateOperationService;
+import org.openbase.bco.dal.lib.layer.service.provider.MultiActivityStateProviderService;
 import org.openbase.bco.registry.remote.Registries;
 import org.openbase.jul.exception.CouldNotPerformException;
 import org.openbase.jul.exception.NotAvailableException;
@@ -38,27 +35,36 @@ import rst.domotic.activity.ActivityConfigType.ActivityConfig;
 import rst.domotic.registry.ActivityRegistryDataType.ActivityRegistryData;
 import rst.domotic.state.ActivityStateType.ActivityState;
 
+import javax.swing.*;
+import java.util.ArrayList;
+import java.util.Collections;
+import java.util.List;
+
 /**
- *
  * @author <a href="mailto:pLeminoq@openbase.org">Tamino Huxohl</a>
  */
-public class ActivityStateServicePanel extends AbstractServicePanel<ActivityStateProviderService, ConsumerService, ActivityStateOperationService> {
+public class MultiActivityStateServicePanel extends AbstractServicePanel<MultiActivityStateProviderService, ConsumerService, MultiActivityStateOperationService> {
+
+    // Variables declaration - do not modify//GEN-BEGIN:variables
+    private javax.swing.JComboBox activityComboBox;
+    private javax.swing.JLabel activityStateLabel;
+    private javax.swing.JPanel activityStatePanel;
 
     /**
      * Creates new form ActivityStateServicePanel
      *
      * @throws org.openbase.jul.exception.InstantiationException
      */
-    public ActivityStateServicePanel() throws org.openbase.jul.exception.InstantiationException {
+    public MultiActivityStateServicePanel() throws org.openbase.jul.exception.InstantiationException {
         initComponents();
         initDynamicComponents();
     }
-    
+
     private void initDynamicComponents() throws org.openbase.jul.exception.InstantiationException {
         try {
             Registries.getActivityRegistry(true);
             updateComboBoxModel();
-            
+
             Registries.getActivityRegistry().addDataObserver((Observable<ActivityRegistryData> source, ActivityRegistryData data) -> {
                 updateComboBoxModel();
             });
@@ -68,17 +74,17 @@ public class ActivityStateServicePanel extends AbstractServicePanel<ActivityStat
             Thread.currentThread().interrupt();
         }
     }
-    
+
     private void updateComboBoxModel() throws CouldNotPerformException {
         Object selected = activityComboBox.getModel().getSelectedItem();
-        
+
         List<ActivityConfigHolder> activityConfigHolderList = new ArrayList<>();
         for (ActivityConfig activityConfig : Registries.getActivityRegistry().getActivityConfigs()) {
             activityConfigHolderList.add(new ActivityConfigHolder(activityConfig));
         }
         Collections.sort(activityConfigHolderList);
         activityComboBox.setModel(new DefaultComboBoxModel(activityConfigHolderList.toArray()));
-        
+
         if (selected != null) {
             activityComboBox.getModel().setSelectedItem(selected);
         } else {
@@ -108,15 +114,15 @@ public class ActivityStateServicePanel extends AbstractServicePanel<ActivityStat
         javax.swing.GroupLayout activityStatePanelLayout = new javax.swing.GroupLayout(activityStatePanel);
         activityStatePanel.setLayout(activityStatePanelLayout);
         activityStatePanelLayout.setHorizontalGroup(
-            activityStatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(activityStateLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
+                activityStatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(activityStateLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 270, Short.MAX_VALUE)
         );
         activityStatePanelLayout.setVerticalGroup(
-            activityStatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(activityStateLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
+                activityStatePanelLayout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(activityStateLabel, javax.swing.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE)
         );
 
-        activityComboBox.setModel(new javax.swing.DefaultComboBoxModel(new String[] { "Item 1", "Item 2", "Item 3", "Item 4" }));
+        activityComboBox.setModel(new DefaultComboBoxModel(new String[]{"Item 1", "Item 2", "Item 3", "Item 4"}));
         activityComboBox.addActionListener(new java.awt.event.ActionListener() {
             public void actionPerformed(java.awt.event.ActionEvent evt) {
                 activityComboBoxActionPerformed(evt);
@@ -126,16 +132,16 @@ public class ActivityStateServicePanel extends AbstractServicePanel<ActivityStat
         javax.swing.GroupLayout layout = new javax.swing.GroupLayout(this);
         this.setLayout(layout);
         layout.setHorizontalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addComponent(activityStatePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
-            .addComponent(activityComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addComponent(activityStatePanel, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
+                        .addComponent(activityComboBox, 0, javax.swing.GroupLayout.DEFAULT_SIZE, Short.MAX_VALUE)
         );
         layout.setVerticalGroup(
-            layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
-            .addGroup(layout.createSequentialGroup()
-                .addComponent(activityStatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
-                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
-                .addComponent(activityComboBox, javax.swing.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE))
+                layout.createParallelGroup(javax.swing.GroupLayout.Alignment.LEADING)
+                        .addGroup(layout.createSequentialGroup()
+                                .addComponent(activityStatePanel, javax.swing.GroupLayout.PREFERRED_SIZE, javax.swing.GroupLayout.DEFAULT_SIZE, javax.swing.GroupLayout.PREFERRED_SIZE)
+                                .addPreferredGap(javax.swing.LayoutStyle.ComponentPlacement.RELATED)
+                                .addComponent(activityComboBox, javax.swing.GroupLayout.DEFAULT_SIZE, 42, Short.MAX_VALUE))
         );
     }// </editor-fold>//GEN-END:initComponents
 
@@ -144,45 +150,49 @@ public class ActivityStateServicePanel extends AbstractServicePanel<ActivityStat
         if (!(selected instanceof ActivityConfigHolder)) {
             return;
         }
-        
+
         ActivityConfigHolder selectedActivity = (ActivityConfigHolder) selected;
         ActivityState activityState = ActivityState.newBuilder().setActivityId(selectedActivity.getActivityConfig().getId()).build();
         try {
-            notifyActionProcessing(getOperationService().setActivityState(activityState));
+            notifyActionProcessing(getOperationService().addActivityState(activityState));
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(new CouldNotPerformException("Could not set user activity state!", ex), logger);
         }
     }//GEN-LAST:event_activityComboBoxActionPerformed
-
-
-    // Variables declaration - do not modify//GEN-BEGIN:variables
-    private javax.swing.JComboBox activityComboBox;
-    private javax.swing.JLabel activityStateLabel;
-    private javax.swing.JPanel activityStatePanel;
     // End of variables declaration//GEN-END:variables
 
     @Override
     protected void updateDynamicComponents() {
         try {
-            if (getProviderService().getActivityState().hasActivityId() && !getProviderService().getActivityState().getActivityId().isEmpty()) {
-                ActivityConfig activityConfig = Registries.getActivityRegistry().getActivityConfigById(getProviderService().getActivityState().getActivityId());
-                logger.info("state: " + activityConfig.getLabel());
-                activityComboBox.getModel().setSelectedItem(new ActivityConfigHolder(activityConfig));
-                activityStateLabel.setText("Current ActivityState = " + activityConfig.getLabel());
+            String activityList = "";
+            for (final ActivityState activityState : getProviderService().getActivityStateList()) {
+
+                if (activityState.hasActivityId() && !activityState.getActivityId().isEmpty()) {
+
+                    if (!activityList.isEmpty()) {
+                        activityList += ", ";
+                    }
+
+                    ActivityConfig activityConfig = Registries.getActivityRegistry().getActivityConfigById(activityState.getActivityId());
+                    logger.info("state: " + activityConfig.getLabel());
+//                    activityComboBox.getModel().setSelectedItem(new ActivityConfigHolder(activityConfig));
+                    activityList += LabelProcessor.getBestMatch(activityConfig.getLabel());
+                }
             }
+            activityStateLabel.setText("Current Activities = " + activityList);
         } catch (CouldNotPerformException ex) {
             ExceptionPrinter.printHistory(ex, logger);
         }
     }
-    
+
     public static class ActivityConfigHolder implements Comparable<ActivityConfigHolder> {
-        
+
         private final ActivityConfig activityConfig;
-        
+
         public ActivityConfigHolder(final ActivityConfig activityConfig) {
             this.activityConfig = activityConfig;
         }
-        
+
         @Override
         public String toString() {
             try {
@@ -191,12 +201,12 @@ public class ActivityStateServicePanel extends AbstractServicePanel<ActivityStat
                 return "?";
             }
         }
-        
+
         @Override
         public int compareTo(ActivityConfigHolder o) {
             return toString().compareTo(o.toString());
         }
-        
+
         public ActivityConfig getActivityConfig() {
             return activityConfig;
         }

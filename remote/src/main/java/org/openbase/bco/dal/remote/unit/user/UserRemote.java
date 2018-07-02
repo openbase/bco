@@ -22,6 +22,7 @@ package org.openbase.bco.dal.remote.unit.user;
  * #L%
  */
 
+import java.util.List;
 import java.util.concurrent.Future;
 
 import org.openbase.bco.dal.lib.action.ActionDescriptionProcessor;
@@ -60,13 +61,9 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
     }
 
     @Override
-    public ActivityState getActivityState() throws NotAvailableException {
+    public List<ActivityState> getActivityStateList() throws NotAvailableException {
         try {
-            // todo: implement multi service state support (openbase/bco.dal#113)
-            if(getData().getActivityStateCount() == 0) {
-                throw new CouldNotPerformException("No activity known for user "+getLabel());
-            }
-            return getData().getActivityState(0);
+            return getData().getActivityStateList();
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("user activity", ex);
         }
@@ -82,9 +79,8 @@ public class UserRemote extends AbstractUnitRemote<UserData> implements User {
     }
 
     @Override
-    public Future<ActionFuture> setActivityState(ActivityState activityState) throws CouldNotPerformException {
-        // todo: implement multi service state support (openbase/bco.dal#113)
-        return FutureProcessor.canceledFuture(new NotSupportedException("multi service not supported yet!", this));
+    public Future<ActionFuture> addActivityState(final ActivityState activityState) throws CouldNotPerformException {
+        return applyAction(ActionDescriptionProcessor.generateActionDescriptionBuilderAndUpdate(activityState, ServiceType.MULTI_ACTIVITY_STATE_SERVICE,this));
     }
 
     @Override
