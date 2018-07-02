@@ -186,7 +186,7 @@ public class ActivityStateServicePanel extends AbstractServicePanel<ActivityStat
         @Override
         public String toString() {
             try {
-                return LabelProcessor.getFirstLabel(this.activityConfig.getLabel());
+                return LabelProcessor.getBestMatch(this.activityConfig.getLabel());
             } catch (NotAvailableException e) {
                 return "?";
             }

@@ -438,7 +438,7 @@ public class ActionDescriptionProcessor {
 
         //TODO: provide label in different languages for LabelProcessor and replace according to user logged in
         if (actionDescription.hasLabel() && !LabelProcessor.isEmpty(actionDescription.getLabel())) {
-            final String label = LabelProcessor.getFirstLabel(actionDescription.getLabel());
+            final String label = LabelProcessor.getBestMatch(actionDescription.getLabel());
             actionDescription.clearLabel();
             LabelProcessor.addLabel(actionDescription.getLabelBuilder(), Locale.ENGLISH, label.replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel()));
         }
@@ -528,7 +528,7 @@ public class ActionDescriptionProcessor {
         String serviceAttributeRepresentation = StringProcessor.formatHumanReadable(serviceAttribute.toBuilder().clearField(ProtoBufFieldProcessor.getFieldDescriptor(serviceAttribute, Service.RESPONSIBLE_ACTION_FIELD_NAME)).build().toString());
         description = description.replace(ActionDescriptionProcessor.SERVICE_ATTRIBUTE_KEY, serviceAttributeRepresentation);
         if (actionDescription.hasLabel() && !LabelProcessor.isEmpty(actionDescription.getLabel())) {
-            final String label = LabelProcessor.getFirstLabel(actionDescription.getLabel());
+            final String label = LabelProcessor.getBestMatch(actionDescription.getLabel());
             actionDescription.clearLabel();
             LabelProcessor.addLabel(actionDescription.getLabelBuilder(), Locale.ENGLISH, label.replace(ActionDescriptionProcessor.SERVICE_ATTRIBUTE_KEY, serviceAttributeRepresentation));
         }

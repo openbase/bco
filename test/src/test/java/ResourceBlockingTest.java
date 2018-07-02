@@ -108,7 +108,7 @@ public class ResourceBlockingTest {
 
         actionDescriptionBuilder.setDescription(actionDescriptionBuilder.getDescription().replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel()));
         //TODO: update USER key with authentication
-        actionDescriptionBuilder.setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, LabelProcessor.getFirstLabel(actionDescriptionBuilder.getLabel()).replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel())));
+        actionDescriptionBuilder.setLabel(LabelProcessor.addLabel(Label.newBuilder(), Locale.ENGLISH, LabelProcessor.getBestMatch(actionDescriptionBuilder.getLabel()).replace(ActionDescriptionProcessor.LABEL_KEY, unitRemote.getLabel())));
 
         return ActionDescriptionProcessor.updateActionDescription(actionDescriptionBuilder, serviceAttribute, serviceType);
     }

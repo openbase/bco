@@ -347,7 +347,7 @@ public abstract class AbstractUnitController<D extends GeneratedMessage, DB exte
             if (LabelProcessor.isEmpty(tmpConfig.getLabel())) {
                 throw new InvalidStateException("unitconfig.label is empty");
             }
-            return LabelProcessor.getFirstLabel(getConfig().getLabel());
+            return LabelProcessor.getBestMatch(getConfig().getLabel());
         } catch (CouldNotPerformException ex) {
             throw new NotAvailableException("label", ex);
         }
