@@ -60,7 +60,7 @@ public class GroupEntry {
     private static int maxParentLocationsSize = 0;
 
     public GroupEntry(final UnitConfig locationUnitConfig) throws CouldNotPerformException, InterruptedException {
-        this(ItemIdGenerator.generateUnitGroupID(locationUnitConfig), LabelProcessor.getFirstLabel(locationUnitConfig.getLabel()), detectIcon(new MetaConfigVariableProvider("LocationConfig", locationUnitConfig.getMetaConfig())), new ArrayList<>());
+        this(ItemIdGenerator.generateUnitGroupID(locationUnitConfig), LabelProcessor.getBestMatch(locationUnitConfig.getLabel()), detectIcon(new MetaConfigVariableProvider("LocationConfig", locationUnitConfig.getMetaConfig())), new ArrayList<>());
         if (!locationUnitConfig.getLocationConfig().getRoot()) {
             this.parentLocations.add(ItemIdGenerator.generateParentGroupID(locationUnitConfig));
         }

@@ -104,7 +104,7 @@ public class UnitTransformationTest extends AbstractBCOManagerTest {
             verifyTransformations();
 
             for (UnitConfig unitConfig : Registries.getUnitRegistry().getUnitConfigs()) {
-                if ((unitConfig.getUnitType() == UnitType.USER || unitConfig.getUnitType() == UnitType.AUTHORIZATION_GROUP) && LabelProcessor.getFirstLabel(unitConfig.getLabel()).equals("Admin")) {
+                if ((unitConfig.getUnitType() == UnitType.USER || unitConfig.getUnitType() == UnitType.AUTHORIZATION_GROUP) && LabelProcessor.getBestMatch(unitConfig.getLabel()).equals("Admin")) {
                     // no permissions for change of admin user or group
                     continue;
                 }

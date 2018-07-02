@@ -80,7 +80,7 @@ public class UserControllerImpl extends AbstractBaseUnitController<UserData, Use
 
     @Override
     public UnitConfig applyConfigUpdate(UnitConfig config) throws CouldNotPerformException, InterruptedException {
-        MetaConfigVariableProvider variableProvider = new MetaConfigVariableProvider(LabelProcessor.getFirstLabel(config.getLabel()), config.getMetaConfig());
+        MetaConfigVariableProvider variableProvider = new MetaConfigVariableProvider(LabelProcessor.getBestMatch(config.getLabel()), config.getMetaConfig());
         synchronized (netDeviceDetectorMapLock) {
 
             // shutdown and remove all existing detectors

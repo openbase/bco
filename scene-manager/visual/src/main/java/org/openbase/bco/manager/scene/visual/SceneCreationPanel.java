@@ -320,7 +320,7 @@ public class SceneCreationPanel extends javax.swing.JPanel {
                 return "New";
             }
             try {
-                return LabelProcessor.getFirstLabel(config.getLabel());
+                return LabelProcessor.getBestMatch(config.getLabel());
             } catch (NotAvailableException e) {
                 return "?";
             }

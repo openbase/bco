@@ -156,7 +156,7 @@ public class OpenHABminConfigGenerator {
 
             // add values
             nameElement.appendChild(LabelProcessor.getBestMatch(deviceDeviceConfig.getLabel()) + " " + Registries.getUnitRegistry().getUnitConfigById(deviceDeviceConfig.getPlacementConfig().getLocationId()).getLabel());
-            locationElement.appendChild(LabelProcessor.getFirstLabel(Registries.getUnitRegistry().getUnitConfigById(deviceDeviceConfig.getPlacementConfig().getLocationId()).getLabel()));
+            locationElement.appendChild(LabelProcessor.getBestMatch(Registries.getUnitRegistry().getUnitConfigById(deviceDeviceConfig.getPlacementConfig().getLocationId()).getLabel()));
             // as a backup use the first label as seen below
             //TODO: this should parse a value from the root location meta config that defines a default label
 
